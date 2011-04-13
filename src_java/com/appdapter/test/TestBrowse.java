@@ -40,7 +40,7 @@ public class TestBrowse {
 	}
 	public static TestNavigatorCtrl makeTestNavigatorCtrl(String[] args) {
 		// From this BoxImpl.class, is makeBCI is able to infer the full BT=BoxImpl<... tree?
-		BoxContextImpl bctx = makeBCI(BoxImpl.class);// makeBoxContextImpl(BoxImpl.class, TriggerImpl.class);
+		BoxContextImpl bctx = makeBCI(BoxImpl.class, RepoBoxImpl.class);// makeBoxContextImpl(BoxImpl.class, TriggerImpl.class);
 		TreeModel tm = bctx.getTreeModel();
 		BoxTreeNode rootBTN = (BoxTreeNode) tm.getRoot();
 
@@ -48,9 +48,10 @@ public class TestBrowse {
 		TestNavigatorCtrl tn = new TestNavigatorCtrl(bctx, tm, rootBTN, dcp);
 		return tn;
 	}
-	public static <BT extends BoxImpl<TriggerImpl<BT>>> BoxContextImpl makeBCI(Class<BT> boxClass) {
-		TriggerImpl<BT> trigProto = makeTriggerPrototype(boxClass);
-		return makeBoxContextImpl(boxClass, trigProto);
+	public static <BT extends BoxImpl<TriggerImpl<BT>>, RBT extends RepoBoxImpl<TriggerImpl<RBT>>> BoxContextImpl makeBCI(Class<BT> boxClass, Class<RBT> repoBoxClass) {
+		TriggerImpl<BT> regTrigProto = makeTriggerPrototype(boxClass);
+		TriggerImpl<RBT> repoTrigProto = makeTriggerPrototype(repoBoxClass);
+		return makeBoxContextImpl(boxClass, repoBoxClass, regTrigProto, repoTrigProto);
 	}
 	public static <BT extends BoxImpl<TriggerImpl<BT>>> TriggerImpl<BT> makeTriggerPrototype(Class<BT> boxClass) {
 		// The trigger subtype does not matter - what matters is capturing BT into the type.
@@ -58,20 +59,23 @@ public class TestBrowse {
 	}
 	// static class ConcBootstrapTF extends BootstrapTriggerFactory<TriggerImpl<BoxImpl<TriggerImpl>>> {
 	// }  //   TT extends TriggerImpl<BT>
-	public static <BT extends BoxImpl<TriggerImpl<BT>>> BoxContextImpl makeBoxContextImpl(Class<BT> boxClass, TriggerImpl<BT> trigProto) {
+	public static <BT extends BoxImpl<TriggerImpl<BT>>, RBT extends RepoBoxImpl<TriggerImpl<RBT>>> BoxContextImpl 
+				makeBoxContextImpl(Class<BT> regBoxClass, Class<RBT> repoBoxClass, TriggerImpl<BT> regTrigProto,
+					TriggerImpl<RBT> repoTrigProto) {
 		try {
 			BoxContextImpl bctx = new BoxContextImpl();
-			BT rootBox = TestServiceWrapFuncs.makeTestBoxImpl(boxClass, trigProto, "rooty");
+			BT rootBox = TestServiceWrapFuncs.makeTestBoxImpl(regBoxClass, regTrigProto, "rooty");
 			bctx.contextualizeAndAttachRootBox(rootBox);
 
 			BootstrapTriggerFactory btf = new BootstrapTriggerFactory();
 			btf.attachTrigger(rootBox, new SysTriggers.QuitTrigger(), "quit");
 
-			BT repoBox = TestServiceWrapFuncs.makeTestChildBoxImpl(rootBox, boxClass, trigProto,  "repo");
-			BT appBox = TestServiceWrapFuncs.makeTestChildBoxImpl(rootBox, boxClass, trigProto, "app");
-			BT sysBox = TestServiceWrapFuncs.makeTestChildBoxImpl(rootBox, boxClass, trigProto, "sys");
 
-			BT r1Box = TestServiceWrapFuncs.makeTestChildBoxImpl(repoBox,  boxClass, trigProto, "h2.td_001");
+			BT repoBox = TestServiceWrapFuncs.makeTestChildBoxImpl(rootBox, regBoxClass, regTrigProto, "repo");
+			BT appBox = TestServiceWrapFuncs.makeTestChildBoxImpl(rootBox, regBoxClass, regTrigProto, "app");
+			BT sysBox = TestServiceWrapFuncs.makeTestChildBoxImpl(rootBox, regBoxClass, regTrigProto, "sys");
+
+			RBT r1Box = TestServiceWrapFuncs.makeTestChildBoxImpl(repoBox,  repoBoxClass, repoTrigProto, "h2.td_001");
 
 			btf.attachTrigger(r1Box, new DatabaseTriggers.InitTrigger(), "openDB");
 			btf.attachTrigger(r1Box, new RepoTriggers.OpenTrigger(), "openMetaRepo");
@@ -81,21 +85,21 @@ public class TestBrowse {
 			btf.attachTrigger(r1Box, new RepoTriggers.DumpStatsTrigger(), "dump stats");
 			TestServiceWrapFuncs.attachPanelOpenTrigger(r1Box, "manage repo", BoxPanel.Kind.REPO_MANAGER);
 
-			BT r2Box = TestServiceWrapFuncs.makeTestChildBoxImpl(repoBox, boxClass, trigProto, "repo_002");
+			RBT r2Box = TestServiceWrapFuncs.makeTestChildBoxImpl(repoBox, repoBoxClass, repoTrigProto, "repo_002");
 			btf.attachTrigger(r2Box, new SysTriggers.DumpTrigger(), "dumpD");
 			btf.attachTrigger(r2Box, new SysTriggers.DumpTrigger(), "dumpC");
 			btf.attachTrigger(r2Box, new SysTriggers.DumpTrigger(), "dumpA");
 
-			BT fishBox = TestServiceWrapFuncs.makeTestChildBoxImpl(appBox, boxClass, trigProto, "fishy");
+			BT fishBox = TestServiceWrapFuncs.makeTestChildBoxImpl(appBox, regBoxClass, regTrigProto, "fishy");
 			TestServiceWrapFuncs.attachPanelOpenTrigger(fishBox, "open-matrix-f", BoxPanel.Kind.MATRIX);
 
 			btf.attachTrigger(fishBox, new SysTriggers.DumpTrigger(), "dumpF");
 
-			BT pumappBox = TestServiceWrapFuncs.makeTestChildBoxImpl(appBox,boxClass, trigProto, "pumapp");
+			BT pumappBox = TestServiceWrapFuncs.makeTestChildBoxImpl(appBox, regBoxClass, regTrigProto, "pumapp");
 			TestServiceWrapFuncs.attachPanelOpenTrigger(pumappBox, "open-matrix-p", BoxPanel.Kind.MATRIX);
 			btf.attachTrigger(pumappBox, new SysTriggers.DumpTrigger(), "dumpP");
 
-			BT buckTreeBox = TestServiceWrapFuncs.makeTestChildBoxImpl(appBox, boxClass, trigProto, "bucksum");
+			BT buckTreeBox = TestServiceWrapFuncs.makeTestChildBoxImpl(appBox, regBoxClass, regTrigProto, "bucksum");
 			btf.attachTrigger(buckTreeBox, new BridgeTriggers.MountSubmenuFromTriplesTrigger(), "loadSubmenus");
 		
 /*

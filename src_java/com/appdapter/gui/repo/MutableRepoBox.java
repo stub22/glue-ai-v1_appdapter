@@ -12,7 +12,7 @@ import com.hp.hpl.jena.sdb.Store;
  *
  * @author winston
  */
-public interface MutableRepoBox<TT extends Trigger<? extends RepoBox<TT>>>  extends RepoBox<TT> {
+public interface MutableRepoBox<TT extends Trigger<? extends RepoBox<TT>>>  extends RepoBox<TT>  {
 	public void setStore(Store store);
 	public void mountStoreUsingFileConfig(String storeConfigPath);
 	public void formatStoreIfNeeded();

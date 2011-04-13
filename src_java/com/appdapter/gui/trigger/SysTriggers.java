@@ -27,7 +27,8 @@ public class SysTriggers {
 			System.exit(0);
 		}
 	}
-	public static class DumpTrigger<BT extends Box<TriggerImpl<BT>>> extends  TriggerImpl<BT> {
+	// Example of the shorter, less-safe, raw typing style.
+	public static class DumpTrigger extends TriggerImpl {
 		@Override public void fire(Box targetBox) {
 			theLogger.info(toString() + "-dumping");
 			((BoxImpl) targetBox).dump();

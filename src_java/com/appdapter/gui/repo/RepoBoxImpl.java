@@ -7,6 +7,7 @@ package com.appdapter.gui.repo;
 
 import arq.cmdline.ModTime;
 import com.appdapter.gui.box.BoxImpl;
+import com.appdapter.gui.box.Trigger;
 import com.hp.hpl.jena.graph.Graph;
 import com.hp.hpl.jena.graph.GraphListener;
 import com.hp.hpl.jena.graph.Node;
@@ -27,7 +28,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author winston
  */
-public class RepoBoxImpl extends BoxImpl implements MutableRepoBox {
+public class RepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<TT>>> extends BoxImpl<TT> implements MutableRepoBox<TT> {
 	static Logger theLogger = LoggerFactory.getLogger(RepoBoxImpl.class);
 	public static Store		myStore;
 	public static String	myStoreConfigPath;

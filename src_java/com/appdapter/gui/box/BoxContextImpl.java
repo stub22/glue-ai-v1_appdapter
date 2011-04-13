@@ -83,4 +83,9 @@ public class BoxContextImpl implements BoxContext, DisplayContextProvider {
 		}
 		return myTreeModel;
 	}
+	public void reloadTreeModel() {
+		TreeModel tm = getTreeModel();
+		DefaultTreeModel dtm = (DefaultTreeModel) tm;
+		dtm.reload();
+	}
 }

@@ -85,7 +85,7 @@ public class BoxImpl<TrigType extends Trigger<? extends BoxImpl<TrigType>>> exte
 		case REPO_MANAGER:
 			bp = new RepoManagerPanel();
 		break;
-			case DB_MANAGER:
+		case DB_MANAGER:
 			bp = new DatabaseManagerPanel();
 		break;
 		}

@@ -15,6 +15,7 @@ import com.appdapter.gui.browse.BrowsePanel;
 import java.awt.BorderLayout;
 import java.awt.event.MouseAdapter;
 import javax.swing.JFrame;
+import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 
 /**
@@ -60,8 +61,11 @@ public class TestNavigatorCtrl {
 			throw new RuntimeException("Frame already launched!");
 		}
 	}
-	public void addBoxToRoot(MutableBox childBox) {
+	public void addBoxToRoot(MutableBox childBox, boolean reload) {
 		Box rootBox =  myBC.getRootBox();
 		myBC.contextualizeAndAttachChildBox(rootBox, childBox);
+		if (reload) {
+			((DefaultTreeModel) myTM).reload();
+		}
 	}
 }

@@ -11,7 +11,7 @@ import com.appdapter.gui.browse.DisplayContext;
  *
  * @author winston
  */
-public interface ViewableBox<TrigType extends Trigger<? extends ViewableBox<TrigType>>> extends Box<TrigType>, KnownComponent {
+public interface ViewableBox<TT extends Trigger<? extends ViewableBox<TT>>> extends Box<TT>, KnownComponent {
 
 	public DisplayContext getDisplayContext();
 

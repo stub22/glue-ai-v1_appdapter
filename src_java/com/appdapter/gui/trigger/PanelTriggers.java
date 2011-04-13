@@ -24,23 +24,21 @@ public class PanelTriggers {
 		OPEN,
 		CLOSE
 	}
-	public static class OpenTrigger extends TriggerImpl {
+	public static class OpenTrigger <VB extends ViewableBox<TriggerImpl<VB>>> extends  TriggerImpl<VB> {
 		private BoxPanel.Kind	myPanelKind;
 
 		public void setPanelKind(BoxPanel.Kind kind) {
 			myPanelKind = kind;
 		}
-		@Override public void fire(Box targetBox) {
+		@Override public void fire(VB targetVB) {
 			theLogger.info(toString() + "-firing, opening box panel");
-			ViewableBox  vb = (ViewableBox) targetBox;
-			DisplayContext dc = vb.getDisplayContext();
-			BrowseTabs.openBoxPanelAndFocus(dc, vb, myPanelKind);
+			DisplayContext dc = targetVB.getDisplayContext();
+			BrowseTabs.openBoxPanelAndFocus(dc, targetVB, myPanelKind);
 		}
 	}
-	public static class CloseTrigger extends TriggerImpl {
-		@Override public void fire(Box targetBox) {
-			theLogger.info(toString() + "-closing");
-			
+	public static class CloseTrigger  <VB extends ViewableBox<TriggerImpl<VB>>> extends  TriggerImpl<VB> {
+		@Override public void fire(VB targetBox) {
+			theLogger.info(toString() + "-closing viewableBox: " + targetBox);	
 		}
 	}
 }
