@@ -21,7 +21,7 @@ public class DatabaseTriggers {
 		CLOSE
 	}
 
-	public static class InitTrigger extends TriggerImpl {
+	public static class InitTrigger<BT extends Box<TriggerImpl<BT>>> extends  TriggerImpl<BT> {
 		@Override public void fire(Box targetBox) {
 			theLogger.info(toString() + "-initing");
 

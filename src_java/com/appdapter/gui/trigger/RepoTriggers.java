@@ -4,6 +4,7 @@
  */
 package com.appdapter.gui.trigger;
 
+import com.appdapter.gui.box.Box;
 import com.appdapter.gui.box.TriggerImpl;
 import com.appdapter.gui.repo.MutableRepoBox;
 import com.appdapter.gui.repo.RepoBox;
@@ -34,24 +35,24 @@ public class RepoTriggers {
 	public static String theStoreConfigPath = "testconf/store/appdtest_sdb_h2.ttl";
 	public static String theSchemaTestPath = "testconf/owl/snazzy.owl";
 
-	public static class OpenTrigger extends TriggerImpl<MutableRepoBox<OpenTrigger>>  {
-		@Override public void fire(MutableRepoBox targetBox) {
+	public static class OpenTrigger<MRB extends MutableRepoBox<TriggerImpl<MRB>>> extends  TriggerImpl<MRB>  {
+		@Override public void fire(MRB targetBox) {
 			targetBox.mountStoreUsingFileConfig(theStoreConfigPath);
 		}
 	}
-	public static class InitTrigger extends TriggerImpl<MutableRepoBox<InitTrigger>> {
-		@Override public void fire(MutableRepoBox targetBox) {
+	public static class InitTrigger<MRB extends MutableRepoBox<TriggerImpl<MRB>>> extends  TriggerImpl<MRB> {
+		@Override public void fire(MRB targetBox) {
 			targetBox.formatStoreIfNeeded();
 		}
 	}
-	public static class DumpStatsTrigger extends TriggerImpl<RepoBox<DumpStatsTrigger>> {
-		public void fire(RepoBox targetBox) {
+	public static class DumpStatsTrigger<RB extends RepoBox<TriggerImpl<RB>>> extends  TriggerImpl<RB> {
+		public void fire(RB targetBox) {
 			List<GraphStat> stats = targetBox.getGraphStats();
 		}
 	}
-	public static class QueryTrigger extends TriggerImpl<RepoBox<QueryTrigger>> {
+	public static class QueryTrigger<RB extends RepoBox<TriggerImpl<RB>>> extends  TriggerImpl<RB>  {
 
-		@Override public void fire(RepoBox targetBox) {
+		@Override public void fire(RB  targetBox) {
 			Store store = targetBox.getStore();
 			try {
 				String queryText = "blah";
@@ -77,13 +78,13 @@ public class RepoTriggers {
 		}
 	}
 
-	public static class UploadTrigger extends TriggerImpl<MutableRepoBox<UploadTrigger>> {
+	public static class UploadTrigger<MRB extends MutableRepoBox<TriggerImpl<MRB>>> extends  TriggerImpl<MRB>  {
 
 		// ModGraph modGraph = new ModGraph();
 
 
 		// Want contravariance?
-		@Override public void fire(MutableRepoBox<UploadTrigger> targetBox) {
+		@Override public void fire(MRB targetBox) {
 			try {
 				String filePath = theSchemaTestPath;
 				targetBox.uploadModelFile(filePath, "whoopee", true);
