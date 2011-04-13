@@ -20,8 +20,10 @@ import org.slf4j.LoggerFactory;
  */
 public class BridgeTriggers {
 	static Logger theLogger = LoggerFactory.getLogger(BridgeTriggers.class);
-	public static class MountSubmenuFromTriplesTrigger extends TriggerImpl {
-		@Override public void fire(Box targetBox) {
+
+
+	public static class MountSubmenuFromTriplesTrigger<BT extends Box<TriggerImpl<BT>>> extends  TriggerImpl<BT> {
+		@Override public void fire(BT targetBox) {
 			theLogger.info(toString() + "-mounting-submenu");
 			BoxContext bc = targetBox.getBoxContext();
 

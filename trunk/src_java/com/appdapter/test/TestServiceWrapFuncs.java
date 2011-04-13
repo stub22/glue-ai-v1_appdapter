@@ -19,7 +19,7 @@ import com.appdapter.gui.trigger.PanelTriggers;
  * @author winston
  */
 public class TestServiceWrapFuncs {
-	public static <BT extends BoxImpl<TT>, TT extends TriggerImpl<BT>> BT makeTestBoxImpl(Class<BT> boxClass, Class<TT> trigClass, String label) {
+	private static <BT extends BoxImpl<TT>, TT extends TriggerImpl<BT>> BT makeTestBoxImpl(Class<BT> boxClass, Class<TT> trigClass, String label) {
 		BT result = CachingComponentAssembler.makeEmptyComponent(boxClass);
 		result.setShortLabel(label);
 		result.setDescription("full description for box with label: " + label);

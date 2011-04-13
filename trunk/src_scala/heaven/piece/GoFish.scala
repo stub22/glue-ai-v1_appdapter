@@ -16,35 +16,18 @@ object GoFish {
 		println("The time is: " + time);
 		TestBrowse.pretendToBeAwesome();
 		//TestBrowse.main(args);
-		val tnc = TestBrowse.makeTestNavigatorCtrl(args);
-		val box1 = Boxy.boxItUp();
-		tnc.addBoxToRoot(box1);
+		val tnc = makeTNC(args);
 		tnc.launchFrame("GoFish");
 
 	}
+	def makeTNC(args: Array[String]) : TestNavigatorCtrl = {
+		val tnc = TestBrowse.makeTestNavigatorCtrl(args);
+		val box1 = Boxy.boxItUp();
+		tnc.addBoxToRoot(box1, false);
+		tnc;
+	}
 /*
-	def attachGBChild(parentBox : Box[_]) : GoodBox[] = {
-		val bc : BoxContext = parentBox.getBoxContext();
-		val gbChild : GoodBox = makeGoodBox();
-		bc.contextualizeAndAttachChildBox(parentBox, gbChild);
-		gbChild;
-	}
-	def makeGoodBox() :  GoodBox[_] = {
-		val gb = new GoodBox[GoodTrigger]();
-		val gt = new GoodTrigger();
-		gt.setShortLabel("primo_good");
-		gb.attachTrigger(gt);
-		gb;
-	}    // extends TriggerImpl[GBT] 
 
-	class GoodTrigger [GBT <: Box[Trigger[GBT]]]() {
-		def fire(targetBox : GBT) : Unit = {
-			println("GoodTrigger is firing on box: " + targetBox);
-		}
-	}
-*/
- // class GoodBox [GTT <: Trigger[Box[GTT]]] () extends BoxImpl[GTT]  {
-	  /*
   	// public List<TrigType> getTriggers();
 	// public BoxContext getBoxContext();
 	// void attachTrigger(TrigType bt);

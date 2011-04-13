@@ -22,7 +22,7 @@ public class DatabaseTriggers {
 	}
 
 	public static class InitTrigger<BT extends Box<TriggerImpl<BT>>> extends  TriggerImpl<BT> {
-		@Override public void fire(Box targetBox) {
+		@Override public void fire(BT targetBox) {
 			theLogger.info(toString() + "-initing");
 
 			DatabaseConnector.Config dbcc = new DatabaseConnector.Config();
