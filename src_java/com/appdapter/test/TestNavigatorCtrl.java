@@ -5,9 +5,11 @@
 
 package com.appdapter.test;
 
+import com.appdapter.gui.box.Box;
 import com.appdapter.gui.box.BoxContext;
 import com.appdapter.gui.box.BoxTreeNode;
 import com.appdapter.gui.box.DisplayContextProvider;
+import com.appdapter.gui.box.MutableBox;
 import com.appdapter.gui.browse.TriggerMenuFactory;
 import com.appdapter.gui.browse.BrowsePanel;
 import java.awt.BorderLayout;
@@ -58,5 +60,8 @@ public class TestNavigatorCtrl {
 			throw new RuntimeException("Frame already launched!");
 		}
 	}
-	
+	public void addBoxToRoot(MutableBox childBox) {
+		Box rootBox =  myBC.getRootBox();
+		myBC.contextualizeAndAttachChildBox(rootBox, childBox);
+	}
 }

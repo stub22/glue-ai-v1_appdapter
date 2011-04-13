@@ -13,6 +13,7 @@ import java.util.List;
  * @author winston
  */
 public interface BoxContext {
+	public Box getRootBox();
 	public Box getParentBox(Box child);
 	public List<Box> getOpenChildBoxes(Box parent);
 	public DisplayContext	findDisplayContext(Box viewable);

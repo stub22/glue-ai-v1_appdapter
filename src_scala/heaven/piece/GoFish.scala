@@ -17,6 +17,8 @@ object GoFish {
 		TestBrowse.pretendToBeAwesome();
 		//TestBrowse.main(args);
 		val tnc = TestBrowse.makeTestNavigatorCtrl(args);
+		val box1 = Boxy.boxItUp();
+		tnc.addBoxToRoot(box1);
 		tnc.launchFrame("GoFish");
 
 	}
