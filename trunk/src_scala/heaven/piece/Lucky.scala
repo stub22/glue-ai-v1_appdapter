@@ -5,7 +5,7 @@
 
 package heaven.piece
 
-import  com.appdapter.gui.box.{Box, BoxContext, MutableBox, Trigger, TriggerImpl};
+
 import com.appdapter.test.CorefTestJava.{_}
 
 class Lucky {
@@ -146,6 +146,20 @@ P:\_prj\s2\appdapter\appdapter_trunk\src_scala\heaven\piece\Lucky.scala:52: erro
 		}
 
 	}
+	class SplitTao extends HiFunTao[SplitZen] {
+		def love(zen : SplitZen) {
+			println (this.toString() + " feels love, and will now consider ")
+			val moreZen = consider(zen, this);
+		}
+	}
+	class SplitZen extends HiFunZen[SplitTao] {
+		def joy(tao : SplitTao) {
+			println (this.toString() + " knows joy, and will now meditate ")
+			val moreTao = meditate(tao, this);
+		}
+
+	}
+
 	abstract class LoSpec {
 		type SpecLET = LoEmptyTao[SpecLEZ];
 		type SpecLEZ <: LoEmptyZen[SpecLET];

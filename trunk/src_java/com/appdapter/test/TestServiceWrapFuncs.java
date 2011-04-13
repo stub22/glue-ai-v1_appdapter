@@ -11,6 +11,7 @@ import com.appdapter.gui.box.BoxContext;
 import com.appdapter.gui.box.BoxImpl;
 import com.appdapter.gui.box.BoxPanel;
 import com.appdapter.gui.box.MutableBox;
+import com.appdapter.gui.box.TriggerImpl;
 import com.appdapter.gui.trigger.PanelTriggers;
 
 /**
@@ -18,15 +19,22 @@ import com.appdapter.gui.trigger.PanelTriggers;
  * @author winston
  */
 public class TestServiceWrapFuncs {
-	public static <BoxType extends BoxImpl> BoxType makeTestBoxImpl(Class<BoxType> boxClass, String label) {
-		BoxType result = CachingComponentAssembler.makeEmptyComponent(boxClass);
+	public static <BT extends BoxImpl<TT>, TT extends TriggerImpl<BT>> BT makeTestBoxImpl(Class<BT> boxClass, Class<TT> trigClass, String label) {
+		BT result = CachingComponentAssembler.makeEmptyComponent(boxClass);
 		result.setShortLabel(label);
 		result.setDescription("full description for box with label: " + label);
 		return result;
 	}
-	public static <BoxType extends BoxImpl> BoxType makeTestChildBoxImpl(Box parentBox, Class<BoxType> boxClass, String label) {
+	public static <BT extends BoxImpl<TT>, TT extends TriggerImpl<BT>> BT makeTestBoxImpl(Class<BT> boxClass, TT trigProto, String label) {
+		BT result = CachingComponentAssembler.makeEmptyComponent(boxClass);
+		result.setShortLabel(label);
+		result.setDescription("full description for box with label: " + label);
+		return result;
+	}
+	public static <BT extends BoxImpl<TT>, TT extends TriggerImpl<BT>> BT makeTestChildBoxImpl(Box parentBox, Class<BT> boxClass,  TT trigProto, String label) {
+		BT result = null;
 		BoxContext ctx = parentBox.getBoxContext();
-		BoxType result = makeTestBoxImpl(boxClass, label);
+		result = makeTestBoxImpl(boxClass, trigProto, label);
 		ctx.contextualizeAndAttachChildBox(parentBox, result);
 		return result;
 	}

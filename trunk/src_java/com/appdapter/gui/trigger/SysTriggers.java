@@ -21,13 +21,13 @@ public class SysTriggers {
 		QUIT,
 		DUMP
 	}
-	public static class QuitTrigger extends TriggerImpl<Box<QuitTrigger>> {
-		@Override public void fire(Box targetBox) {
+	public static class QuitTrigger<BT extends Box<TriggerImpl<BT>>> extends  TriggerImpl<BT> {
+		@Override public void fire(BT targetBox) {
 			theLogger.info(toString() + "-firing, program exiting");
 			System.exit(0);
 		}
 	}
-	public static class DumpTrigger extends TriggerImpl<Box<DumpTrigger>> {
+	public static class DumpTrigger<BT extends Box<TriggerImpl<BT>>> extends  TriggerImpl<BT> {
 		@Override public void fire(Box targetBox) {
 			theLogger.info(toString() + "-dumping");
 			((BoxImpl) targetBox).dump();
