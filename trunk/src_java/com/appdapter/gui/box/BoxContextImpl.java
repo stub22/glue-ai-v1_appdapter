@@ -14,6 +14,8 @@ import javax.swing.tree.TreeModel;
 
 /**
  * @author winston
+ *
+ * This class operates on raw box types.
  */
 public class BoxContextImpl implements BoxContext, DisplayContextProvider {
 	private	BoxTreeNode			myRootNode;
@@ -21,6 +23,13 @@ public class BoxContextImpl implements BoxContext, DisplayContextProvider {
 	public BoxContextImpl() { }
 	private void setRootNode(BoxTreeNode rootNode) {
 		myRootNode = rootNode;
+	}
+	public Box getRootBox() {
+		Box result = null;
+		if (myRootNode != null) {
+			result = myRootNode.getBox();
+		}
+		return result;
 	}
 	private BoxTreeNode findNodeForBox(Box b) {
 		return myRootNode.findDescendantNodeForBox(b);
