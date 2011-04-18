@@ -84,6 +84,9 @@ public class BoxContextImpl implements BoxContext, DisplayContextProvider {
 	}
 	public void contextualizeAndAttachChildBox(Box<?> parentBox, MutableBox<?> childBox) {
 		BoxTreeNode parentNode = findNodeForBox(parentBox);
+		if (parentNode == null) {
+			throw new RuntimeException("Can't find node for parentBox: " + parentBox);
+		}
 		childBox.setContext(this);
 		BoxTreeNode childNode = attachChildBoxNode(parentNode, childBox);
 		childBox.setDisplayContextProvider(this);
