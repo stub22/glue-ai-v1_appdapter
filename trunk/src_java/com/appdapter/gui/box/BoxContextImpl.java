@@ -49,6 +49,7 @@ public class BoxContextImpl implements BoxContext, DisplayContextProvider {
 		BoxTreeNode childNode = findNodeForBox(child);
 		return ((BoxTreeNode) childNode.getParent()).getBox();
 	}
+	// TODO:  Pass in the class parent of the expected children
 	public List<Box> getOpenChildBoxes(Box parent) {
 		List<Box> results = new ArrayList<Box>();
 		BoxTreeNode parentNode = findNodeForBox(parent);
@@ -59,6 +60,16 @@ public class BoxContextImpl implements BoxContext, DisplayContextProvider {
 			results.add(childBox);
 		}
 		return results;
+	}
+	public <BT extends Box<TT>, TT extends Trigger<BT>> List<BT> getOpenChildBoxesNarrowed(Box parent, Class<BT> boxClass, Class<TT> trigClass) {
+		List<Box> wideOpenChildBoxes = getOpenChildBoxes(parent);
+		List<BT> narrowedOpenChildBoxes = new ArrayList<BT>();
+		for (Box wocb : wideOpenChildBoxes) {
+			// This cast does not do any actual runtime typechecking under JDK 1.6.
+			BT narrow = (BT) wocb;
+			narrowedOpenChildBoxes.add(narrow);
+		}
+		return narrowedOpenChildBoxes;
 	}
 	public	DisplayContext	findDisplayContext(Box viewable) {
 		BoxTreeNode btn = findNodeForBox(viewable);
