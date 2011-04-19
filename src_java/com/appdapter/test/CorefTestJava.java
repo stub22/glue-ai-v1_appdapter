@@ -77,7 +77,32 @@ public class CorefTestJava {
 			return someTao;
 		}
 	}
+	public static <OT extends Object> OT getOffTopic() {
+		return null;
+	}
+	public static <OT extends Object> OT getOffTopicNarrow(Class<OT> objClass) {
+		return null;
+	}
 
+	public static <JFT extends JavaFunTao<JFZ>, JFZ extends JavaFunZen<JFT>> JFT  makeSomeTaoUsingProtos(JFT taoProto, JFZ zenProto) {
+		// taoClass, Class<? extends JFZ> zenClass
+		// }) {
+		return null;
+	}
+	public static <JFT extends JavaFunTao<JFZ>, JFZ extends JavaFunZen<? extends JFT>> JFT  makeSomeTaoUsingClasses(Class<JFT> taoProto, Class<JFZ> zenProto) {
+		// taoClass, Class<? extends JFZ> zenClass
+		// }) {
+		return null;
+	}
+	public static JCRFTao  makeSomeResolvedTao() {
+		JCRFTao taoProto = new JCRFTao();
+		JCRFZen zenProto = new JCRFZen();
+
+		JCRFTao pMadeTao = makeSomeTaoUsingProtos(taoProto, zenProto);
+
+		JCRFTao cMadeTao = makeSomeTaoUsingClasses(JCRFTao.class, JCRFZen.class);
+		return pMadeTao;
+	}
 	public static void haveFun() {
 		JCRFTao tao = new JCRFTao();
 		JCRFZen zen = new JCRFZen();

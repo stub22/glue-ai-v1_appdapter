@@ -25,6 +25,7 @@ public interface BoxContext {
 	public Box getRootBox();
 	public Box getParentBox(Box child);
 	public List<Box> getOpenChildBoxes(Box parent);
+	public <BT extends Box<TT>, TT extends Trigger<BT>> List<BT> getOpenChildBoxesNarrowed(Box parent, Class<BT> boxClass, Class<TT> trigClass);
 	public DisplayContext	findDisplayContext(Box viewable);
 
 	public void contextualizeAndAttachChildBox(Box<?> parentBox, MutableBox<?> childBox);

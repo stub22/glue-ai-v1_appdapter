@@ -19,10 +19,30 @@ import  com.appdapter.gui.box.{Box, BoxContext, MutableBox, Trigger, BoxImpl, Tr
 
 object Boxy {
 	
-	class FullBox[FT <:  FullTrigger[_ <: FullBox[FT]]] extends BoxImpl[FT] {}
+	class FullBox[FT <:  FullTrigger[_ <: FullBox[FT]]] extends BoxImpl[FT] {
+		/*
+		def getOpenKidFullBoxes(bc : BoxContext) : Seq[FullBox] = {
+			val rawtypeOpenChildrenJL : java.util.List[FriendBox] = bc.getOpenChildBoxesNarrowed(this, classOf[FT], classOf[FriendTrig]);
+			val rawtypeKidSeq : Seq[FriendBox] = scala.collection.JavaConversions.asBuffer(rawtypeOpenChildrenJL) ;
+			rawtypeKidSeq;
+		}
+		*/
+	}
 	trait FullTrigger[FB <:  FullBox[_ <: FullTrigger[FB]]] extends TriggerImpl[FB] {}
 
-	class BoxOne extends FullBox[FullTrigger[BoxOne]] { }
+	// class BoxOne extends FullBox[FullTrigger[BoxOne]] { }
+	class BoxOne extends FullBox[TriggerOne] {
+		def getOpenKidBoxes(bc : BoxContext) : Seq[BoxOne] = {
+			val kidBoxJL  = bc.getOpenChildBoxesNarrowed(this, classOf[BoxOne], classOf[TriggerOne]);
+			val kidBoxSeq : Seq[BoxOne] = scala.collection.JavaConversions.asScalaBuffer(kidBoxJL) ;
+			kidBoxSeq;
+		}
+		def foodleDoodle(bc : BoxContext) : Seq[BoxOne] = {
+			val kidBoxJL  = bc.getOpenChildBoxesNarrowed(this, classOf[BoxOne], classOf[TriggerOne]);
+			val kidBoxSeq : Seq[BoxOne] = scala.collection.JavaConversions.asScalaBuffer(kidBoxJL) ;
+			kidBoxSeq;
+		}
+	}
 	class TriggerOne extends FullTrigger[BoxOne] {
 		override def fire(box : BoxOne) : Unit = {
 			println(this.toString() + " firing on " + box.toString());
