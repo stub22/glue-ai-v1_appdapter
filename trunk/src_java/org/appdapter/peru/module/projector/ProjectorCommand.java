@@ -16,6 +16,8 @@
 
 package org.appdapter.peru.module.projector;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -41,9 +43,6 @@ import org.appdapter.peru.core.environment.Environment;
 
 import org.appdapter.peru.core.name.Address;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import org.dom4j.Document;
 
 
@@ -63,7 +62,7 @@ import static net.peruser.module.projector.ProjectorAddressConstants.identPropAd
  * @version     @PERUSER_VERSION@
  */
 public class ProjectorCommand extends DocCommand {
-	private static Log 		theLog = LogFactory.getLog(ProjectorCommand.class);
+	private static Logger 		theLogger = LoggerFactory.getLogger(ProjectorCommand.class);
 	
 	// These instance variables need to get set from the RDF config.
 	// Currently, that's a lot of work.  Using some JDK 1.5 features 
@@ -123,12 +122,12 @@ public class ProjectorCommand extends DocCommand {
 		Address linkRefAddress = opConf.getSingleAddress(linkConfigAddress, ProjectorAddressConstants.linkPropRefPropAddress);
 		Address linkQueryAddress = resolveRef(linkRefAddress);
 		
-		theLog.debug("Link query address is " + linkQueryAddress); 
+		theLogger.debug("Link query address is " + linkQueryAddress); 
 		
 		Address linkMarkerAddress = opConf.getSingleAddress(linkConfigAddress, ProjectorAddressConstants.linkMarkerPropAddress);
 		int queryType = -1;
-		theLog.debug("linkMarkerAddress is " + linkMarkerAddress);
-		theLog.debug("canonical forwardAddress is " + forwardMarkerAddress);
+		theLogger.debug("linkMarkerAddress is " + linkMarkerAddress);
+		theLogger.debug("canonical forwardAddress is " + forwardMarkerAddress);
 		if (linkMarkerAddress.equals(forwardMarkerAddress)) {
 			queryType = SimpleAxisQuery.PARENT_POINTS_TO_CHILD;
 		} else if (linkMarkerAddress.equals(reverseMarkerAddress)) {
@@ -152,33 +151,33 @@ public class ProjectorCommand extends DocCommand {
 		
 		String maxDepthString = opConf.getSingleString(commandConfig, depthAddress);
 		myMaxDepth = Integer.parseInt(maxDepthString);
-		theLog.debug("maxDepth of op  is " + myMaxDepth);
+		theLogger.debug("maxDepth of op  is " + myMaxDepth);
 
 		Address rootThing = opConf.getSingleAddress(commandConfig, rootPropAddress);
-		theLog.debug("rootThingRef is " + rootThing);
+		theLogger.debug("rootThingRef is " + rootThing);
 		
 		String rootThingIdent =  opConf.getSingleString (rootThing, identPropAddress);
-		theLog.debug("rootThingIdent is " + rootThingIdent);
+		theLogger.debug("rootThingIdent is " + rootThingIdent);
 	
 		Address rootThingSpace =  opConf.getSingleAddress (rootThing, spacePropAddress);
-		theLog.debug("rootThingSpace is " + rootThingSpace);
+		theLogger.debug("rootThingSpace is " + rootThingSpace);
 		
 		String spaceIdent = opConf.getSingleString(rootThingSpace, identPropAddress);
-		theLog.debug("spaceIdent is " + spaceIdent);
+		theLogger.debug("spaceIdent is " + spaceIdent);
 		myPlaceBaseURI = spaceIdent;
 
 		
 		Address rootQueryAddress = resolveRef(rootThing);
 		myRootQueryURI = rootQueryAddress.getResolvedPath();
-		theLog.debug("rootQueryURI is " + myRootQueryURI);
+		theLogger.debug("rootQueryURI is " + myRootQueryURI);
 		
 		Address boundPlaceAddress = opConf.getSingleBackpointerAddress(rootThingSpace, boundSpacePropAddress);
-		theLog.debug("boundPlace is " + boundPlaceAddress);
+		theLogger.debug("boundPlace is " + boundPlaceAddress);
 		
 		// This is working for SelectorCommand IN THE ConsoleEnvironment, but ExcaliburEnvironment strips "file:"
 		//myPlacePath = getMappedPlaceURL(boundPlaceAddress);
 		myPlacePath = getRawPlaceURL(boundPlaceAddress);
-		theLog.debug("placePath is " + myPlacePath);
+		theLogger.debug("placePath is " + myPlacePath);
 		
 		myOntModelSpec = ReasonerUtils.lookupOntModelSpec(opConf, commandConfig);
 

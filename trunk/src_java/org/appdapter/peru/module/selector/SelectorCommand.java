@@ -16,7 +16,8 @@
 
 package org.appdapter.peru.module.selector;
 
-import java.io.Reader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.StringReader;
 
 import java.util.HashMap;
@@ -27,7 +28,6 @@ import java.util.Map;
 import com.hp.hpl.jena.ontology.OntModel;
 import com.hp.hpl.jena.ontology.OntModelSpec;
 
-import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.query.DatasetFactory;
 import com.hp.hpl.jena.query.DataSource;
 
@@ -49,9 +49,6 @@ import org.appdapter.peru.core.environment.Environment;
 
 import org.appdapter.peru.core.name.Address;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
@@ -66,7 +63,7 @@ import static org.appdapter.peru.module.selector.SelectorAddressConstants.*;
  * @version     @PERUSER_VERSION@
  */
 public class SelectorCommand extends DocCommand  {
-	private static Log 		theLog = LogFactory.getLog(SelectorCommand.class);
+	private static Logger 		theLogger = LoggerFactory.getLogger(SelectorCommand.class);
 
 	private	DataSource			myDataset;
 	private	String			myQueryFilePath;
@@ -85,7 +82,7 @@ public class SelectorCommand extends DocCommand  {
 
 	public void configure (Environment env, Config configImpl, Address configInstanceAddress)
 				throws Throwable {
-		theLog.debug("SelectorCommand.configure() - START");
+		theLogger.debug("SelectorCommand.configure() - START");
 		super.configure(env, configImpl, configInstanceAddress);
 		Config opConf = configImpl;
 
@@ -137,7 +134,7 @@ public DataSet
 		 
 		
 		myDataset = datasrc;
-		theLog.debug("SelectorCommand.configure() - END");
+		theLogger.debug("SelectorCommand.configure() - END");
 	}
 
 	
@@ -152,11 +149,11 @@ public DataSet
 			Element modelE = (Element) iter.next();
 			String format = modelE.valueOf("@format");
 			String inputName = modelE.valueOf("@name");
-			theLog.debug("Found model with name " + inputName + " and format " + format);
+			theLogger.debug("Found model with name " + inputName + " and format " + format);
 			if (format.equals("RDF/XML")) {
 				Element modelRootElement = modelE.element("RDF");
 				String modelXML = modelRootElement.asXML();
-				theLog.debug("Model text dump:\n===========================\n " + modelXML + "\n============================");
+				theLogger.debug("Model text dump:\n===========================\n " + modelXML + "\n============================");
 				StringReader	mxsr = new StringReader(modelXML);
 				String modelBaseURI = null;
 				Model instructiveModel = ModelFactory.createDefaultModel();

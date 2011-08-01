@@ -40,9 +40,8 @@ import com.hp.hpl.jena.rdf.model.StmtIterator;
 import org.appdapter.peru.module.projector.ProjectedNode;
 import org.appdapter.peru.module.projector.Projector;
 import org.appdapter.peru.module.projector.SimpleAxisQuery;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author      Stu B. <www.texpedient.com>
@@ -50,7 +49,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class JenaPulljector implements Projector {
 	
-	private static Log 		theLog = LogFactory.getLog(JenaPulljector.class);	
+	private static Logger 		theLogger = LoggerFactory.getLogger(JenaPulljector.class);	
 	
 	private	Model		myModel;
 	public JenaPulljector (Model m) {
@@ -104,7 +103,7 @@ public class JenaPulljector implements Projector {
 		while (pki.hasNext()) {
 			String key = (String) pki.next();
 			String val = (String) pmap.get(key);
-			theLog.debug("Prefix " + key + " is mapped to URI " + val);
+			theLogger.debug("Prefix " + key + " is mapped to URI " + val);
 		}
 	}
 

@@ -50,10 +50,9 @@ import com.hp.hpl.jena.util.PrintUtil;
 
 import com.hp.hpl.jena.util.iterator.ExtendedIterator;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import org.appdapter.peru.core.environment.Environment;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // import static net.peruser.test.data.TestDataConstants.ModelUtilsUnitTestConstants.*;
 
@@ -65,7 +64,7 @@ import org.appdapter.peru.core.environment.Environment;
  */
 public class ModelUtils
 {
-	private static Log 		theLog = LogFactory.getLog(ModelUtils.class);
+	private static Logger 		theLogger = LoggerFactory.getLogger(ModelUtils.class);
 		
 	public static String getStringPropertyValue(Individual i, DatatypeProperty dp) throws Throwable {
 		String result = null;
@@ -86,8 +85,8 @@ public class ModelUtils
 	}
 	
 	public static void printIndividualDebug(Individual i) {
-		theLog.debug("individual.toString(): " + i.toString());
-		theLog.debug("individual.localName(): " + i.getLocalName());
+		theLogger.debug("individual.toString(): " + i.toString());
+		theLogger.debug("individual.localName(): " + i.getLocalName());
 		ExtendedIterator it = i.listRDFTypes(false);
 		while (it.hasNext()) {
 			Object o = it.next();
@@ -102,7 +101,7 @@ public class ModelUtils
 	}
 
 	public static void printOntClassStats (OntModel om, String classURI) {
-		theLog.debug("classURI=" + classURI);
+		theLogger.debug("classURI=" + classURI);
 		OntClass ontClass = om.getOntClass(classURI);
 		if (ontClass != null) {
 			printIterator(ontClass.listSuperClasses(), "All super classes of " + ontClass.getLocalName());
@@ -146,10 +145,10 @@ public class ModelUtils
 		return resourceURL;
 	}
 	public static void logDebug(String s) {
-		theLog.debug(s);
+		theLogger.debug(s);
 	}
 	public static void logError(String s) {
-		theLog.error(s);
+		theLogger.error(s);
 	}
 	
 	static public  void dumpPrefixes(Model m) throws Throwable {
@@ -162,7 +161,7 @@ public class ModelUtils
 		}
 	}
 	static public Model loadJenaModelUsingJenaFileManager (Environment env, String relativePath) throws Throwable {
-		theLog.debug("******************   ModelUtils.loadJenaModelUsingJenaFileManager() - relativePath:  " + relativePath);
+		theLogger.debug("******************   ModelUtils.loadJenaModelUsingJenaFileManager() - relativePath:  " + relativePath);
 		/* This is similar to the code in jena's Manifest.java */
 	    Model loadedModel = null;
 		JenaKernel	jk = JenaKernel.getDefaultKernel (env);

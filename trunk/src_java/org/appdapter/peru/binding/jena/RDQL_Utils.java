@@ -32,9 +32,9 @@ import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 import org.apache.xerces.util.URI;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 // import com.hp.hpl.jena.rdql.*; 
 
@@ -48,7 +48,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class RDQL_Utils
 {
-		private static Log 		theLog = LogFactory.getLog(RDQL_Utils.class);
+		private static Logger 		theLogger = LoggerFactory.getLogger(RDQL_Utils.class);
 	public static final String LF = System.getProperty("line.separator" );
 		
 	public static void queryOntModelWithRDQLtoWriteXML(String mpath, String qpath, 
@@ -61,7 +61,7 @@ public class RDQL_Utils
 	public static void queryOntModelWithRDQLtoWriteXML(String mpath, String qpath, 
 			OntModelSpec oms, String flavorURI, OutputStream out) throws Throwable {
 
-		theLog.debug("=====================================================================================");
+		theLogger.debug("=====================================================================================");
 		
 		FileInputStream	modelInputStream = new FileInputStream(mpath);
 		Model baseModel = ModelFactory.createDefaultModel();
@@ -79,9 +79,9 @@ public class RDQL_Utils
 		qbr.close();
 		String queryText = qsw.toString();
 		
-		theLog.warn("=====================================================================================");
-		theLog.warn("[DEPRECATED RDQL QUERY IGNORED]: " +  queryText);
-		theLog.warn("=====================================================================================");
+		theLogger.warn("=====================================================================================");
+		theLogger.warn("[DEPRECATED RDQL QUERY IGNORED]: " +  queryText);
+		theLogger.warn("=====================================================================================");
 	}
 	/*
 		ResultBindingImpl argBinding = new ResultBindingImpl();

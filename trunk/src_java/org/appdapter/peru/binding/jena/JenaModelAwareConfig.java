@@ -38,10 +38,10 @@ import org.appdapter.peru.core.document.SentenceValue;
 
 import org.appdapter.peru.binding.dom4j.Dom4jDoc;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import org.appdapter.peru.core.name.Address;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * JenaModelAwareConfig uses a Jena model to provide a set of queryable and 
@@ -55,7 +55,7 @@ import org.appdapter.peru.core.name.Address;
  * @version     @PERUSER_VERSION@
  */
 public class JenaModelAwareConfig extends AbstractConfig implements MutableConfig {
-	private static Log 		theLog = LogFactory.getLog(JenaModelAwareConfig.class);
+	private static Logger 		theLogger = LoggerFactory.getLogger(JenaModelAwareConfig.class);
 	
 	private		Model				myActiveJenaModel;
 	private		JenaAbbreviator		myAbbreviator;
@@ -138,17 +138,17 @@ public class JenaModelAwareConfig extends AbstractConfig implements MutableConfi
 */	
 	public void clearValues (Address thingAddress, Address fieldAddress) throws Throwable {
 		Model actMod = getActiveJenaModel();
-		theLog.debug("Clearing values for field " + fieldAddress + " in thing " + thingAddress);
+		theLogger.debug("Clearing values for field " + fieldAddress + " in thing " + thingAddress);
 		Resource frameResource = resolveFrame(thingAddress);
 		Property slotProperty = resolveSlot(fieldAddress);
-		theLog.debug("Clearing values for slot " + slotProperty + " in frame " + frameResource);
+		theLogger.debug("Clearing values for slot " + slotProperty + " in frame " + frameResource);
 		StmtIterator	matchIter = actMod.listStatements(frameResource, slotProperty, (RDFNode) null);
 		List matchList = new ArrayList();
 		while (matchIter.hasNext()) {
 			Statement defstate = (Statement) matchIter.next();
 			matchList.add(defstate);
 		}
-		theLog.debug("Clearing default statements: " + matchList);
+		theLogger.debug("Clearing default statements: " + matchList);
 		actMod.remove(matchList);
 	}
 	public List getFieldValues (Address thingAddress, Address fieldAddress) throws Throwable {
@@ -156,12 +156,12 @@ public class JenaModelAwareConfig extends AbstractConfig implements MutableConfi
 		List result = new ArrayList();
 		Resource frameResource = resolveFrame(thingAddress);
 		Property slotProperty = resolveSlot(fieldAddress);		
-		theLog.debug("Fetching values for slot " + slotProperty + " in frame " + frameResource);		
+		theLogger.debug("Fetching values for slot " + slotProperty + " in frame " + frameResource);		
 		StmtIterator	matchIter = actMod.listStatements(frameResource, slotProperty, (RDFNode) null);
 		while (matchIter.hasNext()) {
 			Statement statement = (Statement) matchIter.next();
 			RDFNode valNode = statement.getObject();
-			theLog.debug("FOUND: " + valNode);
+			theLogger.debug("FOUND: " + valNode);
 			if (valNode instanceof Resource) {
 				Address valAddress = new JenaAddress((Resource) valNode);
 				result.add(valAddress);
@@ -193,23 +193,23 @@ public class JenaModelAwareConfig extends AbstractConfig implements MutableConfi
 	
 	public void dumpConfigThing(Address thing) {
 		try {
-			theLog.debug("===============================================================");
-			theLog.debug("JMAC dumping config thing:  " + thing);
+			theLogger.debug("===============================================================");
+			theLogger.debug("JMAC dumping config thing:  " + thing);
 			Model actMod = getActiveJenaModel();
 			Resource frameResource = resolveFrame(thing);
-			theLog.debug("frameResource=" + frameResource);
+			theLogger.debug("frameResource=" + frameResource);
 			StmtIterator	matchIter = actMod.listStatements(frameResource, null, (RDFNode) null);
 			while (matchIter.hasNext()) {
 				Statement statement = (Statement) matchIter.next();
-				theLog.debug("statement=" + statement.toString());
+				theLogger.debug("statement=" + statement.toString());
 			}
 			//theLog.debug("---------------------------------------------------------------");
 			//ModelUtils.dumpPrefixes(actMod);
 			//theLog.debug("---------------------------------------------------------------");
 			//theLog.debug(actMod);
-			theLog.debug("===============================================================");
+			theLogger.debug("===============================================================");
 		} catch (Throwable t) {
-			theLog.error("Caught exception in dumpConfigThing", t); 
+			theLogger.error("Caught exception in dumpConfigThing", t); 
 		}
 	}
 	/*

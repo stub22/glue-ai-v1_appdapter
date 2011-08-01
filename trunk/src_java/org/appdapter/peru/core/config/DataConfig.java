@@ -20,15 +20,14 @@ package org.appdapter.peru.core.config;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import org.appdapter.peru.core.name.Address;
 import org.appdapter.peru.core.name.Abbreviator;
 
 import org.appdapter.peru.core.process.Data;
 
 import org.appdapter.peru.core.environment.Environment;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A DataConfig is based on processor.Data
@@ -41,7 +40,7 @@ import org.appdapter.peru.core.environment.Environment;
  * @version     @PERUSER_VERSION@
  */
 public class DataConfig extends AbstractConfig {
-	private static Log 		theLog = LogFactory.getLog(DataConfig.class);
+	private static Logger 		theLogger = LoggerFactory.getLogger(DataConfig.class);
 	
 	private		Data				myData;
 	private		Abbreviator			myAbbreviator;

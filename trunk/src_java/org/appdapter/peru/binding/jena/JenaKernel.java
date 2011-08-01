@@ -40,6 +40,8 @@ import com.hp.hpl.jena.query.DataSource;
 import com.hp.hpl.jena.query.Dataset;
 
 import com.hp.hpl.jena.assembler.Assembler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /*
@@ -47,8 +49,7 @@ import net.peruser.module.projector.ProjectedNode;
 import net.peruser.module.projector.Projector;
 import net.peruser.module.projector.SimpleAxisQuery;
 */
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+
 
 /**   JenaKernel implements the core of the runtime relationship between Peruser and Jena.
  * @author      Stu B. <www.texpedient.com>
@@ -56,7 +57,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class JenaKernel extends Handle { //  implements Kernel {
 	
-	private static Log 		theLog = LogFactory.getLog(JenaKernel.class);	
+	private static Logger 		theLogger = LoggerFactory.getLogger(JenaKernel.class);	
 	
 	private static String	BOOT_CUTE = "_boot";
 	private static String   ENV_HANDLE_DEF_CUTE = "JENA_DEFAULT_KERNEL_FOR_EHC_";
@@ -93,7 +94,7 @@ public class JenaKernel extends Handle { //  implements Kernel {
 		if (bootModelURL != null) {
 			loadBootModel();
 		} else {
-			theLog.warn("No boot model URL supplied, JenaKernel is EMPTY!");
+			theLogger.warn("No boot model URL supplied, JenaKernel is EMPTY!");
 		}
 		
 		HandleDirectory		envPrimaryHD = env.getPrimaryHandleDirectory();
@@ -180,25 +181,25 @@ public class JenaKernel extends Handle { //  implements Kernel {
  
 	/** Prints information about the kernel state to the "debug" log level (via jakarta commons logging). */
 	public void dumpDebug() {
-		theLog.debug("[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[");
+		theLogger.debug("[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[");
 		long	startMsec =  System.currentTimeMillis();
-		theLog.debug("Start Peruser-JenaKernelDump at " + startMsec + " msec = " + new java.util.Date());
+		theLogger.debug("Start Peruser-JenaKernelDump at " + startMsec + " msec = " + new java.util.Date());
 		
 		try {
 			Iterator loci = myFileManager.locators();
 			while (loci.hasNext()) {
 				Locator l = (Locator) loci.next();
-				theLog.debug("locator class: " + l.getClass().getName() + "  name: " + l.getName());
+				theLogger.debug("locator class: " + l.getClass().getName() + "  name: " + l.getName());
 			}
 			myHandleDirectory.dumpHandleList();
 			
 		} catch (Throwable t) {
-			theLog.error("JenaKernel.dumpDebug() caught ", t);
+			theLogger.error("JenaKernel.dumpDebug() caught ", t);
 		}
 		
 		long	endMsec =  System.currentTimeMillis();
-		theLog.debug("End Peruser-JenaKernelDump at " + endMsec + " msec,  elapsed " + (endMsec-startMsec) + " msec"); 
-		theLog.debug("]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
+		theLogger.debug("End Peruser-JenaKernelDump at " + endMsec + " msec,  elapsed " + (endMsec-startMsec) + " msec"); 
+		theLogger.debug("]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
 	}
 
 	/**  If no JenaKernel exists in the environment, an empty one is created and returned. 
@@ -245,22 +246,22 @@ public class JenaKernel extends Handle { //  implements Kernel {
 			return mySupportsAssemblyFlag;
 		}
 		public void dumpDebug() throws Throwable {
-			theLog.debug("{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{");
-			theLog.debug("Handle type= ModelHandle");
-			theLog.debug("cuteLocalName= " + getCuteName());
-			theLog.debug("publishedAddresses= " + getAddress());
-			theLog.debug("jenaModel= " + getJenaModel());
-			theLog.debug("supportsAssembly= " + supportsAssembly());
+			theLogger.debug("{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{");
+			theLogger.debug("Handle type= ModelHandle");
+			theLogger.debug("cuteLocalName= " + getCuteName());
+			theLogger.debug("publishedAddresses= " + getAddress());
+			theLogger.debug("jenaModel= " + getJenaModel());
+			theLogger.debug("supportsAssembly= " + supportsAssembly());
 			if (supportsAssembly()) {
-				theLog.debug("assemblerRoot set:");
+				theLogger.debug("assemblerRoot set:");
 				Set<Resource> assemblerRootSet = getAssemblerRootSet();
 				for (Resource ar : assemblerRootSet) {
-					theLog.debug("    " + ar.toString());
+					theLogger.debug("    " + ar.toString());
 				}
 			} else {
-				theLog.debug("This model handle does NOT support assembly!");
+				theLogger.debug("This model handle does NOT support assembly!");
 			}
-			theLog.debug("}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}");
+			theLogger.debug("}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}");
 		}
 		public Set<Resource> getAssemblerRootSet() throws Throwable {
 			if (supportsAssembly()) {
@@ -280,17 +281,17 @@ public class JenaKernel extends Handle { //  implements Kernel {
 			return myJenaDataset;
 		}
 		public void dumpDebug() throws Throwable {
-			theLog.debug("{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{");
-			theLog.debug("Handle type= DatasetHandle");
-			theLog.debug("cuteLocalName= " + getCuteName());
-			theLog.debug("publishedAddresses= " + getAddress());
-			theLog.debug("dataset = " + getJenaDataset());
+			theLogger.debug("{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{");
+			theLogger.debug("Handle type= DatasetHandle");
+			theLogger.debug("cuteLocalName= " + getCuteName());
+			theLogger.debug("publishedAddresses= " + getAddress());
+			theLogger.debug("dataset = " + getJenaDataset());
 			Iterator dnit = getJenaDataset().listNames();
 			while (dnit.hasNext()) {
 				String	modelName = (String) dnit.next();
-				theLog.debug("       model name: " + modelName);
+				theLogger.debug("       model name: " + modelName);
 			}	
-			theLog.debug("}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}");
+			theLogger.debug("}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}");
 		}
 		
 	}

@@ -19,8 +19,6 @@ package org.appdapter.peru.module.faceebo;
 
 
 import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.Reader;
 import java.io.StringReader;
 
 import java.util.HashMap;
@@ -51,9 +49,8 @@ import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.dom4j.XPath;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -61,7 +58,7 @@ import org.apache.commons.logging.LogFactory;
  * @version     @PERUSER_VERSION@
  */
 public class FaceeboMachine_peru extends AbstractMachine {
-	private static Log 		theLog = LogFactory.getLog(FaceeboMachine_peru.class);
+	private static Logger 		theLogger = LoggerFactory.getLogger(FaceeboMachine_peru.class);
 	// See http://excalibur.apache.org/apidocs/org/apache/avalon/framework/parameters/Parameters.html
 	private		Parameters		myCrutchParameters;
 	
@@ -123,11 +120,11 @@ public class FaceeboMachine_peru extends AbstractMachine {
 		for (Iterator iter = results.iterator(); iter.hasNext(); ) {
 			Element modelE = (Element) iter.next();
 			String format = modelE.valueOf("@format");
-			theLog.info("Found model of format: " + format);
+			theLogger.info("Found model of format: " + format);
 			if (format.equals("RDF/XML")) {
 				Element modelRootElement = modelE.element("RDF");
 				String modelXML = modelRootElement.asXML();
-				theLog.debug("Model dump:\n===========================\n " + modelXML + "\n============================");
+				theLogger.debug("Model dump:\n===========================\n " + modelXML + "\n============================");
 				StringReader	mxsr = new StringReader(modelXML);
 				String modelBaseURI = null;
 				instructiveModel.read(mxsr, modelBaseURI, format);

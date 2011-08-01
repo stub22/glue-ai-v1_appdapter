@@ -25,6 +25,8 @@ import org.appdapter.peru.core.config.Config;
 import org.appdapter.peru.core.document.Doc;
 
 import org.appdapter.peru.core.machine.DocProcessorMachine;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -32,16 +34,13 @@ import org.xmldb.api.base.Database;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 /**
  * @author      Stu B. <www.texpedient.com>
  * @version     @PERUSER_VERSION@
  */
 public class XMLDB_Processor extends DocProcessorMachine {
 	
-	private static Log 		theLog = LogFactory.getLog(XMLDB_Processor.class);
+	private static Logger 		theLogger = LoggerFactory.getLogger(XMLDB_Processor.class);
 	
 	private static Address	IA_STORE_DOC = new CoreAddress("peruser:STORE_THIS_DOC_PLEASE");
 	private static Address	IA_CREATE_COLLECT = new CoreAddress("peruser:xmldb/CREATE_COLLECTION");
@@ -69,15 +68,15 @@ public class XMLDB_Processor extends DocProcessorMachine {
 		
 		initConnection(DRIVER_CLASS_NAME);
 		
-		theLog.info("processDoc(" + instructAddr + ")");
+		theLogger.info("processDoc(" + instructAddr + ")");
 		
 		if (instructAddr.equals(IA_STORE_DOC)) {
-			theLog.info("matched doc storage instruction");
+			theLogger.info("matched doc storage instruction");
 			Config	cc = getCurrentConfig();
 			String	collectionPath = cc.getSingleString(IA_STORE_DOC, PA_COLLECTION);
-			theLog.info("found collectionPath arg: " + collectionPath);
+			theLogger.info("found collectionPath arg: " + collectionPath);
 			String	docID  = cc.getSingleString(IA_STORE_DOC, PA_DOCID);
-			theLog.info("found docID arg: " + docID);
+			theLogger.info("found docID arg: " + docID);
 			
 			Collection targetCollection = findExistingCollection(SERVER_URI, collectionPath, XDB_USER, XDB_PASS);
 			
@@ -97,22 +96,22 @@ public class XMLDB_Processor extends DocProcessorMachine {
 			
 			targetCollection.close();
 			
-			theLog.info("storage complete");
+			theLogger.info("storage complete");
 			
 			resultD = inputDoc;
 		} else if (instructAddr.equals(IA_CREATE_COLLECT)) {
-			theLog.info("matched create collection instruction");
+			theLogger.info("matched create collection instruction");
 			Config	cc = getCurrentConfig();
 			String	parentCollectionPath = cc.getSingleString(IA_CREATE_COLLECT, PA_PARENT_COLLECTION);
-			theLog.info("found parent-collectionPath arg: " + parentCollectionPath);
+			theLogger.info("found parent-collectionPath arg: " + parentCollectionPath);
 			String	childName  = cc.getSingleString(IA_CREATE_COLLECT, PA_CHILD_NAME);
-			theLog.info("found child-collectionName arg: " + childName);
+			theLogger.info("found child-collectionName arg: " + childName);
 			
 			Collection  parentCollection = findExistingCollection(SERVER_URI, parentCollectionPath, XDB_USER, XDB_PASS);		
 			
 			Collection childCollection = addSubCollection(parentCollection, childName);
 			
-			theLog.info("create sub-collect operation complete");
+			theLogger.info("create sub-collect operation complete");
 			
 			resultD = inputDoc;
 		/*

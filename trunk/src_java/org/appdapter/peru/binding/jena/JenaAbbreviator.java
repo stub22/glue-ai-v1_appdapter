@@ -22,9 +22,10 @@ import org.appdapter.peru.core.name.Address;
 import org.appdapter.peru.core.name.Abbreviator;
 
 import com.hp.hpl.jena.shared.PrefixMapping;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+
 
 /**
  *
@@ -33,7 +34,7 @@ import org.apache.commons.logging.LogFactory;
  */
  
 public class JenaAbbreviator implements Abbreviator {
-	private static Log 		theLog = LogFactory.getLog(JenaAbbreviator.class);
+	private static Logger 		theLogger = LoggerFactory.getLogger(JenaAbbreviator.class);
 	private	static String	SHORT_FORM_SEPARATOR = ":";
 	
 	private		PrefixMapping	myJenaPrefixMapping;
@@ -75,7 +76,7 @@ public class JenaAbbreviator implements Abbreviator {
 		} else {
 			throw new Exception("Can't parse short-form address " + shortForm);
 		}
-		theLog.debug("JenaAbbreviator resolved SHORT=" + shortForm + " to LONG=" + longForm);
+		theLogger.debug("JenaAbbreviator resolved SHORT=" + shortForm + " to LONG=" + longForm);
 		return makeAddressFromLongForm(longForm);
 	}
 	

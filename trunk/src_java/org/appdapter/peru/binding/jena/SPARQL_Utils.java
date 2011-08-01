@@ -28,9 +28,6 @@ import java.util.List;
 import java.io.FileInputStream;
 
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import com.hp.hpl.jena.datatypes.xsd.XSDDatatype;
 
 import com.hp.hpl.jena.sparql.util.DatasetUtils;
@@ -56,6 +53,8 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.sparql.junit.TestItem;
 import com.hp.hpl.jena.sparql.util.graph.GraphFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Certain static funcs, pulled directly from com/hp/hpl/jena/query/junit/QueryTest.java
@@ -65,7 +64,7 @@ import com.hp.hpl.jena.sparql.util.graph.GraphFactory;
  * @copyright   derivative(HP, Appdapter)
  */
 public class SPARQL_Utils {
-    private static Log 		theLog = LogFactory.getLog(SPARQL_Utils.class );
+    private static Logger 		theLogger = LoggerFactory.getLogger(SPARQL_Utils.class );
 
 	public static boolean isNonemptyList (List L) {
 		return ((L != null) && (L.size() > 0));
@@ -147,7 +146,7 @@ public class SPARQL_Utils {
 		Iterator dsNameIterator = dataset.listNames();
 		while (dsNameIterator.hasNext()) {
 			String name = (String) dsNameIterator.next();
-			theLog.debug("dataset contains model named: " + name);	
+			theLogger.debug("dataset contains model named: " + name);	
 		}
 	}
 	public static String runQueryOverDataset (String queryFileURL, Dataset inputDataset) throws Throwable {
@@ -193,7 +192,7 @@ public class SPARQL_Utils {
 	**/
 	public static void mergeModelIntoDataSource(DataSource ds, String nameURI, Model m) {
 		// Serializing model contents is expensive when the models aren't tiny.
-		theLog.debug("SPARQL_Utils is merging in model with name " + nameURI); // + " and contents " + m);
+		theLogger.debug("SPARQL_Utils is merging in model with name " + nameURI); // + " and contents " + m);
 
 		Model	previousModel = null;
 		if (nameURI != null) {

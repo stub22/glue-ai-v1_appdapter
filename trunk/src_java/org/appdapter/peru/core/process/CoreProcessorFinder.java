@@ -18,11 +18,8 @@ package	org.appdapter.peru.core.process;
 
 import org.appdapter.peru.core.name.Address;
 import org.appdapter.peru.core.environment.Environment;
-import org.appdapter.peru.core.handle.Handle;
-import org.appdapter.peru.core.handle.HandleDirectory;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Objects of this class are stateless internally, but they do read/write processorHandles in the world directory.
@@ -31,7 +28,7 @@ import org.apache.commons.logging.LogFactory;
  */
  
 public class CoreProcessorFinder extends AbstractProcessorFinder {
-	private static Log 		theLog = LogFactory.getLog(CoreProcessorFinder.class);
+	private static Logger 		theLogger = LoggerFactory.getLogger(CoreProcessorFinder.class);
 	/* Finds or instantiates a processor, but does not configure it or otherwise mess with it */
 	public Processor findProcessor(Environment env, Class pClass, String cuteName, Address addr,
 					Data optionalExtraData) throws Throwable {
@@ -50,7 +47,7 @@ public class CoreProcessorFinder extends AbstractProcessorFinder {
 			message = "instantiated new processor";
 		}
 		String stats = " at [" + resultPH + "]=[" + resultP + "]";
-		theLog.info(message + " " + stats);		
+		theLogger.info(message + " " + stats);		
 		return resultP;
 	}
 

@@ -16,11 +16,10 @@
 
 package org.appdapter.peru.core.name;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import java.util.Map;
 import java.util.HashMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * CoreAbbreviator is an Abbreviator for working with CoreAddresses.
@@ -29,7 +28,7 @@ import java.util.HashMap;
  */
 public class CoreAbbreviator implements Abbreviator {
 	
-	private static Log 		theLog = LogFactory.getLog(CoreAbbreviator.class);
+	private static Logger 		theLogger = LoggerFactory.getLogger(CoreAbbreviator.class);
 	
 	private		Map<String,String>		myPrefixMap;
 	private		String					myShortFormSeparator, myLongFormSeparator;
