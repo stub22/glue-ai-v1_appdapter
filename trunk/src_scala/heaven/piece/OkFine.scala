@@ -1,5 +1,5 @@
 /*
- *  Copyright 2011 by The Appdapter Project (www.appdapter.com).
+ *  Copyright 2011 by The Appdapter Project (www.appdapter.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2011 by The Appdapter Project (www.appdapter.com).
+ *  Copyright 2011 by The Appdapter Project (www.appdapter.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 
 package heaven.piece
-import  com.appdapter.gui.box.{Box, BoxContext, MutableBox, Trigger, BoxImpl, TriggerImpl};
+import  org.appdapter.gui.box.{Box, BoxContext, MutableBox, Trigger, BoxImpl, TriggerImpl};
 
 object Boxy {
 	
@@ -34,12 +34,12 @@ object Boxy {
 	class BoxOne extends FullBox[TriggerOne] {
 		def getOpenKidBoxes(bc : BoxContext) : Seq[BoxOne] = {
 			val kidBoxJL  = bc.getOpenChildBoxesNarrowed(this, classOf[BoxOne], classOf[TriggerOne]);
-			val kidBoxSeq : Seq[BoxOne] = scala.collection.JavaConversions.asScalaBuffer(kidBoxJL) ;
+			val kidBoxSeq : Seq[BoxOne] = scala.collection.JavaConversions.asBuffer(kidBoxJL) ;
 			kidBoxSeq;
 		}
 		def foodleDoodle(bc : BoxContext) : Seq[BoxOne] = {
 			val kidBoxJL  = bc.getOpenChildBoxesNarrowed(this, classOf[BoxOne], classOf[TriggerOne]);
-			val kidBoxSeq : Seq[BoxOne] = scala.collection.JavaConversions.asScalaBuffer(kidBoxJL) ;
+			val kidBoxSeq : Seq[BoxOne] = scala.collection.JavaConversions.asBuffer(kidBoxJL) ;
 			kidBoxSeq;
 		}
 	}
