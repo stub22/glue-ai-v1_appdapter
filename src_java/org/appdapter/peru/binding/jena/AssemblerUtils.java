@@ -18,9 +18,6 @@ package org.appdapter.peru.binding.jena;
 
 // import javax.servlet.http.HttpServlet;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 
 import com.hp.hpl.jena.assembler.Assembler;
 import com.hp.hpl.jena.assembler.Mode;
@@ -33,13 +30,15 @@ import com.hp.hpl.jena.rdf.model.Resource;
 
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.query.DataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** 
  * @author      Stu B. <www.texpedient.com>
  * @version     @PERUSER_VERSION@
  */
 public class AssemblerUtils {
-	private static Log 		theLog = LogFactory.getLog(AssemblerUtils.class );
+	private static Logger 		theLogger = LoggerFactory.getLogger(AssemblerUtils.class );
 	
 	/**
 	 *

@@ -17,6 +17,8 @@
 
 package org.appdapter.peru.core.command;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.appdapter.peru.core.config.Config;
 
 import org.appdapter.peru.core.environment.Environment;
@@ -24,8 +26,6 @@ import org.appdapter.peru.core.environment.Environment;
 import org.appdapter.peru.core.name.Address;
 import org.appdapter.peru.core.name.CoreAddress;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 // JDK 1.5 constants import - POW!
 import static org.appdapter.peru.core.vocabulary.SubstrateAddressConstants.*;
@@ -37,7 +37,7 @@ import static org.appdapter.peru.core.vocabulary.SubstrateAddressConstants.*;
  * @version     @PERUSER_VERSION@
  */
 public abstract class AbstractCommand implements Command {
-	private static Log 		theLog = LogFactory.getLog(AbstractCommand.class);
+	private static Logger 		theLogger = LoggerFactory.getLogger(AbstractCommand.class);
 	
 	protected		Environment		myEnvironment;
 	protected		Config			myConfigImpl;
@@ -59,7 +59,7 @@ public abstract class AbstractCommand implements Command {
 		
 		String javaClassName = getCommandClassName(config, cmdInstanceAddress);
 		
-		theLog.debug("commandClassName is " + javaClassName);
+		theLogger.debug("commandClassName is " + javaClassName);
 
 		Class commandClass = Class.forName(javaClassName);
 		Command command = (Command) commandClass.newInstance();
@@ -101,14 +101,14 @@ public abstract class AbstractCommand implements Command {
 		String placeURL_String = null;
 		// locationPath may be an absolute URL, a name/path relative to some ambient context, or a name/path relative to an explicit repository
 		String  locationPath = myConfigImpl.getSingleString(placeDescAddress, locationPathPropAddress);
-		theLog.debug("locationPath is " + locationPath);	
+		theLogger.debug("locationPath is " + locationPath);	
 		Address repositoryDescAddress = myConfigImpl.getOptionalAddress(placeDescAddress, repositoryPropAddress);
 		if (repositoryDescAddress != null) {
 			// Note that the URL value is an address/resource/URI, not a string!
 			Address repositoryURL_Address = myConfigImpl.getSingleAddress(repositoryDescAddress, urlPropAddress);
-			theLog.debug("repositoryURL_Address is " + repositoryURL_Address);
+			theLogger.debug("repositoryURL_Address is " + repositoryURL_Address);
 			String repositoryURL_String = repositoryURL_Address.getResolvedPath();
-			theLog.debug("repositoryURL_String is " + repositoryURL_String);			
+			theLogger.debug("repositoryURL_String is " + repositoryURL_String);			
 			placeURL_String = repositoryURL_String + locationPath;
 		} else {
 			placeURL_String = locationPath;

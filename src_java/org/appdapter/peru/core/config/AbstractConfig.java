@@ -16,16 +16,15 @@
 
 package org.appdapter.peru.core.config;
 
-import java.util.Iterator;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 // import net.peruser.core.document.Doc;
 import org.appdapter.peru.core.document.SentenceValue;
 
 import org.appdapter.peru.core.name.Address;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author      Stu B. <www.texpedient.com>
@@ -33,7 +32,7 @@ import org.appdapter.peru.core.name.Address;
  */
 public abstract class AbstractConfig implements Config {
 
-	private static Log 		theLog = LogFactory.getLog(AbstractConfig.class);
+	private static Logger 		theLogger = LoggerFactory.getLogger(AbstractConfig.class);
 	
 	/*
 	 * This method may be overriden.
@@ -91,7 +90,7 @@ public abstract class AbstractConfig implements Config {
 		return cursor;
 	}
 	public void dumpConfigThing(Address thing) {
-		theLog.debug("No additional debugging information is available regarding config thing:  " + thing);
+		theLogger.debug("No additional debugging information is available regarding config thing:  " + thing);
 	}
 }
 

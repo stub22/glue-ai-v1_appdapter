@@ -41,9 +41,9 @@ import org.appdapter.peru.core.config.Config;
 import org.appdapter.peru.core.name.Address;
 
 import org.appdapter.peru.core.vocabulary.SubstrateAddressConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /** 
  * Static convenience methods for rule-oriented processing.
@@ -54,7 +54,7 @@ import org.apache.commons.logging.LogFactory;
  */
 
 public class ReasonerUtils implements SubstrateAddressConstants {
-	private static Log 		theLog = LogFactory.getLog(ReasonerUtils.class );
+	private static Logger 		theLogger = LoggerFactory.getLogger(ReasonerUtils.class );
 	
 	static {
 		PrintUtil.registerPrefix("lut", "http://www.peruser.net/substrate#");
@@ -98,7 +98,7 @@ public class ReasonerUtils implements SubstrateAddressConstants {
 		if (defModel != null) {
 			Model infDefModel = makeInferredModel(defModel, reasoner);
 			inferredDataset.setDefaultModel(infDefModel);
-			theLog.debug("Made inferred default model for dataset: " + infDefModel);
+			theLogger.debug("Made inferred default model for dataset: " + infDefModel);
 		}
 		
 		Iterator dni = underlyingDataset.listNames();
@@ -108,7 +108,7 @@ public class ReasonerUtils implements SubstrateAddressConstants {
 			Model underModel = underlyingDataset.getNamedModel(name);
 			Model infModel = makeInferredModel(underModel, reasoner);
 			inferredDataset.addNamedModel(name, infModel);
-			theLog.debug("dataset inference[[name],[under],[inf]] = [[" + name + "],[" + underModel + "],[" + infModel + "]]");
+			theLogger.debug("dataset inference[[name],[under],[inf]] = [[" + name + "],[" + underModel + "],[" + infModel + "]]");
 		}
 		
 		return inferredDataset;
@@ -117,9 +117,9 @@ public class ReasonerUtils implements SubstrateAddressConstants {
 		OntModelSpec result = null;
 		if (configAddress != null) {
 			Address inferenceMarkerAddress = conf.getSingleAddress(configAddress, inferenceMarkerPropAddress);
-			theLog.debug("inferenceMarkerAddress is " + inferenceMarkerAddress);
-			theLog.debug("canonical jenaRdfsInferenceMarkerAddress  is " + jenaRdfsInferenceMarkerAddress);
-			theLog.debug("canonical noInferenceMarkerAddress  is " + noInferenceMarkerAddress);
+			theLogger.debug("inferenceMarkerAddress is " + inferenceMarkerAddress);
+			theLogger.debug("canonical jenaRdfsInferenceMarkerAddress  is " + jenaRdfsInferenceMarkerAddress);
+			theLogger.debug("canonical noInferenceMarkerAddress  is " + noInferenceMarkerAddress);
 			if (inferenceMarkerAddress.equals(jenaRdfsInferenceMarkerAddress)) {
 				result = OntModelSpec.RDFS_MEM_RDFS_INF;
 			} else if (inferenceMarkerAddress.equals(noInferenceMarkerAddress)) {

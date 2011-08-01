@@ -23,9 +23,9 @@ import java.util.Map;
 import java.util.HashMap;
 
 import org.appdapter.peru.core.name.Address;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**   HandleDirectory implements a runtime directory of uniquely named handles to resources.
  * @author      Stu B. <www.texpedient.com>
@@ -35,7 +35,7 @@ public class HandleDirectory {
 	
 	private static HandleDirectory		theDefaultDirectory;
 	
-	private static Log 		theLog = LogFactory.getLog(HandleDirectory.class);	
+	private static Logger 		theLogger = LoggerFactory.getLogger(HandleDirectory.class);	
 	
 	// Listed in order of attachment
 	private	List<Handle>				myHandleList;

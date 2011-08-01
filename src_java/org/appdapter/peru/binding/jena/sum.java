@@ -36,9 +36,8 @@ import com.hp.hpl.jena.sparql.engine.ExecutionContext;
 import com.hp.hpl.jena.sparql.pfunction.PFuncSimpleAndList;
 import com.hp.hpl.jena.sparql.pfunction.PropFuncArg;
 import com.hp.hpl.jena.sparql.util.IterLib;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Example of an ARQ "Property Function". 
@@ -51,14 +50,14 @@ import org.apache.commons.logging.LogFactory;
 
 public class sum extends PFuncSimpleAndList {
 	
-	private static Log 		theLog = LogFactory.getLog(sum.class);
+	private static Logger 		theLogger = LoggerFactory.getLogger(sum.class);
 
 	public QueryIterator execEvaluated(Binding binding, Node subject, Node predicate, PropFuncArg object, 
 				ExecutionContext execCxt) {
 		QueryIterator 		result;
 		List	inputList = object.getArgList();
 		
-		theLog.debug("Computing sum " + subject + " using input list " + inputList);
+		theLogger.debug("Computing sum " + subject + " using input list " + inputList);
 		Iterator lit = inputList.iterator();
 		
 		double sumval = 0.0;
@@ -69,7 +68,7 @@ public class sum extends PFuncSimpleAndList {
 				double addendValue = addendValueNumber.doubleValue();
 				sumval += addendValue;
 			} else {
-				theLog.debug("Skipping non-literal (unbound?) value: " + addendNode);
+				theLogger.debug("Skipping non-literal (unbound?) value: " + addendNode);
 			}
 		}
 		String	sumString = Double.toString(sumval);

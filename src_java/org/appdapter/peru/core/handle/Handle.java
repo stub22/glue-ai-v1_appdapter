@@ -17,9 +17,9 @@
 package org.appdapter.peru.core.handle;
 
 import org.appdapter.peru.core.name.Address;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**   A Handle is a runtime reference to a computing resource.
  * @author      Stu B. <www.texpedient.com>
@@ -28,7 +28,7 @@ import org.apache.commons.logging.LogFactory;
 
 public class Handle {
 		
-	private static Log 		theLog = LogFactory.getLog(Handle.class);	
+	private static Logger 		theLogger = LoggerFactory.getLogger(Handle.class);	
 	
 	private 	String		myCuteLocalName;
 	private		Address		myPublishedAddress;
@@ -49,7 +49,7 @@ public class Handle {
 	}
 	
 	public void dumpDebug() throws Throwable {
-		theLog.debug(this.toString());
+		theLogger.debug(this.toString());
 	}
 }
 

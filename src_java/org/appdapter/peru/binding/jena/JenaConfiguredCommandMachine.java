@@ -17,9 +17,6 @@
 package org.appdapter.peru.binding.jena;
 
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
@@ -42,6 +39,8 @@ import org.appdapter.peru.core.name.CoreAddress;
 // import static net.peruser.core.vocabulary.SubstrateAddressConstants.opConfigRefPropAddress;
 
 import com.hp.hpl.jena.util.FileManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * ModelMachine is an implementation of our Machine interface, using a jena OntologyModel as
@@ -57,7 +56,7 @@ import com.hp.hpl.jena.util.FileManager;
  * @version     @PERUSER_VERSION@
  */
 public class JenaConfiguredCommandMachine extends CommandMachine {
-	private static Log 		theLog = LogFactory.getLog(JenaConfiguredCommandMachine.class);	
+	private static Logger 		theLogger = LoggerFactory.getLogger(JenaConfiguredCommandMachine.class);	
 
 	private static Address	PA_ASSEMBLY_URI = new CoreAddress("peruser:prop/assemblyURI");
 		
@@ -74,7 +73,7 @@ public class JenaConfiguredCommandMachine extends CommandMachine {
 			// Strong evidence that JenaConfiguredCommandMachine is NOT threadsafe!
 			Address	nominalRootAddr = getCurrentNominalRootAddress(); 
 			String assemblyURI = c.getSingleString(nominalRootAddr, PA_ASSEMBLY_URI);
-			theLog.info("found assemblyURI: " + assemblyURI);
+			theLogger.info("found assemblyURI: " + assemblyURI);
 			Environment currentEnv = getCurrentEnvironment();
 			realConfig = buildConfigUsingJenaAssembler(assemblyURI, currentEnv); 
 			// Note that we're presently ignoring everything in the config except the nominalRootAddr.assemblyURI.
@@ -96,10 +95,10 @@ public class JenaConfiguredCommandMachine extends CommandMachine {
 	 */
 	 // Considering changing the configPath type to be an Address.
 	public synchronized void setup(String configPath, Environment env) throws Throwable {
-		theLog.info("JenaConfiguredCommandMachine.setup() called with configPath: " + configPath);
+		theLogger.info("JenaConfiguredCommandMachine.setup() called with configPath: " + configPath);
 		setupUsingDirectStream(configPath, env);
 		//setCurrentConfig(c);
-		theLog.info("JenaConfiguredCommandMachine.setup() complete");
+		theLogger.info("JenaConfiguredCommandMachine.setup() complete");
 	}
 	/** Assume that configPath is a URI that can be assembled by a kernel */
 	public synchronized void setupUsingJenaAssembler(String configPath, Environment env) throws Throwable {
@@ -108,21 +107,21 @@ public class JenaConfiguredCommandMachine extends CommandMachine {
 	}
 	protected synchronized JenaModelAwareConfig buildConfigUsingJenaAssembler(String configPath, Environment env) throws Throwable {
 		JenaModelAwareConfig jmac;
-		theLog.info("JenaConfiguredCommandMachine.buildConfigUsingJenaAssembler() called with configPath: " + configPath);
+		theLogger.info("JenaConfiguredCommandMachine.buildConfigUsingJenaAssembler() called with configPath: " + configPath);
 		super.setup(configPath, env);
 		// If no kernel exists, this will be an unbooted kernel, which won't contain the resource we want.
 		JenaKernel  envKernel = JenaKernel.getDefaultKernel(env);
 		// This doesn't seem to provide any caching (yet).  Checkin with Jena folks and see what they think!
 		Model machineConfigBaseModel = AssemblerUtils.getAssembledModel(envKernel, configPath);
 		OntModel machineConfigOntModel = ModelFactory.createOntologyModel(OntModelSpec.RDFS_MEM_RDFS_INF, machineConfigBaseModel);
-		theLog.debug("machineConfigOntModel=" + machineConfigOntModel);
+		theLogger.debug("machineConfigOntModel=" + machineConfigOntModel);
 		jmac = new JenaModelBackedConfig(machineConfigOntModel);
 		return jmac;
 	}
 	/** Assume that configPath is a path to a resource that can be opened by the environment */
 	public synchronized void setupUsingDirectStream(String configPath, Environment env) throws Throwable {
 		JenaModelAwareConfig jmac;
-		theLog.info("JenaConfiguredCommandMachine.setupUsingDirectStream() called with configPath: " + configPath);
+		theLogger.info("JenaConfiguredCommandMachine.setupUsingDirectStream() called with configPath: " + configPath);
 		super.setup(configPath, env);
 		
 		// Currently we need to choose between one of these two kludges.
@@ -141,7 +140,7 @@ public class JenaConfiguredCommandMachine extends CommandMachine {
 		// Model machineConfigBaseModel = FileManager.get().loadModel(modelBaseURI, modelBaseURI, "RDF/XML");
 		Model machineConfigBaseModel = fm.loadModel(resolvedConfigPath); // , modelBaseURI, "RDF/XML");
 		
-		theLog.debug("machineConfigBaseModel=" + machineConfigBaseModel);
+		theLogger.debug("machineConfigBaseModel=" + machineConfigBaseModel);
 		
 		OntModel machineConfigOntModel = ModelFactory.createOntologyModel(OntModelSpec.RDFS_MEM_RDFS_INF, machineConfigBaseModel);
 		/*		
@@ -157,7 +156,7 @@ public class JenaConfiguredCommandMachine extends CommandMachine {
 		theLog.debug("JenaConfiguredCommandMachine.setupUsingDirectStream() baseURI=" + modelBaseURI);
 		OntModel machineConfigOntModel = ModelUtils.loadRDFS_ModelFromStream(modelInputStream, modelBaseURI);
 		*/		
-		theLog.debug("machineConfigOntModel=" + machineConfigOntModel);
+		theLogger.debug("machineConfigOntModel=" + machineConfigOntModel);
 		jmac = new JenaModelBackedConfig(machineConfigOntModel);
 		setCurrentConfig(jmac);
 		// return jmac;

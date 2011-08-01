@@ -20,9 +20,10 @@ import org.appdapter.peru.core.name.Address;
 import org.appdapter.peru.core.environment.Environment;
 import org.appdapter.peru.core.handle.Handle;
 import org.appdapter.peru.core.handle.HandleDirectory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+
 
 /**
  * @author      Stu B. <www.texpedient.com>
@@ -31,7 +32,7 @@ import org.apache.commons.logging.LogFactory;
  
 public abstract class AbstractProcessorFinder implements ProcessorFinder {
 
-	private static Log 		theLog = LogFactory.getLog(AbstractProcessorFinder.class);
+	private static Logger 		theLogger = LoggerFactory.getLogger(AbstractProcessorFinder.class);
 		
 	/** */
 	public Processor findProcessor(Environment world, String processorClassFQN, String cuteName, 

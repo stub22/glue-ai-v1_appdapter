@@ -37,10 +37,8 @@ import org.appdapter.peru.core.environment.Environment;
 
 // BAD to import bindings in core!
 
-import org.appdapter.peru.binding.dom4j.Dom4jDoc;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Skeletal implementation of a processing queue.<br/>
@@ -54,7 +52,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public abstract class CommandMachine extends DocProcessorMachine {
 	
-	private static Log 		theLog = LogFactory.getLog(CommandMachine.class);	
+	private static Logger 		theLogger = LoggerFactory.getLogger(CommandMachine.class);	
 		
 	private		Command			myCurrentCommand;
 	private		Queue			myFutureCommands;

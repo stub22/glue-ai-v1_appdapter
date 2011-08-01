@@ -23,9 +23,9 @@ import org.appdapter.peru.core.name.Address;
 import org.appdapter.peru.core.name.CoreAddress;
 
 import org.appdapter.peru.core.machine.ProcessorMachine;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  *
@@ -35,7 +35,7 @@ import org.apache.commons.logging.LogFactory;
  
 public class UtilityProcessorMachine extends ProcessorMachine {
 	
-	private static Log 		theLog = LogFactory.getLog(UtilityProcessorMachine.class );	
+	private static Logger 		theLogger = LoggerFactory.getLogger(UtilityProcessorMachine.class );	
 	
 	private static Address	IA_DELAY = new CoreAddress("peruser:builtin/DELAY");
 	private static Address	PA_DELAY_MSEC = new CoreAddress("peruser:prop/delayMsec");
@@ -55,7 +55,7 @@ public class UtilityProcessorMachine extends ProcessorMachine {
 	
 	public void threadDelay(int delayMsec) throws Throwable {
 		// Should this be sending a "delay" command to a CommandMachine, or invoking "delay()" on a MethodMachine() ?
-		theLog.info("threadDelay sleeping for " + delayMsec + " milliseconds");
+		theLogger.info("threadDelay sleeping for " + delayMsec + " milliseconds");
 		Thread.sleep(delayMsec);
 	}
 	

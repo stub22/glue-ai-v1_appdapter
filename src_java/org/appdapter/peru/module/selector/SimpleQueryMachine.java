@@ -50,9 +50,8 @@ import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.dom4j.XPath;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 
@@ -65,7 +64,7 @@ import org.apache.commons.logging.LogFactory;
  * @version     @PERUSER_VERSION@
  */
 public class SimpleQueryMachine extends DocProcessorMachine {
-	private static Log 		theLog = LogFactory.getLog(SimpleQueryMachine.class);
+	private static Logger 		theLogger = LoggerFactory.getLogger(SimpleQueryMachine.class);
 
 	/** Provides a simplified pathway for configuration, suitable in unit testing situations.
 	 *  <br/>Not used in cocoon-deployed situations.
@@ -89,7 +88,7 @@ public class SimpleQueryMachine extends DocProcessorMachine {
 /* Note that in a CocoonConsolidatedConfig constructed by PeruserCocoonKernel, the sitemap parameters are to be found at instructAddr
  */
  
- 		theLog.info("***************SimpleQueryMachine.processDoc() got instructAddress: " + instructAddr);
+ 		theLogger.info("***************SimpleQueryMachine.processDoc() got instructAddress: " + instructAddr);
 		 
 		Address qfa = new CoreAddress("peruser_uri_scheme:queryFile");
 		Address dfia = new CoreAddress("peruser_uri_scheme:dataFile");
@@ -104,7 +103,7 @@ public class SimpleQueryMachine extends DocProcessorMachine {
 		 
 		String conf_dataBaseURI  = curConfig.getSingleString(instructAddr, dbua);
 		 
-		theLog.info("***************SimpleQueryMachine.processDoc() found queryFile param: " + conf_queryFile);
+		theLogger.info("***************SimpleQueryMachine.processDoc() found queryFile param: " + conf_queryFile);
 
 		String modelURL = env.resolveFilePath(conf_dataFile);
 		String queryFileURL = env.resolveFilePath(conf_queryFile);
@@ -142,11 +141,11 @@ public class SimpleQueryMachine extends DocProcessorMachine {
 		for (Iterator iter = results.iterator(); iter.hasNext(); ) {
 			Element modelE = (Element) iter.next();
 			String format = modelE.valueOf("@format");
-			theLog.info("Found model of format: " + format);
+			theLogger.info("Found model of format: " + format);
 			if (format.equals("RDF/XML")) {
 				Element modelRootElement = modelE.element("RDF");
 				String modelXML = modelRootElement.asXML();
-				theLog.debug("Model dump:\n===========================\n " + modelXML + "\n============================");
+				theLogger.debug("Model dump:\n===========================\n " + modelXML + "\n============================");
 				StringReader	mxsr = new StringReader(modelXML);
 				String modelBaseURI = null;
 				instructiveModel.read(mxsr, modelBaseURI, format);

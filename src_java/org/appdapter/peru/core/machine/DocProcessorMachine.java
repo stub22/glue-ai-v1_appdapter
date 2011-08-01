@@ -20,13 +20,14 @@ import org.appdapter.peru.core.document.Doc;
 import org.appdapter.peru.core.document.DocFactory;
 
 import org.appdapter.peru.core.name.Address;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // import static net.peruser.core.vocabulary.SubstrateAddressConstants.instructionAddress;
 // import static net.peruser.core.vocabulary.SubstrateAddressConstants.opConfigRefPropAddress;
 
 // BAD to import bindings in core!
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+
 
 /**
  * Skeletal implementation of a processing queue.<br/>
@@ -40,10 +41,10 @@ import org.apache.commons.logging.LogFactory;
  */
 public abstract class DocProcessorMachine extends ProcessorMachine {
 	
-	private static Log 		theLog = LogFactory.getLog(DocProcessorMachine.class);	
+	private static Logger 		theLogger = LoggerFactory.getLogger(DocProcessorMachine.class);	
 
 	public Object process(Address instructAddr, Object input) throws Throwable {
-		theLog.info(" process() input: " + input);
+		theLogger.info(" process() input: " + input);
 		Object output = null;
 		
 		Doc inputDoc = DocFactory.makeDocFromObject(input, true);
@@ -52,7 +53,7 @@ public abstract class DocProcessorMachine extends ProcessorMachine {
 		output = outputDoc;
 		//	org.w3c.dom.Document outDocW3C = outputDoc.getW3CDOM();
 		//	output = outDocW3C;
-		theLog.info(" process() output: " + output);
+		theLogger.info(" process() output: " + output);
 		return output;
 	}
 	
