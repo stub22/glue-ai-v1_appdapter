@@ -18,8 +18,10 @@ package org.appdapter.peru.test.module.selector;
 
 import org.appdapter.peru.binding.jena.SPARQL_Utils;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
 
 import static org.appdapter.peru.test.data.TestDataConstants.SPARQL_UnitTestConstants.*;
 
@@ -29,16 +31,16 @@ import static org.appdapter.peru.test.data.TestDataConstants.SPARQL_UnitTestCons
  * @version     @PERUSER_VERSION@
  */
 public class SelectorTest {
-	private static Log 		theLog = LogFactory.getLog(SelectorTest.class);	
+	private static Logger 		theLogger = LoggerFactory.getLogger(SelectorTest.class);	
 	public static void main(String[] args) {
-		theLog.info("SPARQL Unit Test - inflating!");
+		theLogger.info("SPARQL Unit Test - inflating!");
 		try {
 			String resultXML = SPARQL_Utils.executeQueryFromFiles (SUT_queryFileURL, SUT_modelURL, SUT_modelFormat, SUT_modelBaseURI);
-			theLog.debug(resultXML);		
+			theLogger.debug(resultXML);		
 		} catch (Throwable t) {
-			theLog.error("SPARQL Unit Test caught exception: ", t);
+			theLogger.error("SPARQL Unit Test caught exception: ", t);
 		}
-		theLog.info("SPARQL Unit Test - deflating!");
+		theLogger.info("SPARQL Unit Test - deflating!");
 	}
 
 }

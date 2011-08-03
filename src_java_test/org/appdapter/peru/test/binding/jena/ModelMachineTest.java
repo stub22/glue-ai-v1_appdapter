@@ -16,6 +16,8 @@
 
 package org.appdapter.peru.test.binding.jena;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.appdapter.peru.core.environment.Environment;
 import org.appdapter.peru.binding.console.ConsoleEnvironment;
 import org.appdapter.peru.binding.jena.JenaConfiguredCommandMachine;
@@ -28,8 +30,6 @@ import org.appdapter.peru.core.document.Doc;
 
 import org.appdapter.peru.binding.dom4j.Dom4jDoc;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 
 import static org.appdapter.peru.test.data.TestDataConstants.ModelMachineUnitTestConstants.*;
@@ -41,10 +41,10 @@ import static org.appdapter.peru.test.data.TestDataConstants.ModelMachineUnitTes
  * @version     @PERUSER_VERSION@
  */
 public class ModelMachineTest {
-	private static Log 		theLog = LogFactory.getLog(ModelMachineTest.class );
+	private static Logger 		theLogger = LoggerFactory.getLogger(ModelMachineTest.class );
 	
 	public static void main(String[] args) {
-		theLog.info("ModelMachineTest - gears are spinning up!");
+		theLogger.info("ModelMachineTest - gears are spinning up!");
 		String commandPath =  MMT_defaultCommandPath;
 		String paramURL = MMT_defaultParamURL;
 		String kernelBootURL = null;
@@ -96,10 +96,10 @@ public class ModelMachineTest {
 			r2doc.writePretty(System.out);			
 
 		} catch (Throwable t) {
-			theLog.error("ModelMachineTest caught: ", t);
+			theLogger.error("ModelMachineTest caught: ", t);
 		}
 
-		theLog.info("ModelMachineTest - gears are spinning down!");
+		theLogger.info("ModelMachineTest - gears are spinning down!");
 	}
 }
 		

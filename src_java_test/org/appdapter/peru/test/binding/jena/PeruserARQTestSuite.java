@@ -43,8 +43,8 @@ import com.hp.hpl.jena.util.FileManager;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -55,7 +55,7 @@ import org.apache.commons.logging.LogFactory;
  * @copyright   derivative(HP, Scrutable)
  */
 public class PeruserARQTestSuite extends TestSuite {
-	private static Log 				theLog = LogFactory.getLog(PeruserARQTestSuite.class);
+	private static Logger 				theLogger = LoggerFactory.getLogger(PeruserARQTestSuite.class);
 	private static final String 	testDirARQ = "app";
 	private static final String 	rootPathTail = "/test_manifest.ttl";
 	
@@ -76,16 +76,16 @@ public class PeruserARQTestSuite extends TestSuite {
 		}
 		
 		private void processManifestFile(String filename, String pathTail) {
-			theLog.debug("processManifestFile[" + filename + "]-START");
+			theLogger.debug("processManifestFile[" + filename + "]-START");
 			Manifest m = null ;
 			try {
 				m = new Manifest(filename) ;
 			} catch (JenaException ex)	{ 
-				theLog.warn("Failed to load: "+filename+"\n"+ex.getMessage()) ;
+				theLogger.warn("Failed to load: "+filename+"\n"+ex.getMessage()) ;
 				return;
 			}
 			String manifestSafeName = TestUtils.safeName(m.getName()) ;
-			theLog.debug("Manifest safeName is " + manifestSafeName);
+			theLogger.debug("Manifest safeName is " + manifestSafeName);
 			
 			ManifestNode mn = new ManifestNode(this, m, pathTail);
 			
@@ -100,10 +100,10 @@ public class PeruserARQTestSuite extends TestSuite {
 				int dirStart = nestedManifestFilename.indexOf(myDirectoryPath);
 				int tailStart = dirStart + myDirectoryPath.length() + 1;
 				String tail = nestedManifestFilename.substring (tailStart);
-				theLog.debug("Filename tail is:  " + tail);
+				theLogger.debug("Filename tail is:  " + tail);
 				processManifestFile(nestedManifestFilename, tail) ;
 			}	
-			theLog.debug("processManifestFile[" + filename + "]-END");
+			theLogger.debug("processManifestFile[" + filename + "]-END");
 		}
 		public ManifestNode findManifestNode (String pathTail) {
 			return (ManifestNode) myManifestNodesByPathTail.get(pathTail);
@@ -148,7 +148,7 @@ public class PeruserARQTestSuite extends TestSuite {
 			
 			ManifestEntry duplicate = (ManifestEntry) myManifestTree.myEntriesByURI.get(me.myURI);
 			if (duplicate != null) {
-				theLog.error("Found duplicate ManifestEntry at URI <" + me.myURI + "> = [" + duplicate + "]");
+				theLogger.error("Found duplicate ManifestEntry at URI <" + me.myURI + "> = [" + duplicate + "]");
 			} else {
 				myManifestTree.myEntriesByURI.put(me.myURI, me);
 			}
@@ -172,7 +172,7 @@ public class PeruserARQTestSuite extends TestSuite {
 				if (harness != null) {
 					harness.runAndDump();
 				} else {
-					theLog.warn("Could not construct harness for " + me.myURI);
+					theLogger.warn("Could not construct harness for " + me.myURI);
 				}
 			}
 		}
@@ -188,10 +188,10 @@ public class PeruserARQTestSuite extends TestSuite {
 			myURI = item.getURI();
 			if (myURI == null) {
 				String encodedItemName = encodeItemName(myTestName);
-				theLog.debug("Encoded '" + testName + "' as '" + encodedItemName + "'"); 
+				theLogger.debug("Encoded '" + testName + "' as '" + encodedItemName + "'"); 
 				myURI = myManifestNode.myManifestPathTail + "#" + encodedItemName; 
 			} else {
-				theLog.debug("Found established URI: '" + myURI + "'"); 
+				theLogger.debug("Found established URI: '" + myURI + "'"); 
 			}
 		}
 		public static String encodeItemName (String name) {
@@ -204,7 +204,7 @@ public class PeruserARQTestSuite extends TestSuite {
 			return result;
 		}
 		public PeruserARQ_Harness makeHarness() {
-			theLog.debug("Creating harness for " + myTestName);
+			theLogger.debug("Creating harness for " + myTestName);
 			PeruserARQ_Harness harness = PeruserARQ_Harness.makeFromManifestConfig(myURI, null, myManifestNode.myManifestTree.myFileManager, myManifest, 
 						myItem, myTestName, myAction, myResult);
 						
@@ -260,11 +260,11 @@ public class PeruserARQTestSuite extends TestSuite {
         // Scripted tests for SPARQL and ARQ.
 		
 		ManifestTree tree = new ManifestTree(testDirARQ, rootPathTail);
-		theLog.info("**************************************Loading Manifests");
+		theLogger.info("**************************************Loading Manifests");
 		tree.loadAllManifests();
-		theLog.info("**************************************Appending Junits");
+		theLogger.info("**************************************Appending Junits");
         tree.appendJUnitTestCases(this);
-		theLog.info("**************************************TestSuite constructor finished");
+		theLogger.info("**************************************TestSuite constructor finished");
         // Various others
         //addTest(miscSuite()) ;
     }
@@ -277,13 +277,13 @@ public class PeruserARQTestSuite extends TestSuite {
 			entryRelativeURI = args[0];
 		}
 		ManifestTree tree = new ManifestTree(testDirARQ, rootPathTail);
-		theLog.info("************************************** Start Loading Manifests");
+		theLogger.info("************************************** Start Loading Manifests");
 		tree.loadAllManifests();
-		theLog.info("************************************** Done Loading Manifests");
+		theLogger.info("************************************** Done Loading Manifests");
 		
 		if (entryRelativeURI != null) {
 			ManifestEntry me = tree.findManifestEntry(entryRelativeURI);
-			theLog.info("Found ManifestEntry at " + entryRelativeURI + " [" + me + "]"); 
+			theLogger.info("Found ManifestEntry at " + entryRelativeURI + " [" + me + "]"); 
 			PeruserARQ_Harness ah = me.makeHarness();
 			ah.runAndDump();
 		} else {

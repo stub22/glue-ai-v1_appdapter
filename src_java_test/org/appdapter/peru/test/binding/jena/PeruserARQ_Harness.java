@@ -28,8 +28,6 @@ import java.io.StringWriter;
 
 import org.appdapter.peru.binding.jena.*;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import com.hp.hpl.jena.query.*;
 import com.hp.hpl.jena.query.ResultSetRewindable;
@@ -48,6 +46,8 @@ import com.hp.hpl.jena.reasoner.Reasoner;
 import com.hp.hpl.jena.sparql.junit.TestItem;
 
 import junit.framework.TestCase;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * PeruserARQ_Harness is a testing wrapper around the Jena ARQ query engine for SPARQL.
@@ -67,7 +67,7 @@ import junit.framework.TestCase;
  * @copyright   derivative(HP, Appdapter)
  */
 public class PeruserARQ_Harness {
-    private static Log 		theLog = LogFactory.getLog(PeruserARQ_Harness.class );
+    private static Logger 		theLogger = LoggerFactory.getLogger(PeruserARQ_Harness.class );
 	
     // private		Model 					myInputModel;
     private		Model 					myExpectedResultsModel = null ;     // Maybe null if no testing of results
@@ -120,7 +120,7 @@ public class PeruserARQ_Harness {
         // Defaults.
         Syntax querySyntax = TestQueryUtils.getQuerySyntax(manifest);
         if ( querySyntax != null) {
-			theLog.info("Explicit querySyntax specified: " + querySyntax);
+			theLogger.info("Explicit querySyntax specified: " + querySyntax);
             if (!querySyntax.equals(Syntax.syntaxRDQL) && !querySyntax.equals(Syntax.syntaxARQ) &&
 							!querySyntax.equals(Syntax.syntaxSPARQL) ) {
                 throw new QueryTestException("Unknown syntax: "+querySyntax) ;
@@ -135,7 +135,7 @@ public class PeruserARQ_Harness {
 		if ((itt == null) || (itt.equals(TestManifestX.TestQuery))) {
 			harness = new PeruserARQ_Harness(manifestEntryURI, inputDataset, testName, fm, item);
 		} else {
-			theLog.warn("Ignoring non-query test " + testName + " of type " + itt);
+			theLogger.warn("Ignoring non-query test " + testName + " of type " + itt);
 		}
         return harness;
     }
@@ -223,14 +223,14 @@ public class PeruserARQ_Harness {
 	
 	public synchronized void runAndDump () {
 		try {
-			theLog.info("=========================================================\n"
+			theLogger.info("=========================================================\n"
 					+   "runAndDump(" + myManifestEntryURI + ")");
 			exec();
 			String xmlOut = getLastResultXML();
-			theLog.info("XML Out\n=========================================================\n" 
+			theLogger.info("XML Out\n=========================================================\n" 
 		        + xmlOut + "\n==========================================================");
 		} catch (Throwable t) {
-			theLog.error("runAndDump", t);
+			theLogger.error("runAndDump", t);
 		}
 	}
 	
@@ -280,7 +280,7 @@ public class PeruserARQ_Harness {
 	
 	protected void parseRulesFile() throws Throwable {
 		String rulesFileURL = myPeruserTestItem.getRulesFileName();
-		theLog.info("rulesFileURL=" + rulesFileURL);
+		theLogger.info("rulesFileURL=" + rulesFileURL);
 		if (rulesFileURL != null) {
 			myReasoner = ReasonerUtils.buildReasonerFromRulesAtURL(rulesFileURL);
         }
@@ -297,7 +297,7 @@ public class PeruserARQ_Harness {
 		 
 		if (qhd && tihd && tihr )    {
 			// Syntax tests may have FROM etc and a manifest data file, so only warn if there are results to test. 
-			theLog.warn(myARQTestItem.getName()+" : is results-testable, AND has BOTH query data source AND file test source") ;
+			theLogger.warn(myARQTestItem.getName()+" : is results-testable, AND has BOTH query data source AND file test source") ;
 		} else if (!qhd && !tihd) {
 			errorFound = "No dataset supplied by query, input file, or constructor!";
 		}
@@ -316,11 +316,11 @@ public class PeruserARQ_Harness {
 		if (myInputDataset == null) {
 			qe = QueryExecutionFactory.create(q) ;
 		} else {
-			theLog.info("Constructing the QueryExecution with an explicit dataset");
+			theLogger.info("Constructing the QueryExecution with an explicit dataset");
 			
 			Dataset inferredDataset = myInputDataset;
 			if (myReasoner != null) {
-				theLog.info("Wrapping the explicit dataset with inference based on explicit rules");
+				theLogger.info("Wrapping the explicit dataset with inference based on explicit rules");
 				inferredDataset = ReasonerUtils.makeInferredDataset (myInputDataset, myReasoner);
 			}
 			
@@ -357,11 +357,11 @@ public class PeruserARQ_Harness {
                 }
             } catch (Exception ex)  {
 				String warnString = "Caught exception in " + queryFlavorDebug + " model result testing - ";
-                theLog.warn(warnString, ex) ;
+                theLogger.warn(warnString, ex) ;
                 failureDescription = warnString + ex;
             }
         } else {
-			theLog.warn("No expected results to compare with actual");
+			theLogger.warn("No expected results to compare with actual");
 		}
 		return failureDescription;
 	}

@@ -32,9 +32,11 @@ import org.appdapter.peru.binding.console.ConsoleEnvironment;
 import org.appdapter.peru.core.name.Address;
 import org.appdapter.peru.core.name.CoreAddress;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+
+
 
 
 
@@ -46,7 +48,7 @@ import org.apache.commons.logging.LogFactory;
  * @version     @PERUSER_VERSION@
  */
 public class AssemblerTest_peru {
-	private static Log 		theLog = LogFactory.getLog(AssemblerTest_peru.class);
+	private static Logger 		theLogger = LoggerFactory.getLogger(AssemblerTest_peru.class);
 
 
 	
@@ -83,7 +85,7 @@ public class AssemblerTest_peru {
 						
 			// Model keysModel = AssemblerUtils.getAssembledModel(jenaKernel, AT_cameraKeysModelURI);
 			
-			theLog.debug("Query Result XML: " + queryResultXML);
+			theLogger.debug("Query Result XML: " + queryResultXML);
 			
 			jenaKernel.dumpDebug();
 		} catch (Throwable t) {
@@ -96,13 +98,13 @@ public class AssemblerTest_peru {
 		Dataset	originalDataset = jenaKernel.assembleAndAttachDataset(datasetCuteName, datasetAssemblyURI);
 		DataSource comboDataset = SPARQL_Utils.makeIndependentDataSourceFromDataset(originalDataset);
 		
-		theLog.debug("Combo Dataset: " + comboDataset);
+		theLogger.debug("Combo Dataset: " + comboDataset);
 		Iterator dnit = comboDataset.listNames();
 		while (dnit.hasNext()) {
 			String	modelName = (String) dnit.next();
-			theLog.debug("found model name: " + modelName);
+			theLogger.debug("found model name: " + modelName);
 		}
-		theLog.debug("Query URL: " + queryPath);
+		theLogger.debug("Query URL: " + queryPath);
 		
 		String queryResultXML = SPARQL_Utils.runQueryOverDataset(queryPath, comboDataset);		
 		

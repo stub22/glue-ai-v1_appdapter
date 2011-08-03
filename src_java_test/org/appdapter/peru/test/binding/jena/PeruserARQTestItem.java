@@ -40,8 +40,8 @@ import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This item extends the (Jena+ARQ) TestItem, and adds handling for special Peruser properties to the jena-ARQ-test-manifest properties
@@ -52,7 +52,8 @@ import org.apache.commons.logging.LogFactory;
  * @version     @PERUSER_VERSION@
  */
 public class PeruserARQTestItem  {
-	private static Log 				theLog = LogFactory.getLog(PeruserARQTestItem.class);
+	private static Logger 				theLogger = LoggerFactory.getLogger(PeruserARQTestItem.class);
+	
 	
 	private String myRulesFileName = null;
 	private	TestItem		myARQTestItem;
@@ -67,13 +68,13 @@ public class PeruserARQTestItem  {
     {
 		myARQTestItem = TestItem.create( r,  defaultTestType,  defaultQuerySyntax,  defaultDataSyntax);
 		_extractRulesFileName();
-		theLog.debug("PeruserARQTestItem constructed using abstract objs, myRulesFileName=" + myRulesFileName);
+		theLogger.debug("PeruserARQTestItem constructed using abstract objs, myRulesFileName=" + myRulesFileName);
 	}
 
 	public PeruserARQTestItem(String _name, String _queryFile, String _dataFile, String _resultFile, String _rulesFile) {
 		myARQTestItem = TestItem.create(_name, _queryFile, _dataFile, _resultFile);
 		myRulesFileName = _rulesFile;
-		theLog.debug("PeruserARQTestItem constructed using strings, myRulesFileName=" + myRulesFileName);
+		theLogger.debug("PeruserARQTestItem constructed using strings, myRulesFileName=" + myRulesFileName);
 	}
 	public TestItem getARQTestItem() {
 		return myARQTestItem;
@@ -87,7 +88,7 @@ public class PeruserARQTestItem  {
 		if (myRulesFileName == null) {
 			Resource tares = getActionResource();
 			if (tares != null) {
-				theLog.debug("rulesPROP = " + rulesPROP);
+				theLogger.debug("rulesPROP = " + rulesPROP);
 				myRulesFileName =  TestUtils.getLiteralOrURI(tares, rulesPROP);
 			}
 		}
@@ -111,7 +112,7 @@ public class PeruserARQTestItem  {
 		String queryBaseURI = null;
 	
 		Syntax queryFileSyntax = myARQTestItem.getFileSyntax();
-		theLog.info("queryFileURL=" + queryFileURL + "  queryBaseURI=" + queryBaseURI + "  queryFileSyntax=" + queryFileSyntax);
+		theLogger.info("queryFileURL=" + queryFileURL + "  queryBaseURI=" + queryBaseURI + "  queryFileSyntax=" + queryFileSyntax);
 		if (queryFileURL == null) {
 			throw new Exception("Query file URL is null");
         }
