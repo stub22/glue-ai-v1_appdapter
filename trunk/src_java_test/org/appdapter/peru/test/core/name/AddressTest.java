@@ -16,8 +16,8 @@
 
 package org.appdapter.peru.test.core.name;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // import net.peruser.core.vocabulary.SubstrateVocabulary;
 
@@ -27,17 +27,17 @@ import org.apache.commons.logging.LogFactory;
  */
 public class AddressTest {
 	
-	private static Log 		theLog = LogFactory.getLog(AddressTest.class);
+	private static Logger 		theLogger = LoggerFactory.getLogger(AddressTest.class);
 	
 	public static void main(String[] args) {
-		theLog.info("AddressTest - gears are spinning up!");
+		theLogger.info("AddressTest - gears are spinning up!");
 		try {
 			// Address linkMarkerPropAddress = Address.parseAddress(":linkMarker");		
 			// Address provaScriptParamAddress = new Address(SubstrateVocabulary.PARAM_PROVA_SCRIPT);
 		} catch (Throwable t) {
-			theLog.error("AddressTest caught ", t);
+			theLogger.error("AddressTest caught ", t);
 		}
-		theLog.info("AddressTest - gears are spinning down!");
+		theLogger.info("AddressTest - gears are spinning down!");
 	}
 	
 }

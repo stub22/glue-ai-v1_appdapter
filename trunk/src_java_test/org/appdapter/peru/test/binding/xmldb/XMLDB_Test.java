@@ -16,14 +16,14 @@
 
 package org.appdapter.peru.test.binding.xmldb;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
-import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * @author      Stu B. <www.texpedient.com>
@@ -31,7 +31,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class XMLDB_Test {
 	
-	private static Log 		theLog = LogFactory.getLog(XMLDB_Test.class);
+	private static Logger 		theLogger = LoggerFactory.getLogger(XMLDB_Test.class);
 
 	private static String 	DRIVER_CLASS_NAME = "org.exist.xmldb.DatabaseImpl";
 	private static String	SERVER_URI = "xmldb:exist://radius:8080/exist/xmlrpc/";
@@ -40,7 +40,7 @@ public class XMLDB_Test {
 	private static String	RESOURCE_NAME = "macbeth.xml";
 	
 	public static void main(String[] args) {
-		theLog.info("XMLDB_Test - gears are spinning up!");
+		theLogger.info("XMLDB_Test - gears are spinning up!");
 		try {
 			
 			// We can get this far (compiled) with just the xmldb.jar
@@ -55,9 +55,9 @@ public class XMLDB_Test {
 			
 			XMLResource res = (XMLResource)col.getResource(RESOURCE_NAME);
 			if (res == null) {
-				theLog.error("Null resource returned for name " + RESOURCE_NAME + " by collection " + col);
+				theLogger.error("Null resource returned for name " + RESOURCE_NAME + " by collection " + col);
 			} else {
-				theLog.info(res.getContent());
+				theLogger.info(res.getContent().toString());
 			}
 			// We can get this far with just the exist.jar + xmldb.jar, but the output is encoded
 			// wrong until we add the "patched" version of xmlrpc from eXist.  JWhich from peruser
@@ -66,9 +66,9 @@ public class XMLDB_Test {
 			// XMLResource document = (XMLResource)col.createResource(f.getName(), "XMLResource");
 
 		} catch (Throwable t) {
-			theLog.error("XMLDB_Test caught ", t);
+			theLogger.error("XMLDB_Test caught ", t);
 		}
-		theLog.info("XMLDB_Test - gears are spinning down!");
+		theLogger.info("XMLDB_Test - gears are spinning down!");
 	}
 	
 }

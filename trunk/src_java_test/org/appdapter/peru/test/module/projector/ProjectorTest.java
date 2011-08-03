@@ -16,6 +16,8 @@
 
 package org.appdapter.peru.test.module.projector;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.PrintStream;
 
 import java.util.ArrayList;
@@ -29,8 +31,6 @@ import org.appdapter.peru.binding.console.ConsoleEnvironment;
 import org.appdapter.peru.binding.jena.JenaPulljector;
 import org.appdapter.peru.binding.jena.ModelUtils;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import org.dom4j.Document;
 import org.appdapter.peru.core.document.Doc;
@@ -53,7 +53,7 @@ import static org.appdapter.peru.test.data.TestDataConstants.ProjectorUnitTestCo
  * @version     @PERUSER_VERSION@
  */
 public class ProjectorTest {
-	private static Log 		theLog = LogFactory.getLog(ProjectorTest.class);
+	private static Logger 		theLogger = LoggerFactory.getLogger(ProjectorTest.class);
 	
 	public static void main(String[] args) {
 		PrintStream outPS = System.out;

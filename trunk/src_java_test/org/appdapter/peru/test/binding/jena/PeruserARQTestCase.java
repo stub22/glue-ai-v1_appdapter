@@ -33,8 +33,8 @@ import com.hp.hpl.jena.rdf.model.Model;
 
 import junit.framework.TestCase;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -46,7 +46,7 @@ import org.apache.commons.logging.LogFactory;
  */
  
 public class PeruserARQTestCase extends TestCase {
-    private static Log 		theLog = LogFactory.getLog( PeruserARQTestCase.class );
+    private static Logger 		theLogger = LoggerFactory.getLogger( PeruserARQTestCase.class );
     
     private static int 		theTestCounter = 1 ;
 
@@ -102,12 +102,12 @@ public class PeruserARQTestCase extends TestCase {
 				verifyAskResult(actualResultFlag);            
 			}
         } catch (IOException ioEx) {
-            theLog.error("IOException: ",ioEx) ;
+            theLogger.error("IOException: ",ioEx) ;
             fail("IOException: "+ioEx.getMessage()) ;
             throw ioEx ;
         }  catch (NullPointerException ex) { throw ex ; }
         catch (Exception ex) {
-            theLog.error("Exception: "+ex.getMessage(),ex) ;
+            theLogger.error("Exception: "+ex.getMessage(),ex) ;
             fail( "Exception: "+ex.getClass().getName()+": "+ex.getMessage()) ;
         }
 		finally {
@@ -123,7 +123,7 @@ public class PeruserARQTestCase extends TestCase {
 			}
 			assertTrue("Actual results do not match expected for: " + myHarness.getTestName(), b) ;
 		} catch (	Exception ex) {
-			theLog.warn("runTestSelect - Exception in result testing", ex) ;
+			theLogger.warn("runTestSelect - Exception in result testing", ex) ;
 			fail("runTestSelect - Exception in result testing: " + ex) ;
 		}
 	}
