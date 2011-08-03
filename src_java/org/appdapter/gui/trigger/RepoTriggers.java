@@ -16,7 +16,6 @@
 
 package org.appdapter.gui.trigger;
 
-import org.appdapter.gui.box.Box;
 import org.appdapter.gui.box.TriggerImpl;
 import org.appdapter.gui.repo.MutableRepoBox;
 import org.appdapter.gui.repo.RepoBox;
@@ -35,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import com.hp.hpl.jena.query.ResultSetFactory;
 import com.hp.hpl.jena.query.ResultSetRewindable;
+import java.net.URL;
 import java.util.List;
 
 /**
@@ -44,12 +44,20 @@ public class RepoTriggers {
 
 	static Logger theLogger = LoggerFactory.getLogger(RepoTriggers.class);
 	// public static Store theStore;
-	public static String theStoreConfigPath = "testconf/store/appdtest_sdb_h2.ttl";
-	public static String theSchemaTestPath = "testconf/owl/snazzy.owl";
+	public static String theStoreConfigPath = "/testconf/store/appdtest_sdb_h2.ttl";
+	public static String theTestSchemaPath = "/testconf/owl/snazzy.owl";
+	public static String theTestQueryURL = "/testconf/sparql/query_stuff.sparql";
 
+	public static String resolveResourceURL(String resURL_path) {
+		URL resURL = RepoTriggers.class.getResource(resURL_path);
+		return resURL.toString();
+	}
 	public static class OpenTrigger<MRB extends MutableRepoBox<TriggerImpl<MRB>>> extends  TriggerImpl<MRB>  {
 		@Override public void fire(MRB targetBox) {
-			targetBox.mountStoreUsingFileConfig(theStoreConfigPath);
+			String storeConfigResolvedPath = resolveResourceURL(theStoreConfigPath);
+			theLogger.info("Resolved storeConfig resource path: " + storeConfigResolvedPath);
+// Model data = FileManager.get().loadModel(dataFile.toString());
+			targetBox.mountStoreUsingFileConfig(storeConfigResolvedPath);
 		}
 	}
 	public static class InitTrigger<MRB extends MutableRepoBox<TriggerImpl<MRB>>> extends  TriggerImpl<MRB> {
@@ -68,8 +76,8 @@ public class RepoTriggers {
 			Store store = targetBox.getStore();
 			try {
 				String queryText = "blah";
-				String queryURL = "file:testconf/sparql/query_stuff.sparql";
-				Query parsedQuery = QueryFactory.read(queryURL); //  wraps create(queryText);
+				String resolvedQueryURL = resolveResourceURL(theTestQueryURL);
+				Query parsedQuery = QueryFactory.read(resolvedQueryURL); //  wraps create(queryText);
 				Dataset ds = DatasetStore.create(store);
 				QueryExecution qe = QueryExecutionFactory.create(parsedQuery, ds);
 				try {
@@ -91,14 +99,12 @@ public class RepoTriggers {
 	}
 
 	public static class UploadTrigger<MRB extends MutableRepoBox<TriggerImpl<MRB>>> extends  TriggerImpl<MRB>  {
-
 		// ModGraph modGraph = new ModGraph();
-
 
 		// Want contravariance?
 		@Override public void fire(MRB targetBox) {
 			try {
-				String filePath = theSchemaTestPath;
+				String filePath = resolveResourceURL(theTestSchemaPath);
 				targetBox.uploadModelFile(filePath, "whoopee", true);
 			} catch (Throwable t) {
 				theLogger.error("problem in UploadTrigger", t);

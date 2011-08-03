@@ -31,13 +31,14 @@ import org.slf4j.LoggerFactory;
 public class BridgeTriggers {
 	static Logger theLogger = LoggerFactory.getLogger(BridgeTriggers.class);
 
+	static String	theTestMenuAssemblyPath = "/testconf/app/boxtest/boxy_001.ttl";
 
 	public static class MountSubmenuFromTriplesTrigger<BT extends Box<TriggerImpl<BT>>> extends  TriggerImpl<BT> {
 		@Override public void fire(BT targetBox) {
 			theLogger.info(toString() + "-mounting-submenu");
 			BoxContext bc = targetBox.getBoxContext();
 
-			String triplesURL = "testconf/app/boxtest/boxy_001.ttl";
+			String triplesURL = RepoTriggers.resolveResourceURL(theTestMenuAssemblyPath);
 			Set<Object> loadedStuff = AssemblerUtils.buildAllObjectsInRdfFile(triplesURL);
 			theLogger.info("Loaded " + loadedStuff.size() + " objects");
 			for (Object o : loadedStuff) {
