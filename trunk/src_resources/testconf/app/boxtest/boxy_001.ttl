@@ -12,8 +12,7 @@
 
 <>  rdfs:comment     "Test building boxes and triggers" ;
     dc:creator       "Stu B. <www.texpedient.com>" ;
-    dc:creator       "the Jena team" ;
-    dc:subject       "" ;
+    dc:subject       "Appdapter Tests" ;
     dc:publisher     "appdapter.org" ;
     dc:title         "(title) Appdapter box assembly test" ;
     dc:description   "(desc) Appdapter box assembly test" ;
