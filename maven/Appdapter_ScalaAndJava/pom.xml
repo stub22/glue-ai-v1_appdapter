@@ -70,6 +70,17 @@ central repo.
 			<name>Scala-Tools Maven2 Repository</name>
 			<url>http://scala-tools.org/repo-releases</url>
 		</repository>
+		<repository>
+			<id>org.apache.respository-SNAPSHOTS</id>
+			<name>Apache snapshots</name>
+			<url>http://repository.apache.org/snapshots/</url>
+			<layout>default</layout>
+		</repository>
+		<repository>
+			<id>com.springsource.repository.bundles.external</id>
+			<name>Spring EBR External Release Repository</name>
+			<url>http://repository.springsource.com/maven/bundles/external</url>
+		</repository>		
 	</repositories>
 
 	<pluginRepositories>
@@ -81,20 +92,18 @@ central repo.
 	</pluginRepositories>
 
 	<dependencies>
-
-    <!-- Test -->
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.8.1</version>
-			<scope>test</scope>
+			<groupId>com.weiglewilczek.scala-lang-osgi</groupId>
+			<artifactId>scala-library</artifactId>
+			<version>2.8.1</version>
 		</dependency>
 
 		<dependency>
-			<groupId>dom4j</groupId>
-			<artifactId>dom4j</artifactId>
+			<groupId>org.dom4j</groupId>
+			<artifactId>com.springsource.org.dom4j</artifactId>
 			<version>1.6.1</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
@@ -109,6 +118,28 @@ central repo.
 			<groupId>com.hp.hpl.jena</groupId>
 			<artifactId>sdb</artifactId>
 			<version>1.3.4</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>log4j</artifactId>
+					<groupId>log4j</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>lucene-core</artifactId>
+					<groupId>org.apache.lucene</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>wstx-asl</artifactId>
+					<groupId>org.codehaus.woodstox</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>xercesImpl</artifactId>
+					<groupId>xerces</groupId>
+				</exclusion>
+			 <exclusion>
+			  <artifactId>icu4j</artifactId>
+			  <groupId>com.ibm.icu</groupId>
+			 </exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>javax.servlet</groupId>
@@ -119,23 +150,71 @@ central repo.
 			<groupId>xmldb</groupId>
 			<artifactId>xmldb-api</artifactId>
 			<version>20021118</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.avalon.framework</groupId>
-			<artifactId>avalon-framework-api</artifactId>
-			<version>4.3.1</version>
 		</dependency>	
+		<!--
 		<dependency>
 			<groupId>org.scala-lang</groupId>
 			<artifactId>scala-library</artifactId>
 			<version>2.8.1</version>
 		</dependency>
+		-->
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
 			<version>1.6.1</version>
 			<scope>runtime</scope>
+			<exclusions>
+				<exclusion>
+					<artifactId>log4j</artifactId>
+					<groupId>log4j</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.lucene</groupId>
+			<artifactId>com.springsource.org.apache.lucene</artifactId>
+			<version>2.3.2</version>			
+			<scope>runtime</scope>
 		</dependency>		
+		<dependency>
+			<groupId>org.apache.log4j</groupId>
+			<artifactId>com.springsource.org.apache.log4j</artifactId>
+			<version>1.2.16</version>
+			<scope>runtime</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.xml.stream</groupId>
+			<artifactId>com.springsource.javax.xml.stream</artifactId>
+			<version>1.0.1</version>
+			<scope>provided</scope>			
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.xerces</groupId>
+			<artifactId>com.springsource.org.apache.xerces</artifactId>
+			<version>2.8.1</version>
+		</dependency>		
+
+		<dependency>
+			<groupId>org.apache.xmlcommons</groupId>
+			<artifactId>com.springsource.org.apache.xmlcommons</artifactId>
+			<version>1.3.4</version>
+			<scope>provided</scope>
+		</dependency>		
+		
+		<dependency>
+			<groupId>com.ibm.icu</groupId>
+			<artifactId>com.springsource.com.ibm.icu</artifactId>
+			<version>3.4.5</version>
+			<scope>runtime</scope>		
+		</dependency>		
+		<dependency>
+			<groupId>org.codehaus.woodstox</groupId>
+			<artifactId>com.springsource.com.ctc.wstx</artifactId>
+			<version>3.2.8</version>
+			<scope>runtime</scope>			
+		</dependency>				
 		<dependency>
 			<groupId>org.scala-tools.testing</groupId>
 			<artifactId>specs_2.8.1</artifactId>
@@ -153,23 +232,56 @@ central repo.
 			<artifactId>jena</artifactId>
 			<version>2.6.4</version>
 			<classifier>tests</classifier>
-			<scope>test</scope>			
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<artifactId>log4j</artifactId>
+					<groupId>log4j</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>xercesImpl</artifactId>
+					<groupId>xerces</groupId>
+				</exclusion>
+			 <exclusion>
+			  <artifactId>icu4j</artifactId>
+			  <groupId>com.ibm.icu</groupId>
+			 </exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.hp.hpl.jena</groupId>
 			<artifactId>arq</artifactId>
 			<version>2.8.7</version>
 			<classifier>tests</classifier>
-			<scope>test</scope>				
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<artifactId>log4j</artifactId>
+					<groupId>log4j</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>lucene-core</artifactId>
+					<groupId>org.apache.lucene</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>wstx-asl</artifactId>
+					<groupId>org.codehaus.woodstox</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>		
 		<dependency>
 			<groupId>org.scala-tools.testing</groupId>
 			<artifactId>specs_${scala.version}</artifactId>
 			<version>1.6.5</version>
 			<scope>test</scope>
-		</dependency>		
-
-		
+		</dependency>
+    <!-- Test -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.8.1</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>

@@ -43,7 +43,7 @@ import org.appdapter.peru.core.environment.Environment;
 
 import org.appdapter.peru.core.machine.AbstractMachine;
 
-import org.apache.avalon.framework.parameters.Parameters;
+// import org.apache.avalon.framework.parameters.Parameters;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
@@ -60,13 +60,17 @@ import org.slf4j.LoggerFactory;
 public class FaceeboMachine_peru extends AbstractMachine {
 	private static Logger 		theLogger = LoggerFactory.getLogger(FaceeboMachine_peru.class);
 	// See http://excalibur.apache.org/apidocs/org/apache/avalon/framework/parameters/Parameters.html
+	
+	/*
 	private		Parameters		myCrutchParameters;
 	
 	public void setCrutchParameters(Parameters p) {
 		myCrutchParameters = p;
 	}
+	 * 
+	 */
 	private String getCrutchParameterString(String name) throws Throwable{
-		return myCrutchParameters.getParameter(name);
+		return null; // return myCrutchParameters.getParameter(name);
 	}
 	/**  
 	 * 
