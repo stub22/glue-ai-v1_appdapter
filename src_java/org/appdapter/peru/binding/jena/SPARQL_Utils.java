@@ -51,7 +51,6 @@ import com.hp.hpl.jena.query.ResultSetFactory;
 import com.hp.hpl.jena.query.ResultSetRewindable;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.sparql.junit.TestItem;
 import com.hp.hpl.jena.sparql.util.graph.GraphFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,9 +72,6 @@ public class SPARQL_Utils {
     public static boolean doesQueryHaveDataset(Query query) {
         return isNonemptyList(query.getGraphURIs()) || isNonemptyList(query.getNamedGraphURIs());
     }
-    public static boolean doesTestItemHaveDataset(TestItem testItem)    {
-        return isNonemptyList(testItem.getDefaultGraphURIs())  || isNonemptyList(testItem.getNamedGraphURIs());
-    }	
     public static Dataset createDataset(List defaultGraphURIs, List namedGraphURIs)    {
         return DatasetUtils.createDataset(defaultGraphURIs, namedGraphURIs, null, null) ;
     }

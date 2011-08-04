@@ -245,6 +245,10 @@ public class PeruserARQ_Harness {
         s = s.replace(')',']') ;
         return s ;
     }
+    public static boolean doesTestItemHaveDataset(TestItem testItem)    {
+        return SPARQL_Utils.isNonemptyList(testItem.getDefaultGraphURIs())  || 
+				SPARQL_Utils.isNonemptyList(testItem.getNamedGraphURIs());
+    }	
     protected void setUp() throws Exception   {
         // SPARQL and ARQ tests are done with no value matching (for query execution and results testing)
         if ( ! my_isRDQLtestFlag )
@@ -253,7 +257,7 @@ public class PeruserARQ_Harness {
            // ARQ.getContext().setTrue(ARQ.graphNoSameValueAs) ;
 		   ARQ.getContext().setTrue(ARQ.strictGraph) ;
         }
-		boolean tihd = SPARQL_Utils.doesTestItemHaveDataset(myARQTestItem);
+		boolean tihd = doesTestItemHaveDataset(myARQTestItem);
 		if (tihd) {
 			if (myInputDataset == null) {
 				myInputDataset = createDataset(myARQTestItem.getDefaultGraphURIs(), myARQTestItem.getNamedGraphURIs()) ;
