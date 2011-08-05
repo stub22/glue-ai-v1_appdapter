@@ -44,19 +44,19 @@ central repo.
 	<artifactId>Appdapter_ScalaAndJava</artifactId>
 	<version>1.0-SNAPSHOT</version>
 	<name>${project.artifactId}</name>
-	<description>My wonderfull scala app</description>
+	<description>Appdapter Maven project including Java and Scala, produces jar, not bundle.</description>
 	<inceptionYear>2010</inceptionYear>
 	<licenses>
 		<license>
 			<name>Apache License, Version 2.0</name>
-			<url>http://....</url>
+			<url>http://www.appdapter.org/license.txt</url>
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
 
 	<properties>
-		<maven.compiler.source>1.5</maven.compiler.source>
-		<maven.compiler.target>1.5</maven.compiler.target>
+		<maven.compiler.source>1.6</maven.compiler.source>
+		<maven.compiler.target>1.6</maven.compiler.target>
 		<encoding>UTF-8</encoding>
 		<scala.version>2.8.1</scala.version>
 		<netbeans.hint.license>appdapter-apache20</netbeans.hint.license>
@@ -308,6 +308,7 @@ central repo.
 							</args>
 							<displayCmd>true</displayCmd>
 <!--			This works for compiling, but not for displaying the source folders in Netbeans.
+				So we are instead using SVN externals to create a tree in Maven-preferred form.
 							<sourceDir>../../src_scala</sourceDir>
 							<sourceDir>../../src_java</sourceDir>
 -->
@@ -322,6 +323,7 @@ central repo.
 							-->
 								 
 							<sendJavaToScalac>false</sendJavaToScalac>
+								
 						</configuration>
 						
 					</execution>
@@ -343,65 +345,7 @@ central repo.
 					</includes>
 				</configuration>
 			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>build-helper-maven-plugin</artifactId>
-				<version>1.7</version>
-				<executions>
-				
-					<execution>
-						<id>add-source</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>add-source</goal>
-						</goals>
-						<configuration>
-							<sources>
-								<source>../../src_java</source>
-								<source>../../src_scala</source>								
-							</sources>
-						</configuration>
-					</execution>
-					<execution>
-						<id>add-test-source</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>add-test-source</goal>
-						</goals>
-						<configuration>
-							<sources>
-								<!-- Netbeans 7.0 does not show these test sources 
-									in project view, but we are hoping that is fixed via Bug 187595:
-									http://netbeans.org/bugzilla/show_bug.cgi?id=187595
-								-->
-								<source>../../src_java_test</source>
-								<source>../../src_scala_test</source>	
-							</sources>
-						</configuration>
-					</execution>
 
-					<execution>
-						<id>add-resource</id>
-						<phase>generate-resources</phase>
-						<goals>
-							<goal>add-resource</goal>
-						</goals>
-						<configuration>
-							<resources>
-								<resource>
-									<directory>../../src_resources</directory>
-									<!--
-									<targetPath>tgt_resources</targetPath>
-									-->
-									<excludes>
-										<exclude>**/junk/**</exclude>
-									</excludes>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>					
-				</executions>
-			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
