@@ -17,7 +17,7 @@
 package org.appdapter.scafun
 
 
-import org.appdapter.test.CorefTestJava.{_}
+import org.appdapter.gui.main.CorefTestJava.{_}
 
 class Lucky {
 	trait Water {}
