@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package heaven.piece
+package org.appdapter.scafun
 
 object OkFine {
   def main(args: Array[String]) :Unit = {
