@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package heaven.piece
+package org.appdapter.scafun
 
 import org.appdapter.gui.box.{Box, BoxContext, BoxImpl, BoxTreeNode, MutableBox, Trigger, TriggerImpl};
 import org.appdapter.test.{TestBrowse, TestNavigatorCtrl};
