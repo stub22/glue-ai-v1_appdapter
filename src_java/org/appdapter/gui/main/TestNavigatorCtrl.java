@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.appdapter.test;
+package org.appdapter.gui.main;
 
 import java.awt.BorderLayout;
 import java.awt.event.MouseAdapter;

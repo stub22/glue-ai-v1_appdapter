@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.appdapter.test;
+package org.appdapter.gui.main;
 
 import org.appdapter.gui.box.Box;
 import org.appdapter.gui.assembly.CachingComponentAssembler;
