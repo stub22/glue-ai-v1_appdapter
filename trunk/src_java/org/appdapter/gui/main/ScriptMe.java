@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.appdapter.test;
+package org.appdapter.gui.main;
 
 /**
  * @author Stu B. <www.texpedient.com>
