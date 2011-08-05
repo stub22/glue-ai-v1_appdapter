@@ -21,7 +21,7 @@ import org.appdapter.gui.main.{TestBrowse, TestNavigatorCtrl};
 
 object GoFish {
   def main(args: Array[String]) :Unit = {
-	  	println("heaven.piece.GoFish sez:  yo");
+	  println(this.getClass.getCanonicalName() + " sez:  yo");
 		println("Mapping stuff to other stuff, blending dynamic approximation and ironic detachment.");
 		val time = java.lang.System.currentTimeMillis();
 		println("The time is: " + time);
