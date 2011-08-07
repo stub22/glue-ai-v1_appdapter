@@ -46,11 +46,6 @@
 			<version>1.4.0</version>
 		</dependency>
 		<dependency>
-			<groupId>org.appdapter</groupId>
-			<artifactId>Appdapter_ScalaAndJava</artifactId>
-			<version>1.0-SNAPSHOT</version>
-		</dependency>
-		<dependency>
 			<groupId>org.apache.clerezza.ext</groupId>
 			<artifactId>com.hp.hpl.jena</artifactId>
 			<version>0.6-incubating-SNAPSHOT</version>
@@ -97,6 +92,41 @@
 			<version>0.1-incubating-SNAPSHOT</version>
 		</dependency>		
 		-->
+	 <dependency>
+	  <groupId>org.apache.felix</groupId>
+	  <artifactId>org.apache.felix.shell.remote</artifactId>
+	  <version>1.1.2</version>
+	 </dependency>
+	 <dependency>
+	  <groupId>org.apache.felix</groupId>
+	  <artifactId>org.apache.felix.shell</artifactId>
+	  <version>1.4.1</version>
+	 </dependency>
+	 <dependency>
+	  <groupId>org.apache.felix</groupId>
+	  <artifactId>org.apache.felix.framework</artifactId>
+	  <version>3.2.2</version>
+	 </dependency>
+	 <dependency>
+	  <groupId>org.apache.felix</groupId>
+	  <artifactId>org.apache.felix.gogo.command</artifactId>
+	  <version>0.10.0</version>
+	 </dependency>
+	 <dependency>
+	  <groupId>org.apache.felix</groupId>
+	  <artifactId>org.apache.felix.gogo.runtime</artifactId>
+	  <version>0.10.0</version>
+	 </dependency>
+	 <dependency>
+	  <groupId>org.apache.felix</groupId>
+	  <artifactId>org.osgi.compendium</artifactId>
+	  <version>1.4.0</version>
+	 </dependency>
+	 <dependency>
+	  <groupId>org.apache.felix</groupId>
+	  <artifactId>org.apache.felix.gogo.shell</artifactId>
+	  <version>0.10.0</version>
+	 </dependency>
 	</dependencies>
 
 	<build>
@@ -167,6 +197,8 @@
 										<propertyfile file="${project.build.directory}/config.properties">
 											<entry key="felix.auto.start" value="${bundles} file:modules/${project.build.finalName}.jar"/>
 											<entry key="org.osgi.framework.bootdelegation" value="*"/>
+											<!-- Added by stu as part of remote shell/gogo config -->
+											<entry key="osgi.framework.activeThreadType" value="normal"/>
 										</propertyfile>
 										<copy file="${maven.dependency.org.apache.felix.org.apache.felix.main.jar.path}" tofile="${project.build.directory}/felix.jar"/>
 									</target>
@@ -230,6 +262,8 @@
 									<entry key="felix.auto.deploy.action" value="uninstall,install,update,start"/>
 									<entry key="org.osgi.framework.storage" value="${project.build.directory}${file.separator}felix-cache"/>
 									<entry key="org.osgi.framework.bootdelegation" value="*"/>
+											<!-- Added by stu as part of remote shell/gogo config -->
+											<entry key="osgi.framework.activeThreadType" value="normal"/>									
 								</propertyfile>
 								<makeurl property="run.properties.url" file="${project.build.directory}/run.properties"/>
 								<java fork="true" jar="${maven.dependency.org.apache.felix.org.apache.felix.main.jar.path}">
