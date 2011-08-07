@@ -1,0 +1,9 @@
+
+
+cd /cygdrive/p/_prj/s2/appdapter/appdapter_trunk/maven/Appdapter_OSGiShellDemo
+
+mvn clean
+mvn package
+mvn -Prun-on-felix antrun:run
+
+

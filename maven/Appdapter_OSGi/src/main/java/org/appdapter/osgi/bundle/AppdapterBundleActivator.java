@@ -11,7 +11,7 @@ public class AppdapterBundleActivator implements BundleActivator {
 
     public void start(BundleContext context) throws Exception {
 		theLogger.info("AppdapterBundleActivator start() - BEGIN");
-        org.appdapter.test.TestBrowse.main(null);
+        // org.appdapter.gui.main.TestBrowse.main(null);
 		theLogger.info("AppdapterBundleActivator start() - END");
     }
 
