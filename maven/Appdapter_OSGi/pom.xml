@@ -41,11 +41,6 @@
 	</repositories>
 	<dependencies>
 		<dependency>
-			<groupId>org.apache.felix</groupId>
-			<artifactId>org.osgi.core</artifactId>
-			<version>1.4.0</version>
-		</dependency>
-		<dependency>
 			<groupId>org.apache.clerezza.ext</groupId>
 			<artifactId>com.hp.hpl.jena</artifactId>
 			<version>0.6-incubating-SNAPSHOT</version>
@@ -96,16 +91,12 @@
 	  <groupId>org.apache.felix</groupId>
 	  <artifactId>org.apache.felix.shell.remote</artifactId>
 	  <version>1.1.2</version>
-	 </dependency>
-	 <dependency>
-	  <groupId>org.apache.felix</groupId>
-	  <artifactId>org.apache.felix.shell</artifactId>
-	  <version>1.4.1</version>
-	 </dependency>
-	 <dependency>
-	  <groupId>org.apache.felix</groupId>
-	  <artifactId>org.apache.felix.framework</artifactId>
-	  <version>3.2.2</version>
+	  <exclusions>
+	   <exclusion>
+	    <artifactId>org.osgi.core</artifactId>
+	    <groupId>org.apache.felix</groupId>
+	   </exclusion>
+	  </exclusions>
 	 </dependency>
 	 <dependency>
 	  <groupId>org.apache.felix</groupId>
@@ -114,18 +105,25 @@
 	 </dependency>
 	 <dependency>
 	  <groupId>org.apache.felix</groupId>
-	  <artifactId>org.apache.felix.gogo.runtime</artifactId>
-	  <version>0.10.0</version>
-	 </dependency>
-	 <dependency>
-	  <groupId>org.apache.felix</groupId>
-	  <artifactId>org.osgi.compendium</artifactId>
-	  <version>1.4.0</version>
-	 </dependency>
-	 <dependency>
-	  <groupId>org.apache.felix</groupId>
 	  <artifactId>org.apache.felix.gogo.shell</artifactId>
 	  <version>0.10.0</version>
+	 </dependency>
+	 <dependency>
+	  <artifactId>org.osgi.core</artifactId>
+	  <groupId>org.osgi</groupId>
+	  <type>jar</type>
+	  <version>4.2.0</version>
+	 </dependency>
+	 <dependency>
+	  <artifactId>org.apache.felix.gogo.runtime</artifactId>
+	  <groupId>org.apache.felix</groupId>
+	  <type>jar</type>
+	  <version>0.10.0</version>
+	 </dependency>
+	 <dependency>
+	  <groupId>org.appdapter</groupId>
+	  <artifactId>Appdapter_ScalaAndJava</artifactId>
+	  <version>1.0-SNAPSHOT</version>
 	 </dependency>
 	</dependencies>
 
@@ -266,11 +264,44 @@
 											<entry key="osgi.framework.activeThreadType" value="normal"/>									
 								</propertyfile>
 								<makeurl property="run.properties.url" file="${project.build.directory}/run.properties"/>
-								<java fork="true" jar="${maven.dependency.org.apache.felix.org.apache.felix.main.jar.path}">
-									<sysproperty key="felix.config.properties" value="${run.properties.url}"/>
-									<jvmarg line="${vm.args}"/>
-								</java>
+
+								<!--
+										This is the execution form supplied by maven-OSGi archetype.
+										But it does not allow console interaction with Felix shell.
+										
+                                <java fork="true" jar="${maven.dependency.org.apache.felix.org.apache.felix.main.jar.path}">
+                                    <sysproperty key="felix.config.properties" value="${run.properties.url}"/>
+                                    <jvmarg line="${vm.args}"/>
+                                </java>
+								
+										So, we (appdapter) add the ability to run ant with same properties
+										outside of Maven.   Maven run also works (with no console input
+										to stdin).  
+										
+										TODO:  Find a way to pass stdin stream of maven into ant (or directly into Felix).
+									
+								-->
+								<property name="felix.ant.run.props" value="${project.build.directory}/felix.ant.run.props"/>
+								<echo>[m-a] felix.ant.run.props=${felix.ant.run.props}</echo>
+								
+								<!-- Write/update runtime properties out for external use (in future ant run). -->
+								<propertyfile file="${felix.ant.run.props}">
+									<entry key="felix.main.jar.path" value="${maven.dependency.org.apache.felix.org.apache.felix.main.jar.path}"/>
+									<entry key="felix.config.props.url" value="${run.properties.url}"/>
+									<entry key="felix.jvm.args" value="${vm.args}"/>
+								</propertyfile>
+								<!-- Load those same props into current context -->
+								<property file="${felix.ant.run.props}"/>
+								
+								<echo>[m-a] felix.main.jar.path=</echo> 
+								<echo>[m-a] felix.config.props.url=${felix.config.props.url}</echo> 	
+								<echo>[m-a] felix.jvm.args=${felix.jvm.args}</echo>
+								
+								<ant antfile="${basedir}/ant_run.xml">
+									<target name="java-fork-felix-jar"/>
+								</ant>								
 							</target>
+							
 						</configuration>
 					</plugin>
 				</plugins>
