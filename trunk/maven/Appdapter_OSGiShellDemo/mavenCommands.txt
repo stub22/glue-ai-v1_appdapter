@@ -6,4 +6,9 @@ mvn clean
 mvn package
 mvn -Prun-on-felix antrun:run
 
+#org.scala-tools.archetypes
+#scala-archetype-simple
+#1.3
+#maven-archetype
+
 
