@@ -98,11 +98,7 @@ central repo.
 			<version>2.8.1</version>
 		</dependency>
 
-		<dependency>
-			<groupId>org.dom4j</groupId>
-			<artifactId>com.springsource.org.dom4j</artifactId>
-			<version>1.6.1</version>
-		</dependency>
+
 
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -184,10 +180,14 @@ central repo.
 		</dependency>
 
 		<dependency>
+			<groupId>org.dom4j</groupId>
+			<artifactId>com.springsource.org.dom4j</artifactId>
+			<version>1.6.1</version>
+		</dependency>
+		<dependency>
 			<groupId>javax.xml.stream</groupId>
 			<artifactId>com.springsource.javax.xml.stream</artifactId>
 			<version>1.0.1</version>
-			<scope>provided</scope>			
 		</dependency>
 
 		<dependency>
