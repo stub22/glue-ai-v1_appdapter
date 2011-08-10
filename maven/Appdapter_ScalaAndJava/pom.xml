@@ -72,7 +72,7 @@ central repo.
 		</repository>
 		<repository>
 			<id>org.apache.respository-SNAPSHOTS</id>
-			<name>Apache snapshots</name>
+			<name>Apache snapshots repository - used for...</name>
 			<url>http://repository.apache.org/snapshots/</url>
 			<layout>default</layout>
 		</repository>
@@ -92,6 +92,7 @@ central repo.
 	</pluginRepositories>
 
 	<dependencies>
+		
 		<dependency>
 			<groupId>com.weiglewilczek.scala-lang-osgi</groupId>
 			<artifactId>scala-library</artifactId>
@@ -110,6 +111,7 @@ central repo.
 			<artifactId>h2</artifactId>
 			<version>1.3.157</version>
 		</dependency>
+	
 		<dependency>
 			<groupId>com.hp.hpl.jena</groupId>
 			<artifactId>sdb</artifactId>
@@ -131,10 +133,18 @@ central repo.
 					<artifactId>xercesImpl</artifactId>
 					<groupId>xerces</groupId>
 				</exclusion>
-			 <exclusion>
-			  <artifactId>icu4j</artifactId>
-			  <groupId>com.ibm.icu</groupId>
-			 </exclusion>
+				<exclusion>
+					<artifactId>icu4j</artifactId>
+					<groupId>com.ibm.icu</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>slf4j-log4j12</artifactId>
+					<groupId>org.slf4j</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>junit</artifactId>
+					<groupId>junit</groupId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -146,86 +156,68 @@ central repo.
 			<groupId>xmldb</groupId>
 			<artifactId>xmldb-api</artifactId>
 			<version>20021118</version>
-		</dependency>	
-		<!--
-		<dependency>
-			<groupId>org.scala-lang</groupId>
-			<artifactId>scala-library</artifactId>
-			<version>2.8.1</version>
 		</dependency>
-		-->
+    <!-- Runtime -->			
 		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.6.1</version>
+			<groupId>org.apache.servicemix.bundles</groupId>
+			<artifactId>org.apache.servicemix.bundles.xerces</artifactId>
+			<version>2.9.1_5</version>
 			<scope>runtime</scope>
 			<exclusions>
 				<exclusion>
-					<artifactId>log4j</artifactId>
-					<groupId>log4j</groupId>
+					<artifactId>xml-apis</artifactId>
+					<groupId>xml-apis</groupId>
 				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>com.springsource.org.apache.lucene</artifactId>
-			<version>2.3.2</version>			
-			<scope>runtime</scope>
-		</dependency>		
-		<dependency>
-			<groupId>org.apache.log4j</groupId>
-			<artifactId>com.springsource.org.apache.log4j</artifactId>
-			<version>1.2.16</version>
+			<groupId>org.apache.servicemix.bundles</groupId>
+			<artifactId>org.apache.servicemix.bundles.lucene</artifactId>
+			<version>3.0.3_2</version>
 			<scope>runtime</scope>
 		</dependency>
-
 		<dependency>
-			<groupId>org.dom4j</groupId>
-			<artifactId>com.springsource.org.dom4j</artifactId>
-			<version>1.6.1</version>
+			<groupId>org.apache.servicemix.specs</groupId>
+			<artifactId>org.apache.servicemix.specs.jaxp-api-1.4</artifactId>
+			<version>1.6.0</version>
+			<scope>runtime</scope>
 		</dependency>
 		<dependency>
-			<groupId>javax.xml.stream</groupId>
-			<artifactId>com.springsource.javax.xml.stream</artifactId>
-			<version>1.0.1</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.xerces</groupId>
-			<artifactId>com.springsource.org.apache.xerces</artifactId>
-			<version>2.8.1</version>
+			<groupId>org.apache.servicemix.bundles</groupId>
+			<artifactId>org.apache.servicemix.bundles.xmlresolver</artifactId>
+			<version>1.2_3</version>
+			<scope>runtime</scope>
 		</dependency>		
-
-		<dependency>
-			<groupId>org.apache.xmlcommons</groupId>
-			<artifactId>com.springsource.org.apache.xmlcommons</artifactId>
-			<version>1.3.4</version>
-			<scope>provided</scope>
-		</dependency>		
-		
 		<dependency>
 			<groupId>com.ibm.icu</groupId>
 			<artifactId>com.springsource.com.ibm.icu</artifactId>
 			<version>3.4.5</version>
 			<scope>runtime</scope>		
-		</dependency>		
-		<dependency>
-			<groupId>org.codehaus.woodstox</groupId>
-			<artifactId>com.springsource.com.ctc.wstx</artifactId>
-			<version>3.2.8</version>
-			<scope>runtime</scope>			
-		</dependency>				
+		</dependency>
+    <!-- Test -->		
 		<dependency>
 			<groupId>org.scala-tools.testing</groupId>
 			<artifactId>specs_2.8.1</artifactId>
 			<version>1.6.8</version>
 			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<artifactId>scala-library</artifactId>
+					<groupId>org.scala-lang</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.scalatest</groupId>
 			<artifactId>scalatest_2.8.1</artifactId>
 			<version>1.5.1</version>
 			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<artifactId>scala-library</artifactId>
+					<groupId>org.scala-lang</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.hp.hpl.jena</groupId>
@@ -242,13 +234,17 @@ central repo.
 					<artifactId>xercesImpl</artifactId>
 					<groupId>xerces</groupId>
 				</exclusion>
-			 <exclusion>
-			  <artifactId>icu4j</artifactId>
-			  <groupId>com.ibm.icu</groupId>
-			 </exclusion>
+				<exclusion>
+					<artifactId>icu4j</artifactId>
+					<groupId>com.ibm.icu</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>slf4j-log4j12</artifactId>
+					<groupId>org.slf4j</groupId>
+				</exclusion>
 			</exclusions>
 		</dependency>
-		<dependency>
+			<dependency>
 			<groupId>com.hp.hpl.jena</groupId>
 			<artifactId>arq</artifactId>
 			<version>2.8.7</version>
@@ -268,20 +264,39 @@ central repo.
 					<groupId>org.codehaus.woodstox</groupId>
 				</exclusion>
 			</exclusions>
-		</dependency>		
+		</dependency>	
+		
 		<dependency>
 			<groupId>org.scala-tools.testing</groupId>
 			<artifactId>specs_${scala.version}</artifactId>
 			<version>1.6.5</version>
 			<scope>test</scope>
 		</dependency>
-    <!-- Test -->
+
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.8.1</version>
+			<groupId>org.apache.servicemix.bundles</groupId>
+			<artifactId>org.apache.servicemix.bundles.dom4j</artifactId>
+			<version>1.6.1_4</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>xml-apis</artifactId>
+					<groupId>xml-apis</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.servicemix.bundles</groupId>
+			<artifactId>org.apache.servicemix.bundles.junit</artifactId>
+			<version>4.7_3</version>
 			<scope>test</scope>
 		</dependency>
+	 <dependency>
+	  <groupId>com.ibm.icu</groupId>
+	  <artifactId>icu4j</artifactId>
+	  <version>4.8.1</version>
+	  <scope>runtime</scope>
+	 </dependency>
 	</dependencies>
 
 	<build>
