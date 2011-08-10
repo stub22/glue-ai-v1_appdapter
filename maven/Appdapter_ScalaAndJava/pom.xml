@@ -44,7 +44,8 @@ central repo.
 	<artifactId>Appdapter_ScalaAndJava</artifactId>
 	<version>1.0-SNAPSHOT</version>
 	<name>${project.artifactId}</name>
-	<description>Appdapter Maven project including Java and Scala, produces jar, not bundle.</description>
+	<url>http://www.appdapter.org</url>
+	<description>Appdapter Maven project including Java and Scala, produces jar, not bundle.  Excludes concrete SLF4J binding.</description>
 	<inceptionYear>2010</inceptionYear>
 	<licenses>
 		<license>
@@ -348,7 +349,9 @@ central repo.
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>2.6</version>
 				<configuration>
+					<!--  FIXME:  If we dont skipTests, then the build "fails" -->
 					<skipTests>true</skipTests>
+					
 					<useFile>false</useFile>
 					<disableXmlReport>true</disableXmlReport>
           <!-- If you have classpath issue like NoDefClassError,... -->
