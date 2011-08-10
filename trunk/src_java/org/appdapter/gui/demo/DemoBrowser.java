@@ -14,8 +14,9 @@
  *  limitations under the License.
  */
 
-package org.appdapter.gui.main;
+package org.appdapter.gui.demo;
 
+import org.appdapter.demo.DemoServiceWrapFuncs;
 import javax.swing.tree.TreeModel;
 import org.appdapter.gui.box.BoxContextImpl;
 import org.appdapter.gui.box.BoxImpl;
@@ -25,9 +26,9 @@ import org.appdapter.gui.box.DisplayContextProvider;
 import org.appdapter.gui.box.TriggerImpl;
 import org.appdapter.gui.repo.RepoBoxImpl;
 import org.appdapter.gui.trigger.BootstrapTriggerFactory;
-import org.appdapter.gui.trigger.BridgeTriggers;
-import org.appdapter.gui.trigger.DatabaseTriggers;
-import org.appdapter.gui.trigger.RepoTriggers;
+import org.appdapter.gui.demo.triggers.BridgeTriggers;
+import org.appdapter.gui.demo.triggers.DatabaseTriggers;
+import org.appdapter.gui.demo.triggers.RepoTriggers;
 import org.appdapter.gui.trigger.SysTriggers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,27 +36,28 @@ import org.slf4j.LoggerFactory;
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public class TestBrowse {
-	static Logger theLogger = LoggerFactory.getLogger(TestBrowse.class);
+public class DemoBrowser {
+	static Logger theLogger = LoggerFactory.getLogger(DemoBrowser.class);
 
 	public static void pretendToBeAwesome() {
-		System.out.println("pretendToBeAwesome - Printing to stdout!");
-		theLogger.info("pretendToBeAwesome - Printing info message to logger!");
+		System.out.println("[System.out] - DemoBrowser.pretendToBeAwesome()");
+		theLogger.info("[SLF4J] - DemoBrowser.pretendToBeAwesome()");
 	}
 	public static void main(String[] args) {
 		pretendToBeAwesome();
-		theLogger.info("TestBrowse.main()-START");
-		TestNavigatorCtrl tn = makeTestNavigatorCtrl(args);
-		tn.launchFrame("Appdap Refact");
+		theLogger.info("DemoBrowser.main()-START");
+		DemoNavigatorCtrl tn = makeDemoNavigatorCtrl(args);
+		tn.launchFrame("Appdapter Demo Browser");
+		theLogger.info("DemoBrowser.main()-END");		
 	}
-	public static TestNavigatorCtrl makeTestNavigatorCtrl(String[] args) {
+	public static DemoNavigatorCtrl makeDemoNavigatorCtrl(String[] args) {
 		// From this BoxImpl.class, is makeBCI is able to infer the full BT=BoxImpl<... tree?
 		BoxContextImpl bctx = makeBCI(BoxImpl.class, RepoBoxImpl.class);// makeBoxContextImpl(BoxImpl.class, TriggerImpl.class);
 		TreeModel tm = bctx.getTreeModel();
 		BoxTreeNode rootBTN = (BoxTreeNode) tm.getRoot();
 
 		DisplayContextProvider dcp = bctx;
-		TestNavigatorCtrl tn = new TestNavigatorCtrl(bctx, tm, rootBTN, dcp);
+		DemoNavigatorCtrl tn = new DemoNavigatorCtrl(bctx, tm, rootBTN, dcp);
 		return tn;
 	}
 	public static <BT extends BoxImpl<TriggerImpl<BT>>, RBT extends RepoBoxImpl<TriggerImpl<RBT>>> BoxContextImpl makeBCI(Class<BT> boxClass, Class<RBT> repoBoxClass) {
@@ -74,18 +76,18 @@ public class TestBrowse {
 					TriggerImpl<RBT> repoTrigProto) {
 		try {
 			BoxContextImpl bctx = new BoxContextImpl();
-			BT rootBox = TestServiceWrapFuncs.makeTestBoxImpl(regBoxClass, regTrigProto, "rooty");
+			BT rootBox = DemoServiceWrapFuncs.makeTestBoxImpl(regBoxClass, regTrigProto, "rooty");
 			bctx.contextualizeAndAttachRootBox(rootBox);
 
 			BootstrapTriggerFactory btf = new BootstrapTriggerFactory();
 			btf.attachTrigger(rootBox, new SysTriggers.QuitTrigger(), "quit");
 
 
-			BT repoBox = TestServiceWrapFuncs.makeTestChildBoxImpl(rootBox, regBoxClass, regTrigProto, "repo");
-			BT appBox = TestServiceWrapFuncs.makeTestChildBoxImpl(rootBox, regBoxClass, regTrigProto, "app");
-			BT sysBox = TestServiceWrapFuncs.makeTestChildBoxImpl(rootBox, regBoxClass, regTrigProto, "sys");
+			BT repoBox = DemoServiceWrapFuncs.makeTestChildBoxImpl(rootBox, regBoxClass, regTrigProto, "repo");
+			BT appBox = DemoServiceWrapFuncs.makeTestChildBoxImpl(rootBox, regBoxClass, regTrigProto, "app");
+			BT sysBox = DemoServiceWrapFuncs.makeTestChildBoxImpl(rootBox, regBoxClass, regTrigProto, "sys");
 
-			RBT r1Box = TestServiceWrapFuncs.makeTestChildBoxImpl(repoBox,  repoBoxClass, repoTrigProto, "h2.td_001");
+			RBT r1Box = DemoServiceWrapFuncs.makeTestChildBoxImpl(repoBox,  repoBoxClass, repoTrigProto, "h2.td_001");
 
 			btf.attachTrigger(r1Box, new DatabaseTriggers.InitTrigger(), "openDB");
 			btf.attachTrigger(r1Box, new RepoTriggers.OpenTrigger(), "openMetaRepo");
@@ -93,23 +95,23 @@ public class TestBrowse {
 			btf.attachTrigger(r1Box, new RepoTriggers.UploadTrigger(), "upload into MetaRepo");
 			btf.attachTrigger(r1Box, new RepoTriggers.QueryTrigger(), "query repo");
 			btf.attachTrigger(r1Box, new RepoTriggers.DumpStatsTrigger(), "dump stats");
-			TestServiceWrapFuncs.attachPanelOpenTrigger(r1Box, "manage repo", BoxPanel.Kind.REPO_MANAGER);
+			DemoServiceWrapFuncs.attachPanelOpenTrigger(r1Box, "manage repo", BoxPanel.Kind.REPO_MANAGER);
 
-			RBT r2Box = TestServiceWrapFuncs.makeTestChildBoxImpl(repoBox, repoBoxClass, repoTrigProto, "repo_002");
+			RBT r2Box = DemoServiceWrapFuncs.makeTestChildBoxImpl(repoBox, repoBoxClass, repoTrigProto, "repo_002");
 			btf.attachTrigger(r2Box, new SysTriggers.DumpTrigger(), "dumpD");
 			btf.attachTrigger(r2Box, new SysTriggers.DumpTrigger(), "dumpC");
 			btf.attachTrigger(r2Box, new SysTriggers.DumpTrigger(), "dumpA");
 
-			BT fishBox = TestServiceWrapFuncs.makeTestChildBoxImpl(appBox, regBoxClass, regTrigProto, "fishy");
-			TestServiceWrapFuncs.attachPanelOpenTrigger(fishBox, "open-matrix-f", BoxPanel.Kind.MATRIX);
+			BT fishBox = DemoServiceWrapFuncs.makeTestChildBoxImpl(appBox, regBoxClass, regTrigProto, "fishy");
+			DemoServiceWrapFuncs.attachPanelOpenTrigger(fishBox, "open-matrix-f", BoxPanel.Kind.MATRIX);
 
 			btf.attachTrigger(fishBox, new SysTriggers.DumpTrigger(), "dumpF");
 
-			BT pumappBox = TestServiceWrapFuncs.makeTestChildBoxImpl(appBox, regBoxClass, regTrigProto, "pumapp");
-			TestServiceWrapFuncs.attachPanelOpenTrigger(pumappBox, "open-matrix-p", BoxPanel.Kind.MATRIX);
+			BT pumappBox = DemoServiceWrapFuncs.makeTestChildBoxImpl(appBox, regBoxClass, regTrigProto, "pumapp");
+			DemoServiceWrapFuncs.attachPanelOpenTrigger(pumappBox, "open-matrix-p", BoxPanel.Kind.MATRIX);
 			btf.attachTrigger(pumappBox, new SysTriggers.DumpTrigger(), "dumpP");
 
-			BT buckTreeBox = TestServiceWrapFuncs.makeTestChildBoxImpl(appBox, regBoxClass, regTrigProto, "bucksum");
+			BT buckTreeBox = DemoServiceWrapFuncs.makeTestChildBoxImpl(appBox, regBoxClass, regTrigProto, "bucksum");
 			btf.attachTrigger(buckTreeBox, new BridgeTriggers.MountSubmenuFromTriplesTrigger(), "loadSubmenus");
 		
 /*
