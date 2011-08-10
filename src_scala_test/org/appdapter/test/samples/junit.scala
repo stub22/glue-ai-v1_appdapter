@@ -1,4 +1,4 @@
-package samples
+package org.appdapter.test.samples
 
 import org.junit._
 import Assert._

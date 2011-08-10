@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package samples
+package org.appdapter.test.samples
 
 /*
 ScalaTest facilitates different styles of testing by providing traits you can mix
