@@ -51,4 +51,7 @@ public class AssemblerUtils {
 		Set<Object> results = buildAllRootsInModel(Assembler.general, loadedModel, Mode.DEFAULT);
 		return results;
 	}
+	public static void registerClassLoader(ClassLoader cl) {
+		FileManager.get().addLocatorClassLoader(cl); 
+	}
 }

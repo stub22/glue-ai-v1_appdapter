@@ -31,7 +31,6 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
 
-import org.apache.xerces.util.URI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +40,8 @@ import org.slf4j.LoggerFactory;
 // We use the Xerces URI parser to find fragments in URIs.
 
 /** 
- * Encapsulates our use of jena RDQL features.
+ * [OBSOLETE - Ignore!]   Encapsulates our use of jena RDQL features.
+ * @deprecated 
  * 
  * @author      Stu B. <www.texpedient.com>
  * @version     @PERUSER_VERSION@
@@ -144,6 +144,7 @@ public class RDQL_Utils
 		Resource res = (Resource) rn.as(Resource.class);
 		return res;
 	}
+	/*
 	public static String getFragment (Object o) throws Throwable {
 		Resource res = getResultResource(o);
 		URI	xercesURI = new URI(res.getURI());
@@ -151,5 +152,7 @@ public class RDQL_Utils
 		return frag;
 		
 	}
+	 
+	 */
 }
 

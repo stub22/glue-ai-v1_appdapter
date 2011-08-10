@@ -39,6 +39,10 @@ public class BridgeTriggers {
 			BoxContext bc = targetBox.getBoxContext();
 
 			String triplesURL = RepoTriggers.resolveResourceURL(theTestMenuAssemblyPath);
+			theLogger.info("resolved resource URL: " + triplesURL);
+			System.out.println("[System.out] resolved resource URL: " + triplesURL);
+			ClassLoader cl = getClass().getClassLoader();
+			AssemblerUtils.registerClassLoader(cl);
 			Set<Object> loadedStuff = AssemblerUtils.buildAllObjectsInRdfFile(triplesURL);
 			theLogger.info("Loaded " + loadedStuff.size() + " objects");
 			for (Object o : loadedStuff) {
