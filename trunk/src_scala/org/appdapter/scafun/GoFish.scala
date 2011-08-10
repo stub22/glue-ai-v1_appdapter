@@ -17,7 +17,7 @@
 package org.appdapter.scafun
 
 import org.appdapter.gui.box.{Box, BoxContext, BoxImpl, BoxTreeNode, MutableBox, Trigger, TriggerImpl};
-import org.appdapter.gui.main.{TestBrowse, TestNavigatorCtrl};
+import org.appdapter.gui.demo.{DemoBrowser, DemoNavigatorCtrl};
 
 object GoFish {
   def main(args: Array[String]) :Unit = {
@@ -25,14 +25,14 @@ object GoFish {
 		println("Mapping stuff to other stuff, blending dynamic approximation and ironic detachment.");
 		val time = java.lang.System.currentTimeMillis();
 		println("The time is: " + time);
-		TestBrowse.pretendToBeAwesome();
+		DemoBrowser.pretendToBeAwesome();
 		//TestBrowse.main(args);
 		val tnc = makeTNC(args);
 		tnc.launchFrame("GoFish");
 
 	}
-	def makeTNC(args: Array[String]) : TestNavigatorCtrl = {
-		val tnc = TestBrowse.makeTestNavigatorCtrl(args);
+	def makeTNC(args: Array[String]) : DemoNavigatorCtrl = {
+		val tnc = DemoBrowser.makeDemoNavigatorCtrl(args);
 		val box1 = Boxy.boxItUp();
 		tnc.addBoxToRoot(box1, false);
 		tnc;
