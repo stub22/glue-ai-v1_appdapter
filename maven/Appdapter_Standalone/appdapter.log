@@ -1,0 +1,31 @@
+INFO main org.appdapter.standalone.demo.LoggingDemo - I have so much to tell you!
+DEBUG main org.appdapter.standalone.demo.LoggingDemo - Debuggery!
+WARN main org.appdapter.standalone.demo.LoggingDemo - Warning!  (Did you see Debuggery?)
+INFO main org.appdapter.standalone.demo.LoggingDemo - I have so much to tell you!
+DEBUG main org.appdapter.standalone.demo.LoggingDemo - Debuggery!
+WARN main org.appdapter.standalone.demo.LoggingDemo - Warning!  (Did you see Debuggery?)
+INFO main org.appdapter.standalone.demo.LoggingDemo - I have so much to tell you!
+DEBUG main org.appdapter.standalone.demo.LoggingDemo - Debuggery!
+WARN main org.appdapter.standalone.demo.LoggingDemo - Warning!  (Did you see Debuggery?)
+INFO main org.appdapter.standalone.demo.LoggingDemo - I have so much to tell you!
+DEBUG main org.appdapter.standalone.demo.LoggingDemo - Debuggery!
+WARN main org.appdapter.standalone.demo.LoggingDemo - Warning!  (Did you see Debuggery?)
+INFO main org.appdapter.standalone.demo.LoggingDemo - I have so much to tell you!
+DEBUG main org.appdapter.standalone.demo.LoggingDemo - Debuggery!
+WARN main org.appdapter.standalone.demo.LoggingDemo - Warning!  (Did you see Debuggery?)
+INFO main org.appdapter.standalone.demo.LoggingDemo - I have so much to tell you!
+DEBUG main org.appdapter.standalone.demo.LoggingDemo - Debuggery!
+WARN main org.appdapter.standalone.demo.LoggingDemo - Warning!  (Did you see Debuggery?)
+TRACE main org.appdapter.standalone.demo.LoggingDemo - Say hi to trace-y for me
+INFO main org.appdapter.standalone.demo.LoggingDemo - I have so much to tell you!
+DEBUG main org.appdapter.standalone.demo.LoggingDemo - Debuggery!
+WARN main org.appdapter.standalone.demo.LoggingDemo - Warning!  (Did you see Debuggery?)
+TRACE main org.appdapter.standalone.demo.LoggingDemo - Say hi to trace-y for me
+INFO main org.appdapter.standalone.demo.LoggingDemo - I have so much to tell you!
+DEBUG main org.appdapter.standalone.demo.LoggingDemo - Debuggery!
+WARN main org.appdapter.standalone.demo.LoggingDemo - Warning!  (Did you see Debuggery?)
+TRACE main org.appdapter.standalone.demo.LoggingDemo - Say hi to trace-y for me
+INFO main org.appdapter.standalone.demo.LoggingDemo - I have so much to tell you!
+DEBUG main org.appdapter.standalone.demo.LoggingDemo - Debuggery!
+WARN main org.appdapter.standalone.demo.LoggingDemo - Warning!  (Did you see Debuggery?)
+TRACE main org.appdapter.standalone.demo.LoggingDemo - Say hi to trace-y for me
