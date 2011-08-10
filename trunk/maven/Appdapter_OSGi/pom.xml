@@ -293,7 +293,7 @@
 								<!-- Load those same props into current context -->
 								<property file="${felix.ant.run.props}"/>
 								
-								<echo>[m-a] felix.main.jar.path=</echo> 
+								<echo>[m-a] felix.main.jar.path=${felix.main.jar.path}</echo> 
 								<echo>[m-a] felix.config.props.url=${felix.config.props.url}</echo> 	
 								<echo>[m-a] felix.jvm.args=${felix.jvm.args}</echo>
 								
