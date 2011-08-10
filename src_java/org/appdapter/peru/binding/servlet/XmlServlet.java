@@ -30,28 +30,18 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Iterator;
 
-import org.dom4j.Element;
-import org.dom4j.Document;
-import org.dom4j.DocumentHelper;
-import org.dom4j.io.XMLWriter;
-import org.dom4j.io.OutputFormat;
 
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.stream.StreamSource;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.dom4j.Document;
-import org.dom4j.io.DocumentResult;
 import org.dom4j.io.DocumentSource;
 
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintStream;
 import java.io.FileInputStream;
 
 
@@ -64,10 +54,8 @@ import org.appdapter.peru.binding.dom4j.Dom4jDoc;
 import org.appdapter.peru.core.environment.Environment;
 
 import org.appdapter.peru.binding.jena.JenaConfiguredCommandMachine;
-import org.appdapter.peru.binding.jena.JenaPulljector;
 
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.ontology.OntModelSpec;
 import org.appdapter.peru.binding.jena.ModelUtils;
 import org.appdapter.peru.binding.jena.JenaPulljector;
 
