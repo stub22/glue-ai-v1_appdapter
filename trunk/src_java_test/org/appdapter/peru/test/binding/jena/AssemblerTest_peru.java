@@ -36,12 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-
-
-
-
-
-/**  We need to test the heck out of the FileManager, Assember, and possibly OntDocumentManager,
+/**  We need to test the heck out of the FileManager, Assembler, and possibly OntDocumentManager,
  *   until all is completely understood..
  *
  * @author      Stu B. <www.texpedient.com>
