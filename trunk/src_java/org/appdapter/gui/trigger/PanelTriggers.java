@@ -16,11 +16,10 @@
 
 package org.appdapter.gui.trigger;
 
-import org.appdapter.gui.box.Box;
 import org.appdapter.gui.box.BoxPanel;
 import org.appdapter.gui.box.TriggerImpl;
 import org.appdapter.gui.box.ViewableBox;
-import org.appdapter.gui.browse.BrowseTabs;
+import org.appdapter.gui.browse.BrowseTabFuncs;
 import org.appdapter.gui.browse.DisplayContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +42,7 @@ public class PanelTriggers {
 		@Override public void fire(VB targetVB) {
 			theLogger.info(toString() + "-firing, opening box panel");
 			DisplayContext dc = targetVB.getDisplayContext();
-			BrowseTabs.openBoxPanelAndFocus(dc, targetVB, myPanelKind);
+			BrowseTabFuncs.openBoxPanelAndFocus(dc, targetVB, myPanelKind);
 		}
 	}
 	public static class CloseTrigger  <VB extends ViewableBox<TriggerImpl<VB>>> extends  TriggerImpl<VB> {
