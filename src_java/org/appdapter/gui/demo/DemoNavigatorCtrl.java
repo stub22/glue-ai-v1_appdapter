@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.appdapter.gui.main;
+package org.appdapter.gui.demo;
 
 import java.awt.BorderLayout;
 import java.awt.event.MouseAdapter;
@@ -34,7 +34,7 @@ import org.appdapter.gui.browse.TriggerMenuFactory;
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public class TestNavigatorCtrl {
+public class DemoNavigatorCtrl {
 
 
 	public		TreeModel				myTM;
@@ -44,7 +44,7 @@ public class TestNavigatorCtrl {
 	private		BrowsePanel				myBP;
 	private		JFrame					myJFrame;
 
-	public TestNavigatorCtrl(BoxContext bc, TreeModel tm, BoxTreeNode rootBTN, DisplayContextProvider dcp) {
+	public DemoNavigatorCtrl(BoxContext bc, TreeModel tm, BoxTreeNode rootBTN, DisplayContextProvider dcp) {
 		myBC = bc;
 		myTM = tm;
 		myRootBTN = rootBTN;

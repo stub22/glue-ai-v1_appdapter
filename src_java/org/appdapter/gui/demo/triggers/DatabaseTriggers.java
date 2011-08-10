@@ -14,21 +14,30 @@
  *  limitations under the License.
  */
 
-package org.appdapter.gui.main;
+package org.appdapter.gui.demo.triggers;
+
+import org.appdapter.binding.h2.DatabaseConnector;
+import org.appdapter.demo.DemoDatabase;
+import org.appdapter.gui.box.Box;
+import org.appdapter.gui.box.TriggerImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public class ScriptMe {
-	public static String yoYoYo(String arg) {
-		return "she said [" + arg + "] - yo?";
+public class DatabaseTriggers {
+	static Logger theLogger = LoggerFactory.getLogger(DatabaseTriggers.class);
+	
+	public enum Kind {
+		OPEN,
+		CLOSE
 	}
-	public static void main(String[] args) {
-		try {
-			System.out.println("ScriptMe: " + yoYoYo("whatevs"));
-		} catch(Throwable t) {
-			System.out.println("Caught: " + t);
-			t.printStackTrace();
+
+	public static class InitTrigger<BT extends Box<TriggerImpl<BT>>> extends  TriggerImpl<BT> {
+		@Override public void fire(BT targetBox) {
+			theLogger.info(toString() + "-initing");
+			DatabaseConnector dbc = DemoDatabase.initConnector();
 		}
-    }
+	}
 }

@@ -23,7 +23,7 @@ import javax.swing.JTabbedPane;
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public class BrowseTabs {
+public class BrowseTabFuncs {
 	protected static boolean isBoxTabKnown(DisplayContext dc, BoxPanel bp) {
 		JTabbedPane tabbedPane = dc.getBoxPanelTabPane();
 		return ((tabbedPane.indexOfComponent(bp) >= 0) ? true : false);
