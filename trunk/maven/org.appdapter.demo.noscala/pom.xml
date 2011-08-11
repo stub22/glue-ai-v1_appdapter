@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.appdapter</groupId>
-	<artifactId>Appdapter_JavaOnlyStandalone</artifactId>
+	<artifactId>org.appdapter.demo.noscala</artifactId>
 	<version>1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>${project.artifactId}</name>
@@ -20,6 +20,10 @@
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<netbeans.hint.license>appdapter-apache20</netbeans.hint.license>
+	</properties>	
 	
 	<build>
 		<sourceDirectory>../../src_java</sourceDirectory>
@@ -51,10 +55,7 @@
 	</build>
 
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<netbeans.hint.license>appdapter-apache20</netbeans.hint.license>
-	</properties>	
+
 
 	<dependencies>
 		<!-- In this project, we make maximum use of Maven's transitive dependency fetching.

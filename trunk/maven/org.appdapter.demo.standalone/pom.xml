@@ -4,12 +4,12 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.appdapter</groupId>
-	<artifactId>Appdapter_Standalone</artifactId>
+	<artifactId>org.appdapter.demo.standalone</artifactId>
 	<version>1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>${project.artifactId}</name>
 	<url>http://www.appdapter.org</url>
-	<description>Appdapter Maven project wrapping JavaAndScala, produces jar, not bundle, with a concrete SLF4J binding.</description>
+	<description>Wraps lib.core and adds a concrete SLF4J binding to Log4J.</description>
 	<inceptionYear>2011</inceptionYear>
 	<licenses>
 		<license>
@@ -39,7 +39,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>Appdapter_ScalaAndJava</artifactId>
+			<artifactId>org.appdapter.lib.core</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
