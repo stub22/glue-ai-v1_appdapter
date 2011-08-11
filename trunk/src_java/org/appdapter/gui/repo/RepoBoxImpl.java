@@ -16,6 +16,8 @@
 
 package org.appdapter.gui.repo;
 
+import org.appdapter.binding.jena.sdb.GraphUploadTask;
+import org.appdapter.binding.jena.model.GraphUploadMonitor;
 import arq.cmdline.ModTime;
 import org.appdapter.gui.box.BoxImpl;
 import org.appdapter.gui.box.Trigger;
@@ -26,9 +28,12 @@ import com.hp.hpl.jena.graph.Triple;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.sdb.SDBFactory;
 import com.hp.hpl.jena.sdb.Store;
+import com.hp.hpl.jena.sdb.shared.Env;
 import com.hp.hpl.jena.sdb.util.StoreUtils;
 import com.hp.hpl.jena.sparql.util.Timer;
+import com.hp.hpl.jena.util.FileManager;
 import com.hp.hpl.jena.util.FileUtils;
+import com.hp.hpl.jena.util.LocatorClassLoader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -52,6 +57,9 @@ public class RepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<TT>>> extends 
 	}
 	@Override public void mountStoreUsingFileConfig(String storeConfigPath) {
 		theLogger.info("Mounting store using fileConfigPath[" + storeConfigPath + "]");
+		FileManager fmgr = Env.fileManager();
+		ClassLoader classLoader = getClass().getClassLoader();
+		fmgr.addLocatorClassLoader(classLoader);
 		Store store = SDBFactory.connectStore(storeConfigPath);
 		setStore(store);
 	}
@@ -93,175 +101,10 @@ public class RepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<TT>>> extends 
 	public String getUploadHomePath() {
 		return ".";
 	}
-	@Override public void uploadModelFile(String fileName, String graphName, boolean replace) {
-		UploadTask ut = new UploadTask();
-		ut.loadOne(myStore, fileName, graphName, replace);
+	@Override public void importGraphFromURL(String graphName, String sourceURL, boolean replaceTgtFlag) {
+		GraphUploadTask ut = new GraphUploadTask();
+		ut.loadOneGraphIntoStoreFromURL(myStore, graphName, sourceURL, replaceTgtFlag);
 	}
-	public static class UploadTask {
-		ModTime modTime = new ModTime();
 
 
-		protected ModTime getModTime() {
-			return modTime;
-		}
-
-		protected boolean isVerbose() {
-			return true;
-		}
-
-		protected boolean isQuiet() {
-			return false;
-		}
-		public Graph getGraph(Store store, String graphName) {
-			if (graphName == null) {
-				return SDBFactory.connectDefaultGraph(store);
-			} else {
-				return SDBFactory.connectNamedGraph(store, graphName);
-			}
-		}
-
-		public Model getModel(Store store, String graphName) {
-			if (graphName == null) {
-				return SDBFactory.connectDefaultModel(store);
-			} else {
-				return SDBFactory.connectNamedModel(store, graphName);
-			}
-		}
-// Code below here is mostly copied from sdbload.java
-
-		private void loadOne(Store store, String filename, String graphName, boolean replace) {
-			Monitor monitor = null;
-
-			Model model = getModel(store, graphName);
-			Graph graph = model.getGraph();
-
-			if (isVerbose() && replace) {
-				System.out.println("Emptying: " + filename);
-			}
-			if (replace) {
-				model.removeAll();
-			}
-
-			if (isVerbose() || getModTime().timingEnabled()) {
-				System.out.println("Start load: " + filename);
-			}
-			if (getModTime().timingEnabled()) {
-				monitor = new Monitor(store.getLoader().getChunkSize(), isVerbose());
-				graph.getEventManager().register(monitor);
-			}
-
-			// Crude but convenient
-			if (filename.indexOf(':') == -1) {
-				filename = "file:" + filename;
-			}
-
-			String lang = FileUtils.guessLang(filename);
-
-			// Always time, only print if enabled.
-			getModTime().startTimer();
-
-			// Load here
-			model.read(filename, lang);
-
-			long timeMilli = getModTime().endTimer();
-
-			if (monitor != null) {
-				System.out.println("Added " + monitor.addCount + " triples");
-
-				if (getModTime().timingEnabled() && !isQuiet()) {
-					System.out.printf("Loaded in %.3f seconds [%d triples/s]\n",
-							timeMilli / 1000.0, (1000 * monitor.addCount / timeMilli));
-				}
-				graph.getEventManager().unregister(monitor);
-			}
-		}
-
-		static class Monitor implements GraphListener {
-
-			int addNotePoint;
-			long addCount = 0;
-			int outputCount = 0;
-			private Timer timer = null;
-			private long lastTime = 0;
-			private boolean displayMemory = false;
-
-			Monitor(int addNotePoint, boolean displayMemory) {
-				this.addNotePoint = addNotePoint;
-				this.displayMemory = displayMemory;
-				this.timer = new Timer();
-				this.timer.startTimer();
-			}
-
-			public void notifyAddTriple(Graph g, Triple t) {
-				addEvent(t);
-			}
-
-			public void notifyAddArray(Graph g, Triple[] triples) {
-				for (Triple t : triples) {
-					addEvent(t);
-				}
-			}
-
-			@SuppressWarnings("unchecked")
-			public void notifyAddList(Graph g, List triples) {
-				notifyAddIterator(g, triples.iterator());
-			}
-
-			@SuppressWarnings("unchecked")
-			public void notifyAddIterator(Graph g, Iterator it) {
-				for (; it.hasNext();) {
-					addEvent((Triple) it.next());
-				}
-			}
-
-			public void notifyAddGraph(Graph g, Graph added) {
-			}
-
-			public void notifyDeleteTriple(Graph g, Triple t) {
-			}
-
-			@SuppressWarnings("unchecked")
-			public void notifyDeleteList(Graph g, List L) {
-			}
-
-			public void notifyDeleteArray(Graph g, Triple[] triples) {
-			}
-
-			@SuppressWarnings("unchecked")
-			public void notifyDeleteIterator(Graph g, Iterator it) {
-			}
-
-			public void notifyDeleteGraph(Graph g, Graph removed) {
-			}
-
-			public void notifyEvent(Graph source, Object value) {
-			}
-
-			private void addEvent(Triple t) {
-				addCount++;
-				if (addNotePoint > 0 && (addCount % addNotePoint) == 0) {
-					outputCount++;
-					long soFar = timer.readTimer();
-					long thisTime = soFar - lastTime;
-
-					// *1000L is milli to second conversion
-					//   addNotePoint/ (thisTime/1000L)
-					long tpsBatch = (addNotePoint * 1000L) / thisTime;
-					long tpsAvg = (addCount * 1000L) / soFar;
-
-					String msg = String.format("Add: %,d triples  (Batch: %d / Run: %d)", addCount, tpsBatch, tpsAvg);
-					if (displayMemory) {
-						long mem = Runtime.getRuntime().totalMemory();
-						long free = Runtime.getRuntime().freeMemory();
-						msg = msg + String.format("   [M:%,d/F:%,d]", mem, free);
-					}
-					System.out.println(msg);
-					if (outputCount > 0 && (outputCount % 10) == 0) {
-						System.out.printf("  Elapsed: %.1f seconds\n", (soFar / 1000F));
-					}
-					lastTime = soFar;
-				}
-			}
-		}
-	}
 }
