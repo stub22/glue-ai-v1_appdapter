@@ -50,9 +50,9 @@ import org.slf4j.LoggerFactory;
 /**
  * JUnit-Test-Suite for ARQ (+inference), based on the Jena Junit/query code.
  *
- * @author      Stu B. <www.texpedient.com>, based on code by Andy Seaborne of HP.
+ * @author      Stu B. <www.texpedient.com> of Scrutable, based on code by Andy Seaborne of HP.
  * @version     @PERUSER_VERSION@
- * @copyright   derivative(HP, Appdapter)
+ * @copyright   derivative(HP, Scrutable)
  */
 public class PeruserARQTestSuite extends TestSuite {
 	private static Logger 				theLogger = LoggerFactory.getLogger(PeruserARQTestSuite.class);
