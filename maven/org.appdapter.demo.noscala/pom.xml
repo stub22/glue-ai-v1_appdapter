@@ -77,20 +77,6 @@
 			<artifactId>dom4j</artifactId>
 			<version>1.6.1</version>
 		</dependency>
-		<dependency>
-			<!--  Used in peru.binding.servlet -->
-			<groupId>javax.servlet</groupId>
-			<artifactId>servlet-api</artifactId>
-			<version>2.5</version>
-			<scope>provided</scope>
-		</dependency>
-	
-		<dependency>
-			<!--  Used in peru.binding.xmldb -->			
-			<groupId>xmldb</groupId>
-			<artifactId>xmldb-api</artifactId>
-			<version>20021118</version>
-		</dependency>
 		
 		<!-- *************** Runtime Deps *********************** -->
 

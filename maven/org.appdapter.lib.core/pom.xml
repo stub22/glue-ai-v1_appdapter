@@ -43,6 +43,7 @@ central repo.
 	<groupId>org.appdapter</groupId>
 	<artifactId>org.appdapter.lib.core</artifactId>
 	<version>1.0-SNAPSHOT</version>
+	<packaging>jar</packaging>
 	<name>${project.artifactId}</name>
 	<url>http://www.appdapter.org</url>
 	<description>Appdapter Maven project including Java and Scala, produces jar, not bundle.  Excludes concrete SLF4J binding.</description>
@@ -158,20 +159,6 @@ central repo.
 				</exclusion>
 			</exclusions>
 		</dependency>
-	
-		<dependency>
-			<!--  Used in peru.binding.servlet -->
-			<groupId>javax.servlet</groupId>
-			<artifactId>servlet-api</artifactId>
-			<version>2.5</version>
-		</dependency>
-	
-		<dependency>
-			<!--  Used in peru.binding.xmldb -->			
-			<groupId>xmldb</groupId>
-			<artifactId>xmldb-api</artifactId>
-			<version>20021118</version>
-		</dependency>
 		
 		<!-- *************** Runtime Deps *********************** -->
 		<dependency>
@@ -235,53 +222,7 @@ central repo.
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<dependency>
-			<groupId>com.hp.hpl.jena</groupId>
-			<artifactId>jena</artifactId>
-			<version>2.6.4</version>
-			<classifier>tests</classifier>
-			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<artifactId>log4j</artifactId>
-					<groupId>log4j</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>xercesImpl</artifactId>
-					<groupId>xerces</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>icu4j</artifactId>
-					<groupId>com.ibm.icu</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>slf4j-log4j12</artifactId>
-					<groupId>org.slf4j</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-			<dependency>
-			<groupId>com.hp.hpl.jena</groupId>
-			<artifactId>arq</artifactId>
-			<version>2.8.7</version>
-			<classifier>tests</classifier>
-			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<artifactId>log4j</artifactId>
-					<groupId>log4j</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>lucene-core</artifactId>
-					<groupId>org.apache.lucene</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>wstx-asl</artifactId>
-					<groupId>org.codehaus.woodstox</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>	
-		
+	
 		<dependency>
 			<groupId>org.scala-tools.testing</groupId>
 			<artifactId>specs_${scala.version}</artifactId>
