@@ -27,5 +27,5 @@ public interface MutableRepoBox<TT extends Trigger<? extends RepoBox<TT>>>  exte
 	public void mountStoreUsingFileConfig(String storeConfigPath);
 	public void formatStoreIfNeeded();
 
-	public void uploadModelFile(String fileName, String graphName, boolean replace);
+	public void importGraphFromURL(String tgtGraphName, String sourceURL, boolean replaceTgtFlag);
 }

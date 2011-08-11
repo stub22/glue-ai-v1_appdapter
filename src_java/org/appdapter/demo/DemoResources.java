@@ -50,12 +50,20 @@ public class DemoResources {
 	//  So instead we must rely on Jena's classpath loader, which means this method is kinda worse than useless
 	// (cuz it works great when resources are in file:myproj/classes/mypkg/thing.txt, but not after Jar-ing same project).
 
-	 * @deprecated
+	 * 
 	 */
-	public static String resolveResourcePathToURL_WhichJenaCantUseInCaseOfJarFileRes(String resURL_path) {
-		URL resURL = DemoResources.class.getResource(resURL_path);
-		theLogger.debug("Resolved " + resURL_path + " to " + resURL);
+
+	public static String makeURLforClassNeighborResPath_JenaFMCantUseButModelReaderCan(Class neighbor, String resURL_path) {
+		if (!resURL_path.startsWith("/")) {
+			theLogger.warn("Relative path class.getResource(" + resURL_path + ") will receive converted package prefix for: " + neighbor.getPackage().getName());
+		}
+		URL resURL = neighbor.getResource(resURL_path);
+		theLogger.debug(neighbor.toString() + " resolved " + resURL_path + " to " + resURL);
 		return resURL.toString();
-	}
-	
+	}	
+	public static String makeURLforClassLoaderResPath_JenaFMCantUseButModelReaderCan(ClassLoader classLoader, String resURL_path) {
+		URL resURL = classLoader.getResource(resURL_path);
+		theLogger.debug(classLoader.toString() + " resolved " + resURL_path + " to " + resURL);
+		return resURL.toString();
+	}		
 }

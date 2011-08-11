@@ -96,8 +96,14 @@ public class RepoTriggers {
 		// Want contravariance?
 		@Override public void fire(MRB targetBox) {
 			try {
-				String filePath = DemoResources.DATA_PATH; //DemoResources.resolveResourcePathToURL_WhichJenaCantUseInCaseOfJarFileRes(DemoResources.DATA_PATH);
-				targetBox.uploadModelFile(filePath, "whoopee", true);
+				String tgtGraphName = "yowza";
+				
+				// TODO - check on DemoResources.OPTIONAL_ABSOLUTE_ROOT_PATH
+				String absolutePathInNeigborClassSpace = "/" + DemoResources.DATA_PATH;
+				String dataSourceURL = 
+				DemoResources.makeURLforClassNeighborResPath_JenaFMCantUseButModelReaderCan(getClass(), absolutePathInNeigborClassSpace);
+					
+				targetBox.importGraphFromURL(tgtGraphName, dataSourceURL, true);
 			} catch (Throwable t) {
 				theLogger.error("problem in UploadTrigger", t);
 			}

@@ -153,9 +153,10 @@ public class RepoManagerPanel  extends BoxPanel<MutableRepoBox> {
 			File selectedFile = chooser.getSelectedFile();
 			String fileName = selectedFile.getPath();
 			String graphName = myTF_graphName.getText();
-			theLogger.info("User selected fileName[" + fileName + "] and graphName[" + graphName + "]");
+			String sourceURL = "file:" + fileName;
+			theLogger.info("User selected source URL [" + sourceURL + "] and target graph [" + graphName + "]");
 
-			myFocusBox.uploadModelFile("file:" + fileName, graphName, true);
+			myFocusBox.importGraphFromURL(graphName, sourceURL, true);
 			myRGTM.refreshStats(myFocusBox);
 		}
 	}//GEN-LAST:event_myBut_chooseFileActionPerformed

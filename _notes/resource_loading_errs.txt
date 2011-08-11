@@ -1,0 +1,75 @@
+System.out] - DemoBrowser.pretendToBeAwesome()
+ INFO [main] (DemoBrowser.java:44) - [SLF4J] - DemoBrowser.pretendToBeAwesome()
+ INFO [AWT-EventQueue-0] (BridgeTriggers.java:37) - MountSubmenuFromTriplesTrigger-loadSubmenus[trigger-field-summary-goes-here].fire()
+DEBUG [AWT-EventQueue-0] (DemoResources.java:38) - Resolved /org/appdapter/democonf/app/boxdemo/boxy_001.ttl to jar:file:/C:/Users/winston/.m2/repository/org/appdapter/Appdapter_ScalaAndJava/1.0-SNAPSHOT/Appdapter_ScalaAndJava-1.0-SNAPSHOT.jar!/org/appdapter/democonf/app/boxdemo/boxy_001.ttl
+ INFO [AWT-EventQueue-0] (BridgeTriggers.java:42) - Registering classloader with Jena FileManager: sun.misc.Launcher$AppClassLoader@32f4a24a
+TRACE [AWT-EventQueue-0] (SystemUtils.java:27) - Using thread classloader
+DEBUG [AWT-EventQueue-0] (FileManager.java:149) - Add location: LocatorFile
+DEBUG [AWT-EventQueue-0] (FileManager.java:149) - Add location: ClassLoaderLocator
+TRACE [AWT-EventQueue-0] (LocatorFile.java:119) - Not found: file:location-mapping.rdf
+TRACE [AWT-EventQueue-0] (LocatorClassLoader.java:53) - Failed to open: file:location-mapping.rdf
+TRACE [AWT-EventQueue-0] (LocatorFile.java:119) - Not found: file:location-mapping.n3
+TRACE [AWT-EventQueue-0] (LocatorClassLoader.java:53) - Failed to open: file:location-mapping.n3
+TRACE [AWT-EventQueue-0] (LocatorFile.java:119) - Not found: file:location-mapping.ttl
+TRACE [AWT-EventQueue-0] (LocatorClassLoader.java:53) - Failed to open: file:location-mapping.ttl
+TRACE [AWT-EventQueue-0] (LocatorFile.java:119) - Not found: file:etc/location-mapping.rdf
+TRACE [AWT-EventQueue-0] (LocatorClassLoader.java:53) - Failed to open: file:etc/location-mapping.rdf
+TRACE [AWT-EventQueue-0] (LocatorFile.java:119) - Not found: file:etc/location-mapping.n3
+TRACE [AWT-EventQueue-0] (LocatorClassLoader.java:53) - Failed to open: file:etc/location-mapping.n3
+TRACE [AWT-EventQueue-0] (LocatorFile.java:119) - Not found: file:etc/location-mapping.ttl
+TRACE [AWT-EventQueue-0] (LocatorClassLoader.java:53) - Failed to open: file:etc/location-mapping.ttl
+DEBUG [AWT-EventQueue-0] (LocationMapper.java:143) - Failed to find configuration: file:location-mapping.rdf;file:location-mapping.n3;file:location-mapping.ttl;file:etc/location-mapping.rdf;file:etc/location-mapping.n3;file:etc/location-mapping.ttl
+DEBUG [AWT-EventQueue-0] (FileManager.java:149) - Add location: LocatorFile
+DEBUG [AWT-EventQueue-0] (FileManager.java:149) - Add location: LocatorURL
+DEBUG [AWT-EventQueue-0] (FileManager.java:149) - Add location: ClassLoaderLocator
+DEBUG [AWT-EventQueue-0] (FileManager.java:149) - Add location: ClassLoaderLocator
+ INFO [AWT-EventQueue-0] (BridgeTriggers.java:44) - Loading triples file: jar:file:/C:/Users/winston/.m2/repository/org/appdapter/Appdapter_ScalaAndJava/1.0-SNAPSHOT/Appdapter_ScalaAndJava-1.0-SNAPSHOT.jar!/org/appdapter/democonf/app/boxdemo/boxy_001.ttl
+DEBUG [AWT-EventQueue-0] (FileManager.java:248) - loadModel(jar:file:/C:/Users/winston/.m2/repository/org/appdapter/Appdapter_ScalaAndJava/1.0-SNAPSHOT/Appdapter_ScalaAndJava-1.0-SNAPSHOT.jar!/org/appdapter/democonf/app/boxdemo/boxy_001.ttl)
+DEBUG [AWT-EventQueue-0] (FileManager.java:465) - Not mapped: jar:file:/C:/Users/winston/.m2/repository/org/appdapter/Appdapter_ScalaAndJava/1.0-SNAPSHOT/Appdapter_ScalaAndJava-1.0-SNAPSHOT.jar!/org/appdapter/democonf/app/boxdemo/boxy_001.ttl
+DEBUG [AWT-EventQueue-0] (FileManager.java:377) - Syntax guess: TURTLE
+TRACE [AWT-EventQueue-0] (LocatorFile.java:119) - Not found: jar:file:/C:/Users/winston/.m2/repository/org/appdapter/Appdapter_ScalaAndJava/1.0-SNAPSHOT/Appdapter_ScalaAndJava-1.0-SNAPSHOT.jar!/org/appdapter/democonf/app/boxdemo/boxy_001.ttl
+TRACE [AWT-EventQueue-0] (LocatorURL.java:37) - Not found : jar:file:/C:/Users/winston/.m2/repository/org/appdapter/Appdapter_ScalaAndJava/1.0-SNAPSHOT/Appdapter_ScalaAndJava-1.0-SNAPSHOT.jar!/org/appdapter/democonf/app/boxdemo/boxy_001.ttl
+TRACE [AWT-EventQueue-0] (LocatorClassLoader.java:46) - Not found: jar:file:/C:/Users/winston/.m2/repository/org/appdapter/Appdapter_ScalaAndJava/1.0-SNAPSHOT/Appdapter_ScalaAndJava-1.0-SNAPSHOT.jar!/org/appdapter/democonf/app/boxdemo/boxy_001.ttl
+TRACE [AWT-EventQueue-0] (LocatorClassLoader.java:46) - Not found: jar:file:/C:/Users/winston/.m2/repository/org/appdapter/Appdapter_ScalaAndJava/1.0-SNAPSHOT/Appdapter_ScalaAndJava-1.0-SNAPSHOT.jar!/org/appdapter/democonf/app/boxdemo/boxy_001.ttl
+DEBUG [AWT-EventQueue-0] (FileManager.java:387) - Failed to locate 'jar:file:/C:/Users/winston/.m2/repository/org/appdapter/Appdapter_ScalaAndJava/1.0-SNAPSHOT/Appdapter_ScalaAndJava-1.0-SNAPSHOT.jar!/org/appdapter/democonf/app/boxdemo/boxy_001.ttl'
+Exception in thread "AWT-EventQueue-0" com.hp.hpl.jena.shared.NotFoundException: Not found: jar:file:/C:/Users/winston/.m2/repository/org/appdapter/Appdapter_ScalaAndJava/1.0-SNAPSHOT/Appdapter_ScalaAndJava-1.0-SNAPSHOT.jar!/org/appdapter/democonf/app/boxdemo/boxy_001.ttl
+	at com.hp.hpl.jena.util.FileManager.readModelWorker(FileManager.java:388)
+	at com.hp.hpl.jena.util.FileManager.loadModelWorker(FileManager.java:299)
+	at com.hp.hpl.jena.util.FileManager.loadModel(FileManager.java:250)
+	at org.appdapter.binding.jena.model.AssemblerUtils.buildAllObjectsInRdfFile(AssemblerUtils.java:50)
+	
+	
+	
+	
+	
+	
+	INFO [AWT-EventQueue-0] (BridgeTriggers.java:55) - Loaded object which is not a mutable box: DumpTrigger-trig 001-a (dump)[trigger-field-summary-goes-here]
+ INFO [AWT-EventQueue-0] (DatabaseTriggers.java:39) - InitTrigger-openDB[trigger-field-summary-goes-here]-initing
+ INFO [AWT-EventQueue-0] (DemoDatabase.java:41) - org.appdapter.demo.DemoDatabase.initConnector() appears to have succeeded, try a web connection using H2 console to: org.appdapter.binding.h2.DatabaseConnector$Config@425113f0
+ INFO [AWT-EventQueue-0] (RepoBoxImpl.java:54) - Mounting store using fileConfigPath[org/appdapter/democonf/store/appdemo_sdb_h2.ttl]
+DEBUG [AWT-EventQueue-0] (ARQMgt.java:87) - Register MBean: com.hp.hpl.jena.sparql.system:type=Context
+DEBUG [AWT-EventQueue-0] (ARQMgt.java:87) - Register MBean: com.hp.hpl.jena.sparql.system:type=Engine
+DEBUG [AWT-EventQueue-0] (ARQMgt.java:87) - Register MBean: com.hp.hpl.jena.sparql.system:type=SystemInfo
+DEBUG [AWT-EventQueue-0] (ARQMgt.java:87) - Register MBean: com.hp.hpl.jena.sparql.system:type=SystemInfo
+DEBUG [AWT-EventQueue-0] (ARQMgt.java:87) - Register MBean: org.openjena.riot.system:type=SystemInfo
+DEBUG [AWT-EventQueue-0] (ARQMgt.java:87) - Register MBean: com.hp.hpl.jena.sdb.system:type=SystemInfo
+DEBUG [AWT-EventQueue-0] (FileManager.java:149) - Add location: LocatorFile
+DEBUG [AWT-EventQueue-0] (FileManager.java:248) - loadModel(org/appdapter/democonf/store/appdemo_sdb_h2.ttl)
+DEBUG [AWT-EventQueue-0] (FileManager.java:377) - Syntax guess: TURTLE
+TRACE [AWT-EventQueue-0] (LocatorFile.java:119) - Not found: org/appdapter/democonf/store/appdemo_sdb_h2.ttl
+DEBUG [AWT-EventQueue-0] (FileManager.java:387) - Failed to locate 'org/appdapter/democonf/store/appdemo_sdb_h2.ttl'
+Exception in thread "AWT-EventQueue-0" com.hp.hpl.jena.shared.NotFoundException: Not found: org/appdapter/democonf/store/appdemo_sdb_h2.ttl
+	at com.hp.hpl.jena.util.FileManager.readModelWorker(FileManager.java:388)
+	at com.hp.hpl.jena.util.FileManager.loadModelWorker(FileManager.java:299)
+	at com.hp.hpl.jena.util.FileManager.loadModel(FileManager.java:250)
+	at com.hp.hpl.jena.sdb.StoreDesc.read(StoreDesc.java:45)
+	at com.hp.hpl.jena.sdb.store.StoreFactory.create(StoreFactory.java:49)
+	at com.hp.hpl.jena.sdb.SDBFactory.connectStore(SDBFactory.java:100)
+	at org.appdapter.gui.repo.RepoBoxImpl.mountStoreUsingFileConfig(RepoBoxImpl.java:55)
+	at org.appdapter.gui.demo.triggers.RepoTriggers$OpenTrigger.fire(RepoTriggers.java:52)
+	at org.appdapter.gui.demo.triggers.RepoTriggers$OpenTrigger.fire(RepoTriggers.java:48)
+	at org.appdapter.gui.browse.TriggerMenuFactory$2.actionPerformed(TriggerMenuFactory.java:89)
+	at javax.swing.AbstractButton.fireActionPerformed(AbstractButton.java:1995)
+	
+	
+	
