@@ -26,9 +26,9 @@ import static org.junit.Assert.*;
  *
  * @author Stu B. <www.texpedient.com>
  */
-public class IsThisThingOn {
+public class BreakfastTest {
 	
-	public IsThisThingOn() {
+	public BreakfastTest() {
 	}
 
 	@BeforeClass
