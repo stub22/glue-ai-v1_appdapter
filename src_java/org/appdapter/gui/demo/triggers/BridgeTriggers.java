@@ -32,18 +32,18 @@ import org.slf4j.LoggerFactory;
 public class BridgeTriggers {
 	static Logger theLogger = LoggerFactory.getLogger(BridgeTriggers.class);
 
-	static String	DEMO_MENU_ASSEMBLY_RESOURCE_PATH = DemoResources.MENU_ASSEMBLY_PATH;
-
 	public static class MountSubmenuFromTriplesTrigger<BT extends Box<TriggerImpl<BT>>> extends  TriggerImpl<BT> {
 		@Override public void fire(BT targetBox) {
-			theLogger.info(toString() + "-mounting-submenu");
+			theLogger.info(toString() + ".fire()");
 			BoxContext bc = targetBox.getBoxContext();
 
-			String triplesURL = RepoTriggers.resolveResourceURL(DEMO_MENU_ASSEMBLY_RESOURCE_PATH);
-			theLogger.info("[SLF4J] resolved resource URL: " + triplesURL);
-			System.out.println("[System.out] resolved resource URL: " + triplesURL);
-			ClassLoader cl = getClass().getClassLoader();
-			AssemblerUtils.registerClassLoader(cl);
+			String triplesURL = DemoResources.MENU_ASSEMBLY_PATH; // DemoResources.resolveResourceURL(DemoResources.MENU_ASSEMBLY_PATH);
+			triplesURL = "org/appdapter/democonf/app/boxdemo/boxy_001.ttl";
+			System.out.println("Resolved triplesURL: " + triplesURL);
+//			ClassLoader cl = DemoResources.class.getClassLoader();
+//			theLogger.info("Registering classloader with Jena FileManager: " + cl);
+//			AssemblerUtils.registerClassLoader(cl);
+			theLogger.info("Loading triples file: " + triplesURL);
 			Set<Object> loadedStuff = AssemblerUtils.buildAllObjectsInRdfFile(triplesURL);
 			theLogger.info("Loaded " + loadedStuff.size() + " objects");
 			for (Object o : loadedStuff) {
