@@ -4,9 +4,9 @@
 
     <groupId>org.appdapter</groupId>
     <artifactId>ext.bundle.osgi.common</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>bundle</packaging>
-	<name>${project.artifactId}</name>
+	<name>${project.artifactId} - Platform dependency wrapper - of dubious value, so far!</name>
 	<url>http://www.appdapter.org</url>
 	<description>This bundle sets up dependencies on specific versions of OSGi common components.
 				It doesn't really work right yet, since the deps are marked "provided" and are not propagated
@@ -19,7 +19,10 @@
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
-
+	<scm>
+		<connection>scm:svn:https://subversion.assembla.com/svn/appdapter/trunk/maven/${project.artifactId}</connection>
+	</scm>
+	
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
