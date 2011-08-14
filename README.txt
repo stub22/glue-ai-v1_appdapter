@@ -8,6 +8,8 @@ centric computing, with particular focus on semantic web capabilities.
 To learn more about the software, see the website at:
 http://www.appdapter.org
 
-You can use this software in both binary and source code forms.
-
 Appdapter binaries are available via the central maven repository.
+
+See:
+    
+ https://www.assembla.com/spaces/appdapter/wiki/GettingStarted
