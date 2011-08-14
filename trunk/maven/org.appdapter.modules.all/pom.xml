@@ -15,7 +15,7 @@
 	<parent>
 		<groupId>org.appdapter</groupId>
 		<artifactId>org.appdapter.project.root</artifactId>
-		<version>1.0.1-SNAPSHOT</version>
+		<version>1.0.1</version>
 		<relativePath>../../pom.xml</relativePath>
 	</parent>  
 	
