@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0                       http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	
 	<!--
@@ -24,7 +24,7 @@ Version less parent will be allowed in Maven 3.1.
 -->
 	<groupId>org.appdapter</groupId>
 	<artifactId>org.appdapter.modules.all</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<packaging>pom</packaging>
 	<name>${project.artifactId} - Root Module</name>
 	<description>Root ancestor pom.xml for all Appdapter modules</description>
@@ -54,8 +54,8 @@ Version less parent will be allowed in Maven 3.1.
 		<scala.version>2.8.1</scala.version>
 	</properties>		
 	<scm>
-		<connection>scm:svn:https://subversion.assembla.com/svn/appdapter/trunk/maven/${project.artifactId}</connection>
-		<url>https://www.assembla.com/code/appdapter/subversion/nodes/trunk/maven/${project.artifactId}</url>
+		<connection>scm:svn:https://subversion.assembla.com/svn/appdapter/tags/v1.0.0/${project.artifactId}</connection>
+		<url>https://www.assembla.com/code/appdapter/subversion/nodes/tags/v1.0.0/${project.artifactId}</url>
 	</scm>
 	<build>
 		
