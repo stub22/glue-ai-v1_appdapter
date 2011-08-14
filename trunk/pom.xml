@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	
+	<!--
+	
+	This project is used only for releasing to Maven central.
+	It's purpose is to include all our source directories in the folder which gets 
+	tagged by release:prepare and checked-out+built+delivered by release:perform.
+	
+	Using Sonatype parent as described here:
+		https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide#SonatypeOSSMavenRepositoryUsageGuide-7a.1.POMandsettingsconfig
+		
+	Their pom.xml file is viewable here:
+	
+	http://repo1.maven.org/maven2/org/sonatype/oss/oss-parent/7/oss-parent-7.pom
+	-->
+  <parent>
+    <groupId>org.sonatype.oss</groupId>
+    <artifactId>oss-parent</artifactId>
+    <version>7</version>
+  </parent>	
+	
+<!--
+http://stackoverflow.com/questions/3684664/maven-property-substitution-not-done-for-project-version-tag-of-pom/3685248#3685248
+
+hard code the version in the top project/version element.
+hard code the version in the project/parent/version element of children.
+children inherit the version unless they want to override it
+use ${project.groupId} and ${project.version} for inter module dependencies.	
+
+Version less parent will be allowed in Maven 3.1.
+-->
+	<groupId>org.appdapter</groupId>
+	<artifactId>org.appdapter.project.root</artifactId>
+	<version>1.0.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<name>${project.artifactId} - Project Root</name>
+	<description>Project Root Folder pom.xml - includes all code + doc directories when snapped.</description>
+	<url>http://www.appdapter.org</url>
+	<inceptionYear>2010</inceptionYear>
+	<licenses>
+		<license>
+			<name>Apache License, Version 2.0</name>
+			<url>http://www.appdapter.org/license.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>	
+	<modules>
+		<module>maven/org.appdapter.modules.all</module>	
+	</modules>
+	<properties>
+	</properties>		
+	<scm>
+		<connection>scm:svn:https://subversion.assembla.com/svn/appdapter/trunk/</connection>
+		<developerConnection>scm:svn:https://subversion.assembla.com/svn/appdapter/trunk/</developerConnection>
+		<url>https://www.assembla.com/code/appdapter/subversion/nodes/trunk/</url>
+	</scm>
+	<build>
+		
+		<pluginManagement>
+			<plugins>
+			<!-- Supplied by sonatype. 
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-gpg-plugin</artifactId>
+					<executions>
+						<execution>
+							<id>sign-artifacts</id>
+							<phase>verify</phase>
+							<goals>
+								<goal>sign</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+			--> 
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-release-plugin</artifactId>
+					<configuration>
+						<autoVersionSubmodules>true</autoVersionSubmodules>
+						<!-- New in plugin version 2.2, but does not work correctly yet.
+						See:   https://jira.codehaus.org/browse/MRELEASE-695
+						<tagNameFormat>v@{project.version}</tagNameFormat>
+						 -->
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+		<plugins>
+	<!-- These are specified for us by sonatype oss-7 pom.xml.
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>2.1.2</version>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>jar-no-fork</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.8</version>
+				<configuration>
+				</configuration>
+				<executions>
+					<execution>
+						<id>attach-javadoc</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>				
+			</plugin>	
+		-->
+		</plugins>
+	</build>
+</project>

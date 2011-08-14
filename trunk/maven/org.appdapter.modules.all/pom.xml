@@ -5,12 +5,19 @@
 	<!--
 		Using Sonatype parent as described here:
 		https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide#SonatypeOSSMavenRepositoryUsageGuide-7a.1.POMandsettingsconfig
-	-->
+	
   <parent>
     <groupId>org.sonatype.oss</groupId>
     <artifactId>oss-parent</artifactId>
     <version>7</version>
   </parent>	
+  -->
+	<parent>
+		<groupId>org.appdapter</groupId>
+		<artifactId>org.appdapter.project.root</artifactId>
+		<version>1.0.1-SNAPSHOT</version>
+		<relativePath>../../pom.xml</relativePath>
+	</parent>  
 	
 <!--
 http://stackoverflow.com/questions/3684664/maven-property-substitution-not-done-for-project-version-tag-of-pom/3685248#3685248
@@ -22,12 +29,16 @@ use ${project.groupId} and ${project.version} for inter module dependencies.
 
 Version less parent will be allowed in Maven 3.1.
 -->
+<!--
 	<groupId>org.appdapter</groupId>
+		<version>1.0.1-SNAPSHOT</version>
+-->		
 	<artifactId>org.appdapter.modules.all</artifactId>
-	<version>1.0.1-SNAPSHOT</version>
+
 	<packaging>pom</packaging>
-	<name>${project.artifactId} - Root Module</name>
-	<description>Root ancestor pom.xml for all Appdapter modules</description>
+	<name>${project.artifactId} - "All Modules" parent.</name>
+	<description>Ancestor pom.xml for all Appdapter modules, includes all build config.  
+			Is not the root for release purposes.</description>
 	<url>http://www.appdapter.org</url>
 	<inceptionYear>2010</inceptionYear>
 	<licenses>
@@ -52,12 +63,14 @@ Version less parent will be allowed in Maven 3.1.
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<netbeans.hint.license>appdapter-apache20</netbeans.hint.license>
 		<scala.version>2.8.1</scala.version>
-	</properties>		
+	</properties>	
+	<!--
 	<scm>
 		<connection>scm:svn:https://subversion.assembla.com/svn/appdapter/trunk/maven/org.appdapter.modules.all</connection>
 		<developerConnection>scm:svn:https://subversion.assembla.com/svn/appdapter/trunk/maven/org.appdapter.modules.all</developerConnection>
 		<url>https://www.assembla.com/code/appdapter/subversion/nodes/trunk/maven/org.appdapter.modules.all</url>
 	</scm>
+	-->
 	<build>
 		
 		<pluginManagement>
@@ -88,33 +101,12 @@ Version less parent will be allowed in Maven 3.1.
 						<skipTests>true</skipTests>
 					</configuration>
 				</plugin>				
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-gpg-plugin</artifactId>
-					<executions>
-						<execution>
-							<id>sign-artifacts</id>
-							<phase>verify</phase>
-							<goals>
-								<goal>sign</goal>
-							</goals>
-						</execution>
-					</executions>
-				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-release-plugin</artifactId>
-					<configuration>
-						<autoVersionSubmodules>true</autoVersionSubmodules>
-						<!-- New in plugin version 2.2, but does not work correctly yet.
-						See:   https://jira.codehaus.org/browse/MRELEASE-695
-						<tagNameFormat>v@{project.version}</tagNameFormat>
-						 -->
-					</configuration>
-				</plugin>
+
+
 			</plugins>
 		</pluginManagement>
 		<plugins>
+			<!--
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
@@ -146,6 +138,7 @@ Version less parent will be allowed in Maven 3.1.
 					</execution>
 				</executions>				
 			</plugin>	
+			-->
 		</plugins>
 	</build>
 </project>
