@@ -4,7 +4,7 @@
 
     <groupId>org.appdapter</groupId>
     <artifactId>ext.bundle.felix.shell</artifactId>
-    <version>1.0.0</version>
+    <version>1.0-SNAPSHOT</version>
     <packaging>bundle</packaging>
 	<name>${project.artifactId} - felix/gogo/remote shell launcher</name>
 	<url>http://www.appdapter.org</url>
@@ -18,6 +18,14 @@
 			<distribution>repo</distribution>
 		</license>
 	</licenses>	
+<!--
+Where connection requires read access for Maven to be able to find the source code (for example, an update), 
+developerConnection requires a connection that will give write access. 
+
+-->
+	<scm>
+		<connection>scm:svn:https://subversion.assembla.com/svn/appdapter/trunk</connection>
+	</scm>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
