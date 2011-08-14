@@ -55,6 +55,7 @@ Version less parent will be allowed in Maven 3.1.
 	</properties>		
 	<scm>
 		<connection>scm:svn:https://subversion.assembla.com/svn/appdapter/tags/v1.0.0/${project.artifactId}</connection>
+		<developerConnection>${project.scm.connection}</developerConnection>
 		<url>https://www.assembla.com/code/appdapter/subversion/nodes/tags/v1.0.0/${project.artifactId}</url>
 	</scm>
 	<build>
