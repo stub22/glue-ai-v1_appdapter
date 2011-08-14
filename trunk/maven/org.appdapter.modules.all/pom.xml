@@ -24,7 +24,7 @@ Version less parent will be allowed in Maven 3.1.
 -->
 	<groupId>org.appdapter</groupId>
 	<artifactId>org.appdapter.modules.all</artifactId>
-	<version>1.0.0</version>
+	<version>1.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>${project.artifactId} - Root Module</name>
 	<description>Root ancestor pom.xml for all Appdapter modules</description>
@@ -54,9 +54,9 @@ Version less parent will be allowed in Maven 3.1.
 		<scala.version>2.8.1</scala.version>
 	</properties>		
 	<scm>
-		<connection>scm:svn:https://subversion.assembla.com/svn/appdapter/tags/v1.0.0/${project.artifactId}</connection>
-		<developerConnection>${project.scm.connection}/tags/v1.0.0</developerConnection>
-		<url>https://www.assembla.com/code/appdapter/subversion/nodes/tags/v1.0.0/${project.artifactId}</url>
+		<connection>scm:svn:https://subversion.assembla.com/svn/appdapter/trunk/maven/org.appdapter.modules.all</connection>
+		<developerConnection>scm:svn:https://subversion.assembla.com/svn/appdapter/trunk/maven/org.appdapter.modules.all</developerConnection>
+		<url>https://www.assembla.com/code/appdapter/subversion/nodes/trunk/maven/org.appdapter.modules.all</url>
 	</scm>
 	<build>
 		
