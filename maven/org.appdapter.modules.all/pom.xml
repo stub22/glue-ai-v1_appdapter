@@ -45,7 +45,25 @@ Version less parent will be allowed in Maven 3.1.
 	<scm>
 		<connection>scm:svn:https://subversion.assembla.com/svn/appdapter/trunk/maven/${project.artifactId}</connection>
 	</scm>
-	
+	<profiles>
+		<profile>
+			<id>maven-release</id>
+			<modules>
+                <!-- any module not bound to default modules, such as the ones for test, release, etc... -->
+			</modules>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-release-plugin</artifactId>
+						<configuration>
+							<autoVersionSubmodules>true</autoVersionSubmodules>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>        
+		</profile>
+	</profiles>	
 	<build>
 		<pluginManagement>
 			<plugins>
