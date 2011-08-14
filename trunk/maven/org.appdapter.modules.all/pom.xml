@@ -115,6 +115,16 @@ Version less parent will be allowed in Maven 3.1.
 					</execution>
 				</executions>
 			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.8</version>
+				<configuration>
+
+				</configuration>
+			</plugin>
+	
 		</plugins>			
 	</build>
 </project>
