@@ -94,6 +94,7 @@ Version less parent will be allowed in Maven 3.1.
 					<artifactId>maven-release-plugin</artifactId>
 					<configuration>
 						<autoVersionSubmodules>true</autoVersionSubmodules>
+						<tagNameFormat>v@{project.version}</tagNameFormat>
 					</configuration>
 				</plugin>
  				
