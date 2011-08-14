@@ -1,14 +1,3 @@
-All source code, test data, and documents of the Appdapter project
-are copyright by their authors, and released as open source software
-under an Apache 2.0 license, quoted below.
-
-Essentially what this license means is that you are free to use, copy,
-modify and distribute this software, as long as you preserve our license
-notice in all files you use, copy, modify and/or distribute, and display 
-a mention of our project with Web URL www.appdapter.org prominently in 
-documentation of any software you distribute using our project as a library.
------------------------------------------------------------------------
-
   Copyright 2011 by The Appdapter Project (www.appdapter.org).
 
   Licensed under the Apache License, Version 2.0 (the "License");
