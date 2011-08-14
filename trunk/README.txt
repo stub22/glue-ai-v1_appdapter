@@ -10,6 +10,10 @@ http://www.appdapter.org
 
 Appdapter binaries are available via the central maven repository.
 
-See:
+For a general overview, see:
+
+ http://www.appdapter.org
+
+For a basic HOWTO, see:
     
- https://www.assembla.com/spaces/appdapter/wiki/GettingStarted
+ http://www.assembla.com/spaces/appdapter/wiki/GettingStarted
