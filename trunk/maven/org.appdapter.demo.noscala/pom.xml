@@ -11,11 +11,12 @@
 	<artifactId>org.appdapter.demo.noscala</artifactId>
 	<packaging>jar</packaging>
 	<name>${project.artifactId} - Demo java only</name>
-	<description>	Appdapter Maven project for Java code only, produces runnable jar with concrete SLF4J binding to Log4J.
-					Uses relative paths to source, no SVN:Externals needed.  Uses only deps to Central repo.
+	<description>Builds java code only, produces runnable jar with concrete SLF4J binding to Log4J.
+			Uses only deps to Maven-Central repo.
 	</description>
 
 	<build>
+		<!--  	Uses relative paths to source, no SVN:Externals needed.  -->
 		<sourceDirectory>../../src_java</sourceDirectory>
 		<testSourceDirectory>../../test_java</testSourceDirectory>
 		<resources>
@@ -30,7 +31,7 @@
 
 	<dependencies>
 		<!-- In this project, we make maximum use of Maven's transitive dependency fetching.
-			In the Appdapter_ScalaAndJava project (and all bundles), we are much more
+			In the org.appdapter.lib.core project (and all bundles), we are much more
 			careful with marking deps by explicit scope and version
 		-->
 		<dependency>
@@ -53,7 +54,7 @@
 
 			<!-- In THIS project, we do not make a point of declaring
 				our transitive runtime deps.
-				That IS done, however, in Appdapter_ScalaAndJava
+				That IS done, however, in org.appdapter.lib.core
 			-->
 		
 		<!-- *************** Test Deps *********************** -->
