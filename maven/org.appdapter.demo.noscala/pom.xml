@@ -2,29 +2,19 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-
-	<groupId>org.appdapter</groupId>
+	<parent>
+		<groupId>org.appdapter</groupId>
+		<artifactId>org.appdapter.modules.demo</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+		<relativePath>../org.appdapter.modules.demo/pom.xml</relativePath>
+	</parent>	
 	<artifactId>org.appdapter.demo.noscala</artifactId>
-	<version>1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
-	<name>${project.artifactId}</name>
-	<url>http://www.appdapter.org</url>
+	<name>${project.artifactId} - Demo java only</name>
 	<description>	Appdapter Maven project for Java code only, produces runnable jar with concrete SLF4J binding to Log4J.
 					Uses relative paths to source, no SVN:Externals needed.  Uses only deps to Central repo.
 	</description>
-	<inceptionYear>2011</inceptionYear>
-	<licenses>
-		<license>
-			<name>Apache License, Version 2.0</name>
-			<url>http://www.appdapter.org/license.txt</url>
-			<distribution>repo</distribution>
-		</license>
-	</licenses>
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<netbeans.hint.license>appdapter-apache20</netbeans.hint.license>
-	</properties>	
-	
+
 	<build>
 		<sourceDirectory>../../src_java</sourceDirectory>
 		<testSourceDirectory>../../test_java</testSourceDirectory>
@@ -34,28 +24,9 @@
 			</resource>
 		</resources>
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.3.2</version>
-				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.9</version>
-				<configuration>
-					<skipTests>true</skipTests>
-				</configuration>
-			</plugin>
+
 		</plugins>
 	</build>
-
-
-
 
 	<dependencies>
 		<!-- In this project, we make maximum use of Maven's transitive dependency fetching.

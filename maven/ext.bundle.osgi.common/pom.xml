@@ -1,13 +1,16 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
-    <groupId>org.appdapter</groupId>
+	<parent>
+		<groupId>org.appdapter</groupId>
+		<artifactId>org.appdapter.modules.core</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+		<relativePath>../org.appdapter.modules.core/pom.xml</relativePath>
+	</parent>
     <artifactId>ext.bundle.osgi.common</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
     <packaging>bundle</packaging>
 	<name>${project.artifactId} - Platform dependency wrapper - of dubious value, so far!</name>
-	<url>http://www.appdapter.org</url>
+	
 	<description>This bundle sets up dependencies on specific versions of OSGi common components.
 				It doesn't really work right yet, since the deps are marked "provided" and are not propagated
 				to client projects.  You can pretty much ignore this project!</description>
