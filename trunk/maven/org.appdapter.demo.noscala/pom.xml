@@ -1,4 +1,4 @@
-
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
@@ -6,12 +6,13 @@
 		<artifactId>org.appdapter.modules.demo</artifactId>
 		<version>1.0.3-SNAPSHOT</version>
 		<relativePath>../org.appdapter.modules.demo/pom.xml</relativePath>
-	</parent>	
+	</parent>
+	
 	<artifactId>org.appdapter.demo.noscala</artifactId>
 	<packaging>jar</packaging>
-	<name>${project.artifactId} - Demo java only</name>
+	<name>${project.artifactId} - Demo mimimal java-only, single proj, short dep list  - uses log4j, no scala code, no OSGi, runs!</name>
 	<description>Builds java code only, produces runnable jar with concrete SLF4J binding to Log4J.
-			Uses only deps to Maven-Central repo.
+			Uses only deps to Maven-Central repo.  Does NOT use lib.core - compiles all code internally.
 	</description>
 
 	<build>
