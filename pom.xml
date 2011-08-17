@@ -50,7 +50,14 @@ Version-less parent will be allowed in Maven 3.1.
 		<module>maven/org.appdapter.modules.all</module>	
 	</modules>
 	<properties>
-	</properties>		
+	</properties>	
+	
+<!--
+	connection - used for read access to Maven (e.g. for svn-update)
+	developerConnection - requires a write-access connection (e.g. for svn-commit)
+	url - human-browsable view of SVN
+-->
+	
 	<scm>
 		<connection>scm:svn:https://subversion.assembla.com/svn/appdapter/trunk/</connection>
 		<developerConnection>scm:svn:https://subversion.assembla.com/svn/appdapter/trunk/</developerConnection>
