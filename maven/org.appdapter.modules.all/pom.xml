@@ -2,16 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	
-	<!--
-		Using Sonatype parent as described here:
-		https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide#SonatypeOSSMavenRepositoryUsageGuide-7a.1.POMandsettingsconfig
-	
-  <parent>
-    <groupId>org.sonatype.oss</groupId>
-    <artifactId>oss-parent</artifactId>
-    <version>7</version>
-  </parent>	
-  -->
+
 	<parent>
 		<groupId>org.appdapter</groupId>
 		<artifactId>org.appdapter.project.root</artifactId>
@@ -36,21 +27,14 @@ Version less parent will be allowed in Maven 3.1.
 	<artifactId>org.appdapter.modules.all</artifactId>
 
 	<packaging>pom</packaging>
-	<name>${project.artifactId} - "All Modules" parent.</name>
+	<name>${project.artifactId} - "All Modules" parent pom</name>
 	<description>Ancestor pom.xml for all Appdapter modules, includes all build config.  
 			Is not the root for release purposes.</description>
-	<url>http://www.appdapter.org</url>
-	<inceptionYear>2010</inceptionYear>
-	<licenses>
-		<license>
-			<name>Apache License, Version 2.0</name>
-			<url>http://www.appdapter.org/license.txt</url>
-			<distribution>repo</distribution>
-		</license>
-	</licenses>	
+
 	<modules>
-		<!--
 		<module>../org.appdapter.modules.core</module>
+		<!--
+		
 		<module>../org.appdapter.modules.felix</module>
 		-->
 		<module>../org.appdapter.modules.demo</module>

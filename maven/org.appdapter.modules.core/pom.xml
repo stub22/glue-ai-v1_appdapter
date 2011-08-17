@@ -4,12 +4,12 @@
 	<parent>
 		<groupId>org.appdapter</groupId>
 		<artifactId>org.appdapter.modules.all</artifactId>
-		<version>1.0.0-SNAPSHOT</version>
+		<version>1.0.3-SNAPSHOT</version>
 		<relativePath>../org.appdapter.modules.all/pom.xml</relativePath>
 	</parent>	
 	<artifactId>org.appdapter.modules.core</artifactId>
 	<packaging>pom</packaging>
-	<name>${project.artifactId} - Core Modules Parent</name>
+	<name>${project.artifactId} - "Core Modules" parent pom</name>
 	<description>Parent module for all Core Appdapter projects.</description>
 	<modules>
 		<module>../ext.bundle.osgi.common</module>
