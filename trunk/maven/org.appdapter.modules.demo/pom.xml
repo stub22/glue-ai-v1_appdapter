@@ -9,7 +9,7 @@
 	</parent>	
 	<artifactId>org.appdapter.modules.demo</artifactId>
 	<packaging>pom</packaging>
-	<name>${project.artifactId} - Demo Modules Parent</name>
+	<name>${project.artifactId} - "Demo Modules" parent pom</name>
 	<description>
 	</description>
 	<modules>

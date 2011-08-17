@@ -44,12 +44,12 @@ central repo.
 	<parent>
 		<groupId>org.appdapter</groupId>
 		<artifactId>org.appdapter.modules.core</artifactId>
-		<version>1.0.0-SNAPSHOT</version>
+		<version>1.0.3-SNAPSHOT</version>
 		<relativePath>../org.appdapter.modules.core/pom.xml</relativePath>
 	</parent>		
 	<artifactId>org.appdapter.lib.core</artifactId>
 	<packaging>jar</packaging>
-	<name>${project.artifactId} - Core Library</name>
+	<name>${project.artifactId} - Core classes only, not a bundle</name>
 	<url>http://www.appdapter.org</url>
 	<description>Appdapter Maven project including Java and Scala, produces jar, not bundle.  Excludes concrete SLF4J binding.</description>
 
@@ -294,3 +294,20 @@ central repo.
 		</plugins>
 	</build>
 </project>
+<!--
+/*
+ *  Copyright 2011 by The Appdapter Project (www.appdapter.org).
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+-->

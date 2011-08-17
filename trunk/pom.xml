@@ -35,7 +35,7 @@ Version-less parent will be allowed in Maven 3.1.
 	<artifactId>org.appdapter.project.root</artifactId>
 	<version>1.0.3-SNAPSHOT</version>
 	<packaging>pom</packaging>
-	<name>${project.artifactId} - Project Root Folder - Linked to Sonatype Repo Parent</name>
+	<name>${project.artifactId} - Root pom, linked to Sonatype repo parent</name>
 	<description>Project Root Folder pom.xml - includes all code + doc directories when snapped.</description>
 	<url>http://www.appdapter.org</url>
 	<inceptionYear>2010</inceptionYear>
