@@ -10,7 +10,7 @@
 
     <artifactId>org.appdapter.bundle.core</artifactId>
     <packaging>bundle</packaging>
-   	<name>${project.artifactId} - Main Bundle, "depend on me!"</name>
+   	<name>${project.artifactId} - primary OSGi Bundle, "depend on me!"</name>
 	<description>Appdapter OSGi bundle, with no dependencies on a particular OSGi framework, no SLF4J concrete binding, 
 			and no builtin shell.</description>	
 

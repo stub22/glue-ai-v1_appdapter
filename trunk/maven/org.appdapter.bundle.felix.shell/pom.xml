@@ -11,7 +11,7 @@
 
 	<artifactId>org.appdapter.bundle.felix.shell</artifactId>	
 	<packaging>bundle</packaging>
-	<name>${project.artifactId} - Test binding to felix shell, runs from repo.</name>
+	<name>${project.artifactId} - Binds to felix shell, runs from maven repo. (Apache-Felix OSGi Bundle)</name>
 	<description>Appdapter bundle for runnable OSGi deployment from repo, including Felix gogo shell and concrete SLF4J binding.</description>
 
 	<repositories>
