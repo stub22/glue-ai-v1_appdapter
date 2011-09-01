@@ -26,6 +26,18 @@
 			<groupId>${project.groupId}</groupId>
 			<artifactId>org.appdapter.bundle.core</artifactId>
 			<version>${project.version}</version>
+		 <exclusions>
+			 <!--
+		  <exclusion>
+		   <artifactId>org.appdapter.lib.core</artifactId>
+		   <groupId>org.appdapter</groupId>
+		  </exclusion>
+		  -->
+		  <exclusion>
+		   <artifactId>org.osgi.core</artifactId>
+		   <groupId>org.apache.felix</groupId>
+		  </exclusion>
+		 </exclusions>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
