@@ -37,6 +37,20 @@
             <artifactId>qpid-common</artifactId>
             <version>0.10</version>
             <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>mina-filter-ssl</artifactId>
+                    <groupId>org.apache.mina</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>mina-core</artifactId>
+                    <groupId>org.apache.mina</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>backport-util-concurrent</artifactId>
+                    <groupId>backport-util-concurrent</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.activemq</groupId>
