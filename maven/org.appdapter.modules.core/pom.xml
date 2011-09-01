@@ -16,6 +16,7 @@
 		<module>../org.appdapter.lib.core</module>
 		<module>../org.appdapter.bundle.core</module>
 		<module>../ext.bundle.jena.full</module>
+		<module>../ext.bundle.xml.dom4j</module>
 	</modules>
 
 </project>
