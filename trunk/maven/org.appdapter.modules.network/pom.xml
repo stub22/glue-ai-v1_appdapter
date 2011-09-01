@@ -13,8 +13,8 @@
 	<description>
 	</description>
 	<modules>
-		<module>../ext.bundle.apache_avro_151</module>
-		<module>../ext.bundle.apache_qpid_010</module>
+		<module>../ext.bundle.apache_avro</module>
+		<module>../ext.bundle.apache_qpid</module>
 	</modules>
 
 </project>
