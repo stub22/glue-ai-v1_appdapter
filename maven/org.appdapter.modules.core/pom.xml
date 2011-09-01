@@ -15,11 +15,7 @@
 		<module>../ext.bundle.osgi.common</module>
 		<module>../org.appdapter.lib.core</module>
 		<module>../org.appdapter.bundle.core</module>
-		
-		<!-- Coming in version 1.0.1:
 		<module>../ext.bundle.jena.full</module>
-		-->
-		
 	</modules>
 
 </project>
