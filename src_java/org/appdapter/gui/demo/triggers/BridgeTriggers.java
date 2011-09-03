@@ -16,7 +16,7 @@
 
 package org.appdapter.gui.demo.triggers;
 
-import org.appdapter.binding.jena.model.AssemblerUtils;
+import org.appdapter.bind.rdf.jena.model.AssemblerUtils;
 import org.appdapter.gui.box.Box;
 import org.appdapter.gui.box.BoxContext;
 import org.appdapter.gui.box.MutableBox;

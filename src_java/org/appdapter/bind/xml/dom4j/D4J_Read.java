@@ -14,30 +14,22 @@
  *  limitations under the License.
  */
 
-package org.appdapter.gui.demo.triggers;
+package org.appdapter.bind.xml.dom4j;
 
-import org.appdapter.bind.sql.h2.DatabaseConnector;
-import org.appdapter.demo.DemoDatabase;
-import org.appdapter.gui.box.Box;
-import org.appdapter.gui.box.TriggerImpl;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.dom4j.Document;
+import org.dom4j.DocumentHelper;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public class DatabaseTriggers {
-	static Logger theLogger = LoggerFactory.getLogger(DatabaseTriggers.class);
-	
-	public enum Kind {
-		OPEN,
-		CLOSE
+
+public class D4J_Read {
+
+	public static Document wrapAndParseXmlText(String xmlText, String wrapperTagName) throws Throwable {
+		String rooted = "<" + wrapperTagName + ">" + xmlText + "</" + wrapperTagName + ">";
+		Document rootedDoc4J = DocumentHelper.parseText(rooted);
+		return rootedDoc4J;
 	}
 
-	public static class InitTrigger<BT extends Box<TriggerImpl<BT>>> extends  TriggerImpl<BT> {
-		@Override public void fire(BT targetBox) {
-			theLogger.info(toString() + "-initing");
-			DatabaseConnector dbc = DemoDatabase.initConnector();
-		}
-	}
+
 }
