@@ -15,7 +15,7 @@
  */
 package org.appdapter.demo;
 
-import org.appdapter.binding.h2.DatabaseConnector;
+import org.appdapter.bind.sql.h2.DatabaseConnector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

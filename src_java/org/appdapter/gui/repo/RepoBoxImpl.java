@@ -16,8 +16,8 @@
 
 package org.appdapter.gui.repo;
 
-import org.appdapter.binding.jena.sdb.GraphUploadTask;
-import org.appdapter.binding.jena.model.GraphUploadMonitor;
+import org.appdapter.bind.rdf.jena.sdb.GraphUploadTask;
+import org.appdapter.bind.rdf.jena.model.GraphUploadMonitor;
 import arq.cmdline.ModTime;
 import org.appdapter.gui.box.BoxImpl;
 import org.appdapter.gui.box.Trigger;
