@@ -14,30 +14,33 @@
  *  limitations under the License.
  */
 
-package org.appdapter.gui.demo.triggers;
+package org.appdapter.bind.rdf.jena.sdb;
 
-import org.appdapter.bind.sql.h2.DatabaseConnector;
-import org.appdapter.demo.DemoDatabase;
-import org.appdapter.gui.box.Box;
-import org.appdapter.gui.box.TriggerImpl;
+import java.sql.Connection;
+import java.sql.DriverManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public class DatabaseTriggers {
-	static Logger theLogger = LoggerFactory.getLogger(DatabaseTriggers.class);
-	
-	public enum Kind {
-		OPEN,
-		CLOSE
-	}
 
-	public static class InitTrigger<BT extends Box<TriggerImpl<BT>>> extends  TriggerImpl<BT> {
-		@Override public void fire(BT targetBox) {
-			theLogger.info(toString() + "-initing");
-			DatabaseConnector dbc = DemoDatabase.initConnector();
-		}
-	}
+public class MetaRepo {
+	static Logger theLogger = LoggerFactory.getLogger(MetaRepo.class);
+
+	private		String		myH2_JDBC_URL;
+	private		String		mySDB_ConfigPath;
+	private		Connection	myDBC;
+
+
 }
+/*
+ * To use command line scripts, see the scripts page including setting environment variables SDBROOT, SDB_USER, SDB_PASSWORD and SDB_JDBC.
+ bin/sdbconfig --sdb=sdb.ttl --create
+and run the test suite:
+ bin/sdbtest --sdb=sdb.ttl testing/manifest-sdb.ttl
+ *
+ *
+ */

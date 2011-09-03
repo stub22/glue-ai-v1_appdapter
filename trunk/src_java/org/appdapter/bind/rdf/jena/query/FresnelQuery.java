@@ -14,30 +14,12 @@
  *  limitations under the License.
  */
 
-package org.appdapter.gui.demo.triggers;
-
-import org.appdapter.bind.sql.h2.DatabaseConnector;
-import org.appdapter.demo.DemoDatabase;
-import org.appdapter.gui.box.Box;
-import org.appdapter.gui.box.TriggerImpl;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+package org.appdapter.bind.rdf.jena.query;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public class DatabaseTriggers {
-	static Logger theLogger = LoggerFactory.getLogger(DatabaseTriggers.class);
-	
-	public enum Kind {
-		OPEN,
-		CLOSE
-	}
 
-	public static class InitTrigger<BT extends Box<TriggerImpl<BT>>> extends  TriggerImpl<BT> {
-		@Override public void fire(BT targetBox) {
-			theLogger.info(toString() + "-initing");
-			DatabaseConnector dbc = DemoDatabase.initConnector();
-		}
-	}
+public class FresnelQuery {
+
 }
