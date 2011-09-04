@@ -20,7 +20,7 @@ import org.appdapter.core.math.number.RealNumeric;
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public interface MetricSet<V, Distance extends RealNumeric.Nonnegative<Distance>> extends TopologicalSet<V> {
+public interface MetricSet<V, Distance extends RealNumeric.Nonnegative<? super Distance>> extends TopologicalSet<V> {
 	// a & b don't have to be in the set, as long as they are compat with metric.
 	public Distance distanceForElementPair(V a, V b);
 	public boolean isComplete();
@@ -28,7 +28,7 @@ public interface MetricSet<V, Distance extends RealNumeric.Nonnegative<Distance>
 	public boolean isBounded();
 	public boolean isTotallyBounded();
 	
-	public abstract class Basic<V, D extends RealNumeric.Nonnegative<D>> implements MetricSet<V, D> {
+	public abstract class Basic<V, D extends RealNumeric.Nonnegative<? super D>> implements MetricSet<V, D> {
 		public boolean isCompact() { return isClosed() && isTotallyBounded(); }
 	}
 }

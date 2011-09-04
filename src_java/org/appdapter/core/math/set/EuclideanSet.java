@@ -26,17 +26,17 @@ import org.appdapter.core.math.number.RealNumeric;
 // DistN and MeasN are both "real numbers", as are the coordinates of V, but each may
 // use a different concrete type.
 public interface EuclideanSet<V, 
-					DistN extends RealNumeric.Nonnegative<DistN>, 
-					MeasN extends RealNumeric.Nonnegative<MeasN>,
-					DimN extends IntegNumeric.Natural<DimN>> 
+					DistN extends RealNumeric.Nonnegative<? super DistN>, 
+					MeasN extends RealNumeric.Nonnegative<? super MeasN>,
+					DimN extends IntegNumeric.Natural<? super DimN>> 
 
 			extends MetricSet<V, DistN>, MeasurableSet<V, MeasN>, DimensionalSet<V,DimN> {
 	
 	@Override public DimN getDimension();
 	
 	public abstract class Basic<V, 
-					MeasAndDistRN extends RealNumeric.Nonnegative<MeasAndDistRN>,
-					DimN extends IntegNumeric.Natural<DimN>> 
+					MeasAndDistRN extends RealNumeric.Nonnegative<? super MeasAndDistRN>,
+					DimN extends IntegNumeric.Natural<? super DimN>> 
 			extends MetricSet.Basic<V, MeasAndDistRN> 	
 					implements EuclideanSet<V, MeasAndDistRN, MeasAndDistRN, DimN> {
 		

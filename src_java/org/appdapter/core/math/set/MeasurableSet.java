@@ -22,6 +22,6 @@ import org.appdapter.core.math.set.GeneralSet;
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public interface MeasurableSet<V, MN extends ExtendedRealNumeric.Nonnegative<MN>> extends GeneralSet<V> {
+public interface MeasurableSet<V, MN extends ExtendedRealNumeric.Nonnegative<? super MN>> extends GeneralSet<V> {
 	public MN measure();
 }
