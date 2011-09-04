@@ -22,14 +22,14 @@ import org.appdapter.core.math.number.RealNumeric;
  * @author Stu B. <www.texpedient.com>
  */
 public interface RealSet<
-			RN extends RealNumeric<RN>,  
-			MDRN extends RealNumeric.Nonnegative<MDRN>, 
-			DimN extends IntegNumeric.Natural<DimN> > 
+			RN extends RealNumeric<? super RN>,  
+			MDRN extends RealNumeric.Nonnegative<? super MDRN>, 
+			DimN extends IntegNumeric.Natural<? super DimN> > 
 		extends EuclideanSet<RN, MDRN, MDRN, DimN> { // , PartiallyOrderedSet<RN> {
 	
-	public abstract class Basic<RN extends RealNumeric<RN>, 
-					MDRN extends RealNumeric.Nonnegative<MDRN>, 
-					DimN extends IntegNumeric.Natural<DimN>> 
+	public abstract class Basic<RN extends RealNumeric<? super RN>, 
+					MDRN extends RealNumeric.Nonnegative<? super MDRN>, 
+					DimN extends IntegNumeric.Natural<? super DimN>> 
 			extends EuclideanSet.Basic<RN, MDRN, DimN> 	implements RealSet<RN, MDRN, DimN> {	
 		public Basic(DimN dim) {
 			// assert dim=="one"
