@@ -21,6 +21,13 @@ import org.appdapter.core.math.number.RealNumeric;
 /**
  * @author Stu B. <www.texpedient.com>
  */
+// We cannot relate MDRN to RN in Java
+// If we try:   MDRN extends RN & RealNumeric.Nonnegative<? super MDRN>
+// we get:  "A type variable may not be followed by other bounds"
+// http://blogs.oracle.com/vr/entry/a_type_variable_may_not
+
+// However, should work in Scala.
+
 public interface RealSet<
 			RN extends RealNumeric<? super RN>,  
 			MDRN extends RealNumeric.Nonnegative<? super MDRN>, 
