@@ -22,9 +22,9 @@ import org.appdapter.core.math.set.RealSet;
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public interface RealInterval<RN extends RealNumeric<RN>,
-				MDRN extends RealNumeric.Nonnegative<MDRN>, 
-				DimN extends IntegNumeric.Natural<DimN>> 
+public interface RealInterval<RN extends RealNumeric<? super RN>,
+				MDRN extends RealNumeric.Nonnegative<? super MDRN>, 
+				DimN extends IntegNumeric.Natural<? super DimN>> 
 		extends RealSet<RN, MDRN, DimN> {
 	
 	public RN getLowerBound();

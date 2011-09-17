@@ -15,9 +15,15 @@
  */
 package org.appdapter.bind.math.jscience.calculus;
 
+import java.util.List;
+import javolution.util.Index;
 import org.appdapter.core.math.number.RealNumeric;
 import org.jscience.mathematics.number.FieldNumber;
 import org.jscience.mathematics.number.Float64;
+import org.jscience.mathematics.structure.Field;
+import org.jscience.mathematics.vector.DenseVector;
+import org.jscience.mathematics.vector.Float64Vector;
+import org.jscience.mathematics.vector.Vector;
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -125,5 +131,11 @@ public class Reals {
 				downcastFailureException(PositiveReal64.class);
 			}
 		}
-	}	
+	}
+	// TODO:  Change to a wrapper of Float64Vector to take better advantage of hardware accel.
+	
+	// public static class Real64Vector[WrappedVecType] extends DenseVector<Real64> {
+
+		
+
 }

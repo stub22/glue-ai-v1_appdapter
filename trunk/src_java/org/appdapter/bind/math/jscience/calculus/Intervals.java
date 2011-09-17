@@ -15,77 +15,36 @@
  */
 package org.appdapter.bind.math.jscience.calculus;
 
-
 import org.appdapter.bind.math.jscience.calculus.Integers.Natural64;
 import org.appdapter.bind.math.jscience.calculus.Reals.NonnegativeReal64;
 import org.appdapter.bind.math.jscience.calculus.Reals.Real64;
 import org.appdapter.core.math.number.RealNumeric;
+import org.appdapter.core.math.set.EuclideanSet;
 import org.appdapter.core.math.set.RealSet;
 import org.appdapter.core.math.set.TopologicalSet;
 import org.jscience.mathematics.number.Float64;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
 public class Intervals {
+	static Logger theLogger = LoggerFactory.getLogger(Intervals.class);
 	Reals.Real64 rrr = new Reals.Real64(Float64.ONE);
-	
 	RealNumeric<? super Reals.Real64> r2 = rrr;
-	public static class Realty extends RealSet.Basic<Reals.Real64, Reals.NonnegativeReal64, Integers.Natural64> {
 
-		public Realty(Natural64 dim) {
+	public static abstract class RealSet64 extends RealSet.Basic<Reals.Real64, Reals.NonnegativeReal64, Integers.Natural64> {
+
+		public RealSet64(Natural64 dim) {
 			super(dim);
 		}
 
-		@Override
-		public NonnegativeReal64 distanceForElementPair(Real64 a, Real64 b) {
-			throw new UnsupportedOperationException("Not supported yet.");
-		}
-
-		@Override
-		public boolean isComplete() {
-			throw new UnsupportedOperationException("Not supported yet.");
-		}
-
-		@Override
-		public boolean isBounded() {
-			throw new UnsupportedOperationException("Not supported yet.");
-		}
-
-		@Override
-		public boolean isTotallyBounded() {
-			throw new UnsupportedOperationException("Not supported yet.");
-		}
-
-		@Override
-		public boolean isOpen() {
-			throw new UnsupportedOperationException("Not supported yet.");
-		}
-
-		@Override
-		public boolean isClosed() {
-			throw new UnsupportedOperationException("Not supported yet.");
-		}
-
-		@Override
-		public TopologicalSet<Real64> getFrontier() {
-			throw new UnsupportedOperationException("Not supported yet.");
-		}
-
-		@Override
-		public TopologicalSet<Real64> getClosure() {
-			throw new UnsupportedOperationException("Not supported yet.");
-		}
-
-		@Override
-		public boolean containsElement(Real64 v) {
-			throw new UnsupportedOperationException("Not supported yet.");
-		}
-
-		@Override
-		public NonnegativeReal64 measure() {
-			throw new UnsupportedOperationException("Not supported yet.");
-		}
-		
+	}
+	//public static class RealVectorSet64 extends EuclideanSet.Basic<Reals.Real64, Reals.NonnegativeReal64, Integers.Natural64> {
+	//}
+	
+	public static void main(String args[]) {
+		theLogger.info("Hi!");
 	}
 }
