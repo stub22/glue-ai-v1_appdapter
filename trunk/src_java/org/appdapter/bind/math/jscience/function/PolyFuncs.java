@@ -26,7 +26,7 @@ import org.jscience.mathematics.structure.Ring;
 import org.jscience.mathematics.number.Number;
 // import org.jscience.mathematics.number.Real;
 import java.util.List;
-import java.util.logging.Level;
+// import java.util.logging.Level;
 
 
 import org.slf4j.Logger;
@@ -51,10 +51,10 @@ public class PolyFuncs {
 	}
 
 	public static <RN extends Number<RN>> double evalPoly(Polynomial<RN> poly) {
-		return evalPrintReturnPoly(poly, null, null, null, false);
+		return evalPrintReturnPoly(poly, null, null, false);
 	}
 	public static <RN extends Number<RN>> double evalPrintReturnPoly(Polynomial<RN> poly, String logLabel,
-				Logger logger, Level logLev, boolean logFlag) {
+				Logger logger, boolean logFlag) {
 		RN val = poly.evaluate();
 		if (logFlag) { // (logFlag && logger.isLoggable(logLev)) {
 			StringBuffer msg = new StringBuffer(logLabel).append(" = {");
