@@ -24,21 +24,87 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 			<version>1.6.1</version>
+            <scope>provided</scope>
 		</dependency>
         <dependency>
             <groupId>org.apache.servicemix.bundles</groupId>
             <artifactId>org.apache.servicemix.bundles.javax-inject</artifactId>
             <version>1_1</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
-          <groupId>org.apache.avro</groupId>
-          <artifactId>avro</artifactId>
-          <version>1.5.1</version>
+            <groupId>org.apache.avro</groupId>
+            <artifactId>avro</artifactId>
+            <version>1.5.1</version>
+            <scope>provided</scope>
+            <exclusions>
+              <exclusion>
+                <artifactId>paranamer</artifactId>
+                <groupId>com.thoughtworks.paranamer</groupId>
+              </exclusion>
+              <exclusion>
+                <artifactId>snappy-java</artifactId>
+                <groupId>org.xerial.snappy</groupId>
+              </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
           <groupId>org.apache.avro</groupId>
           <artifactId>avro-ipc</artifactId>
           <version>1.5.1</version>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <artifactId>paranamer</artifactId>
+            <groupId>com.thoughtworks.paranamer</groupId>
+            <type>jar</type>
+            <version>2.3</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <artifactId>snappy-java</artifactId>
+            <groupId>org.xerial.snappy</groupId>
+            <type>jar</type>
+            <version>1.0.1-rc3</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <artifactId>jetty</artifactId>
+            <groupId>org.mortbay.jetty</groupId>
+            <type>jar</type>
+            <version>6.1.26</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <artifactId>jetty-util</artifactId>
+            <groupId>org.mortbay.jetty</groupId>
+            <type>jar</type>
+            <version>6.1.26</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <artifactId>netty</artifactId>
+            <groupId>org.jboss.netty</groupId>
+            <type>jar</type>
+            <version>3.2.4.Final</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <artifactId>velocity</artifactId>
+            <groupId>org.apache.velocity</groupId>
+            <type>jar</type>
+            <version>1.7</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <artifactId>jackson-mapper-asl</artifactId>
+            <groupId>org.codehaus.jackson</groupId>
+            <version>1.7.3</version>
+        </dependency>
+        <dependency>
+            <artifactId>jackson-core-asl</artifactId>
+            <groupId>org.codehaus.jackson</groupId>
+            <version>1.7.3</version>
         </dependency>
     </dependencies>
 
