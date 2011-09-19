@@ -38,16 +38,6 @@
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
 			<version>1.3.157</version>
-		</dependency>	
-		<dependency>
-			<groupId>com.hp.hpl.jena</groupId>
-			<artifactId>sdb</artifactId>
-			<version>1.3.4</version>
-		</dependency>
-		<dependency>
-			<groupId>dom4j</groupId>
-			<artifactId>dom4j</artifactId>
-			<version>1.6.1</version>
 		</dependency>
 		
 		<!-- *************** Runtime Deps *********************** -->
@@ -56,7 +46,14 @@
 				our transitive runtime deps.
 				That IS done, however, in org.appdapter.lib.core
 			-->
-		
+		<dependency>
+			<artifactId>slf4j-log4j12</artifactId>
+			<groupId>org.slf4j</groupId>
+			<type>jar</type>
+			<version>1.6.1</version>
+			<scope>runtime</scope>
+
+		</dependency>		
 		<!-- *************** Test Deps *********************** -->
 			<!-- Junit itself is picked up transitively by SDB.  
 				 Same comment regarding explicit/implicit applies as for runtime above.
@@ -67,6 +64,12 @@
 			<version>2.8.7</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
+		 <exclusions>
+		  <exclusion>
+		   <artifactId>log4j</artifactId>
+		   <groupId>log4j</groupId>
+		  </exclusion>
+		 </exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.hp.hpl.jena</groupId>
@@ -74,8 +77,59 @@
 			<version>2.6.4</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
+		 <exclusions>
+		  <exclusion>
+		   <artifactId>log4j</artifactId>
+		   <groupId>log4j</groupId>
+		  </exclusion>
+		 </exclusions>
 		</dependency>
+	 <dependency>
+	  <groupId>${project.groupId}</groupId>
+	  <artifactId>ext.bundle.xml.dom4j_161</artifactId>
+	  <version>${project.version}</version>
+	  <exclusions>
+	   <exclusion>
+	    <artifactId>org.osgi.core</artifactId>
+	    <groupId>org.apache.felix</groupId>
+	   </exclusion>
+	  </exclusions>
+	 </dependency>
+	 <dependency>
+	  <groupId>${project.groupId}</groupId>
+	  <artifactId>ext.bundle.jena_all_264</artifactId>
+	  <version>${project.version}</version>
+	  <exclusions>
+	   <exclusion>
+	    <artifactId>org.osgi.core</artifactId>
+	    <groupId>org.apache.felix</groupId>
+	   </exclusion>
+	  </exclusions>
+	 </dependency>
+	 <dependency>
+	  <groupId>${project.groupId}</groupId>
+	  <artifactId>ext.bundle.math.jscience_50SNAP</artifactId>
+	  <version>${project.version}</version>
+	  <exclusions>
+	   <exclusion>
+	    <artifactId>org.osgi.core</artifactId>
+	    <groupId>org.apache.felix</groupId>
+	   </exclusion>
+	  </exclusions>
+	 </dependency>
+	 <dependency>
+	  <artifactId>slf4j-api</artifactId>
+	  <groupId>org.slf4j</groupId>
+	  <type>jar</type>
+	  <version>1.6.1</version>
 
+	 </dependency>
+	 <dependency>
+	  <groupId>junit</groupId>
+	  <artifactId>junit</artifactId>
+	  <version>4.8.2</version>
+	  <scope>test</scope>
+	 </dependency>
 	</dependencies>
 </project>
 
