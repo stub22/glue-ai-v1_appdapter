@@ -65,5 +65,7 @@ public class DemoResources {
 		URL resURL = classLoader.getResource(resURL_path);
 		theLogger.debug(classLoader.toString() + " resolved " + resURL_path + " to " + resURL);
 		return resURL.toString();
-	}		
+	}
+	
+	
 }

@@ -97,7 +97,7 @@
 				<configuration>
 					<instructions>
 						<!-- org.gjt.*;resolution:='optional', -->
-						<Import-Package>*</Import-Package>
+						<Import-Package>org.h2, *</Import-Package>
 						<Bundle-Activator>org.appdapter.osgi.core.AppdapterCoreBundleActivator</Bundle-Activator>
 						<Export-Package>org.appdapter.*</Export-Package>
 						
