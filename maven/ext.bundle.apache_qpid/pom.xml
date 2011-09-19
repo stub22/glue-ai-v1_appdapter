@@ -30,11 +30,27 @@
             <groupId>org.apache.qpid</groupId>
             <artifactId>qpid-client</artifactId>
             <version>0.10</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.qpid</groupId>
             <artifactId>qpid-common</artifactId>
             <version>0.10</version>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>backport-util-concurrent</artifactId>
+                    <groupId>backport-util-concurrent</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>mina-filter-ssl</artifactId>
+                    <groupId>org.apache.mina</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>mina-core</artifactId>
+                    <groupId>org.apache.mina</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.activemq</groupId>
@@ -46,7 +62,26 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 			<version>1.6.1</version>
+            <scope>provided</scope>
 		</dependency>
+        <dependency>
+            <artifactId>backport-util-concurrent</artifactId>
+            <groupId>backport-util-concurrent</groupId>
+            <version>2.2</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <artifactId>mina-core</artifactId>
+            <groupId>org.apache.mina</groupId>
+            <version>1.0.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <artifactId>mina-filter-ssl</artifactId>
+            <groupId>org.apache.mina</groupId>
+            <version>1.0.1</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <build>
