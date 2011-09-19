@@ -22,7 +22,10 @@ import com.hp.hpl.jena.assembler.Mode;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.util.FileManager;
+import com.hp.hpl.jena.util.Locator;
+import com.hp.hpl.jena.util.LocatorClassLoader;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import org.slf4j.Logger;
 
@@ -51,7 +54,19 @@ public class AssemblerUtils {
 		Set<Object> results = buildAllRootsInModel(Assembler.general, loadedModel, Mode.DEFAULT);
 		return results;
 	}
-	public static void registerClassLoader(ClassLoader cl) {
-		FileManager.get().addLocatorClassLoader(cl); 
+	public static void ensureClassLoaderRegisteredWithJenaFM(ClassLoader cl) {
+		LocatorClassLoader candidateLCL = new LocatorClassLoader(cl);
+		FileManager fm = FileManager.get();
+		// TODO:  Ensure that cl is not already registered!
+		Iterator<Locator> locs = fm.locators();
+		while (locs.hasNext()) { 
+			Locator l = locs.next();
+			if (candidateLCL.equals(l)) {
+				theLogger.info("Found existing equivalent Jena FM loader for: " + cl);
+				return;
+			}
+		}
+		theLogger.info("Registering new Jena FM loader for: " + cl);
+		fm.addLocator(candidateLCL); 
 	}
 }

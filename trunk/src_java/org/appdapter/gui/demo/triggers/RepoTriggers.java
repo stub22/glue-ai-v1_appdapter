@@ -16,6 +16,7 @@
 
 package org.appdapter.gui.demo.triggers;
 
+import org.appdapter.bind.rdf.jena.model.AssemblerUtils;
 import org.appdapter.gui.box.TriggerImpl;
 import org.appdapter.gui.repo.MutableRepoBox;
 import org.appdapter.gui.repo.RepoBox;
@@ -67,6 +68,8 @@ public class RepoTriggers {
 		@Override public void fire(RB  targetBox) {
 			Store store = targetBox.getStore();
 			try {
+				theLogger.info("Registering classLoader with JenaFM");
+				AssemblerUtils.ensureClassLoaderRegisteredWithJenaFM(getClass().getClassLoader());
 				String unusedInlineQueryText = "blah";
 				String resolvedQueryURL = DemoResources.QUERY_PATH; // DemoResources.resolveResourcePathToURL_WhichJenaCantUseInCaseOfJarFileRes(DemoResources.QUERY_PATH);
 				Query parsedQuery = QueryFactory.read(resolvedQueryURL); //  wraps create(queryText);

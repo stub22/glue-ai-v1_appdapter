@@ -40,9 +40,7 @@ public class BridgeTriggers {
 			String triplesURL = DemoResources.MENU_ASSEMBLY_PATH; // DemoResources.resolveResourceURL(DemoResources.MENU_ASSEMBLY_PATH);
 			triplesURL = "org/appdapter/democonf/app/boxdemo/boxy_001.ttl";
 			System.out.println("Resolved triplesURL: " + triplesURL);
-//			ClassLoader cl = DemoResources.class.getClassLoader();
-//			theLogger.info("Registering classloader with Jena FileManager: " + cl);
-//			AssemblerUtils.registerClassLoader(cl);
+			AssemblerUtils.ensureClassLoaderRegisteredWithJenaFM(DemoResources.class.getClassLoader());
 			theLogger.info("Loading triples file: " + triplesURL);
 			Set<Object> loadedStuff = AssemblerUtils.buildAllObjectsInRdfFile(triplesURL);
 			theLogger.info("Loaded " + loadedStuff.size() + " objects");
