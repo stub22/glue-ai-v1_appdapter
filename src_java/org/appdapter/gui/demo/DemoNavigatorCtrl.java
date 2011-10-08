@@ -63,7 +63,7 @@ public class DemoNavigatorCtrl {
 		if (myJFrame == null) {
 			myJFrame = new JFrame(title);
 
-			myJFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+			myJFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			myJFrame.getContentPane().add(myBP, BorderLayout.CENTER);
 
 			myJFrame.pack();
@@ -79,5 +79,8 @@ public class DemoNavigatorCtrl {
 		if (reload) {
 			((DefaultTreeModel) myTM).reload();
 		}
+	}
+	public JFrame getFrame() { 
+		return myJFrame;
 	}
 }

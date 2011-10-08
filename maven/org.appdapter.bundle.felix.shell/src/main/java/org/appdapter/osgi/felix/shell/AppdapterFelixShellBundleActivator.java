@@ -25,8 +25,14 @@ import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.appdapter.gui.demo.DemoNavigatorCtrl;
+import javax.swing.JFrame;
+
 public class AppdapterFelixShellBundleActivator implements BundleActivator {
 	static Logger theLogger = LoggerFactory.getLogger(AppdapterFelixShellBundleActivator.class);
+	
+	private JFrame	myDemoJFrame;
+	
     public void start(BundleContext context) throws Exception {
 		String startupMsg = getClass().getCanonicalName() + ".start(ctx=" + context + ")";
 		System.out.println("[System.out]" + startupMsg);
@@ -50,14 +56,22 @@ public class AppdapterFelixShellBundleActivator implements BundleActivator {
 		theLogger.info("[SLF4J]" + startupMsg);
 		theLogger.info("Is SLF4J->Log4J logging working?");
 		theLogger.info("Starting demo browser[");
-		DemoBrowser.main(null);
+		
+		String args[] = null;
+		DemoNavigatorCtrl dnc = DemoBrowser.makeDemoNavigatorCtrl(args);
+		dnc.launchFrame("org.appdapter.osgi.felix.shell - DemoBrowser");
+		myDemoJFrame = dnc.getFrame();
+		// DemoBrowser.main(null);
 		theLogger.info("]Finished starting browser, bundle activation .start() complete.");
     }
 
     public void stop(BundleContext context) throws Exception {
 		String windupMsg = getClass().getCanonicalName() + ".stop(ctx=" + context + ")";
-		theLogger.info("[SLF4J]" + windupMsg);		
-		System.out.println("[System.out]" + windupMsg);		
+		theLogger.info("[SLF4J] " + windupMsg);		
+		System.out.println("[System.out]" + windupMsg);
+		theLogger.info("[SLF4J] disposing of demo window" );	
+		myDemoJFrame.dispose();
+		theLogger.info("[SLF4J] finished dispose()" );	
     }
 
 }
