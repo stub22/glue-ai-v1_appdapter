@@ -43,7 +43,7 @@ central repo.
 	<parent>
 		<groupId>org.appdapter</groupId>
 		<artifactId>org.appdapter.modules.core</artifactId>
-		<version>1.0.3</version>
+		<version>1.0.4-SNAPSHOT</version>
 		<relativePath>../org.appdapter.modules.core/pom.xml</relativePath>
 	</parent>		
 	<artifactId>org.appdapter.lib.core</artifactId>
