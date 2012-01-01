@@ -51,7 +51,7 @@
 			<groupId>org.slf4j</groupId>
 			<type>jar</type>
 			<version>1.6.1</version>
-			<scope>runtime</scope>
+
 
 		</dependency>		
 		<!-- *************** Test Deps *********************** -->
