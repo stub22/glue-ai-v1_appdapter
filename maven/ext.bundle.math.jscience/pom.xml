@@ -66,9 +66,9 @@
 		<dependency>
 			<groupId>javolution</groupId>
 			<artifactId>javolution</artifactId>
-		  <!-- We have to re-export javolution, even though it's a "bundle", because the
-				embedded poms are entangled with the java.net repository, and it is all
-				just too screwed up.
+		  <!-- We tearfully have to re-export javolution, even though it's  supplied to us as a "bundle", 
+				because the embedded poms are entangled with the broken java.net repository, and 
+				it is all just too screwed up.
 			-->
 			<type>jar</type>
 			<version>5.5.1</version>

@@ -18,18 +18,20 @@ package org.appdapter.osgi.core;
 /**
  * @author Stu B. <www.texpedient.com>
  */
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger; 
 public abstract class BundleActivatorBase implements BundleActivator  {
 	protected abstract Logger getLogger();
-	
-    @Override
-	public void start(BundleContext context) throws Exception {
-		String startupMsg = getClass().getCanonicalName() + ".start(ctx=" + context + ")";
+			
+    @Override public void start(BundleContext bundleCtx) throws Exception {
+		String startupMsg = getClass().getCanonicalName() + ".start(ctx=" + bundleCtx + ")";
 		System.out.println("[System.out]" + startupMsg);
 		Logger log = getLogger();
 		log.info("[SLF4J]" + startupMsg);
+		Bundle b = bundleCtx.getBundle();
+		log.info("bundle=" + b);
     }
 
     @Override
@@ -39,4 +41,5 @@ public abstract class BundleActivatorBase implements BundleActivator  {
 		Logger log = getLogger();
 		log.info("[SLF4J]" + windupMsg);		
 	}
+
 }
