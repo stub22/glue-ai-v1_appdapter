@@ -55,10 +55,7 @@
 			<groupId>org.apache.log4j</groupId>
 			<artifactId>com.springsource.org.apache.log4j</artifactId>
 			<version>1.2.16</version>
-			<!--
-			Needed at compile time so we can force the properties resource URL in, due to TCCL issue.
 			<scope>runtime</scope>			
-			-->
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
