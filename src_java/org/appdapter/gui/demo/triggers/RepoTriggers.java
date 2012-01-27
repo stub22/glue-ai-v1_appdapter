@@ -59,7 +59,7 @@ public class RepoTriggers {
 		}
 	}
 	public static class DumpStatsTrigger<RB extends RepoBox<TriggerImpl<RB>>> extends  TriggerImpl<RB> {
-		public void fire(RB targetBox) {
+		@Override public void fire(RB targetBox) {
 			List<GraphStat> stats = targetBox.getGraphStats();
 		}
 	}

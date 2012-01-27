@@ -54,14 +54,17 @@
 			<scope>provided</scope>
 		</dependency>
 		-->
-		<!-- This dep is installed to local repo during initialize phase below. -->
+		<!-- This dep is installed to local repo during initialize phase below. 
+			Must disable the dep, run mvn initialize, then re-enable the deb
+			-->
+			
 		<dependency>
 			<groupId>org.jscience</groupId>
 			<artifactId>jscience-mathematics</artifactId>
 			<version>5.0-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
-
+		
 		<dependency>
 			<groupId>javolution</groupId>
 			<artifactId>javolution</artifactId>
