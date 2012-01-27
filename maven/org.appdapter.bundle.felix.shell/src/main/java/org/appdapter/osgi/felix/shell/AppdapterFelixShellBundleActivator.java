@@ -37,10 +37,10 @@ public class AppdapterFelixShellBundleActivator extends BundleActivatorBase {
 		return theLogger;
 	}	
 	
-    public void start(BundleContext context) throws Exception {
+    @Override public void start(BundleContext context) throws Exception {
 		
 		forceLog4jConfig();
-		
+		super.start(context);
 
 		theLogger.info("Starting demo browser[");
 		
@@ -52,13 +52,14 @@ public class AppdapterFelixShellBundleActivator extends BundleActivatorBase {
 		theLogger.info("]Finished starting browser, bundle activation .start() complete.");
     }
 
-    public void stop(BundleContext context) throws Exception {
+    @Override public void stop(BundleContext context) throws Exception {
 		String windupMsg = getClass().getCanonicalName() + ".stop(ctx=" + context + ")";
 		theLogger.info("[SLF4J] " + windupMsg);		
 		System.out.println("[System.out]" + windupMsg);
 		theLogger.info("[SLF4J] disposing of demo window" );	
 		myDemoJFrame.dispose();
 		theLogger.info("[SLF4J] finished dispose()" );	
+		super.stop(context);
     }
 
 }
