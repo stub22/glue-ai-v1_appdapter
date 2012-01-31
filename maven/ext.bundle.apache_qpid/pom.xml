@@ -9,7 +9,7 @@
     <artifactId>ext.bundle.apache_qpid_010</artifactId>
     <packaging>bundle</packaging>
 
-    <name>${project.artifactId} - Qpid OSGi Wrapper</name>
+    <name>ext.bundle.apache_qpid_010 - OSGi - Qpid wrapper</name>
 	<url>http://www.appdapter.org</url>
 	<description>Provides dependencies and OSGi bindings for working with Apache Qpid</description>
 

@@ -8,8 +8,7 @@
 	</parent>	
     <packaging>bundle</packaging>
     <artifactId>ext.bundle.xml.dom4j_161</artifactId>
-    <name>${project.artifactId} - Dom4J Dependency Wrapper Bundle</name>
-
+    <name>${project.artifactId} - OSGi - Dom4J wrapper</name>
 
     <dependencies>
         <dependency>

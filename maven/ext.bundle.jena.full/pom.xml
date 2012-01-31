@@ -9,7 +9,7 @@
 	</parent>	
     <artifactId>ext.bundle.jena_all_264</artifactId>
     <packaging>bundle</packaging>
-    <name>${project.artifactId} - Jena Dependency Wrapper Bundle</name>
+    <name>ext.bundle.jena_all_264 - OSGi - Jena wrapper</name>
 
     <dependencies>
         <dependency>

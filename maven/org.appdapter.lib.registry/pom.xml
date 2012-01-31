@@ -11,7 +11,7 @@
 	</parent>		
 	<artifactId>org.appdapter.lib.registry</artifactId>
 	<packaging>jar</packaging>
-	<name>${project.artifactId} - Registry core and test harness</name>
+	<name>org.appdapter.lib.registry - POJO</name>
 	<url>http://www.appdapter.org</url>
 	<description>Pluggable object registration + query service</description>
 

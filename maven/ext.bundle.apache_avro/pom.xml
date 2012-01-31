@@ -9,7 +9,7 @@
     <artifactId>ext.bundle.apache_avro_151</artifactId>
     <packaging>bundle</packaging>
 
-    <name>${project.artifactId} - Avro OSGi Wrapper</name>
+    <name>ext.bundle.apache_avro_151 - OSGi - Avro wrapper</name>
 	<url>http://www.appdapter.org</url>
 	<description>Provides dependencies and OSGi bindings for working with Apache Avro</description>
 
