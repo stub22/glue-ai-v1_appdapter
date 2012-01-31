@@ -8,13 +8,12 @@
 	</parent>
     <artifactId>ext.bundle.osgi.common</artifactId>
     <packaging>bundle</packaging>
-	<name>${project.artifactId} - Platform dependency wrapper - of dubious value, so far!</name>
+	<name>${project.artifactId} - OSGi - platform wrapper - IGNORE</name>
 	
-	<description>This bundle sets up dependencies on specific versions of OSGi common components.
+	<description>OSGi platform dependency wrapper - of dubious value, so far!  This bundle sets up dependencies on specific versions of OSGi common components.
 				It doesn't really work right yet, since the deps are marked "provided" and are not propagated
 				to client projects.  You can pretty much ignore this project!</description>
-
-	
+				
     <dependencies>
         <dependency>
             <groupId>org.osgi</groupId>

@@ -9,7 +9,7 @@
 	</parent>
 	<artifactId>ext.bundle.math.jscience_50SNAP</artifactId>
 	<packaging>bundle</packaging>
-	<name>${project.artifactId} - OSGi wrapper for jscience.org jars</name>
+	<name>ext.bundle.math.jscience_50SNAP - OSGi - Jscience wrapper</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

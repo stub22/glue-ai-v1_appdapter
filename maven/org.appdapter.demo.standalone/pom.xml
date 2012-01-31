@@ -10,7 +10,7 @@
 
 	<artifactId>org.appdapter.demo.standalone</artifactId>
 	<packaging>jar</packaging>
-	<name>${project.artifactId} - Demo of Lib - logs with Log4J, no OSGi deps, runs!</name>
+	<name>org.appdapter.demo.standalone - POJO - runnable</name>
 	<description>Wraps lib.core and adds a concrete SLF4J binding to Log4J.</description>
 
     <build>
