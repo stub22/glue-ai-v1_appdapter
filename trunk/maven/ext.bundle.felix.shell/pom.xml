@@ -9,10 +9,11 @@
 
     <artifactId>ext.bundle.felix.shell</artifactId>
     <packaging>bundle</packaging>
-	<name>${project.artifactId} - felix/gogo/remote shell launcher (Apache-Felix OSGi Bundle)</name>
+	<name>${project.artifactId} - OSGi + exec-wrap</name>
 	
-	<description>This (optional) bundle sets up dependencies on the local+remote Felix/Gogo shell bundles.  
-				We use it directly to test the launch of Felix shell, from segregated Ant command line.</description>
+	<description>Optional felix/gogo/remote shell launcher.   This (optional) bundle sets up dependencies on the 
+			local+remote Felix/Gogo shell bundles.  We use it directly to test the launch of Felix shell, 
+			from segregated Ant command line.</description>
 
     <dependencies>
         <dependency>

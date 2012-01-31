@@ -10,9 +10,10 @@
 
 	<artifactId>org.appdapter.bundle.core</artifactId>
 	<packaging>bundle</packaging>
-	<name>${project.artifactId} - primary OSGi Bundle, "depend on me!"</name>
-	<description>Appdapter OSGi bundle, with no dependencies on a particular OSGi framework, no SLF4J concrete binding, 
-			and no builtin shell.
+	<name>${project.artifactId} - OSGi - core + registry</name>
+	<description>Primary Appdapter OSGi Bundle, "depend on me!", has no dependencies on a particular 
+			OSGi framework implementation, no SLF4J concrete binding, and no builtin shell.
+			Includes the contents of both the "core" and "registry" bundes from the "lib" tier.
 	</description>	
 	<repositories>
 		<repository>
