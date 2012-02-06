@@ -16,15 +16,22 @@
 package org.appdapter.api.registry;
 
 /**
+ *
+ *  Receiver receives type-safe results found by a Finder.
+ * 
  * @author Stu B. <www.texpedient.com>
  * 
- * Will be called in single threaded fashion.
+ *
  */
 public interface Receiver<OC>  {
 	public enum Status {
 		SEEKING,
 		DONE
 	}
-	// Return SEEKING if more matches should be sought, else done.
+	/**
+	 * 
+	 * @return SEEKING if more matches should be sought, else DONE.
+	 * 
+	 */
 	public Status receiveMatch(OC match, ResultSequence<OC> seq, long seqIndex);
 }

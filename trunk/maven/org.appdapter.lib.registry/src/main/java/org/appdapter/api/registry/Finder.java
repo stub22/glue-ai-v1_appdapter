@@ -18,8 +18,11 @@ package org.appdapter.api.registry;
 
 
 /**
+ * Finder is a type-parametrized interface used to search for matches to a Pattern.
+ * The finder can only locate Registry objects that match its own type parameter.
+ * The finder delivers pattern matches to a Receiver.
+ * 
  * @author Stu B. <www.texpedient.com>
- * A finder must make fair delivery on all current sequences
  */
 public interface Finder<OC> {
 	// TODO: Add bounds estimation 

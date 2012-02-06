@@ -67,27 +67,34 @@ public class BasicFinder<OT> implements SimpleFinder<OT> {
 		deliverMatchesUntilDone(p, collector);
 		return matches;
 	}
+	protected void verifyMatchCount(int matchCount, int minAllowed, int maxAllowed, Pattern patForError) throws Exception {
+		if ((matchCount < minAllowed) || (matchCount > maxAllowed)) {
+			throw new Exception("Expected between " + minAllowed + " and " + maxAllowed + " matches for " 
+					+  patForError + ", but got " + matchCount);
+		}
+	}
 	@Override public OT findFirstMatch(Pattern p, int minAllowed, int maxAllowed) throws Exception {
 		// TODO:  Do not need to iterate further than maxAllowed, which is usually not higher than 2.
 		// TODO:  Sanity checks on minAllowed + maxAllowed args.
 		List<OT> matches = collectMatches(p);
 		int matchCount = matches.size();
-		if ((matchCount >= minAllowed) && (matchCount <= maxAllowed)) {
-			return (matchCount > 0) ?  matches.get(0) : null;
-		} else {
-			throw new Exception("Expected between " + minAllowed + " and " + maxAllowed + " matches for " + p + ", but got " + matchCount);
-		}
+		verifyMatchCount(matchCount, minAllowed, maxAllowed, p);
+		return (matchCount > 0) ?  matches.get(0) : null;
 	}
 
 
-	@Override public List<OT> findAllMatches(Pattern p) {
+	@Override public List<OT> findAllMatches(Pattern p, int minAllowed, int maxAllowed)  throws Exception  {
 		List<OT> matches = collectMatches(p);
+		int matchCount = matches.size();
+		verifyMatchCount(matchCount, minAllowed, maxAllowed, p);
 		return matches;
 	}
 
-	@Override public long countMatches(Pattern p) {
-		// TODO:  this can be done more efficiently by delivering to a null receiver (for starters!)
+	@Override public long countMatches(Pattern p, int maxAllowed)  throws Exception  {
+		// TODO:  this can be done much more efficiently by delivering to a null receiver (for starters!)
 		List<OT> matches = collectMatches(p);
+		int matchCount = matches.size();
+		verifyMatchCount(matchCount, 0, maxAllowed, p);
 		return matches.size();
 	}
 

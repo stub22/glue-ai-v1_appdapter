@@ -16,6 +16,8 @@
 package org.appdapter.api.registry;
 
 /**
+ * Maintains state of a particular query result stream from some finder.
+ * 
  * @author Stu B. <www.texpedient.com>
  */
 public class ResultSequence<OT> extends Object {

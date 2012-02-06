@@ -17,67 +17,19 @@ package org.appdapter.module.basic;
 
 import org.appdapter.api.module.Modulator;
 import org.appdapter.api.module.Module;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.appdapter.core.log.BasicDebugger;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public abstract class BasicModule implements Module {
+public abstract class BasicModule<PM extends Modulator> extends BasicDebugger implements Module<PM> {
 	
-	static Logger thefalbackLogger = LoggerFactory.getLogger(BasicModule.class);
-	
-	private		Modulator		myModulator;
+	private		PM				myModulator;
 	private		State			myState = State.PRE_INIT;
 	
 	private		boolean			myStopRequestedFlag = false;
-	
-	private		Logger			myLogger;
-	private		int				myDebugImportanceThreshold = IMPO_NORM;
-	
-	public static int			IMPO_NORM		= 0;
-	public static int			IMPO_LO			= -10;
-	public static int			IMPO_LOLO		= -100;
-	public static int			IMPO_MIN		= Integer.MIN_VALUE;
-	public static int			IMPO_HI			= 10;
-	public static int			IMPO_HIHI		= 100;
-	public static int			IMPO_MAX		= Integer.MAX_VALUE;
-	
-	protected Logger getLogger() {
-		if (myLogger == null) {
-			myLogger = LoggerFactory.getLogger(this.getClass());
-			if (myLogger == null) {
-				myLogger = thefalbackLogger;
-			}
-		}
-		return myLogger;
-	}
-	public synchronized void setLogger(Logger l) {
-		myLogger = l;
-	}
 
-	/*
-	 * More "urgent" debug has higher level, 
-	 * so high threshold means less debug output.
-	 */
-	public void setDebugImportanceThreshold(int thresh) {
-		myDebugImportanceThreshold = thresh;
-	}
-	public boolean checkDebugImportance(int importance) {
-		return (importance >= myDebugImportanceThreshold);
-	}
 
-	public void logDebug(int importance, String msg) {
-		if (checkDebugImportance(importance)) {
-			String formatted = "[imp=" + importance +"] " + msg;
-			Logger log = getLogger();
-			if (log != null) {
-				log.info(formatted);
-			} else {
-				System.out.println("[System.out-BasicModule.logDebug]" + formatted);	
-			}
-		}
-	}
 
 	@Override public State getState() {
 		return myState;
@@ -89,16 +41,16 @@ public abstract class BasicModule implements Module {
 	@Override public boolean isStopRequested() {
 		return myStopRequestedFlag;
 	}
-	@Override public Modulator getModulator() {
+	@Override public PM getParentModulator() {
 		return myModulator;
 	}
 
-	@Override public synchronized void setModulator(Modulator m) {
+	@Override public synchronized void setParentModulator(PM m) {
 		myModulator = m;
 	}
 	protected void notifyStateViolation(String detectingMethod, String expectedStateDesc, boolean throExcept) { 
 		String msg = "[" + detectingMethod + "] found illegal state [" + myState + " instead of expected [" + expectedStateDesc + "]";
-		logDebug(IMPO_HI, msg);
+		logInfo(IMPO_HI, msg);
 		if (throExcept) {
 			throw new RuntimeException(msg);
 		}
@@ -110,8 +62,8 @@ public abstract class BasicModule implements Module {
 	protected void verifyStoredState(String checkingMethod, boolean throExcept, State... allowedStates) {
 		for (State s : allowedStates) {
 			if (myState == s) {
-				// TODO - let logDebug format the string, only after importance check.
-				logDebug(IMPO_LO, "[" + checkingMethod + "] verified storedState: " + s);
+				// TODO - let logInfoEvent format the string, only after importance check.
+				logInfo(IMPO_LO, "[" + checkingMethod + "] verified storedState: " + myState);
 				return;
 			}
 		}
@@ -175,9 +127,13 @@ public abstract class BasicModule implements Module {
 		verifyStoredState("exitBasicReleaseModule", true, State.POST_STOP_OR_FAILED_STARTUP);
 	}
 	
+	public String getDescription() { 
+		return "[class=" + getClass().getSimpleName() + ", state=" + myState + ", stopRQ=" 
+					+ myStopRequestedFlag + "]";
+	}
 
 	@Override public String toString() { 
-		return "[class=" + getClass().getSimpleName() + ", state=" + myState + ", stopRQ=" + myStopRequestedFlag + "]";
+		return getDescription();
 	}
 
 	

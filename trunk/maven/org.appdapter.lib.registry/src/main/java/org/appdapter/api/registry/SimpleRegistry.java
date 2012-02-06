@@ -18,13 +18,32 @@ package org.appdapter.api.registry;
 import java.util.List;
 
 /**
+ * Additional Registry methods which simply ther process of looking for a single matching
+ * object, or all matching objects, for clients who do not wish to work directly with 
+ * Finders and Receivers.
+ * 
  * @author Stu B. <www.texpedient.com>
  */
 public interface SimpleRegistry extends Registry {
 
-	public <OT> OT findRequiredUniqueMatch(Class<OT> objClaz, Pattern p) throws Exception;
+	/**
+	 * @return any match found or null, with no uniqueness constraints, no problem mon.
+	 */
 	public <OT> OT findOptionalFirstMatch(Class<OT> objClaz, Pattern p);
-	public <OT> OT findOptionalUniqueMatch(Class<OT> objClaz, Pattern p) throws Exception;
 	
-	public <OT> List<OT> findAllMatches(Class<OT> objClaz, Pattern p);	
+	/**
+	 * @return exactly one unique match or exception is thrown
+	 */
+
+	public <OT> OT findRequiredUniqueMatch(Class<OT> objClaz, Pattern p) throws Exception;
+	/**
+	 * @return null if nothing, or single unique match, but throws on multi-match
+	 */
+	
+	public <OT> OT findOptionalUniqueMatch(Class<OT> objClaz, Pattern p) throws Exception;
+	/**
+	 * @return all matches, but throws if result size would be outside of inclusive-bounds [minAllowed, maxAllowed]
+	 */
+	
+	public <OT> List<OT> findAllMatches(Class<OT> objClaz, Pattern p, int minAllowed, int maxAllowed) throws Exception;	
 }

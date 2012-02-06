@@ -24,11 +24,12 @@ import org.appdapter.api.registry.Finder;
 import org.appdapter.api.registry.Pattern;
 import org.appdapter.api.registry.SimpleFinder;
 import org.appdapter.api.registry.VerySimpleRegistry;
+import org.appdapter.core.log.BasicDebugger;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public class BasicRegistry implements VerySimpleRegistry {
+public class BasicRegistry extends BasicDebugger implements VerySimpleRegistry {
 	private	Map<Description, Object> myObjectsByDesc;
 	
 	public BasicRegistry() {
@@ -68,9 +69,10 @@ public class BasicRegistry implements VerySimpleRegistry {
 		}
 	}
 
-	@Override public <OT> List<OT> findAllMatches(Class<OT> objClaz, Pattern p) {
+	@Override public <OT> List<OT> findAllMatches(Class<OT> objClaz, Pattern p, int minAllowed, int maxAllowed)
+			throws Exception {
 		BasicFinder<OT> bf = getBasicFinder(objClaz);
-		return bf.findAllMatches(p);
+		return bf.findAllMatches(p, minAllowed, maxAllowed);
 	}
 	protected <OT> List<OT> brutishlyCollectAllMatches (Class<OT> objClz, Pattern p) {
 		List<OT> resultList = new ArrayList<OT>();

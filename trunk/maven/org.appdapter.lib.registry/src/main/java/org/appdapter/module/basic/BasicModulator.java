@@ -20,12 +20,13 @@ import java.util.List;
 import org.appdapter.api.module.Modulator;
 import org.appdapter.api.module.Module;
 import org.appdapter.api.module.Module.State.*;
+import org.appdapter.core.log.BasicDebugger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public class BasicModulator implements Modulator {
+public class BasicModulator extends BasicDebugger implements Modulator {
 	static Logger theLogger = LoggerFactory.getLogger(BasicModulator.class);
 	private List<Module>	myModuleList = new ArrayList<Module>();
 
@@ -52,7 +53,7 @@ public class BasicModulator implements Modulator {
 		
 	}
 	@Override public synchronized void attachModule(Module m) {
-		Modulator prevMod = m.getModulator();
+		Modulator prevMod = m.getParentModulator();
 		if (prevMod != null) {
 			throw new RuntimeException("Modulator[" + this + "] cannot attach module [" + m 
 							+ "] with existing modulator [" + prevMod + "]");
@@ -62,12 +63,12 @@ public class BasicModulator implements Modulator {
 			throw new RuntimeException("Modulator[" + this + "] cannot attach module [" + m 
 							+ "] in action state [" + modState + "]");
 		}
-		m.setModulator(this);
+		m.setParentModulator(this);
 		myModuleList.add(m);
 	}
 
 	@Override public synchronized void detachModule(Module m) {
-		Modulator prevMod = m.getModulator();
+		Modulator prevMod = m.getParentModulator();
 		if (prevMod != this) {
 			throw new RuntimeException("Modulator[" + this + "] cannot detach from module [" + m + 
 							"] with different modulator [" + prevMod);
@@ -77,17 +78,22 @@ public class BasicModulator implements Modulator {
 			throw new RuntimeException("Modulator[" + this + "] cannot attach module [" + m 
 							+ "] in action state [" + modState + "]");
 		}
-		m.setModulator(null);
+		m.setParentModulator(null);
 		myModuleList.remove(m);
 	}
 
 	@Override public int getAttachedModuleCount() {
 		return myModuleList.size();
 	}
-
+	/*
+	 * 
+	 */
 	@Override public synchronized void processOneBatch() {
 		// process lifecycle in reverse chronological order, to ensure that a particular module can advance
 		// no more than one state per batch.
+		
+		//TODO - verify that this thread is not already inside a callback of one of our own modules
+		
 		dumpModules();
 		processFinishedModules();
 		processStoppingModules();
@@ -174,7 +180,7 @@ public class BasicModulator implements Modulator {
 	}
 	
 	public void dumpModules() { 
-		theLogger.info("Modules: " + myModuleList);
+		theLogger.debug("Modules", myModuleList);
 	}
 	
 }
