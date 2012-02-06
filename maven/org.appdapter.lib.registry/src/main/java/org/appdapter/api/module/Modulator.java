@@ -22,9 +22,9 @@ public interface Modulator {
 	
 
 	/*
-	 *  A module may be attached to only one Modulator, and must be detached from
-	 *  old Modulator before attached to a new one.  Attach+Detach may occur at any time 
-	 *  that it is NOT in an action module.
+	 *  A module may be attached to only one Modulator, called its ParentModulator, and must 
+	 *	be detached from old Modulator before attached to a new one.  Attach+Detach may occur 
+	 * at any time that it is NOT in an action module.
 	 * 
 	 *  attachModule is responsible for setting the module's modulator to itself.
 	 */
@@ -43,6 +43,10 @@ public interface Modulator {
 	/* All action method calls to Modules must take place during a call to processOneBatch.
 	 * A Modulator must be able to do all its work simply by being asked to processOneBatch
 	 * repeatedly.  
+	 * 
+	 * A child module of this Modulator may not call processOneBatch from any of its work
+	 * methods, although in principle that child module can run its own modulators, and
+	 * process batches on them.
 	 */
 	public void processOneBatch();
 		

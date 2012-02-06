@@ -16,6 +16,9 @@
 package org.appdapter.api.registry;
 
 /**
+ * A registry is able to register Object+Description pairs, and generate Finders
+ * that can search through the registered pairs.
+ * 
  * @author Stu B. <www.texpedient.com>
  */
 public interface Registry {
@@ -24,5 +27,9 @@ public interface Registry {
 	// or two descriptions for "same" object?
 	
 	public void registerObject(Object o, Description d);
+	
+	/**
+	 * @return a Finder that can search the Registry for objects of the given class OT.
+	 */
 	public <OT> Finder<OT> getFinder(Class<OT> objClaz);
 }

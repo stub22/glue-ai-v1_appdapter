@@ -17,17 +17,21 @@
 package org.appdapter.registry.test;
 
 import org.appdapter.api.registry.VerySimpleRegistry;
+import org.appdapter.core.log.BasicDebugger;
 import org.appdapter.osgi.registry.RegistryServiceFuncs;
-import org.appdapter.registry.basic.BasicRegistry;
 
 /**
  * @author Stu B. <www.texpedient.com>
  *
  */
-public class BasicRegistryTestOne 
-{
+public class BasicRegistryTestOne extends BasicDebugger {
     public static void main( String[] args ) {
-        System.out.println( "Hello World!" );
+		BasicRegistryTestOne brto = new BasicRegistryTestOne();
+		brto.doTest(args);
+	}
+	public void doTest(String[] args ) { 
+		logInfo("START - args=" + args.toString());
+       
 		
 		VerySimpleRegistry vsr = RegistryServiceFuncs.getTheWellKnownRegistry();
 		
@@ -36,20 +40,20 @@ public class BasicRegistryTestOne
 			vsr.registerNamedObject(new Long(35), name35);
 			Number optNum35 = vsr.findOptionalUniqueNamedObject(Number.class, name35);
 			
-			System.out.println("Found optional number: " + optNum35);
+			logInfo("Found optional number: " + optNum35);
 			
 			Number reqNum35 = vsr.findRequiredUniqueNamedObject(Number.class, "thirty five");
 			
-			System.out.println("Found required number: " + optNum35);
+			logInfo("Found required number: " + optNum35);
 			
 			String optFailed35 = vsr.findOptionalUniqueNamedObject(String.class, name35);
 			
-			System.out.println("Should have found null: " + optFailed35);
-			System.out.println("Next line should throw.");
+			logInfo("Should have found null: " + optFailed35);
+			logInfo("Next line should throw.");
 			
 			String reqFailed35 = vsr.findRequiredUniqueNamedObject(String.class, name35);
 			
-			System.out.println("Oops, got: " + reqFailed35);			
+			logInfo("Oops, got: " + reqFailed35);			
 
 		} catch (Throwable t) { 
 			t.printStackTrace();

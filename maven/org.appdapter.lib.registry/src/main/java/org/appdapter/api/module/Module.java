@@ -18,10 +18,13 @@ package org.appdapter.api.module;
 /**
  * A Module has 5 ActionMethods = [initModule(), start(), runOnce(), stop(), releaseModule()]
  * and 8 formal states.
+ * 
+ * A Module has a ParentModulator which it may use to perform any system interactions, as
+ * permitted by the type interface of the PM.
  * 		 
  * @author Stu B. <www.texpedient.com>
  */
-public interface Module {
+public interface Module<ParentModulator extends Modulator> {
 	public enum State {
 		// [initial]				=> PRE_INIT,
 		
@@ -92,13 +95,14 @@ public interface Module {
 	 * must be "made by" the Modulator.
 	 * 
 	 */
-	public void setModulator(Modulator m);
+	public void setParentModulator(ParentModulator pm);
 	
 	/**
+	 * The Module must have a valid parentModulator whenever it is inside a module action callback.
 	 * @return Current Modulator, subject to synchronization behavior of this module.
 	 */
 	
-	public Modulator getModulator();
+	public ParentModulator getParentModulator();
 	
 	/**  Modulator must be set when initModule is called.  initModule is called exactly
 	 *  once, by the modulator, and can be First method called on Module, and called only once. 
