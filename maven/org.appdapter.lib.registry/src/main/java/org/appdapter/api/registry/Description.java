@@ -18,14 +18,18 @@ package org.appdapter.api.registry;
 import java.io.Serializable;
 
 /**
- * @author Stu B. <www.texpedient.com>
+ * Description defines the queryable and matchable aspects of some object that is placed in
+ * a registry or sought in a registry.
  * 
  * Description must properly implement hashCode() and equals(), so it can serve as a container key.
  * It also must be a serializable java object, although a Registry may choose to avoid serialization
  * to avoid possible version conflicts.
  * 
  * The description can *optionally* keep a (transient) link to the described object.
+ * 
+ *  @author Stu B. <www.texpedient.com>
  */
+
 public interface Description extends Serializable {
 	public String	getName();
 }

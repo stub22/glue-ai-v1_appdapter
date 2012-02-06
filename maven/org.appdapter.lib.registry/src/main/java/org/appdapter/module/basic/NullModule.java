@@ -15,37 +15,39 @@
  */
 package org.appdapter.module.basic;
 
+import org.appdapter.api.module.Modulator;
+
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public class NullModule extends BasicModule {
+public class NullModule<PM extends Modulator>  extends BasicModule<PM> {
 	@Override public synchronized void initModule() {
 		enterBasicInitModule(true);
-		logDebug(IMPO_NORM, "initModule");
+		logInfo(IMPO_NORM, "initModule");
 		exitBasicInitModule(true);
 	}
 	
 	@Override public synchronized void start() {
 		enterBasicStart();
-		logDebug(IMPO_NORM, "start");
+		logInfo(IMPO_NORM, "start");
 		exitBasicStart();
 	}
 
 	@Override public synchronized void runOnce() {
 		enterBasicRunOnce();
-		logDebug(IMPO_NORM, "runOnce");
+		logInfo(IMPO_NORM, "runOnce");
 		exitBasicRunOnce();
 	}
 
 	@Override public synchronized void stop() {
 		enterBasicStop();
-		logDebug(IMPO_NORM, "stop");
+		logInfo(IMPO_NORM, "stop");
 		exitBasicStop();
 	}
 
 	@Override public synchronized void releaseModule() {
 		enterBasicReleaseModule();
-		logDebug(IMPO_NORM, "releaseModule");
+		logInfo(IMPO_NORM, "releaseModule");
 		exitBasicReleaseModule();
 	}
 

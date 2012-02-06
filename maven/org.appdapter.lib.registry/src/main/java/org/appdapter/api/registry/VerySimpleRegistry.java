@@ -16,6 +16,9 @@
 package org.appdapter.api.registry;
 
 /**
+ * Additional Registry methods making it easy to look up an object by exact match to the name 
+ * field of its description.
+ * 
  * @author Stu B. <www.texpedient.com>
  */
 public interface VerySimpleRegistry extends SimpleRegistry {

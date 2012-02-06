@@ -17,9 +17,12 @@ package org.appdapter.registry.test;
 
 import org.appdapter.api.module.Modulator;
 import org.appdapter.api.registry.VerySimpleRegistry;
+import org.appdapter.core.log.BasicDebugger;
 import org.appdapter.module.basic.BasicModulator;
 import org.appdapter.module.basic.BasicModule;
+import org.appdapter.module.basic.EmptyTimedModule;
 import org.appdapter.module.basic.NullModule;
+import org.appdapter.module.basic.TimedModule;
 import org.appdapter.osgi.registry.RegistryServiceFuncs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,36 +30,36 @@ import org.slf4j.LoggerFactory;
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public class BasicModuleTestOne {
+public class BasicModuleTestOne extends BasicDebugger {
 
 	static Logger theLogger = LoggerFactory.getLogger(BasicModuleTestOne.class);
 
-	public static class PowerModule extends NullModule {
+	public static class PowerModule extends NullModule<BasicModulator> {
 
 		@Override public synchronized void runOnce() {
 			enterBasicRunOnce();
-			logDebug(IMPO_NORM, "PowerModule runOnce body");
+			Long runStart = logInfoEvent(IMPO_NORM, true, null, "runOnce", "BEGIN");
+			BasicModulator parentBM = getParentModulator();
+			logInfoEvent(IMPO_NORM, true, runStart, "runOnce", "");
 			exitBasicRunOnce();
 		}
 	}
 
-	public static void log(String msg) {
-		System.out.println(msg);
-	}
-
-	public static void processBatches(Modulator mu, int count) {
+	public void processBatches(Modulator mu, int count) {
 		for (int i = 0; i < count; i++) {
 			mu.processOneBatch();
 		}
 	}
 
-	public static void syncTest() {
+	public void syncTest() {
 		final Modulator mu = new BasicModulator();
 
 		processBatches(mu, 5);
 		PowerModule pm1 = new PowerModule();
 		pm1.setDebugImportanceThreshold(BasicModule.IMPO_MIN);
 		mu.attachModule(pm1);
+		EmptyTimedModule etm = new EmptyTimedModule();
+		mu.attachModule(etm);
 		processBatches(mu, 10);
 		pm1.markStopRequested();
 		processBatches(mu, 5);
@@ -64,7 +67,7 @@ public class BasicModuleTestOne {
 		processBatches(mu, 5);
 	}
 
-	public static void asyncTest() throws Throwable {
+	public void asyncTest() throws Throwable {
 
 		final Modulator mu = new BasicModulator();
 		Thread runner = new Thread(new Runnable() {
@@ -74,7 +77,7 @@ public class BasicModuleTestOne {
 					try {
 						mu.processOneBatch();
 					} catch (Throwable t) {
-						log("Caught " + t.toString());
+						logError("Caught", t);
 					}
 				}
 			}
@@ -90,20 +93,23 @@ public class BasicModuleTestOne {
 		mu.detachModule(pm1);
 		Thread.sleep(20);
 	}
-
-	public static void main(String[] args) {
-		theLogger.info("------------BasicModuleTestOne-----------");
+	public void runTest() { 
+		logInfo("------------BasicModuleTestOne-----------");
 
 		VerySimpleRegistry vsr = RegistryServiceFuncs.getTheWellKnownRegistry();
 
 		try {
 			syncTest();
-			theLogger.info("========================================");
+			logInfo("========================================");
 			asyncTest();
 
 		} catch (Throwable t) {
 			t.printStackTrace();
 		}
-
+		
+	}
+	public static void main(String[] args) {
+		BasicModuleTestOne bmto = new BasicModuleTestOne();
+		bmto.runTest();
 	}
 }

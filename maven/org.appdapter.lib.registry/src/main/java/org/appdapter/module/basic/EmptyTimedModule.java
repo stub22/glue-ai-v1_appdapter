@@ -13,20 +13,28 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+package org.appdapter.module.basic;
 
-package org.appdapter.api.registry;
-
-import java.io.Serializable;
+import org.appdapter.api.module.Modulator;
 
 /**
- * Pattern is able to check whether it is matched by a Description.
- * 
- * Pattern must properly implement hashCode() and equals(), so it can serve as a container key.
- * It also must be a serializable java object, although a Registry may choose to avoid serialization
- * to avoid possible version conflicts.
- * 
- *  @author Stu B. <www.texpedient.com>
+ * @author Stu B. <www.texpedient.com>
  */
-public interface Pattern extends Serializable {
-	public boolean matches(Description d);
+public class EmptyTimedModule<Mlator extends Modulator> extends TimedModule<Mlator> {
+
+	@Override protected void doInit(Mlator mlator) {
+	}
+
+	@Override protected void doStart(Mlator mlator) {
+	}
+
+	@Override protected void doRunOnce(Mlator mlator, long runSeqNum) {
+	}
+
+	@Override protected void doStop(Mlator mlator) {
+	}
+
+	@Override protected void doRelease(Mlator mlator) {
+	}
+	
 }

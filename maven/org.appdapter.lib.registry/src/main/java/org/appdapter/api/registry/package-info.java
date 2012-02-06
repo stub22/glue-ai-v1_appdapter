@@ -14,19 +14,11 @@
  *  limitations under the License.
  */
 
-package org.appdapter.api.registry;
-
-import java.io.Serializable;
-
 /**
- * Pattern is able to check whether it is matched by a Description.
  * 
- * Pattern must properly implement hashCode() and equals(), so it can serve as a container key.
- * It also must be a serializable java object, although a Registry may choose to avoid serialization
- * to avoid possible version conflicts.
- * 
- *  @author Stu B. <www.texpedient.com>
+ * <p>
+ * Our Registry system allows objects to be registered and looked up in a type-safe manner,
+ * with optionally guarded result size, and flexibility in result delivery to client code.
+ * </p>
  */
-public interface Pattern extends Serializable {
-	public boolean matches(Description d);
-}
+package org.appdapter.api.registry;
