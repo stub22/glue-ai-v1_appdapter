@@ -27,6 +27,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * Can work with or without OSGi.   To use (possibly) outside of OSGi, 
+ * use getTheWellKnownRegistry() (flexible, will try OSGi lookup first),
+ * or, to be extra <i>something</i>, you could call getTheWellKnownStaticRegistry(),
+ * but that will cause trouble if you really are in OSGi.
  * @author Stu B. <www.texpedient.com>
  */
 public class RegistryServiceFuncs {
@@ -39,17 +43,38 @@ public class RegistryServiceFuncs {
 	// Used for testing when there is no OSGi framework available.
 	// Should always be null in an OSGi environment.
 	private static VerySimpleRegistry	theNonOsgiWKR;
-	
+	/**
+	 *  Requires OSGi context.
+	 * @param <RT>
+	 * @param bundleCtx
+	 * @param regClazz
+	 * @param wellKnownReg
+	 * @return 
+	 */
 	public static <RT extends Registry> ServiceRegistration registerTheWellKnownRegistry(BundleContext bundleCtx, 
 					Class<RT> regClazz, RT wellKnownReg) {
 		// OSGi 4.3  return bundleCtx.registerService(regClazz, wellKnownReg, null);
 		// OSGi 4.2
 		return bundleCtx.registerService(regClazz.getName(), wellKnownReg, null);
 	}
+	/**
+	 *  Requires OSGi context.
+	 * @param bundleCtx
+	 * @param wellKnownReg
+	 * @return 
+	 */
 	public static  ServiceRegistration registerTheWellKnownRegistry(BundleContext bundleCtx, 
 					VerySimpleRegistry wellKnownReg) {
 		return registerTheWellKnownRegistry(bundleCtx, VerySimpleRegistry.class, wellKnownReg);
-	}		
+	}
+	/**
+	 *  Requires OSGi context.
+	 * 
+	 * @param <RT>
+	 * @param bundleCtx
+	 * @param rtClazz
+	 * @return 
+	 */
 	public static <RT extends Registry> RT lookupTheWellKnownRegistry(BundleContext bundleCtx, Class<RT> rtClazz) {
 		ServiceReference ref = bundleCtx.getServiceReference(rtClazz.getName());
 		if(ref == null){
@@ -57,19 +82,18 @@ public class RegistryServiceFuncs {
 		}
 		return (RT) bundleCtx.getService(ref);
 	}
+	/** Requires OSGi context.
+	 * 
+	 */
 	public static VerySimpleRegistry lookupTheWellKnownRegistry(BundleContext bundleCtx) { 
 		return lookupTheWellKnownRegistry(bundleCtx, VerySimpleRegistry.class);
 	}
-	
-	public static VerySimpleRegistry getTheWellKnownRegistry(BundleContext bundleCtx) {
-		if (bundleCtx == null) {
-			theLogger.info("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  Getting singleton WellKnownRegistry in non-OSGi context");
-			if (theNonOsgiWKR == null) { 
-				theLogger.info("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  Making singleton WellKnownRegistry for non-OSGi context");
-				theNonOsgiWKR = new BasicRegistry();
-			}
-			return theNonOsgiWKR;
-		}
+	/**
+	 * Use this when you are sure you should be in OSGi, and bundleCtx should not be null.
+	 * @param bundleCtx
+	 * @return 
+	 */
+	public static VerySimpleRegistry getTheWellKnownRegistryUsingReqContext(BundleContext bundleCtx) {
 		// Find the existing registry, OR make it
 		VerySimpleRegistry vsr = lookupTheWellKnownRegistry(bundleCtx);
 		if (vsr == null) {
@@ -80,7 +104,36 @@ public class RegistryServiceFuncs {
 			vsr = lookupTheWellKnownRegistry(bundleCtx);
 		}
 		return vsr;
+	}	
+	/**
+	 *  Don't use in OSGi context, b/c you will probably wind up with two separate well known registries. 
+	 */
+	public static VerySimpleRegistry getTheWellKnownStaticRegistry() {
+		theLogger.info("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  Getting singleton WellKnownRegistry in non-OSGi context");
+		if (theNonOsgiWKR == null) { 
+			theLogger.info("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  Making singleton WellKnownRegistry for non-OSGi context");
+			theNonOsgiWKR = new BasicRegistry();
+		}
+		return theNonOsgiWKR;
+	}	
+	/** Will use the bundleCtx, if it is not null.  Else will use static registry.
+	 * 
+	 * @param bundleCtx
+	 * @return 
+	 */
+	public static VerySimpleRegistry getTheWellKnownRegistryUsingOptContext(BundleContext bundleCtx) {
+		if (bundleCtx != null) {
+			return getTheWellKnownRegistryUsingReqContext(bundleCtx);
+		} else {
+			return getTheWellKnownStaticRegistry();
+		} 
 	}
+	
+	/**
+	 * Attempts to find OSGi bundle context, using OSG Framework.getBundle(RegistryServiceFuncs.class).
+	 * Uses it when successful, otherwise uses static version.
+	 * @return 
+	 */
 	public static VerySimpleRegistry getTheWellKnownRegistry() {
 		BundleContext localBundleCtx = null;
 		Bundle localBundle = FrameworkUtil.getBundle(RegistryServiceFuncs.class);
@@ -89,7 +142,8 @@ public class RegistryServiceFuncs {
 		} else {
 			theLogger.warn("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  Cannot get local bundle - we are outside OSGi!");
 		}
-		return getTheWellKnownRegistry(localBundleCtx);
+		return getTheWellKnownRegistryUsingOptContext(localBundleCtx);
 	}
+
 
 }
