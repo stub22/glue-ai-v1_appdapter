@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.appdapter</groupId>
 		<artifactId>org.appdapter.modules.felix</artifactId>
-		<version>1.0.4</version>
+		<version>1.0.5-SNAPSHOT</version>
 		<relativePath>../org.appdapter.modules.felix/pom.xml</relativePath>
 	</parent>
 
