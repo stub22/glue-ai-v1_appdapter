@@ -27,7 +27,8 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
+/**  Base implementation of our demo Swing Panel boxes.  
+ * <br/> 
  * @author Stu B. <www.texpedient.com>
  */
 public class BoxImpl<TrigType extends Trigger<? extends BoxImpl<TrigType>>> extends KnownComponentImpl implements KnownComponent, MutableBox<TrigType>, ViewableBox<TrigType> {

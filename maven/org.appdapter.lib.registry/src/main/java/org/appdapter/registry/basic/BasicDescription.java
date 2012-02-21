@@ -19,11 +19,10 @@ import org.appdapter.api.registry.Description;
 
 /**
  * @author Stu B. <www.texpedient.com>
- * 
- * TODO:  Descriptions must be immutable
+ * This class is final to prevent identity/equality mishaps.
  */
-public class BasicDescription implements Description {
-	private String myName;
+public final class BasicDescription implements Description {
+	private final String myName;
 	public BasicDescription(String name) {
 		myName = name;
 	}
