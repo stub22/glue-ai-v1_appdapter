@@ -96,7 +96,7 @@ public class BasicModuleTestOne extends BasicDebugger {
 	public void runTest() { 
 		logInfo("------------BasicModuleTestOne-----------");
 
-		VerySimpleRegistry vsr = RegistryServiceFuncs.getTheWellKnownRegistry();
+		VerySimpleRegistry vsr = RegistryServiceFuncs.getTheWellKnownRegistry(getClass());
 
 		try {
 			syncTest();

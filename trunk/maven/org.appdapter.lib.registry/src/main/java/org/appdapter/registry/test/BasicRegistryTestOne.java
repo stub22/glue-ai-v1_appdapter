@@ -33,7 +33,7 @@ public class BasicRegistryTestOne extends BasicDebugger {
 		logInfo("START - args=" + args.toString());
        
 		
-		VerySimpleRegistry vsr = RegistryServiceFuncs.getTheWellKnownRegistry();
+		VerySimpleRegistry vsr = RegistryServiceFuncs.getTheWellKnownRegistry(getClass());
 		
 		try {
 			String name35 =  "thirty five";
