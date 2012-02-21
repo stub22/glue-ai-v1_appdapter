@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
  */
 public class RegistryServiceFuncs {
 	
-	static Logger theLogger = LoggerFactory.getLogger(RegistryServiceFuncs.class);
+	private static Logger theLogger = LoggerFactory.getLogger(RegistryServiceFuncs.class);
 	
 	public static Class	THE_WELL_KNOWN_REG_DEFAULT_INTF = VerySimpleRegistry.class;
 	public static Class	THE_WELL_KNOWN_REG_DEFAULT_IMPL = BasicRegistry.class;
@@ -139,6 +139,11 @@ public class RegistryServiceFuncs {
 		Bundle localBundle = FrameworkUtil.getBundle(RegistryServiceFuncs.class);
 		if (localBundle != null) { 
 			localBundleCtx  = localBundle.getBundleContext();
+			if (localBundleCtx != null) {
+				theLogger.info("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  Found legit localBundleCtx: " + localBundleCtx);
+			} else {
+				theLogger.warn("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  Cannot get locaBundleCtx - permissions problem?");
+			}
 		} else {
 			theLogger.warn("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  Cannot get local bundle - we are outside OSGi!");
 		}

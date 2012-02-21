@@ -40,6 +40,10 @@ public class BasicRegistry extends BasicDebugger implements VerySimpleRegistry {
 		myObjectsByDesc.put(d, o);
 	}
 
+	/*
+	 * From DeletingRegistry interface.
+	 * 
+	 */
 
 	@Override public <OT> Finder<OT> getFinder(Class<OT> objClaz) {
 		return new BasicFinder(this, objClaz);

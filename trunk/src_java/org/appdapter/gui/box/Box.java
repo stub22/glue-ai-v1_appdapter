@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * A Box is some entity displayable (perhaps in pieces) and interactable in GUI.
  * It is not necessarily a rectangular graphical area, although it might be.
- * Sometimes it is more like a wooden box of stuff, maybe a round one...
+ * Sometimes it is more like a wooden box of stuff, maybe a round one.
  *
  * @author Stu B. <www.texpedient.com>
  */
