@@ -134,18 +134,18 @@ public class RegistryServiceFuncs {
 	 * Uses it when successful, otherwise uses static version.
 	 * @return 
 	 */
-	public static VerySimpleRegistry getTheWellKnownRegistry() {
+	public static VerySimpleRegistry getTheWellKnownRegistry(Class osgiCredentialClaz) {
 		BundleContext localBundleCtx = null;
-		Bundle localBundle = FrameworkUtil.getBundle(RegistryServiceFuncs.class);
+		Bundle localBundle = FrameworkUtil.getBundle(osgiCredentialClaz);
 		if (localBundle != null) { 
 			localBundleCtx  = localBundle.getBundleContext();
 			if (localBundleCtx != null) {
-				theLogger.info("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  Found legit localBundleCtx: " + localBundleCtx);
+				theLogger.debug("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  Found legit bundleCtx " + localBundleCtx + " associated to bundle " + localBundle + " via credClaz: " + osgiCredentialClaz);
 			} else {
-				theLogger.warn("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  Cannot get locaBundleCtx - permissions problem?");
+				theLogger.warn("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  bundle getBundleContext() returned null - OSGi permissions or load-ordering problem for bundle [" + osgiCredentialClaz + "] via credClaz[" + osgiCredentialClaz + "]");
 			}
 		} else {
-			theLogger.warn("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  Cannot get local bundle - we are outside OSGi!");
+			theLogger.warn("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  Cannot get local bundle for - we are assumed to be outside OSGi (credentialClaz=" + osgiCredentialClaz + ")");
 		}
 		return getTheWellKnownRegistryUsingOptContext(localBundleCtx);
 	}
