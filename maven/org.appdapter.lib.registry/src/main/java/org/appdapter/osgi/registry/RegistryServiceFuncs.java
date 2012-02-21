@@ -89,7 +89,7 @@ public class RegistryServiceFuncs {
 		return lookupTheWellKnownRegistry(bundleCtx, VerySimpleRegistry.class);
 	}
 	/**
-	 * Use this when you are sure you should be in OSGi, and bundleCtx should not be null.
+	 * Use this when you are sure you should be in OSGi, and willing to bring us a bona-fide non-null bundleCtx.
 	 * @param bundleCtx
 	 * @return 
 	 */
