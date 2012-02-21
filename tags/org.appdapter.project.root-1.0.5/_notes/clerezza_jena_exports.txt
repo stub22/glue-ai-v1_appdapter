@@ -1,0 +1,76 @@
+
+
+                    <instructions>
+                        <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
+						<Embed-Dependency>*;artifactId=!commons-logging</Embed-Dependency>
+                        <Embed-Transitive>true</Embed-Transitive>
+						<Import-Package>!com.hp.hpl.jena.*.test,
+						!org.apache.xml.resolver.*,!sun.*,
+						!com.sun.msv.*,
+						!com.sun.jdmk.*,
+						!javax.jms.*,
+						!org.relaxng.*,
+						!com.ibm.uvm.tools,
+						!javax.jmdns,
+						*</Import-Package>
+						<Export-Package>com.hp.hpl.jena.*, org.apache.xerces.util</Export-Package>
+                    </instructions>
+					
+
+com.hp.hpl.jena.sparql.core,com.hp.hpl.jena.sparql.engine,com.hp.hpl.
+ jena.sparql.function.library",org.apache.xerces.util
+Ignore-Package: com.sun.jdmk.comm,javax.jmdns,com.hp.hpl.jena.iri.test
+ ,com.sun.msv.reader.util,javax.jms,com.ibm.uvm.tools,com.sun.msv.read
+ er.trex.ng,com.sun.msv.reader,org.relaxng.datatype,org.apache.xml.res
+ olver.readers,com.sun.msv.verifier.regexp,com.sun.msv.util,sun.io,com
+ .sun.msv.grammar,com.sun.msv.verifier,org.apache.xml.resolver,sun.mis
+ c,com.sun.msv.grammar.trex
+Bundle-ClassPath: .,lucene-core-2.3.1.jar,iri-0.8.jar,jena-2.6.4.jar,w
+ stx-asl-3.2.9.jar,slf4j-api-1.6.1.jar,log4j-1.2.16.jar,stax-api-1.0.1
+ .jar,slf4j-log4j12-1.5.8.jar,slf4j-simple-1.6.1.jar,icu4j-3.4.4.jar,a
+ rq-2.8.7.jar,xml-apis-1.3.04.jar,slf4j-scala-api-1.6.1-incubating-SNA
+ PSHOT.jar,xercesImpl-2.9.1.jar,scala-library-2.8.1.jar
+Built-By: jenkins
+Tool: Bnd-0.0.357
+Bundle-Name: Clerezza Ext - Jena OSGi Bundle
+Created-By: Apache Maven Bundle Plugin
+Build-Jdk: 1.6.0_20
+Bundle-Version: 0.6.0.incubating-SNAPSHOT
+Bnd-LastModified: 1312675507823
+Embed-Transitive: true
+Bundle-ManifestVersion: 2
+Bundle-License: http://www.apache.org/licenses/LICENSE-2.0.txt
+Bundle-Description: All required dependencies for Jena
+Bundle-SymbolicName: com.hp.hpl.jena
+Import-Package: com.hp.hpl.jena,com.hp.hpl.jena.assembler,com.hp.hpl.j
+ ena.assembler.assemblers,com.hp.hpl.jena.assembler.exceptions,com.hp.
+ 
+ 
+ 
+ 
+
+
+
+     [java] g!  INFO [AWT-EventQueue-0] (BridgeTriggers.java:39) - MountSubmenuF
+romTriplesTrigger-loadSubmenus[trigger-field-summary-goes-here]-mounting-submenu
+
+     [java]  INFO [AWT-EventQueue-0] (BridgeTriggers.java:43) - [SLF4J] resolved
+ resource URL: bundle://36.0:1/org/appdapter/democonf/app/boxdemo/boxy_001.ttl
+     [java] SLF4J: Class path contains multiple SLF4J bindings.
+     [java] SLF4J: Found binding in [bundle://49[System.out] resolved resource U
+RL: bundle://36.0:1/org/appdapter/democonf/app/boxdemo/boxy_001.ttl
+     [java] .0:9/org/slf4j/impl/StaticLoggerBinder.class]
+     [java] SLF4J: Found binding in [bundle://49.0:10/org/slf4j/impl/StaticLogge
+rBinder.class]
+     [java] SLF4J: See http://www.slf4j.org/codes.html#multiple_bindings for an
+explanation.
+     [java] SLF4J: The requested version 1.5.8 by your slf4j binding is not comp
+atible with [1.6]
+     [java] SLF4J: See http://www.slf4j.org/codes.html#version_mismatch for furt
+her details.
+     [java] Exception in thread "AWT-EventQueue-0" com.hp.hpl.jena.shared.NotFou
+ndException: Not found: bundle://36.0:1/org/appdapter/democonf/app/boxdemo/boxy_
+001.ttl
+
+
+
