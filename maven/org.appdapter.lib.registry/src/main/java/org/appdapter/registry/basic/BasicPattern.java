@@ -19,6 +19,8 @@ import org.appdapter.api.registry.Description;
 import org.appdapter.api.registry.Pattern;
 
 /**
+ * A BasicPattern simply matches candidate desciptions for ".equals()" with a single target description.
+ * 
  * @author Stu B. <www.texpedient.com>
  */
 public class BasicPattern implements Pattern {

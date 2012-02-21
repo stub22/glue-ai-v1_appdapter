@@ -17,14 +17,20 @@ package org.appdapter.api.registry;
 
 /**
  * A registry is able to register Object+Description pairs, and generate Finders
- * that can search through the registered pairs.
+ * that can search through the registered pairs.   Semantics for deletion or 
+ * replacement of object references is so far left to subtypes, as is the meaning
+ * of "equal" objects or descriptions.
  * 
  * @author Stu B. <www.texpedient.com>
  */
 public interface Registry {
 	
-	// What is defined behavior if we register two objects for "same" description,
-	// or two descriptions for "same" object?
+	/** Open questions:
+	 * 
+	 *	1) What is defined behavior if we register two objects for "same" description,
+	 *		or two descriptions for "same" object?
+	 *
+	 */
 	
 	public void registerObject(Object o, Description d);
 	
