@@ -142,10 +142,10 @@ public class RegistryServiceFuncs {
 			if (localBundleCtx != null) {
 				theLogger.debug("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  Found legit bundleCtx " + localBundleCtx + " associated to bundle " + localBundle + " via credClaz: " + osgiCredentialClaz);
 			} else {
-				theLogger.warn("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  bundle getBundleContext() returned null - OSGi permissions or load-ordering problem for bundle [" + osgiCredentialClaz + "] via credClaz[" + osgiCredentialClaz + "]");
+				theLogger.warn("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  bundle getBundleContext() returned null - OSGi permissions or load-ordering problem for bundle [" + localBundle + "] via credClaz[" + osgiCredentialClaz + "]");
 			}
 		} else {
-			theLogger.warn("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  Cannot get local bundle for - we are assumed to be outside OSGi (credentialClaz=" + osgiCredentialClaz + ")");
+			theLogger.warn("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  Cannot get local bundle, so we are assumed to be outside OSGi (credentialClaz=" + osgiCredentialClaz + ")");
 		}
 		return getTheWellKnownRegistryUsingOptContext(localBundleCtx);
 	}
