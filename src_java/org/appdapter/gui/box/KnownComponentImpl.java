@@ -52,6 +52,6 @@ public abstract class KnownComponentImpl implements MutableKnownComponent {
 	protected abstract String getFieldSummary();
 
 	@Override public String toString() {
-		return this.getClass().getSimpleName() + "-" + getShortLabel() + "[" + getFieldSummary() + "]";
+		return this.getClass().getSimpleName() + "-" + hashCode() + "-" + getShortLabel() + "[" + getFieldSummary() + "]";
 	}
 }
