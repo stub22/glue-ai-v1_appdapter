@@ -37,11 +37,9 @@ public class BridgeTriggers {
 			theLogger.info(toString() + ".fire()");
 			BoxContext bc = targetBox.getBoxContext();
 
-			String triplesURL = DemoResources.MENU_ASSEMBLY_PATH; // DemoResources.resolveResourceURL(DemoResources.MENU_ASSEMBLY_PATH);
-			triplesURL = "org/appdapter/democonf/app/boxdemo/boxy_001.ttl";
-			System.out.println("Resolved triplesURL: " + triplesURL);
+			String triplesURL = DemoResources.MENU_ASSEMBLY_PATH; 
 			AssemblerUtils.ensureClassLoaderRegisteredWithJenaFM(DemoResources.class.getClassLoader());
-			theLogger.info("Loading triples file: " + triplesURL);
+			theLogger.info("Loading triples from URL: " + triplesURL);
 			Set<Object> loadedStuff = AssemblerUtils.buildAllObjectsInRdfFile(triplesURL);
 			theLogger.info("Loaded " + loadedStuff.size() + " objects");
 			for (Object o : loadedStuff) {

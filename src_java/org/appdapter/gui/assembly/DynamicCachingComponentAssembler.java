@@ -20,11 +20,16 @@ import org.appdapter.core.item.Ident;
 import org.appdapter.core.item.Item;
 import org.appdapter.gui.box.MutableKnownComponent;
 import org.appdapter.gui.box.TriggerImpl;
+import com.hp.hpl.jena.rdf.model.Resource;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
 public abstract class DynamicCachingComponentAssembler<MKC extends MutableKnownComponent> extends CachingComponentAssembler<MKC> {
+	
+	public DynamicCachingComponentAssembler(Resource r) {
+		super(r);
+	}
 	@Override protected Class<MKC> decideComponentClass(Ident componentID, Item componentConfigItem) {
 		String jfqcn = readConfigValString(componentID, AssemblyNames.P_javaFQCN, componentConfigItem, null);
 		if (jfqcn != null) {

@@ -22,6 +22,7 @@ import com.hp.hpl.jena.rdf.model.NodeIterator;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.rdf.model.RDFList;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -85,17 +86,24 @@ public class JenaResourceItem extends BaseItem implements ModelIdent {
 		}
 		return results;
 	}
-	@Override protected Literal getLiteralVal(Ident fieldID, boolean throwOnFailure) {
+	protected RDFNode getSinglePropertyVal(Ident fieldID, boolean throwOnFailure) {
 		List<RDFNode> nodes = getPropertyValues(fieldID);
 		int nodeListSize = nodes.size();
 		if (nodeListSize == 1) {
-			RDFNode firstNode = nodes.get(0);
-			return firstNode.asLiteral();
+			return nodes.get(0);
 		} else if (throwOnFailure) {
 			throw new RuntimeException("Got " + nodeListSize + " nodes instead of expected 1 for " + fieldID);
 		} else {
 			return null;
 		}
+	}	
+	@Override protected Literal getLiteralVal(Ident fieldID, boolean throwOnFailure) {
+		Literal resultLit = null;
+		RDFNode resultNode = getSinglePropertyVal(fieldID, throwOnFailure);
+		if (resultNode != null) {
+			resultLit = resultNode.asLiteral();
+		} 
+		return resultLit;
 	}
 	@Override protected List<Item> getLinkedItems(Ident linkName) {
 		List<RDFNode> nodes = getPropertyValues(linkName);
@@ -107,6 +115,26 @@ public class JenaResourceItem extends BaseItem implements ModelIdent {
 		}
 		return results;
 	}
+	@Override public List<Item> getLinkedOrderedList(Ident linkName) {
+		List<Item> results = new ArrayList<Item>();				
+		RDFNode resultNode = getSinglePropertyVal(linkName, false);
+		if (resultNode != null) {
+			RDFList rdfList = resultNode.as(RDFList.class);
+			System.out.println("Found rdfList[" + linkName + "] = " + rdfList);
+			if (rdfList != null) {
+				List<RDFNode> javaNodeList = rdfList.asJavaList();
+				System.out.println("JavaNodeList = " + javaNodeList);
+				for (RDFNode elementNode : javaNodeList) {
+					Resource res = elementNode.asResource();
+					JenaResourceItem jri = new JenaResourceItem(res);
+					results.add(jri);
+				}
+			}
+		}
+		return results;
+	
+	}
+	
 
 	public Resource getJenaResource() {
 		return myResource;
