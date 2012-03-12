@@ -64,4 +64,8 @@ public class ArqRowItem extends ResultItem {
 		throw new UnsupportedOperationException("ArqRowItem doesn't have an ident yet");
 	}
 
+	@Override public List<Item> getLinkedOrderedList(Ident listLinkName) {
+		throw new UnsupportedOperationException("ArqRowItem doesn't know how to access RDF-Lists, yet.");
+	}
+
 }

@@ -19,6 +19,7 @@ package org.appdapter.gui.assembly;
 import org.appdapter.core.item.Ident;
 import org.appdapter.core.item.Item;
 import org.appdapter.gui.box.TriggerImpl;
+import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.assembler.Assembler;
 import com.hp.hpl.jena.assembler.Mode;
 import org.slf4j.Logger;
@@ -29,19 +30,10 @@ import org.slf4j.LoggerFactory;
  */
 public class TriggerAssembler extends DynamicCachingComponentAssembler<TriggerImpl> {
 	static Logger theLogger = LoggerFactory.getLogger(TriggerAssembler.class);
-/*
-	@Override protected Class<TriggerImpl> decideComponentClass(Ident componentID, Item componentConfigItem) {
-		String jfqcn = readConfigValString(componentID, AssemblyNames.P_javaFQCN, componentConfigItem, null);
-		if (jfqcn != null) {
-			theLogger.info("Found trigger class name: " + jfqcn);
-			Class<TriggerImpl> triggerClass = TriggerImpl.findBoxTriggerClass(jfqcn);
-			return triggerClass;
-		} else {
-			throw new RuntimeException("Cannot find class name for trigger with componentID: " + componentID);
-		}
+
+	public TriggerAssembler(Resource builderConfRes) {
+		super(builderConfRes);
 	}
- * 
- */
 	@Override protected void initExtendedFieldsAndLinks(TriggerImpl comp, Item configItem, Assembler asmblr, Mode mode) {
 		theLogger.info("bonus trigger init here");
 		Ident compID = comp.getIdent();

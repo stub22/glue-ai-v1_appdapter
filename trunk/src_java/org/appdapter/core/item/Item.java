@@ -48,5 +48,6 @@ public interface Item {
 			ASCENDING, DESCENDING
 		}
 	}
-	public List<Item> getSortedLinkedItemList(Ident linkName, List<SortKey> sortFieldNames);
+	public List<Item> getLinkedItemsSorted(Ident linkName, List<SortKey> sortFieldNames);
+	public List<Item> getLinkedOrderedList(Ident listLinkName);
 }

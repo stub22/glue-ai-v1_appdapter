@@ -16,6 +16,8 @@
 
 package org.appdapter.scafun
 import  org.appdapter.gui.box.{Box, BoxContext, MutableBox, Trigger, BoxImpl, TriggerImpl};
+import  org.appdapter.demo.DemoResources;
+import  org.appdapter.bind.rdf.jena.model.AssemblerUtils;
 
 object Boxy {
 	
@@ -57,5 +59,14 @@ object Boxy {
 		box1.attachTrigger(trig1);
 		box1;
 	}
+	  def main(args: Array[String]) :Unit = {
+		  println(this.getClass.getCanonicalName() + " sez:  we like rectangles!");
+		val triplesPath = DemoResources.MENU_ASSEMBLY_PATH; 
+			AssemblerUtils.ensureClassLoaderRegisteredWithJenaFM(this.getClass().getClassLoader());
+			println("Loading triples from URL: " + triplesPath);
+			// Set<Object> 
+			val loadedStuff = AssemblerUtils.buildAllObjectsInRdfFile(triplesPath);
+			println("Loaded objects: " + loadedStuff);
+	  }
 
 }

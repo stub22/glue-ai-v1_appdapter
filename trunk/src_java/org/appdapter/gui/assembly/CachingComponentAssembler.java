@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Collection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,17 +43,51 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class CachingComponentAssembler<MKC extends MutableKnownComponent> extends AssemblerBase {
 	static Logger theLogger = LoggerFactory.getLogger(CachingComponentAssembler.class);
-	private	Map<Ident, MKC> myCompCache = new HashMap<Ident, MKC>();
+	
+	private	static Map<Class, ComponentCache> theCaches = new HashMap<Class, ComponentCache>();
 
+	protected ComponentCache<MKC>	getCache() { 
+		Class	tc = getClass();
+		// Not really type-safe, ugh.
+		ComponentCache<MKC> cc = theCaches.get(tc);
+		if (cc == null) { 
+			cc = new ComponentCache<MKC>();
+			theCaches.put(tc, cc);
+		}
+		return cc;
+	}
+	
+	
 	protected abstract Class<MKC> decideComponentClass(Ident componentID, Item componentConfigItem);
 	protected abstract void initExtendedFieldsAndLinks(MKC comp, Item configItem, Assembler asmblr, Mode mode);
 	
-	protected MKC getCachedComponent(Ident id) {
-		return myCompCache.get(id);
+	public CachingComponentAssembler(Resource assemblerConfResource) {
+		super();
+		// The AssemblerGroup re-does this on every call to open(), so we need to put our caches outside.
+		logDebug("Constructing CCA " + toString() + " with config resource: " + assemblerConfResource);
+		/*
+		Exception e = new Exception();
+		e.fillInStackTrace();
+		e.printStackTrace();
+		 * 
+		 */
 	}
-	protected void putCachedComponent(Ident id, MKC comp) {
-		myCompCache.put(id, comp);
+	protected Logger getLogger() { 
+		return theLogger;
 	}
+	protected void logDebug(String text) {
+		getLogger().debug(text);
+	}	
+	protected void logInfo(String text) {
+		getLogger().info(text);
+	}
+	protected void logWarn(String text) {
+		getLogger().warn(text);
+	}
+	protected void logError(String text, Throwable t) {
+		getLogger().error(text, t);
+	}
+
 	public static <KC extends KnownComponent> KC makeEmptyComponent(Class<KC> knownCompClass) {
 		KC knownComp = null;
 		try {
@@ -63,12 +98,15 @@ public abstract class CachingComponentAssembler<MKC extends MutableKnownComponen
 		return knownComp;
 	}
 	public MKC fetchOrMakeComponent(Class<MKC> knownCompClass, Ident id, Assembler asmblr, Mode mode) {
-		MKC knownComp = getCachedComponent(id);
+		ComponentCache<MKC> cc = getCache();
+		MKC knownComp = cc.getCachedComponent(id);
 		if (knownComp == null) {
 			knownComp = makeEmptyComponent(knownCompClass);
 			knownComp.setIdent(id);
 			initFieldsAndLinks(knownComp, null, asmblr, mode);
-			putCachedComponent(id, knownComp);
+			cc.putCachedComponent(id, knownComp);
+		} else {
+			logDebug("Got cache hit on " + knownComp);
 		}
 		return knownComp;
 	}
@@ -89,6 +127,12 @@ public abstract class CachingComponentAssembler<MKC extends MutableKnownComponen
 		String descValString = readConfigValString(compID, AssemblyNames.P_description, optionalExplicitItem, "default-desc");
 		comp.setDescription(descValString);
 	}
+	/**
+	 * If optionalExplicitItem is not null, use it.  Otherwise, if compID is itself an Item, use it.  Otherwise, null.
+	 * @param compID
+	 * @param optionalExplicitItem
+	 * @return 
+	 */
 	private Item chooseBestConfigItem(Ident compID, Item optionalExplicitItem) {
 		Item infoSource = null;
 		if (optionalExplicitItem != null) {
@@ -100,8 +144,7 @@ public abstract class CachingComponentAssembler<MKC extends MutableKnownComponen
 	}
 	protected Ident getConfigPropertyIdent(Item infoSource, Ident compID, String fieldName) {
 		Ident infoSourceID = infoSource.getIdent();
-		theLogger.info("infoSourceID=" + infoSourceID);
-		theLogger.info("compID=" + compID);
+		logDebug("infoSourceID=" + infoSourceID + ", compID=" + compID);
 		ModelIdent	someModelIdent = null;
 		if (infoSourceID instanceof ModelIdent) {
 			someModelIdent = (ModelIdent) infoSourceID;
@@ -112,7 +155,7 @@ public abstract class CachingComponentAssembler<MKC extends MutableKnownComponen
 		if (someModelIdent != null) {
 			propertyIdent = someModelIdent.getIdentInSameModel(fieldName);
 		} else {
-			theLogger.warn("Cannot find a bootstrap ident to resolve fieldName: " + fieldName);
+			logWarn("Cannot find a bootstrap ident to resolve fieldName: " + fieldName);
 		}
 		return propertyIdent;
 	}
@@ -120,35 +163,102 @@ public abstract class CachingComponentAssembler<MKC extends MutableKnownComponen
 	protected String readConfigValString(Ident compID, String fieldName, Item optionalItem, String defaultVal) {
 		String resultVal = null;
 		Item infoSource = chooseBestConfigItem(compID, optionalItem);
-		theLogger.info("Best config item: " + infoSource);
+		// Typical output is
+		// Resolved fieldName http://www.appdapter.org/schema/box#label to propertyIdent: JenaResourceItem[res=http://www.appdapter.org/schema/box#label]
 		Ident propertyIdent = getConfigPropertyIdent(infoSource, compID, fieldName);
-		theLogger.info("Resolved fieldName " + fieldName + " to propertyIdent: " + propertyIdent);
+		logDebug("Resolved fieldName " + fieldName + " to propertyIdent: " + propertyIdent + ", to be fetched from source " + infoSource);
 		if (propertyIdent != null) {
 			resultVal = infoSource.getValString(propertyIdent, defaultVal);
+		}
+		return resultVal;
+	}
+	protected Long readConfigValLong(Ident compID, String fieldName, Item optionalItem, Long defaultVal) {
+		Long resultVal = null;
+		Item infoSource = chooseBestConfigItem(compID, optionalItem);
+		// Typical output is
+		// Resolved fieldName http://www.appdapter.org/schema/box#label to propertyIdent: JenaResourceItem[res=http://www.appdapter.org/schema/box#label]
+		Ident propertyIdent = getConfigPropertyIdent(infoSource, compID, fieldName);
+		logDebug("Resolved fieldName " + fieldName + " to propertyIdent: " + propertyIdent + ", to be fetched from source " + infoSource);
+		if (propertyIdent != null) {
+			resultVal = infoSource.getValLong(propertyIdent, defaultVal);
+		}
+		return resultVal;
+	}
+	protected Double readConfigValDouble(Ident compID, String fieldName, Item optionalItem, Double defaultVal) {
+		Double resultVal = null;
+		Item infoSource = chooseBestConfigItem(compID, optionalItem);
+		// Typical output is
+		// Resolved fieldName http://www.appdapter.org/schema/box#label to propertyIdent: JenaResourceItem[res=http://www.appdapter.org/schema/box#label]
+		Ident propertyIdent = getConfigPropertyIdent(infoSource, compID, fieldName);
+		logDebug("Resolved fieldName " + fieldName + " to propertyIdent: " + propertyIdent + ", to be fetched from source " + infoSource);
+		if (propertyIdent != null) {
+			resultVal = infoSource.getValDouble(propertyIdent, defaultVal);
 		}
 		return resultVal;
 	}
 	protected List<Object> findOrMakeLinkedObjects(Item configItem, String linkName, Assembler asmblr, Mode mode, List<SortKey> sortFieldNames) {
 		List<Object>	resultList = new ArrayList<Object>();
 		Ident linkNameID = getConfigPropertyIdent(configItem, configItem.getIdent(), linkName);
-		List<Item> linkedItems = configItem.getSortedLinkedItemList(linkNameID, sortFieldNames);
+		List<Item> linkedItems = configItem.getLinkedItemsSorted(linkNameID, sortFieldNames);
+		resultList = resultListFromItems(linkedItems, asmblr, mode);
+		return resultList;
+	}
+	protected List<Object> findOrMakeLinkedObjectsInCollection(Item configItem, String collectionLinkName, Assembler asmblr, Mode mode) {
+		List<Object>	resultList = new ArrayList<Object>();
+		Ident linkNameID = getConfigPropertyIdent(configItem, configItem.getIdent(), collectionLinkName);
+		List<Item> linkedItems = ((JenaResourceItem) configItem).getLinkedOrderedList(linkNameID);
+		logDebug("Got linkedItem collection at [" + collectionLinkName + "=" + linkNameID + "] = " + linkedItems);		
+		resultList = resultListFromItems(linkedItems, asmblr, mode);
+		logDebug("Opened object collection : " + resultList);
+		return resultList;
+		/*
+		Set<Item> linkedItemSet = configItem.getLinkedItemSet(linkNameID);
+		logInfo("Found collection head set: " + linkedItemSet);
+		if ((linkedItemSet != null) && (linkedItemSet.size() == 1)) {
+			
+		//	resultList = resultListFromItemList(linkedItems, assmblr, mode);		
+		} else {
+			logWarn("Expected one collection link at " + linkName + "=" + linkNameID + " but found " + linkedItemSet);
+		}
+		 * 
+		 */		
+	}
+	/**
+	 * For every linkedItem which is actually a JenaResourceItem, use the Jena assembler system to find/create
+	 * the assembled object for that item.
+	 * 
+	 * @param linkedItems
+	 * @param assmblr
+	 * @param mode
+	 * @return 
+	 */
+	protected List<Object> resultListFromItems(Collection<Item> linkedItems, Assembler assmblr, Mode mode) {
+		List<Object>	resultList = new ArrayList<Object>();
 		for (Item linkedItem : linkedItems) {
 			if (linkedItem instanceof JenaResourceItem) {
 				JenaResourceItem jri = (JenaResourceItem) linkedItem;
-				Object assembledObject = asmblr.open(asmblr, jri.getJenaResource(), mode);
+				// The assembler
+				Object assembledObject = assmblr.open(assmblr, jri.getJenaResource(), mode);
 				if (assembledObject != null) {
 					resultList.add(assembledObject);
 				} else {
-					theLogger.warn("Got null assembly result for item: " + linkedItem);
+					logWarn("Got null assembly result for item, ignoring: " + linkedItem);
 				}
 			} else {
-				theLogger.warn("Cannot assemble linked object from non-Jena item: " + linkedItem);
+				logWarn("Cannot assemble linked object from non-Jena item: " + linkedItem);
 			}
 		}
 		return resultList;
-	}
+	}/**
+	 * Our plugin for the Jena assembler will look in our cache first, making a new component only if requred.
+	 * TODO:  Attempt conformance with the Jena Assembler "Mode" param.
+	 * @param asmblr
+	 * @param rsrc
+	 * @param mode
+	 * @return 
+	 */
 	@Override final public Object open(Assembler asmblr, Resource rsrc, Mode mode) {
-		theLogger.info("Opening component at: " + rsrc);
+		logDebug("Assembler[" + toString() + "] is opening component at: " + rsrc);
 		JenaResourceItem wrapperItem = new JenaResourceItem(rsrc);
 		Class<MKC> componentClass = decideComponentClass(wrapperItem, wrapperItem);
 		MKC comp = null;
@@ -157,5 +267,6 @@ public abstract class CachingComponentAssembler<MKC extends MutableKnownComponen
 		}
 		return comp;
 	}
+	
 
 }
