@@ -99,7 +99,10 @@
 						<Import-Package>org.h2, *</Import-Package>
 						<Bundle-Activator>org.appdapter.osgi.core.AppdapterCoreBundleActivator</Bundle-Activator>
 						<Export-Package>org.appdapter.*</Export-Package>
-						
+						<!-- Horrid workaround for Class.forName() used in DynamicCachingComponentAssembler, could widen it to "*",
+							but better to get Jena code fixed to allow classloader setup.
+						-->
+						<DynamicImport-Package>org.cogchar.*</DynamicImport-Package>						
 						<!--
 						arq.*,com.hp.hpl.jena.*,org.openjena.*,etc.*,vocabularies.*
 						
