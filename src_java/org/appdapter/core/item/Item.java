@@ -26,28 +26,28 @@ import java.util.Set;
  * 
  * An Item is something which has descriptive fields (attribs), and links to other items.
  * Fields must be functional (single-valued) properties.
- * Ordered collections are supported only via the getSortedLinkedItemList method.
+ * Ordered collections are supported via getLinkedOrderedList and getSortedLinkedItemList methods.
  * If a set of item links has some natural order, this is simulated via a dummy sort field name (e.g. "rowNumber").
  */
 public interface Item {
 	public	Ident	getIdent();
 
-	public	String getValString(Ident fieldName, String defaultVal);
-	public	Long getValLong(Ident fieldName, Long defaultVal);
-	public	Double getValDouble(Ident fieldName, Double defaultVal);
-	public	Date getValDate(Ident fieldName, Date defaultVal);
+	public	String getValString(Ident fieldIdent, String defaultVal);
+	public	Long getValLong(Ident fieldIdent, Long defaultVal);
+	public	Double getValDouble(Ident fieldIdent, Double defaultVal);
+	public	Date getValDate(Ident fieldIdent, Date defaultVal);
 
 
-	public Set<Item> getLinkedItemSet(Ident linkName);
-	public int getLinkedItemCount(Ident linkName);
-	public Item getSingleLinkedItem(Ident linkName);
+	public Set<Item> getLinkedItemSet(Ident linkIdent);
+	public int getLinkedItemCount(Ident linkIdent);
+	public Item getSingleLinkedItem(Ident linkIdent);
 
 	public static class SortKey {
-		public	Ident		mySortFieldName;
+		public	Ident		mySortFieldIdent;
 		public enum Direction {
 			ASCENDING, DESCENDING
 		}
 	}
-	public List<Item> getLinkedItemsSorted(Ident linkName, List<SortKey> sortFieldNames);
-	public List<Item> getLinkedOrderedList(Ident listLinkName);
+	public List<Item> getLinkedItemsSorted(Ident linkIdent, List<SortKey> sortFieldNames);
+	public List<Item> getLinkedOrderedList(Ident listLinkIdent);
 }
