@@ -24,6 +24,8 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.assembler.Assembler;
 import com.hp.hpl.jena.assembler.Mode;
 import java.util.List;
+import java.util.Set;
+import org.appdapter.core.item.ItemFuncs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,6 +45,9 @@ public class BoxAssembler extends DynamicCachingComponentAssembler<BoxImpl> {
 			Trigger t = (Trigger) lt;
 			box.attachTrigger(t);
 		}
+		
+		Set<Item>	extraItems = ItemFuncs.getLinkedItemSet(configItem, AssemblyNames.P_extraThing);
+		// System.out.println("Found extraItems: " + extraItems);
 		
 	}
 
