@@ -170,7 +170,7 @@
 						<!-- Horrid workaround for Class.forName() used in AssemberHelp, could widen it to "*",
 							but better to get Jena code fixed to allow classloader setup.
 						-->
-						<DynamicImport-Package>org.appdapter.*</DynamicImport-Package>
+						<DynamicImport-Package>org.appdapter.*,org.cogchar.*</DynamicImport-Package>
                         <Bundle-Activator>org.appdapter.ext.bundle.jena.full.Activator</Bundle-Activator>
 						<!-- The sdb.* packages require Junit -->
 						<Export-Package>org.appdapter.*,arq.*,com.hp.hpl.jena.*,etc.*,org.openjena.*,vocabularies.*</Export-Package>
