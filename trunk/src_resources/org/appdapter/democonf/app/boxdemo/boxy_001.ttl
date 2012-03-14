@@ -50,5 +50,10 @@ apt:box_002 	rdf:type			apsb:BuildableBox;
 				apsb:javaFQCN		"org.appdapter.gui.box.BoxImpl";
 				apsb:label			"box 002 apsb label";
 				rdfs:label 			"box 002 rdfs label";
-				apsb:trigger		apt:trig_001a
+				apsb:trigger		apt:trig_001a;
+
+				apsb:extraThing		[
+					apsb:ballotCount		22;
+					apsb:secretNumber		3.14
+				]
 				.

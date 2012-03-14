@@ -30,4 +30,6 @@ public class AssemblyNames {
 	public static 	String		P_description	= NS_rdfs + "description";
 	public static 	String		P_javaFQCN		= NS_box + "javaFQCN";
 	public static 	String		P_trigger		= NS_box + "trigger";
+	
+	public static 	String		P_extraThing	= NS_box + "extraThing";
 }
