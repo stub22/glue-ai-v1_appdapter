@@ -19,8 +19,16 @@ package org.appdapter.api.module;
  * A Module has 5 ActionMethods = [initModule(), start(), runOnce(), stop(), releaseModule()]
  * and 8 formal states.
  * 
+ * The application work of the module should be performed in small chunks by its runOnce() method,
+ * which is called repeatedly (by some framework) until the module is stopped.
+ * 
  * A Module has a ParentModulator which it may use to perform any system interactions, as
  * permitted by the type interface of the PM.
+ * 
+ * Normally, the methods of a Module are only invoked by its ParentModulator.  The
+ * Module is not allowed to directly depend on this fact, but the Module is allowed
+ * to make calls on its ParentModulator, which in general is a thread-safer behavior 
+ * if we know we the current thread already holds the lock on that Modulator.
  * 		 
  * @author Stu B. <www.texpedient.com>
  */
