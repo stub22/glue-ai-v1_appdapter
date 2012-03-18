@@ -59,7 +59,9 @@ public abstract class CachingComponentAssembler<MKC extends MutableKnownComponen
 	public static void clearCacheFor(Class c) {
 		theCaches.put(c, null);
 	}
-	
+	public static void clearAllCaches() { 
+		theCaches = new HashMap<Class, ComponentCache>();
+	}
 	protected abstract Class<MKC> decideComponentClass(Ident componentID, Item componentConfigItem);
 	protected abstract void initExtendedFieldsAndLinks(MKC comp, Item configItem, Assembler asmblr, Mode mode);
 	

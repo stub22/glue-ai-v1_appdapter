@@ -108,8 +108,8 @@ public class BoxImpl<TrigType extends Trigger<? extends BoxImpl<TrigType>>> exte
 		return bp;
 	}
 
-	@Override protected String getFieldSummary() {
-		return "triggerCount=" + myTriggers.size();
+	@Override public String getFieldSummary() {
+		return super.getFieldSummary() + ", triggerCount=" + myTriggers.size();
 	}
 
 

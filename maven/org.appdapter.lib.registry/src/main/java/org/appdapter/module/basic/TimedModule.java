@@ -90,8 +90,8 @@ public abstract class TimedModule<Mlator extends Modulator> extends BasicModule<
 		exitBasicReleaseModule();
 	}
 	
-	@Override public String getDescription() { 
-		String basicDesc = super.getDescription();
+	@Override public String getFieldSummary() { 
+		String basicDesc = super.getFieldSummary();
 		return basicDesc + "[compRunCnt=" + getCompletedRunCount() + "]";
 	}
 

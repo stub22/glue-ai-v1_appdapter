@@ -99,9 +99,18 @@ public class BasicModuleTestOne extends BasicDebugger {
 		VerySimpleRegistry vsr = RegistryServiceFuncs.getTheWellKnownRegistry(getClass());
 
 		try {
+			logInfo("========================================");
+			logInfo("Starting syncTest()");
+			logInfo("========================================");
 			syncTest();
 			logInfo("========================================");
+			logInfo("Finished syncTest(), starting asyncTest()");
+			logInfo("========================================");
 			asyncTest();
+			logInfo("========================================");
+			logInfo("Finished asyncTest()");
+			logInfo("========================================");
+			
 
 		} catch (Throwable t) {
 			t.printStackTrace();

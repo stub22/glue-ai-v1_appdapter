@@ -17,11 +17,12 @@
 package org.appdapter.gui.box;
 
 import org.appdapter.core.item.Ident;
+import org.appdapter.core.log.BasicDebugger;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public abstract class KnownComponentImpl implements MutableKnownComponent {
+public class KnownComponentImpl extends BasicDebugger implements MutableKnownComponent {
 	private	Ident	myIdent;
 	private String	myShortLabel, myDescription;
 
@@ -39,7 +40,7 @@ public abstract class KnownComponentImpl implements MutableKnownComponent {
 	}
 
 	@Override public void setDescription(String description) {
-		this.myDescription = description;
+		myDescription = description;
 	}
 
 	@Override public String getShortLabel() {
@@ -49,7 +50,9 @@ public abstract class KnownComponentImpl implements MutableKnownComponent {
 	@Override public void setShortLabel(String shortLabel) {
 		this.myShortLabel = shortLabel;
 	}
-	protected abstract String getFieldSummary();
+	public String getFieldSummary() {
+		return "desc=" + myDescription;
+	}
 
 	@Override public String toString() {
 		return this.getClass().getSimpleName() + "-" + hashCode() + "-" + getShortLabel() + "[" + getFieldSummary() + "]";

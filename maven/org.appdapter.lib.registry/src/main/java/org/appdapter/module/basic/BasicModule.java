@@ -17,12 +17,12 @@ package org.appdapter.module.basic;
 
 import org.appdapter.api.module.Modulator;
 import org.appdapter.api.module.Module;
-import org.appdapter.core.log.BasicDebugger;
+import org.appdapter.gui.box.KnownComponentImpl;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public abstract class BasicModule<PM extends Modulator> extends BasicDebugger implements Module<PM> {
+public abstract class BasicModule<PM extends Modulator> extends KnownComponentImpl implements Module<PM> {
 	
 	private		PM				myModulator;
 	private		State			myState = State.PRE_INIT;
@@ -127,13 +127,8 @@ public abstract class BasicModule<PM extends Modulator> extends BasicDebugger im
 		verifyStoredState("exitBasicReleaseModule", true, State.POST_STOP_OR_FAILED_STARTUP);
 	}
 	
-	public String getDescription() { 
-		return "[class=" + getClass().getSimpleName() + ", state=" + myState + ", stopRQ=" 
-					+ myStopRequestedFlag + "]";
-	}
-
-	@Override public String toString() { 
-		return getDescription();
+	@Override public String getFieldSummary() { 
+		return super.getFieldSummary() + ", state=" + myState + ", stopRQ=" + myStopRequestedFlag;
 	}
 
 	
