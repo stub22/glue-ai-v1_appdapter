@@ -53,8 +53,8 @@ public abstract class TriggerImpl<BoxType extends Box<? extends TriggerImpl<BoxT
 		return c;
 	}
 	*/
-	@Override protected String getFieldSummary() {
-		return "trigger-field-summary-goes-here";
+	@Override public String getFieldSummary() {
+		return super.getFieldSummary() +  ", trigger-field-summary-goes-here";
 	}
 
 }
