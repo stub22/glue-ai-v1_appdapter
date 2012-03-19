@@ -32,6 +32,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Collection;
+
+import org.appdapter.core.log.BasicDebugger;
+import org.appdapter.core.log.Loggable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,11 +45,18 @@ import org.slf4j.LoggerFactory;
  *
  * CC = "Component Class"
  */
-public abstract class CachingComponentAssembler<MKC extends MutableKnownComponent> extends AssemblerBase {
+public abstract class CachingComponentAssembler<MKC extends MutableKnownComponent> extends AssemblerBase implements Loggable {
 	static Logger theLogger = LoggerFactory.getLogger(CachingComponentAssembler.class);
 	
 	private	static Map<Class, ComponentCache> theCaches = new HashMap<Class, ComponentCache>();
 
+	private	BasicDebugger myDebugger = new BasicDebugger();
+	
+	public CachingComponentAssembler() {
+		myDebugger = new BasicDebugger();
+	}
+	
+	
 	protected ComponentCache<MKC>	getCache() { 
 		Class	tc = getClass();
 		// Not really type-safe, ugh.
@@ -67,6 +78,7 @@ public abstract class CachingComponentAssembler<MKC extends MutableKnownComponen
 	
 	public CachingComponentAssembler(Resource assemblerConfResource) {
 		super();
+		myDebugger.useLoggerForClass(getClass());
 		// The AssemblerGroup re-does this on every call to open(), so we need to put our caches outside.
 		logDebug("Constructing CCA " + toString() + " with config resource: " + assemblerConfResource);
 		/*
@@ -75,21 +87,6 @@ public abstract class CachingComponentAssembler<MKC extends MutableKnownComponen
 		e.printStackTrace();
 		 * 
 		 */
-	}
-	protected Logger getLogger() { 
-		return theLogger;
-	}
-	protected void logDebug(String text) {
-		getLogger().debug(text);
-	}	
-	protected void logInfo(String text) {
-		getLogger().info(text);
-	}
-	protected void logWarn(String text) {
-		getLogger().warn(text);
-	}
-	protected void logError(String text, Throwable t) {
-		getLogger().error(text, t);
 	}
 
 	public static <KC extends KnownComponent> KC makeEmptyComponent(Class<KC> knownCompClass) {
@@ -159,7 +156,7 @@ public abstract class CachingComponentAssembler<MKC extends MutableKnownComponen
 		if (someModelIdent != null) {
 			propertyIdent = someModelIdent.getIdentInSameModel(fieldName);
 		} else {
-			logWarn("Cannot find a bootstrap ident to resolve fieldName: " + fieldName);
+			logWarning("Cannot find a bootstrap ident to resolve fieldName: " + fieldName);
 		}
 		return propertyIdent;
 	}
@@ -246,10 +243,10 @@ public abstract class CachingComponentAssembler<MKC extends MutableKnownComponen
 				if (assembledObject != null) {
 					resultList.add(assembledObject);
 				} else {
-					logWarn("Got null assembly result for item, ignoring: " + linkedItem);
+					logWarning("Got null assembly result for item, ignoring: " + linkedItem);
 				}
 			} else {
-				logWarn("Cannot assemble linked object from non-Jena item: " + linkedItem);
+				logWarning("Cannot assemble linked object from non-Jena item: " + linkedItem);
 			}
 		}
 		return resultList;
@@ -272,5 +269,25 @@ public abstract class CachingComponentAssembler<MKC extends MutableKnownComponen
 		return comp;
 	}
 	
-
+	@Override public void logInfo(int importance, String msg) {
+		myDebugger.logInfo(importance, msg);
+	}
+	@Override public void logInfo(String msg) {
+		myDebugger.logInfo(msg);
+	}
+	@Override public void logError(String msg, Throwable t) {
+		myDebugger.logError(msg, t);
+	}
+	@Override public void logError(String msg) {
+		myDebugger.logError(msg);
+	}
+	@Override public void logWarning(String msg, Throwable t) {
+		myDebugger.logWarning(msg, t);
+	}
+	@Override public void logWarning(String msg) {
+		myDebugger.logWarning(msg);
+	}
+	public void logDebug(String msg) {
+		myDebugger.logDebug(msg);
+	}
 }
