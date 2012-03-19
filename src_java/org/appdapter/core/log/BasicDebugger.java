@@ -23,7 +23,7 @@ import org.slf4j.helpers.NOPLogger;
  * @author Stu B. <www.texpedient.com>
  */
 public class BasicDebugger implements Loggable {
-	static Logger thefallbackLogger = LoggerFactory.getLogger(BasicDebugger.class);
+	static Logger theFallbackLogger = LoggerFactory.getLogger(BasicDebugger.class);
 
 	private enum MsgKind {
 		INFO,
@@ -45,12 +45,20 @@ public class BasicDebugger implements Loggable {
 	 */
 	protected Logger getLogger() {
 		if (myLogger == null) {
-			myLogger = LoggerFactory.getLogger(this.getClass());
-			if (myLogger == null) {
-				myLogger = thefallbackLogger;
-			}
+			myLogger = getLoggerForClass(this.getClass());
 		}
 		return myLogger;
+	}
+	public static  Logger getLoggerForClass(Class c) {
+		Logger result = LoggerFactory.getLogger(c);
+		if (result == null) {
+			result = theFallbackLogger;
+		}
+		return result;
+	}
+	public void useLoggerForClass(Class c) {
+		Logger l = getLoggerForClass(c);
+		setLogger(l);
 	}
 	public synchronized void setLogger(Logger l) {
 		myLogger = l;
@@ -141,6 +149,10 @@ public class BasicDebugger implements Loggable {
 	}
 	@Override public void logWarning(String msg) {
 		logWarning(msg, null);
+	}
+	
+	public void logDebug(String msg) {
+		logInfo(IMPO_LO, msg);
 	}
 	
 }
