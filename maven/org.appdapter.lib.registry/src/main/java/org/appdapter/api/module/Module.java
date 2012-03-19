@@ -86,9 +86,15 @@ public interface Module<ParentModulator extends Modulator> {
 		/**
 		 * Module is eligible to have releaseState() called, which is the only eligible method.
 		 * The Module is required to reliably return this state value until the releaseState()
-		 * method begins.
+		 * method begins.  No further Xitions allowed.
 		 */
-		POST_STOP_OR_FAILED_STARTUP		
+		POST_STOP, 
+		/**
+		 * Module is eligible to have releaseState() called, which is the only eligible method.
+		 * The Module is required to reliably return this state value until the releaseState()
+		 * method begins.  No further Xitions allowed.
+		 */		
+		FAILED_STARTUP		
 	}
 	
 	/**
