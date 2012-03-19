@@ -22,20 +22,20 @@ import org.slf4j.helpers.NOPLogger;
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public class BasicDebugger {
+public class BasicDebugger implements Loggable {
 	static Logger thefallbackLogger = LoggerFactory.getLogger(BasicDebugger.class);
 
+	private enum MsgKind {
+		INFO,
+		WARN,
+		ERROR
+	}
+	
 	private		Logger			myLogger;
 	private		int				myDebugImportanceThreshold = IMPO_NORM;
 
 	
-	public static int			IMPO_NORM		= 0;
-	public static int			IMPO_LO			= -10;
-	public static int			IMPO_LOLO		= -100;
-	public static int			IMPO_MIN		= Integer.MIN_VALUE;
-	public static int			IMPO_HI			= 10;
-	public static int			IMPO_HIHI		= 100;
-	public static int			IMPO_MAX		= Integer.MAX_VALUE;
+
 	
 	/* Null tests are not working for diversion to System.out because:
 		SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
@@ -105,19 +105,42 @@ public class BasicDebugger {
 		return resultStamp;
 	}
 	
-	public void logInfo(int importance, String msg) {
+	@Override public void logInfo(int importance, String msg) {
 		logInfoEvent(importance, false, null, "%s", msg);
 	}
-	public void logInfo(String msg) {
+	@Override public void logInfo(String msg) {
 		logInfo(IMPO_NORM, msg);
-	}	
-	public void logError(String msg, Throwable t) {
+	}
+	protected void logWithException(MsgKind mk, String msg, Throwable t) {
 		Logger l = getLogger();
 		if (l != null) { 
-			l.error(msg, t);
+			if (mk == MsgKind.ERROR) {
+				l.error(msg, t);
+			} else {
+				l.warn(msg, t);
+			}
 		} else {
-			System.err.println("Error: " + msg);
-			t.printStackTrace(System.out);
+			if (msg != null) {
+				// Better to not use STDERR, because then the sequence is disrupted.
+				System.out.println(mk.name() + ": " + msg);
+			} 
+			if (t != null) {
+				t.printStackTrace(System.out);
+			}
 		}
 	}
+	
+	@Override public void logError(String msg, Throwable t) {
+		logWithException(MsgKind.ERROR, msg, t);
+	}
+	@Override public void logWarning(String msg, Throwable t) {
+		logWithException(MsgKind.WARN, msg, t);
+	}
+	@Override public void logError(String msg) {
+		logError(msg, null);
+	}
+	@Override public void logWarning(String msg) {
+		logWarning(msg, null);
+	}
+	
 }
