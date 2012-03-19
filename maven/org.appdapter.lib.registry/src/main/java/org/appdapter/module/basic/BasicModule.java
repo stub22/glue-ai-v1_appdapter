@@ -73,7 +73,7 @@ public abstract class BasicModule<PM extends Modulator> extends KnownComponentIm
 	
 	@Override public synchronized void failDuringInitOrStartup() {
 		verifyStoredState("failDuringInitOrStartup", true, State.PRE_INIT, State.IN_INIT, State.WAIT_TO_START, State.IN_START);
-		myState = State.POST_STOP_OR_FAILED_STARTUP;
+		myState = State.FAILED_STARTUP;
 	}
 		
 		
@@ -117,14 +117,14 @@ public abstract class BasicModule<PM extends Modulator> extends KnownComponentIm
 	}
 	protected synchronized void exitBasicStop() {
 		verifyStoredState("exitBasicStop", true, State.IN_STOP);
-		myState = State.POST_STOP_OR_FAILED_STARTUP;
+		myState = State.POST_STOP;
 	}
 
 	protected synchronized void enterBasicReleaseModule() {
-		verifyStoredState("enterBasicReleaseModule", true, State.POST_STOP_OR_FAILED_STARTUP);
+		verifyStoredState("enterBasicReleaseModule", true, State.POST_STOP, State.FAILED_STARTUP);
 	}
 	protected synchronized void exitBasicReleaseModule() {
-		verifyStoredState("exitBasicReleaseModule", true, State.POST_STOP_OR_FAILED_STARTUP);
+		verifyStoredState("exitBasicReleaseModule", true, State.POST_STOP, State.FAILED_STARTUP);
 	}
 	
 	@Override public String getFieldSummary() { 

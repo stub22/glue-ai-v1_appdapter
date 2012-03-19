@@ -38,7 +38,8 @@ public class BasicModulator extends BasicDebugger implements Modulator {
 			case PRE_INIT:
 			case WAIT_TO_START:
 			case WAIT_TO_RUN_OR_STOP:
-			case POST_STOP_OR_FAILED_STARTUP:
+			case POST_STOP:
+			case FAILED_STARTUP:
 				return false;
 			
 			case IN_INIT:
@@ -115,7 +116,7 @@ public class BasicModulator extends BasicDebugger implements Modulator {
 		return matches;
 	}
 	protected void processFinishedModules() { 
-		List<Module> finishedModules = getModulesMatchingStates(Module.State.POST_STOP_OR_FAILED_STARTUP);
+		List<Module> finishedModules = getModulesMatchingStates(Module.State.POST_STOP, Module.State.FAILED_STARTUP);
 		for (Module fm : finishedModules) {
 			try {
 				fm.releaseModule();
