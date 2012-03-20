@@ -70,7 +70,9 @@ public class BasicModuleTestOne extends BasicDebugger {
 			logInfo ("Expecting exception as we try to detach a module that was already auto-detached");
 			mu.detachModule(pm1);
 		} catch (RuntimeException re) {
-			logInfo("Caught expected exception: " + re);
+			logInfo("Caught the exception, as expected");
+			logError("Caught expected exception, but logging as error - for fun! ", re);
+			logWarning("And now, as a warning: ", re);
 		}
 		processBatches(mu, 5);
 	}
