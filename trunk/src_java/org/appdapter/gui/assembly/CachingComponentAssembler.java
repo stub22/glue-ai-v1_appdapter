@@ -197,6 +197,12 @@ public abstract class CachingComponentAssembler<MKC extends MutableKnownComponen
 		}
 		return resultVal;
 	}
+	protected List<Item> readLinkedItemSeq(Item configItem, String collectionLinkName) {
+		Ident linkNameID = getConfigPropertyIdent(configItem, configItem.getIdent(), collectionLinkName);
+		List<Item> linkedItems = ((JenaResourceItem) configItem).getLinkedOrderedList(linkNameID);
+		logDebug("Got linkedItem collection at [" + collectionLinkName + "=" + linkNameID + "] = " + linkedItems);	
+		return linkedItems;
+	}
 	protected List<Object> findOrMakeLinkedObjects(Item configItem, String linkName, Assembler asmblr, Mode mode, List<SortKey> sortFieldNames) {
 		List<Object>	resultList = new ArrayList<Object>();
 		Ident linkNameID = getConfigPropertyIdent(configItem, configItem.getIdent(), linkName);
@@ -204,11 +210,9 @@ public abstract class CachingComponentAssembler<MKC extends MutableKnownComponen
 		resultList = resultListFromItems(linkedItems, asmblr, mode);
 		return resultList;
 	}
-	protected List<Object> findOrMakeLinkedObjectsInCollection(Item configItem, String collectionLinkName, Assembler asmblr, Mode mode) {
+	protected List<Object> findOrMakeLinkedObjSeq(Item configItem, String collectionLinkName, Assembler asmblr, Mode mode) {
 		List<Object>	resultList = new ArrayList<Object>();
-		Ident linkNameID = getConfigPropertyIdent(configItem, configItem.getIdent(), collectionLinkName);
-		List<Item> linkedItems = ((JenaResourceItem) configItem).getLinkedOrderedList(linkNameID);
-		logDebug("Got linkedItem collection at [" + collectionLinkName + "=" + linkNameID + "] = " + linkedItems);		
+		List<Item> linkedItems = readLinkedItemSeq(configItem, collectionLinkName);
 		resultList = resultListFromItems(linkedItems, asmblr, mode);
 		logDebug("Opened object collection : " + resultList);
 		return resultList;

@@ -32,14 +32,17 @@ import org.slf4j.LoggerFactory;
  */
 public class BasicModuleTestOne extends BasicDebugger {
 
-	static Logger theLogger = LoggerFactory.getLogger(BasicModuleTestOne.class);
+	static class Ctx {
+		public String myData = "Yes, please!";
+	}
+//	static Logger theLogger = LoggerFactory.getLogger(BasicModuleTestOne.class);
 
-	public static class PowerModule extends NullModule<BasicModulator> {
+	public static class PowerModule extends NullModule<Ctx> {
 
 		@Override public synchronized void runOnce() {
 			enterBasicRunOnce();
 			Long runStart = logInfoEvent(IMPO_NORM, true, null, "runOnce", "BEGIN");
-			BasicModulator parentBM = getParentModulator();
+			Ctx c = getContext();
 			logInfoEvent(IMPO_NORM, true, runStart, "runOnce", "");
 			exitBasicRunOnce();
 		}
@@ -52,7 +55,7 @@ public class BasicModuleTestOne extends BasicDebugger {
 	}
 
 	public void syncTest() {
-		final Modulator mu = new BasicModulator();
+		final Modulator mu = new BasicModulator<Ctx>(new Ctx(), true);
 
 		processBatches(mu, 5);
 		PowerModule pm1 = new PowerModule();
@@ -63,13 +66,18 @@ public class BasicModuleTestOne extends BasicDebugger {
 		processBatches(mu, 10);
 		pm1.markStopRequested();
 		processBatches(mu, 5);
-		mu.detachModule(pm1);
+		try {
+			logInfo ("Expecting exception as we try to detach a module that was already auto-detached");
+			mu.detachModule(pm1);
+		} catch (RuntimeException re) {
+			logInfo("Caught expected exception: " + re);
+		}
 		processBatches(mu, 5);
 	}
 
 	public void asyncTest() throws Throwable {
 
-		final Modulator mu = new BasicModulator();
+		final Modulator mu = new BasicModulator(new Ctx(), false);
 		Thread runner = new Thread(new Runnable() {
 
 			@Override public void run() {
@@ -87,11 +95,11 @@ public class BasicModuleTestOne extends BasicDebugger {
 		PowerModule pm1 = new PowerModule();
 		pm1.setDebugImportanceThreshold(BasicModule.IMPO_MIN);
 		mu.attachModule(pm1);
-		Thread.sleep(20);
+		Thread.sleep(200);
 		pm1.markStopRequested();
-		Thread.sleep(20);
+		Thread.sleep(200);
 		mu.detachModule(pm1);
-		Thread.sleep(20);
+		Thread.sleep(200);
 	}
 	public void runTest() { 
 		logInfo("------------BasicModuleTestOne-----------");

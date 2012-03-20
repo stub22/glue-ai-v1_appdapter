@@ -22,9 +22,9 @@ import org.appdapter.gui.box.KnownComponentImpl;
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public abstract class BasicModule<PM extends Modulator> extends KnownComponentImpl implements Module<PM> {
+public abstract class BasicModule<Ctx> extends KnownComponentImpl implements Module<Ctx> {
 	
-	private		PM				myModulator;
+	private		Ctx				myContext;
 	private		State			myState = State.PRE_INIT;
 	
 	private		boolean			myStopRequestedFlag = false;
@@ -41,12 +41,12 @@ public abstract class BasicModule<PM extends Modulator> extends KnownComponentIm
 	@Override public boolean isStopRequested() {
 		return myStopRequestedFlag;
 	}
-	@Override public PM getParentModulator() {
-		return myModulator;
+	@Override public Ctx getContext() {
+		return myContext;
 	}
 
-	@Override public synchronized void setParentModulator(PM m) {
-		myModulator = m;
+	@Override public synchronized void setContext(Ctx m) {
+		myContext = m;
 	}
 	protected void notifyStateViolation(String detectingMethod, String expectedStateDesc, boolean throExcept) { 
 		String msg = "[" + detectingMethod + "] found illegal state [" + myState + " instead of expected [" + expectedStateDesc + "]";

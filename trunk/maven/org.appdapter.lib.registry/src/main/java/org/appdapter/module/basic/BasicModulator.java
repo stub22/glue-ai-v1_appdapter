@@ -26,10 +26,17 @@ import org.slf4j.LoggerFactory;
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public class BasicModulator extends BasicDebugger implements Modulator {
-	static Logger theLogger = LoggerFactory.getLogger(BasicModulator.class);
-	private List<Module>	myModuleList = new ArrayList<Module>();
-
+public class BasicModulator<Ctx> extends BasicDebugger implements Modulator<Ctx> {
+	// static Logger theLogger = LoggerFactory.getLogger(BasicModulator.class);
+	private		List<Module<Ctx>>		myModuleList = new ArrayList<Module<Ctx>>();
+	private		Ctx						myDefaultCtx;
+	protected	boolean					myAutoDetachOnFinishFlag;
+	
+	public BasicModulator(Ctx defCtx, boolean autoDetachOnFinish) {
+		myDefaultCtx = defCtx;
+		myAutoDetachOnFinishFlag = autoDetachOnFinish;
+	}
+	
 	protected static boolean isModuleInActionState(Module.State modState) { 
 		if (modState == null) {
 			return false;
@@ -53,33 +60,43 @@ public class BasicModulator extends BasicDebugger implements Modulator {
 		}
 		
 	}
-	@Override public synchronized void attachModule(Module m) {
-		Modulator prevMod = m.getParentModulator();
-		if (prevMod != null) {
-			throw new RuntimeException("Modulator[" + this + "] cannot attach module [" + m 
-							+ "] with existing modulator [" + prevMod + "]");
+	protected void setDefaultContext(Ctx ctx) {
+		myDefaultCtx = ctx;
+	}
+	@Override public synchronized void attachModule(Module<Ctx> m) {
+		Ctx prevCtx = m.getContext();
+		if (prevCtx != null) {
+			throw new RuntimeException("[" + this + "] cannot attach module [" + m 
+							+ "] with existing context [" + prevCtx + "]");
 		}
 		Module.State modState = m.getState();
 		if(isModuleInActionState(modState)) {
 			throw new RuntimeException("Modulator[" + this + "] cannot attach module [" + m 
 							+ "] in action state [" + modState + "]");
 		}
-		m.setParentModulator(this);
+		m.setContext(myDefaultCtx);
 		myModuleList.add(m);
 	}
 
-	@Override public synchronized void detachModule(Module m) {
-		Modulator prevMod = m.getParentModulator();
+	@Override public synchronized void detachModule(Module<Ctx> m) {
+		/*
+		Modulator prevMod = m.getContext();
 		if (prevMod != this) {
 			throw new RuntimeException("Modulator[" + this + "] cannot detach from module [" + m + 
 							"] with different modulator [" + prevMod);
 		}
+		 * 
+		 */
+		if (!myModuleList.contains(m)) {
+			throw new RuntimeException("[" + this + "] cannot detach from module [" + m + 
+							"], it is not currently attached!");
+		}
 		Module.State modState = m.getState();
 		if(isModuleInActionState(modState)) {
-			throw new RuntimeException("Modulator[" + this + "] cannot attach module [" + m 
+			throw new RuntimeException("Modulator[" + this + "] cannot detach module [" + m 
 							+ "] in action state [" + modState + "]");
 		}
-		m.setParentModulator(null);
+		m.setContext(null);
 		myModuleList.remove(m);
 	}
 
@@ -102,8 +119,8 @@ public class BasicModulator extends BasicDebugger implements Modulator {
 		processStartingModules();
 		processInitingModules();
 	}
-	protected List<Module> getModulesMatchingStates(Module.State... matchStates) { 
-		List<Module> matches = new ArrayList<Module>();
+	protected synchronized List<Module<Ctx>> getModulesMatchingStates(Module.State... matchStates) { 
+		List<Module<Ctx>> matches = new ArrayList<Module<Ctx>>();
 		for (Module cand : myModuleList) {
 			Module.State candState = cand.getState();
 			for (Module.State ms : matchStates) { 
@@ -115,22 +132,44 @@ public class BasicModulator extends BasicDebugger implements Modulator {
 		}
 		return matches;
 	}
+	protected synchronized List<Module<Ctx>> getModulesNotMatchingStates(Module.State... excludedStates) { 
+		List<Module<Ctx>> matches = new ArrayList<Module<Ctx>>();
+		for (Module cand : myModuleList) {
+			Module.State candState = cand.getState();
+			boolean matchedExcluded = false;
+			for (Module.State ms : excludedStates) { 
+				if (candState == ms) {
+					matchedExcluded = true;
+					break;
+				}
+			}
+			if (!matchedExcluded) {
+				matches.add(cand);
+			}
+		}
+		return matches;
+	}
+	protected List<Module<Ctx>> getUnfinishedModules() { 
+		return getModulesNotMatchingStates(Module.State.POST_STOP, Module.State.FAILED_STARTUP);
+	}
 	protected void processFinishedModules() { 
-		List<Module> finishedModules = getModulesMatchingStates(Module.State.POST_STOP, Module.State.FAILED_STARTUP);
+		List<Module<Ctx>> finishedModules = getModulesMatchingStates(Module.State.POST_STOP, Module.State.FAILED_STARTUP);
 		for (Module fm : finishedModules) {
 			try {
 				fm.releaseModule();
 			} catch (Throwable t) {
 				// TODO: make sure we can get module description without further exceptions.
-				theLogger.error("Exception while releasing module [" + fm + "]", t);
+				logError("Exception while releasing module [" + fm + "]", t);
 			} finally {
-				myModuleList.remove(fm);
+				if (myAutoDetachOnFinishFlag) {
+					detachModule(fm);
+				}
 			}
 		}
 	}
 
 	protected void processStoppingModules() { 
-		List<Module> modulesEligibleToStop = getModulesMatchingStates(Module.State.WAIT_TO_RUN_OR_STOP);
+		List<Module<Ctx>> modulesEligibleToStop = getModulesMatchingStates(Module.State.WAIT_TO_RUN_OR_STOP);
 		for (Module mes : modulesEligibleToStop) {
 			try {
 				if (mes.isStopRequested()) {
@@ -138,7 +177,7 @@ public class BasicModulator extends BasicDebugger implements Modulator {
 				}
 			} catch (Throwable t) {
 				// TODO: make sure we can get module description without further exceptions.
-				theLogger.error("Exception while stopping module [" + mes + "]", t);
+				logError("Exception while stopping module [" + mes + "]", t);
 				// stop should not throw.  If it does throw, and state was not updated to
 				// POST_STOP_OR_FAILED_STARTUP, then it will be allowed to continue trying
 				// to run, and stop.
@@ -146,42 +185,44 @@ public class BasicModulator extends BasicDebugger implements Modulator {
 		}
 	}
 	protected void processRunningModules() { 
-		List<Module> modulesEligibleToRun = getModulesMatchingStates(Module.State.WAIT_TO_RUN_OR_STOP);
-		for (Module mer : modulesEligibleToRun) {
+		List<Module<Ctx>> modulesEligibleToRun = getModulesMatchingStates(Module.State.WAIT_TO_RUN_OR_STOP);
+		for (Module<Ctx> mer : modulesEligibleToRun) {
 			try {
 				mer.runOnce();
 			} catch (Throwable t) {
 				// runOnce should not throw.  When it does, there is no administrative effect.
-				theLogger.error("Exception while running module [" + mer + "]", t);
+				logError("Exception while running module [" + mer + "]", t);
 			}
 		}
 	}
 	protected void processStartingModules() { 
-		List<Module> modulesEligibleToStart = getModulesMatchingStates(Module.State.WAIT_TO_START);
+		List<Module<Ctx>> modulesEligibleToStart = getModulesMatchingStates(Module.State.WAIT_TO_START);
 		for (Module mes : modulesEligibleToStart) {
 			try {
 				mes.start();
 			} catch (Throwable t) {
-				theLogger.warn("Exception while starting module [" + mes + "], marking module failed state", t);
-				theLogger.warn("Marking module failed state");
+				logWarning("Exception while starting module [" + mes + "], marking module failed state", t);
+				logWarning("Marking module failed state");
 				mes.failDuringInitOrStartup();
 			}
 		}
 	}
 	protected void processInitingModules() { 
-		List<Module> modulesEligibleToInit = getModulesMatchingStates(Module.State.PRE_INIT, null);
+		List<Module<Ctx>> modulesEligibleToInit = getModulesMatchingStates(Module.State.PRE_INIT, null);
 		for (Module mei : modulesEligibleToInit) {
 			try {
 				mei.initModule();
 			} catch (Throwable t) {
-				theLogger.warn("Exception while initing module [" + mei + "], marking module failed state", t);
+				logWarning("Exception while initing module [" + mei + "], marking module failed state", t);
 				mei.failDuringInitOrStartup();
 			}
 		}
 	}
 	
 	public void dumpModules() { 
-		theLogger.debug("Modules", myModuleList);
+		if (checkDebugImportance(IMPO_LO)) {
+			logInfo(IMPO_LO, "Module Dump: [" +  myModuleList + "]");
+		}
 	}
 	
 }

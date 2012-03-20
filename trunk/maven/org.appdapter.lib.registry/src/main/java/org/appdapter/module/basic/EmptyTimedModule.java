@@ -15,26 +15,24 @@
  */
 package org.appdapter.module.basic;
 
-import org.appdapter.api.module.Modulator;
-
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public class EmptyTimedModule<Mlator extends Modulator> extends TimedModule<Mlator> {
+public class EmptyTimedModule<Ctx> extends TimedModule<Ctx> {
 
-	@Override protected void doInit(Mlator mlator) {
+	@Override protected void doInit(Ctx ctx) {
 	}
 
-	@Override protected void doStart(Mlator mlator) {
+	@Override protected void doStart(Ctx ctx) {
 	}
 
-	@Override protected void doRunOnce(Mlator mlator, long runSeqNum) {
+	@Override protected void doRunOnce(Ctx ctx, long runSeqNum) {
 	}
 
-	@Override protected void doStop(Mlator mlator) {
+	@Override protected void doStop(Ctx ctx) {
 	}
 
-	@Override protected void doRelease(Mlator mlator) {
+	@Override protected void doRelease(Ctx ctx) {
 	}
 	
 }

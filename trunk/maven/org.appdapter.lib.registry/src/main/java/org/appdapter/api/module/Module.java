@@ -32,7 +32,7 @@ package org.appdapter.api.module;
  * 		 
  * @author Stu B. <www.texpedient.com>
  */
-public interface Module<ParentModulator extends Modulator> {
+public interface Module<Ctx> {
 	public enum State {
 		// [initial]				=> PRE_INIT,
 		
@@ -109,14 +109,14 @@ public interface Module<ParentModulator extends Modulator> {
 	 * must be "made by" the Modulator.
 	 * 
 	 */
-	public void setParentModulator(ParentModulator pm);
+	public void setContext(Ctx pm);
 	
 	/**
 	 * The Module must have a valid parentModulator whenever it is inside a module action callback.
 	 * @return Current Modulator, subject to synchronization behavior of this module.
 	 */
 	
-	public ParentModulator getParentModulator();
+	public Ctx getContext();
 	
 	/**  Modulator must be set when initModule is called.  initModule is called exactly
 	 *  once, by the modulator, and can be First method called on Module, and called only once. 

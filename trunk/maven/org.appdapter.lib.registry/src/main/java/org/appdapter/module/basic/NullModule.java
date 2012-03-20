@@ -15,12 +15,10 @@
  */
 package org.appdapter.module.basic;
 
-import org.appdapter.api.module.Modulator;
-
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public class NullModule<PM extends Modulator>  extends BasicModule<PM> {
+public class NullModule<Ctx>  extends BasicModule<Ctx> {
 	@Override public synchronized void initModule() {
 		enterBasicInitModule(true);
 		logInfo(IMPO_NORM, "initModule");
