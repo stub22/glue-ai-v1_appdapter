@@ -68,9 +68,9 @@ public class BasicDebugger implements Loggable {
 		return ((l != null) && ! (l instanceof NOPLogger));
 	}
 
-	/*
-	 * More "urgent" debug has higher level, 
-	 * so high threshold means less debug output.
+	/**
+	 * More "urgent" debug has higher level (numerically), 
+	 * so high threshold (numerically) means *less* debug output.
 	 */
 	public void setDebugImportanceThreshold(int thresh) {
 		myDebugImportanceThreshold = thresh;
