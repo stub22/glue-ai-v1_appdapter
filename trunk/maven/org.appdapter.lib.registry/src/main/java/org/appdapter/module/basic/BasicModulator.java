@@ -190,7 +190,8 @@ public class BasicModulator<Ctx> extends BasicDebugger implements Modulator<Ctx>
 			try {
 				mer.runOnce();
 			} catch (Throwable t) {
-				// runOnce should not throw.  When it does, there is no administrative effect.
+				// runOnce should not throw.  But when it does, there is no administrative effect - the
+				// module continues in its state machines.
 				logError("Exception while running module [" + mer + "]", t);
 			}
 		}

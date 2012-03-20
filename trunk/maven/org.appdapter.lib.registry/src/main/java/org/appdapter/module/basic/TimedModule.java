@@ -90,8 +90,7 @@ public abstract class TimedModule<Ctx> extends BasicModule<Ctx> {
 	}
 	
 	@Override public String getFieldSummary() { 
-		String basicDesc = super.getFieldSummary();
-		return basicDesc + "[compRunCnt=" + getCompletedRunCount() + "]";
+		return super.getFieldSummary() + ", compRunCnt=" + getCompletedRunCount();
 	}
 
 
