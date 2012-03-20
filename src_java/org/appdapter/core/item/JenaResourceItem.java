@@ -39,14 +39,34 @@ public class JenaResourceItem extends BaseItem implements ModelIdent {
 		myResource = r;
 	}
 	@Override public boolean equals(Object o) {
-		if (o instanceof JenaResourceItem) {
+		if ((o != null) && (o instanceof Ident)) {
+			String absUri = getAbsUriString();
+			if (absUri != null) {
+				String otherAbsUri = ((Ident) o).getAbsUriString();
+				return getAbsUriString().equals(otherAbsUri);
+			} else {
+				if (o instanceof JenaResourceItem) {
+					myResource.equals(((JenaResourceItem) o).myResource);
+				}
+			}	
+		}
+		return false;
+	}		
+/*		if (o instanceof JenaResourceItem) {
 			return myResource.equals(((JenaResourceItem) o).myResource);
 		} else {
 			return false;
 		}
-	}
+ */
+ 
 	@Override public int hashCode() {
-		return myResource.hashCode();
+		// Blank-nodes do not have an absUriString
+		String uriString = getAbsUriString();
+		if (uriString != null) {
+			return getAbsUriString().hashCode();
+		} else {
+			return myResource.hashCode();
+		}
 	}
 	@Override public Ident getIdent() {
 		return this;

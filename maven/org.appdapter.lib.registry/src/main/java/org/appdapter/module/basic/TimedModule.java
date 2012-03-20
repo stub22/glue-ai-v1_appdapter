@@ -15,7 +15,6 @@
  */
 package org.appdapter.module.basic;
 
-import org.appdapter.api.module.Modulator;
 import org.appdapter.module.basic.BasicModule;
 
 /**
@@ -23,7 +22,7 @@ import org.appdapter.module.basic.BasicModule;
  * presence explicit in each callback.  We also supply a naive "completed run count".
  * @author Stu B. <www.texpedient.com>
  */
-public abstract class TimedModule<Mlator extends Modulator> extends BasicModule<Mlator> {
+public abstract class TimedModule<Ctx> extends BasicModule<Ctx> {
 
 	private		long	myCompletedRunCount = 0;
 	
@@ -32,60 +31,60 @@ public abstract class TimedModule<Mlator extends Modulator> extends BasicModule<
 	public long getCompletedRunCount() { 
 		return myCompletedRunCount;
 	}
-	protected abstract void doInit(Mlator mlator);
+	protected abstract void doInit(Ctx mlator);
 	
 	@Override public synchronized void initModule() {
 		enterBasicInitModule(true);
-		Mlator mlator = getParentModulator();
-		Long beginStamp = logInfoEvent(IMPO_NORM, true, null, ".doInit()-BEGIN");
-		doInit(mlator);
+		Ctx ctx = getContext();
+		Long beginStamp = logInfoEvent(IMPO_HI, true, null, ".doInit()-BEGIN");
+		doInit(ctx);
 		logInfoEvent(IMPO_NORM, true, beginStamp, ".doInit()-END");
 		exitBasicInitModule(true);
 	}
 	
-	protected abstract void doStart(Mlator mlator);
+	protected abstract void doStart(Ctx ctx);
 	
 	@Override public synchronized void start() {
 		enterBasicStart();
-		Mlator mlator = getParentModulator();
+		Ctx ctx = getContext();
 		Long beginStamp = logInfoEvent(IMPO_NORM, true, null, ".doStart()-BEGIN");
-		doStart(mlator);
+		doStart(ctx);
 		logInfoEvent(IMPO_NORM, true, beginStamp, ".doStart()-END");
 		exitBasicStart();
 	}
 	
-	protected abstract void doRunOnce(Mlator mlator, long runSeqNum);
+	protected abstract void doRunOnce(Ctx ctx, long runSeqNum);
 
 	@Override public synchronized void runOnce() {
 		enterBasicRunOnce();
-		Mlator mlator = getParentModulator();
+		Ctx ctx = getContext();
 		// Our importance is usually "LO", but once every myRunDebugModulus runs, the importance goes up to "NORM".
 		int msgImportance = ((myCompletedRunCount % myRunDebugModulus) == 0) ? IMPO_NORM : IMPO_LO;
 		Long startStamp = logInfoEvent(msgImportance, true, null, ".doRunOnce(seqNum=%d)-BEGIN", myCompletedRunCount);
-		doRunOnce(mlator, myCompletedRunCount);
+		doRunOnce(ctx, myCompletedRunCount);
 		logInfoEvent(msgImportance, true, startStamp, ".doRunOnce(seqNum=%d)-END", myCompletedRunCount);
 		++myCompletedRunCount;
 		exitBasicRunOnce();
 	}
 
-	protected abstract void doStop(Mlator mlator);
+	protected abstract void doStop(Ctx ctx);
 	
 	@Override public synchronized void stop() {
 		enterBasicStop();
-		Mlator mlator = getParentModulator();
+		Ctx ctx = getContext();
 		Long beginStamp = logInfoEvent(IMPO_NORM, true, null, ".doStop()-BEGIN");
-		doStop(mlator);
+		doStop(ctx);
 		logInfoEvent(IMPO_NORM, true, beginStamp, ".doStop()-END");
 		exitBasicStop();
 	}
 
-	protected abstract void doRelease(Mlator mlator);
+	protected abstract void doRelease(Ctx ctx);
 	
 	@Override public synchronized void releaseModule() {
 		enterBasicReleaseModule();
-		Mlator mlator = getParentModulator();
+		Ctx ctx = getContext();
 		Long beginStamp = logInfoEvent(IMPO_NORM, true, null, ".doRelease()-BEGIN");
-		doRelease(mlator);
+		doRelease(ctx);
 		logInfoEvent(IMPO_NORM, true, beginStamp, ".doRelease()-END");
 		exitBasicReleaseModule();
 	}

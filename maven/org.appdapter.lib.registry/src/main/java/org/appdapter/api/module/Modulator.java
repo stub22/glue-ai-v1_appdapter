@@ -18,25 +18,25 @@ package org.appdapter.api.module;
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public interface Modulator {
+public interface Modulator<Ctx> {
 	
 
 	/*
-	 *  A module may be attached to only one Modulator, called its ParentModulator, and must 
-	 *	be detached from old Modulator before attached to a new one.  Attach+Detach may occur 
-	 * at any time that it is NOT in an action module.
+	 *  A module may be attached to only one Modulator, and must 
+	 *	be detached from any old Modulator before attached to a new one.  
+	 * Attach+Detach may occur at any time that it is NOT in an action module.
 	 * 
-	 *  attachModule is responsible for setting the module's modulator to itself.
+	 *  attachModule is responsible for setting the module's context to an appropriate value.
 	 */
 	
-	public void attachModule(Module m);
+	public void attachModule(Module<Ctx> m);
 	
 	/*
 	 *  A module may be attached or detached at any time that it is NOT in an action module.
-	 *  detachModule is responsible for setting the module's modulator to null.
+	 *  detachModule is responsible for setting the module's context to null.
 	 */
 	
-	public void detachModule(Module m);
+	public void detachModule(Module<Ctx> m);
 	
 	public int getAttachedModuleCount();
 	
