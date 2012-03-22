@@ -121,14 +121,14 @@ public interface Module<Ctx> {
 	/**  Modulator must be set when initModule is called.  initModule is called exactly
 	 *  once, by the modulator, and can be First method called on Module, and called only once. 
 	 *		Can only be called by the modulatorModule 
-	 * Upon return, must be in WAIT_TO_START, or or POST_STOP_OR_FAILED_STARTUP.
+	 * Upon return, must be in WAIT_TO_START, or FAILED_STARTUP.
 	 */
 	
 	public void initModule();	
 
 	/** Required pre-state is WAIT_TO_START.   
 	 * During-state is IN_START 
-	 * Upon return, state is WAIT_TO_RUN_OR_STOP, or POST_STOP_OR_FAILED_STARTUP.
+	 * Upon return, state is WAIT_TO_RUN_OR_STOP, or FAILED_STARTUP.
 	 */
 	
 	public void start();	
@@ -141,11 +141,11 @@ public interface Module<Ctx> {
 	
 	/** Required pre-state is WAIT_TO_RUN_OR_STOP.   
 	 * During-state is IN_STOP. 
-	 * Upon return, state is POST_STOP_OR_FAILED_STARTUP. */
+	 * Upon return, state is POST_STOP */
 	
 	public void	stop();		
 
-	/** Required pre-state is POST_STOP_OR_FAILED_STARTUP.  Module is no longer usable as soon as call begins.   
+	/** Required pre-state is POST_STOP or FAILED_STARTUP.  Module is no longer usable as soon as call begins.   
 	 * Should not throw.   
 	 */
 	

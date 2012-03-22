@@ -152,6 +152,9 @@ public class BasicModulator<Ctx> extends BasicDebugger implements Modulator<Ctx>
 	protected List<Module<Ctx>> getUnfinishedModules() { 
 		return getModulesNotMatchingStates(Module.State.POST_STOP, Module.State.FAILED_STARTUP);
 	}
+	protected List<Module<Ctx>> getFinishedModules() { 
+		return getModulesMatchingStates(Module.State.POST_STOP, Module.State.FAILED_STARTUP);
+	}	
 	protected void processFinishedModules() { 
 		List<Module<Ctx>> finishedModules = getModulesMatchingStates(Module.State.POST_STOP, Module.State.FAILED_STARTUP);
 		for (Module fm : finishedModules) {
