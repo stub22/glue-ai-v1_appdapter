@@ -23,52 +23,28 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger; 
 
+import org.appdapter.core.log.BasicDebugger;
+
 import java.net.URL;
 import org.appdapter.bind.log4j.Log4jFuncs;
 
 
 
 
-public abstract class BundleActivatorBase implements BundleActivator  {
-	protected abstract Logger getLogger();
-			
-    @Override public void start(BundleContext bundleCtx) throws Exception {
-		String startupMsg = getClass().getCanonicalName() + ".start(ctx=" + bundleCtx + ")";
-		System.out.println("[System.out]" + startupMsg);
-		Logger log = getLogger();
-		log.info("[SLF4J]" + startupMsg);
+public abstract class BundleActivatorBase extends BasicDebugger implements BundleActivator  {
+	// protected abstract Logger getLogger();
+		
+	protected String describe(String action, BundleContext bundleCtx) { 
 		Bundle b = bundleCtx.getBundle();
-		log.info("bundle=" + b);
+		String msg = getClass().getCanonicalName() + "." + action + "(ctx=[" + bundleCtx + "], bundle=[" + b + "])";
+		return msg;
+	}
+    @Override public void start(BundleContext bundleCtx) throws Exception {
+		logInfo(describe("start<BundleActivatorBase>", bundleCtx));
     }
 
-    @Override
-	public void stop(BundleContext context) throws Exception {
-		String windupMsg = getClass().getCanonicalName() + ".stop(ctx=" + context + ")";
-		System.out.println("[System.out]" + windupMsg);		
-		Logger log = getLogger();
-		log.info("[SLF4J]" + windupMsg);		
+    @Override public void stop(BundleContext bundleCtx) throws Exception {
+		logInfo(describe("stop<BundleActivatorBase>", bundleCtx));	
 	}
 	
-	protected void forceLog4jConfig() {
-		Logger logger = getLogger();
-
-		// To get more determinism over when this happens (before other bundles that use logging are launched),
-		// need to mess with Felix auto-start properties?
-		ClassLoader threadCL = Thread.currentThread().getContextClassLoader();
-		ClassLoader localCL = getClass().getClassLoader();
-		System.out.println("thread-context-CL=" + threadCL);
-		System.out.println("local-CL=" + localCL);
-
-		String resPath = "log4j.properties";
-		
-		URL threadURL = threadCL.getResource(resPath);
-		URL localURL = localCL.getResource(resPath);
-		System.out.println("[System.out] threadCL resolved " + resPath + " to threadURL " + threadURL);
-		System.out.println("[System.out] localCL resolved  " + resPath + " to  localURL" + localURL);
-		System.out.println("[System.out] " + getClass().getCanonicalName() + " is forcing Log4J to read config from localURL: " + localURL);
-		Log4jFuncs.forceLog4jConfig(localURL);
-		getLogger().info("{forceLog4JConfig} - This here message should be conveyed by SLF4J->Log4J");
-		
-	}
-
 }
