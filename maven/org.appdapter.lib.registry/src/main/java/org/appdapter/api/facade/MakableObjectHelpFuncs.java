@@ -18,7 +18,6 @@ package org.appdapter.api.facade;
 
 import org.appdapter.api.registry.Description;
 import org.appdapter.api.registry.VerySimpleRegistry;
-import org.appdapter.core.log.BasicDebugger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,8 +25,8 @@ import org.slf4j.LoggerFactory;
  * @author Stu B. <www.texpedient.com>
  */
 
-public class FacadeRegistryFuncs extends BasicDebugger {
-	private final static Logger		theLogger = LoggerFactory.getLogger(FacadeRegistryFuncs.class);
+public class MakableObjectHelpFuncs {
+	private final static Logger		theLogger = LoggerFactory.getLogger(MakableObjectHelpFuncs.class);	
 	/**
 	 * Used to find or flexibly construct an object that is to be placed in a registry.
 	 * @param <OT>
@@ -77,12 +76,4 @@ public class FacadeRegistryFuncs extends BasicDebugger {
 			}
 		});
 	}
-	
-	public static <FT, FK> String chooseBestLocalFacadeName(FacadeSpec<FT,FK> fs, String optOverrideName) {
-		String actualName = fs.getNameString();
-		if (optOverrideName != null) {
-			actualName = optOverrideName;
-		}
-		return actualName;
-	}	
 }
