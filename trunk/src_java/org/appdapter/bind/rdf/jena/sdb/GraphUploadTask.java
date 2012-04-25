@@ -27,6 +27,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author Stu B. <www.texpedient.com>
+ * 
+ * Includes code from Jena project file "sdbload.java"
  */
 public class GraphUploadTask {
 	
