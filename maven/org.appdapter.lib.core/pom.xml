@@ -49,7 +49,7 @@ central repo.
 	<artifactId>org.appdapter.lib.core</artifactId>
 	<packaging>jar</packaging>
 	<name>org.appdapter.lib.core - POJO</name>
-	<url>http://www.appdapter.org</url>
+
 	<description>Appdapter Maven project including Java and Scala, produces jar, not bundle.  Excludes concrete SLF4J binding.</description>
 
 
