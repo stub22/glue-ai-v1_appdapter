@@ -10,21 +10,17 @@
 	</parent>		
 	<artifactId>org.appdapter.lib.registry</artifactId>
 	<packaging>jar</packaging>
-	<name>org.appdapter.lib.registry - POJO</name>
+	<name>${project.artifactId} - POJO</name>
 	<url>http://www.appdapter.org</url>
 	<description>Pluggable object registration + query service</description>
 
-
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>org.appdapter.lib.core</artifactId>
 			<version>${project.version}</version>
-		</dependency>				
+		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
