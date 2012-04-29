@@ -17,10 +17,10 @@
 package org.appdapter.gui.demo.triggers;
 
 import org.appdapter.bind.rdf.jena.model.AssemblerUtils;
-import org.appdapter.gui.box.Box;
-import org.appdapter.gui.box.BoxContext;
-import org.appdapter.gui.box.MutableBox;
-import org.appdapter.gui.box.TriggerImpl;
+import org.appdapter.api.trigger.Box;
+import org.appdapter.api.trigger.BoxContext;
+import org.appdapter.api.trigger.MutableBox;
+import org.appdapter.api.trigger.TriggerImpl;
 import java.util.Set;
 import org.appdapter.demo.DemoResources;
 import org.slf4j.Logger;

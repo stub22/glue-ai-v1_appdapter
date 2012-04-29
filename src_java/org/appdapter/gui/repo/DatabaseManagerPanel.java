@@ -22,13 +22,13 @@
 
 package org.appdapter.gui.repo;
 
-import org.appdapter.gui.box.Box;
-import org.appdapter.gui.box.BoxPanel;
+import org.appdapter.api.trigger.Box;
+import org.appdapter.gui.box.ScreenBoxPanel;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public class DatabaseManagerPanel extends BoxPanel {
+public class DatabaseManagerPanel extends ScreenBoxPanel {
 
     /** Creates new form DatabaseManagerPanel */
     public DatabaseManagerPanel() {

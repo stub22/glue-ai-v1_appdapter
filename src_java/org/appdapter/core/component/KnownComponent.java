@@ -14,17 +14,18 @@
  *  limitations under the License.
  */
 
-package org.appdapter.gui.box;
+package org.appdapter.core.component;
+
+import org.appdapter.core.item.Ident;
 
 /**
  * @author Stu B. <www.texpedient.com>
+ *  A known box is an interactable entity tied to a modeled representation of that entity (in some repo).
  */
-public interface MutableBox<TrigType extends Trigger<? extends MutableBox<TrigType>>> extends Box<TrigType>  {
+public interface KnownComponent {
+	public Ident getIdent();
 
-	void attachTrigger(TrigType bt);
+	public String getDescription();
 
-	void setContext(BoxContext bc);
-
-	void setDisplayContextProvider(DisplayContextProvider dcp);
-
+	public String getShortLabel();
 }

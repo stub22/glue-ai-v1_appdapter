@@ -16,6 +16,12 @@
 
 package org.appdapter.gui.box;
 
+import org.appdapter.api.trigger.BoxContext;
+import org.appdapter.api.trigger.MutableBox;
+import org.appdapter.api.trigger.BoxImpl;
+import org.appdapter.api.trigger.Trigger;
+import org.appdapter.core.component.KnownComponent;
+import org.appdapter.core.component.KnownComponentImpl;
 import org.appdapter.gui.browse.DisplayContext;
 import org.appdapter.gui.repo.DatabaseManagerPanel;
 import org.appdapter.gui.repo.ModelMatrixPanel;
@@ -31,37 +37,20 @@ import org.slf4j.LoggerFactory;
  * <br/> 
  * @author Stu B. <www.texpedient.com>
  */
-public class BoxImpl<TrigType extends Trigger<? extends BoxImpl<TrigType>>> extends KnownComponentImpl implements KnownComponent, MutableBox<TrigType>, ViewableBox<TrigType> {
-	static Logger theLogger = LoggerFactory.getLogger(BoxImpl.class);
+public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<TrigType>>> extends BoxImpl<TrigType> implements ScreenBox<TrigType> {
+	static Logger theLogger = LoggerFactory.getLogger(ScreenBoxImpl.class);
 	// Because it's a "provider", we have an extra layer of indirection between box and display, enabling independence.
 	private DisplayContextProvider			myDCP;
 	
-	private	BoxContext						myBoxContext;
 
-
-	private List<TrigType>				myTriggers = new ArrayList<TrigType>();
 	// A box may have up to one panel for any kind.
-	private	Map<BoxPanel.Kind, BoxPanel>	myPanelMap = new HashMap<BoxPanel.Kind, BoxPanel>();
+	private	Map<ScreenBoxPanel.Kind, ScreenBoxPanel>	myPanelMap = new HashMap<ScreenBoxPanel.Kind, ScreenBoxPanel>();
 
 
 	public void setDisplayContextProvider(DisplayContextProvider dcp) {
 		myDCP = dcp;
 	}
-	public void setContext(BoxContext bc) {
-		myBoxContext = bc;
-	}
-	@Override public BoxContext getBoxContext() {
-		return myBoxContext;
-	}
-	public void clearTriggers() {
-		myTriggers.clear();
-	}
-	public void attachTrigger(TrigType trig) {
-		myTriggers.add(trig);
-	}
-	@Override public List<TrigType> getTriggers() {
-		return myTriggers;
-	}
+
 	
 	public DisplayContext getDisplayContext() {
 		if (myDCP != null) {
@@ -75,21 +64,21 @@ public class BoxImpl<TrigType extends Trigger<? extends BoxImpl<TrigType>>> exte
 	}
 
 
-	protected void putBoxPanel(BoxPanel.Kind kind, BoxPanel bp) {
+	protected void putBoxPanel(ScreenBoxPanel.Kind kind, ScreenBoxPanel bp) {
 		myPanelMap.put(kind, bp);
 	}
-	protected BoxPanel getBoxPanel(BoxPanel.Kind kind) {
+	protected ScreenBoxPanel getBoxPanel(ScreenBoxPanel.Kind kind) {
 		return myPanelMap.get(kind);
 	}
-	@Override public BoxPanel findBoxPanel(BoxPanel.Kind kind) {
-		BoxPanel bp = getBoxPanel(kind);
+	@Override public ScreenBoxPanel findBoxPanel(ScreenBoxPanel.Kind kind) {
+		ScreenBoxPanel bp = getBoxPanel(kind);
 		if (bp == null) {
 			bp = makeBoxPanel(kind);
 		}
 		return bp;
 	}
-	protected BoxPanel makeBoxPanel(BoxPanel.Kind kind) {
-		BoxPanel bp = null;
+	protected ScreenBoxPanel makeBoxPanel(ScreenBoxPanel.Kind kind) {
+		ScreenBoxPanel bp = null;
 		switch(kind) {
 		case MATRIX:
 			bp = new ModelMatrixPanel();
@@ -108,9 +97,7 @@ public class BoxImpl<TrigType extends Trigger<? extends BoxImpl<TrigType>>> exte
 		return bp;
 	}
 
-	@Override public String getFieldSummary() {
-		return super.getFieldSummary() + ", triggerCount=" + myTriggers.size();
-	}
+
 
 
 }

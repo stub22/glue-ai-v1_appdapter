@@ -14,22 +14,14 @@
  *  limitations under the License.
  */
 
-package org.appdapter.gui.assembly;
+package org.appdapter.api.trigger;
+
+import org.appdapter.api.trigger.Trigger;
+import org.appdapter.api.trigger.Box;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public class AssemblyNames {
+public interface MutableTrigger<BoxType extends Box<? extends MutableTrigger<BoxType>>> extends Trigger<BoxType> {
 
-	public static	String		NS_rdf = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
-	public static 	String		NS_rdfs = "http://www.w3.org/2000/01/rdf-schema#";
-	public static	String		NS_dc = "http://purl.org/dc/elements/1.1/";
-	public static	String		NS_box = "http://www.appdapter.org/schema/box#";
-
-	public static 	String		P_label			= NS_box + "label";
-	public static 	String		P_description	= NS_rdfs + "description";
-	public static 	String		P_javaFQCN		= NS_box + "javaFQCN";
-	public static 	String		P_trigger		= NS_box + "trigger";
-	
-	public static 	String		P_extraThing	= NS_box + "extraThing";
 }

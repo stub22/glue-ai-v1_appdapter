@@ -19,8 +19,8 @@ package org.appdapter.gui.repo;
 import org.appdapter.bind.rdf.jena.sdb.GraphUploadTask;
 import org.appdapter.bind.rdf.jena.model.GraphUploadMonitor;
 import arq.cmdline.ModTime;
-import org.appdapter.gui.box.BoxImpl;
-import org.appdapter.gui.box.Trigger;
+import org.appdapter.gui.box.ScreenBoxImpl;
+import org.appdapter.api.trigger.Trigger;
 import com.hp.hpl.jena.graph.Graph;
 import com.hp.hpl.jena.graph.GraphListener;
 import com.hp.hpl.jena.graph.Node;
@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public class RepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<TT>>> extends BoxImpl<TT> implements MutableRepoBox<TT> {
+public class RepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<TT>>> extends ScreenBoxImpl<TT> implements MutableRepoBox<TT> {
 	static Logger theLogger = LoggerFactory.getLogger(RepoBoxImpl.class);
 	public static Store		myStore;
 	public static String	myStoreConfigPath;

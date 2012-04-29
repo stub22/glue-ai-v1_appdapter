@@ -15,6 +15,7 @@
  */
 package org.appdapter.gui.box;
 
+import org.appdapter.api.trigger.Box;
 import org.appdapter.gui.browse.BrowsePanel;
 import org.appdapter.gui.browse.DisplayContext;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -22,16 +23,16 @@ import javax.swing.tree.DefaultMutableTreeNode;
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public class BoxTreeNode extends DefaultMutableTreeNode {
+public class ScreenBoxTreeNode extends DefaultMutableTreeNode {
 	private		DisplayContext		myDisplayContext;
 
-	public BoxTreeNode() {
+	public ScreenBoxTreeNode() {
 		super();
 	}
-	public BoxTreeNode(Box box) {
+	public ScreenBoxTreeNode(Box box) {
 		super(box);
 	}
-	public BoxTreeNode(Box box, boolean allowsChildren) {
+	public ScreenBoxTreeNode(Box box, boolean allowsChildren) {
 		super(box, allowsChildren);
 	}
 	public void setDisplayContext(DisplayContext dc) {
@@ -43,7 +44,7 @@ public class BoxTreeNode extends DefaultMutableTreeNode {
 	protected DisplayContext findDisplayContext() {
 		DisplayContext foundDC = getDisplayContext();
 		if (foundDC == null) {
-			BoxTreeNode parentNode = (BoxTreeNode) getParent();
+			ScreenBoxTreeNode parentNode = (ScreenBoxTreeNode) getParent();
 			if (parentNode != null) {
 				foundDC = parentNode.findDisplayContext();
 			}
@@ -53,14 +54,14 @@ public class BoxTreeNode extends DefaultMutableTreeNode {
 	public Box getBox() {
 		return (Box) getUserObject();
 	}
-	public BoxTreeNode findDescendantNodeForBox(Box b) {
+	public ScreenBoxTreeNode findDescendantNodeForBox(Box b) {
 		if (b == getUserObject()) {
 			return this;
 		} else {
 			int childCount = getChildCount();
 			for (int i=0; i < childCount; i++) {
-				BoxTreeNode childNode = (BoxTreeNode) getChildAt(i);
-				BoxTreeNode matchNode = childNode.findDescendantNodeForBox(b);
+				ScreenBoxTreeNode childNode = (ScreenBoxTreeNode) getChildAt(i);
+				ScreenBoxTreeNode matchNode = childNode.findDescendantNodeForBox(b);
 				if (matchNode != null) {
 					return matchNode;
 				}
