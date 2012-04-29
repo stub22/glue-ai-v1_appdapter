@@ -13,26 +13,21 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+package org.appdapter.gui.box;
 
-package org.appdapter.gui.repo;
-
-import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.Trigger;
-import com.hp.hpl.jena.sdb.Store;
-import java.util.List;
+import org.appdapter.api.trigger.Box;
+import org.appdapter.core.component.KnownComponent;
+import org.appdapter.gui.browse.DisplayContext;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public interface RepoBox<TT extends Trigger<? extends RepoBox<TT>>> extends Box<TT> {
-	public Store				getStore();
+public interface ScreenBox<TT extends Trigger<? extends ScreenBox<TT>>> extends Box<TT>, KnownComponent {
 
-	public List<GraphStat>		getGraphStats();
-
-	public String				getUploadHomePath();
+	public DisplayContext getDisplayContext();
 	
-	public static class GraphStat {
-		String		graphURI;
-		long		statementCount;
-	}
+	void setDisplayContextProvider(DisplayContextProvider dcp);	
+
+	public ScreenBoxPanel findBoxPanel(ScreenBoxPanel.Kind kind);
 }

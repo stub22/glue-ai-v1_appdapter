@@ -16,32 +16,32 @@
 
 package org.appdapter.demo;
 
-import org.appdapter.gui.box.Box;
-import org.appdapter.gui.assembly.CachingComponentAssembler;
-import org.appdapter.gui.box.BoxContext;
-import org.appdapter.gui.box.BoxImpl;
-import org.appdapter.gui.box.BoxPanel;
-import org.appdapter.gui.box.MutableBox;
-import org.appdapter.gui.box.TriggerImpl;
+import org.appdapter.api.trigger.Box;
+import org.appdapter.bind.rdf.jena.assembly.CachingComponentAssembler;
+import org.appdapter.api.trigger.BoxContext;
+import org.appdapter.gui.box.ScreenBoxImpl;
+import org.appdapter.gui.box.ScreenBoxPanel;
+import org.appdapter.api.trigger.MutableBox;
+import org.appdapter.api.trigger.TriggerImpl;
 import org.appdapter.gui.trigger.PanelTriggers;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
 public class DemoServiceWrapFuncs {
-	private static <BT extends BoxImpl<TT>, TT extends TriggerImpl<BT>> BT makeTestBoxImpl(Class<BT> boxClass, Class<TT> trigClass, String label) {
+	private static <BT extends ScreenBoxImpl<TT>, TT extends TriggerImpl<BT>> BT makeTestBoxImpl(Class<BT> boxClass, Class<TT> trigClass, String label) {
 		BT result = CachingComponentAssembler.makeEmptyComponent(boxClass);
 		result.setShortLabel(label);
 		result.setDescription("full description for box with label: " + label);
 		return result;
 	}
-	public static <BT extends BoxImpl<TT>, TT extends TriggerImpl<BT>> BT makeTestBoxImpl(Class<BT> boxClass, TT trigProto, String label) {
+	public static <BT extends ScreenBoxImpl<TT>, TT extends TriggerImpl<BT>> BT makeTestBoxImpl(Class<BT> boxClass, TT trigProto, String label) {
 		BT result = CachingComponentAssembler.makeEmptyComponent(boxClass);
 		result.setShortLabel(label);
 		result.setDescription("full description for box with label: " + label);
 		return result;
 	}
-	public static <BT extends BoxImpl<TT>, TT extends TriggerImpl<BT>> BT makeTestChildBoxImpl(Box parentBox, Class<BT> boxClass,  TT trigProto, String label) {
+	public static <BT extends ScreenBoxImpl<TT>, TT extends TriggerImpl<BT>> BT makeTestChildBoxImpl(Box parentBox, Class<BT> boxClass,  TT trigProto, String label) {
 		BT result = null;
 		BoxContext ctx = parentBox.getBoxContext();
 		result = makeTestBoxImpl(boxClass, trigProto, label);
@@ -49,7 +49,7 @@ public class DemoServiceWrapFuncs {
 		return result;
 	}
 
-	public static PanelTriggers.OpenTrigger attachPanelOpenTrigger(MutableBox box, String label, BoxPanel.Kind kind) {
+	public static PanelTriggers.OpenTrigger attachPanelOpenTrigger(MutableBox box, String label, ScreenBoxPanel.Kind kind) {
 		PanelTriggers.OpenTrigger trig = new PanelTriggers.OpenTrigger();
 		trig.setShortLabel(label);
 		trig.setPanelKind(kind);

@@ -22,7 +22,7 @@
 
 package org.appdapter.gui.repo;
 
-import org.appdapter.gui.box.BoxPanel;
+import org.appdapter.gui.box.ScreenBoxPanel;
 import java.io.File;
 import javax.swing.JFileChooser;
 import org.slf4j.Logger;
@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public class RepoManagerPanel  extends BoxPanel<MutableRepoBox> {
+public class RepoManagerPanel  extends ScreenBoxPanel<MutableRepoBox> {
 	static Logger theLogger = LoggerFactory.getLogger(RepoManagerPanel.class);
 
 	private	MutableRepoBox			myFocusBox;

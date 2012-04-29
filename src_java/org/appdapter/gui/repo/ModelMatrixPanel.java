@@ -22,15 +22,15 @@
 
 package org.appdapter.gui.repo;
 
-import org.appdapter.gui.box.Box;
-import org.appdapter.gui.box.BoxPanel;
+import org.appdapter.api.trigger.Box;
+import org.appdapter.gui.box.ScreenBoxPanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public class ModelMatrixPanel extends BoxPanel {
+public class ModelMatrixPanel extends ScreenBoxPanel {
 	static Logger theLogger = LoggerFactory.getLogger(ModelMatrixPanel.class);
     /** Creates new form ModelMatrixPanel */
     public ModelMatrixPanel() {

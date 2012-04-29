@@ -16,11 +16,11 @@
 
 package org.appdapter.gui.trigger;
 
-import org.appdapter.gui.box.BoxImpl;
-import org.appdapter.gui.box.TriggerImpl;
+import org.appdapter.gui.box.ScreenBoxImpl;
+import org.appdapter.api.trigger.TriggerImpl;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public abstract class ConcreteTrigger extends TriggerImpl<BoxImpl<ConcreteTrigger>> {
+public abstract class ConcreteTrigger extends TriggerImpl<ScreenBoxImpl<ConcreteTrigger>> {
 }

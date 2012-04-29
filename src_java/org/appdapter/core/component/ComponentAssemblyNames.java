@@ -14,25 +14,23 @@
  *  limitations under the License.
  */
 
-package org.appdapter.gui.repo;
-
-import org.appdapter.api.trigger.Box;
-import org.appdapter.api.trigger.Trigger;
-import com.hp.hpl.jena.sdb.Store;
-import java.util.List;
+package org.appdapter.core.component;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public interface RepoBox<TT extends Trigger<? extends RepoBox<TT>>> extends Box<TT> {
-	public Store				getStore();
+public class ComponentAssemblyNames {
 
-	public List<GraphStat>		getGraphStats();
+	public static	String		NS_rdf = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+	public static 	String		NS_rdfs = "http://www.w3.org/2000/01/rdf-schema#";
+	public static	String		NS_dc = "http://purl.org/dc/elements/1.1/";
+	public static	String		NS_box = "http://www.appdapter.org/schema/box#";
 
-	public String				getUploadHomePath();
+	public static 	String		P_description	= NS_rdfs + "description";
+	public static 	String		P_label			= NS_box + "label";
+
+	public static 	String		P_javaFQCN		= NS_box + "javaFQCN";
+
 	
-	public static class GraphStat {
-		String		graphURI;
-		long		statementCount;
-	}
+	public static 	String		P_extraThing	= NS_box + "extraThing";
 }

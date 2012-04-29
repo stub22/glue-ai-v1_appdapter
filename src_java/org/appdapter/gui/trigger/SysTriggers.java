@@ -16,9 +16,9 @@
 
 package org.appdapter.gui.trigger;
 
-import org.appdapter.gui.box.Box;
-import org.appdapter.gui.box.TriggerImpl;
-import org.appdapter.gui.box.BoxImpl;
+import org.appdapter.api.trigger.Box;
+import org.appdapter.api.trigger.TriggerImpl;
+import org.appdapter.gui.box.ScreenBoxImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +41,7 @@ public class SysTriggers {
 	public static class DumpTrigger extends TriggerImpl {
 		@Override public void fire(Box targetBox) {
 			theLogger.info(toString() + "-dumping");
-			((BoxImpl) targetBox).dump();
+			((ScreenBoxImpl) targetBox).dump();
 		}
 	}
 

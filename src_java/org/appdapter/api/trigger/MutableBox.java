@@ -14,25 +14,18 @@
  *  limitations under the License.
  */
 
-package org.appdapter.gui.repo;
+package org.appdapter.api.trigger;
 
-import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.Trigger;
-import com.hp.hpl.jena.sdb.Store;
-import java.util.List;
+import org.appdapter.api.trigger.Box;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public interface RepoBox<TT extends Trigger<? extends RepoBox<TT>>> extends Box<TT> {
-	public Store				getStore();
+public interface MutableBox<TrigType extends Trigger<? extends MutableBox<TrigType>>> extends Box<TrigType>  {
 
-	public List<GraphStat>		getGraphStats();
+	void attachTrigger(TrigType bt);
 
-	public String				getUploadHomePath();
-	
-	public static class GraphStat {
-		String		graphURI;
-		long		statementCount;
-	}
+	void setContext(BoxContext bc);
+
 }

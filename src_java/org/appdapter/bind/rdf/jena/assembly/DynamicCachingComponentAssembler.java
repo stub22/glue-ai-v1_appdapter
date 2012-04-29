@@ -14,12 +14,13 @@
  *  limitations under the License.
  */
 
-package org.appdapter.gui.assembly;
+package org.appdapter.bind.rdf.jena.assembly;
 
+import org.appdapter.core.component.ComponentAssemblyNames;
 import org.appdapter.core.item.Ident;
 import org.appdapter.core.item.Item;
-import org.appdapter.gui.box.MutableKnownComponent;
-import org.appdapter.gui.box.TriggerImpl;
+import org.appdapter.core.component.MutableKnownComponent;
+import org.appdapter.api.trigger.TriggerImpl;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 /**
@@ -31,7 +32,7 @@ public abstract class DynamicCachingComponentAssembler<MKC extends MutableKnownC
 		super(r);
 	}
 	@Override protected Class<MKC> decideComponentClass(Ident componentID, Item componentConfigItem) {
-		String jfqcn = readConfigValString(componentID, AssemblyNames.P_javaFQCN, componentConfigItem, null);
+		String jfqcn = getReader().readConfigValString(componentID, ComponentAssemblyNames.P_javaFQCN, componentConfigItem, null);
 		if (jfqcn != null) {
 			theLogger.info("Found component class name: " + jfqcn);
 			Class<MKC> triggerClass = findClass(jfqcn);

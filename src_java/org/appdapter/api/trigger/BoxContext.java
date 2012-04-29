@@ -13,12 +13,23 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+package org.appdapter.api.trigger;
 
-package org.appdapter.gui.box;
+import org.appdapter.api.trigger.MutableBox;
+import org.appdapter.api.trigger.Trigger;
+import org.appdapter.api.trigger.Box;
+import org.appdapter.gui.browse.DisplayContext;
+import java.util.List;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public interface Trigger<BoxType extends Box<? extends Trigger<BoxType>>> {
-	public abstract void fire(BoxType targetBox);
+public interface BoxContext {
+	public Box getRootBox();
+	public Box getParentBox(Box child);
+	public List<Box> getOpenChildBoxes(Box parent);
+	public <BT extends Box<TT>, TT extends Trigger<BT>> List<BT> getOpenChildBoxesNarrowed(Box parent, Class<BT> boxClass, Class<TT> trigClass);
+
+
+	public void contextualizeAndAttachChildBox(Box<?> parentBox, MutableBox<?> childBox);
 }

@@ -16,9 +16,9 @@
 
 package org.appdapter.gui.trigger;
 
-import org.appdapter.gui.box.BoxPanel;
-import org.appdapter.gui.box.TriggerImpl;
-import org.appdapter.gui.box.ViewableBox;
+import org.appdapter.gui.box.ScreenBoxPanel;
+import org.appdapter.api.trigger.TriggerImpl;
+import org.appdapter.gui.box.ScreenBox;
 import org.appdapter.gui.browse.BrowseTabFuncs;
 import org.appdapter.gui.browse.DisplayContext;
 import org.slf4j.Logger;
@@ -33,10 +33,10 @@ public class PanelTriggers {
 		OPEN,
 		CLOSE
 	}
-	public static class OpenTrigger <VB extends ViewableBox<TriggerImpl<VB>>> extends  TriggerImpl<VB> {
-		private BoxPanel.Kind	myPanelKind;
+	public static class OpenTrigger <VB extends ScreenBox<TriggerImpl<VB>>> extends  TriggerImpl<VB> {
+		private ScreenBoxPanel.Kind	myPanelKind;
 
-		public void setPanelKind(BoxPanel.Kind kind) {
+		public void setPanelKind(ScreenBoxPanel.Kind kind) {
 			myPanelKind = kind;
 		}
 		@Override public void fire(VB targetVB) {
@@ -45,7 +45,7 @@ public class PanelTriggers {
 			BrowseTabFuncs.openBoxPanelAndFocus(dc, targetVB, myPanelKind);
 		}
 	}
-	public static class CloseTrigger  <VB extends ViewableBox<TriggerImpl<VB>>> extends  TriggerImpl<VB> {
+	public static class CloseTrigger  <VB extends ScreenBox<TriggerImpl<VB>>> extends  TriggerImpl<VB> {
 		@Override public void fire(VB targetBox) {
 			theLogger.info(toString() + "-closing viewableBox: " + targetBox);	
 		}

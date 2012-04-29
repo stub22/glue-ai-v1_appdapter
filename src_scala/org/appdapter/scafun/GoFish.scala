@@ -16,7 +16,7 @@
 
 package org.appdapter.scafun
 
-import org.appdapter.gui.box.{Box, BoxContext, BoxImpl, BoxTreeNode, MutableBox, Trigger, TriggerImpl};
+import org.appdapter.api.trigger.{Box, BoxContext, BoxImpl, MutableBox, Trigger, TriggerImpl};
 import org.appdapter.gui.demo.{DemoBrowser, DemoNavigatorCtrl};
 
 object GoFish {

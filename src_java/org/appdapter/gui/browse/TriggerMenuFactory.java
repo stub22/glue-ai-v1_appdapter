@@ -16,10 +16,10 @@
 
 package org.appdapter.gui.browse;
 
-import org.appdapter.gui.box.Box;
-import org.appdapter.gui.box.BoxImpl;
-import org.appdapter.gui.box.KnownComponent;
-import org.appdapter.gui.box.Trigger;
+import org.appdapter.api.trigger.Box;
+import org.appdapter.gui.box.ScreenBoxImpl;
+import org.appdapter.core.component.KnownComponent;
+import org.appdapter.api.trigger.Trigger;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;

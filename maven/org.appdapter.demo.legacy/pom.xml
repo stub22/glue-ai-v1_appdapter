@@ -3,19 +3,14 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<artifactId>org.appdapter.maven.root</artifactId>
 		<groupId>org.appdapter</groupId>
-		<version>0.5</version>
-	</parent>
-	<groupId>org.appdapter</groupId>
+		<artifactId>org.appdapter.modules.core</artifactId>
+		<version>1.0.7-SNAPSHOT</version>
+		<relativePath>../org.appdapter.modules.core/pom.xml</relativePath>
+	</parent>			
 	<artifactId>org.appdapter.demo.legacy</artifactId>
-	<version>1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>	
 	<name>${project.artifactId}</name>
-	<url>http://maven.apache.org</url>
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	</properties>
 	<build>		
 		<sourceDirectory>../../src_java_legacy</sourceDirectory>
 		<testSourceDirectory>../../test_java_legacy</testSourceDirectory>

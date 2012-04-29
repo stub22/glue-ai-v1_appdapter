@@ -13,19 +13,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.appdapter.gui.assembly;
+package org.appdapter.core.component;
 import org.appdapter.core.item.Ident;
-import org.appdapter.core.item.Item;
-import org.appdapter.core.item.Item.SortKey;
-import org.appdapter.core.item.JenaResourceItem;
-import org.appdapter.core.item.ModelIdent;
-import org.appdapter.gui.box.KnownComponent;
-import org.appdapter.gui.box.MutableKnownComponent;
-import com.hp.hpl.jena.assembler.Assembler;
-import com.hp.hpl.jena.assembler.Mode;
-import com.hp.hpl.jena.assembler.assemblers.AssemblerBase;
-import com.hp.hpl.jena.rdf.model.Resource;
-import java.util.ArrayList;
+
+import org.appdapter.core.component.MutableKnownComponent;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,10 +30,10 @@ import org.slf4j.LoggerFactory;
 public class ComponentCache<MKC extends MutableKnownComponent>  {
 	static Logger theLogger = LoggerFactory.getLogger(ComponentCache.class);
 	private	Map<Ident, MKC> myCompCache = new HashMap<Ident, MKC>();	
-	protected MKC getCachedComponent(Ident id) {
+	public MKC getCachedComponent(Ident id) {
 		return myCompCache.get(id);
 	}
-	protected void putCachedComponent(Ident id, MKC comp) {
+	public void putCachedComponent(Ident id, MKC comp) {
 		myCompCache.put(id, comp);
 	}	
 }

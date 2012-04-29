@@ -14,25 +14,17 @@
  *  limitations under the License.
  */
 
-package org.appdapter.gui.repo;
+package org.appdapter.core.component;
 
-import org.appdapter.api.trigger.Box;
-import org.appdapter.api.trigger.Trigger;
-import com.hp.hpl.jena.sdb.Store;
-import java.util.List;
+import org.appdapter.core.item.Ident;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public interface RepoBox<TT extends Trigger<? extends RepoBox<TT>>> extends Box<TT> {
-	public Store				getStore();
+public interface MutableKnownComponent extends KnownComponent {
+	public void setIdent(Ident id);
+	public void setDescription(String description);
+	public void setShortLabel(String shortLabel);
 
-	public List<GraphStat>		getGraphStats();
 
-	public String				getUploadHomePath();
-	
-	public static class GraphStat {
-		String		graphURI;
-		long		statementCount;
-	}
 }

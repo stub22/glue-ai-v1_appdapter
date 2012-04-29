@@ -17,7 +17,7 @@ package org.appdapter.module.basic;
 
 import org.appdapter.api.module.Modulator;
 import org.appdapter.api.module.Module;
-import org.appdapter.gui.box.KnownComponentImpl;
+import org.appdapter.core.component.KnownComponentImpl;
 
 /**
  * @author Stu B. <www.texpedient.com>

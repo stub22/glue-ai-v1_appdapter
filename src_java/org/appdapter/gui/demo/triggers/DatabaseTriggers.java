@@ -18,8 +18,8 @@ package org.appdapter.gui.demo.triggers;
 
 import org.appdapter.bind.sql.h2.DatabaseConnector;
 import org.appdapter.demo.DemoDatabase;
-import org.appdapter.gui.box.Box;
-import org.appdapter.gui.box.TriggerImpl;
+import org.appdapter.api.trigger.Box;
+import org.appdapter.api.trigger.TriggerImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

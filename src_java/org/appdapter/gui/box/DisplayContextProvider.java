@@ -16,6 +16,7 @@
 
 package org.appdapter.gui.box;
 
+import org.appdapter.api.trigger.Box;
 import org.appdapter.gui.browse.DisplayContext;
 
 /**
