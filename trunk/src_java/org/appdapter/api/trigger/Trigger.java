@@ -14,18 +14,13 @@
  *  limitations under the License.
  */
 
-package org.appdapter.gui.box;
+package org.appdapter.api.trigger;
 
-import org.appdapter.core.item.Ident;
+import org.appdapter.api.trigger.Box;
 
 /**
  * @author Stu B. <www.texpedient.com>
- *  A known box is an interactable entity tied to a modeled representation of that entity (in some repo).
  */
-public interface KnownComponent {
-	public Ident getIdent();
-
-	public String getDescription();
-
-	public String getShortLabel();
+public interface Trigger<BoxType extends Box<? extends Trigger<BoxType>>> {
+	public abstract void fire(BoxType targetBox);
 }

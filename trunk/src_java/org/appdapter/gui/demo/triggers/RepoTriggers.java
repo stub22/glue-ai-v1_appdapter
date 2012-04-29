@@ -17,7 +17,7 @@
 package org.appdapter.gui.demo.triggers;
 
 import org.appdapter.bind.rdf.jena.model.AssemblerUtils;
-import org.appdapter.gui.box.TriggerImpl;
+import org.appdapter.api.trigger.TriggerImpl;
 import org.appdapter.gui.repo.MutableRepoBox;
 import org.appdapter.gui.repo.RepoBox;
 import org.appdapter.gui.repo.RepoBox.GraphStat;

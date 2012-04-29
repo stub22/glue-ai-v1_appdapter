@@ -16,7 +16,7 @@
 
 package org.appdapter.gui.repo;
 
-import org.appdapter.gui.box.Trigger;
+import org.appdapter.api.trigger.Trigger;
 import com.hp.hpl.jena.sdb.Store;
 
 /**

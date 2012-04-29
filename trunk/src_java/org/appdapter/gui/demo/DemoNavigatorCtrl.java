@@ -22,12 +22,12 @@ import java.awt.event.MouseAdapter;
 import javax.swing.JFrame;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
-import org.appdapter.gui.box.Box;
+import org.appdapter.api.trigger.Box;
 
-import org.appdapter.gui.box.BoxContext;
-import org.appdapter.gui.box.BoxTreeNode;
+import org.appdapter.api.trigger.BoxContext;
+import org.appdapter.gui.box.ScreenBoxTreeNode;
 import org.appdapter.gui.box.DisplayContextProvider;
-import org.appdapter.gui.box.MutableBox;
+import org.appdapter.api.trigger.MutableBox;
 import org.appdapter.gui.browse.BrowsePanel;
 import org.appdapter.gui.browse.TriggerMenuFactory;
 
@@ -39,12 +39,12 @@ public class DemoNavigatorCtrl {
 
 	public		TreeModel				myTM;
 	public		BoxContext				myBC;
-	public		BoxTreeNode				myRootBTN;
+	public		ScreenBoxTreeNode				myRootBTN;
 	private		DisplayContextProvider	myDCP;
 	private		BrowsePanel				myBP;
 	private		JFrame					myJFrame;
 
-	public DemoNavigatorCtrl(BoxContext bc, TreeModel tm, BoxTreeNode rootBTN, DisplayContextProvider dcp) {
+	public DemoNavigatorCtrl(BoxContext bc, TreeModel tm, ScreenBoxTreeNode rootBTN, DisplayContextProvider dcp) {
 		myBC = bc;
 		myTM = tm;
 		myRootBTN = rootBTN;

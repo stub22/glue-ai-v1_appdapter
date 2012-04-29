@@ -16,9 +16,9 @@
 
 package org.appdapter.gui.trigger;
 
-import org.appdapter.gui.box.BoxImpl;
-import org.appdapter.gui.box.MutableBox;
-import org.appdapter.gui.box.TriggerImpl;
+import org.appdapter.gui.box.ScreenBoxImpl;
+import org.appdapter.api.trigger.MutableBox;
+import org.appdapter.api.trigger.TriggerImpl;
 import org.slf4j.Logger;
 
 import org.slf4j.LoggerFactory;
@@ -45,10 +45,10 @@ public class BootstrapTriggerFactory { // <TT extends Trigger<? extends MutableB
 		}
 		return trig;
 	}
-	public <RTT extends TriggerImpl<BoxImpl<RTT>>> RTT putTriggerOnBox(MutableBox<? super RTT> mbox, Class<RTT> trigClass, String trigName) {
+	public <RTT extends TriggerImpl<ScreenBoxImpl<RTT>>> RTT putTriggerOnBox(MutableBox<? super RTT> mbox, Class<RTT> trigClass, String trigName) {
 		return null;
 	}
-	public <BT extends BoxImpl<TriggerImpl<BT>>> TriggerImpl<BT> attachNewTrigger(BT box, Class<? extends TriggerImpl<BT>> trigClass,  String trigName) {
+	public <BT extends ScreenBoxImpl<TriggerImpl<BT>>> TriggerImpl<BT> attachNewTrigger(BT box, Class<? extends TriggerImpl<BT>> trigClass,  String trigName) {
 		TriggerImpl<BT> trig = null;
 		try {
 			trig = trigClass.newInstance();
@@ -58,7 +58,7 @@ public class BootstrapTriggerFactory { // <TT extends Trigger<? extends MutableB
 		}
 		return trig;
 	}
-	public <BT extends BoxImpl<TriggerImpl<BT>>> void attachTrigger(BT box, TriggerImpl<BT> trigger,  String trigName) {
+	public <BT extends ScreenBoxImpl<TriggerImpl<BT>>> void attachTrigger(BT box, TriggerImpl<BT> trigger,  String trigName) {
 		trigger.setShortLabel(trigName);
 		box.attachTrigger(trigger);
 	}

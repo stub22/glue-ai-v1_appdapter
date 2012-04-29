@@ -13,16 +13,25 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.appdapter.gui.box;
 
-import org.appdapter.gui.browse.DisplayContext;
+package org.appdapter.api.trigger;
+
+import org.appdapter.api.trigger.MutableTrigger;
+import org.appdapter.api.trigger.Box;
+import org.appdapter.core.component.KnownComponentImpl;
+import java.lang.Class;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public interface ViewableBox<TT extends Trigger<? extends ViewableBox<TT>>> extends Box<TT>, KnownComponent {
+public abstract class TriggerImpl<BoxType extends Box<? extends TriggerImpl<BoxType>>> extends KnownComponentImpl implements MutableTrigger<BoxType> {
+	static Logger theLogger = LoggerFactory.getLogger(TriggerImpl.class);
 
-	public DisplayContext getDisplayContext();
 
-	public BoxPanel findBoxPanel(BoxPanel.Kind kind);
+	@Override public String getFieldSummary() {
+		return super.getFieldSummary() +  ", trigger-field-summary-goes-here";
+	}
+
 }

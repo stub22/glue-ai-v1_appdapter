@@ -18,12 +18,12 @@ package org.appdapter.gui.demo;
 
 import org.appdapter.demo.DemoServiceWrapFuncs;
 import javax.swing.tree.TreeModel;
-import org.appdapter.gui.box.BoxContextImpl;
-import org.appdapter.gui.box.BoxImpl;
-import org.appdapter.gui.box.BoxPanel;
-import org.appdapter.gui.box.BoxTreeNode;
+import org.appdapter.gui.box.ScreenBoxContextImpl;
+import org.appdapter.gui.box.ScreenBoxImpl;
+import org.appdapter.gui.box.ScreenBoxPanel;
+import org.appdapter.gui.box.ScreenBoxTreeNode;
 import org.appdapter.gui.box.DisplayContextProvider;
-import org.appdapter.gui.box.TriggerImpl;
+import org.appdapter.api.trigger.TriggerImpl;
 import org.appdapter.gui.repo.RepoBoxImpl;
 import org.appdapter.gui.trigger.BootstrapTriggerFactory;
 import org.appdapter.gui.demo.triggers.BridgeTriggers;
@@ -52,30 +52,30 @@ public class DemoBrowser {
 	}
 	public static DemoNavigatorCtrl makeDemoNavigatorCtrl(String[] args) {
 		// From this BoxImpl.class, is makeBCI is able to infer the full BT=BoxImpl<... tree?
-		BoxContextImpl bctx = makeBCI(BoxImpl.class, RepoBoxImpl.class);// makeBoxContextImpl(BoxImpl.class, TriggerImpl.class);
+		ScreenBoxContextImpl bctx = makeBCI(ScreenBoxImpl.class, RepoBoxImpl.class);// makeBoxContextImpl(BoxImpl.class, TriggerImpl.class);
 		TreeModel tm = bctx.getTreeModel();
-		BoxTreeNode rootBTN = (BoxTreeNode) tm.getRoot();
+		ScreenBoxTreeNode rootBTN = (ScreenBoxTreeNode) tm.getRoot();
 
 		DisplayContextProvider dcp = bctx;
 		DemoNavigatorCtrl tn = new DemoNavigatorCtrl(bctx, tm, rootBTN, dcp);
 		return tn;
 	}
-	public static <BT extends BoxImpl<TriggerImpl<BT>>, RBT extends RepoBoxImpl<TriggerImpl<RBT>>> BoxContextImpl makeBCI(Class<BT> boxClass, Class<RBT> repoBoxClass) {
+	public static <BT extends ScreenBoxImpl<TriggerImpl<BT>>, RBT extends RepoBoxImpl<TriggerImpl<RBT>>> ScreenBoxContextImpl makeBCI(Class<BT> boxClass, Class<RBT> repoBoxClass) {
 		TriggerImpl<BT> regTrigProto = makeTriggerPrototype(boxClass);
 		TriggerImpl<RBT> repoTrigProto = makeTriggerPrototype(repoBoxClass);
 		return makeBoxContextImpl(boxClass, repoBoxClass, regTrigProto, repoTrigProto);
 	}
-	public static <BT extends BoxImpl<TriggerImpl<BT>>> TriggerImpl<BT> makeTriggerPrototype(Class<BT> boxClass) {
+	public static <BT extends ScreenBoxImpl<TriggerImpl<BT>>> TriggerImpl<BT> makeTriggerPrototype(Class<BT> boxClass) {
 		// The trigger subtype does not matter - what matters is capturing BT into the type.
 		return new SysTriggers.QuitTrigger<BT>();
 	}
 	// static class ConcBootstrapTF extends BootstrapTriggerFactory<TriggerImpl<BoxImpl<TriggerImpl>>> {
 	// }  //   TT extends TriggerImpl<BT>
-	public static <BT extends BoxImpl<TriggerImpl<BT>>, RBT extends RepoBoxImpl<TriggerImpl<RBT>>> BoxContextImpl 
+	public static <BT extends ScreenBoxImpl<TriggerImpl<BT>>, RBT extends RepoBoxImpl<TriggerImpl<RBT>>> ScreenBoxContextImpl 
 				makeBoxContextImpl(Class<BT> regBoxClass, Class<RBT> repoBoxClass, TriggerImpl<BT> regTrigProto,
 					TriggerImpl<RBT> repoTrigProto) {
 		try {
-			BoxContextImpl bctx = new BoxContextImpl();
+			ScreenBoxContextImpl bctx = new ScreenBoxContextImpl();
 			BT rootBox = DemoServiceWrapFuncs.makeTestBoxImpl(regBoxClass, regTrigProto, "rooty");
 			bctx.contextualizeAndAttachRootBox(rootBox);
 
@@ -95,7 +95,7 @@ public class DemoBrowser {
 			btf.attachTrigger(r1Box, new RepoTriggers.UploadTrigger(), "upload into MetaRepo");
 			btf.attachTrigger(r1Box, new RepoTriggers.QueryTrigger(), "query repo");
 			btf.attachTrigger(r1Box, new RepoTriggers.DumpStatsTrigger(), "dump stats");
-			DemoServiceWrapFuncs.attachPanelOpenTrigger(r1Box, "manage repo", BoxPanel.Kind.REPO_MANAGER);
+			DemoServiceWrapFuncs.attachPanelOpenTrigger(r1Box, "manage repo", ScreenBoxPanel.Kind.REPO_MANAGER);
 
 			RBT r2Box = DemoServiceWrapFuncs.makeTestChildBoxImpl(repoBox, repoBoxClass, repoTrigProto, "repo_002");
 			btf.attachTrigger(r2Box, new SysTriggers.DumpTrigger(), "dumpD");
@@ -103,12 +103,12 @@ public class DemoBrowser {
 			btf.attachTrigger(r2Box, new SysTriggers.DumpTrigger(), "dumpA");
 
 			BT fishBox = DemoServiceWrapFuncs.makeTestChildBoxImpl(appBox, regBoxClass, regTrigProto, "fishy");
-			DemoServiceWrapFuncs.attachPanelOpenTrigger(fishBox, "open-matrix-f", BoxPanel.Kind.MATRIX);
+			DemoServiceWrapFuncs.attachPanelOpenTrigger(fishBox, "open-matrix-f", ScreenBoxPanel.Kind.MATRIX);
 
 			btf.attachTrigger(fishBox, new SysTriggers.DumpTrigger(), "dumpF");
 
 			BT pumappBox = DemoServiceWrapFuncs.makeTestChildBoxImpl(appBox, regBoxClass, regTrigProto, "pumapp");
-			DemoServiceWrapFuncs.attachPanelOpenTrigger(pumappBox, "open-matrix-p", BoxPanel.Kind.MATRIX);
+			DemoServiceWrapFuncs.attachPanelOpenTrigger(pumappBox, "open-matrix-p", ScreenBoxPanel.Kind.MATRIX);
 			btf.attachTrigger(pumappBox, new SysTriggers.DumpTrigger(), "dumpP");
 
 			BT buckTreeBox = DemoServiceWrapFuncs.makeTestChildBoxImpl(appBox, regBoxClass, regTrigProto, "bucksum");

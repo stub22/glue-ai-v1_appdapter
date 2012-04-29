@@ -13,12 +13,22 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package org.appdapter.gui.box;
 
+import org.appdapter.api.trigger.Box;
+import javax.swing.JPanel;
+
 /**
+ * BoxPanels may be used to view many different boxes.
+ * 
  * @author Stu B. <www.texpedient.com>
  */
-public interface MutableTrigger<BoxType extends Box<? extends MutableTrigger<BoxType>>> extends Trigger<BoxType> {
-
+public abstract class ScreenBoxPanel<BoxType extends Box> extends JPanel {
+	public enum Kind {
+		MATRIX,
+		DB_MANAGER,
+		REPO_MANAGER,
+		OTHER
+	}
+	public abstract void focusOnBox(BoxType b);
 }

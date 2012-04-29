@@ -16,28 +16,28 @@
 
 package org.appdapter.gui.browse;
 
-import org.appdapter.gui.box.BoxPanel;
-import org.appdapter.gui.box.ViewableBox;
+import org.appdapter.gui.box.ScreenBoxPanel;
+import org.appdapter.gui.box.ScreenBox;
 import javax.swing.JTabbedPane;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
 public class BrowseTabFuncs {
-	protected static boolean isBoxTabKnown(DisplayContext dc, BoxPanel bp) {
+	protected static boolean isBoxTabKnown(DisplayContext dc, ScreenBoxPanel bp) {
 		JTabbedPane tabbedPane = dc.getBoxPanelTabPane();
 		return ((tabbedPane.indexOfComponent(bp) >= 0) ? true : false);
 	}
-	protected static void setSelectedBoxTab(DisplayContext dc, BoxPanel boxP) {
+	protected static void setSelectedBoxTab(DisplayContext dc, ScreenBoxPanel boxP) {
 		JTabbedPane tabbedPane = dc.getBoxPanelTabPane();
 		tabbedPane.setSelectedComponent(boxP);
 	}	
-	protected static void addBoxTab(DisplayContext dc, BoxPanel boxP, String label) {
+	protected static void addBoxTab(DisplayContext dc, ScreenBoxPanel boxP, String label) {
 		JTabbedPane tabbedPane = dc.getBoxPanelTabPane();
 		tabbedPane.add(label, boxP);
 	}
-	public static void openBoxPanelAndFocus(DisplayContext dc, ViewableBox boxI, BoxPanel.Kind kind) {
-		BoxPanel boxP = boxI.findBoxPanel(kind);
+	public static void openBoxPanelAndFocus(DisplayContext dc, ScreenBox boxI, ScreenBoxPanel.Kind kind) {
+		ScreenBoxPanel boxP = boxI.findBoxPanel(kind);
 		if (!isBoxTabKnown(dc, boxP)) {
 			String tabLabel = kind.toString() + "-" + boxI.getShortLabel();
 			addBoxTab(dc, boxP, tabLabel);
