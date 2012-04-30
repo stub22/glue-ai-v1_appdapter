@@ -76,7 +76,14 @@
 			<groupId>org.apache.servicemix.bundles</groupId>
 			<artifactId>org.apache.servicemix.bundles.xerces</artifactId>
 			<version>2.9.1_5</version>
-			<scope>runtime</scope>
+			<!-- We use "runtime" scope, because Xerces is needed when we compile references to Jena XSD-based 
+				datatypes for literals (in Scala, anyway) in customers of this bundle.  Without it we'll see:
+				
+	 Missing dependency 'class org.apache.xerces.impl.dv.XSSimpleType', 
+	 required by ...ext.bundle.jena_all_264\1.0.7-SNAPSHOT\ext.bundle.jena_all_264-1.0.7-SNAPSHOT.jar(com/hp/hpl/jena/datatypes/xsd/XSDDatatype.class)
+			-->
+			
+			<scope>compile</scope>
 			<exclusions>
 				<exclusion>
 					<artifactId>xml-apis</artifactId>
