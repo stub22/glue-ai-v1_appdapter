@@ -32,7 +32,7 @@ import org.appdapter.peru.core.name.Address;
 
 import org.appdapter.peru.core.name.CoreAddress;
 
-import org.appdapter.peru.binding.jena.SPARQL_Utils;
+import org.appdapter.bind.rdf.jena.query.SPARQL_Utils;
 
 import org.appdapter.peru.core.config.Config;
 
