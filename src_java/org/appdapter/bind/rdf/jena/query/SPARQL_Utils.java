@@ -21,7 +21,7 @@
  */
 
 
-package org.appdapter.peru.binding.jena;
+package org.appdapter.bind.rdf.jena.query;
 import java.util.Iterator;
 import java.util.List;
 
@@ -52,6 +52,8 @@ import com.hp.hpl.jena.query.ResultSetRewindable;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.sparql.util.graph.GraphFactory;
+import org.appdapter.bind.rdf.jena.model.JenaModelUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -167,7 +169,7 @@ public class SPARQL_Utils {
 		Model newDefaultModel = null;
 		Model oldDefaultModel = dset.getDefaultModel();
 		if (oldDefaultModel != null) {
-			newDefaultModel = ModelUtils.makeNaiveCopy(oldDefaultModel);
+			newDefaultModel = JenaModelUtils.makeNaiveCopy(oldDefaultModel);
 		}
 		Dataset copy = DatasetFactory.make(dset, newDefaultModel);
 		// We KNOW this is a DataSource from reading the ARQ 2.1 impl!!!  Ahem.

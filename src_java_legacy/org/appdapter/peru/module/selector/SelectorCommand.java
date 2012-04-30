@@ -36,7 +36,7 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
 
 import org.appdapter.peru.binding.jena.ModelUtils;
 import org.appdapter.peru.binding.jena.ReasonerUtils;
-import org.appdapter.peru.binding.jena.SPARQL_Utils;
+import org.appdapter.bind.rdf.jena.query.SPARQL_Utils;
 
 import org.appdapter.peru.core.command.DocCommand;
 
