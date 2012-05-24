@@ -17,15 +17,20 @@
 package org.appdapter.gui.repo;
 
 import org.appdapter.api.trigger.Trigger;
-import com.hp.hpl.jena.sdb.Store;
+import org.appdapter.core.store.Repo;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public interface MutableRepoBox<TT extends Trigger<? extends RepoBox<TT>>>  extends RepoBox<TT>  {
-	public void setStore(Store store);
-	public void mountStoreUsingFileConfig(String storeConfigPath);
+public interface MutableRepoBox<TT extends Trigger<? extends RepoBox<TT>>>  extends RepoBox<TT> {
+
+	public void mount(String configPath);
+	public Repo getRepo();
+	
 	public void formatStoreIfNeeded();
 
-	public void importGraphFromURL(String tgtGraphName, String sourceURL, boolean replaceTgtFlag);
+	public void importGraphFromURL(String tgtGraphName, String sourceURL, boolean replaceTgtFlag);	
+	public String getUploadHomePath();
+		
+		
 }

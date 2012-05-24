@@ -90,6 +90,9 @@ public class RegistryServiceFuncs {
 	}
 	/**
 	 * Use this when you are sure you should be in OSGi, and willing to bring us a bona-fide non-null bundleCtx.
+	 * This approach has value when an Activator.start() needs to get the registry (which should normally
+	 * only be to register *itself* for others to find), without going through a credentialClaz (which
+	 * should also work, if credClaz is from same bundle as the Activator).
 	 * @param bundleCtx
 	 * @return 
 	 */
