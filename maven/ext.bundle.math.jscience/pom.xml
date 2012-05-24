@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.appdapter</groupId>
 		<artifactId>org.appdapter.modules.math</artifactId>
-		<version>1.0.7</version>
+		<version>1.0.8-SNAPSHOT</version>
 		<relativePath>../org.appdapter.modules.math/pom.xml</relativePath>
 	</parent>
 	<artifactId>ext.bundle.math.jscience_50SNAP</artifactId>
