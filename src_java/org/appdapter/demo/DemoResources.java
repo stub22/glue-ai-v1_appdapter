@@ -41,14 +41,15 @@ public class DemoResources {
 	
 	
 	public static String DATA_PATH = DEMOCONF_ROOT_PATH + "/owl/snazzy.owl";
-	public static String QUERY_PATH = DEMOCONF_ROOT_PATH + "/sparql/query_stuff.sparql";	
+	public static String QUERY_PATH = DEMOCONF_ROOT_PATH + "/sparql/query_stuff.sparql";
 	public static String MENU_ASSEMBLY_PATH = DEMOCONF_ROOT_PATH + "/app/boxdemo/boxy_001.ttl";
 	
 	/**
 	//  It seems that Jena 2.6.4  FileManager builtin Locators cannot handle a JAR-embedded URL like:
 	//  jar:file:/C:/Users/winston/.m2/repository/org/appdapter/Appdapter_ScalaAndJava/1.0-SNAPSHOT/Appdapter_ScalaAndJava-1.0-SNAPSHOT.jar!/org/appdapter/democonf/app/boxdemo/boxy_001.ttl
-	//  So instead we must rely on Jena's classpath loader, which means this method is kinda worse than useless
-	// (cuz it works great when resources are in file:myproj/classes/mypkg/thing.txt, but not after Jar-ing same project).
+	//  So instead we must rely on Jena's classpath loader, which means these two methods are kinda worse than useless,
+	* and yet they are so short that it's a shame to throw them away
+	// (cuz this way works great when resources are in file:myproj/classes/mypkg/thing.txt, but not after Jar-ing same project).
 
 	 * 
 	 */

@@ -16,26 +16,12 @@
 
 package org.appdapter.gui.demo.triggers;
 
-import org.appdapter.bind.rdf.jena.model.AssemblerUtils;
 import org.appdapter.api.trigger.TriggerImpl;
 import org.appdapter.gui.repo.MutableRepoBox;
 import org.appdapter.gui.repo.RepoBox;
-import org.appdapter.gui.repo.RepoBox.GraphStat;
-import com.hp.hpl.jena.query.Dataset;
-import com.hp.hpl.jena.query.Query;
-import com.hp.hpl.jena.query.QueryExecution;
-import com.hp.hpl.jena.query.QueryExecutionFactory;
-import com.hp.hpl.jena.query.QueryFactory;
-import com.hp.hpl.jena.query.ResultSet;
-import com.hp.hpl.jena.query.ResultSetFormatter;
-import com.hp.hpl.jena.sdb.Store;
-import com.hp.hpl.jena.sdb.store.DatasetStore;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.appdapter.core.store.Repo.GraphStat;
 
-import com.hp.hpl.jena.query.ResultSetFactory;
-import com.hp.hpl.jena.query.ResultSetRewindable;
-import java.net.URL;
+
 import java.util.List;
 import org.appdapter.demo.DemoResources;
 
@@ -44,13 +30,11 @@ import org.appdapter.demo.DemoResources;
  */
 public class RepoTriggers {
 
-	static Logger theLogger = LoggerFactory.getLogger(RepoTriggers.class);
-
 	public static class OpenTrigger<MRB extends MutableRepoBox<TriggerImpl<MRB>>> extends  TriggerImpl<MRB>  {
 		@Override public void fire(MRB targetBox) {
 			String storeConfigResolvedPath = DemoResources.STORE_CONFIG_PATH; // DemoResources.resolveResourcePathToURL_WhichJenaCantUseInCaseOfJarFileRes(DemoResources.STORE_CONFIG_PATH);
 			// Model data = FileManager.get().loadModel(dataPath.toString());
-			targetBox.mountStoreUsingFileConfig(storeConfigResolvedPath);
+			targetBox.mount(storeConfigResolvedPath);
 		}
 	}
 	public static class InitTrigger<MRB extends MutableRepoBox<TriggerImpl<MRB>>> extends  TriggerImpl<MRB> {
@@ -60,36 +44,15 @@ public class RepoTriggers {
 	}
 	public static class DumpStatsTrigger<RB extends RepoBox<TriggerImpl<RB>>> extends  TriggerImpl<RB> {
 		@Override public void fire(RB targetBox) {
-			List<GraphStat> stats = targetBox.getGraphStats();
+			List<GraphStat> stats = targetBox.getAllGraphStats();
 		}
 	}
 	public static class QueryTrigger<RB extends RepoBox<TriggerImpl<RB>>> extends  TriggerImpl<RB>  {
 
 		@Override public void fire(RB  targetBox) {
-			Store store = targetBox.getStore();
-			try {
-				theLogger.info("Registering classLoader with JenaFM");
-				AssemblerUtils.ensureClassLoaderRegisteredWithJenaFM(getClass().getClassLoader());
-				String unusedInlineQueryText = "blah";
-				String resolvedQueryURL = DemoResources.QUERY_PATH; // DemoResources.resolveResourcePathToURL_WhichJenaCantUseInCaseOfJarFileRes(DemoResources.QUERY_PATH);
-				Query parsedQuery = QueryFactory.read(resolvedQueryURL); //  wraps create(queryText);
-				Dataset ds = DatasetStore.create(store);
-				QueryExecution qe = QueryExecutionFactory.create(parsedQuery, ds);
-				try {
-					ResultSet rs = qe.execSelect();
-					ResultSetRewindable rsr = ResultSetFactory.makeRewindable(rs);
-					ResultSetFormatter.out(rsr);
-					theLogger.info("\ntriple results complete, starting XML\n===================================");
-					rsr.reset();
-					String resultXML = ResultSetFormatter.asXMLString(rsr);
-					theLogger.info(resultXML);
-					 
-				} finally {
-					qe.close();
-				}
-			} catch (Throwable t) {
-				theLogger.error("problem in QueryTrigger", t);
-			}
+			String resolvedQueryURL = DemoResources.QUERY_PATH; 
+			String resultXML = targetBox.processQueryAtUrlAndProduceXml(resolvedQueryURL);
+			logInfo("ResultXML\n-----------------------------------" + resultXML + "\n---------------------------------");
 		}
 	}
 
@@ -108,7 +71,7 @@ public class RepoTriggers {
 					
 				targetBox.importGraphFromURL(tgtGraphName, dataSourceURL, true);
 			} catch (Throwable t) {
-				theLogger.error("problem in UploadTrigger", t);
+				logError("problem in UploadTrigger", t);
 			}
 		}
 

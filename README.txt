@@ -17,3 +17,7 @@ For a general overview, see:
 For a basic HOWTO, see:
     
  http://www.assembla.com/spaces/appdapter/wiki/GettingStarted
+ 
+ To build the ext.bundle.math.jscience project, you must
+ temporarily disable its dependency on the jscience.jar.
+ See notes in that pom.xml file.

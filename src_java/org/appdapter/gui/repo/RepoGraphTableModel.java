@@ -16,7 +16,7 @@
 
 package org.appdapter.gui.repo;
 
-import org.appdapter.gui.repo.RepoBox.GraphStat;
+import org.appdapter.core.store.Repo.GraphStat;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.table.AbstractTableModel;
@@ -34,7 +34,7 @@ public class RepoGraphTableModel extends AbstractTableModel {
 	private	List<GraphStat>	myCachedStats = new ArrayList<GraphStat>();
 
 	protected void refreshStats(RepoBox repoBox) {
-		myCachedStats = repoBox.getGraphStats();
+		myCachedStats = repoBox.getAllGraphStats();
 		fireTableDataChanged();
 	}
 	protected void focusOnRepo(RepoBox repoBox) {

@@ -34,9 +34,21 @@ import com.hp.hpl.jena.sparql.util.Timer;
 import com.hp.hpl.jena.util.FileManager;
 import com.hp.hpl.jena.util.FileUtils;
 import com.hp.hpl.jena.util.LocatorClassLoader;
+
+import com.hp.hpl.jena.query.Query;
+
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import org.appdapter.core.store.BasicRepoImpl;
+import org.appdapter.core.store.Repo;
+import org.appdapter.core.store.Repo.GraphStat;
+import org.appdapter.core.store.Repo.ResultSetProc;
+
+import com.hp.hpl.jena.query.ResultSet;
+
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,65 +57,40 @@ import org.slf4j.LoggerFactory;
  */
 public class RepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<TT>>> extends ScreenBoxImpl<TT> implements MutableRepoBox<TT> {
 	static Logger theLogger = LoggerFactory.getLogger(RepoBoxImpl.class);
-	public static Store		myStore;
-	public static String	myStoreConfigPath;
+	public static Repo.Mutable		myRepo;
+	
+	// Store		myStore;
+	// public static String	myStoreConfigPath;
 
-	@Override public Store getStore() {
-		return myStore;
+	@Override public Repo getRepo() {
+		return myRepo;
 	}
 
-	@Override public void setStore(Store store) {
-		myStore = store;
-	}
-	@Override public void mountStoreUsingFileConfig(String storeConfigPath) {
-		theLogger.info("Mounting store using fileConfigPath[" + storeConfigPath + "]");
-		FileManager fmgr = Env.fileManager();
-		ClassLoader classLoader = getClass().getClassLoader();
-		fmgr.addLocatorClassLoader(classLoader);
-		Store store = SDBFactory.connectStore(storeConfigPath);
-		setStore(store);
+	@Override public void mount(String configPath) {
+		myRepo = BasicRepoImpl.openRepo(configPath);
 	}
 	@Override public void formatStoreIfNeeded() {
-		Store store = getStore();
-		if (store == null) {
-			throw new RuntimeException("Improperly asked to format store with no store open.");
-		}
-		try {
-			boolean isFormatted = StoreUtils.isFormatted(store);
-			theLogger.info("isFormatted returned  " + isFormatted);
-			if (!isFormatted) {
-				theLogger.info("Creating SDB tables in store: " + store);
-				store.getTableFormatter().create();
-			} else {
-				theLogger.warn("Store " + store + " is already formatted, so ignoring init command.");
-			}
-		} catch (Throwable t) {
-			theLogger.error("Problem in formatStoreIfNeeded", t);
-		}
+		myRepo.formatStoreIfNeeded();
 	}
-
-	@Override public List<GraphStat> getGraphStats() {
-		List<GraphStat> stats = new ArrayList<GraphStat>();
-		Store store = getStore();
-		Iterator<Node> nodeIt = StoreUtils.storeGraphNames(store);
-		while (nodeIt.hasNext()) {
-			Node n = nodeIt.next();
-			GraphStat stat = new GraphStat();
-			stat.graphURI =  n.getURI();
-			Model m = SDBFactory.connectNamedModel(store, stat.graphURI);
-			stat.statementCount = m.size();
-			theLogger.info("Found graph with URI: " + stat.graphURI + " and size: " + stat.statementCount);
-			stats.add(stat);
-		}
-		return stats;
+	@Override public List<GraphStat> getAllGraphStats() {
+		return myRepo.getGraphStats();
 	}
-
-	public String getUploadHomePath() {
-		return ".";
+	@Override public String getUploadHomePath() {
+		return myRepo.getUploadHomePath();
 	}
 	@Override public void importGraphFromURL(String graphName, String sourceURL, boolean replaceTgtFlag) {
-		GraphUploadTask ut = new GraphUploadTask();
-		ut.loadOneGraphIntoStoreFromURL(myStore, graphName, sourceURL, replaceTgtFlag);
+		myRepo.importGraphFromURL(graphName, sourceURL, replaceTgtFlag);
+	}
+
+	@Override public String processQueryAtUrlAndProduceXml(String queryURL) {
+		Query parsedQuery = myRepo.parseQueryURL(queryURL);
+		String xmlOut = myRepo.processQuery(parsedQuery, new ResultSetProc<String>() {
+			@Override public String processResultSet(ResultSet rset) {
+				return BasicRepoImpl.dumpResultSetToXML(rset);
+			}
+		});
+		return xmlOut;
+
 	}
 
 
