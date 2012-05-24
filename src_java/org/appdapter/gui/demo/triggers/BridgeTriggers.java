@@ -23,32 +23,30 @@ import org.appdapter.api.trigger.MutableBox;
 import org.appdapter.api.trigger.TriggerImpl;
 import java.util.Set;
 import org.appdapter.demo.DemoResources;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
 public class BridgeTriggers {
-	static Logger theLogger = LoggerFactory.getLogger(BridgeTriggers.class);
 
 	public static class MountSubmenuFromTriplesTrigger<BT extends Box<TriggerImpl<BT>>> extends  TriggerImpl<BT> {
 		@Override public void fire(BT targetBox) {
-			theLogger.info(toString() + ".fire()");
+			logInfo(toString() + ".fire()");
 			BoxContext bc = targetBox.getBoxContext();
 
 			String triplesURL = DemoResources.MENU_ASSEMBLY_PATH; 
 			AssemblerUtils.ensureClassLoaderRegisteredWithJenaFM(DemoResources.class.getClassLoader());
-			theLogger.info("Loading triples from URL: " + triplesURL);
+			logInfo("Loading triples from URL: " + triplesURL);
 			Set<Object> loadedStuff = AssemblerUtils.buildAllObjectsInRdfFile(triplesURL);
-			theLogger.info("Loaded " + loadedStuff.size() + " objects");
+			logInfo("Loaded " + loadedStuff.size() + " objects");
 			for (Object o : loadedStuff) {
 				if (o instanceof MutableBox) {
 					MutableBox  loadedMutableBox = (MutableBox) o;
 					bc.contextualizeAndAttachChildBox(targetBox, loadedMutableBox);
-					theLogger.info("Loaded mutable box: " + loadedMutableBox);
+					logInfo("Loaded mutable box: " + loadedMutableBox);
 				} else {
-					theLogger.info("Loaded object which is not a mutable box: " + o);
+					logInfo("Loaded object which is not a mutable box: " + o);
 				}
 			}
 		}

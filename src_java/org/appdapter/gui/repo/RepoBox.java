@@ -16,23 +16,15 @@
 
 package org.appdapter.gui.repo;
 
+import java.util.List;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.Trigger;
-import com.hp.hpl.jena.sdb.Store;
-import java.util.List;
+import org.appdapter.core.store.Repo;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
 public interface RepoBox<TT extends Trigger<? extends RepoBox<TT>>> extends Box<TT> {
-	public Store				getStore();
-
-	public List<GraphStat>		getGraphStats();
-
-	public String				getUploadHomePath();
-	
-	public static class GraphStat {
-		String		graphURI;
-		long		statementCount;
-	}
+	public List<Repo.GraphStat>		getAllGraphStats();
+	public String processQueryAtUrlAndProduceXml(String queryURL);
 }
