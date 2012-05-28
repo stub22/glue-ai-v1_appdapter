@@ -146,6 +146,9 @@ public class RegistryServiceFuncs {
 				theLogger.debug("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  Found legit bundleCtx " + localBundleCtx + " associated to bundle " + localBundle + " via credClaz: " + osgiCredentialClaz);
 			} else {
 				theLogger.warn("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  bundle getBundleContext() returned null - OSGi permissions or load-ordering problem for bundle [" + localBundle + "] via credClaz[" + osgiCredentialClaz + "]");
+				Exception e = new Exception("OSGi bundle permissions problem");
+				e.fillInStackTrace();
+				e.printStackTrace();
 			}
 		} else {
 			theLogger.warn("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  Cannot get local bundle, so we are assumed to be outside OSGi (credentialClaz=" + osgiCredentialClaz + ")");
