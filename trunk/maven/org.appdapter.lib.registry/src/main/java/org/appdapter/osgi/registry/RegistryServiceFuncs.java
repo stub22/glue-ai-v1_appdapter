@@ -141,11 +141,19 @@ public class RegistryServiceFuncs {
 		BundleContext localBundleCtx = null;
 		Bundle localBundle = FrameworkUtil.getBundle(osgiCredentialClaz);
 		if (localBundle != null) { 
+			
+			/*  http://www.osgi.org/javadoc/r4v42/org/osgi/framework/Bundle.html#getBundleContext()
+			 * If this bundle is not in the STARTING, ACTIVE, or STOPPING states or this bundle is a fragment bundle, 
+			 * then this bundle has no valid BundleContext. This method will return null if this bundle has no 
+			 * valid BundleContext.
+			*/ 
+				
 			localBundleCtx  = localBundle.getBundleContext();
 			if (localBundleCtx != null) {
 				theLogger.debug("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  Found legit bundleCtx " + localBundleCtx + " associated to bundle " + localBundle + " via credClaz: " + osgiCredentialClaz);
 			} else {
 				theLogger.warn("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  bundle getBundleContext() returned null - OSGi permissions or load-ordering problem for bundle [" + localBundle + "] via credClaz[" + osgiCredentialClaz + "]");
+				theLogger.warn("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  bundle state=" + localBundle.getState() );
 				Exception e = new Exception("OSGi bundle permissions problem");
 				e.fillInStackTrace();
 				e.printStackTrace();
