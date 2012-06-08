@@ -21,7 +21,29 @@
      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
      xmlns:snappy_bind="http://www.appdapter.org/ontologies/2010/snappy_bind.owl#">
-    <owl:Ontology rdf:about=""/>
+    <owl:Ontology rdf:about="http://www.appdapter.org/ontologies/2010/snazzy.owl"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Annotation properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Datatypes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
     
 
 
@@ -38,133 +60,128 @@
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#beginMark -->
 
-    <owl:ObjectProperty rdf:about="#beginMark">
-        <rdfs:subPropertyOf rdf:resource="#mark"/>
+    <owl:ObjectProperty rdf:about="&snazzy;beginMark">
+        <rdfs:subPropertyOf rdf:resource="&snazzy;mark"/>
     </owl:ObjectProperty>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#child -->
 
-    <owl:ObjectProperty rdf:about="#child">
-        <rdfs:subPropertyOf rdf:resource="#link"/>
+    <owl:ObjectProperty rdf:about="&snazzy;child">
+        <rdfs:subPropertyOf rdf:resource="&snazzy;link"/>
     </owl:ObjectProperty>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#condition -->
 
-    <owl:ObjectProperty rdf:about="#condition"/>
+    <owl:ObjectProperty rdf:about="&snazzy;condition"/>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#endMark -->
 
-    <owl:ObjectProperty rdf:about="#endMark">
-        <rdfs:subPropertyOf rdf:resource="#mark"/>
+    <owl:ObjectProperty rdf:about="&snazzy;endMark">
+        <rdfs:subPropertyOf rdf:resource="&snazzy;mark"/>
     </owl:ObjectProperty>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#firstChild -->
 
-    <owl:ObjectProperty rdf:about="#firstChild">
+    <owl:ObjectProperty rdf:about="&snazzy;firstChild">
         <rdf:type rdf:resource="&owl;FunctionalProperty"/>
-        <rdfs:comment
-            >firstChild has no prevSibling</rdfs:comment>
-        <rdfs:subPropertyOf rdf:resource="#child"/>
+        <rdfs:comment>firstChild has no prevSibling</rdfs:comment>
+        <rdfs:subPropertyOf rdf:resource="&snazzy;child"/>
     </owl:ObjectProperty>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#host -->
 
-    <owl:ObjectProperty rdf:about="#host"/>
+    <owl:ObjectProperty rdf:about="&snazzy;host"/>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#lastChild -->
 
-    <owl:ObjectProperty rdf:about="#lastChild">
+    <owl:ObjectProperty rdf:about="&snazzy;lastChild">
         <rdf:type rdf:resource="&owl;FunctionalProperty"/>
-        <rdfs:comment
-            >lastChild has no nextSibling</rdfs:comment>
-        <rdfs:subPropertyOf rdf:resource="#child"/>
+        <rdfs:comment>lastChild has no nextSibling</rdfs:comment>
+        <rdfs:subPropertyOf rdf:resource="&snazzy;child"/>
     </owl:ObjectProperty>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#link -->
 
-    <owl:ObjectProperty rdf:about="#link">
-        <rdfs:comment
-            >Updates to related links (e.g. child and sibling) must happen transactionally for correct graph semantics</rdfs:comment>
+    <owl:ObjectProperty rdf:about="&snazzy;link">
+        <rdfs:comment>Updates to related links (e.g. child and sibling) must happen transactionally for correct graph semantics</rdfs:comment>
     </owl:ObjectProperty>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#mark -->
 
-    <owl:ObjectProperty rdf:about="#mark"/>
+    <owl:ObjectProperty rdf:about="&snazzy;mark"/>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#nextSibling -->
 
-    <owl:ObjectProperty rdf:about="#nextSibling">
+    <owl:ObjectProperty rdf:about="&snazzy;nextSibling">
         <rdf:type rdf:resource="&owl;FunctionalProperty"/>
-        <owl:inverseOf rdf:resource="#prevSibling"/>
-        <rdfs:subPropertyOf rdf:resource="#sibling"/>
+        <owl:inverseOf rdf:resource="&snazzy;prevSibling"/>
+        <rdfs:subPropertyOf rdf:resource="&snazzy;sibling"/>
     </owl:ObjectProperty>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#postCond -->
 
-    <owl:ObjectProperty rdf:about="#postCond">
-        <rdfs:subPropertyOf rdf:resource="#condition"/>
+    <owl:ObjectProperty rdf:about="&snazzy;postCond">
+        <rdfs:subPropertyOf rdf:resource="&snazzy;condition"/>
     </owl:ObjectProperty>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#preCond -->
 
-    <owl:ObjectProperty rdf:about="#preCond">
-        <rdfs:comment
-            >often points to a policy</rdfs:comment>
-        <rdfs:subPropertyOf rdf:resource="#condition"/>
+    <owl:ObjectProperty rdf:about="&snazzy;preCond">
+        <rdfs:comment>often points to a policy</rdfs:comment>
+        <rdfs:subPropertyOf rdf:resource="&snazzy;condition"/>
     </owl:ObjectProperty>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#prevSibling -->
 
-    <owl:ObjectProperty rdf:about="#prevSibling">
+    <owl:ObjectProperty rdf:about="&snazzy;prevSibling">
         <rdf:type rdf:resource="&owl;FunctionalProperty"/>
-        <rdfs:subPropertyOf rdf:resource="#sibling"/>
+        <rdfs:subPropertyOf rdf:resource="&snazzy;sibling"/>
     </owl:ObjectProperty>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#result -->
 
-    <owl:ObjectProperty rdf:about="#result"/>
+    <owl:ObjectProperty rdf:about="&snazzy;result"/>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#sibling -->
 
-    <owl:ObjectProperty rdf:about="#sibling">
-        <rdfs:subPropertyOf rdf:resource="#link"/>
+    <owl:ObjectProperty rdf:about="&snazzy;sibling">
+        <rdfs:subPropertyOf rdf:resource="&snazzy;link"/>
     </owl:ObjectProperty>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#spec -->
 
-    <owl:ObjectProperty rdf:about="#spec">
-        <rdfs:comment
-            >often includes a task</rdfs:comment>
+    <owl:ObjectProperty rdf:about="&snazzy;spec">
+        <rdfs:comment>often includes a task</rdfs:comment>
     </owl:ObjectProperty>
     
 
@@ -182,7 +199,7 @@
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#occurrenceTime -->
 
-    <owl:DatatypeProperty rdf:about="#occurrenceTime">
+    <owl:DatatypeProperty rdf:about="&snazzy;occurrenceTime">
         <rdf:type rdf:resource="&owl;FunctionalProperty"/>
     </owl:DatatypeProperty>
     
@@ -202,44 +219,42 @@
     <!-- http://www.appdapter.org/ontologies/2010/snappy_bind.owl#JenaAssembly -->
 
     <owl:Class rdf:about="&snappy_bind;JenaAssembly">
-        <rdfs:subClassOf rdf:resource="#Assembly"/>
+        <rdfs:subClassOf rdf:resource="&snazzy;Assembly"/>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#Abs -->
 
-    <owl:Class rdf:about="#Abs">
+    <owl:Class rdf:about="&snazzy;Abs">
         <rdfs:label>Abstraction</rdfs:label>
-        <rdfs:subClassOf rdf:resource="#Thingy"/>
-        <rdfs:comment
-            >Abs is short for abstraction.</rdfs:comment>
+        <rdfs:subClassOf rdf:resource="&snazzy;Thingy"/>
+        <rdfs:comment>Abs is short for abstraction.</rdfs:comment>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#Act -->
 
-    <owl:Class rdf:about="#Act">
-        <rdfs:subClassOf rdf:resource="#PhysicalAbs"/>
-        <rdfs:comment
-            >A computational action which is atomic for modeling purposes, and which may produce events.</rdfs:comment>
+    <owl:Class rdf:about="&snazzy;Act">
+        <rdfs:subClassOf rdf:resource="&snazzy;PhysicalAbs"/>
+        <rdfs:comment>A computational action which is atomic for modeling purposes, and which may produce events.</rdfs:comment>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#App -->
 
-    <owl:Class rdf:about="#App">
-        <rdfs:subClassOf rdf:resource="#Task"/>
+    <owl:Class rdf:about="&snazzy;App">
+        <rdfs:subClassOf rdf:resource="&snazzy;Task"/>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#Assembly -->
 
-    <owl:Class rdf:about="#Assembly">
-        <rdfs:subClassOf rdf:resource="#Record"/>
+    <owl:Class rdf:about="&snazzy;Assembly">
+        <rdfs:subClassOf rdf:resource="&snazzy;Record"/>
         <rdfs:comment></rdfs:comment>
     </owl:Class>
     
@@ -247,46 +262,43 @@
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#Category -->
 
-    <owl:Class rdf:about="#Category">
-        <rdfs:subClassOf rdf:resource="#LogicalAbs"/>
+    <owl:Class rdf:about="&snazzy;Category">
+        <rdfs:subClassOf rdf:resource="&snazzy;LogicalAbs"/>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#Complete -->
 
-    <owl:Class rdf:about="#Complete">
-        <rdfs:subClassOf rdf:resource="#TaskStateCategory"/>
+    <owl:Class rdf:about="&snazzy;Complete">
+        <rdfs:subClassOf rdf:resource="&snazzy;TaskStateCategory"/>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#Deed -->
 
-    <owl:Class rdf:about="#Deed">
-        <rdfs:subClassOf rdf:resource="#Task"/>
-        <rdfs:comment
-            >Deed tasks have a chance of being implemented directly by a job.  The postcondition is that the doable is (done | failed | killed), the precondition is that the doable is well specified.</rdfs:comment>
+    <owl:Class rdf:about="&snazzy;Deed">
+        <rdfs:subClassOf rdf:resource="&snazzy;Task"/>
+        <rdfs:comment>Deed tasks have a chance of being implemented directly by a job.  The postcondition is that the doable is (done | failed | killed), the precondition is that the doable is well specified.</rdfs:comment>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#Event -->
 
-    <owl:Class rdf:about="#Event">
-        <rdfs:subClassOf rdf:resource="#Record"/>
-        <rdfs:comment
-            >Model of an actual recorded occurrence in time, usually produced by an Act.</rdfs:comment>
+    <owl:Class rdf:about="&snazzy;Event">
+        <rdfs:subClassOf rdf:resource="&snazzy;Record"/>
+        <rdfs:comment>Model of an actual recorded occurrence in time, usually produced by an Act.</rdfs:comment>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#ExecutingJob -->
 
-    <owl:Class rdf:about="#ExecutingJob">
-        <rdfs:subClassOf rdf:resource="#Job"/>
-        <rdfs:comment
-            >ExecJob is an unsafe operation, included for the convenience of those
+    <owl:Class rdf:about="&snazzy;ExecutingJob">
+        <rdfs:subClassOf rdf:resource="&snazzy;Job"/>
+        <rdfs:comment>ExecJob is an unsafe operation, included for the convenience of those
 who build test scripts or plugins for appdapter. 
 
 ExecJobs may invoke acts, and manually produce additional result events.
@@ -305,96 +317,92 @@ model instance and execute a piece of code implementing the ExecJob interface.</
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#Failed -->
 
-    <owl:Class rdf:about="#Failed">
-        <rdfs:subClassOf rdf:resource="#TaskStateCategory"/>
+    <owl:Class rdf:about="&snazzy;Failed">
+        <rdfs:subClassOf rdf:resource="&snazzy;TaskStateCategory"/>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#Find -->
 
-    <owl:Class rdf:about="#Find">
-        <rdfs:subClassOf rdf:resource="#Deed"/>
+    <owl:Class rdf:about="&snazzy;Find">
+        <rdfs:subClassOf rdf:resource="&snazzy;Deed"/>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#ImmutableModelResult -->
 
-    <owl:Class rdf:about="#ImmutableModelResult">
-        <rdfs:subClassOf rdf:resource="#ModelResult"/>
-        <rdfs:comment
-            >Model for query only, can be retained after supplying job completes/fails.</rdfs:comment>
+    <owl:Class rdf:about="&snazzy;ImmutableModelResult">
+        <rdfs:subClassOf rdf:resource="&snazzy;ModelResult"/>
+        <rdfs:comment>Model for query only, can be retained after supplying job completes/fails.</rdfs:comment>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#JdbcStore -->
 
-    <owl:Class rdf:about="#JdbcStore">
-        <rdfs:subClassOf rdf:resource="#Store"/>
+    <owl:Class rdf:about="&snazzy;JdbcStore">
+        <rdfs:subClassOf rdf:resource="&snazzy;Store"/>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#Job -->
 
-    <owl:Class rdf:about="#Job">
-        <rdfs:subClassOf rdf:resource="#PhysicalAbs"/>
-        <rdfs:comment
-            >Jobs are attempted multistep computations, which decompose into strictly sequential acts.  The explicit record of a job is the record of its spec, and its acts with their events.  The ResultEvents produced by its acts are the ordered results of the job.</rdfs:comment>
+    <owl:Class rdf:about="&snazzy;Job">
+        <rdfs:subClassOf rdf:resource="&snazzy;PhysicalAbs"/>
+        <rdfs:comment>Jobs are attempted multistep computations, which decompose into strictly sequential acts.  The explicit record of a job is the record of its spec, and its acts with their events.  The ResultEvents produced by its acts are the ordered results of the job.</rdfs:comment>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#Label -->
 
-    <owl:Class rdf:about="#Label">
-        <rdfs:subClassOf rdf:resource="#Deed"/>
+    <owl:Class rdf:about="&snazzy;Label">
+        <rdfs:subClassOf rdf:resource="&snazzy;Deed"/>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#LarkcStore -->
 
-    <owl:Class rdf:about="#LarkcStore">
-        <rdfs:subClassOf rdf:resource="#Store"/>
+    <owl:Class rdf:about="&snazzy;LarkcStore">
+        <rdfs:subClassOf rdf:resource="&snazzy;Store"/>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#LearningJob -->
 
-    <owl:Class rdf:about="#LearningJob">
-        <rdfs:subClassOf rdf:resource="#Job"/>
+    <owl:Class rdf:about="&snazzy;LearningJob">
+        <rdfs:subClassOf rdf:resource="&snazzy;Job"/>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#LogicalAbs -->
 
-    <owl:Class rdf:about="#LogicalAbs">
-        <rdfs:subClassOf rdf:resource="#Abs"/>
+    <owl:Class rdf:about="&snazzy;LogicalAbs">
+        <rdfs:subClassOf rdf:resource="&snazzy;Abs"/>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#Machine -->
 
-    <owl:Class rdf:about="#Machine">
-        <rdfs:subClassOf rdf:resource="#PhysicalAbs"/>
-        <rdfs:comment
-            >Model of execution capacity and utilization, serving as a target for Acts.</rdfs:comment>
+    <owl:Class rdf:about="&snazzy;Machine">
+        <rdfs:subClassOf rdf:resource="&snazzy;PhysicalAbs"/>
+        <rdfs:comment>Model of execution capacity and utilization, serving as a target for Acts.</rdfs:comment>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#Make -->
 
-    <owl:Class rdf:about="#Make">
-        <rdfs:subClassOf rdf:resource="#Deed"/>
-        <rdfs:comment
-            >App tasks interact with appdapter using the LogicalAbs layer,
+    <owl:Class rdf:about="&snazzy;Make">
+        <rdfs:subClassOf rdf:resource="&snazzy;Deed"/>
+        <rdfs:comment>App tasks interact with appdapter using the LogicalAbs layer,
 and are logically resolved into other tasks (apps &amp; deeds).</rdfs:comment>
     </owl:Class>
     
@@ -402,302 +410,293 @@ and are logically resolved into other tasks (apps &amp; deeds).</rdfs:comment>
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#MakePreTasks -->
 
-    <owl:Class rdf:about="#MakePreTasks">
-        <rdfs:subClassOf rdf:resource="#Make"/>
+    <owl:Class rdf:about="&snazzy;MakePreTasks">
+        <rdfs:subClassOf rdf:resource="&snazzy;Make"/>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#MatrixResult -->
 
-    <owl:Class rdf:about="#MatrixResult">
-        <rdfs:subClassOf rdf:resource="#Result"/>
+    <owl:Class rdf:about="&snazzy;MatrixResult">
+        <rdfs:subClassOf rdf:resource="&snazzy;Result"/>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#ModelResult -->
 
-    <owl:Class rdf:about="#ModelResult">
-        <rdfs:subClassOf rdf:resource="#Result"/>
-        <rdfs:comment
-            >A model instantiated for query and update (if mutable).</rdfs:comment>
+    <owl:Class rdf:about="&snazzy;ModelResult">
+        <rdfs:subClassOf rdf:resource="&snazzy;Result"/>
+        <rdfs:comment>A model instantiated for query and update (if mutable).</rdfs:comment>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#Move -->
 
-    <owl:Class rdf:about="#Move">
-        <rdfs:subClassOf rdf:resource="#Deed"/>
+    <owl:Class rdf:about="&snazzy;Move">
+        <rdfs:subClassOf rdf:resource="&snazzy;Deed"/>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#MutableModelResult -->
 
-    <owl:Class rdf:about="#MutableModelResult">
-        <rdfs:subClassOf rdf:resource="#ModelResult"/>
-        <rdfs:comment
-            >Mutable model to work with and update as needed.   Must be closed before the producing job can complete or fail.</rdfs:comment>
+    <owl:Class rdf:about="&snazzy;MutableModelResult">
+        <rdfs:subClassOf rdf:resource="&snazzy;ModelResult"/>
+        <rdfs:comment>Mutable model to work with and update as needed.   Must be closed before the producing job can complete or fail.</rdfs:comment>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#Pending -->
 
-    <owl:Class rdf:about="#Pending">
-        <rdfs:subClassOf rdf:resource="#TaskStateCategory"/>
+    <owl:Class rdf:about="&snazzy;Pending">
+        <rdfs:subClassOf rdf:resource="&snazzy;TaskStateCategory"/>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#PhysicalAbs -->
 
-    <owl:Class rdf:about="#PhysicalAbs">
-        <rdfs:subClassOf rdf:resource="#Abs"/>
+    <owl:Class rdf:about="&snazzy;PhysicalAbs">
+        <rdfs:subClassOf rdf:resource="&snazzy;Abs"/>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#Policy -->
 
-    <owl:Class rdf:about="#Policy">
-        <rdfs:subClassOf rdf:resource="#LogicalAbs"/>
-        <rdfs:comment
-            >Policies are kinda funny.  Everyone knows we have them, but nobody knows what they are!</rdfs:comment>
+    <owl:Class rdf:about="&snazzy;Policy">
+        <rdfs:subClassOf rdf:resource="&snazzy;LogicalAbs"/>
+        <rdfs:comment>Policies are kinda funny.  Everyone knows we have them, but nobody knows what they are!</rdfs:comment>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#PresentationJob -->
 
-    <owl:Class rdf:about="#PresentationJob">
-        <rdfs:subClassOf rdf:resource="#Job"/>
+    <owl:Class rdf:about="&snazzy;PresentationJob">
+        <rdfs:subClassOf rdf:resource="&snazzy;Job"/>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#Purge -->
 
-    <owl:Class rdf:about="#Purge">
-        <rdfs:subClassOf rdf:resource="#Deed"/>
+    <owl:Class rdf:about="&snazzy;Purge">
+        <rdfs:subClassOf rdf:resource="&snazzy;Deed"/>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#Query -->
 
-    <owl:Class rdf:about="#Query">
-        <rdfs:subClassOf rdf:resource="#Find"/>
+    <owl:Class rdf:about="&snazzy;Query">
+        <rdfs:subClassOf rdf:resource="&snazzy;Find"/>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#QueryJob -->
 
-    <owl:Class rdf:about="#QueryJob">
-        <rdfs:subClassOf rdf:resource="#Job"/>
+    <owl:Class rdf:about="&snazzy;QueryJob">
+        <rdfs:subClassOf rdf:resource="&snazzy;Job"/>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#Record -->
 
-    <owl:Class rdf:about="#Record">
-        <rdfs:subClassOf rdf:resource="#PhysicalAbs"/>
-        <rdfs:comment
-            >Model of a coherent(-ly viewed) piece of storable and transmittable information.</rdfs:comment>
+    <owl:Class rdf:about="&snazzy;Record">
+        <rdfs:subClassOf rdf:resource="&snazzy;PhysicalAbs"/>
+        <rdfs:comment>Model of a coherent(-ly viewed) piece of storable and transmittable information.</rdfs:comment>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#RequestAct -->
 
-    <owl:Class rdf:about="#RequestAct">
-        <rdfs:subClassOf rdf:resource="#Act"/>
+    <owl:Class rdf:about="&snazzy;RequestAct">
+        <rdfs:subClassOf rdf:resource="&snazzy;Act"/>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#Result -->
 
-    <owl:Class rdf:about="#Result">
-        <rdfs:subClassOf rdf:resource="#Event"/>
+    <owl:Class rdf:about="&snazzy;Result">
+        <rdfs:subClassOf rdf:resource="&snazzy;Event"/>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#RowResult -->
 
-    <owl:Class rdf:about="#RowResult">
-        <rdfs:subClassOf rdf:resource="#MatrixResult"/>
-        <rdfs:comment
-            >RowResult is typically from a JDBC (SQL), CSV, ARFF kind of data source.</rdfs:comment>
+    <owl:Class rdf:about="&snazzy;RowResult">
+        <rdfs:subClassOf rdf:resource="&snazzy;MatrixResult"/>
+        <rdfs:comment>RowResult is typically from a JDBC (SQL), CSV, ARFF kind of data source.</rdfs:comment>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#Running -->
 
-    <owl:Class rdf:about="#Running">
-        <rdfs:subClassOf rdf:resource="#TaskStateCategory"/>
+    <owl:Class rdf:about="&snazzy;Running">
+        <rdfs:subClassOf rdf:resource="&snazzy;TaskStateCategory"/>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#ScoringJob -->
 
-    <owl:Class rdf:about="#ScoringJob">
-        <rdfs:subClassOf rdf:resource="#Job"/>
+    <owl:Class rdf:about="&snazzy;ScoringJob">
+        <rdfs:subClassOf rdf:resource="&snazzy;Job"/>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#SdbStore -->
 
-    <owl:Class rdf:about="#SdbStore">
-        <rdfs:subClassOf rdf:resource="#Store"/>
+    <owl:Class rdf:about="&snazzy;SdbStore">
+        <rdfs:subClassOf rdf:resource="&snazzy;Store"/>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#Solve -->
 
-    <owl:Class rdf:about="#Solve">
-        <rdfs:subClassOf rdf:resource="#Find"/>
+    <owl:Class rdf:about="&snazzy;Solve">
+        <rdfs:subClassOf rdf:resource="&snazzy;Find"/>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#SparqlAskResult -->
 
-    <owl:Class rdf:about="#SparqlAskResult">
-        <rdfs:subClassOf rdf:resource="#SparqlResult"/>
+    <owl:Class rdf:about="&snazzy;SparqlAskResult">
+        <rdfs:subClassOf rdf:resource="&snazzy;SparqlResult"/>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#SparqlDescribeResult -->
 
-    <owl:Class rdf:about="#SparqlDescribeResult">
-        <rdfs:subClassOf rdf:resource="#SparqlResult"/>
+    <owl:Class rdf:about="&snazzy;SparqlDescribeResult">
+        <rdfs:subClassOf rdf:resource="&snazzy;SparqlResult"/>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#SparqlGraphResult -->
 
-    <owl:Class rdf:about="#SparqlGraphResult">
-        <rdfs:subClassOf rdf:resource="#ImmutableModelResult"/>
-        <rdfs:subClassOf rdf:resource="#SparqlResult"/>
+    <owl:Class rdf:about="&snazzy;SparqlGraphResult">
+        <rdfs:subClassOf rdf:resource="&snazzy;ImmutableModelResult"/>
+        <rdfs:subClassOf rdf:resource="&snazzy;SparqlResult"/>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#SparqlRequest -->
 
-    <owl:Class rdf:about="#SparqlRequest">
-        <rdfs:subClassOf rdf:resource="#RequestAct"/>
+    <owl:Class rdf:about="&snazzy;SparqlRequest">
+        <rdfs:subClassOf rdf:resource="&snazzy;RequestAct"/>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#SparqlResult -->
 
-    <owl:Class rdf:about="#SparqlResult">
-        <rdfs:subClassOf rdf:resource="#Result"/>
-        <rdfs:comment
-            >Result from SPARQL query on some friendly Store or Machine.</rdfs:comment>
+    <owl:Class rdf:about="&snazzy;SparqlResult">
+        <rdfs:subClassOf rdf:resource="&snazzy;Result"/>
+        <rdfs:comment>Result from SPARQL query on some friendly Store or Machine.</rdfs:comment>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#SparqlSelectResult -->
 
-    <owl:Class rdf:about="#SparqlSelectResult">
-        <rdfs:subClassOf rdf:resource="#RowResult"/>
-        <rdfs:subClassOf rdf:resource="#SparqlResult"/>
+    <owl:Class rdf:about="&snazzy;SparqlSelectResult">
+        <rdfs:subClassOf rdf:resource="&snazzy;RowResult"/>
+        <rdfs:subClassOf rdf:resource="&snazzy;SparqlResult"/>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#SparqlUpdateResult -->
 
-    <owl:Class rdf:about="#SparqlUpdateResult">
-        <rdfs:subClassOf rdf:resource="#SparqlResult"/>
+    <owl:Class rdf:about="&snazzy;SparqlUpdateResult">
+        <rdfs:subClassOf rdf:resource="&snazzy;SparqlResult"/>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#Store -->
 
-    <owl:Class rdf:about="#Store">
-        <rdfs:subClassOf rdf:resource="#PhysicalAbs"/>
-        <rdfs:comment
-            >Model of facility for information storage and retrieval.</rdfs:comment>
+    <owl:Class rdf:about="&snazzy;Store">
+        <rdfs:subClassOf rdf:resource="&snazzy;PhysicalAbs"/>
+        <rdfs:comment>Model of facility for information storage and retrieval.</rdfs:comment>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#Task -->
 
-    <owl:Class rdf:about="#Task">
-        <rdfs:subClassOf rdf:resource="#LogicalAbs"/>
-        <rdfs:comment
-            >Task snapshots may be asserted or proved to be in a TaskStateCategory.   Tasks are resolved into other tasks and jobs.</rdfs:comment>
+    <owl:Class rdf:about="&snazzy;Task">
+        <rdfs:subClassOf rdf:resource="&snazzy;LogicalAbs"/>
+        <rdfs:comment>Task snapshots may be asserted or proved to be in a TaskStateCategory.   Tasks are resolved into other tasks and jobs.</rdfs:comment>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#TaskStateCategory -->
 
-    <owl:Class rdf:about="#TaskStateCategory">
+    <owl:Class rdf:about="&snazzy;TaskStateCategory">
         <owl:equivalentClass>
             <owl:Class>
                 <owl:unionOf rdf:parseType="Collection">
-                    <rdf:Description rdf:about="#Complete"/>
-                    <rdf:Description rdf:about="#Failed"/>
-                    <rdf:Description rdf:about="#Pending"/>
-                    <rdf:Description rdf:about="#Running"/>
+                    <rdf:Description rdf:about="&snazzy;Complete"/>
+                    <rdf:Description rdf:about="&snazzy;Failed"/>
+                    <rdf:Description rdf:about="&snazzy;Pending"/>
+                    <rdf:Description rdf:about="&snazzy;Running"/>
                 </owl:unionOf>
             </owl:Class>
         </owl:equivalentClass>
-        <rdfs:subClassOf rdf:resource="#Category"/>
-        <rdfs:subClassOf rdf:resource="#Task"/>
+        <rdfs:subClassOf rdf:resource="&snazzy;Category"/>
+        <rdfs:subClassOf rdf:resource="&snazzy;Task"/>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#TestMachine -->
 
-    <owl:Class rdf:about="#TestMachine">
-        <rdfs:subClassOf rdf:resource="#Machine"/>
+    <owl:Class rdf:about="&snazzy;TestMachine">
+        <rdfs:subClassOf rdf:resource="&snazzy;Machine"/>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#Thingy -->
 
-    <owl:Class rdf:about="#Thingy">
-        <rdfs:comment
-            >Thingy is used as an artificial root class in many appdapter models.  It can sometimes simplify GUI rendering/manipulation of a model.</rdfs:comment>
+    <owl:Class rdf:about="&snazzy;Thingy">
+        <rdfs:comment>Thingy is used as an artificial root class in many appdapter models.  It can sometimes simplify GUI rendering/manipulation of a model.</rdfs:comment>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#UpdateJob -->
 
-    <owl:Class rdf:about="#UpdateJob">
-        <rdfs:subClassOf rdf:resource="#Job"/>
+    <owl:Class rdf:about="&snazzy;UpdateJob">
+        <rdfs:subClassOf rdf:resource="&snazzy;Job"/>
     </owl:Class>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#WekaRowResult -->
 
-    <owl:Class rdf:about="#WekaRowResult">
-        <rdfs:subClassOf rdf:resource="#RowResult"/>
+    <owl:Class rdf:about="&snazzy;WekaRowResult">
+        <rdfs:subClassOf rdf:resource="&snazzy;RowResult"/>
     </owl:Class>
     
 
@@ -721,92 +720,102 @@ and are logically resolved into other tasks (apps &amp; deeds).</rdfs:comment>
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#app_bux_best_action -->
 
-    <owl:Thing rdf:about="#app_bux_best_action">
-        <preCond rdf:resource="#app_bux_best_strategy"/>
+    <owl:Thing rdf:about="&snazzy;app_bux_best_action">
+        <rdf:type rdf:resource="&owl;NamedIndividual"/>
+        <preCond rdf:resource="&snazzy;app_bux_best_strategy"/>
     </owl:Thing>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#app_bux_best_strategy -->
 
-    <owl:Thing rdf:about="#app_bux_best_strategy">
-        <preCond rdf:resource="#app_bux_likely_outcomes"/>
+    <owl:Thing rdf:about="&snazzy;app_bux_best_strategy">
+        <rdf:type rdf:resource="&owl;NamedIndividual"/>
+        <preCond rdf:resource="&snazzy;app_bux_likely_outcomes"/>
     </owl:Thing>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#app_bux_eval_outcome_for_strategy_1 -->
 
-    <owl:Thing rdf:about="#app_bux_eval_outcome_for_strategy_1">
-        <rdfs:comment
-            >Dynamically asserted pre-task for app_bux_eval_outcomes.</rdfs:comment>
+    <owl:Thing rdf:about="&snazzy;app_bux_eval_outcome_for_strategy_1">
+        <rdf:type rdf:resource="&owl;NamedIndividual"/>
+        <rdfs:comment>Dynamically asserted pre-task for app_bux_eval_outcomes.</rdfs:comment>
     </owl:Thing>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#app_bux_eval_outcome_for_strategy_2 -->
 
-    <owl:Thing rdf:about="#app_bux_eval_outcome_for_strategy_2"/>
+    <owl:Thing rdf:about="&snazzy;app_bux_eval_outcome_for_strategy_2">
+        <rdf:type rdf:resource="&owl;NamedIndividual"/>
+    </owl:Thing>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#app_bux_eval_outcomes -->
 
-    <owl:Thing rdf:about="#app_bux_eval_outcomes">
-        <rdfs:comment
-            >Precondition tasks are dynamically added, so that we have one for each strategy to be evaluated.  This adding is done in accordance with a spec which calls for a deed to make the tasks and set them as preconditions of this individual.</rdfs:comment>
-        <preCond rdf:resource="#app_bux_eval_outcome_for_strategy_1"/>
-        <preCond rdf:resource="#app_bux_eval_outcome_for_strategy_2"/>
-        <spec rdf:resource="#deed_gen_eval_outcome_pretasks"/>
+    <owl:Thing rdf:about="&snazzy;app_bux_eval_outcomes">
+        <rdf:type rdf:resource="&owl;NamedIndividual"/>
+        <rdfs:comment>Precondition tasks are dynamically added, so that we have one for each strategy to be evaluated.  This adding is done in accordance with a spec which calls for a deed to make the tasks and set them as preconditions of this individual.</rdfs:comment>
+        <preCond rdf:resource="&snazzy;app_bux_eval_outcome_for_strategy_1"/>
+        <preCond rdf:resource="&snazzy;app_bux_eval_outcome_for_strategy_2"/>
+        <spec rdf:resource="&snazzy;deed_gen_eval_outcome_pretasks"/>
     </owl:Thing>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#app_bux_likely_outcomes -->
 
-    <owl:Thing rdf:about="#app_bux_likely_outcomes">
-        <rdfs:comment
-            >after potential_strategies are ready, we may pursue eval_outcomes.</rdfs:comment>
-        <postCond rdf:resource="#app_bux_eval_outcomes"/>
-        <preCond rdf:resource="#app_bux_potential_strategies"/>
+    <owl:Thing rdf:about="&snazzy;app_bux_likely_outcomes">
+        <rdf:type rdf:resource="&owl;NamedIndividual"/>
+        <rdfs:comment>after potential_strategies are ready, we may pursue eval_outcomes.</rdfs:comment>
+        <postCond rdf:resource="&snazzy;app_bux_eval_outcomes"/>
+        <preCond rdf:resource="&snazzy;app_bux_potential_strategies"/>
     </owl:Thing>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#app_bux_measure_present -->
 
-    <owl:Thing rdf:about="#app_bux_measure_present"/>
+    <owl:Thing rdf:about="&snazzy;app_bux_measure_present">
+        <rdf:type rdf:resource="&owl;NamedIndividual"/>
+    </owl:Thing>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#app_bux_potential_strategies -->
 
-    <owl:Thing rdf:about="#app_bux_potential_strategies">
-        <preCond rdf:resource="#app_bux_predict_future"/>
+    <owl:Thing rdf:about="&snazzy;app_bux_potential_strategies">
+        <rdf:type rdf:resource="&owl;NamedIndividual"/>
+        <preCond rdf:resource="&snazzy;app_bux_predict_future"/>
     </owl:Thing>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#app_bux_predict_future -->
 
-    <owl:Thing rdf:about="#app_bux_predict_future">
-        <preCond rdf:resource="#app_bux_measure_present"/>
-        <preCond rdf:resource="#app_bux_study_past"/>
+    <owl:Thing rdf:about="&snazzy;app_bux_predict_future">
+        <rdf:type rdf:resource="&owl;NamedIndividual"/>
+        <preCond rdf:resource="&snazzy;app_bux_measure_present"/>
+        <preCond rdf:resource="&snazzy;app_bux_study_past"/>
     </owl:Thing>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#app_bux_study_past -->
 
-    <owl:Thing rdf:about="#app_bux_study_past"/>
+    <owl:Thing rdf:about="&snazzy;app_bux_study_past">
+        <rdf:type rdf:resource="&owl;NamedIndividual"/>
+    </owl:Thing>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#app_finan_decide -->
 
-    <owl:Thing rdf:about="#app_finan_decide">
-        <rdfs:comment
-            >Goal is to find a risk-appropriate, max-profit tradeset for a given 
+    <owl:Thing rdf:about="&snazzy;app_finan_decide">
+        <rdf:type rdf:resource="&owl;NamedIndividual"/>
+        <rdfs:comment>Goal is to find a risk-appropriate, max-profit tradeset for a given 
 future timespan, given a multigrain history up till present moment.  
 
 This is done by backchaining goals of the form 
@@ -823,162 +832,182 @@ are bound to jobs.
 Thus the design goal of an appdapter app is generally to try
 to minimize the amount of job dependence, and maximize
 the potential for logical inference of task &quot;completion&quot;.</rdfs:comment>
-        <preCond rdf:resource="#app_bux_best_action"/>
+        <preCond rdf:resource="&snazzy;app_bux_best_action"/>
     </owl:Thing>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#deed_gen_eval_outcome_pretasks -->
 
-    <owl:Thing rdf:about="#deed_gen_eval_outcome_pretasks">
-        <rdf:type rdf:resource="#MakePreTasks"/>
+    <owl:Thing rdf:about="&snazzy;deed_gen_eval_outcome_pretasks">
+        <rdf:type rdf:resource="&snazzy;MakePreTasks"/>
+        <rdf:type rdf:resource="&owl;NamedIndividual"/>
     </owl:Thing>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#pretend_act_001a -->
 
-    <owl:Thing rdf:about="#pretend_act_001a">
-        <endMark rdf:resource="#pretend_end_event_001a"/>
-        <host rdf:resource="#pretend_machine_AAA"/>
-        <mark rdf:resource="#pretend_problem_event_001a"/>
-        <mark rdf:resource="#pretend_progress_event_001a"/>
-        <beginMark rdf:resource="#pretend_start_event_001a"/>
+    <owl:Thing rdf:about="&snazzy;pretend_act_001a">
+        <rdf:type rdf:resource="&owl;NamedIndividual"/>
+        <endMark rdf:resource="&snazzy;pretend_end_event_001a"/>
+        <host rdf:resource="&snazzy;pretend_machine_AAA"/>
+        <mark rdf:resource="&snazzy;pretend_problem_event_001a"/>
+        <mark rdf:resource="&snazzy;pretend_progress_event_001a"/>
+        <beginMark rdf:resource="&snazzy;pretend_start_event_001a"/>
     </owl:Thing>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#pretend_act_001b -->
 
-    <owl:Thing rdf:about="#pretend_act_001b">
-        <prevSibling rdf:resource="#pretend_act_001a"/>
-        <endMark rdf:resource="#pretend_end_event_001b"/>
-        <host rdf:resource="#pretend_machine_BBB"/>
-        <beginMark rdf:resource="#pretend_start_event_001b"/>
+    <owl:Thing rdf:about="&snazzy;pretend_act_001b">
+        <rdf:type rdf:resource="&owl;NamedIndividual"/>
+        <prevSibling rdf:resource="&snazzy;pretend_act_001a"/>
+        <endMark rdf:resource="&snazzy;pretend_end_event_001b"/>
+        <host rdf:resource="&snazzy;pretend_machine_BBB"/>
+        <beginMark rdf:resource="&snazzy;pretend_start_event_001b"/>
     </owl:Thing>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#pretend_doable_task_001 -->
 
-    <owl:Thing rdf:about="#pretend_doable_task_001"/>
+    <owl:Thing rdf:about="&snazzy;pretend_doable_task_001">
+        <rdf:type rdf:resource="&owl;NamedIndividual"/>
+    </owl:Thing>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#pretend_end_event_001a -->
 
-    <owl:Thing rdf:about="#pretend_end_event_001a">
-        <occurrenceTime rdf:datatype="&xsd;dateTime"
-            >2001-10-26T19:32:52Z</occurrenceTime>
+    <owl:Thing rdf:about="&snazzy;pretend_end_event_001a">
+        <rdf:type rdf:resource="&owl;NamedIndividual"/>
+        <occurrenceTime rdf:datatype="&xsd;dateTime">2001-10-26T19:32:52Z</occurrenceTime>
     </owl:Thing>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#pretend_end_event_001b -->
 
-    <owl:Thing rdf:about="#pretend_end_event_001b"/>
+    <owl:Thing rdf:about="&snazzy;pretend_end_event_001b">
+        <rdf:type rdf:resource="&owl;NamedIndividual"/>
+    </owl:Thing>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#pretend_job_001 -->
 
-    <owl:Thing rdf:about="#pretend_job_001">
-        <firstChild rdf:resource="#pretend_act_001a"/>
-        <lastChild rdf:resource="#pretend_act_001b"/>
-        <spec rdf:resource="#pretend_doable_task_001"/>
+    <owl:Thing rdf:about="&snazzy;pretend_job_001">
+        <rdf:type rdf:resource="&owl;NamedIndividual"/>
+        <firstChild rdf:resource="&snazzy;pretend_act_001a"/>
+        <lastChild rdf:resource="&snazzy;pretend_act_001b"/>
+        <spec rdf:resource="&snazzy;pretend_doable_task_001"/>
     </owl:Thing>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#pretend_machine_AAA -->
 
-    <owl:Thing rdf:about="#pretend_machine_AAA"/>
+    <owl:Thing rdf:about="&snazzy;pretend_machine_AAA">
+        <rdf:type rdf:resource="&owl;NamedIndividual"/>
+    </owl:Thing>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#pretend_machine_BBB -->
 
-    <owl:Thing rdf:about="#pretend_machine_BBB"/>
+    <owl:Thing rdf:about="&snazzy;pretend_machine_BBB">
+        <rdf:type rdf:resource="&owl;NamedIndividual"/>
+    </owl:Thing>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#pretend_postcondition_001 -->
 
-    <owl:Thing rdf:about="#pretend_postcondition_001"/>
+    <owl:Thing rdf:about="&snazzy;pretend_postcondition_001">
+        <rdf:type rdf:resource="&owl;NamedIndividual"/>
+    </owl:Thing>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#pretend_problem_event_001a -->
 
-    <owl:Thing rdf:about="#pretend_problem_event_001a">
-        <occurrenceTime rdf:datatype="&xsd;dateTime"
-            >2001-10-26T19:31:59Z</occurrenceTime>
+    <owl:Thing rdf:about="&snazzy;pretend_problem_event_001a">
+        <rdf:type rdf:resource="&owl;NamedIndividual"/>
+        <occurrenceTime rdf:datatype="&xsd;dateTime">2001-10-26T19:31:59Z</occurrenceTime>
     </owl:Thing>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#pretend_progress_event_001a -->
 
-    <owl:Thing rdf:about="#pretend_progress_event_001a">
-        <occurrenceTime rdf:datatype="&xsd;dateTime"
-            >2001-10-26T19:31:41Z</occurrenceTime>
+    <owl:Thing rdf:about="&snazzy;pretend_progress_event_001a">
+        <rdf:type rdf:resource="&owl;NamedIndividual"/>
+        <occurrenceTime rdf:datatype="&xsd;dateTime">2001-10-26T19:31:41Z</occurrenceTime>
     </owl:Thing>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#pretend_start_event_001a -->
 
-    <owl:Thing rdf:about="#pretend_start_event_001a">
-        <occurrenceTime rdf:datatype="&xsd;dateTime"
-            >2001-10-26T19:31:14Z</occurrenceTime>
+    <owl:Thing rdf:about="&snazzy;pretend_start_event_001a">
+        <rdf:type rdf:resource="&owl;NamedIndividual"/>
+        <occurrenceTime rdf:datatype="&xsd;dateTime">2001-10-26T19:31:14Z</occurrenceTime>
     </owl:Thing>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#pretend_start_event_001b -->
 
-    <owl:Thing rdf:about="#pretend_start_event_001b"/>
+    <owl:Thing rdf:about="&snazzy;pretend_start_event_001b">
+        <rdf:type rdf:resource="&owl;NamedIndividual"/>
+    </owl:Thing>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#store_bux_daily_data -->
 
-    <owl:Thing rdf:about="#store_bux_daily_data">
-        <rdf:type rdf:resource="#JdbcStore"/>
+    <owl:Thing rdf:about="&snazzy;store_bux_daily_data">
+        <rdf:type rdf:resource="&snazzy;JdbcStore"/>
+        <rdf:type rdf:resource="&owl;NamedIndividual"/>
     </owl:Thing>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#store_bux_meta_data -->
 
-    <SdbStore rdf:about="#store_bux_meta_data">
-        <rdf:type rdf:resource="&owl;Thing"/>
-    </SdbStore>
+    <owl:Thing rdf:about="&snazzy;store_bux_meta_data">
+        <rdf:type rdf:resource="&snazzy;SdbStore"/>
+        <rdf:type rdf:resource="&owl;NamedIndividual"/>
+    </owl:Thing>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#store_bux_minute_data -->
 
-    <owl:Thing rdf:about="#store_bux_minute_data">
-        <rdf:type rdf:resource="#JdbcStore"/>
+    <owl:Thing rdf:about="&snazzy;store_bux_minute_data">
+        <rdf:type rdf:resource="&snazzy;JdbcStore"/>
+        <rdf:type rdf:resource="&owl;NamedIndividual"/>
     </owl:Thing>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#store_bux_parameter_estimates -->
 
-    <owl:Thing rdf:about="#store_bux_parameter_estimates">
-        <rdf:type rdf:resource="#JdbcStore"/>
-        <rdfs:comment
-            >Contains parameter estimates for particular time ranges, in terms denominated by bux_statistical_models.</rdfs:comment>
+    <owl:Thing rdf:about="&snazzy;store_bux_parameter_estimates">
+        <rdf:type rdf:resource="&snazzy;JdbcStore"/>
+        <rdf:type rdf:resource="&owl;NamedIndividual"/>
+        <rdfs:comment>Contains parameter estimates for particular time ranges, in terms denominated by bux_statistical_models.</rdfs:comment>
     </owl:Thing>
     
 
 
     <!-- http://www.appdapter.org/ontologies/2010/snazzy.owl#store_bux_statistical_models -->
 
-    <owl:Thing rdf:about="#store_bux_statistical_models">
-        <rdf:type rdf:resource="#SdbStore"/>
+    <owl:Thing rdf:about="&snazzy;store_bux_statistical_models">
+        <rdf:type rdf:resource="&snazzy;SdbStore"/>
+        <rdf:type rdf:resource="&owl;NamedIndividual"/>
     </owl:Thing>
     
 
@@ -994,15 +1023,15 @@ the potential for logical inference of task &quot;completion&quot;.</rdfs:commen
     <rdf:Description>
         <rdf:type rdf:resource="&owl;AllDisjointClasses"/>
         <owl:members rdf:parseType="Collection">
-            <rdf:Description rdf:about="#Complete"/>
-            <rdf:Description rdf:about="#Failed"/>
-            <rdf:Description rdf:about="#Pending"/>
-            <rdf:Description rdf:about="#Running"/>
+            <rdf:Description rdf:about="&snazzy;Complete"/>
+            <rdf:Description rdf:about="&snazzy;Failed"/>
+            <rdf:Description rdf:about="&snazzy;Pending"/>
+            <rdf:Description rdf:about="&snazzy;Running"/>
         </owl:members>
     </rdf:Description>
 </rdf:RDF>
 
 
 
-<!-- Generated by the OWL API (version 2.2.1.1138) http://owlapi.sourceforge.net -->
+<!-- Generated by the OWL API (version 3.2.3.1824) http://owlapi.sourceforge.net -->
 

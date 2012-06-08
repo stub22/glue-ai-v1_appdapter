@@ -180,7 +180,7 @@
 						<DynamicImport-Package>org.appdapter.*,org.cogchar.*</DynamicImport-Package>
                         <Bundle-Activator>org.appdapter.ext.bundle.jena.full.Activator</Bundle-Activator>
 						<!-- The sdb.* packages require Junit -->
-						<Export-Package>org.appdapter.*,arq.*,com.hp.hpl.jena.*,etc.*,org.openjena.*,vocabularies.*</Export-Package>
+						<Export-Package>org.appdapter.*,arq.*,com.hp.hpl.jena.*,etc.*,org.openjena.*,vocabularies.*, jena.*</Export-Package>
 						<Private-Package>riotcmd</Private-Package>
                     </instructions>
                 </configuration>
