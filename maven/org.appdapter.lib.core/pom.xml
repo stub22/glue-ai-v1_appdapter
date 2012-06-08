@@ -93,6 +93,11 @@ central repo.
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>net.sf.opencsv</groupId>
+			<artifactId>opencsv</artifactId>
+			<version>2.3</version>
+		</dependency>		
+		<dependency>
 			<!--
 				Needed at compile time so we can provide a utility to force the properties resource URL in, 
 				due to TCCL issues with Log4J's default startup in OSGi environment.	
