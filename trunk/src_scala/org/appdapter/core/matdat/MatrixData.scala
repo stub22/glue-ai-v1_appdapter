@@ -93,7 +93,20 @@ class SheetProc (val myHeaderRowCount : Int) {
 		println("DATA = " + cells.dump());
 	}
 }
-
+class MapSheetProc (headerRowCount : Int) extends SheetProc(headerRowCount) {
+	val myResultMap = scala.collection.mutable.Map.empty[String, String]
+	
+	override def absorbDataRow(cellRow : MatrixRow) {
+		val key : Option[String] = cellRow.getPossibleColumnValueString(0);
+		val value : Option[String] = cellRow.getPossibleColumnValueString(1);
+		
+		if (key.isDefined && value.isDefined) {
+			myResultMap.put(key.get, value.get)
+		}
+	}
+	import collection.JavaConversions._	
+	def getJavaMap : java.util.Map[String, String] = myResultMap;
+}
 
 object MatrixData {
 	def processSheet(url : String, processor : MatrixRow => Unit) { 
