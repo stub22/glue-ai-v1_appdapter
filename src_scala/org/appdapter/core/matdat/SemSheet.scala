@@ -115,9 +115,10 @@ object SemSheet {
 				} else None
 				println("Got Col Binding: " + optColBind);				
 				if (optColBind.isDefined) {
-					myPropColBindings = myPropColBindings ::: List(optColBind.get)
+					myPropColBindings = optColBind.get :: myPropColBindings;
 				}
 			}
+			myPropColBindings = myPropColBindings.reverse
 		}
 		
 		override def absorbDataRow(cellRow : MatrixRow) {
@@ -172,17 +173,32 @@ object SemSheet {
 		}
 	}
 	
-	def main(args: Array[String]) :Unit = {
+	def main(args: Array[String]) : Unit = {
 	  	println("SemSheet test ");
 		val keyForBootSheet22 = "0ArBjkBoH40tndDdsVEVHZXhVRHFETTB5MGhGcWFmeGc";
+		
+		val namespaceSheetNum = 9;
+		val namespaceSheetURL = WebSheet.makeGdocSheetQueryURL(keyForBootSheet22, namespaceSheetNum, None);
+		println("Made Namespace Sheet URL: " + namespaceSheetURL);
+		val namespaceMapProc = new MapSheetProc(1);
+		MatrixData.processSheet (namespaceSheetURL, namespaceMapProc.processRow);
+		
+		println("Got NS map: " + namespaceMapProc.myResultMap)
+		
+		
+		
 		val reposSheetNum = 8;
-		val url = WebSheet.makeGdocSheetQueryURL(keyForBootSheet22, reposSheetNum, None);
-		println("Made URL: " + url);
+		val repoSheetURL = WebSheet.makeGdocSheetQueryURL(keyForBootSheet22, reposSheetNum, None);
+		println("Made Repos Sheet URL: " + repoSheetURL);
 		val sp = new SheetProc(3);
-		MatrixData.processSheet (url, sp.processRow);
+		MatrixData.processSheet (repoSheetURL, sp.processRow);
 		val tgtModel : Model = ModelFactory.createDefaultModel();
+		
+		
+		tgtModel.setNsPrefixes (namespaceMapProc.getJavaMap)
+		
 		val modelInsertProc = new ModelInsertSheetProc(tgtModel);
-		MatrixData.processSheet (url, modelInsertProc.processRow);
+		MatrixData.processSheet (repoSheetURL, modelInsertProc.processRow);
 		println ("tgtModel=" + tgtModel)
 	}	
 }
