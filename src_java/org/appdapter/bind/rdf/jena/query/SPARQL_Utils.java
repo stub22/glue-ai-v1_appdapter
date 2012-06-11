@@ -58,7 +58,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Certain static funcs, pulled directly from com/hp/hpl/jena/query/junit/QueryTest.java
+ * Certain static funcs, many pulled  from com/hp/hpl/jena/query/junit/QueryTest.java
  *
  * @author      Stu B. <www.texpedient.com>, using code by Andy Seaborne of HP.
  * @version     @PERUSER_VERSION@

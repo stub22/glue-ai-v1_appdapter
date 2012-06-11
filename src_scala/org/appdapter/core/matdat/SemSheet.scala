@@ -29,6 +29,8 @@ import com.hp.hpl.jena.datatypes.{RDFDatatype, TypeMapper}
 import com.hp.hpl.jena.datatypes.xsd.{XSDDatatype}
 import com.hp.hpl.jena.shared.{PrefixMapping}
 
+
+
 /**
  * @author Stu B. <www.texpedient.com>
  */
@@ -185,8 +187,6 @@ object SemSheet {
 		
 		println("Got NS map: " + namespaceMapProc.myResultMap)
 		
-		
-		
 		val reposSheetNum = 8;
 		val repoSheetURL = WebSheet.makeGdocSheetQueryURL(keyForBootSheet22, reposSheetNum, None);
 		println("Made Repos Sheet URL: " + repoSheetURL);
@@ -200,5 +200,11 @@ object SemSheet {
 		val modelInsertProc = new ModelInsertSheetProc(tgtModel);
 		MatrixData.processSheet (repoSheetURL, modelInsertProc.processRow);
 		println ("tgtModel=" + tgtModel)
+		
+		QuerySheet.testModelQueryWithPrefixHelp(tgtModel)
+		/**
+		 *     		Set<Object> results = buildAllRootsInModel(Assembler.general, loadedModel, Mode.DEFAULT);
+		 * 
+		 */
 	}	
 }
