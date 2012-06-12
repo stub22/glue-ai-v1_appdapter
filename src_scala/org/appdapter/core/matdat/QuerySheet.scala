@@ -30,8 +30,8 @@ import com.hp.hpl.jena.query.{ResultSet, ResultSetFormatter, ResultSetRewindable
 
 object QuerySheet {
 	
-	def testModelQueryWithPrefixHelp(model : Model) {
-		val qText = "select ?sheet { ?sheet a ccrt:GoogSheet }";
+	def execModelQueryWithPrefixHelp(model : Model, qText : String) : ResultSet = {
+
 		val qBaseURI: String = null;
 		val query = new Query();
 		// Query prefixes must be applied before the query is parsed.
@@ -43,8 +43,16 @@ object QuerySheet {
 		
 		val qExec = QueryExecutionFactory.create(query, model, qSolnInit);
 		val qrs : ResultSet = qExec.execSelect();
+		qrs;
+	}
+	
+	def buildQueryResultXML (qrs : ResultSet) : String = {
 		val qrsrw = ResultSetFactory.makeRewindable(qrs);
-		val resultXML : String = ResultSetFormatter.asXMLString(qrsrw);		
-		println("Query Result XML: \n" + resultXML);		
+		val resultXML : String = ResultSetFormatter.asXMLString(qrsrw);
+		resultXML;
+	}
+	
+	def buildQueryResultMap (qrs : ResultSet, keyVar : String, valVar : String) : Map[String, String] = {
+		null;
 	}
 }

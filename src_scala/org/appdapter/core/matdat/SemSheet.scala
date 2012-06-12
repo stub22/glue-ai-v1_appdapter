@@ -174,34 +174,54 @@ object SemSheet {
 			model.createTypedLiteral(cellString, myDatatype);
 		}
 	}
-	
+	val keyForBootSheet22 = "0ArBjkBoH40tndDdsVEVHZXhVRHFETTB5MGhGcWFmeGc";
+
+	def readModelGDocSheet(sheetKey: String, sheetNum : Int,  nsJavaMap : java.util.Map[String, String]) : Model = {
+		val tgtModel : Model = ModelFactory.createDefaultModel();
+		
+		tgtModel.setNsPrefixes (nsJavaMap)
+		
+		val modelInsertProc = new ModelInsertSheetProc(tgtModel);
+		val sheetURL = WebSheet.makeGdocSheetQueryURL(sheetKey, sheetNum, None);
+		
+		MatrixData.processSheet (sheetURL, modelInsertProc.processRow);
+		println ("tgtModel=" + tgtModel)
+		tgtModel;
+	}
+
 	def main(args: Array[String]) : Unit = {
 	  	println("SemSheet test ");
-		val keyForBootSheet22 = "0ArBjkBoH40tndDdsVEVHZXhVRHFETTB5MGhGcWFmeGc";
 		
 		val namespaceSheetNum = 9;
 		val namespaceSheetURL = WebSheet.makeGdocSheetQueryURL(keyForBootSheet22, namespaceSheetNum, None);
 		println("Made Namespace Sheet URL: " + namespaceSheetURL);
 		val namespaceMapProc = new MapSheetProc(1);
 		MatrixData.processSheet (namespaceSheetURL, namespaceMapProc.processRow);
-		
-		println("Got NS map: " + namespaceMapProc.myResultMap)
+		val nsJavaMap : java.util.Map[String, String] = namespaceMapProc.getJavaMap
+		println("Got NS map: " + nsJavaMap)
 		
 		val reposSheetNum = 8;
-		val repoSheetURL = WebSheet.makeGdocSheetQueryURL(keyForBootSheet22, reposSheetNum, None);
-		println("Made Repos Sheet URL: " + repoSheetURL);
-		val sp = new SheetProc(3);
-		MatrixData.processSheet (repoSheetURL, sp.processRow);
-		val tgtModel : Model = ModelFactory.createDefaultModel();
+		val reposModel : Model = readModelGDocSheet(keyForBootSheet22, reposSheetNum, nsJavaMap);
+		
+		val queriesSheetNum = 12;
+		val queriesModel : Model = readModelGDocSheet(keyForBootSheet22, queriesSheetNum, nsJavaMap);		
+		
+		val tqText = "select ?sheet { ?sheet a ccrt:GoogSheet }";
+		
+		val trset = QuerySheet.execModelQueryWithPrefixHelp(reposModel, tqText);
+		val trxml = QuerySheet.buildQueryResultXML(trset);
+		
+		println("Got repo-query-test result-XML: \n" + trxml);
+		
+		val qqText = "select ?qres ?qtxt { ?qres a ccrt:SparqlQuery; ccrt:queryText ?qtxt}";
+
+		val qqrset = QuerySheet.execModelQueryWithPrefixHelp(queriesModel, qqText);
 		
 		
-		tgtModel.setNsPrefixes (namespaceMapProc.getJavaMap)
+		val qqrxml = QuerySheet.buildQueryResultXML(qqrset);
+
+		println("Got query-query-test result-XML: \n" + qqrxml);
 		
-		val modelInsertProc = new ModelInsertSheetProc(tgtModel);
-		MatrixData.processSheet (repoSheetURL, modelInsertProc.processRow);
-		println ("tgtModel=" + tgtModel)
-		
-		QuerySheet.testModelQueryWithPrefixHelp(tgtModel)
 		/**
 		 *     		Set<Object> results = buildAllRootsInModel(Assembler.general, loadedModel, Mode.DEFAULT);
 		 * 
