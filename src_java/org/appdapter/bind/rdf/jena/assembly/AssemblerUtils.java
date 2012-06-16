@@ -81,4 +81,18 @@ public class AssemblerUtils {
 		Set<Object> loadedStuff = AssemblerUtils.buildAllObjectsInRdfFile(rdfConfigFlexPath);
 		return loadedStuff;
 	}
+	public static <T> T readOneConfigObjFromPath(Class<T> configType, String rdfConfigFlexPath, ClassLoader optResourceClassLoader) {
+		Set<Object> loadedStuff = AssemblerUtils.buildObjSetFromPath (rdfConfigFlexPath, optResourceClassLoader);
+		int objCount = loadedStuff.size();
+		if (objCount != 1) {
+			throw new RuntimeException("Expected one config thing but got " + objCount + " from path[" + rdfConfigFlexPath + "]");
+		}
+		Object singleConfigObj =  loadedStuff.toArray()[0];
+		Class objClass = singleConfigObj.getClass();
+		if (configType.isAssignableFrom(objClass)) {
+			return (T) singleConfigObj;
+		} else {
+			throw new RuntimeException("Expected config object type " + configType + " but got " + objClass);
+		}
+	}	
 }
