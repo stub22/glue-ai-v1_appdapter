@@ -17,7 +17,7 @@
 package org.appdapter.scafun
 import  org.appdapter.api.trigger.{Box, BoxContext, MutableBox, Trigger, BoxImpl, TriggerImpl};
 import  org.appdapter.demo.DemoResources;
-import  org.appdapter.bind.rdf.jena.model.AssemblerUtils;
+import  org.appdapter.bind.rdf.jena.assembly.AssemblerUtils;
 
 object Boxy {
 	

@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.appdapter.bind.rdf.jena.model;
+package org.appdapter.bind.rdf.jena.assembly;
 
 /**
  * @author Stu B. <www.texpedient.com>
