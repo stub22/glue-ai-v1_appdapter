@@ -57,7 +57,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import java.util.List;
-import org.appdapter.bind.rdf.jena.model.AssemblerUtils;
+import org.appdapter.bind.rdf.jena.assembly.AssemblerUtils;
 import org.appdapter.bind.rdf.jena.sdb.GraphUploadTask;
 
 import org.appdapter.core.log.BasicDebugger;

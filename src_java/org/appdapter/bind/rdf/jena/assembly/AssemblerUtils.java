@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.appdapter.bind.rdf.jena.model;
+package org.appdapter.bind.rdf.jena.assembly;
 
 import com.hp.hpl.jena.assembler.Assembler;
 import com.hp.hpl.jena.assembler.AssemblerHelp;
@@ -29,6 +29,8 @@ import java.util.Iterator;
 import java.util.Set;
 import org.slf4j.Logger;
 
+import org.appdapter.core.log.BasicDebugger;
+
 import org.slf4j.LoggerFactory;
 
 /**
@@ -37,6 +39,7 @@ import org.slf4j.LoggerFactory;
 
 public class AssemblerUtils {
 	static Logger theLogger = LoggerFactory.getLogger(AssemblerUtils.class);
+	static BasicDebugger theDbg = new BasicDebugger();
 
 
 	public static Set<Object>	buildAllRootsInModel(Assembler jenaAssembler, Model jenaModel, Mode jenaAssemblyMode) {
@@ -57,7 +60,7 @@ public class AssemblerUtils {
 	public static void ensureClassLoaderRegisteredWithJenaFM(ClassLoader cl) {
 		LocatorClassLoader candidateLCL = new LocatorClassLoader(cl);
 		FileManager fm = FileManager.get();
-		// TODO:  Ensure that cl is not already registered!
+		// First, ensure that cl is not already registered
 		Iterator<Locator> locs = fm.locators();
 		while (locs.hasNext()) { 
 			Locator l = locs.next();
@@ -68,5 +71,14 @@ public class AssemblerUtils {
 		}
 		theLogger.info("Registering new Jena FM loader for: " + cl);
 		fm.addLocator(candidateLCL); 
+	}
+	public static Set<Object> buildObjSetFromPath(String rdfConfigFlexPath, ClassLoader optResourceClassLoader) {
+		if (optResourceClassLoader != null) {
+			theDbg.logDebug("Ensuring registration of classLoader: " + optResourceClassLoader);
+			ensureClassLoaderRegisteredWithJenaFM(optResourceClassLoader);
+		}
+		theDbg.logInfo("Loading triples from flex-path: " + rdfConfigFlexPath);
+		Set<Object> loadedStuff = AssemblerUtils.buildAllObjectsInRdfFile(rdfConfigFlexPath);
+		return loadedStuff;
 	}
 }
