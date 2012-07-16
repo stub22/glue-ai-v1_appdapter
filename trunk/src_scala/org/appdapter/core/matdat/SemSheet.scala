@@ -24,6 +24,7 @@ import au.com.bytecode.opencsv.CSVReader;
 import org.appdapter.core.log.BasicDebugger;
 
 import com.hp.hpl.jena.rdf.model.{Model, Statement, Resource, Property, Literal, RDFNode, ModelFactory}
+import com.hp.hpl.jena.query.{ResultSet, ResultSetFormatter, ResultSetRewindable, ResultSetFactory, QuerySolution};
 import com.hp.hpl.jena.ontology.{OntProperty, ObjectProperty, DatatypeProperty}
 import com.hp.hpl.jena.datatypes.{RDFDatatype, TypeMapper}
 import com.hp.hpl.jena.datatypes.xsd.{XSDDatatype}
@@ -153,6 +154,8 @@ object SemSheet {
 						val model : Model = modelParentRes.getModel();
 						val rdfNode : RDFNode = makeValueNode(cellString, model);
 						val stmt : Statement = model.createStatement(modelParentRes, myProp, rdfNode);
+						// Triggers Jena ModelEvent-Add regardless of whether triple is new.
+						// Jena team is open to extensions + improvements of this mechanism.
 						model.add(stmt);
 						Some(stmt);
 					};
@@ -188,16 +191,18 @@ object SemSheet {
 		println ("tgtModel=" + tgtModel)
 		tgtModel;
 	}
-
+	
 	def main(args: Array[String]) : Unit = {
 	  	println("SemSheet test ");
 		
 		val namespaceSheetNum = 9;
 		val namespaceSheetURL = WebSheet.makeGdocSheetQueryURL(keyForBootSheet22, namespaceSheetNum, None);
 		println("Made Namespace Sheet URL: " + namespaceSheetURL);
-		val namespaceMapProc = new MapSheetProc(1);
-		MatrixData.processSheet (namespaceSheetURL, namespaceMapProc.processRow);
-		val nsJavaMap : java.util.Map[String, String] = namespaceMapProc.getJavaMap
+		// val namespaceMapProc = new MapSheetProc(1);
+		// MatrixData.processSheet (namespaceSheetURL, namespaceMapProc.processRow);
+		// namespaceMapProc.getJavaMap
+		val nsJavaMap : java.util.Map[String, String] = MatrixData.readJavaMapFromSheet(namespaceSheetURL);
+		
 		println("Got NS map: " + nsJavaMap)
 		
 		val reposSheetNum = 8;
@@ -215,12 +220,34 @@ object SemSheet {
 		
 		val qqText = "select ?qres ?qtxt { ?qres a ccrt:SparqlQuery; ccrt:queryText ?qtxt}";
 
-		val qqrset = QuerySheet.execModelQueryWithPrefixHelp(queriesModel, qqText);
-		
-		
-		val qqrxml = QuerySheet.buildQueryResultXML(qqrset);
+		val qqrset : ResultSet = QuerySheet.execModelQueryWithPrefixHelp(queriesModel, qqText);
+		val qqrsrw = ResultSetFactory.makeRewindable(qqrset);
+		// Does not disturb the original result set
+		val qqrxml = QuerySheet.buildQueryResultXML(qqrsrw);
 
+		import scala.collection.JavaConversions._;	
+			
+		
 		println("Got query-query-test result-XML: \n" + qqrxml);
+		qqrsrw.reset();
+		val allVarNames : java.util.List[String] = qqrsrw.getResultVars();
+		println ("Got all-vars java-list: " + allVarNames);
+		while (qqrsrw.hasNext()) {
+			val qSoln : QuerySolution = qqrsrw.next();
+			for (val n : String <- allVarNames ) {
+				val qvNode : RDFNode = qSoln.get(n);
+				println ("qvar[" +  n + "]=" + qvNode);
+			}
+			
+			val qtxtLit : Literal = qSoln.getLiteral("qtxt")
+			val qtxtString = qtxtLit.getString();
+			val zzRset = QuerySheet.execModelQueryWithPrefixHelp(reposModel, qtxtString);
+			val zzRSxml = QuerySheet.buildQueryResultXML(zzRset);
+			println ("Query using qTxt got: " + zzRSxml)
+			
+	//		logInfo("Got qsoln" + qSoln + " with s=[" + qSoln.get("s") + "], p=[" + qSoln.get("p") + "], o=[" 
+	//						+ qSoln.get("o") +"]");
+		}		
 		
 		/**
 		 *     		Set<Object> results = buildAllRootsInModel(Assembler.general, loadedModel, Mode.DEFAULT);
