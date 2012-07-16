@@ -16,12 +16,13 @@
 
 package org.appdapter.scafun
 import  org.appdapter.api.trigger.{Box, BoxContext, MutableBox, Trigger, BoxImpl, TriggerImpl};
+import  org.appdapter.gui.box.{ScreenBox, ScreenBoxImpl};
 import  org.appdapter.demo.DemoResources;
 import  org.appdapter.bind.rdf.jena.assembly.AssemblerUtils;
 
 object Boxy {
 	
-	class FullBox[FT <:  FullTrigger[_ <: FullBox[FT]]] extends BoxImpl[FT] {
+	class FullBox[FT <:  FullTrigger[_ <: FullBox[FT]]] extends ScreenBoxImpl[FT] {
 		/*
 		def getOpenKidFullBoxes(bc : BoxContext) : Seq[FullBox] = {
 			val rawtypeOpenChildrenJL : java.util.List[FriendBox] = bc.getOpenChildBoxesNarrowed(this, classOf[FT], classOf[FriendTrig]);

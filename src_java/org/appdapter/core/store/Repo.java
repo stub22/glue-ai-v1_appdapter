@@ -13,13 +13,13 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package org.appdapter.core.store;
 
 import java.util.List;
 import com.hp.hpl.jena.sdb.Store;
 import java.util.List;
 import org.appdapter.core.store.Repo;
+import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.query.QueryExecutionFactory;
@@ -30,33 +30,35 @@ import com.hp.hpl.jena.query.ResultSetFormatter;
 /**
  * @author Stu B. <www.texpedient.com>
  */
+public interface Repo extends QueryProcessor {
 
-public interface  Repo {
-	public Store				getStore();
-	public void setStore(Store store);
+	public Dataset getMainQueryDataset();
 	
-	public void mountStoreUsingFileConfig(String storeConfigPath);
-	public List<GraphStat>		getGraphStats();
-	
-	public Query parseQueryText(String inlineQueryText);
-	public Query parseQueryURL(String resolvedQueryURL);
-	
-	public static interface ResultSetProc<ResType> {
-		public ResType processResultSet(ResultSet rset);
-	}
-	public <ResType> ResType processQuery(Query parsedQuery, BasicRepoImpl.ResultSetProc<ResType> resProc);
-	
+	public List<GraphStat> getGraphStats();
+
 	public static class GraphStat {
-		public String		graphURI;
-		public long		statementCount;
+
+		public String graphURI;
+
+		public long statementCount;
 	}
-	
-	public static interface Mutable extends Repo {
-		public String				getUploadHomePath();
 
-		public void formatStoreIfNeeded();
+	public static interface Stored extends Repo {
 
-		public void importGraphFromURL(String tgtGraphName, String sourceURL, boolean replaceTgtFlag);	
+		public Store getStore();
+
+		public void setStore(Store store);
+
+		public void mountStoreUsingFileConfig(String storeConfigPath);
 		
+	}
+	public static interface Mutable extends Repo {
+
+		public void importGraphFromURL(String tgtGraphName, String sourceURL, boolean replaceTgtFlag);
+
+		// uploadHomePath is just a UI config helper ... looking for its proper place in java-land
+		public String getUploadHomePath();
+
+		public void formatRepoIfNeeded();
 	}
 }
