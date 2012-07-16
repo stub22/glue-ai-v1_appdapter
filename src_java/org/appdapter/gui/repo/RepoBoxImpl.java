@@ -41,10 +41,10 @@ import com.hp.hpl.jena.query.Query;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import org.appdapter.core.store.BasicRepoImpl;
+import org.appdapter.core.store.BasicStoredMutableRepoImpl;
 import org.appdapter.core.store.Repo;
 import org.appdapter.core.store.Repo.GraphStat;
-import org.appdapter.core.store.Repo.ResultSetProc;
+import org.appdapter.core.store.QueryProcessor.ResultSetProc;
 
 import com.hp.hpl.jena.query.ResultSet;
 
@@ -67,10 +67,10 @@ public class RepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<TT>>> extends 
 	}
 
 	@Override public void mount(String configPath) {
-		myRepo = BasicRepoImpl.openRepo(configPath);
+		myRepo = BasicStoredMutableRepoImpl.openRepo(configPath);
 	}
 	@Override public void formatStoreIfNeeded() {
-		myRepo.formatStoreIfNeeded();
+		myRepo.formatRepoIfNeeded();
 	}
 	@Override public List<GraphStat> getAllGraphStats() {
 		return myRepo.getGraphStats();
@@ -86,7 +86,7 @@ public class RepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<TT>>> extends 
 		Query parsedQuery = myRepo.parseQueryURL(queryURL);
 		String xmlOut = myRepo.processQuery(parsedQuery, new ResultSetProc<String>() {
 			@Override public String processResultSet(ResultSet rset) {
-				return BasicRepoImpl.dumpResultSetToXML(rset);
+				return BasicStoredMutableRepoImpl.dumpResultSetToXML(rset);
 			}
 		});
 		return xmlOut;
