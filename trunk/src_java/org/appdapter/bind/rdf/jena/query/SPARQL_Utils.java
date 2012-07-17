@@ -157,62 +157,6 @@ public class SPARQL_Utils {
 		String resultXML = ResultSetFormatter.asXMLString(lastResultSet);		
 		return resultXML;
 	}
-
-	/** 	
-	  * The exact semantics here are still vague.   Roughly speaking, the new datasource
-	  * is one that we can modify "without affecting" the original dataset, but that
-	  * meaning is unclear when the original dataset contains database models.
-	  * And even in the case of memory models, is Jena making a copy for us?
-	  * Need to do some experimenting here.
-	**/
-	public static DataSource makeIndependentDataSourceFromDataset(Dataset dset) {
-		Model newDefaultModel = null;
-		Model oldDefaultModel = dset.getDefaultModel();
-		if (oldDefaultModel != null) {
-			newDefaultModel = JenaModelUtils.makeNaiveCopy(oldDefaultModel);
-		}
-		Dataset copy = DatasetFactory.make(dset, newDefaultModel);
-		// We KNOW this is a DataSource from reading the ARQ 2.1 impl!!!  Ahem.
- 		return (DataSource)  copy;
-	}	
-	
-	/** 	
-	**/
-	public static void ensureDefaultModelNotNull(DataSource ds) {
-		if (ds.getDefaultModel() == null) {
-			Model emptyModel = ModelFactory.createDefaultModel();
-			ds.setDefaultModel(emptyModel);
-		}
-	}
-	
-	/** 	If no model yet exists within dataset @ nameURI, then we create it.
-			If nameURI is null, then we merge into (or create) the "default model"
-	**/
-	public static void mergeModelIntoDataSource(DataSource ds, String nameURI, Model m) {
-		// Serializing model contents is expensive when the models aren't tiny.
-		theLogger.debug("SPARQL_Utils is merging in model with name " + nameURI); // + " and contents " + m);
-
-		Model	previousModel = null;
-		if (nameURI != null) {
-			if (ds.containsNamedModel(nameURI)) {
-				previousModel = ds.getNamedModel(nameURI);
-			}
-		} else {
-			previousModel = ds.getDefaultModel();
-		}
-		Model augmentedModel = null;
-		if (previousModel != null) {
-			augmentedModel = previousModel;
-			previousModel.add(m);
-		} else {
-			augmentedModel = m;
-		}
-		if (nameURI != null) {
-			ds.replaceNamedModel(nameURI, augmentedModel);
-		} else {
-			ds.setDefaultModel(augmentedModel);
-		}
-	}
 }
 
 

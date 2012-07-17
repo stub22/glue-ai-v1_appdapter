@@ -18,7 +18,7 @@ package org.appdapter.core.matdat
 
 import com.hp.hpl.jena.rdf.model.{Model, Statement, Resource, Property, Literal, RDFNode, ModelFactory, InfModel}
 
-import com.hp.hpl.jena.query.{Query, QueryFactory, QueryExecution, QueryExecutionFactory, QuerySolution, Syntax};
+import com.hp.hpl.jena.query.{Query, QueryFactory, QueryExecution, QueryExecutionFactory, QuerySolution, QuerySolutionMap, Syntax};
 import com.hp.hpl.jena.query.{Dataset, DatasetFactory, DataSource};
 import com.hp.hpl.jena.query.{ResultSet, ResultSetFormatter, ResultSetRewindable, ResultSetFactory};
 
@@ -30,8 +30,9 @@ import com.hp.hpl.jena.shared.{PrefixMapping}
 import com.hp.hpl.jena.rdf.listeners.{ObjectListener};
 
 import org.appdapter.bind.rdf.jena.model.{ModelStuff, JenaModelUtils};
+import org.appdapter.bind.rdf.jena.query.{JenaArqQueryFuncs, JenaArqResultSetProcessor};
 
-import org.appdapter.core.store.{Repo, BasicQueryProcessorImpl, BasicRepoImpl};
+import org.appdapter.core.store.{Repo, BasicQueryProcessorImpl, BasicRepoImpl, QueryProcessor};
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -64,9 +65,9 @@ class SheetRepo(val myDirectoryModel : Model) extends BasicRepoImpl {
 		val nsJavaMap : java.util.Map[String, String] = myDirectoryModel.getNsPrefixMap()
 		
 		val msqText = """
-			select ?repo ?key ?sheet ?num 
+			select ?container ?key ?sheet ?num 
 				{
-					?repo  a ccrt:GoogSheetRepo; ccrt:key ?key.
+					?container  a ccrt:GoogSheetRepo; ccrt:key ?key.
 					?sheet a ccrt:GoogSheet; ccrt:sheetNumber ?num; ccrt:repo ?repo.
 				}
 		"""
@@ -76,11 +77,11 @@ class SheetRepo(val myDirectoryModel : Model) extends BasicRepoImpl {
 		while (msRset.hasNext()) {
 			val qSoln : QuerySolution = msRset.next();
 			
-			val repoRes : Resource = qSoln.getResource("repo");
+			val containerRes : Resource = qSoln.getResource("container");
 			val sheetRes : Resource = qSoln.getResource("sheet");
 			val sheetNum_Lit : Literal = qSoln.getLiteral("num")
 			val sheetKey_Lit : Literal = qSoln.getLiteral("key")
-			println("repoRes=" + repoRes + ", sheetRes=" + sheetRes + ", num=" + sheetNum_Lit + ", key=" + sheetKey_Lit)
+			println("containerRes=" + containerRes + ", sheetRes=" + sheetRes + ", num=" + sheetNum_Lit + ", key=" + sheetKey_Lit)
 			
 			val sheetNum = sheetNum_Lit.getInt();
 			val sheetKey = sheetKey_Lit.getString();
@@ -88,10 +89,54 @@ class SheetRepo(val myDirectoryModel : Model) extends BasicRepoImpl {
 			println("Read sheetModel: " + sheetModel)
 			val graphURI = sheetRes.getURI();
 			mainDset.replaceNamedModel(graphURI, sheetModel)
-		}
-
-		
+		}		
 	}
+	def findSingleQuerySolution(parsedQQ : Query, qInitBinding : QuerySolution) : Option[QuerySolution] = {
+		val solnJavaList : java.util.List[QuerySolution] = findAllSolutions(parsedQQ, qInitBinding);
+		if (solnJavaList.ne(null)) {
+			if (solnJavaList.size() == 1) {
+				return Some(solnJavaList.get(0))
+			}
+		} 
+		None; 
+	}
+	def parseQueryText(queryText : String) : Query = {
+		JenaArqQueryFuncs.parseQueryText(queryText, myDirectoryModel);
+	}
+	def bindQueryVarToQName(qSoln : QuerySolutionMap, vName : String, resQName : String) : Unit = {
+		val expandedURI = myDirectoryModel.expandPrefix(resQName)
+		val dirResource = myDirectoryModel.createResource(expandedURI)
+		qSoln.add(vName, dirResource)
+	}
+	def getQueryText(querySourceGraphQName : String, queryParentQName : String) : String = {
+		val mainDset : DataSource = getMainQueryDataset().asInstanceOf[DataSource];
+		
+		val nsJavaMap : java.util.Map[String, String] = myDirectoryModel.getNsPrefixMap()
+		
+		val qInitBinding = new QuerySolutionMap()
+		bindQueryVarToQName(qInitBinding, "g", querySourceGraphQName)
+		bindQueryVarToQName(qInitBinding, "qRes", queryParentQName)
+
+		val msqText = """
+			SELECT ?g ?qRes ?queryTxt WHERE {
+				GRAPH ?g {
+					?qRes  a ccrt:SparqlQuery ; ccrt:queryText ?queryTxt .			
+				}
+			}
+		"""
+		
+		val parsedQQ = parseQueryText(msqText);
+		
+		println ("parsedQQ: " + parsedQQ)
+		val possSoln : Option[QuerySolution] = findSingleQuerySolution(parsedQQ, qInitBinding);
+		val qText : String = if (possSoln.isDefined) {
+			val qSoln = possSoln.get;
+			val qtxt_Lit : Literal = qSoln.getLiteral("queryTxt");
+			qtxt_Lit.getString()
+		} else "";
+
+		qText
+	}	
 }
 
 object SheetRepo {
@@ -112,6 +157,12 @@ object SheetRepo {
 		val sr = new SheetRepo(directoryModel)
 		
 		sr.loadSheetModelsIntoMainDataset()
-
+		
+		val qText = sr.getQueryText("ccrt:qry_sheet_22", "ccrt:find_humanoids_99")
+		println("Found query text: " + qText)
+		
+		val parsedQ = sr.parseQueryText(qText);
+		val solnJavaList : java.util.List[QuerySolution] = sr.findAllSolutions(parsedQ, null);
+		println("Found solutions: " + solnJavaList)
 	}
 }

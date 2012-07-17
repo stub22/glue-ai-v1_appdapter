@@ -14,8 +14,7 @@
  *  limitations under the License.
  */
 
-package org.appdapter.core.store;
-
+package org.appdapter.bind.rdf.jena.query;
 import org.appdapter.bind.rdf.jena.assembly.AssemblerUtils;
 import com.hp.hpl.jena.query.Syntax;
 import com.hp.hpl.jena.query.Dataset;
@@ -34,13 +33,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.appdapter.core.log.BasicDebugger;
+import org.appdapter.core.store.QueryProcessor;
+import org.appdapter.core.store.Repo;
 /**
  * @author Stu B. <www.texpedient.com>
  */
-
-public abstract class BasicQueryProcessorImpl extends BasicDebugger implements QueryProcessor {
-	/*
-	public Query parseQueryText(String inlineQueryText, PrefixMapping pmap) { 
+public class JenaArqQueryFuncs {
+	public static BasicDebugger	theDbg = new BasicDebugger();
+	/**
+	 * 
+	 * @param inlineQueryText - query text to be parsed
+	 * @param prefixMapping - set of extra RDF namespace abbreviations available to the query text (note that any
+	 *			Jena Model can be used as a PrefixMapping)
+	 * @return - a parsed Jena ARQ query, ready for execution.
+	 */
+	public static Query parseQueryText(String inlineQueryText, PrefixMapping pmap) { 
 		String qBaseURI = null;
 		Query query = new Query();
 		// Query prefixes must be applied before the query is parsed.
@@ -48,25 +55,27 @@ public abstract class BasicQueryProcessorImpl extends BasicDebugger implements Q
 		QueryFactory.parse(query, inlineQueryText, qBaseURI, Syntax.syntaxSPARQL); 
 		return query;
 	}
-	
-	public Query parseQueryURL(String resolvedQueryURL) {
+	/**
+	 * 
+	 * @param resolvedQueryURL - URL to the query text
+	 * @return  - parsed Jena ARQ query, ready for execution.
+	 */
+	public static Query parseQueryURL(String resolvedQueryURL) {
 		Query parsedQuery = null;
 		try {
 			// String resolvedQueryURL = DemoResources.QUERY_PATH;
 			// DemoResources.resolveResourcePathToURL_WhichJenaCantUseInCaseOfJarFileRes(DemoResources.QUERY_PATH);
-			logInfo("Registering classLoader with JenaFM");  // Because it is used 
-			AssemblerUtils.ensureClassLoaderRegisteredWithJenaFM(getClass().getClassLoader());
+			theDbg.logInfo("Registering classLoader with JenaFM");  // Because it is used 
+			AssemblerUtils.ensureClassLoaderRegisteredWithJenaFM(JenaArqQueryFuncs.class.getClassLoader());
 			parsedQuery = QueryFactory.read(resolvedQueryURL);
 		} catch (Throwable t) {
-			logError("problem in parseQueryURL", t);
+			theDbg.logError("problem in parseQueryURL", t);
 		}
 		return parsedQuery;
 	}
-	public <ResType> ResType processQueryExecution(QueryExecution qe, Repo.ResultSetProc<ResType> resProc) {
+	public static <ResType> ResType processQueryExecution(QueryExecution qe, JenaArqResultSetProcessor<ResType> resProc) {
 		ResType result = null;
-		
 		try {
-
 			try {
 				// ResultSet does not have a close() method
 				ResultSet rs = qe.execSelect();
@@ -75,16 +84,17 @@ public abstract class BasicQueryProcessorImpl extends BasicDebugger implements Q
 				qe.close();
 			}
 		} catch (Throwable t) {
-			logError("problem in QueryTrigger", t);
+			theDbg.logError("problem in processQueryExecution", t);
 		}
 		return result;
 	}
-	@Override public <ResType> ResType processDatasetQuery(Dataset ds, Query parsedQuery, QuerySolution initBinding, Repo.ResultSetProc<ResType> resProc) {
+	public static <ResType> ResType processDatasetQuery(Dataset ds, Query parsedQuery, QuerySolution initBinding, 
+					JenaArqResultSetProcessor<ResType> resProc) {
 		QueryExecution qe = QueryExecutionFactory.create(parsedQuery, ds, initBinding);
 		return processQueryExecution(qe, resProc);
 	}
-	@Override public List<QuerySolution> findAllSolutions(Dataset ds, Query parsedQuery, QuerySolution initBinding) {
-		Repo.ResultSetProc<List<QuerySolution>> resProc = new Repo.ResultSetProc<List<QuerySolution>>() {
+	public static List<QuerySolution> findAllSolutions(Dataset ds, Query parsedQuery, QuerySolution initBinding) {
+		JenaArqResultSetProcessor<List<QuerySolution>> resProc = new JenaArqResultSetProcessor<List<QuerySolution>>() {
 			@Override public List<QuerySolution> processResultSet(ResultSet rset) {
 				List<QuerySolution> solnList = new ArrayList<QuerySolution>();
 				while (rset.hasNext()) {
@@ -103,7 +113,6 @@ public abstract class BasicQueryProcessorImpl extends BasicDebugger implements Q
 		rsr.reset();
 		String resultXML = ResultSetFormatter.asXMLString(rsr);
 		return resultXML;
-	}
-	*
-	*/ 
+	}	
 }
+

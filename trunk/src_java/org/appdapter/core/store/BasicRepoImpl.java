@@ -17,14 +17,10 @@
 package org.appdapter.core.store;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.query.Query;
-import com.hp.hpl.jena.query.QueryExecution;
-import com.hp.hpl.jena.query.QueryExecutionFactory;
-import com.hp.hpl.jena.query.QueryFactory;
-import com.hp.hpl.jena.query.ResultSet;
-import com.hp.hpl.jena.query.ResultSetFormatter;
-import com.hp.hpl.jena.query.ResultSetFactory;
-import com.hp.hpl.jena.query.ResultSetRewindable;
-import org.appdapter.core.log.BasicDebugger;
+import com.hp.hpl.jena.query.QuerySolution;
+import java.util.List;
+import org.appdapter.bind.rdf.jena.query.JenaArqQueryFuncs;
+import org.appdapter.bind.rdf.jena.query.JenaArqResultSetProcessor;
 /**
  * @author Stu B. <www.texpedient.com>
  */
@@ -34,7 +30,7 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 	
 	protected abstract Dataset makeMainQueryDataset();
 	
-	public Dataset getMainQueryDataset() {
+	@Override public Dataset getMainQueryDataset() {
 		if (myMainQueryDataset == null) {
 			myMainQueryDataset = makeMainQueryDataset();
 		}
@@ -42,14 +38,18 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 	}
 
 
-	@Override public <ResType> ResType processQuery(Query parsedQuery, ResultSetProc<ResType> resProc) {
+	@Override public <ResType> ResType processQuery(Query parsedQuery, QuerySolution initBinding, JenaArqResultSetProcessor<ResType> resProc) {
 		ResType result = null;
 		try {
 			Dataset ds = getMainQueryDataset();
-			processDatasetQuery(ds, parsedQuery, resProc);
+			result = JenaArqQueryFuncs.processDatasetQuery(ds, parsedQuery, initBinding, resProc);
 		} catch (Throwable t) {
 			logError("problem in processQuery", t);
 		}
 		return result;
+	}
+	@Override public List<QuerySolution> findAllSolutions(Query parsedQuery, QuerySolution initBinding) {
+		Dataset ds = getMainQueryDataset();
+		return JenaArqQueryFuncs.findAllSolutions(ds, parsedQuery, initBinding);
 	}
 }

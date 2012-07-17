@@ -25,7 +25,22 @@ import org.slf4j.helpers.NOPLogger;
  * @author Stu B. <www.texpedient.com>
  */
 public class BasicDebugger implements Loggable {
-
+	
+	private	Class	myAppClass;
+	
+	/**
+	 * We use this constructor when we don't want to extend BasicDebugger.
+	 * @param appClass 
+	 */
+	public BasicDebugger(Class appClass) {
+		myAppClass = appClass;
+	}
+	/**
+	 * This default constructor is intended for use by classes extending BasicDebugger.
+	 */
+	public BasicDebugger() {
+		myAppClass = this.getClass();
+	}
 	static Logger theFallbackLogger = LoggerFactory.getLogger(BasicDebugger.class);
 
 	private enum MsgKind {
@@ -45,7 +60,7 @@ public class BasicDebugger implements Loggable {
 	 */
 	protected Logger getLogger() {
 		if (myLogger == null) {
-			myLogger = getLoggerForClass(this.getClass());
+			myLogger = getLoggerForClass(myAppClass);
 		}
 		return myLogger;
 	}
