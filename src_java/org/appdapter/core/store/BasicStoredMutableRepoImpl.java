@@ -174,7 +174,7 @@ public class BasicStoredMutableRepoImpl extends BasicRepoImpl implements Repo.St
 		Dataset ds = DatasetStore.create(store);
 		return ds;
 	}
-
+/*
 	@Override public <ResType> ResType processQuery(Query parsedQuery, ResultSetProc<ResType> resProc) {
 		ResType result = null;
 		try {
@@ -187,6 +187,6 @@ public class BasicStoredMutableRepoImpl extends BasicRepoImpl implements Repo.St
 		}
 		return result;
 	}
-	
+*/	
 
 }
