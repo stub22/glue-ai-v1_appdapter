@@ -15,16 +15,8 @@
  */
 
 package org.appdapter.core.store;
-import java.util.List;
-import com.hp.hpl.jena.sdb.Store;
-import java.util.List;
-import org.appdapter.core.store.Repo;
-import com.hp.hpl.jena.query.Query;
-import com.hp.hpl.jena.query.QueryExecution;
-import com.hp.hpl.jena.query.QueryExecutionFactory;
-import com.hp.hpl.jena.query.QueryFactory;
-import com.hp.hpl.jena.query.ResultSet;
-import com.hp.hpl.jena.query.ResultSetFormatter;
+import com.hp.hpl.jena.query.*;
+import org.appdapter.bind.rdf.jena.query.JenaArqResultSetProcessor;
 /**
  * @author Stu B. <www.texpedient.com>
  * 
@@ -33,8 +25,10 @@ import com.hp.hpl.jena.query.ResultSetFormatter;
  */
 
 public interface QueryProcessor {
-	
-	public Query parseQueryText(String inlineQueryText);
+	/*
+
+	public Query parseQueryText(String inlineQueryText, PrefixMapping prefixMapping);
+
 
 	public Query parseQueryURL(String resolvedQueryURL);
 
@@ -43,6 +37,12 @@ public interface QueryProcessor {
 		public ResType processResultSet(ResultSet rset);
 	}
 
-	public <ResType> ResType processQuery(Query parsedQuery, BasicStoredMutableRepoImpl.ResultSetProc<ResType> resProc);
-
+	
+	
+	public <ResType> ResType processDatasetQuery(Dataset ds, Query parsedQuery, QuerySolution initBinding, Repo.ResultSetProc<ResType> resProc);
+	
+	public List<QuerySolution> findAllSolutions(Dataset ds, Query parsedQuery, QuerySolution initBinding);
+	* 
+	*/
+	
 }

@@ -15,23 +15,22 @@
  */
 package org.appdapter.core.store;
 
+import com.hp.hpl.jena.query.*;
 import java.util.List;
 import com.hp.hpl.jena.sdb.Store;
 import java.util.List;
+import org.appdapter.bind.rdf.jena.query.JenaArqResultSetProcessor;
 import org.appdapter.core.store.Repo;
-import com.hp.hpl.jena.query.Dataset;
-import com.hp.hpl.jena.query.Query;
-import com.hp.hpl.jena.query.QueryExecution;
-import com.hp.hpl.jena.query.QueryExecutionFactory;
-import com.hp.hpl.jena.query.QueryFactory;
-import com.hp.hpl.jena.query.ResultSet;
-import com.hp.hpl.jena.query.ResultSetFormatter;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
 public interface Repo extends QueryProcessor {
 
+	public <ResType> ResType processQuery(Query parsedQuery, QuerySolution initBinding, JenaArqResultSetProcessor<ResType> resProc);
+	
+	public List<QuerySolution> findAllSolutions(Query parsedQuery, QuerySolution initBinding);
+	
 	public Dataset getMainQueryDataset();
 	
 	public List<GraphStat> getGraphStats();
@@ -39,7 +38,6 @@ public interface Repo extends QueryProcessor {
 	public static class GraphStat {
 
 		public String graphURI;
-
 		public long statementCount;
 	}
 

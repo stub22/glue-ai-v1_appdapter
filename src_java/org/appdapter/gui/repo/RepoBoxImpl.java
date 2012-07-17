@@ -16,37 +16,20 @@
 
 package org.appdapter.gui.repo;
 
-import org.appdapter.bind.rdf.jena.sdb.GraphUploadTask;
-import org.appdapter.bind.rdf.jena.model.GraphUploadMonitor;
-import arq.cmdline.ModTime;
 import org.appdapter.gui.box.ScreenBoxImpl;
 import org.appdapter.api.trigger.Trigger;
-import com.hp.hpl.jena.graph.Graph;
-import com.hp.hpl.jena.graph.GraphListener;
-import com.hp.hpl.jena.graph.Node;
-import com.hp.hpl.jena.graph.Triple;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.sdb.SDBFactory;
-import com.hp.hpl.jena.sdb.Store;
-import com.hp.hpl.jena.sdb.shared.Env;
-import com.hp.hpl.jena.sdb.util.StoreUtils;
-import com.hp.hpl.jena.sparql.util.Timer;
-import com.hp.hpl.jena.util.FileManager;
-import com.hp.hpl.jena.util.FileUtils;
-import com.hp.hpl.jena.util.LocatorClassLoader;
 
 import com.hp.hpl.jena.query.Query;
 
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import org.appdapter.core.store.BasicStoredMutableRepoImpl;
 import org.appdapter.core.store.Repo;
 import org.appdapter.core.store.Repo.GraphStat;
-import org.appdapter.core.store.QueryProcessor.ResultSetProc;
 
 import com.hp.hpl.jena.query.ResultSet;
+import org.appdapter.bind.rdf.jena.query.JenaArqQueryFuncs;
+import org.appdapter.bind.rdf.jena.query.JenaArqResultSetProcessor;
 
 
 import org.slf4j.Logger;
@@ -83,10 +66,10 @@ public class RepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<TT>>> extends 
 	}
 
 	@Override public String processQueryAtUrlAndProduceXml(String queryURL) {
-		Query parsedQuery = myRepo.parseQueryURL(queryURL);
-		String xmlOut = myRepo.processQuery(parsedQuery, new ResultSetProc<String>() {
+		Query parsedQuery = JenaArqQueryFuncs.parseQueryURL(queryURL);
+		String xmlOut = myRepo.processQuery(parsedQuery, null, new JenaArqResultSetProcessor<String>() {
 			@Override public String processResultSet(ResultSet rset) {
-				return BasicStoredMutableRepoImpl.dumpResultSetToXML(rset);
+				return JenaArqQueryFuncs.dumpResultSetToXML(rset);
 			}
 		});
 		return xmlOut;
