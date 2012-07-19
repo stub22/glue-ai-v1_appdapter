@@ -136,28 +136,32 @@ class SheetRepo(val myDirectoryModel : Model) extends BasicRepoImpl {
 		} else "";
 
 		qText
-	}	
+	}
+
 }
 
 object SheetRepo {
-	def main(args: Array[String]) : Unit = {
-		println("SheetRepo - start")
-		val namespaceSheetNum = 9;
-		val namespaceSheetURL = WebSheet.makeGdocSheetQueryURL(SemSheet.keyForBootSheet22, namespaceSheetNum, None);
+	def readDirectoryModelFromGoog(sheetKey : String, namespaceSheetNum : Int, dirSheetNum : Int) : Model = { 
+		println("readDirectoryModelFromGoog - start")
+		val namespaceSheetURL = WebSheet.makeGdocSheetQueryURL(sheetKey, namespaceSheetNum, None);
 		println("Made Namespace Sheet URL: " + namespaceSheetURL);
-		// val namespaceMapProc = new MapSheetProc(1);
-		// MatrixData.processSheet (namespaceSheetURL, namespaceMapProc.processRow);
-		// namespaceMapProc.getJavaMap
 		val nsJavaMap : java.util.Map[String, String] = MatrixData.readJavaMapFromSheet(namespaceSheetURL);
-		
 		println("Got NS map: " + nsJavaMap)		
-		val directorySheetNum = 8;
-		val directoryModel : Model = SemSheet.readModelGDocSheet(SemSheet.keyForBootSheet22, directorySheetNum, nsJavaMap);
-			
-		val sr = new SheetRepo(directoryModel)
-		
+		val dirModel : Model = SemSheet.readModelGDocSheet(sheetKey, dirSheetNum, nsJavaMap);
+		dirModel;
+	}
+	def loadTestSheetRepo() : SheetRepo = {
+		val nsSheetNum = 9;
+		val dirSheetNum = 8;
+
+		val dirModel : Model = readDirectoryModelFromGoog(SemSheet.keyForBootSheet22, nsSheetNum, dirSheetNum) 
+		val sr = new SheetRepo(dirModel)
 		sr.loadSheetModelsIntoMainDataset()
-		
+		sr
+	}
+	
+	def main(args: Array[String]) : Unit = {
+		val sr : SheetRepo = loadTestSheetRepo()
 		val qText = sr.getQueryText("ccrt:qry_sheet_22", "ccrt:find_humanoids_99")
 		println("Found query text: " + qText)
 		
