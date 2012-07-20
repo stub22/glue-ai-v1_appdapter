@@ -22,10 +22,12 @@ public class FacadeSpec<Type, Kind> {
 
 	private final Class<Type> myObjClazz;
 	private Kind myKind;
+	private	boolean	myExtFlag;
 
-	public FacadeSpec(Kind kind, Class<Type> sClz) {
+	public FacadeSpec(Kind kind, Class<Type> sClz, boolean extFlag) {
 		myKind = kind;
 		myObjClazz = sClz;
+		myExtFlag = extFlag;
 	}
 
 	public Class<Type> getFacadeClass() {
@@ -38,5 +40,25 @@ public class FacadeSpec<Type, Kind> {
 
 	public String getNameString() {
 		return getKind().toString();
+	}
+	public boolean isExternal() { 
+		return myExtFlag;
+	}
+	
+	public Class determineCredentialClass(Class optOverrideClz, Class userClz) {
+		Class credClz = userClz;
+		if (optOverrideClz != null) {
+			credClz = optOverrideClz;
+		} else {
+					
+		// Use our own class as the default credential for external facades, to usually make Netigso happily return a bundleContext.			
+			if (!isExternal()) {
+				// Use the internal facade class as the default credential, to usually make Netigso happily return a bundleContext.
+				if (myObjClazz != null) {
+					credClz = myObjClazz;
+				}
+			}
+		}
+		return credClz;
 	}
 }
