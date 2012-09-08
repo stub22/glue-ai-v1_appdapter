@@ -54,17 +54,26 @@
 			<scope>provided</scope>
 		</dependency>
 		-->
-		<!-- This dep is installed to local repo during initialize phase below. 
-			Must disable the dep, run mvn initialize, then re-enable the deb
-			-->
+		<!--    On our *first* build, this dep is installed to local repo during initialize phase below. 
 			
+
+                        Currently, to make that work, you must 
+                        1) Manually disable (comment out) this dependency the dep
+                        2) run "mvn initialize" (or "build" from netbeans), 
+                        3) Re-enable (uncomment) the dependency.
+                        4) Run "mvn clean install" (or Netbeans "clean and build")
+                        
+		
+	  	--> 
+                <!-- IMPORTANT and UGLY: Comment out this dep on first build (against
+                your particular local maven_repo), then uncomment and rebuild -->
 		<dependency>
 			<groupId>org.jscience</groupId>
 			<artifactId>jscience-mathematics</artifactId>
 			<version>5.0-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
-		
+                   
 		<dependency>
 			<groupId>javolution</groupId>
 			<artifactId>javolution</artifactId>
