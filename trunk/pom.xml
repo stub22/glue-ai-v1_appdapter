@@ -15,11 +15,11 @@
 	
 	http://repo1.maven.org/maven2/org/sonatype/oss/oss-parent/7/oss-parent-7.pom
 	-->
-  <parent>
-    <groupId>org.sonatype.oss</groupId>
-    <artifactId>oss-parent</artifactId>
-    <version>7</version>
-  </parent>	
+	<parent>
+		<groupId>org.sonatype.oss</groupId>
+		<artifactId>oss-parent</artifactId>
+		<version>7</version>
+	</parent>	
 	
 <!--
 http://stackoverflow.com/questions/3684664/maven-property-substitution-not-done-for-project-version-tag-of-pom/3685248#3685248
@@ -50,6 +50,11 @@ Version-less parent will be allowed in Maven 3.1.
 		<module>maven/org.appdapter.modules.all</module>	
 	</modules>
 	<properties>
+            <!-- Override this property in a profile to use different targets
+            See pattern suggested at:  
+            http://stackoverflow.com/questions/1005407/can-i-move-maven2-target-folder-to-another-device
+            -->
+		<my.build.directory>target</my.build.directory>
 	</properties>	
 	
 <!--
@@ -64,7 +69,7 @@ Version-less parent will be allowed in Maven 3.1.
 		<url>https://www.assembla.com/code/appdapter/subversion/nodes/trunk/</url>
 	</scm>
 	<build>
-		
+		<directory>${my.build.directory}</directory>
 		<pluginManagement>
 			<plugins>
 				<plugin>
@@ -78,6 +83,36 @@ Version-less parent will be allowed in Maven 3.1.
 						 -->
 					</configuration>
 				</plugin>
+
+				<plugin>
+					<groupId>org.scala-tools</groupId>
+					<artifactId>maven-scala-plugin</artifactId>
+					<configuration>
+		<!-- On Frogbait this option drops Scala proj build time about 20% -->
+						<jvmArgs>
+							<jvmArg>-XX:+TieredCompilation</jvmArg>
+						</jvmArgs>
+						<displayCmd>true</displayCmd>	
+							<!-- Compile ONLY the Scala code.  The Java code is compiled by a previous goal.
+								This works OK as long as we don't refer to Scala classes from Java.
+								
+								Without this instruction, the Scala compiler is unable to handle our
+								Tao/Zen coreferent types.   Don't know why these types are OK if
+								Java is compiled before Scala but not if everything is compiled together.
+								Will return to this issue later.
+							-->
+													
+						<sendJavaToScalac>false</sendJavaToScalac>		
+						<configuration>
+							<args>			
+								<arg>-make:transitive</arg>
+								<arg>-dependencyfile</arg>
+								<arg>${project.build.directory}/.scala_dependencies</arg>
+							</args>
+						</configuration>						
+					</configuration>
+				</plugin>
+		
 			</plugins>
 		</pluginManagement>
 		<plugins>
