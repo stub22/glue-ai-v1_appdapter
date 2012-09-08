@@ -215,32 +215,17 @@ central repo.
 					<execution>
 						<goals>
 							<goal>compile</goal>
+							<!-- Not currently using any tests
 							<goal>testCompile</goal>
+							--> 
 						</goals>
 						<configuration>
-							<args>			
-								<arg>-make:transitive</arg>
-								<arg>-dependencyfile</arg>
-								<arg>${project.build.directory}/.scala_dependencies</arg>
-							</args>
-							<displayCmd>true</displayCmd>
+
 <!--			This works for compiling, but not for displaying the source folders in Netbeans.
 				So we are instead using SVN externals to create a tree in Maven-preferred form.
 							<sourceDir>../../src_scala</sourceDir>
 							<sourceDir>../../src_java</sourceDir>
 -->
-
-							<!-- Compile ONLY the Scala code.  The Java code is compiled by a previous goal.
-								This works OK as long as we don't refer to Scala classes from Java.
-								
-								Without this instruction, the Scala compiler is unable to handle our
-								Tao/Zen coreferent types.   Don't know why these types are OK if
-								Java is compiled before Scala but not if everything is compiled together.
-								Will return to this issue later.
-							-->
-								 
-							<sendJavaToScalac>false</sendJavaToScalac>
-								
 						</configuration>
 						
 					</execution>
