@@ -213,17 +213,17 @@ object SemSheet {
 		
 		val tqText = "select ?sheet { ?sheet a ccrt:GoogSheet }";
 		
-		val trset = QuerySheet.execModelQueryWithPrefixHelp(reposModel, tqText);
-		val trxml = QuerySheet.buildQueryResultXML(trset);
+		val trset = QueryHelper.execModelQueryWithPrefixHelp(reposModel, tqText);
+		val trxml = QueryHelper.buildQueryResultXML(trset);
 		
 		println("Got repo-query-test result-XML: \n" + trxml);
 		
 		val qqText = "select ?qres ?qtxt { ?qres a ccrt:SparqlQuery; ccrt:queryText ?qtxt}";
 
-		val qqrset : ResultSet = QuerySheet.execModelQueryWithPrefixHelp(queriesModel, qqText);
+		val qqrset : ResultSet = QueryHelper.execModelQueryWithPrefixHelp(queriesModel, qqText);
 		val qqrsrw = ResultSetFactory.makeRewindable(qqrset);
 		// Does not disturb the original result set
-		val qqrxml = QuerySheet.buildQueryResultXML(qqrsrw);
+		val qqrxml = QueryHelper.buildQueryResultXML(qqrsrw);
 
 		import scala.collection.JavaConversions._;	
 			
@@ -241,8 +241,8 @@ object SemSheet {
 			
 			val qtxtLit : Literal = qSoln.getLiteral("qtxt")
 			val qtxtString = qtxtLit.getString();
-			val zzRset = QuerySheet.execModelQueryWithPrefixHelp(reposModel, qtxtString);
-			val zzRSxml = QuerySheet.buildQueryResultXML(zzRset);
+			val zzRset = QueryHelper.execModelQueryWithPrefixHelp(reposModel, qtxtString);
+			val zzRSxml = QueryHelper.buildQueryResultXML(zzRset);
 			println ("Query using qTxt got: " + zzRSxml)
 			
 	//		logInfo("Got qsoln" + qSoln + " with s=[" + qSoln.get("s") + "], p=[" + qSoln.get("p") + "], o=[" 
