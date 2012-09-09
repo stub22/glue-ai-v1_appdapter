@@ -72,7 +72,7 @@ class SheetRepo(val myDirectoryModel : Model) extends BasicRepoImpl {
 				}
 		"""
 		
-		val msRset = QuerySheet.execModelQueryWithPrefixHelp(myDirectoryModel, msqText);		
+		val msRset = QueryHelper.execModelQueryWithPrefixHelp(myDirectoryModel, msqText);		
 		import scala.collection.JavaConversions._;
 		while (msRset.hasNext()) {
 			val qSoln : QuerySolution = msRset.next();

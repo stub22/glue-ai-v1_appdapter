@@ -28,7 +28,7 @@ import com.hp.hpl.jena.query.{ResultSet, ResultSetFormatter, ResultSetRewindable
  * @author Stu B. <www.texpedient.com>
  */
 
-object QuerySheet {
+object QueryHelper {
 	
 	def execModelQueryWithPrefixHelp(model : Model, qText : String) : ResultSet = {
 
