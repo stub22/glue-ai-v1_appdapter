@@ -19,8 +19,12 @@ import com.hp.hpl.jena.query.ResultSet;
 /**
  * @author Stu B. <www.texpedient.com>
  * 
- * By requiring client code to pass in these processors, we allow a Jena 
- * query to be more sure of completing and releasing all resources.
+ * Defines a synchronous pattern for producing a particular ResType from 
+ * a query result set.   This interface is a primary extension point.
+ * 
+ * By requiring client code to pass in these processors, we give it
+ * flexibility, while ensuring our ARQ query will complete and release all 
+ * resources, regardless of errors.
  * 
  */
 

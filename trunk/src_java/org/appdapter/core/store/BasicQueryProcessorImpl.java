@@ -39,6 +39,7 @@ import org.appdapter.core.log.BasicDebugger;
  */
 
 public abstract class BasicQueryProcessorImpl extends BasicDebugger implements QueryProcessor {
+	// All the stateless utility features below are now static methods in JenaArqQueryFuncs
 	/*
 	public Query parseQueryText(String inlineQueryText, PrefixMapping pmap) { 
 		String qBaseURI = null;
