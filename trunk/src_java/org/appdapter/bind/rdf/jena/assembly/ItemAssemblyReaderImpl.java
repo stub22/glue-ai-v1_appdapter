@@ -21,10 +21,10 @@ import com.hp.hpl.jena.assembler.Mode;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import org.appdapter.core.item.Ident;
+import org.appdapter.core.name.Ident;
 import org.appdapter.core.item.Item;
 import org.appdapter.core.item.JenaResourceItem;
-import org.appdapter.core.item.ModelIdent;
+import org.appdapter.core.name.ModelIdent;
 import org.appdapter.core.log.BasicDebugger;
 
 /**
