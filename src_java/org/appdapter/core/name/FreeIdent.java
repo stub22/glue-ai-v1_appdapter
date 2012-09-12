@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.appdapter.core.item;
+package org.appdapter.core.name;
 
 /**
  * @author Stu B. <www.texpedient.com>

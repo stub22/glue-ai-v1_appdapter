@@ -20,7 +20,7 @@ import com.hp.hpl.jena.assembler.Assembler;
 import com.hp.hpl.jena.assembler.Mode;
 import java.util.Collection;
 import java.util.List;
-import org.appdapter.core.item.Ident;
+import org.appdapter.core.name.Ident;
 import org.appdapter.core.item.Item;
 
 /**

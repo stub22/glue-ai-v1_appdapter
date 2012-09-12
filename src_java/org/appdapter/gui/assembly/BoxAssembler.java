@@ -18,7 +18,7 @@ package org.appdapter.gui.assembly;
 
 import org.appdapter.bind.rdf.jena.assembly.DynamicCachingComponentAssembler;
 import org.appdapter.core.component.ComponentAssemblyNames;
-import org.appdapter.core.item.Ident;
+import org.appdapter.core.name.Ident;
 import org.appdapter.core.item.Item;
 import org.appdapter.gui.box.ScreenBoxImpl;
 import org.appdapter.api.trigger.Trigger;

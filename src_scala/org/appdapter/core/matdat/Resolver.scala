@@ -24,10 +24,15 @@ import com.hp.hpl.jena.datatypes.{RDFDatatype, TypeMapper}
 import com.hp.hpl.jena.datatypes.xsd.{XSDDatatype}
 import com.hp.hpl.jena.shared.{PrefixMapping}
 
+import org.appdapter.core.name.{Ident, FreeIdent};
+
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
+
+
+
 /**
  * Binding for an input column of URIs / QNames.   optDefPrefix may be an abbrev OR a URI prefix ;  If it contains
  * no colons, one is appended, making the input effectively, e.g. "xyz" -> "xyz:"
@@ -47,6 +52,7 @@ class ResourceResolver(val myPrefixMap: PrefixMapping, val myOptDefAntePrefixWit
 		val resolvedURI = myPrefixMap.expandPrefix(qnOrURI);
 		resolvedURI;
 	}
+	
 	def findOrMakeResource(model:Model, qnameOrURI:String) : Resource = {
 		val uri = resolveURI(qnameOrURI);
 		val res = model.createResource(uri);
@@ -58,8 +64,15 @@ class ResourceResolver(val myPrefixMap: PrefixMapping, val myOptDefAntePrefixWit
 		val prop = propRes.as(classOf[Property]);
 		prop;
 	}
-		
+	
+	def resolveIdent(qnameOrURI:String) : Ident = {
+		val uri : String = resolveURI(qnameOrURI);
+		// Todo:  grab the "end" of the input to use as "localName".
+		val ident = new FreeIdent(uri, qnameOrURI);
+		ident
+	}
+	
 }
-object Resolver {
+object ResourceResolver {
 
 }

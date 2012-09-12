@@ -17,7 +17,7 @@
 package org.appdapter.gui.assembly;
 
 import org.appdapter.bind.rdf.jena.assembly.DynamicCachingComponentAssembler;
-import org.appdapter.core.item.Ident;
+import org.appdapter.core.name.Ident;
 import org.appdapter.core.item.Item;
 import org.appdapter.api.trigger.TriggerImpl;
 import com.hp.hpl.jena.rdf.model.Resource;

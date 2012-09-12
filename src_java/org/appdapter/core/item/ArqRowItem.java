@@ -16,6 +16,7 @@
 
 package org.appdapter.core.item;
 
+import org.appdapter.core.name.Ident;
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.QuerySolutionMap;
 import com.hp.hpl.jena.rdf.model.Literal;
