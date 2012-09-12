@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.appdapter.core.item;
+package org.appdapter.core.name;
 
 /**
  *

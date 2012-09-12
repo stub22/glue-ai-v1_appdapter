@@ -16,6 +16,7 @@
 
 package org.appdapter.core.item;
 
+import org.appdapter.core.name.Ident;
 import com.hp.hpl.jena.rdf.model.Literal;
 import java.util.Date;
 import java.util.HashSet;

@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 package org.appdapter.core.component;
-import org.appdapter.core.item.Ident;
+import org.appdapter.core.name.Ident;
 
 import org.appdapter.core.component.MutableKnownComponent;
 

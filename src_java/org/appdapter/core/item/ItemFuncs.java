@@ -15,6 +15,8 @@
  */
 package org.appdapter.core.item;
 
+import org.appdapter.core.name.Ident;
+import org.appdapter.core.name.ModelIdent;
 import java.util.Set;
 
 /**

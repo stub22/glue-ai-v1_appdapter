@@ -18,7 +18,7 @@ package org.appdapter.bind.rdf.jena.assembly;
 
 import org.appdapter.core.component.ComponentCache;
 import org.appdapter.core.component.ComponentAssemblyNames;
-import org.appdapter.core.item.Ident;
+import org.appdapter.core.name.Ident;
 import org.appdapter.core.item.Item;
 import org.appdapter.core.item.JenaResourceItem;
 import org.appdapter.core.component.KnownComponent;
