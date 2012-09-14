@@ -19,16 +19,12 @@ package org.appdapter.api.trigger;
 import org.appdapter.api.trigger.MutableTrigger;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.core.component.KnownComponentImpl;
-import java.lang.Class;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
 public abstract class TriggerImpl<BoxType extends Box<? extends TriggerImpl<BoxType>>> extends KnownComponentImpl implements MutableTrigger<BoxType> {
-	static Logger theLogger = LoggerFactory.getLogger(TriggerImpl.class);
-
 
 	@Override public String getFieldSummary() {
 		return super.getFieldSummary() +  ", trigger-field-summary-goes-here";
