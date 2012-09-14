@@ -20,11 +20,6 @@ import org.appdapter.core.name.Ident
 import org.appdapter.core.matdat.FancyRepo
 
 trait QueryInterface {
-
-  /** Triggers the refresh of the SheetRepo cache
-   *
-   */
-  def reloadSheetRepo
   
   /** Returns the current cached SheetRepo
    *

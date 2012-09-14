@@ -45,13 +45,7 @@ class QueryEmitter(val myRepo : FancyRepo, val myQueryVarName : String, val myQu
 	//  QueryTester.repo = QueryTester.loadSheetRepo
 	//}
   }
-  
-  def reloadSheetRepo {
-	 throw new Exception("reloadSheetRepo is defunct - talk to Stu")
-	// This needs to be done externally
-	// QueryTester.repo = QueryTester.loadSheetRepo
-  }
-  
+
   
   /** Returns the current cached SheetRepo
    *
