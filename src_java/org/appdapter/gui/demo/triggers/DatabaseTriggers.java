@@ -20,14 +20,12 @@ import org.appdapter.bind.sql.h2.DatabaseConnector;
 import org.appdapter.demo.DemoDatabase;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.TriggerImpl;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
 public class DatabaseTriggers {
-	static Logger theLogger = LoggerFactory.getLogger(DatabaseTriggers.class);
+
 	
 	public enum Kind {
 		OPEN,
@@ -36,7 +34,7 @@ public class DatabaseTriggers {
 
 	public static class InitTrigger<BT extends Box<TriggerImpl<BT>>> extends  TriggerImpl<BT> {
 		@Override public void fire(BT targetBox) {
-			theLogger.info(toString() + "-initing");
+			logInfo(toString() + "-initing");
 			DatabaseConnector dbc = DemoDatabase.initConnector();
 		}
 	}

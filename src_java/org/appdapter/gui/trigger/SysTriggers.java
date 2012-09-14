@@ -19,28 +19,27 @@ package org.appdapter.gui.trigger;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.TriggerImpl;
 import org.appdapter.gui.box.ScreenBoxImpl;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
 public class SysTriggers {
-	static Logger theLogger = LoggerFactory.getLogger(SysTriggers.class);
+
 	public enum Kind {
 		QUIT,
 		DUMP
 	}
 	public static class QuitTrigger<BT extends Box<TriggerImpl<BT>>> extends  TriggerImpl<BT> {
 		@Override public void fire(BT targetBox) {
-			theLogger.info(toString() + "-firing, program exiting");
+			logInfo(toString() + "-firing, program exiting");
 			System.exit(0);
 		}
 	}
 	// Example of the shorter, less-safe, raw typing style.
 	public static class DumpTrigger extends TriggerImpl {
 		@Override public void fire(Box targetBox) {
-			theLogger.info(toString() + "-dumping");
+			logInfo(toString() + "-dumping");
 			((ScreenBoxImpl) targetBox).dump();
 		}
 	}
