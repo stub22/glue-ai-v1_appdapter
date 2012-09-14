@@ -15,43 +15,45 @@
  */
 
 package org.appdapter.scafun
-import  org.appdapter.api.trigger.{Box, BoxContext, MutableBox, Trigger, BoxImpl, TriggerImpl};
+import  org.appdapter.api.trigger.{Box, BoxContext, MutableBox, Trigger, MutableTrigger, BoxImpl, TriggerImpl};
 import  org.appdapter.gui.box.{ScreenBox, ScreenBoxImpl};
 import  org.appdapter.demo.DemoResources;
 import  org.appdapter.bind.rdf.jena.assembly.AssemblerUtils;
 
-object Boxy {
+
 	
-	class FullBox[FT <:  FullTrigger[_ <: FullBox[FT]]] extends ScreenBoxImpl[FT] {
-		/*
-		def getOpenKidFullBoxes(bc : BoxContext) : Seq[FullBox] = {
-			val rawtypeOpenChildrenJL : java.util.List[FriendBox] = bc.getOpenChildBoxesNarrowed(this, classOf[FT], classOf[FriendTrig]);
-			val rawtypeKidSeq : Seq[FriendBox] = scala.collection.JavaConversions.asBuffer(rawtypeOpenChildrenJL) ;
-			rawtypeKidSeq;
-		}
-		*/
-	}
-	trait FullTrigger[FB <:  FullBox[_ <: FullTrigger[FB]]] extends TriggerImpl[FB] {}
+class FullBox[FT <:  FullTrigger[_ <: FullBox[FT]]] extends ScreenBoxImpl[FT] {
+	/*
+	 def getOpenKidFullBoxes(bc : BoxContext) : Seq[FullBox] = {
+	 val rawtypeOpenChildrenJL : java.util.List[FriendBox] = bc.getOpenChildBoxesNarrowed(this, classOf[FT], classOf[FriendTrig]);
+	 val rawtypeKidSeq : Seq[FriendBox] = scala.collection.JavaConversions.asBuffer(rawtypeOpenChildrenJL) ;
+	 rawtypeKidSeq;
+	 }
+	 */
+}
+// trait FullTrigger[FB <:  FullBox[_ <: FullTrigger[FB]]] extends TriggerImpl[FB] {}
 
-	// class BoxOne extends FullBox[FullTrigger[BoxOne]] { }
-	class BoxOne extends FullBox[TriggerOne] {
-		def getOpenKidBoxes(bc : BoxContext) : Seq[BoxOne] = {
-			val kidBoxJL  = bc.getOpenChildBoxesNarrowed(this, classOf[BoxOne], classOf[TriggerOne]);
-			val kidBoxSeq : Seq[BoxOne] = scala.collection.JavaConversions.asBuffer(kidBoxJL) ;
-			kidBoxSeq;
-		}
-		def foodleDoodle(bc : BoxContext) : Seq[BoxOne] = {
-			val kidBoxJL  = bc.getOpenChildBoxesNarrowed(this, classOf[BoxOne], classOf[TriggerOne]);
-			val kidBoxSeq : Seq[BoxOne] = scala.collection.JavaConversions.asBuffer(kidBoxJL) ;
-			kidBoxSeq;
-		}
-	}
-	class TriggerOne extends FullTrigger[BoxOne] {
-		override def fire(box : BoxOne) : Unit = {
-			println(this.toString() + " firing on " + box.toString());
-		}
-	}
+trait FullTrigger[FB <:  FullBox[_ <: FullTrigger[FB]]] extends MutableTrigger[FB] {}
 
+// class BoxOne extends FullBox[FullTrigger[BoxOne]] { }
+class BoxOne extends FullBox[TriggerOne] {
+	def getOpenKidBoxes(bc : BoxContext) : Seq[BoxOne] = {
+		val kidBoxJL  = bc.getOpenChildBoxesNarrowed(this, classOf[BoxOne], classOf[TriggerOne]);
+		val kidBoxSeq : Seq[BoxOne] = scala.collection.JavaConversions.asBuffer(kidBoxJL) ;
+		kidBoxSeq;
+	}
+	def foodleDoodle(bc : BoxContext) : Seq[BoxOne] = {
+		val kidBoxJL  = bc.getOpenChildBoxesNarrowed(this, classOf[BoxOne], classOf[TriggerOne]);
+		val kidBoxSeq : Seq[BoxOne] = scala.collection.JavaConversions.asBuffer(kidBoxJL) ;
+		kidBoxSeq;
+	}
+}
+class TriggerOne extends TriggerImpl[BoxOne] with FullTrigger[BoxOne] {
+	override def fire(box : BoxOne) : Unit = {
+		println(this.toString() + " firing on " + box.toString());
+	}
+}
+object Boxy {
 	def boxItUp() : BoxOne = {
 		val box1 = new BoxOne();
 		box1.setShortLabel("boxOne-1")
@@ -60,14 +62,14 @@ object Boxy {
 		box1.attachTrigger(trig1);
 		box1;
 	}
-	  def main(args: Array[String]) :Unit = {
-		  println(this.getClass.getCanonicalName() + " sez:  we like rectangles!");
+	def main(args: Array[String]) :Unit = {
+		println(this.getClass.getCanonicalName() + " sez:  we like rectangles!");
 		val triplesPath = DemoResources.MENU_ASSEMBLY_PATH; 
-			AssemblerUtils.ensureClassLoaderRegisteredWithJenaFM(this.getClass().getClassLoader());
-			println("Loading triples from URL: " + triplesPath);
-			// Set<Object> 
-			val loadedStuff = AssemblerUtils.buildAllObjectsInRdfFile(triplesPath);
-			println("Loaded objects: " + loadedStuff);
-	  }
+		AssemblerUtils.ensureClassLoaderRegisteredWithJenaFM(this.getClass().getClassLoader());
+		println("Loading triples from URL: " + triplesPath);
+		// Set<Object> 
+		val loadedStuff = AssemblerUtils.buildAllObjectsInRdfFile(triplesPath);
+		println("Loaded objects: " + loadedStuff);
+	}
 
 }

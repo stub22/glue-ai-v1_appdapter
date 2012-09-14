@@ -19,13 +19,14 @@ package org.appdapter.scafun
 import org.appdapter.api.trigger.{Box, BoxContext, BoxImpl, MutableBox, Trigger, TriggerImpl};
 import org.appdapter.gui.demo.{DemoBrowser, DemoNavigatorCtrl};
 
+
 object GoFish {
   def main(args: Array[String]) :Unit = {
 	  println(this.getClass.getCanonicalName() + " sez:  yo");
 		println("Mapping stuff to other stuff, blending dynamic approximation and ironic detachment.");
 		val time = java.lang.System.currentTimeMillis();
 		println("The time is: " + time);
-		DemoBrowser.pretendToBeAwesome();
+		DemoBrowser.testLoggingSetup();
 		//TestBrowse.main(args);
 		val tnc = makeTNC(args);
 		tnc.launchFrame("GoFish");

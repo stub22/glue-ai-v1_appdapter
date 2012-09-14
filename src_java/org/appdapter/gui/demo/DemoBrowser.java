@@ -39,12 +39,12 @@ import org.slf4j.LoggerFactory;
 public class DemoBrowser {
 	static Logger theLogger = LoggerFactory.getLogger(DemoBrowser.class);
 
-	public static void pretendToBeAwesome() {
+	public static void testLoggingSetup() {
 		System.out.println("[System.out] - DemoBrowser.pretendToBeAwesome()");
 		theLogger.info("[SLF4J] - DemoBrowser.pretendToBeAwesome()");
 	}
 	public static void main(String[] args) {
-		pretendToBeAwesome();
+		testLoggingSetup();
 		theLogger.info("DemoBrowser.main()-START");
 		DemoNavigatorCtrl tn = makeDemoNavigatorCtrl(args);
 		tn.launchFrame("Appdapter Demo Browser");
