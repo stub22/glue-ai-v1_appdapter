@@ -54,6 +54,7 @@ class TriggerOne extends TriggerImpl[BoxOne] with FullTrigger[BoxOne] {
 	}
 }
 object Boxy {
+	
 	def boxItUp() : BoxOne = {
 		val box1 = new BoxOne();
 		box1.setShortLabel("boxOne-1")
@@ -63,7 +64,7 @@ object Boxy {
 		box1;
 	}
 	def main(args: Array[String]) :Unit = {
-		println(this.getClass.getCanonicalName() + " sez:  we like rectangles!");
+		println(this.getClass.getCanonicalName() + " sez:  we like rectangles!  Beginning test RDF load of boxes.");
 		val triplesPath = DemoResources.MENU_ASSEMBLY_PATH; 
 		AssemblerUtils.ensureClassLoaderRegisteredWithJenaFM(this.getClass().getClassLoader());
 		println("Loading triples from URL: " + triplesPath);

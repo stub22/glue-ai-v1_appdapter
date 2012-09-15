@@ -56,26 +56,4 @@ public class DemoServiceWrapFuncs {
 		box.attachTrigger(trig);
 		return trig;
 	}
-/*
-	public static BoxTreeNode makeNode(BoxContext bc, String label) {
-		BoxImpl bi = new BoxImpl(label);
-		bi.setContext(bc);
-		BoxTreeNode btn = new BoxTreeNode(bi);
-		bi.setDisplayContextProvider(btn);
-		return btn;
-	}
-	public static BoxTreeNode makeChildNode(BoxTreeNode parentNode, String label) {
-		BoxContext bctx = parentNode.getBox().getContext();
-		BoxTreeNode childNode = makeNode(bctx, label);
-		parentNode.add(childNode);
-		return childNode;
-	}
- *
- */
-	/*
-	public static BoxImpl boxImpl(BoxTreeNode btn) {
-		return (BoxImpl) btn.getBox();
-	}
-	 *
-	 */
 }

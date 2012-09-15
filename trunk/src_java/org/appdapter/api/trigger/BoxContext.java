@@ -23,6 +23,8 @@ import java.util.List;
 
 /**
  * @author Stu B. <www.texpedient.com>
+ * 
+ * TODO:  Parametrize in B <: Box
  */
 public interface BoxContext {
 	public Box getRootBox();
