@@ -37,15 +37,15 @@ import org.appdapter.gui.browse.TriggerMenuFactory;
 public class DemoNavigatorCtrl {
 
 
-	public		TreeModel				myTM;
-	public		BoxContext				myBC;
-	public		ScreenBoxTreeNode				myRootBTN;
+	private		TreeModel				myTM;
+	private		BoxContext				myBoxCtx;
+	private		ScreenBoxTreeNode		myRootBTN;
 	private		DisplayContextProvider	myDCP;
 	private		BrowsePanel				myBP;
 	private		JFrame					myJFrame;
 
 	public DemoNavigatorCtrl(BoxContext bc, TreeModel tm, ScreenBoxTreeNode rootBTN, DisplayContextProvider dcp) {
-		myBC = bc;
+		myBoxCtx = bc;
 		myTM = tm;
 		myRootBTN = rootBTN;
 		myDCP = dcp;
@@ -74,8 +74,8 @@ public class DemoNavigatorCtrl {
 		}
 	}
 	public void addBoxToRoot(MutableBox childBox, boolean reload) {
-		Box rootBox =  myBC.getRootBox();
-		myBC.contextualizeAndAttachChildBox(rootBox, childBox);
+		Box rootBox =  myBoxCtx.getRootBox();
+		myBoxCtx.contextualizeAndAttachChildBox(rootBox, childBox);
 		if (reload) {
 			((DefaultTreeModel) myTM).reload();
 		}
