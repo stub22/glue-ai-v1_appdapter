@@ -42,11 +42,6 @@ class BoxOne extends FullBox[TriggerOne] {
 		val kidBoxSeq : Seq[BoxOne] = scala.collection.JavaConversions.asBuffer(kidBoxJL) ;
 		kidBoxSeq;
 	}
-	def foodleDoodle(bc : BoxContext) : Seq[BoxOne] = {
-		val kidBoxJL  = bc.getOpenChildBoxesNarrowed(this, classOf[BoxOne], classOf[TriggerOne]);
-		val kidBoxSeq : Seq[BoxOne] = scala.collection.JavaConversions.asBuffer(kidBoxJL) ;
-		kidBoxSeq;
-	}
 }
 class TriggerOne extends TriggerImpl[BoxOne] with FullTrigger[BoxOne] {
 	override def fire(box : BoxOne) : Unit = {
