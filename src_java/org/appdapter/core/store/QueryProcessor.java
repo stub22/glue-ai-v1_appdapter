@@ -16,6 +16,7 @@
 
 package org.appdapter.core.store;
 import com.hp.hpl.jena.query.*;
+import java.util.List;
 import org.appdapter.bind.rdf.jena.query.JenaArqResultSetProcessor;
 /**
  * @author Stu B. <www.texpedient.com>
@@ -25,24 +26,24 @@ import org.appdapter.bind.rdf.jena.query.JenaArqResultSetProcessor;
  */
 
 public interface QueryProcessor {
-	/*
-
-	public Query parseQueryText(String inlineQueryText, PrefixMapping prefixMapping);
-
-
-	public Query parseQueryURL(String resolvedQueryURL);
-
-	public static interface ResultSetProc<ResType> {
-
-		public ResType processResultSet(ResultSet rset);
-	}
-
+		/** This query method is the most general, since it does not assume that we want to hold all solutions in
+	 * memory in raw form.  Instead it allows us to pass in a solution processor, which presumably reduces
+	 * the total amount of memory/objects required for the total required  information content.
+	 * 
+	 * @param <ResType>
+	 * @param parsedQuery
+	 * @param initBinding
+	 * @param resProc - filter proc to be applied to each result
+	 * @return 
+	 */
+	public <ResType> ResType processQuery(Query parsedQuery, QuerySolution initBinding, JenaArqResultSetProcessor<ResType> resProc);
 	
-	
-	public <ResType> ResType processDatasetQuery(Dataset ds, Query parsedQuery, QuerySolution initBinding, Repo.ResultSetProc<ResType> resProc);
-	
-	public List<QuerySolution> findAllSolutions(Dataset ds, Query parsedQuery, QuerySolution initBinding);
-	* 
-	*/
+	/**
+	 * Pulls  all solutions into memory in raw form, which is simple but not necessarily efficient.
+	 * @param parsedQuery
+	 * @param initBinding
+	 * @return 
+	 */
+	public List<QuerySolution> findAllSolutions(Query parsedQuery, QuerySolution initBinding);
 	
 }
