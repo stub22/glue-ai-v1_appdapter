@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.appdapter.core.matdat
+package org.appdapter.impl.store
 
 import org.appdapter.core.log.BasicDebugger;
 

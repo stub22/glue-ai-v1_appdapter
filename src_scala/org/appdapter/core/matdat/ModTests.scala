@@ -22,6 +22,8 @@ import com.hp.hpl.jena.query.{ResultSet, ResultSetFormatter, ResultSetRewindable
 import com.hp.hpl.jena.rdf.listeners.{ObjectListener};
 
 import org.appdapter.bind.rdf.jena.model.{ModelStuff, JenaModelUtils};
+
+import org.appdapter.impl.store.{DirectRepo, QueryHelper, ResourceResolver};
 /**
  * @author Stu B. <www.texpedient.com>
  * 

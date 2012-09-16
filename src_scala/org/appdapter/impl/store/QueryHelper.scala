@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.appdapter.core.matdat
+package org.appdapter.impl.store
 
 import com.hp.hpl.jena.shared.{PrefixMapping}
 import com.hp.hpl.jena.rdf.model.{Model, Statement, Resource, Property, Literal, RDFNode, ModelFactory}
