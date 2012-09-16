@@ -99,18 +99,6 @@ public class BasicStoredMutableRepoImpl extends BasicRepoImpl implements Repo.St
 		return repo;
 	}
 
-	/*
-	 * protected ResultSet execQueryFromURL(String queryURL) { try { Query parsedQuery = QueryFactory.read(queryURL); //
-	 * create(queryText); Dataset ds = DatasetStore.create(myStore); QueryExecution qe =
-	 * QueryExecutionFactory.create(parsedQuery, ds); try { ResultSet rs = qe.execSelect(); ResultSetRewindable rsr =
-	 * ResultSetFactory.makeRewindable(rs); ResultSetFormatter.out(rsr); System.out.println("and now how about
-	 * XML\n==================================="); rsr.reset(); String resultXML = ResultSetFormatter.asXMLString(rsr);
-	 * System.out.println(resultXML);
-	 *
-	 * } finally { qe.close(); } } catch (Throwable t) { theLogger.error("problem in QueryTrigger", t); } } public
-	 *
-	 */
-
 	@Override	public Store getStore() {
 		/*
 		* http://jena.apache.org/documentation/sdb/javaapi.html
@@ -174,19 +162,6 @@ public class BasicStoredMutableRepoImpl extends BasicRepoImpl implements Repo.St
 		Dataset ds = DatasetStore.create(store);
 		return ds;
 	}
-/*
-	@Override public <ResType> ResType processQuery(Query parsedQuery, ResultSetProc<ResType> resProc) {
-		ResType result = null;
-		try {
-			Store store = getStore();
-			Dataset ds = DatasetStore.create(store);
-			
-			processDatasetQuery(ds, parsedQuery, resProc);
-		} catch (Throwable t) {
-			logError("problem in QueryTrigger", t);
-		}
-		return result;
-	}
-*/	
+
 
 }

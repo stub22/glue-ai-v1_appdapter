@@ -27,12 +27,18 @@ import org.appdapter.core.store.Repo;
  */
 public interface Repo extends QueryProcessor {
 
-	public <ResType> ResType processQuery(Query parsedQuery, QuerySolution initBinding, JenaArqResultSetProcessor<ResType> resProc);
+
 	
-	public List<QuerySolution> findAllSolutions(Query parsedQuery, QuerySolution initBinding);
-	
+	/**
+	 * Access an arbitrary "main" Jena-ARQ dataset 
+	 * @return 
+	 */
 	public Dataset getMainQueryDataset();
 	
+	/**
+	 * Get summary information about the graphs in this repo.
+	 * @return 
+	 */
 	public List<GraphStat> getGraphStats();
 
 	public static class GraphStat {
