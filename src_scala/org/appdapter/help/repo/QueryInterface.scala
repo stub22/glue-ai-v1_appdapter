@@ -17,7 +17,8 @@
 package org.appdapter.help.repo
 
 import org.appdapter.core.name.Ident
-import org.appdapter.core.matdat.FancyRepo
+
+import org.appdapter.impl.store.{FancyRepo};
 
 trait QueryInterface {
   
