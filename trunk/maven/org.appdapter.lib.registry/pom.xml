@@ -31,8 +31,10 @@
 			Enable to see SLF4J debug output (instead of System.out.println) in local tests.
 			We don't bundle this dep, because SLF4J is based on user choosing *their own* 
 			impl jar.  Unfortunately, the SLF4J default impl is NOPLogger, which does nothing,
-			which is why we supply the Sys.out.println fallback in BasicDebugger.  Would prefer
-			to just set SimpleLogger as default.
+			which is why we supply the Sys.out.println fallback in BasicDebugger. 
+			
+			Better policy would be to use scope=test, but currently we aren't using the whole
+			"test" rigamarole of Maven / Junit / ScalaSpecs, etc...
 		
 		<dependency>
 			<groupId>org.slf4j</groupId>
