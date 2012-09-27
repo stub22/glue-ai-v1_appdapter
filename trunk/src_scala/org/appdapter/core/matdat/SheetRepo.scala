@@ -66,12 +66,12 @@ class SheetRepo(directoryModel : Model) extends DirectRepo(directoryModel) {
 			val sheetRes : Resource = qSoln.getResource("sheet");
 			val sheetNum_Lit : Literal = qSoln.getLiteral("num")
 			val sheetKey_Lit : Literal = qSoln.getLiteral("key")
-			println("containerRes=" + containerRes + ", sheetRes=" + sheetRes + ", num=" + sheetNum_Lit + ", key=" + sheetKey_Lit)
+			logDebug("containerRes=" + containerRes + ", sheetRes=" + sheetRes + ", num=" + sheetNum_Lit + ", key=" + sheetKey_Lit)
 			
 			val sheetNum = sheetNum_Lit.getInt();
 			val sheetKey = sheetKey_Lit.getString();
 			val sheetModel : Model = SemSheet.readModelGDocSheet(sheetKey, sheetNum, nsJavaMap);
-			println("Read sheetModel: " + sheetModel)
+			logDebug("Read sheetModel: " + sheetModel)
 			val graphURI = sheetRes.getURI();
 			mainDset.replaceNamedModel(graphURI, sheetModel)
 		}		

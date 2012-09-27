@@ -52,9 +52,12 @@ public class AssemblerUtils {
 		}
 		return results;
 	}
+	public static Set<Object>	buildAllRootsInModel(Model jenaModel) {
+		return buildAllRootsInModel(Assembler.general, jenaModel, Mode.DEFAULT);
+	}
 	public static Set<Object> buildAllObjectsInRdfFile(String rdfURL) {
 		Model	loadedModel =  FileManager.get().loadModel(rdfURL);
-		Set<Object> results = buildAllRootsInModel(Assembler.general, loadedModel, Mode.DEFAULT);
+		Set<Object> results = buildAllRootsInModel(loadedModel);
 		return results;
 	}
 	public static void ensureClassLoaderRegisteredWithJenaFM(ClassLoader cl) {

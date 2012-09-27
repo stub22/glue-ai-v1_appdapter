@@ -23,7 +23,7 @@ import org.appdapter.core.matdat.{SheetRepo}
 import com.hp.hpl.jena.rdf.model.{Model, Statement, Resource, Property, Literal, RDFNode, ModelFactory, InfModel}
 
 import com.hp.hpl.jena.query.{Query, QueryFactory, QueryExecution, QueryExecutionFactory, QuerySolution, QuerySolutionMap, Syntax};
-import com.hp.hpl.jena.query.{Dataset, DatasetFactory, DataSource};
+
 import com.hp.hpl.jena.query.{ResultSet, ResultSetFormatter, ResultSetRewindable, ResultSetFactory};
 
 import scala.collection.immutable.StringOps
