@@ -18,6 +18,7 @@ package org.appdapter.bind.log4j;
 
 import java.net.URL;
 import org.apache.log4j.PropertyConfigurator;
+import org.slf4j.LoggerFactory;
 
 //</editor-fold>
 /**
@@ -29,5 +30,7 @@ public class Log4jFuncs {
 		System.out.println("[System.out] " + Log4jFuncs.class.getName() + 
 						" is forcing Log4J to read config from propertiesURL: " + propertiesURL);
 		PropertyConfigurator.configure(propertiesURL);
+		
+		
 	}
 }

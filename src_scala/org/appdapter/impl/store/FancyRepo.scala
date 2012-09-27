@@ -98,7 +98,7 @@ abstract class FancyRepo() extends BasicRepoImpl {
 		
 		val parsedQQ = parseQueryText(msqText);
 		
-		println ("parsedQQ: " + parsedQQ)
+		logDebug("parsedQQ: " + parsedQQ)
 		val possSoln : Option[QuerySolution] = findSingleQuerySolution(parsedQQ, qInitBinding);
 		val qText : String = if (possSoln.isDefined) {
 			val qSoln = possSoln.get;

@@ -15,12 +15,20 @@
  */
 
 package org.appdapter.core.store;
+
+import java.util.List;
+
+import org.appdapter.bind.rdf.jena.query.JenaArqQueryFuncs;
+import org.appdapter.bind.rdf.jena.query.JenaArqResultSetProcessor;
+
+import org.appdapter.bind.rdf.jena.assembly.AssemblerUtils;
+import org.appdapter.core.name.Ident;
+
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.query.QuerySolution;
-import java.util.List;
-import org.appdapter.bind.rdf.jena.query.JenaArqQueryFuncs;
-import org.appdapter.bind.rdf.jena.query.JenaArqResultSetProcessor;
+import com.hp.hpl.jena.rdf.model.Model;
+import java.util.Set;
 /**
  * @author Stu B. <www.texpedient.com>
  */
@@ -51,5 +59,15 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 	@Override public List<QuerySolution> findAllSolutions(Query parsedQuery, QuerySolution initBinding) {
 		Dataset ds = getMainQueryDataset();
 		return JenaArqQueryFuncs.findAllSolutions(ds, parsedQuery, initBinding);
+	}
+	@Override public Model getNamedModel(Ident graphNameIdent) {
+		Dataset mqd = getMainQueryDataset();
+		String absURI = graphNameIdent.getAbsUriString();
+		return mqd.getNamedModel(absURI);
+	}	
+	@Override public Set<Object> assembleRootsFromNamedModel(Ident graphNameIdent) {
+		Model loadedModel = getNamedModel(graphNameIdent);
+		Set<Object> results = AssemblerUtils.buildAllRootsInModel(loadedModel);
+		return results;
 	}
 }

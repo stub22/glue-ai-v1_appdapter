@@ -22,7 +22,7 @@ import org.appdapter.core.store.Repo;
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public interface MutableRepoBox<TT extends Trigger<? extends RepoBox<TT>>>  extends RepoBox<TT> {
+public interface MutableRepoBox<TT extends Trigger<? extends RepoBox<TT>>> extends RepoBox<TT> {
 
 	public void mount(String configPath);
 	public Repo getRepo();

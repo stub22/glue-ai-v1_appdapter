@@ -15,20 +15,18 @@
  */
 package org.appdapter.core.store;
 
-import com.hp.hpl.jena.query.*;
-import java.util.List;
+import com.hp.hpl.jena.query.Dataset;
+import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.sdb.Store;
 import java.util.List;
-import org.appdapter.bind.rdf.jena.query.JenaArqResultSetProcessor;
-import org.appdapter.core.store.Repo;
+import java.util.Set;
+import org.appdapter.core.name.Ident;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
 public interface Repo extends QueryProcessor {
 
-
-	
 	/**
 	 * Access an arbitrary "main" Jena-ARQ dataset 
 	 * @return 
@@ -40,6 +38,19 @@ public interface Repo extends QueryProcessor {
 	 * @return 
 	 */
 	public List<GraphStat> getGraphStats();
+	
+	/**
+	 * Get named graph 
+	 * @param graphNameIdent
+	 * @return 
+	 */
+	public Model getNamedModel (Ident graphNameIdent);
+	/**
+	 * 
+	 * @param graphNameIdent
+	 * @return 
+	 */
+	public Set<Object> assembleRootsFromNamedModel(Ident graphNameIdent);
 
 	public static class GraphStat {
 

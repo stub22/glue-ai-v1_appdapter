@@ -118,7 +118,7 @@ object SemSheet {
 						}
 					}
 				} else None
-				println("Got Col Binding: " + optColBind);				
+				theDbg.logDebug("Got Col Binding: " + optColBind);				
 				if (optColBind.isDefined) {
 					myPropColBindings = optColBind.get :: myPropColBindings;
 				}
@@ -127,7 +127,7 @@ object SemSheet {
 		}
 		
 		override def absorbDataRow(cellRow : MatrixRow) {
-			println("Processing SEMANTIC data(!) = " + cellRow.dump());
+			theDbg.logDebug("Processing SEMANTIC data(!) = " + cellRow.dump());
 			if (myIndivColIdx >= 0) {
 				val optIndivCell : Option[String] = cellRow.getPossibleColumnValueString(myIndivColIdx);
 				val optIndiv : Option[Resource] = if (optIndivCell.isDefined) {
@@ -190,7 +190,7 @@ object SemSheet {
 		val sheetURL = WebSheet.makeGdocSheetQueryURL(sheetKey, sheetNum, None);
 		
 		MatrixData.processSheet (sheetURL, modelInsertProc.processRow);
-		println ("tgtModel=" + tgtModel)
+		theDbg.logDebug("tgtModel=" + tgtModel)
 		tgtModel;
 	}
 	
