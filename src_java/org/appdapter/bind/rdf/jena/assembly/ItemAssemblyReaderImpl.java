@@ -115,6 +115,15 @@ public class ItemAssemblyReaderImpl extends BasicDebugger implements ItemAssembl
 		return linkedItems;
 	}
 
+	/**
+	 * Note that the returned list is *not* yet sorted!  To be fixed.
+	 * @param configItem
+	 * @param linkName
+	 * @param asmblr
+	 * @param mode
+	 * @param sortFieldNames
+	 * @return 
+	 */
 	@Override
 	public List<Object> findOrMakeLinkedObjects(Item configItem, String linkName, Assembler asmblr, Mode mode, List<Item.SortKey> sortFieldNames) {
 		List<Object>	resultList = new ArrayList<Object>();

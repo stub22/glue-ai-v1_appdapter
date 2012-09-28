@@ -58,8 +58,15 @@ public abstract class BaseItem implements Item {
 			throw new RuntimeException("Found " + size + " items instead of expected 1 at " + linkName);
 		}
 	}
+	/**
+	 * This implementation does not yet actually do the requested sorting.
+	 * To be fixed!
+	 * @param linkName
+	 * @param sortFieldNames - presently ignored.
+	 * @return 
+	 */
 	@Override public List<Item> getLinkedItemsSorted(Ident linkName, List<SortKey> sortFieldNames) {
-		theLogger.warn("These items are not yet really sorted by linkName: " + linkName);
+		// theLogger.warn("These items are not yet really sorted by linkName: " + linkName);
 		return getLinkedItems(linkName);
 	}
 	public Ident getValIdent(Ident fieldName) {
