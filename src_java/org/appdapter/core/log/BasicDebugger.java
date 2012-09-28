@@ -186,6 +186,24 @@ public class BasicDebugger implements Loggable {
 	public void logDebug(String msg) {
 		logInfo(IMPO_LO, msg);
 	}
+	/**
+	 * This should usually be called only once during a system's runtime lifetime.
+	 * (To be tested:  works OK to update properties at runtime?)
+	 * 
+	 * Prints some debug to stdout about known classloaders, then builds a URL using the
+	 * *local* CL of this concrete class (which will be *your* class is you make subtypes
+	 * of BasicDebugger or BundleActivatorBase!) to create a resource URL into the classpath
+	 * (under OSGi, the bundle-classpath-of) of that concrete class, which under OSGi will 
+	 * look something like:
+	 * 
+	 *  bundle://221.0:1/log4j.properties
+	 * 
+	 * ...which is then passed to Log4jFuncs.forceLog4jConfig.
+	 * 
+	 * What this means is that you can put a log4j.properties into any bundle of your own,
+	 * then call "forceLog4jConfig()" ONCE from that bundle's activator (or framework-START-event
+	 * handler), and then your properties should be in place.
+	 */
 	protected void forceLog4jConfig() {
 		// Logger logger = getLogger();
 
@@ -200,11 +218,10 @@ public class BasicDebugger implements Loggable {
 		
 		URL threadURL = threadCL.getResource(resPath);
 		URL localURL = localCL.getResource(resPath);
-		System.out.println("[System.out] threadCL resolved " + resPath + " to threadURL " + threadURL);
-		System.out.println("[System.out] localCL resolved  " + resPath + " to  localURL" + localURL);
+		System.out.println("[System.out] forceLog4jConfig() threadCL resolved " + resPath + " to threadURL " + threadURL);
+		System.out.println("[System.out] forceLog4jConfig() localCL resolved  " + resPath + " to  localURL " + localURL);
 		System.out.println("[System.out] " + getClass().getCanonicalName() + " is forcing Log4J to read config from localURL: " + localURL);
 		Log4jFuncs.forceLog4jConfig(localURL);
-		getLogger().info("{forceLog4JConfig} - This here message should be conveyed by SLF4J->Log4J");
-		
+		getLogger().warn("{forceLog4JConfig} - This message was printed at WARN level to SLF4J, after forcing config for Log4J to localURL: " + localURL);
 	}	
 }
