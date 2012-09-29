@@ -100,7 +100,7 @@ public class RegistryServiceFuncs {
 		// Find the existing registry, OR make it
 		VerySimpleRegistry vsr = lookupTheWellKnownRegistry(bundleCtx);
 		if (vsr == null) {
-			theLogger.info("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  Creating default WellKnownRegistry");
+			theLogger.warn("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  Creating default WellKnownRegistry");
 			VerySimpleRegistry theVsr = new BasicRegistry();
 			ServiceRegistration sreg = registerTheWellKnownRegistry(bundleCtx, theVsr);
 			theLogger.info("Got ServiceRegistration: " + sreg);
@@ -114,7 +114,7 @@ public class RegistryServiceFuncs {
 	public static VerySimpleRegistry getTheWellKnownStaticRegistry() {
 		theLogger.info("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  Getting singleton WellKnownRegistry in non-OSGi context");
 		if (theNonOsgiWKR == null) { 
-			theLogger.info("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  Making singleton WellKnownRegistry for non-OSGi context");
+			theLogger.warn("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  Making singleton WellKnownRegistry for non-OSGi context");
 			theNonOsgiWKR = new BasicRegistry();
 		}
 		return theNonOsgiWKR;
@@ -150,16 +150,16 @@ public class RegistryServiceFuncs {
 				
 			localBundleCtx  = localBundle.getBundleContext();
 			if (localBundleCtx != null) {
-				theLogger.debug("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  Found legit bundleCtx " + localBundleCtx + " associated to bundle " + localBundle + " via credClaz: " + osgiCredentialClaz);
+				theLogger.debug("Found legit bundleCtx {} associated to bundle {} via credClaz {} ", new Object[] {localBundleCtx, localBundle, osgiCredentialClaz});
 			} else {
-				theLogger.warn("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  bundle getBundleContext() returned null - OSGi permissions or load-ordering problem for bundle [" + localBundle + "] via credClaz[" + osgiCredentialClaz + "]");
-				theLogger.warn("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  bundle state=" + localBundle.getState() );
+				theLogger.warn("Bundle getBundleContext() returned null - OSGi permissions or load-ordering problem for bundle {} in state {} via credClaz {}", 
+							new Object[] {localBundle, localBundle.getState(), osgiCredentialClaz});
 				Exception e = new Exception("OSGi bundle permissions problem");
 				e.fillInStackTrace();
 				e.printStackTrace();
 			}
 		} else {
-			theLogger.warn("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  Cannot get local bundle, so we are assumed to be outside OSGi (credentialClaz=" + osgiCredentialClaz + ")");
+			theLogger.warn("%%%%%%%%%% Cannot get local bundle, so we are assumed to be outside OSGi (credentialClaz={})", osgiCredentialClaz );
 		}
 		return getTheWellKnownRegistryUsingOptContext(localBundleCtx);
 	}

@@ -44,18 +44,21 @@ import org.slf4j.LoggerFactory;
  *
  * CC = "Component Class"
  */
-public abstract class CachingComponentAssembler<MKC extends MutableKnownComponent> extends AssemblerBase implements Loggable {
-	static Logger theLogger = LoggerFactory.getLogger(CachingComponentAssembler.class);
+public abstract class CachingComponentAssembler<MKC extends MutableKnownComponent> extends AssemblerBase {
+	private Logger myLogger = LoggerFactory.getLogger(getClass());
+	private static Logger theBackupLogger = LoggerFactory.getLogger(CachingComponentAssembler.class);
 	
 	private	static Map<Class, ComponentCache> theCaches = new HashMap<Class, ComponentCache>();
 
-	private	BasicDebugger myDebugger = new BasicDebugger();
+	// private	BasicDebugger myDebugger = new BasicDebugger(getClass());
 	
 	protected ItemAssemblyReader		myReader = new ItemAssemblyReaderImpl();
 	
-	
+	protected Logger getLogger() { 
+		return myLogger;
+	}
 	public CachingComponentAssembler() {
-		myDebugger = new BasicDebugger();
+		// myDebugger = new BasicDebugger();
 	}
 	
 	public ItemAssemblyReader getReader() { 
@@ -83,9 +86,8 @@ public abstract class CachingComponentAssembler<MKC extends MutableKnownComponen
 	
 	public CachingComponentAssembler(Resource assemblerConfResource) {
 		super();
-		myDebugger.useLoggerForClass(getClass());
 		// The AssemblerGroup re-does this on every call to open(), so we need to put our caches outside.
-		logDebug("Constructing CCA " + toString() + " with config resource: " + assemblerConfResource);
+		getLogger().debug("Constructing CCA {} with config resource: {} ", this, assemblerConfResource);
 		/*
 		Exception e = new Exception();
 		e.fillInStackTrace();
@@ -99,7 +101,7 @@ public abstract class CachingComponentAssembler<MKC extends MutableKnownComponen
 		try {
 			knownComp = knownCompClass.newInstance();
 		} catch (Throwable t) {
-			theLogger.error("Problem instantiating empty component", t);
+			theBackupLogger.error("Problem instantiating empty component", t);
 		}
 		return knownComp;
 	}
@@ -112,7 +114,7 @@ public abstract class CachingComponentAssembler<MKC extends MutableKnownComponen
 			initFieldsAndLinks(knownComp, null, asmblr, mode);
 			cc.putCachedComponent(id, knownComp);
 		} else {
-			logDebug("Got cache hit on " + knownComp);
+			getLogger().debug("Got cache hit on {} ", knownComp);
 		}
 		return knownComp;
 	}
@@ -143,7 +145,7 @@ public abstract class CachingComponentAssembler<MKC extends MutableKnownComponen
 	 * @return 
 	 */
 	@Override final public Object open(Assembler asmblr, Resource rsrc, Mode mode) {
-		logDebug("Assembler[" + toString() + "] is opening component at: " + rsrc);
+		getLogger().debug("Assembler[{}] is opening component at: {}", this, rsrc);
 		JenaResourceItem wrapperItem = new JenaResourceItem(rsrc);
 		Class<MKC> componentClass = decideComponentClass(wrapperItem, wrapperItem);
 		MKC comp = null;
@@ -152,7 +154,7 @@ public abstract class CachingComponentAssembler<MKC extends MutableKnownComponen
 		}
 		return comp;
 	}
-	
+	/*
 	@Override public void logInfo(int importance, String msg) {
 		myDebugger.logInfo(importance, msg);
 	}
@@ -174,4 +176,6 @@ public abstract class CachingComponentAssembler<MKC extends MutableKnownComponen
 	public void logDebug(String msg) {
 		myDebugger.logDebug(msg);
 	}
+	* 
+	*/ 
 }
