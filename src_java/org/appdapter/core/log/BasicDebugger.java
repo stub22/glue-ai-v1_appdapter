@@ -122,7 +122,7 @@ public class BasicDebugger implements Loggable {
 				}
 				resultStamp = stamp;
 			}
-			String formatted = "[imp=" + importance + "]" + tsString + "=" + formattedMsg;
+			String formatted = "[imp=" + importance + "]" + tsString + "={" + getClass().getSimpleName() + "}" + formattedMsg;
 			if (isLoggerUsable()) {
 				Logger log = getLogger();
 				log.info(formatted);

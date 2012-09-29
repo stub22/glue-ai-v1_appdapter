@@ -65,11 +65,11 @@ public abstract class BundleActivatorBase extends BasicDebugger implements Bundl
 	 * @throws Exception 
 	 */
     @Override public void start(BundleContext bundleCtx) throws Exception {
-		logInfo(describe("start<BundleActivatorBase>", bundleCtx));
+		getLogger().info(describe("start<BundleActivatorBase>", bundleCtx));
     }
 
     @Override public void stop(BundleContext bundleCtx) throws Exception {
-		logInfo(describe("stop<BundleActivatorBase>", bundleCtx));	
+		getLogger().info(describe("stop<BundleActivatorBase>", bundleCtx));	
 	}
 
 	/** Override this method if you need notification after all bundles in your container have been started.
@@ -79,7 +79,7 @@ public abstract class BundleActivatorBase extends BasicDebugger implements Bundl
 	 * @param bundleCtx - Fetched from the bundle of the FrameworkEvent, so it should be nice and fresh.
 	 */
 	protected void handleFrameworkStartedEvent(BundleContext bundleCtx) {
-		logInfo("Default implementation of handleFrameworkStartedEvent() called on " + getClass() + ", you should override this!  BundleContext=" + bundleCtx);
+		getLogger().info("Default implementation of handleFrameworkStartedEvent() called on " + getClass() + ", you should override this!  BundleContext=" + bundleCtx);
 	}
 	/**
 	 * Call this method from any bundle's start() to schedule a callback to its handleFrameworkStartedEvent() method.
@@ -90,9 +90,9 @@ public abstract class BundleActivatorBase extends BasicDebugger implements Bundl
 			bundleCtx.addFrameworkListener(new FrameworkListener() {
 			public void frameworkEvent(FrameworkEvent fe) {
 				int eventType = fe.getType();
-				logInfo("************************ Got frameworkEvent with eventType=" + eventType + ", bundle=" + fe.getBundle());
+				getLogger().info("************************ Got frameworkEvent with eventType=" + eventType + ", bundle=" + fe.getBundle());
 				if (eventType == FrameworkEvent.STARTED) {
-					logInfo("********  OSGi Framework has STARTED, calling dispatchFrameworkStartedEvent()");
+					getLogger().info("********  OSGi Framework has STARTED, calling dispatchFrameworkStartedEvent()");
 					dispatchFrameworkStartedEvent(fe.getBundle(), fe.getThrowable());
 				}
 			}
@@ -100,15 +100,15 @@ public abstract class BundleActivatorBase extends BasicDebugger implements Bundl
 	}
 	private void dispatchFrameworkStartedEvent(Bundle eventBundle, Throwable eventThrowable) {
 		String thrownMsg = (eventThrowable == null) ? "OK" : eventThrowable.getClass().getName();
-		logInfo("dispatchFrameworkStartedEvent<BundleActivatorBase> ( bundle=" + eventBundle + ", msg=" + thrownMsg);
+		getLogger().info("dispatchFrameworkStartedEvent<BundleActivatorBase> ( bundle={}, msg={}", eventBundle, thrownMsg);
 		if (eventThrowable == null) {
 			BundleContext bc = eventBundle.getBundleContext();
 			if (bc == null) {
-				logError("Cannot find bundle context for event bundle, so there will be no callback to app startup: " + eventBundle);
+				getLogger().info("Cannot find bundle context for event bundle, so there will be no callback to app startup: {} ", eventBundle);
 			}
 			handleFrameworkStartedEvent(bc);
 		} else {
-			logWarning("No callback to application startup, due to throwable ", eventThrowable);
+			getLogger().warn("No callback to application startup, due to throwable ", eventThrowable);
 		}
 	}
 	
