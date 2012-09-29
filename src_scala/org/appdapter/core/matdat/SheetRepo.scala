@@ -29,6 +29,8 @@ import com.hp.hpl.jena.shared.{PrefixMapping}
 
 import com.hp.hpl.jena.rdf.listeners.{ObjectListener};
 
+import org.appdapter.core.log.BasicDebugger;
+
 import org.appdapter.bind.rdf.jena.model.{ModelStuff, JenaModelUtils};
 import org.appdapter.bind.rdf.jena.query.{JenaArqQueryFuncs, JenaArqResultSetProcessor};
 
@@ -66,12 +68,12 @@ class SheetRepo(directoryModel : Model) extends DirectRepo(directoryModel) {
 			val sheetRes : Resource = qSoln.getResource("sheet");
 			val sheetNum_Lit : Literal = qSoln.getLiteral("num")
 			val sheetKey_Lit : Literal = qSoln.getLiteral("key")
-			logDebug("containerRes=" + containerRes + ", sheetRes=" + sheetRes + ", num=" + sheetNum_Lit + ", key=" + sheetKey_Lit)
+			getLogger.debug("containerRes=" + containerRes + ", sheetRes=" + sheetRes + ", num=" + sheetNum_Lit + ", key=" + sheetKey_Lit)
 			
 			val sheetNum = sheetNum_Lit.getInt();
 			val sheetKey = sheetKey_Lit.getString();
 			val sheetModel : Model = SemSheet.readModelGDocSheet(sheetKey, sheetNum, nsJavaMap);
-			logDebug("Read sheetModel: " + sheetModel)
+			getLogger.debug("Read sheetModel: {}" ,  sheetModel)
 			val graphURI = sheetRes.getURI();
 			mainDset.replaceNamedModel(graphURI, sheetModel)
 		}		
@@ -80,13 +82,14 @@ class SheetRepo(directoryModel : Model) extends DirectRepo(directoryModel) {
 
 }
 
-object SheetRepo {
+object SheetRepo extends BasicDebugger {
+	
 	def readDirectoryModelFromGoog(sheetKey : String, namespaceSheetNum : Int, dirSheetNum : Int) : Model = { 
-		println("readDirectoryModelFromGoog - start")
+		getLogger.debug("readDirectoryModelFromGoog - start")
 		val namespaceSheetURL = WebSheet.makeGdocSheetQueryURL(sheetKey, namespaceSheetNum, None);
-		println("Made Namespace Sheet URL: " + namespaceSheetURL);
+		getLogger.debug("Made Namespace Sheet URL: " + namespaceSheetURL);
 		val nsJavaMap : java.util.Map[String, String] = MatrixData.readJavaMapFromSheet(namespaceSheetURL);
-		println("Got NS map: " + nsJavaMap)		
+		getLogger.debug("Got NS map: " + nsJavaMap)		
 		val dirModel : Model = SemSheet.readModelGDocSheet(sheetKey, dirSheetNum, nsJavaMap);
 		dirModel;
 	}
