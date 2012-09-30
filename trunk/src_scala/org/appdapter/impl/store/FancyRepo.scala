@@ -17,7 +17,7 @@
 package org.appdapter.impl.store
 
 import com.hp.hpl.jena.rdf.model.{Model, Statement, Resource, Property, Literal, RDFNode, ModelFactory, InfModel}
-
+import com.hp.hpl.jena.datatypes.xsd.XSDDatatype
 import com.hp.hpl.jena.query.{Query, QueryFactory, QueryExecution, QueryExecutionFactory, QuerySolution, QuerySolutionMap, Syntax};
 import com.hp.hpl.jena.query.{Dataset, DatasetFactory, DataSource};
 import com.hp.hpl.jena.query.{ResultSet, ResultSetFormatter, ResultSetRewindable, ResultSetFactory};
@@ -33,6 +33,8 @@ import org.appdapter.bind.rdf.jena.model.{ModelStuff, JenaModelUtils};
 import org.appdapter.bind.rdf.jena.query.{JenaArqQueryFuncs, JenaArqResultSetProcessor};
 
 import org.appdapter.core.store.{Repo, BasicQueryProcessorImpl, BasicRepoImpl, QueryProcessor};
+
+import org.appdapter.help.repo.InitialBinding;
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -54,12 +56,15 @@ class RepoPrintinListener(val prefix: String) extends ObjectListener {
 abstract class FancyRepo() extends BasicRepoImpl {
 	def	getDirectoryModel : Model;
 	
+	def getDirectoryModelClient : ModelClientImpl = new ModelClientImpl(getDirectoryModel);
 	
 	override def  makeMainQueryDataset() : Dataset = {
 		val ds : Dataset = DatasetFactory.create() // becomes   createMem() in later Jena versions.
 		ds;
 	}
+	// Not implemented at present
 	override def  getGraphStats() : java.util.List[Repo.GraphStat] = new java.util.ArrayList();
+	
 	def findSingleQuerySolution(parsedQQ : Query, qInitBinding : QuerySolution) : Option[QuerySolution] = {
 		val solnJavaList : java.util.List[QuerySolution] = findAllSolutions(parsedQQ, qInitBinding);
 		if (solnJavaList.ne(null)) {
@@ -73,11 +78,8 @@ abstract class FancyRepo() extends BasicRepoImpl {
 		val dirModel = getDirectoryModel;
 		JenaArqQueryFuncs.parseQueryText(queryText, dirModel);
 	}
-	def bindQueryVarToQName(qSoln : QuerySolutionMap, vName : String, resQName : String) : Unit = {
-		val dirModel = getDirectoryModel;
-		val expandedURI = dirModel.expandPrefix(resQName)
-		val dirResource = dirModel.createResource(expandedURI)
-		qSoln.add(vName, dirResource)
+	def makeInitialBinding : InitialBinding = {
+		new InitialBinding(getDirectoryModelClient)
 	}
 	def resolveIndirectQueryText(querySourceGraphQName : String, queryParentQName : String) : String = {
 
@@ -85,9 +87,11 @@ abstract class FancyRepo() extends BasicRepoImpl {
 		val dirModel = getDirectoryModel;
 		val nsJavaMap : java.util.Map[String, String] = dirModel.getNsPrefixMap()
 		
-		val qInitBinding = new QuerySolutionMap()
-		bindQueryVarToQName(qInitBinding, "g", querySourceGraphQName)
-		bindQueryVarToQName(qInitBinding, "qRes", queryParentQName)
+		val ib = makeInitialBinding
+		ib.bindQName( "g", querySourceGraphQName)
+		ib.bindQName("qRes", queryParentQName)
+		val qInitBinding : QuerySolutionMap = ib.getQSMap
+
 
 		val msqText = """
 			SELECT ?g ?qRes ?queryTxt WHERE {
@@ -111,10 +115,10 @@ abstract class FancyRepo() extends BasicRepoImpl {
 	}
 	import scala.collection.immutable.StringOps
 	
-	def queryIndirectForAllSolutions(qSrcGraphQN : String, queryParentQN : String, qInitBinding : QuerySolution) 
+	def queryIndirectForAllSolutions(qSrcGraphQN : String, queryQN : String, qInitBinding : QuerySolution) 
 			: java.util.List[QuerySolution] = {
 		
-		val qText = resolveIndirectQueryText(qSrcGraphQN, queryParentQN)
+		val qText = resolveIndirectQueryText(qSrcGraphQN, queryQN)
 		val qTextOps = new StringOps(qText);
 		val fixedQTxt = qTextOps.replaceAll("!!", "?")  // Remove this as soon as app code is updated
 		val parsedQ = parseQueryText(fixedQTxt);
