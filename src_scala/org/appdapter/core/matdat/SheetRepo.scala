@@ -32,7 +32,7 @@ import com.hp.hpl.jena.rdf.listeners.{ObjectListener};
 import org.appdapter.core.log.BasicDebugger;
 
 import org.appdapter.bind.rdf.jena.model.{ModelStuff, JenaModelUtils};
-import org.appdapter.bind.rdf.jena.query.{JenaArqQueryFuncs, JenaArqResultSetProcessor};
+// import org.appdapter.bind.rdf.jena.query.{JenaArqQueryFuncs, JenaArqResultSetProcessor};
 
 import org.appdapter.core.store.{Repo, BasicQueryProcessorImpl, BasicRepoImpl, QueryProcessor};
 
@@ -102,14 +102,28 @@ object SheetRepo extends BasicDebugger {
 		sr.loadSheetModelsIntoMainDataset()
 		sr
 	}
+	import scala.collection.immutable.StringOps
 	
 	def main(args: Array[String]) : Unit = {
-		val sr : SheetRepo = loadTestSheetRepo()
-		val qText = sr.getQueryText("ccrt:qry_sheet_22", "ccrt:find_humanoids_99")
-		println("Found query text: " + qText)
 		
-		val parsedQ = sr.parseQueryText(qText);
-		val solnJavaList : java.util.List[QuerySolution] = sr.findAllSolutions(parsedQ, null);
+		// Find a query with this info
+		val querySheetQName = "ccrt:qry_sheet_22";
+		val queryQName = "ccrt:find_lights_99"
+
+		// Plug a parameter in with this info
+		val lightsGraphVarName = "qGraph"
+		val lightsGraphQName = "ccrt:lights_camera_sheet_22"	
+		
+		// Run the resulting fully bound query, and print the results.
+		
+		val sr : SheetRepo = loadTestSheetRepo()
+
+		val qInitBinding = new QuerySolutionMap()
+
+		sr.bindQueryVarToQName(qInitBinding, lightsGraphVarName, lightsGraphQName)
+		
+		val solnJavaList : java.util.List[QuerySolution] = sr.queryIndirectForAllSolutions(querySheetQName, queryQName, qInitBinding);
+
 		println("Found solutions: " + solnJavaList)
 	}
 }
