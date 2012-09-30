@@ -31,7 +31,7 @@ import scala.collection.JavaConversions._
 /**
  * @author Ryan Biggs
  * @author Stu B. <www.texpedient.com>
- * (Stu moved Ryan's stateless solution functions from QueryEmitter into here)
+ * (Stu moved Ryan's stateless solution functions from QueryEmitter into here, and shortened method names)
  */
 
 class SolutionHelper {
@@ -42,7 +42,7 @@ class SolutionHelper {
    * @param variableName The query variable name for the string literal desired
    * @return The selected String literal
    */
-  def getStringFromSolution(solutionMap:SolutionMap[Ident], selectorUri:Ident, variableName:String) = {
+  def pullString(solutionMap:SolutionMap[Ident], selectorUri:Ident, variableName:String) = {
 	var literal: String = null
 	if (solutionMap.map contains selectorUri) {
 	  literal = solutionMap.map(selectorUri).solution.getLiteral(variableName).getString
@@ -57,7 +57,7 @@ class SolutionHelper {
    * @param variableName The query variable name for the string literal desired
    * @return The selected String literal
    */
-  def getStringFromSolution(solutionMap:SolutionMap[String], selector:String, variableName:String) = {
+  def pullString(solutionMap:SolutionMap[String], selector:String, variableName:String) = {
 	var literal: String = null
 	if (solutionMap.map contains selector) {
 	  literal = solutionMap.map(selector).solution.getLiteral(variableName).getString
@@ -71,8 +71,8 @@ class SolutionHelper {
    * @param variableName The query variable name for the string literal desired
    * @return The selected string literal
    */
-  def getStringFromSolution(solution:Solution, variableName:String): String = {
-	getStringFromSolution(solution, variableName, null)
+  def pullString(solution:Solution, variableName:String): String = {
+	pullString(solution, variableName, null)
   }
    
   /** Gets a string literal from a single query solution with a provided default if solution variable is not found
@@ -82,7 +82,7 @@ class SolutionHelper {
    * @param default The String to return if the query variable is not found in solution
    * @return The selected string literal
    */
-  def getStringFromSolution(solution:Solution, variableName:String, default:String): String = {
+  def pullString(solution:Solution, variableName:String, default:String): String = {
 	var literal: String = default
 	if (solution.solution.contains(variableName)) {
 	  literal = solution.solution.getLiteral(variableName).getString
@@ -96,14 +96,14 @@ class SolutionHelper {
    * @param variableName The query variable name for the string literals desired
    * @return The selected string literals
    */
-  def getStringsFromSolution(solutionList:SolutionList, variableName:String) = {
+  def pullStrings(solutionList:SolutionList, variableName:String) = {
 	for (i <- 0 until solutionList.list.length) yield solutionList.list(i).solution.getLiteral(variableName).getString
   }
   
-  def getStringsFromSolutionAsJava(solutionList:SolutionList, variableName:String): java.util.List[String] 
-		= getStringsFromSolution(solutionList, variableName)
+  def pullStringsAsJava(solutionList:SolutionList, variableName:String): java.util.List[String] 
+		= pullStrings(solutionList, variableName)
   
-  def getIdentFromSolution(solution:Solution, variableName:String) = {
+  def pullIdent(solution:Solution, variableName:String) = {
 	var ident:Ident = null;
 	if (solution.solution.contains(variableName)) {
 	  ident = new FreeIdent(solution.solution.getResource(variableName).getURI, solution.solution.getResource(variableName).getLocalName)
@@ -111,7 +111,7 @@ class SolutionHelper {
 	ident
   }
   
-  def getIdentsFromSolution(solutionList:SolutionList, variableName:String) = {
+  def pullIdents(solutionList:SolutionList, variableName:String) = {
 	val identList = new scala.collection.mutable.ArrayBuffer[Ident];
 	solutionList.list.foreach(solution => {
 		identList += new FreeIdent(solution.solution.getResource(variableName).getURI, solution.solution.getResource(variableName).getLocalName)
@@ -119,9 +119,9 @@ class SolutionHelper {
 	identList
   }
   
-  def getIdentsFromSolutionAsJava(solutionList:SolutionList, variableName:String): java.util.List[Ident] = getIdentsFromSolution(solutionList, variableName)
+  def pullIdentsAsJava(solutionList:SolutionList, variableName:String): java.util.List[Ident] = pullIdents(solutionList, variableName)
   
-  def getFloatFromSolution(solutionMap:SolutionMap[Ident], selector:Ident, variableName:String) = {
+  def pullFloat(solutionMap:SolutionMap[Ident], selector:Ident, variableName:String) = {
 	var literal: Float = Float.NaN
 	if (solutionMap.map contains selector) {
 	  literal = solutionMap.map(selector).solution.getLiteral(variableName).getFloat
@@ -129,7 +129,7 @@ class SolutionHelper {
 	literal
   }
   
-  def getFloatFromSolution(solution:Solution, variableName:String, default:Float) = {
+  def pullFloat(solution:Solution, variableName:String, default:Float) = {
 	var literal: Float = default
 	if (solution.solution.contains(variableName)) {
 	  literal = solution.solution.getLiteral(variableName).getFloat
@@ -137,7 +137,7 @@ class SolutionHelper {
 	literal
   }
   
-  def getDoubleFromSolution(solutionMap:SolutionMap[Ident], selector:Ident, variableName:String) = {
+  def pullDouble(solutionMap:SolutionMap[Ident], selector:Ident, variableName:String) = {
 	var literal: Double = Double.NaN
 	if (solutionMap.map contains selector) {
 	  literal = solutionMap.map(selector).solution.getLiteral(variableName).getDouble
@@ -145,7 +145,7 @@ class SolutionHelper {
 	literal
   }
   
-  def getDoubleFromSolution(solutionMap:SolutionMap[String], selector:String, variableName:String) = {
+  def pullDouble(solutionMap:SolutionMap[String], selector:String, variableName:String) = {
 	var literal: Double = Double.NaN
 	if (solutionMap.map contains selector) {
 	  literal = solutionMap.map(selector).solution.getLiteral(variableName).getDouble
@@ -160,7 +160,7 @@ class SolutionHelper {
    * @param default The double to return if the query variable is not found in solution
    * @return The selected double literal
    */
-  def getDoubleFromSolution(solution:Solution, variableName:String, default:Double): Double = {
+  def pullDouble(solution:Solution, variableName:String, default:Double): Double = {
 	var literal: Double = default
 	if (solution.solution.contains(variableName)) {
 	  literal = solution.solution.getLiteral(variableName).getDouble
@@ -168,7 +168,7 @@ class SolutionHelper {
 	literal
   }
   
-  def getIntegerFromSolution(solutionMap:SolutionMap[Ident], selector:Ident, variableName:String) = {
+  def pullInteger(solutionMap:SolutionMap[Ident], selector:Ident, variableName:String) = {
 	// I'd really prefer to set this to null to result in NPE in subsequent Java code if it's not found in solution
 	// But Scala won't allow that for Int (or Float), and use of an Option seems inappropriate when this will be often called from Java code
 	var literal: Int = 0
@@ -185,7 +185,7 @@ class SolutionHelper {
    * @param variableName The query variable name for the boolean literal desired
    * @return The selected boolean literal
    */
-  def getBooleanFromSolution(solutionMap:SolutionMap[Ident], selector:Ident, variableName:String): Boolean = {
+  def pullBoolean(solutionMap:SolutionMap[Ident], selector:Ident, variableName:String): Boolean = {
 	var literal: Boolean = false
 	if (solutionMap.map contains selector) {
 	  literal = solutionMap.map(selector).solution.getLiteral(variableName).getBoolean
@@ -199,7 +199,7 @@ class SolutionHelper {
    * @param variableName The query variable name for the boolean literal desired
    * @return The selected boolean literal
    */
-  def getBooleanFromSolution(solution:Solution, variableName:String) = {
+  def pullBoolean(solution:Solution, variableName:String) = {
 	var literal: Boolean = false
 	if (solution.solution contains variableName) {
 	  literal = solution.solution.getLiteral(variableName).getBoolean
