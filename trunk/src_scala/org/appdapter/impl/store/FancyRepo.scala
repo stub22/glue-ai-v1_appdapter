@@ -79,7 +79,8 @@ abstract class FancyRepo() extends BasicRepoImpl {
 		val dirResource = dirModel.createResource(expandedURI)
 		qSoln.add(vName, dirResource)
 	}
-	def getQueryText(querySourceGraphQName : String, queryParentQName : String) : String = {
+	def resolveIndirectQueryText(querySourceGraphQName : String, queryParentQName : String) : String = {
+
 		val mainDset : DataSource = getMainQueryDataset().asInstanceOf[DataSource];
 		val dirModel = getDirectoryModel;
 		val nsJavaMap : java.util.Map[String, String] = dirModel.getNsPrefixMap()
@@ -107,7 +108,20 @@ abstract class FancyRepo() extends BasicRepoImpl {
 		} else "";
 
 		qText
-	}		
+	}
+	import scala.collection.immutable.StringOps
+	
+	def queryIndirectForAllSolutions(qSrcGraphQN : String, queryParentQN : String, qInitBinding : QuerySolution) 
+			: java.util.List[QuerySolution] = {
+		
+		val qText = resolveIndirectQueryText(qSrcGraphQN, queryParentQN)
+		val qTextOps = new StringOps(qText);
+		val fixedQTxt = qTextOps.replaceAll("!!", "?")  // Remove this as soon as app code is updated
+		val parsedQ = parseQueryText(fixedQTxt);
+
+		findAllSolutions(parsedQ, qInitBinding);
+	}
+	
 }
 class DirectRepo(val myDirectoryModel : Model) extends FancyRepo {
 	
