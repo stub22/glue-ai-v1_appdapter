@@ -37,6 +37,7 @@ import org.appdapter.bind.rdf.jena.model.{ModelStuff, JenaModelUtils};
 import org.appdapter.core.store.{Repo, BasicQueryProcessorImpl, BasicRepoImpl, QueryProcessor};
 
 import org.appdapter.impl.store.{DirectRepo, QueryHelper, ResourceResolver};
+import org.appdapter.help.repo.InitialBinding
 /**
  * @author Stu B. <www.texpedient.com>
  * 
@@ -117,12 +118,11 @@ object SheetRepo extends BasicDebugger {
 		// Run the resulting fully bound query, and print the results.
 		
 		val sr : SheetRepo = loadTestSheetRepo()
-
-		val qInitBinding = new QuerySolutionMap()
-
-		sr.bindQueryVarToQName(qInitBinding, lightsGraphVarName, lightsGraphQName)
+		val qib = sr.makeInitialBinding
 		
-		val solnJavaList : java.util.List[QuerySolution] = sr.queryIndirectForAllSolutions(querySheetQName, queryQName, qInitBinding);
+		qib.bindQName(lightsGraphVarName, lightsGraphQName)
+		
+		val solnJavaList : java.util.List[QuerySolution] = sr.queryIndirectForAllSolutions(querySheetQName, queryQName, qib.getQSMap);
 
 		println("Found solutions: " + solnJavaList)
 	}
