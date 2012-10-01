@@ -32,6 +32,7 @@ import org.appdapter.bind.rdf.jena.model.{ModelStuff, JenaModelUtils};
 import org.appdapter.bind.rdf.jena.query.{JenaArqQueryFuncs, JenaArqResultSetProcessor};
 
 import org.appdapter.core.name.{Ident, FreeIdent}
+import org.appdapter.core.item.{Item, JenaResourceItem}
 /**
  * @author Stu B. <www.texpedient.com>
  */
@@ -53,6 +54,14 @@ class ModelClientImpl (private val myModel : Model) {
 	}
 	def makeStringLiteral(litString : String) : Literal = {
 		makeTypedLiteral(litString, XSDDatatype.XSDstring);
+	}
+	
+	def makeIdentForQName(qName : String) : Ident = makeJenaResourceItemForQName(qName)
+	def makeItemForQName(qName : String) : Item = makeJenaResourceItemForQName(qName)
+	
+	private def makeJenaResourceItemForQName(qName : String) : JenaResourceItem = {	
+		val res = makeResourceForQName(qName)
+		new JenaResourceItem(res)
 	}
 
 }
