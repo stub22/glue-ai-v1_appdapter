@@ -27,7 +27,7 @@ import scala.collection.JavaConversions._
  * @author Stu B. <www.texpedient.com>
  */
 
-class RepoClientImpl(val myRepo : FancyRepo, val myQueryVarName : String, val myQuerySheetName : String ) extends RepoClient {
+class RepoClientImpl(private val myRepo : FancyRepo, private val myDefltTgtGraphVarName : String, private val myDefltQrySrcGrphName : String ) extends RepoClient {
   
 	private val mySH = new SolutionHelper()
 	
@@ -46,12 +46,17 @@ class RepoClientImpl(val myRepo : FancyRepo, val myQueryVarName : String, val my
 		ensureRepo
 		myRepo
 	}
-  
-	def getQueryVarName = myQueryVarName ; // QueryTester.GRAPH_QUERY_VAR
+	def getQuerySheetName = myDefltQrySrcGrphName; // QueryTester.QUERY_SHEET;
 	
-	def getQuerySheetName = myQuerySheetName; // QueryTester.QUERY_SHEET;
-  
+	def getQueryVarName = myDefltTgtGraphVarName ; // QueryTester.GRAPH_QUERY_VAR
 	
+	/* Fundamental form, with idents for the query lookup */
+	def queryIndirectForAllSolutions(qSrcGraphIdent : Ident, queryIdent: Ident, qInitBinding: InitialBinding) : SolutionList = {
+		val r = getRepo;
+		val javaSL = r.queryIndirectForAllSolutions(qSrcGraphIdent, queryIdent, qInitBinding.getQSMap)
+		mySH.makeSolutionList(javaSL)
+	}
+	/* Fundamental form, with QNames for the query lookup */
 	def queryIndirectForAllSolutions(qSrcGraphQN : String, queryQName: String, qInitBinding: InitialBinding) : SolutionList = {
 		val r = getRepo;
 		val javaSL = r.queryIndirectForAllSolutions(qSrcGraphQN, queryQName, qInitBinding.getQSMap)
@@ -61,31 +66,45 @@ class RepoClientImpl(val myRepo : FancyRepo, val myQueryVarName : String, val my
 		val querySheetQName = getQuerySheetName
 		queryIndirectForAllSolutions(querySheetQName, queryQName, qInitBinding)
 	}
-	def queryIndirectForAllSolutions(queryQName: String, soleVarName : String, soleVarIdent : Ident) : SolutionList	= {
+	def queryIndirectForAllSolutions(queryQName: String, soleSPARQL_VN : String, soleVarIdent : Ident) : SolutionList	= {
 		val r = getRepo;
 		val qib = r.makeInitialBinding
-		qib.bindIdent(soleVarName, soleVarIdent)
+		qib.bindIdent(soleSPARQL_VN, soleVarIdent)
 		queryIndirectForAllSolutions(queryQName, qib)	
+	}
+	def queryIndirectForAllSolutions(queryQName: String, soleSPARQL_VN : String, soleVarQN : String) : SolutionList = {
+		val soleVarIdent = getDirectoryModelClient.makeIdentForQName(soleVarQN);
+		queryIndirectForAllSolutions(queryQName, soleSPARQL_VN, soleVarIdent)
 	}
 	def queryIndirectForAllSolutions( queryQName: String, targetGraphIdent : Ident) : SolutionList = {
 		val qSoleVarName = getQueryVarName
 		queryIndirectForAllSolutions(queryQName,qSoleVarName, targetGraphIdent)
 	}
-	def queryIndirectForAllSolutions(queryQName: String, soleVarName : String, soleVarLiteralString : String) : SolutionList = {
+	def queryIndirectForAllSolutions(queryQN: String, targetGraphQN : String) : SolutionList = {
+		val targetGraphIdent = getDirectoryModelClient.makeIdentForQName(targetGraphQN)
+		queryIndirectForAllSolutions(queryQN, targetGraphIdent)
+	}
+	def queryIndirectForAllSolutions(queryQName: String, targetGraphIdent : Ident, otherSPARQL_VN : String, otherVarIdent : Ident) : SolutionList ={
+		val r = getRepo;
+		val qib = r.makeInitialBinding
+		val tgtGraphVN = getQueryVarName
+		qib.bindIdent(tgtGraphVN, targetGraphIdent)
+		qib.bindIdent(otherSPARQL_VN, otherVarIdent)
+		queryIndirectForAllSolutions(queryQName, qib)
+	}
+	def queryIndirectForAllSolutions(queryQN: String, targetGraphQN : String, otherSPARQL_VN : String, otherValQN : String) : SolutionList = {
+		val targetGraphID = getDirectoryModelClient.makeIdentForQName(targetGraphQN)
+		val otherValID = getDirectoryModelClient.makeIdentForQName(targetGraphQN)
+		queryIndirectForAllSolutions(queryQN, targetGraphID, otherSPARQL_VN, otherValID)
+	}
+	def queryIndirectForAllSolutionsWithStringBinding(queryQName: String, soleVarName : String, soleVarLiteralString : String) : SolutionList = {
 		val r = getRepo;
 		val qib = r.makeInitialBinding		
 		qib.bindLiteralString(soleVarName, soleVarLiteralString)
 		queryIndirectForAllSolutions(queryQName, qib)
 	}
 	
-	def queryIndirectForAllSolutions(queryQName: String, targetGraphIdent : Ident, otherVarName : String, otherVarIdent : Ident) : SolutionList ={
-		val r = getRepo;
-		val qib = r.makeInitialBinding
-		val tgtGraphVN = getQueryVarName
-		qib.bindIdent(tgtGraphVN, targetGraphIdent)
-		qib.bindIdent(otherVarName, otherVarIdent)
-		queryIndirectForAllSolutions(queryQName, qib)
-	}
-	
 	def makeInitialBinding : InitialBinding = getRepo.makeInitialBinding
+	
+	private def getDirectoryModelClient  = getRepo.getDirectoryModelClient
 }

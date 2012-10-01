@@ -18,6 +18,7 @@ package org.appdapter.core.item;
 
 import org.appdapter.core.name.ModelIdent;
 import org.appdapter.core.name.Ident;
+import org.appdapter.core.item.JenaResourceItem;
 import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.NodeIterator;
