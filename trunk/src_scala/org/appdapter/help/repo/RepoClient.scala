@@ -29,30 +29,64 @@ trait RepoClient {
 	def getRepo: FancyRepo
 	
 	/**
-	 * The most general case
+	 * The most general case, using Idents for input.
+	 */
+	def queryIndirectForAllSolutions(queryModelIdent : Ident, queryIdent: Ident, qInitBinding: InitialBinding) : SolutionList
+	/**
+	 * The most general case, this time using QNames.
 	 */
 	def queryIndirectForAllSolutions(queryModelQName : String, queryQName: String, qInitBinding: InitialBinding) : SolutionList
 	/**
-	 * More common case where we assume the queryModelName is known.
+	 * Common case where we assume the queryModelName is known.
 	 */
 	def queryIndirectForAllSolutions(queryQName: String, qInitBinding: InitialBinding) : SolutionList
 	/**
-	 * Assume a single input binding, which is an Ident.
+	 * Assume the queryModelName is known.
+	 * Assume a single input SPARQL variable binding, containing a URI via Ident.
 	 */
-	def queryIndirectForAllSolutions(queryQName: String, soleVarName : String, soleVarIdent : Ident) : SolutionList
-	/*
-	 * Assume a single input binding, which is the target graph.  Assume the name of that variable is known.
+	def queryIndirectForAllSolutions(queryQName: String, soleSPARQL_VN : String, soleVarIdent : Ident) : SolutionList
+	
+	def queryIndirectForAllSolutions(queryQName: String, soleSPARQL_VN : String, soleVarQN : String) : SolutionList
+
+	
+	/* Assume the queryModelName is known.
+	 * Assume a single input binding, which is the target graph. 
+	 * Assume the name of that target graph SPARQL variable is known 
+	 * (i.e. client will use default/currentvalue, e.g. "qGraph"),
+	 * with value passed as an ident.
 	 */
 	def queryIndirectForAllSolutions(queryQName: String, targetGraphIdent : Ident) : SolutionList
+	
 	/*
-	 * Assume a single input binding, which is a string literal.
+	 * Assume a single input binding, which is the target graph, given in this case by a String QName.  
+	 * Assume the name of that SPARQL variable is known (i.e. client will use default/current value, e.g. "qGraph".
 	 */
-	def queryIndirectForAllSolutions(queryQName: String, soleVarName : String, soleVarVal : String) : SolutionList
+	def queryIndirectForAllSolutions(queryQN: String, targetGraphQN : String) : SolutionList
+
 	/**
 	 * Assume two bindings:  One for the target graph, and one other ident binding.
 	 * This case is used a lot.
 	 */
-	def queryIndirectForAllSolutions(queryQName: String, targetGraphIdent : Ident, otherVarName : String, otherVarIdent : Ident) : SolutionList
+	def queryIndirectForAllSolutions(queryQN: String, targetGraphIdent : Ident, otherSPARQL_VN : String, otherVarIdent : Ident) : SolutionList
+
+	/**
+	 * Assume two bindings:  One for the target graph, and one other URI binding.
+	 * In this case, both values are supplied using QNames.
+	 * This case is used a lot.
+	 */
+	def queryIndirectForAllSolutions(queryQN: String, targetGraphQN : String, otherSPARQL_VN : String, otherValQN: String) : SolutionList
+
+	
+	
+	/*
+	 * Assume a single input binding, which is a string literal.
+	 * This form does NOT provide for automatic setting of the qGraph, so it is a little different flavor
+	 * from the others here.  Useful?
+	 */
+	def queryIndirectForAllSolutionsWithStringBinding(queryQName: String, soleVarName : String, soleVarVal : String) : SolutionList
+
+
+
 	/** 
 	 * Produce an InitialBinding that knows how to bind resources and literals for use in our repo.
 	 */

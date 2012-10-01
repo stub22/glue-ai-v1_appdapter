@@ -33,7 +33,7 @@ import org.appdapter.bind.rdf.jena.model.{ModelStuff, JenaModelUtils};
 import org.appdapter.bind.rdf.jena.query.{JenaArqQueryFuncs, JenaArqResultSetProcessor};
 
 import org.appdapter.core.store.{Repo, BasicQueryProcessorImpl, BasicRepoImpl, QueryProcessor};
-
+import org.appdapter.core.name.Ident;
 import org.appdapter.help.repo.InitialBinding;
 
 /**
@@ -54,9 +54,24 @@ class RepoPrintinListener(val prefix: String) extends ObjectListener {
 	 
 }
 abstract class FancyRepo() extends BasicRepoImpl {
+	
+	final val	QUERY_QUERY_GRAPH_INPUT_VAR = "g";
+	final val	QUERY_QUERY_URI_RESULT_VAR = "qRes";
+	
+	final val   QUERY_QUERY_TEXT = """
+			SELECT ?g ?qRes ?queryTxt WHERE {
+				GRAPH ?g {
+					?qRes  a ccrt:SparqlQuery ; ccrt:queryText ?queryTxt .			
+				}
+			}
+		"""
+	
+	
 	def	getDirectoryModel : Model;
 	
 	def getDirectoryModelClient : ModelClientImpl = new ModelClientImpl(getDirectoryModel);
+	
+	lazy val myQueryResQuery : Query = parseQueryResolutionQuery
 	
 	override def  makeMainQueryDataset() : Dataset = {
 		val ds : Dataset = DatasetFactory.create() // becomes   createMem() in later Jena versions.
@@ -81,30 +96,36 @@ abstract class FancyRepo() extends BasicRepoImpl {
 	def makeInitialBinding : InitialBinding = {
 		new InitialBinding(getDirectoryModelClient)
 	}
+	/**
+	 * These QName parameters are resolved against the repo's default namespace prefixes.
+	 */
 	def resolveIndirectQueryText(querySourceGraphQName : String, queryParentQName : String) : String = {
-
-		val mainDset : DataSource = getMainQueryDataset().asInstanceOf[DataSource];
-		val dirModel = getDirectoryModel;
-		val nsJavaMap : java.util.Map[String, String] = dirModel.getNsPrefixMap()
+		// val mainDset : DataSource = getMainQueryDataset().asInstanceOf[DataSource];
+		// val dirModel = getDirectoryModel;
+		// val nsJavaMap : java.util.Map[String, String] = dirModel.getNsPrefixMap()
 		
 		val ib = makeInitialBinding
-		ib.bindQName( "g", querySourceGraphQName)
-		ib.bindQName("qRes", queryParentQName)
-		val qInitBinding : QuerySolutionMap = ib.getQSMap
-
-
-		val msqText = """
-			SELECT ?g ?qRes ?queryTxt WHERE {
-				GRAPH ?g {
-					?qRes  a ccrt:SparqlQuery ; ccrt:queryText ?queryTxt .			
-				}
-			}
-		"""
+		ib.bindQName(QUERY_QUERY_GRAPH_INPUT_VAR, querySourceGraphQName)
+		ib.bindQName(QUERY_QUERY_URI_RESULT_VAR, queryParentQName)
+		resolveIndirectQueryText(ib)
+	}
+	/**
+	 * Alternate form using full URIs, from any Ident.
+	 */
+	def resolveIndirectQueryText(querySourceGraphID : Ident, queryID : Ident) : String = {
+		val ib = makeInitialBinding
+		ib.bindIdent(QUERY_QUERY_GRAPH_INPUT_VAR, querySourceGraphID)
+		ib.bindIdent(QUERY_QUERY_URI_RESULT_VAR, queryID)
+		resolveIndirectQueryText(ib)
+	}
+	
+	private def resolveIndirectQueryText(queryResIB : InitialBinding) : String = {
+		val qInitBinding : QuerySolutionMap = queryResIB.getQSMap
 		
-		val parsedQQ = parseQueryText(msqText);
+		val parsedQQ : Query = myQueryResQuery
 		
-		logDebug("parsedQQ: " + parsedQQ)
 		val possSoln : Option[QuerySolution] = findSingleQuerySolution(parsedQQ, qInitBinding);
+		
 		val qText : String = if (possSoln.isDefined) {
 			val qSoln = possSoln.get;
 			val qtxt_Lit : Literal = qSoln.getLiteral("queryTxt");
@@ -113,17 +134,30 @@ abstract class FancyRepo() extends BasicRepoImpl {
 
 		qText
 	}
-	import scala.collection.immutable.StringOps
+	def queryIndirectForAllSolutions(qSrcGraphIdent : Ident, queryIdent : Ident, qInitBinding : QuerySolution) 
+			: java.util.List[QuerySolution] = {
+		val qText = resolveIndirectQueryText(qSrcGraphIdent, queryIdent)
+		queryDirectForAllSolutions(qText, qInitBinding)		
+	}
 	
 	def queryIndirectForAllSolutions(qSrcGraphQN : String, queryQN : String, qInitBinding : QuerySolution) 
 			: java.util.List[QuerySolution] = {
-		
+				
 		val qText = resolveIndirectQueryText(qSrcGraphQN, queryQN)
+		queryDirectForAllSolutions(qText, qInitBinding)
+	}
+	def queryDirectForAllSolutions(qText : String, qInitBinding : QuerySolution) : java.util.List[QuerySolution] = {
+		import scala.collection.immutable.StringOps
 		val qTextOps = new StringOps(qText);
 		val fixedQTxt = qTextOps.replaceAll("!!", "?")  // Remove this as soon as app code is updated
 		val parsedQ = parseQueryText(fixedQTxt);
 
 		findAllSolutions(parsedQ, qInitBinding);
+	}
+	private def parseQueryResolutionQuery : Query = {
+		val parsedQQ = parseQueryText(QUERY_QUERY_TEXT);
+		logDebug("Parsed QueryResolutionQuery as: " + parsedQQ)		
+		parsedQQ
 	}
 	
 }
