@@ -17,14 +17,14 @@
 package org.appdapter.help.repo
 
 import org.appdapter.core.name.{Ident, FreeIdent}
-import org.appdapter.impl.store.{ModelClientImpl};
+import org.appdapter.core.store.{ModelClient, InitialBinding};
 import com.hp.hpl.jena.query.{QuerySolutionMap};
 import com.hp.hpl.jena.rdf.model.{Model, Statement, Resource, Property, Literal, RDFNode, ModelFactory, InfModel}
 /**
  * @author Stu B. <www.texpedient.com>
  */
 
-class InitialBinding(private val myModelClient : ModelClientImpl) {
+class InitialBindingImpl(private val myModelClient : ModelClient) extends InitialBinding {
 	private val	mySolutionMap = new QuerySolutionMap();
 	
 	def getQSMap : QuerySolutionMap = mySolutionMap

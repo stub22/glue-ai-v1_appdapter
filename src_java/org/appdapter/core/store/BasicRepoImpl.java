@@ -16,7 +16,7 @@
 
 package org.appdapter.core.store;
 
-import java.util.List;
+
 
 import org.appdapter.bind.rdf.jena.query.JenaArqQueryFuncs;
 import org.appdapter.bind.rdf.jena.query.JenaArqResultSetProcessor;
@@ -28,6 +28,9 @@ import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.rdf.model.Model;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Set;
 /**
  * @author Stu B. <www.texpedient.com>
@@ -43,6 +46,20 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 			myMainQueryDataset = makeMainQueryDataset();
 		}
 		return myMainQueryDataset;
+	}
+	@Override public List<GraphStat> getGraphStats() {
+		List<GraphStat> stats  = new ArrayList<GraphStat>();
+		Dataset mainDset = getMainQueryDataset(); 
+		Iterator<String> nameIt = mainDset.listNames();
+		while (nameIt.hasNext()) {
+			String modelName = nameIt.next();
+			Repo.GraphStat gs = new GraphStat();
+			gs.graphURI = modelName;
+			Model m = mainDset.getNamedModel(modelName);
+			gs.statementCount = m.size();
+			stats.add(gs);
+		}
+		return stats;
 	}
 
 

@@ -50,7 +50,7 @@ public class RepoTriggers {
 	public static class QueryTrigger<RB extends RepoBox<TriggerImpl<RB>>> extends  TriggerImpl<RB>  {
 
 		@Override public void fire(RB  targetBox) {
-			String resolvedQueryURL = DemoResources.QUERY_PATH; 
+			String resolvedQueryURL = DemoResources.QUERY_PATH;
 			String resultXML = targetBox.processQueryAtUrlAndProduceXml(resolvedQueryURL);
 			logInfo("ResultXML\n-----------------------------------" + resultXML + "\n---------------------------------");
 		}
@@ -74,7 +74,5 @@ public class RepoTriggers {
 				logError("problem in UploadTrigger", t);
 			}
 		}
-
-
 	}
 }

@@ -32,9 +32,10 @@ import com.hp.hpl.jena.rdf.listeners.{ObjectListener};
 import org.appdapter.bind.rdf.jena.model.{ModelStuff, JenaModelUtils};
 import org.appdapter.bind.rdf.jena.query.{JenaArqQueryFuncs, JenaArqResultSetProcessor};
 
-import org.appdapter.core.store.{Repo, BasicQueryProcessorImpl, BasicRepoImpl, QueryProcessor};
+import org.appdapter.core.store.{Repo, BasicRepoImpl, BasicStoredMutableRepoImpl, QueryProcessor, InitialBinding, ModelClient};
 import org.appdapter.core.name.Ident;
-import org.appdapter.help.repo.InitialBinding;
+import org.appdapter.help.repo.InitialBindingImpl;
+import org.appdapter.core.log.Loggable;
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -53,8 +54,8 @@ class RepoPrintinListener(val prefix: String) extends ObjectListener {
 	 }
 	 
 }
-abstract class FancyRepo() extends BasicRepoImpl {
-	
+// abstract class FancyRepo() extends BasicRepoImpl with Repo.WithDirectory {
+trait FancyRepo extends Repo.WithDirectory with ModelClientCore with Loggable {	
 	final val	QUERY_QUERY_GRAPH_INPUT_VAR = "g";
 	final val	QUERY_QUERY_URI_RESULT_VAR = "qRes";
 	
@@ -65,21 +66,24 @@ abstract class FancyRepo() extends BasicRepoImpl {
 				}
 			}
 		"""
+	private	var		myOptCachedDirMC  : Option[ModelClientImpl] = None
+
+
+	private def getDirModelClientImpl : ModelClientImpl = {		
+		if (myOptCachedDirMC == None) {
+			myOptCachedDirMC = Some(new ModelClientImpl(getDirectoryModel));
+		}
+		myOptCachedDirMC.get
+	}
+	override def getDirectoryModelClient : ModelClient = getDirModelClientImpl
+		
+	override def getFallbackModelClient : ModelClient = getDirectoryModelClient()
 	
-	
-	def	getDirectoryModel : Model;
-	
-	def getDirectoryModelClient : ModelClientImpl = new ModelClientImpl(getDirectoryModel);
+	// Allows us to implement the ModelClientCore API through delegation.
+	override protected def getModel = getDirModelClientImpl.getModel;
 	
 	lazy val myQueryResQuery : Query = parseQueryResolutionQuery
-	
-	override def  makeMainQueryDataset() : Dataset = {
-		val ds : Dataset = DatasetFactory.create() // becomes   createMem() in later Jena versions.
-		ds;
-	}
-	// Not implemented at present
-	override def  getGraphStats() : java.util.List[Repo.GraphStat] = new java.util.ArrayList();
-	
+		
 	def findSingleQuerySolution(parsedQQ : Query, qInitBinding : QuerySolution) : Option[QuerySolution] = {
 		val solnJavaList : java.util.List[QuerySolution] = findAllSolutions(parsedQQ, qInitBinding);
 		if (solnJavaList.ne(null)) {
@@ -93,8 +97,8 @@ abstract class FancyRepo() extends BasicRepoImpl {
 		val dirModel = getDirectoryModel;
 		JenaArqQueryFuncs.parseQueryText(queryText, dirModel);
 	}
-	def makeInitialBinding : InitialBinding = {
-		new InitialBinding(getDirectoryModelClient)
+	override def makeInitialBinding() : InitialBinding = {
+		new InitialBindingImpl(getFallbackModelClient)
 	}
 	/**
 	 * These QName parameters are resolved against the repo's default namespace prefixes.
@@ -134,19 +138,19 @@ abstract class FancyRepo() extends BasicRepoImpl {
 
 		qText
 	}
-	def queryIndirectForAllSolutions(qSrcGraphIdent : Ident, queryIdent : Ident, qInitBinding : QuerySolution) 
+	override def queryIndirectForAllSolutions(qSrcGraphIdent : Ident, queryIdent : Ident, qInitBinding : QuerySolution) 
 			: java.util.List[QuerySolution] = {
 		val qText = resolveIndirectQueryText(qSrcGraphIdent, queryIdent)
 		queryDirectForAllSolutions(qText, qInitBinding)		
 	}
 	
-	def queryIndirectForAllSolutions(qSrcGraphQN : String, queryQN : String, qInitBinding : QuerySolution) 
+	override def queryIndirectForAllSolutions(qSrcGraphQN : String, queryQN : String, qInitBinding : QuerySolution) 
 			: java.util.List[QuerySolution] = {
 				
 		val qText = resolveIndirectQueryText(qSrcGraphQN, queryQN)
 		queryDirectForAllSolutions(qText, qInitBinding)
 	}
-	def queryDirectForAllSolutions(qText : String, qInitBinding : QuerySolution) : java.util.List[QuerySolution] = {
+	override def queryDirectForAllSolutions(qText : String, qInitBinding : QuerySolution) : java.util.List[QuerySolution] = {
 		import scala.collection.immutable.StringOps
 		val qTextOps = new StringOps(qText);
 		val fixedQTxt = qTextOps.replaceAll("!!", "?")  // Remove this as soon as app code is updated
@@ -161,8 +165,29 @@ abstract class FancyRepo() extends BasicRepoImpl {
 	}
 	
 }
-class DirectRepo(val myDirectoryModel : Model) extends FancyRepo {
+
+// class DirectRepo(val myDirectoryModel : Model) extends FancyRepo {
+
+class DirectRepo(val myDirectoryModel : Model) extends BasicRepoImpl with FancyRepo {
 	
 	override def	getDirectoryModel : Model = myDirectoryModel;
+	
+	override def  makeMainQueryDataset() : Dataset = {
+		val ds : Dataset = DatasetFactory.create() // becomes   createMem() in later Jena versions.
+		ds;
+	}
+	// Not implemented at present
+	// override def  getGraphStats() : java.util.List[Repo.GraphStat] = new java.util.ArrayList();
+	
+}
+
+class DatabaseRepo(configPath : String, val myDirGraphID : Ident) 
+			extends BasicStoredMutableRepoImpl(configPath) with FancyRepo with Repo.Mutable with Repo.Stored {
+				
+		
+	openUsingCurrentConfigPath();
+	formatRepoIfNeeded();
+	
+	override def	getDirectoryModel : Model = getNamedModel(myDirGraphID);
 	
 }

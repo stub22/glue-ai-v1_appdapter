@@ -35,16 +35,39 @@ public class DemoServiceWrapFuncs {
 		result.setDescription("full description for box with label: " + label);
 		return result;
 	}
+	/**
+	 * Makes a ScreenBox, using the type of trigProto to define the allowed trigger type of the box.
+	 * The data/contents of trigProto is not used.
+	 * @param <BT>
+	 * @param <TT>
+	 * @param boxClass
+	 * @param trigProto
+	 * @param label
+	 * @return 
+	 */
 	public static <BT extends ScreenBoxImpl<TT>, TT extends TriggerImpl<BT>> BT makeTestBoxImpl(Class<BT> boxClass, TT trigProto, String label) {
 		BT result = CachingComponentAssembler.makeEmptyComponent(boxClass);
 		result.setShortLabel(label);
 		result.setDescription("full description for box with label: " + label);
 		return result;
 	}
-	public static <BT extends ScreenBoxImpl<TT>, TT extends TriggerImpl<BT>> BT makeTestChildBoxImpl(Box parentBox, Class<BT> boxClass,  TT trigProto, String label) {
+	/** Make a ScreenBox and attach it as a child to an existing parentBox.
+	 * trigProto to define the allowed trigger type of the new box.
+	 * The data/contents of trigProto is not used.
+	 * 
+	 * @param <BT>
+	 * @param <TT>
+	 * @param parentBox
+	 * @param childBoxClass
+	 * @param trigProto
+	 * @param label
+	 * @return 
+	 */
+	public static <BT extends ScreenBoxImpl<TT>, TT extends TriggerImpl<BT>> BT makeTestChildBoxImpl(Box parentBox, 
+					Class<BT> childBoxClass,  TT trigProto, String label) {
 		BT result = null;
 		BoxContext ctx = parentBox.getBoxContext();
-		result = makeTestBoxImpl(boxClass, trigProto, label);
+		result = makeTestBoxImpl(childBoxClass, trigProto, label);
 		ctx.contextualizeAndAttachChildBox(parentBox, result);
 		return result;
 	}

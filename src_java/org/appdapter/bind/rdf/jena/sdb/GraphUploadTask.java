@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 /**
  * @author Stu B. <www.texpedient.com>
  * 
- * Includes code from Jena project file "sdbload.java"
+ * Includes code copied from Jena project file "sdbload.java".
  */
 public class GraphUploadTask {
 	
@@ -81,10 +81,10 @@ public class GraphUploadTask {
 		Model tgtStoreModel = getModel(store, tgtGraphName);
 		Graph graph = tgtStoreModel.getGraph();
 
-		if (isVerbose() && replaceTgtFlag) {
-			theLogger.info("Emptying graph: " + tgtGraphName);
-		}
 		if (replaceTgtFlag) {
+			if (isVerbose()) {
+				theLogger.info("Emptying graph: " + tgtGraphName);
+			}
 			tgtStoreModel.removeAll();
 		}
 	// Crude but convenient
@@ -95,7 +95,6 @@ public class GraphUploadTask {
 		if (isVerbose() || getModTime().timingEnabled()) {
 			theLogger.info("Start loading from: " + sourceURL);
 		}
-	
 		if (getModTime().timingEnabled()) {
 			monitor = new GraphUploadMonitor(store.getLoader().getChunkSize(), isVerbose());
 			graph.getEventManager().register(monitor);

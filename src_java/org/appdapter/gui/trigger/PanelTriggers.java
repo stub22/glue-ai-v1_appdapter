@@ -36,6 +36,12 @@ public class PanelTriggers {
 	public static class OpenTrigger <VB extends ScreenBox<TriggerImpl<VB>>> extends  TriggerImpl<VB> {
 		private ScreenBoxPanel.Kind	myPanelKind;
 
+		/**
+		 * 
+		 * @param kind - ScreenBoxImpl base class knows how to make certain kinds of utility ScreenBoxPanels.  
+		 * But if, we set this kind to OTHER, then it will invoke the method makeOtherPanel(), which an
+		 * application can override to produce any other kind of ScreenBoxPanel.
+		 */
 		public void setPanelKind(ScreenBoxPanel.Kind kind) {
 			myPanelKind = kind;
 		}

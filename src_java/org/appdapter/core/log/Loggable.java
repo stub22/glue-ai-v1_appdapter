@@ -33,4 +33,5 @@ public interface Loggable {
 	public void logError(String msg);
 	public void logWarning(String msg, Throwable t);
 	public void logWarning(String msg);
+	public void logDebug(String msg);
 }

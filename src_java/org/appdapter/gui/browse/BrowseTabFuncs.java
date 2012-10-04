@@ -36,7 +36,15 @@ public class BrowseTabFuncs {
 		JTabbedPane tabbedPane = dc.getBoxPanelTabPane();
 		tabbedPane.add(label, boxP);
 	}
+	/**
+	 * It's OK to call this repeatedly for the same boxI.
+	 * @param dc
+	 * @param boxI - We rely on this boxI to "find" the right panel, and return the same panel if it's been 
+	 * opened before.
+	 * @param kind 
+	 */
 	public static void openBoxPanelAndFocus(DisplayContext dc, ScreenBox boxI, ScreenBoxPanel.Kind kind) {
+		
 		ScreenBoxPanel boxP = boxI.findBoxPanel(kind);
 		if (!isBoxTabKnown(dc, boxP)) {
 			String tabLabel = kind.toString() + "-" + boxI.getShortLabel();
