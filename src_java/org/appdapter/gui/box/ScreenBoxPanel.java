@@ -30,5 +30,9 @@ public abstract class ScreenBoxPanel<BoxType extends Box> extends JPanel {
 		REPO_MANAGER,
 		OTHER
 	}
+	/** Make the display of this panel foocus on a particular box.
+	 * 
+	 * @param b - a box to focus on
+	 */
 	public abstract void focusOnBox(BoxType b);
 }

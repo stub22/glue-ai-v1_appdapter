@@ -183,7 +183,7 @@ public class BasicDebugger implements Loggable {
 		logWarning(msg, null);
 	}
 
-	public void logDebug(String msg) {
+	@Override public void logDebug(String msg) {
 		logInfo(IMPO_LO, msg);
 	}
 	/**

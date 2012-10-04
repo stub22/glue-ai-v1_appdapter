@@ -60,7 +60,9 @@ public class DemoBrowser {
 		DemoNavigatorCtrl tn = new DemoNavigatorCtrl(bctx, tm, rootBTN, dcp);
 		return tn;
 	}
-	public static <BT extends ScreenBoxImpl<TriggerImpl<BT>>, RBT extends RepoBoxImpl<TriggerImpl<RBT>>> ScreenBoxContextImpl makeBCI(Class<BT> boxClass, Class<RBT> repoBoxClass) {
+	
+	public static <BT extends ScreenBoxImpl<TriggerImpl<BT>>, RBT extends RepoBoxImpl<TriggerImpl<RBT>>> 
+				ScreenBoxContextImpl makeBCI(Class<BT> boxClass, Class<RBT> repoBoxClass) {
 		TriggerImpl<BT> regTrigProto = makeTriggerPrototype(boxClass);
 		TriggerImpl<RBT> repoTrigProto = makeTriggerPrototype(repoBoxClass);
 		return makeBoxContextImpl(boxClass, repoBoxClass, regTrigProto, repoTrigProto);
@@ -71,6 +73,17 @@ public class DemoBrowser {
 	}
 	// static class ConcBootstrapTF extends BootstrapTriggerFactory<TriggerImpl<BoxImpl<TriggerImpl>>> {
 	// }  //   TT extends TriggerImpl<BT>
+	
+	/** Here is a humdinger of a static method, that constructs a demontration application tree
+	 * 
+	 * @param <BT>
+	 * @param <RBT>
+	 * @param regBoxClass
+	 * @param repoBoxClass
+	 * @param regTrigProto - defines the BT  trigger parameter type for screen boxes.  The repoTrigProto instance data is unused.
+	 * @param repoTrigProto - defines the RBT trigger parameter type for repo boxes.  The repoTrigProto instance data is unused.
+	 * @return 
+	 */
 	public static <BT extends ScreenBoxImpl<TriggerImpl<BT>>, RBT extends RepoBoxImpl<TriggerImpl<RBT>>> ScreenBoxContextImpl 
 				makeBoxContextImpl(Class<BT> regBoxClass, Class<RBT> repoBoxClass, TriggerImpl<BT> regTrigProto,
 					TriggerImpl<RBT> repoTrigProto) {
