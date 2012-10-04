@@ -37,7 +37,7 @@ import org.appdapter.bind.rdf.jena.model.{ModelStuff, JenaModelUtils};
 import org.appdapter.core.store.{Repo, BasicQueryProcessorImpl, BasicRepoImpl, QueryProcessor};
 
 import org.appdapter.impl.store.{DirectRepo, QueryHelper, ResourceResolver};
-import org.appdapter.help.repo.InitialBinding
+import org.appdapter.help.repo.InitialBindingImpl
 /**
  * @author Stu B. <www.texpedient.com>
  * 

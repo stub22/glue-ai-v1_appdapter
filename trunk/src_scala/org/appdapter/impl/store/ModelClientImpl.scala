@@ -37,31 +37,42 @@ import org.appdapter.core.item.{Item, JenaResourceItem}
  * @author Stu B. <www.texpedient.com>
  */
 
-class ModelClientImpl (private val myModel : Model) {
-	def makeResourceForURI(uri : String) : Resource = {
-		myModel.createResource(uri)
+
+class ModelClientImpl (private val myModel : Model) extends ModelClientCore {
+	def getModel : Model = myModel;
+}
+trait ModelClientCore extends org.appdapter.core.store.ModelClient {
+	protected def getModel : Model;
+	
+	override def makeResourceForURI(uri : String) : Resource = {
+		getModel.createResource(uri)
 	}
-	def makeResourceForQName(qName : String) : Resource = {
-		val expandedURI = myModel.expandPrefix(qName)
+	override def makeResourceForQName(qName : String) : Resource = {
+		val expandedURI = getModel.expandPrefix(qName)
 		makeResourceForURI(expandedURI)
 	}
-	def makeResourceForIdent(id : Ident) : Resource = {
+	override def makeResourceForIdent(id : Ident) : Resource = {
 		val uri : String = id.getAbsUriString
 		makeResourceForURI(uri)
 	}
-	def makeTypedLiteral(litString : String, dtype : RDFDatatype) : Literal = {
-		myModel.createTypedLiteral(litString, dtype);
+	override def makeTypedLiteral(litString : String, dtype : RDFDatatype) : Literal = {
+		getModel.createTypedLiteral(litString, dtype);
 	}
-	def makeStringLiteral(litString : String) : Literal = {
+	override def makeStringLiteral(litString : String) : Literal = {
 		makeTypedLiteral(litString, XSDDatatype.XSDstring);
 	}
 	
-	def makeIdentForQName(qName : String) : Ident = makeJenaResourceItemForQName(qName)
-	def makeItemForQName(qName : String) : Item = makeJenaResourceItemForQName(qName)
+	override def makeIdentForQName(qName : String) : Ident = makeJenaResourceItemForQName(qName)
+	override def makeItemForQName(qName : String) : Item = makeJenaResourceItemForQName(qName)
 	
+
 	private def makeJenaResourceItemForQName(qName : String) : JenaResourceItem = {	
 		val res = makeResourceForQName(qName)
 		new JenaResourceItem(res)
+	}
+	override  def makeIdentForURI(uri : String) : Ident = {
+		val res = makeResourceForURI(uri)
+		new JenaResourceItem(res);
 	}
 
 }

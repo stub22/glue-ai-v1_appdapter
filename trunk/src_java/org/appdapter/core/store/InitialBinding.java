@@ -1,12 +1,12 @@
 /*
- *  Copyright 2011 by The Appdapter Project (www.appdapter.org).
- *
+ *  Copyright 2012 by The Appdapter Project (www.appdapter.org).
+ * 
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
  *  You may obtain a copy of the License at
- *
+ * 
  *       http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  *  Unless required by applicable law or agreed to in writing, software
  *  distributed under the License is distributed on an "AS IS" BASIS,
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,23 +14,21 @@
  *  limitations under the License.
  */
 
-package org.appdapter.gui.repo;
-
-import org.appdapter.api.trigger.Trigger;
-import org.appdapter.core.store.Repo;
-
+package org.appdapter.core.store;
+import org.appdapter.core.name.Ident;
+import com.hp.hpl.jena.query.QuerySolutionMap;
+import com.hp.hpl.jena.rdf.model.RDFNode;
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public interface MutableRepoBox<TT extends Trigger<? extends RepoBox<TT>>> extends RepoBox<TT> {
 
-	public void mount(String configPath);
+public interface InitialBinding {
+	public QuerySolutionMap getQSMap();
 	
-	public void formatStoreIfNeeded();
-
-	public void importGraphFromURL(String tgtGraphName, String sourceURL, boolean replaceTgtFlag);
+	public void bindNode( String vName, RDFNode  node  );
 	
-	public String getUploadHomePath();
-		
-		
+	public void  bindQName(String vName, String resQName );
+	public void  bindURI(String vName , String resURI);
+	public void  bindIdent(String vName , Ident id);
+	public void  bindLiteralString(String vName , String litString);
 }

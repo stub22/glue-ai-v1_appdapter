@@ -21,6 +21,7 @@ import com.hp.hpl.jena.sdb.Store;
 import java.util.List;
 import java.util.Set;
 import org.appdapter.core.name.Ident;
+import com.hp.hpl.jena.query.QuerySolution;
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -56,6 +57,9 @@ public interface Repo extends QueryProcessor {
 
 		public String graphURI;
 		public long statementCount;
+		public String toString() { 
+			return "[GraphStat uri=" + graphURI + ", stmtCnt=" + statementCount + "]";
+		}
 	}
 
 	public static interface Stored extends Repo {
@@ -68,12 +72,26 @@ public interface Repo extends QueryProcessor {
 		
 	}
 	public static interface Mutable extends Repo {
-
+		public void addNamedModel(Ident modelID, Model model) ;
+		public void replaceNamedModel(Ident modelID, Model model) ;
+		
 		public void importGraphFromURL(String tgtGraphName, String sourceURL, boolean replaceTgtFlag);
 
 		// uploadHomePath is just a UI config helper ... looking for its proper place in java-land
 		public String getUploadHomePath();
 
 		public void formatRepoIfNeeded();
+	}
+	public static interface WithFallbackModelClient extends Repo, ModelClient {
+		public ModelClient getFallbackModelClient();
+	}
+	public static interface WithDirectory extends WithFallbackModelClient {
+		public Model getDirectoryModel();
+		public ModelClient getDirectoryModelClient();
+		public InitialBinding makeInitialBinding();
+		
+		public List<QuerySolution> queryIndirectForAllSolutions( Ident qSrcGraphIdent, Ident queryIdent, QuerySolution qInitBinding ) ;
+		public List<QuerySolution> queryIndirectForAllSolutions( String qSrcGraphQN, String queryQN, QuerySolution qInitBinding ) ;
+		public List<QuerySolution> queryDirectForAllSolutions( String qText, QuerySolution qInitBinding);
 	}
 }

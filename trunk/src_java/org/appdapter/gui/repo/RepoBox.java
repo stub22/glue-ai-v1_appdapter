@@ -25,6 +25,10 @@ import org.appdapter.core.store.Repo;
  * @author Stu B. <www.texpedient.com>
  */
 public interface RepoBox<TT extends Trigger<? extends RepoBox<TT>>> extends Box<TT> {
+	public Repo getRepo();  // Return type should be yet another type parameter of the interface.
+	
 	public List<Repo.GraphStat>		getAllGraphStats();
+	
+	// This method does not belong here.
 	public String processQueryAtUrlAndProduceXml(String queryURL);
 }

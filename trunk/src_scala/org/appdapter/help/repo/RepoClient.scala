@@ -17,16 +17,16 @@
 package org.appdapter.help.repo
 
 import org.appdapter.core.name.Ident
+import org.appdapter.core.store.{Repo, InitialBinding, ModelClient}
 
-import org.appdapter.impl.store.{FancyRepo};
+// import org.appdapter.impl.store.{FancyRepo};
 
-trait RepoClient {
+trait RepoClient extends ModelClient {
   
-	/** Returns the current cached FancyRepo
-	 *
-	 * @return The test sheet FancyRepo
+	/** 
+	 * @return currently cached Repo.WithDirectory
 	 */
-	def getRepo: FancyRepo
+	def getRepo: Repo.WithDirectory
 	
 	/**
 	 * The most general case, using Idents for input.

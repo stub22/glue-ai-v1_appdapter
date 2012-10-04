@@ -16,24 +16,22 @@
 
 package org.appdapter.gui.box;
 
-import org.appdapter.api.trigger.BoxContext;
-import org.appdapter.api.trigger.MutableBox;
 import org.appdapter.api.trigger.BoxImpl;
 import org.appdapter.api.trigger.Trigger;
-import org.appdapter.core.component.KnownComponent;
-import org.appdapter.core.component.KnownComponentImpl;
 import org.appdapter.gui.browse.DisplayContext;
 import org.appdapter.gui.repo.DatabaseManagerPanel;
 import org.appdapter.gui.repo.ModelMatrixPanel;
 import org.appdapter.gui.repo.RepoManagerPanel;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**  Base implementation of our demo Swing Panel boxes.  
+/**  Base implementation of our demo Swing Panel boxes. 
+ * The default implementation can own one swing panel of each "Kind".
+ * This owner does not actually create any kind of GUI resource until it is asked to
+ * findBoxPanel(kind).  A strongheaded purpose-specific box might ignore "Kind",
+ * and always return whatever panel it thinks is "best".  
  * <br/> 
  * @author Stu B. <www.texpedient.com>
  */
@@ -65,11 +63,22 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 
 
 	protected void putBoxPanel(ScreenBoxPanel.Kind kind, ScreenBoxPanel bp) {
+		ScreenBoxPanel oldBP = getBoxPanel(kind);
+		if (oldBP != null) {
+			theLogger.warn("Replacing old ScreenBoxPanel link for " + getShortLabel() + " to {} with {} ", oldBP, bp);
+		}
 		myPanelMap.put(kind, bp);
 	}
 	protected ScreenBoxPanel getBoxPanel(ScreenBoxPanel.Kind kind) {
 		return myPanelMap.get(kind);
 	}
+	/**
+	 * The box panel returned might be one that we "made" earlier, 
+	 * or one that we make right now,
+	 * or it might be one that someone "put" onto me.
+	 * @param kind
+	 * @return 
+	 */
 	@Override public ScreenBoxPanel findBoxPanel(ScreenBoxPanel.Kind kind) {
 		ScreenBoxPanel bp = getBoxPanel(kind);
 		if (bp == null) {
@@ -77,6 +86,14 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 		}
 		return bp;
 	}
+	/**
+	 * This whole "kind" thing is a ruse allowing us to make some hardwired basic panel types
+	 * without the conceptual bloat of yet another registry of named things.  The real generality
+	 * comes when you override this ScreenBoxImpl class, and provide your own OTHER kind of panel.
+	 * When these mechanisms mature, we will expand to a proper GUI component type registry.
+	 * @param kind
+	 * @return 
+	 */
 	protected ScreenBoxPanel makeBoxPanel(ScreenBoxPanel.Kind kind) {
 		ScreenBoxPanel bp = null;
 		switch(kind) {
@@ -89,6 +106,11 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 		case DB_MANAGER:
 			bp = new DatabaseManagerPanel();
 		break;
+		case OTHER:
+			bp = makeOtherPanel();
+		break;
+		default:
+				throw new RuntimeException("Found unexpected ScreenBoxPanelKind: " + kind);
 		}
 		if (bp != null) {
 			// Subclasses might do something fancier to share panels among instances.
@@ -96,8 +118,18 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 		}
 		return bp;
 	}
-
-
-
+	/** Override this to create an app-specific ScreenBoxPanel kind, and configure
+	 * your app to request a panel of kind "OTHER", using BrowseTabFuncs.openBoxPanelAndFocus,
+	 * PanelTriggers.OpenTrigger, or your own mechanism.  Note that your ScreenBoxPanel
+	 * may be able to display any number of boxes, by responding to the focusOnBox method.
+	 * If those boxes are screen boxes, you may want to tell them to 
+	 * putBoxPanel() the one currently displaying them, in case they are later asked
+	 * to findBoxPanel themselves.
+	 * @return 
+	 */
+	protected ScreenBoxPanel makeOtherPanel() { 
+		theLogger.warn("Default implementation of makeOtherPanel() for {} is returning null", getShortLabel());
+		return null;
+	}
 
 }
