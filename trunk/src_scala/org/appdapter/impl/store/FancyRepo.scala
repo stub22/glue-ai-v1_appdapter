@@ -176,9 +176,7 @@ class DirectRepo(val myDirectoryModel : Model) extends BasicRepoImpl with FancyR
 		val ds : Dataset = DatasetFactory.create() // becomes   createMem() in later Jena versions.
 		ds;
 	}
-	// Not implemented at present
-	// override def  getGraphStats() : java.util.List[Repo.GraphStat] = new java.util.ArrayList();
-	
+
 }
 
 class DatabaseRepo(configPath : String, val myDirGraphID : Ident) 
