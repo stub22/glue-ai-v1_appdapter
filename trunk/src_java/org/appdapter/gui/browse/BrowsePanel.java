@@ -67,7 +67,7 @@ public class BrowsePanel extends javax.swing.JPanel implements DisplayContext {
 
         myLowerPanel.setLayout(new java.awt.BorderLayout());
 
-        myCmdInputTextField.setText("type/paste commands/uris/urls here");
+        myCmdInputTextField.setText("console input - type/paste commands/uris/urls here, and see output in resizable pane below.   NOTE:  The tabs at upper right can hold any Swing GUI components");
         myCmdInputTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 myCmdInputTextFieldActionPerformed(evt);
@@ -97,7 +97,12 @@ public class BrowsePanel extends javax.swing.JPanel implements DisplayContext {
         myContentPanel.setBackground(new java.awt.Color(51, 0, 51));
         myContentPanel.setLayout(new java.awt.BorderLayout());
 
-        myBoxPanelStatus.setText("is panel loading status here useful?");
+        myBoxPanelStatus.setText("Extra text field - used for status display and special console input .   This screen shows a box navigation system.");
+        myBoxPanelStatus.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                myBoxPanelStatusActionPerformed(evt);
+            }
+        });
         myContentPanel.add(myBoxPanelStatus, java.awt.BorderLayout.NORTH);
 
         javax.swing.GroupLayout myHomeBoxPanelLayout = new javax.swing.GroupLayout(myHomeBoxPanel);
@@ -127,6 +132,10 @@ public class BrowsePanel extends javax.swing.JPanel implements DisplayContext {
 	private void myCmdInputTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_myCmdInputTextFieldActionPerformed
 		// TODO add your handling code here:
 	}//GEN-LAST:event_myCmdInputTextFieldActionPerformed
+
+	private void myBoxPanelStatusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_myBoxPanelStatusActionPerformed
+		// TODO add your handling code here:
+	}//GEN-LAST:event_myBoxPanelStatusActionPerformed
 	public void addTreeMouseAdapter(MouseAdapter ma) {
 		myTree.addMouseListener(ma);
 	}
