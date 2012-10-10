@@ -25,7 +25,7 @@ import org.appdapter.api.trigger.Box;
 public interface MutableBox<TrigType extends Trigger<? extends MutableBox<TrigType>>> extends Box<TrigType>  {
 
 	void attachTrigger(TrigType bt);
-
+	void clearTriggers();
 	void setContext(BoxContext bc);
 
 }

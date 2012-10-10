@@ -43,12 +43,19 @@ import org.slf4j.LoggerFactory;
  * @author Stu B. <www.texpedient.com>
  *
  * CC = "Component Class"
+ * 
+ * This class maintains a horrible lynchpin for all our Jena Assembler-based features
+ * (which are completely optional):  A static map of ComponentCaches, keyed by component class.
+ * We cannot rely on instance data very easily in Assemblers, because Jena can construct them at will.
+ * 
+ * Using this map, we ensure that clients get the same object handles, every time they use
+ * a cooperating Assembler to look up a component for a particular URI.
  */
 public abstract class CachingComponentAssembler<MKC extends MutableKnownComponent> extends AssemblerBase {
 	private Logger myLogger = LoggerFactory.getLogger(getClass());
 	private static Logger theBackupLogger = LoggerFactory.getLogger(CachingComponentAssembler.class);
 	
-	private	static Map<Class, ComponentCache> theCaches = new HashMap<Class, ComponentCache>();
+	private	static Map<Class, ComponentCache> theCachesByAssmblrSubclass = new HashMap<Class, ComponentCache>();
 
 	// private	BasicDebugger myDebugger = new BasicDebugger(getClass());
 	
@@ -68,18 +75,18 @@ public abstract class CachingComponentAssembler<MKC extends MutableKnownComponen
 	protected ComponentCache<MKC>	getCache() { 
 		Class	tc = getClass();
 		// Not really type-safe, ugh.
-		ComponentCache<MKC> cc = theCaches.get(tc);
+		ComponentCache<MKC> cc = theCachesByAssmblrSubclass.get(tc);
 		if (cc == null) { 
 			cc = new ComponentCache<MKC>();
-			theCaches.put(tc, cc);
+			theCachesByAssmblrSubclass.put(tc, cc);
 		}
 		return cc;
 	}
-	public static void clearCacheFor(Class c) {
-		theCaches.put(c, null);
+	public static void clearCacheForAssemblerSubclass(Class c) {
+		theCachesByAssmblrSubclass.put(c, null);
 	}
-	public static void clearAllCaches() { 
-		theCaches = new HashMap<Class, ComponentCache>();
+	public static void clearAllSubclassCaches() { 
+		theCachesByAssmblrSubclass = new HashMap<Class, ComponentCache>();
 	}
 	protected abstract Class<MKC> decideComponentClass(Ident componentID, Item componentConfigItem);
 	protected abstract void initExtendedFieldsAndLinks(MKC comp, Item configItem, Assembler asmblr, Mode mode);
