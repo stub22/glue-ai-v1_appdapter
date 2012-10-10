@@ -20,9 +20,9 @@ package org.appdapter.api.facade;
  */
 public class FacadeSpec<Type, Kind> {
 
-	private final Class<Type> myObjClazz;
-	private Kind myKind;
-	private	boolean	myExtFlag;
+	private final Class<Type>		myObjClazz;
+	private Kind					myKind;
+	private	boolean					myExtFlag;
 
 	public FacadeSpec(Kind kind, Class<Type> sClz, boolean extFlag) {
 		myKind = kind;

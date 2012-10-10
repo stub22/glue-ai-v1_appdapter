@@ -22,20 +22,11 @@ import  org.appdapter.bind.rdf.jena.assembly.AssemblerUtils;
 
 
 	
-class FullBox[FT <:  FullTrigger[_ <: FullBox[FT]]] extends ScreenBoxImpl[FT] {
-	/*
-	 def getOpenKidFullBoxes(bc : BoxContext) : Seq[FullBox] = {
-	 val rawtypeOpenChildrenJL : java.util.List[FriendBox] = bc.getOpenChildBoxesNarrowed(this, classOf[FT], classOf[FriendTrig]);
-	 val rawtypeKidSeq : Seq[FriendBox] = scala.collection.JavaConversions.asBuffer(rawtypeOpenChildrenJL) ;
-	 rawtypeKidSeq;
-	 }
-	 */
-}
-// trait FullTrigger[FB <:  FullBox[_ <: FullTrigger[FB]]] extends TriggerImpl[FB] {}
+class FullBox[FT <:  FullTrigger[_ <: FullBox[FT]]] extends ScreenBoxImpl[FT] {}
 
 trait FullTrigger[FB <:  FullBox[_ <: FullTrigger[FB]]] extends MutableTrigger[FB] {}
 
-// class BoxOne extends FullBox[FullTrigger[BoxOne]] { }
+
 class BoxOne extends FullBox[TriggerOne] {
 	def getOpenKidBoxes(bc : BoxContext) : Seq[BoxOne] = {
 		val kidBoxJL  = bc.getOpenChildBoxesNarrowed(this, classOf[BoxOne], classOf[TriggerOne]);

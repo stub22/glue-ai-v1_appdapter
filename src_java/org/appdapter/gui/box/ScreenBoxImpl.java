@@ -45,32 +45,16 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	private	Map<ScreenBoxPanel.Kind, ScreenBoxPanel>	myPanelMap = new HashMap<ScreenBoxPanel.Kind, ScreenBoxPanel>();
 
 
-	public void setDisplayContextProvider(DisplayContextProvider dcp) {
+	@Override public void setDisplayContextProvider(DisplayContextProvider dcp) {
 		myDCP = dcp;
 	}
 
 	
-	public DisplayContext getDisplayContext() {
+	@Override public DisplayContext getDisplayContext() {
 		if (myDCP != null) {
 			return myDCP.findDisplayContext(this);
 		}
 		return null;
-	}
-
-	public void dump() {
-		theLogger.info("DUMP-DUMP-DE-DUMP");
-	}
-
-
-	protected void putBoxPanel(ScreenBoxPanel.Kind kind, ScreenBoxPanel bp) {
-		ScreenBoxPanel oldBP = getBoxPanel(kind);
-		if (oldBP != null) {
-			theLogger.warn("Replacing old ScreenBoxPanel link for " + getShortLabel() + " to {} with {} ", oldBP, bp);
-		}
-		myPanelMap.put(kind, bp);
-	}
-	protected ScreenBoxPanel getBoxPanel(ScreenBoxPanel.Kind kind) {
-		return myPanelMap.get(kind);
 	}
 	/**
 	 * The box panel returned might be one that we "made" earlier, 
@@ -86,6 +70,18 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 		}
 		return bp;
 	}
+
+	protected void putBoxPanel(ScreenBoxPanel.Kind kind, ScreenBoxPanel bp) {
+		ScreenBoxPanel oldBP = getBoxPanel(kind);
+		if (oldBP != null) {
+			theLogger.warn("Replacing old ScreenBoxPanel link for " + getShortLabel() + " to {} with {} ", oldBP, bp);
+		}
+		myPanelMap.put(kind, bp);
+	}
+	protected ScreenBoxPanel getBoxPanel(ScreenBoxPanel.Kind kind) {
+		return myPanelMap.get(kind);
+	}
+
 	/**
 	 * This whole "kind" thing is a ruse allowing us to make some hardwired basic panel types
 	 * without the conceptual bloat of yet another registry of named things.  The real generality
@@ -130,6 +126,9 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	protected ScreenBoxPanel makeOtherPanel() { 
 		theLogger.warn("Default implementation of makeOtherPanel() for {} is returning null", getShortLabel());
 		return null;
+	}
+	public void dump() {
+		theLogger.info("DUMP-DUMP-DE-DUMP");
 	}
 
 }

@@ -33,16 +33,16 @@ public abstract class BoxImpl <TrigType extends Trigger<? extends BoxImpl<TrigTy
 
 	private List<TrigType>				myTriggers = new ArrayList<TrigType>();
 	
-	public void setContext(BoxContext bc) {
+	@Override public void setContext(BoxContext bc) {
 		myBoxContext = bc;
 	}
 	@Override public BoxContext getBoxContext() {
 		return myBoxContext;
 	}
-	public void clearTriggers() {
+	@Override public void clearTriggers() {
 		myTriggers.clear();
 	}
-	public void attachTrigger(TrigType trig) {
+	@Override public void attachTrigger(TrigType trig) {
 		myTriggers.add(trig);
 	}
 	@Override public List<TrigType> getTriggers() {
