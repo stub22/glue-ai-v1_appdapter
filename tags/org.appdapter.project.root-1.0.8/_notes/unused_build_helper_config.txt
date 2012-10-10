@@ -1,0 +1,64 @@
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>1.7</version>
+				<executions>
+				
+					<execution>
+						<id>add-source</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>add-source</goal>
+						</goals>
+						<configuration>
+							<sources>
+								<source>../../src_java</source>
+								<source>../../src_scala</source>								
+							</sources>
+						</configuration>
+					</execution>
+					<execution>
+						<id>add-test-source</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>add-test-source</goal>
+						</goals>
+						<configuration>
+							<sources>
+								<!-- Netbeans 7.0 does not show these test sources 
+									in project view, but we are hoping that is fixed via Bug 187595:
+									http://netbeans.org/bugzilla/show_bug.cgi?id=187595
+									
+									As noted above, we are instead currently using SVN:externals to create
+									a source tree in compliance with Maven default/recommended form.
+								-->
+								<!--
+								<source>../../src_java_test</source>
+								<source>../../src_scala_test</source>	
+								-->
+							</sources>
+						</configuration>
+					</execution>
+
+					<execution>
+						<id>add-resource</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>add-resource</goal>
+						</goals>
+						<configuration>
+							<resources>
+								<resource>
+									<directory>../../src_resources</directory>
+									<!--
+									<targetPath>tgt_resources</targetPath>
+									-->
+									<excludes>
+										<exclude>**/junk/**</exclude>
+									</excludes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>					
+				</executions>
+			</plugin>
