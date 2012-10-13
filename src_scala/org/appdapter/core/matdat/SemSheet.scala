@@ -127,8 +127,16 @@ object SemSheet {
 		}
 		
 		override def absorbDataRow(cellRow : MatrixRow) {
-			theDbg.logDebug("Processing SEMANTIC data(!) = " + cellRow.dump());
-			if (myIndivColIdx >= 0) {
+			getLogger.debug("Processing SEMANTIC data(!) = " + cellRow.dump());
+			
+		
+			val commentCol = 0;
+			val optComment : Option[String] = cellRow.getPossibleColumnValueString(commentCol);
+			val rowIsCommentedOut : Boolean = optComment.getOrElse("").trim.startsWith("#");
+			if (rowIsCommentedOut) {
+				getLogger.info("Row is commented out: " + cellRow.dump());
+			} 
+			if ((myIndivColIdx >= 0) && (! rowIsCommentedOut)) {
 				val optIndivCell : Option[String] = cellRow.getPossibleColumnValueString(myIndivColIdx);
 				val optIndiv : Option[Resource] = if (optIndivCell.isDefined) {
 					val indivQNameOrURI = optIndivCell.get
@@ -207,15 +215,15 @@ object SemSheet {
 		
 		println("Got NS map: " + nsJavaMap)
 		
-		val reposSheetNum = 8;
-		val reposModel : Model = readModelGDocSheet(keyForBootSheet22, reposSheetNum, nsJavaMap);
+		val dirSheetNum = 8;
+		val dirModel : Model = readModelGDocSheet(keyForBootSheet22, dirSheetNum, nsJavaMap);
 		
 		val queriesSheetNum = 12;
 		val queriesModel : Model = readModelGDocSheet(keyForBootSheet22, queriesSheetNum, nsJavaMap);		
 		
 		val tqText = "select ?sheet { ?sheet a ccrt:GoogSheet }";
 		
-		val trset = QueryHelper.execModelQueryWithPrefixHelp(reposModel, tqText);
+		val trset = QueryHelper.execModelQueryWithPrefixHelp(dirModel, tqText);
 		val trxml = QueryHelper.buildQueryResultXML(trset);
 		
 		println("Got repo-query-test result-XML: \n" + trxml);
@@ -243,7 +251,7 @@ object SemSheet {
 			
 			val qtxtLit : Literal = qSoln.getLiteral("qtxt")
 			val qtxtString = qtxtLit.getString();
-			val zzRset = QueryHelper.execModelQueryWithPrefixHelp(reposModel, qtxtString);
+			val zzRset = QueryHelper.execModelQueryWithPrefixHelp(dirModel, qtxtString);
 			val zzRSxml = QueryHelper.buildQueryResultXML(zzRset);
 			println ("Query using qTxt got: " + zzRSxml)
 			
