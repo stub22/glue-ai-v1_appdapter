@@ -188,19 +188,28 @@ central repo.
 				</exclusion>
 			</exclusions>
 		</dependency>
-	 <dependency>
-	  <groupId>${project.groupId}</groupId>
-	  <artifactId>ext.bundle.math.jscience_50SNAP</artifactId>
-	  <version>${project.version}</version>
-	 </dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>ext.bundle.math.jscience_50SNAP</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-simple</artifactId>
+			<version>1.6.2</version>
+	  <!-- Can change the scope during unit testing, but don't commit to SVN with scope other than "test" -->
+			<scope>test</scope>
+		</dependency>
+	 <!--
 	 <dependency>
 	  <groupId>org.slf4j</groupId>
 	  <artifactId>slf4j-log4j12</artifactId>
 	  <version>1.6.2</version>
 	  <scope>test</scope>
 	 </dependency>
+	 -->
 	</dependencies>
-
+	
 	<build>
 	  <!--
     <sourceDirectory>src/main/scala</sourceDirectory>

@@ -66,9 +66,8 @@ class MatrixRowCSV (val myRowArr : Array[String]) extends MatrixRow {
 			}
 		}
 	}
-
 }
-class SheetProc (val myHeaderRowCount : Int) {
+class SheetProc (val myHeaderRowCount : Int) extends BasicDebugger {
 	require(myHeaderRowCount > 0);
 	private var myRowIdx = 0;
 	private val myHeaderRows = new Array[MatrixRow](myHeaderRowCount);
@@ -86,13 +85,16 @@ class SheetProc (val myHeaderRowCount : Int) {
 	}
 	def absorbHeaderRows(headRows : Array[MatrixRow]) {
 		for (hrIdx <- 0 until headRows.length) {
-			println("HEADER[" + hrIdx + "] = " + headRows(hrIdx).dump());
+			getLogger.info("HEADER[" + hrIdx + "] = " + headRows(hrIdx).dump());
 		}
 	}
 	def absorbDataRow(cells : MatrixRow) {
-		println("DATA = " + cells.dump());
+		getLogger.info("DATA = " + cells.dump());
 	}
 }
+/**
+ * Used to read a simple two column sheet into a (key,value) pair map.
+ */
 class MapSheetProc (headerRowCount : Int, val keyColIdx : Int, val vColIdx : Int) extends SheetProc(headerRowCount) {
 	val myResultMap = scala.collection.mutable.Map.empty[String, String]
 	
@@ -101,7 +103,12 @@ class MapSheetProc (headerRowCount : Int, val keyColIdx : Int, val vColIdx : Int
 		val value : Option[String] = cellRow.getPossibleColumnValueString(vColIdx);
 		
 		if (key.isDefined && value.isDefined) {
-			myResultMap.put(key.get, value.get)
+			val rowIsCommentedOut : Boolean = key.get.trim.startsWith("#");
+			if (!rowIsCommentedOut) {
+				myResultMap.put(key.get, value.get)
+			} else {
+				getLogger.info("Row is commented out: " + cellRow.dump());
+			}
 		}
 	}
 	import collection.JavaConversions._	
