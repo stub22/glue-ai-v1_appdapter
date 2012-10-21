@@ -50,8 +50,8 @@ public class RepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<TT>>> extends 
 	}
 
 	@Override public void mount(String configPath) {
-		// This static method call does not allow us to construct a fancier subtype of BasicStoredMutableRepoImpl.
-		myRepo = BasicStoredMutableRepoImpl.openRepo(configPath);
+		// This bonehead static method call does not allow us to construct a fancier subtype of BasicStoredMutableRepoImpl.
+		myRepo = BasicStoredMutableRepoImpl.openBasicRepoFromConfigPath(configPath, getClass().getClassLoader());
 	}
 	@Override public void formatStoreIfNeeded() {
 		myRepo.formatRepoIfNeeded();

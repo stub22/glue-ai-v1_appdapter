@@ -66,9 +66,9 @@ public interface Repo extends QueryProcessor {
 
 		public Store getStore();
 
-		public void setStore(Store store);
+		// public void setStore(Store store);
 
-		public void mountStoreUsingFileConfig(String storeConfigPath);
+		// public void mountStoreUsingFileConfig(String storeConfigPath);
 		
 	}
 	public static interface Mutable extends Repo {

@@ -59,91 +59,49 @@ import org.appdapter.core.name.Ident;
 
 import org.appdapter.demo.DemoResources;
 
-
 /**
  * @author Stu B. <www.texpedient.com>
- * 
- * This impl uses 
+ *
+ * This impl uses a Jena SDB "Store". 
+ *
+ * http://jena.apache.org/documentation/javadoc/sdb/com/hp/hpl/jena/sdb/Store.html
  */
 public class BasicStoredMutableRepoImpl extends BasicRepoImpl implements Repo.Stored, Repo.Mutable {
 
-	// static Logger theLogger = LoggerFactory.getLogger(AppRepo.class);
-	private String	myStoreConfigPath;
-	private Store	myStore;
+	private Store myStore;
 
-	public static BasicStoredMutableRepoImpl openRepo(String storeConfigPath) {
-		BasicStoredMutableRepoImpl repo = new BasicStoredMutableRepoImpl(storeConfigPath);
-		repo.openUsingCurrentConfigPath();
-		return repo;
-	}
-	
-	protected BasicStoredMutableRepoImpl(String storeConfigPath) {
-		myStoreConfigPath = storeConfigPath;
-	}
-	
-	@Override public void mountStoreUsingFileConfig(String storeConfigPath) {
-		logInfo("Mounting store using fileConfigPath[" + storeConfigPath + "]");
-		FileManager fmgr = Env.fileManager();
-		ClassLoader classLoader = getClass().getClassLoader();
-		fmgr.addLocatorClassLoader(classLoader);
-		Store store = SDBFactory.connectStore(storeConfigPath);
-		setStore(store);
-	}	
 
-	protected void openUsingCurrentConfigPath() {
-		logInfo("Connecting to store using config from: " + myStoreConfigPath);
-		mountStoreUsingFileConfig(myStoreConfigPath);
+
+	/**
+	 * 
+	 * @param aStore 
+	 */
+	protected BasicStoredMutableRepoImpl(Store aStore) {
+		myStore = aStore;
 	}
 
-
-
-	@Override	public Store getStore() {
+	@Override public Store getStore() {
 		/*
-		* http://jena.apache.org/documentation/sdb/javaapi.html
-		* A Store is lightweight and does not perform any database actions when created, so creating and releasing
-		* them will not impact performance. Closing a store does not close the JDBC connection.
-		*/		
+		 * http://jena.apache.org/documentation/sdb/javaapi.html A Store is lightweight and does not perform any
+		 * database actions when created, so creating and releasing them will not impact performance. Closing a store
+		 * does not close the JDBC connection.
+		 */
 		return myStore;
 	}
+
 	@Override public String getUploadHomePath() {
 		return ".";
 	}
-	@Override public void setStore(Store store) {
+
+	protected void setStore(Store store) {
 		myStore = store;
 	}
-	/**
-	@Override public List<GraphStat> getGraphStats() {
-		List<GraphStat> stats = new ArrayList<GraphStat>();
-		Store store = getStore();
-		Iterator<Node> nodeIt = StoreUtils.storeGraphNames(store);
-		while (nodeIt.hasNext()) {
-			Node n = nodeIt.next();
-			GraphStat stat = new GraphStat();
-			stat.graphURI =  n.getURI();
-			// What's the diff between using this API, and using Dataset.getNamedModel?
-			// There are more overloaded variations in the SDBFactory API, but probably
-			// it's the same result either way.  Dataset code should be more general,
-			// and fit better with our abstract "Repo" concept.  Not 100% sure though
-			// about equivalent behavior and performance when we are trying to write 
-			// to the repo.
-			
-			Model m = SDBFactory.connectNamedModel(store, stat.graphURI);
-			stat.statementCount = m.size();
-			logInfo("Found graph with URI: " + stat.graphURI + " and size: " + stat.statementCount);
-			stats.add(stat);
-		}
-		return stats;
-	}
-	*/
-
-
-
 
 	@Override public void formatRepoIfNeeded() {
 		Store store = getStore();
 		if (store == null) {
 			throw new RuntimeException("Improperly asked to format store with no store open.");
-		}		
+		}
 		try {
 			boolean isFormatted = StoreUtils.isFormatted(store);
 
@@ -158,38 +116,49 @@ public class BasicStoredMutableRepoImpl extends BasicRepoImpl implements Repo.St
 			logError("problem in formatIfNeeded", t);
 		}
 	}
-
+	/**
+	 * Uses a "GraphUploadTask" to read the contents of sourceURL into tgtGraph (named or default),
+	 * with copious debug output.
+	 * 
+	 * @param tgtGraphName - resolved to a model using  SDBFactory.connectNamedModel.  If null, uses connectDefaultModel.
+	 * @param sourceURL
+	 * @param replaceTgtFlag - If true, model will first be cleared using tgtStoreModel.removeAll();
+	 */
 	@Override public void importGraphFromURL(String tgtGraphName, String sourceURL, boolean replaceTgtFlag) {
-		GraphUploadTask ut = new GraphUploadTask();
+		// Copied settings from dflt constructor
+		boolean timingEnabledFlag = true;
+		boolean verboseFlag = true;
+		boolean quietFlag = false;
+		GraphUploadTask ut = new GraphUploadTask(timingEnabledFlag, verboseFlag, quietFlag);
 		ut.loadOneGraphIntoStoreFromURL(myStore, tgtGraphName, sourceURL, replaceTgtFlag);
 	}
+
 	@Override public Dataset makeMainQueryDataset() {
 		Store store = getStore();
 		Dataset ds = DatasetStore.create(store);
 		return ds;
 	}
-	/* Does not work with Jena 2.6.4.
-	 * Later versions
-	 
-	protected DataSource getMainMutableDataSource() { 
-		Dataset mds = getMainQueryDataset();
-		return (DataSource) mds;
-	}*/
+	/*
+	 * Does not work with Jena 2.6.4. May work in some later (Apache-era) Jena versions.
+	 *
+	 * protected DataSource getMainMutableDataSource() { Dataset mds = getMainQueryDataset(); return (DataSource) mds;
+	}
+	 */
+
 	protected Model connectNamedModel(Ident modelID) {
 		return SDBFactory.connectNamedModel(getStore(), modelID.getAbsUriString());
 	}
+
 	@Override public void addNamedModel(Ident modelID, Model srcModel) {
 		// DataSource mutableDataSrc = (DataSource) getMainMutableDataSource();
 		// Newer versions of Jena API include this method in the Dataset interface.
 		// mutableDataSrc.addNamedModel(modelID.getAbsUriString(), model);
 		Model connModel = connectNamedModel(modelID);
 		/*
-		logInfo("Connected named model: " + connModel);
-		Graph g = connModel.getGraph();
-		logInfo("Graph = " + g);
-		logInfo("BulkUpdateHandler = " + g.getBulkUpdateHandler());
-		* 
-		*/ 
+		 * logInfo("Connected named model: " + connModel); Graph g = connModel.getGraph(); logInfo("Graph = " + g);
+		 * logInfo("BulkUpdateHandler = " + g.getBulkUpdateHandler());
+		 *
+		 */
 		connModel.add(srcModel);
 	}
 
@@ -201,5 +170,46 @@ public class BasicStoredMutableRepoImpl extends BasicRepoImpl implements Repo.St
 		connModel.removeAll();
 		connModel.add(srcModel);
 	}
-
+	
+	
+	/**
+	 * For unit testing, this static convenience method constructs the "basic" version of Store repo.  
+	 * See details in SdbStoreFactory.  
+	 * For real application use cases, we instead usually  go through the FancyRepoFactory object defined in Scala Packages of 
+	 * this proj.
+	 * @param storeConfigPath
+	 * @param optCL
+	 * @return 
+	 */
+	public static BasicStoredMutableRepoImpl openBasicRepoFromConfigPath(String storeConfigPath, ClassLoader optCL) {
+		Store s = SdbStoreFactory.connectSdbStoreFromResPath(storeConfigPath, optCL);
+		BasicStoredMutableRepoImpl repo = new BasicStoredMutableRepoImpl(s);
+		return repo;
+	}	
+	
+	
+	/**
+	 * Old sample store-iterator code, replaced by Dataset-level impls. in BasicRepoImpl.getGraphStats.
+	 * Iterating the store's graphs directly, rather than thru Dataset. 
+	 * Will give absolutely equivalent results?
+	 * 
+	 * @param store
+	 * @return 
+	 */
+	protected List<GraphStat> unusedDirectGraphStatFetcher(Store store) {
+		List<GraphStat> stats = new ArrayList<GraphStat>();
+		Iterator<Node> nodeIt = StoreUtils.storeGraphNames(store);
+		while (nodeIt.hasNext()) {
+			Node n = nodeIt.next();
+			GraphStat stat = new GraphStat();
+			stat.graphURI = n.getURI();
+			Model m = SDBFactory.connectNamedModel(store, stat.graphURI);
+			stat.statementCount = m.size();
+			logInfo("Found graph with URI: " + stat.graphURI + " and size: " + stat.statementCount);
+			stats.add(stat);
+		}
+		return stats;
+	}
+	
+	
 }
