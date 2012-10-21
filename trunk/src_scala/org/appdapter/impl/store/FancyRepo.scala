@@ -32,7 +32,7 @@ import com.hp.hpl.jena.rdf.listeners.{ObjectListener};
 import org.appdapter.bind.rdf.jena.model.{ModelStuff, JenaModelUtils};
 import org.appdapter.bind.rdf.jena.query.{JenaArqQueryFuncs, JenaArqResultSetProcessor};
 
-import org.appdapter.core.store.{Repo, BasicRepoImpl, BasicStoredMutableRepoImpl, QueryProcessor, InitialBinding, ModelClient};
+import org.appdapter.core.store.{Repo, BasicRepoImpl, BasicStoredMutableRepoImpl, QueryProcessor, InitialBinding, ModelClient, SdbStoreFactory};
 import org.appdapter.core.name.Ident;
 import org.appdapter.help.repo.InitialBindingImpl;
 import org.appdapter.core.log.Loggable;
@@ -178,14 +178,21 @@ class DirectRepo(val myDirectoryModel : Model) extends BasicRepoImpl with FancyR
 	}
 
 }
+import com.hp.hpl.jena.sdb.Store;
 
-class DatabaseRepo(configPath : String, val myDirGraphID : Ident) 
-			extends BasicStoredMutableRepoImpl(configPath) with FancyRepo with Repo.Mutable with Repo.Stored {
+class DatabaseRepo(store : Store, val myDirGraphID : Ident) 
+			extends BasicStoredMutableRepoImpl(store) with FancyRepo with Repo.Mutable with Repo.Stored {
 				
 		
-	openUsingCurrentConfigPath();
 	formatRepoIfNeeded();
 	
 	override def	getDirectoryModel : Model = getNamedModel(myDirGraphID);
 	
+}
+
+object FancyRepoFactory extends org.appdapter.core.log.BasicDebugger {
+	def makeDatabaseRepo(repoConfResPath : String, optCL : ClassLoader, dirGraphID : Ident) : DatabaseRepo = {
+		val s : Store = SdbStoreFactory.connectSdbStoreFromResPath(repoConfResPath, optCL);
+		new DatabaseRepo(s, dirGraphID);
+	}
 }

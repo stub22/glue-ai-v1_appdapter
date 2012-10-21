@@ -10,7 +10,13 @@
     <artifactId>ext.bundle.jena_all_264</artifactId>
     <packaging>bundle</packaging>
     <name>ext.bundle.jena_all_264 - OSGi - Jena wrapper</name>
-
+	<description>Jena + ARQ + SDB.  Versions used match the midpoint of Joseki 3.4.3 and 3.4.4.</description>
+	<!--
+		Joseki 3.4.4 http://joseki.cvs.sourceforge.net/viewvc/joseki/Joseki3/pom.xml?revision=1.50&view=markup
+			<ver.jena>2.6.4</ver.jena>
+			<ver.arq>2.8.8</ver.arq>  <== We are using 2.8.7 below, which is used in Joseki 3.4.3.
+			<ver.sdb>1.3.4</ver.sdb>  <== We are using this, but Joseki 3.4.3 uses 1.3.3.
+	-->
     <dependencies>
         <dependency>
             <groupId>org.apache.felix</groupId>
