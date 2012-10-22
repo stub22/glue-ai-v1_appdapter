@@ -41,18 +41,21 @@ public interface Repo extends QueryProcessor {
 	public List<GraphStat> getGraphStats();
 	
 	/**
-	 * Get named graph 
+	 * Get named graph as Jena "Model" object, for direct API access.
 	 * @param graphNameIdent
 	 * @return 
 	 */
 	public Model getNamedModel (Ident graphNameIdent);
+
 	/**
-	 * 
+	 * Use the Jena "assembler" vocabulary to build a set of objects from a given model.
 	 * @param graphNameIdent
 	 * @return 
 	 */
 	public Set<Object> assembleRootsFromNamedModel(Ident graphNameIdent);
-
+	
+	
+	
 	public static class GraphStat {
 
 		public String graphURI;
