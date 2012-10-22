@@ -79,7 +79,51 @@ class SheetRepo(directoryModel : Model) extends DirectRepo(directoryModel) {
 			mainDset.replaceNamedModel(graphURI, sheetModel)
 		}		
 	}
-
+	def loadFileModelsIntoMainDataset() = {
+		val mainDset : DataSource = getMainQueryDataset().asInstanceOf[DataSource];
+		
+		val nsJavaMap : java.util.Map[String, String] = myDirectoryModel.getNsPrefixMap()
+		
+		val msqText = """
+			select ?repo ?repoPath ?model ?modelPath
+				{
+					?repo  a ccrt:FileRepo; ccrt:sourcePath ?repoPath.
+					?model a ccrt:FileModel; ccrt:sourcePath ?modelPath; ccrt:repo ?repo.
+				}
+		"""
+		
+		val msRset = QueryHelper.execModelQueryWithPrefixHelp(myDirectoryModel, msqText);		
+		import scala.collection.JavaConversions._;
+		while (msRset.hasNext()) {
+			val qSoln : QuerySolution = msRset.next();
+			
+			val repoRes : Resource = qSoln.getResource("repo");
+			val modelRes : Resource = qSoln.getResource("model");
+			val repoPath_Lit : Literal = qSoln.getLiteral("repoPath")
+			val modelPath_Lit : Literal = qSoln.getLiteral("modelPath")
+			val dbgArray = Array[Object](repoRes, repoPath_Lit, modelRes, modelPath_Lit);
+			getLogger.warn("repo={}, repoPath={}, model={}, modelPath={}", dbgArray);
+			
+			val rPath  = repoPath_Lit.getString();
+			val mPath = modelPath_Lit.getString();
+			
+			getLogger().warn("Ready to read from [{}] / [{}]", rPath, mPath);
+			val rdfURL = rPath + mPath;
+			
+			import com.hp.hpl.jena.util.FileManager;
+			// 	Same result?  		FileManager fmgr = Env.fileManager();	
+			val jenaFileMgr = FileManager.get(); 
+			try {
+				val fileModel =  jenaFileMgr.loadModel(rdfURL);
+					
+				getLogger.warn("Read fileModel: {}" ,  fileModel)
+				val graphURI = modelRes.getURI();
+				mainDset.replaceNamedModel(graphURI, fileModel)
+			} catch {
+				case except => getLogger().error("Caught error loading file {}", rdfURL, except)
+			}
+		}		
+	}
 
 }
 
@@ -94,13 +138,15 @@ object SheetRepo extends BasicDebugger {
 		val dirModel : Model = SemSheet.readModelGDocSheet(sheetKey, dirSheetNum, nsJavaMap);
 		dirModel;
 	}
-	def loadTestSheetRepo() : SheetRepo = {
+	private def loadTestSheetRepo() : SheetRepo = {
 		val nsSheetNum = 9;
 		val dirSheetNum = 8;
 
 		val dirModel : Model = readDirectoryModelFromGoog(SemSheet.keyForBootSheet22, nsSheetNum, dirSheetNum) 
 		val sr = new SheetRepo(dirModel)
 		sr.loadSheetModelsIntoMainDataset()
+		
+		sr.loadFileModelsIntoMainDataset()
 		sr
 	}
 	import scala.collection.immutable.StringOps
