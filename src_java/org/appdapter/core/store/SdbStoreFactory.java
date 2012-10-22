@@ -86,8 +86,10 @@ public class SdbStoreFactory {
 	public static Store connectSdbStoreFromResPath(String storeConfigPath, ClassLoader optLoaderToAdd) {
 		getLogger().info("Connecting store using storeConfigPath[{}] and optionalCL[{}]", storeConfigPath, optLoaderToAdd);
 		if (optLoaderToAdd != null) {
-			FileManager fmgr = Env.fileManager();			
-			fmgr.addLocatorClassLoader(optLoaderToAdd);
+			AssemblerUtils.ensureClassLoaderRegisteredWithJenaFM(optLoaderToAdd);
+			// Above line is similar to this, but it checks first to make sure that CL is not already registered.
+			// FileManager fmgr = Env.fileManager();			
+			// fmgr.addLocatorClassLoader(optLoaderToAdd);
 		}
 		Store store = SDBFactory.connectStore(storeConfigPath);
 		return store;

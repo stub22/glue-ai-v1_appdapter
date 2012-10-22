@@ -91,4 +91,9 @@ trait RepoClient extends ModelClient {
 	 * Produce an InitialBinding that knows how to bind resources and literals for use in our repo.
 	 */
 	def makeInitialBinding : InitialBinding;
+	
+	
+	def assembleRootsFromNamedModel(graphNameIdent : Ident) : java.util.Set[Object];
+	
+	def assembleRootsFromNamedModel(graphQName : String) : java.util.Set[Object];
 }

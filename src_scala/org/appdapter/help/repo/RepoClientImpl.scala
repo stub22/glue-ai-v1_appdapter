@@ -108,4 +108,13 @@ class RepoClientImpl(private val myRepo : Repo.WithDirectory, private val myDefl
 	override def makeInitialBinding : InitialBinding = getRepo.makeInitialBinding
 	
 	private def getDirectoryModelClient  = getRepo.getDirectoryModelClient
+	
+	override def assembleRootsFromNamedModel(graphNameIdent : Ident) : java.util.Set[Object] = 
+				getRepo.assembleRootsFromNamedModel(graphNameIdent);
+			
+	override def assembleRootsFromNamedModel(graphQName : String)  : java.util.Set[Object] = {
+		val graphID = getDirectoryModelClient.makeIdentForQName(graphQName)
+		assembleRootsFromNamedModel(graphID);
+	}
+			
 }
