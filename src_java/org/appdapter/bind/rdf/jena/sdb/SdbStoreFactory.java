@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.appdapter.core.store;
+package org.appdapter.bind.rdf.jena.sdb;
 
 import com.hp.hpl.jena.sdb.SDBFactory;
 import com.hp.hpl.jena.sdb.Store;
@@ -54,6 +54,7 @@ import java.util.Iterator;
 
 import java.util.List;
 import org.appdapter.bind.rdf.jena.assembly.AssemblerUtils;
+import org.appdapter.bind.rdf.jena.model.JenaFileManagerUtils;
 import org.appdapter.bind.rdf.jena.sdb.GraphUploadTask;
 
 import org.appdapter.core.name.Ident;
@@ -79,17 +80,18 @@ public class SdbStoreFactory {
 	 * http://jena.apache.org/documentation/javadoc/sdb/com/hp/hpl/jena/sdb/SDBFactory.html
 	 * 
 	 * @param storeConfigPath - passed to SDBFactory.connectStore, is usually path to Turtle-format RDF-model file-resource on our classpath. 
-	 * @param optLoaderToAdd - if nonnull, is passed to default-FileManager.addLocatorClassLoader.
+	 * @param optLoaderToAdd - if nonnull, is passed to SDB-Env FileManager, which is DIFFERENT from default FileManager
+	 * used by Jena (returned by FileManager.get()) when reading files through regular Jena API (or through our 
+	 * AssemblerUtils).
 	 * @return 
 	 */
 
 	public static Store connectSdbStoreFromResPath(String storeConfigPath, ClassLoader optLoaderToAdd) {
 		getLogger().info("Connecting store using storeConfigPath[{}] and optionalCL[{}]", storeConfigPath, optLoaderToAdd);
 		if (optLoaderToAdd != null) {
-			AssemblerUtils.ensureClassLoaderRegisteredWithJenaFM(optLoaderToAdd);
-			// Above line is similar to this, but it checks first to make sure that CL is not already registered.
-			// FileManager fmgr = Env.fileManager();			
-			// fmgr.addLocatorClassLoader(optLoaderToAdd);
+			// This FileManager is different from the default one returned by FileManager.get()!
+			FileManager sdbEnvFM = Env.fileManager();			
+			JenaFileManagerUtils.ensureClassLoaderRegisteredWithJenaFM(sdbEnvFM, optLoaderToAdd);
 		}
 		Store store = SDBFactory.connectStore(storeConfigPath);
 		return store;

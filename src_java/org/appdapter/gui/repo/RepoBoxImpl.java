@@ -66,8 +66,8 @@ public class RepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<TT>>> extends 
 		myRepo.importGraphFromURL(graphName, sourceURL, replaceTgtFlag);
 	}
 
-	@Override public String processQueryAtUrlAndProduceXml(String queryURL) {
-		Query parsedQuery = JenaArqQueryFuncs.parseQueryURL(queryURL);
+	@Override public String processQueryAtUrlAndProduceXml(String queryURL, ClassLoader optResourceCL) {
+		Query parsedQuery = JenaArqQueryFuncs.parseQueryURL(queryURL, optResourceCL);
 		String xmlOut = myRepo.processQuery(parsedQuery, null, new JenaArqResultSetProcessor<String>() {
 			@Override public String processResultSet(ResultSet rset) {
 				return JenaArqQueryFuncs.dumpResultSetToXML(rset);

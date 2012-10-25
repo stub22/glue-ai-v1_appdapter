@@ -19,9 +19,8 @@ import  org.appdapter.api.trigger.{Box, BoxContext, MutableBox, Trigger, Mutable
 import  org.appdapter.gui.box.{ScreenBox, ScreenBoxImpl};
 import  org.appdapter.demo.DemoResources;
 import  org.appdapter.bind.rdf.jena.assembly.AssemblerUtils;
+import org.appdapter.bind.rdf.jena.model.{JenaFileManagerUtils};
 
-
-	
 class FullBox[FT <:  FullTrigger[_ <: FullBox[FT]]] extends ScreenBoxImpl[FT] {}
 
 trait FullTrigger[FB <:  FullBox[_ <: FullTrigger[FB]]] extends MutableTrigger[FB] {}
@@ -52,7 +51,7 @@ object Boxy {
 	def main(args: Array[String]) :Unit = {
 		println(this.getClass.getCanonicalName() + " sez:  we like rectangles!  Beginning test RDF load of boxes.");
 		val triplesPath = DemoResources.MENU_ASSEMBLY_PATH; 
-		AssemblerUtils.ensureClassLoaderRegisteredWithJenaFM(this.getClass().getClassLoader());
+		JenaFileManagerUtils.ensureClassLoaderRegisteredWithDefaultJenaFM(this.getClass().getClassLoader());
 		println("Loading triples from URL: " + triplesPath);
 		// Set<Object> 
 		val loadedStuff = AssemblerUtils.buildAllObjectsInRdfFile(triplesPath);

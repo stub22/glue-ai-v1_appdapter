@@ -31,8 +31,8 @@ import com.hp.hpl.jena.rdf.listeners.{ObjectListener};
 
 import org.appdapter.bind.rdf.jena.model.{ModelStuff, JenaModelUtils};
 import org.appdapter.bind.rdf.jena.query.{JenaArqQueryFuncs, JenaArqResultSetProcessor};
-
-import org.appdapter.core.store.{Repo, BasicRepoImpl, BasicStoredMutableRepoImpl, QueryProcessor, InitialBinding, ModelClient, SdbStoreFactory};
+import org.appdapter.bind.rdf.jena.sdb.{SdbStoreFactory}
+import org.appdapter.core.store.{Repo, BasicRepoImpl, BasicStoredMutableRepoImpl, QueryProcessor, InitialBinding, ModelClient};
 import org.appdapter.core.name.Ident;
 import org.appdapter.help.repo.InitialBindingImpl;
 import org.appdapter.core.log.Loggable;
