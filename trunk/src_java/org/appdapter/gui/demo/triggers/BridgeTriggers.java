@@ -22,6 +22,7 @@ import org.appdapter.api.trigger.BoxContext;
 import org.appdapter.api.trigger.MutableBox;
 import org.appdapter.api.trigger.TriggerImpl;
 import java.util.Set;
+import org.appdapter.bind.rdf.jena.model.JenaFileManagerUtils;
 import org.appdapter.demo.DemoResources;
 
 
@@ -36,7 +37,7 @@ public class BridgeTriggers {
 			BoxContext bc = targetBox.getBoxContext();
 
 			String triplesURL = DemoResources.MENU_ASSEMBLY_PATH; 
-			AssemblerUtils.ensureClassLoaderRegisteredWithJenaFM(DemoResources.class.getClassLoader());
+			JenaFileManagerUtils.ensureClassLoaderRegisteredWithDefaultJenaFM(DemoResources.class.getClassLoader());
 			logInfo("Loading triples from URL: " + triplesURL);
 			Set<Object> loadedStuff = AssemblerUtils.buildAllObjectsInRdfFile(triplesURL);
 			logInfo("Loaded " + loadedStuff.size() + " objects");

@@ -29,6 +29,6 @@ public interface RepoBox<TT extends Trigger<? extends RepoBox<TT>>> extends Box<
 	
 	public List<Repo.GraphStat>		getAllGraphStats();
 	
-	// This method does not belong here.
-	public String processQueryAtUrlAndProduceXml(String queryURL);
+	// This method does not really belong here, but it is useful during testing.
+	public String processQueryAtUrlAndProduceXml(String queryURL, ClassLoader optResourceCL);
 }

@@ -22,15 +22,15 @@ import com.hp.hpl.jena.assembler.Mode;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.util.FileManager;
-import com.hp.hpl.jena.util.Locator;
-import com.hp.hpl.jena.util.LocatorClassLoader;
+
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import org.slf4j.Logger;
+
+import org.appdapter.bind.rdf.jena.model.JenaFileManagerUtils;
 
 import org.appdapter.core.log.BasicDebugger;
-
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -60,32 +60,18 @@ public class AssemblerUtils {
 		Set<Object> results = buildAllRootsInModel(loadedModel);
 		return results;
 	}
-	public static void ensureClassLoaderRegisteredWithJenaFM(ClassLoader cl) {
-		LocatorClassLoader candidateLCL = new LocatorClassLoader(cl);
-		FileManager fm = FileManager.get();
-		// First, ensure that cl is not already registered
-		Iterator<Locator> locs = fm.locators();
-		while (locs.hasNext()) { 
-			Locator l = locs.next();
-			if (candidateLCL.equals(l)) {
-				theLogger.info("Found existing equivalent Jena FM loader for: " + cl);
-				return;
-			}
-		}
-		theLogger.info("Registering new Jena FM loader for: " + cl);
-		fm.addLocator(candidateLCL); 
-	}
+
 	public static Set<Object> buildObjSetFromPath(String rdfConfigFlexPath, ClassLoader optResourceClassLoader) {
 		if (optResourceClassLoader != null) {
 			theDbg.logDebug("Ensuring registration of classLoader: " + optResourceClassLoader);
-			ensureClassLoaderRegisteredWithJenaFM(optResourceClassLoader);
+			JenaFileManagerUtils.ensureClassLoaderRegisteredWithDefaultJenaFM(optResourceClassLoader);
 		}
 		theDbg.logInfo("Loading triples from flex-path: " + rdfConfigFlexPath);
-		Set<Object> loadedStuff = AssemblerUtils.buildAllObjectsInRdfFile(rdfConfigFlexPath);
+		Set<Object> loadedStuff = buildAllObjectsInRdfFile(rdfConfigFlexPath);
 		return loadedStuff;
 	}
 	public static <T> T readOneConfigObjFromPath(Class<T> configType, String rdfConfigFlexPath, ClassLoader optResourceClassLoader) {
-		Set<Object> loadedStuff = AssemblerUtils.buildObjSetFromPath (rdfConfigFlexPath, optResourceClassLoader);
+		Set<Object> loadedStuff = buildObjSetFromPath (rdfConfigFlexPath, optResourceClassLoader);
 		int objCount = loadedStuff.size();
 		if (objCount != 1) {
 			throw new RuntimeException("Expected one config thing but got " + objCount + " from path[" + rdfConfigFlexPath + "]");
