@@ -51,7 +51,8 @@ public class RepoTriggers {
 
 		@Override public void fire(RB  targetBox) {
 			String resolvedQueryURL = DemoResources.QUERY_PATH;
-			String resultXML = targetBox.processQueryAtUrlAndProduceXml(resolvedQueryURL);
+			ClassLoader optCL = DemoResources.class.getClassLoader();
+			String resultXML = targetBox.processQueryAtUrlAndProduceXml(resolvedQueryURL, optCL);
 			logInfo("ResultXML\n-----------------------------------" + resultXML + "\n---------------------------------");
 		}
 	}

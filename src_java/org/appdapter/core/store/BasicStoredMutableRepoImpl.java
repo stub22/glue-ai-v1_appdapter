@@ -15,6 +15,7 @@
  */
 package org.appdapter.core.store;
 
+import org.appdapter.bind.rdf.jena.sdb.SdbStoreFactory;
 import com.hp.hpl.jena.sdb.SDBFactory;
 import com.hp.hpl.jena.sdb.Store;
 import com.hp.hpl.jena.sdb.util.StoreUtils;

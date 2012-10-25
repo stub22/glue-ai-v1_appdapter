@@ -31,6 +31,7 @@ import com.hp.hpl.jena.query.ResultSetRewindable;
 import com.hp.hpl.jena.shared.PrefixMapping;
 import java.util.ArrayList;
 import java.util.List;
+import org.appdapter.bind.rdf.jena.model.JenaFileManagerUtils;
 
 import org.appdapter.core.log.BasicDebugger;
 import org.appdapter.core.store.QueryProcessor;
@@ -60,13 +61,16 @@ public class JenaArqQueryFuncs {
 	 * @param resolvedQueryURL - URL to the query text
 	 * @return  - parsed Jena ARQ query, ready for execution.
 	 */
-	public static Query parseQueryURL(String resolvedQueryURL) {
+	public static Query parseQueryURL(String resolvedQueryURL, ClassLoader optResourceCL) {
 		Query parsedQuery = null;
 		try {
 			// String resolvedQueryURL = DemoResources.QUERY_PATH;
 			// DemoResources.resolveResourcePathToURL_WhichJenaCantUseInCaseOfJarFileRes(DemoResources.QUERY_PATH);
-			theDbg.logInfo("Registering classLoader with JenaFM");  // Because it is used 
-			AssemblerUtils.ensureClassLoaderRegisteredWithJenaFM(JenaArqQueryFuncs.class.getClassLoader());
+			//   JenaArqQueryFuncs.class.getClassLoader()
+			if (optResourceCL != null) {
+				theDbg.logInfo("Registering classLoader for this package with JenaFM"); 
+				JenaFileManagerUtils.ensureClassLoaderRegisteredWithDefaultJenaFM(optResourceCL);
+			}
 			parsedQuery = QueryFactory.read(resolvedQueryURL);
 		} catch (Throwable t) {
 			theDbg.logError("problem in parseQueryURL", t);
