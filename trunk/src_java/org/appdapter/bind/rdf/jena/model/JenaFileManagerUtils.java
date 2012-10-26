@@ -17,6 +17,9 @@
 package org.appdapter.bind.rdf.jena.model;
 
 import java.util.Iterator;
+import java.util.List;
+
+import java.lang.ClassLoader;
 import com.hp.hpl.jena.util.FileManager;
 import com.hp.hpl.jena.util.Locator;
 import com.hp.hpl.jena.util.LocatorClassLoader;
@@ -52,12 +55,25 @@ public class JenaFileManagerUtils {
 		theLogger.info("Registering new Jena FM loader for: " + cl);
 		fm.addLocator(candidateLCL); 
 	}
+
+	public static void ensureClassLoadersRegisteredWithJenaFM(FileManager fm, List<ClassLoader> clList) {
+		for (ClassLoader cl : clList) {
+			ensureClassLoaderRegisteredWithJenaFM(fm, cl);
+		}
+	}
+	public static FileManager getDefaultJenaFM() { 
+		return FileManager.get(); 
+	}	
 	/** Ensures cl is registered with the FileManager returned by FileManager.get() 
 	 * (which is *not* used for SDB Store Config!  See SdbStoreFactory).
 	 * @param cl 
 	 */
 	public static void ensureClassLoaderRegisteredWithDefaultJenaFM(ClassLoader cl) {
-		FileManager fm = FileManager.get();
+		FileManager fm = getDefaultJenaFM();
 		ensureClassLoaderRegisteredWithJenaFM(fm, cl);
 	}
+	public static void ensureClassLoadersRegisteredWithDefaultJenaFM(List<ClassLoader> clList) {
+		FileManager fm = getDefaultJenaFM();
+		ensureClassLoadersRegisteredWithJenaFM(fm, clList);
+	}	
 }
