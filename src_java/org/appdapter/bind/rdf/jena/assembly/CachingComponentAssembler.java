@@ -112,14 +112,15 @@ public abstract class CachingComponentAssembler<MKC extends MutableKnownComponen
 		}
 		return knownComp;
 	}
-	public MKC fetchOrMakeComponent(Class<MKC> knownCompClass, Ident id, Assembler asmblr, Mode mode) {
+	public MKC fetchOrMakeComponent(Ident compID, Item confItem, Assembler asmblr, Mode mode) {
 		ComponentCache<MKC> cc = getCache();
-		MKC knownComp = cc.getCachedComponent(id);
+		MKC knownComp = cc.getCachedComponent(compID);
 		if (knownComp == null) {
+			Class<MKC> knownCompClass = decideComponentClass(compID, confItem);
 			knownComp = makeEmptyComponent(knownCompClass);
-			knownComp.setIdent(id);
+			knownComp.setIdent(compID);
 			initFieldsAndLinks(knownComp, null, asmblr, mode);
-			cc.putCachedComponent(id, knownComp);
+			cc.putCachedComponent(compID, knownComp);
 		} else {
 			getLogger().debug("Got cache hit on {} ", knownComp);
 		}
@@ -154,11 +155,11 @@ public abstract class CachingComponentAssembler<MKC extends MutableKnownComponen
 	@Override final public Object open(Assembler asmblr, Resource rsrc, Mode mode) {
 		getLogger().debug("Assembler[{}] is opening component at: {}", this, rsrc);
 		JenaResourceItem wrapperItem = new JenaResourceItem(rsrc);
-		Class<MKC> componentClass = decideComponentClass(wrapperItem, wrapperItem);
-		MKC comp = null;
-		if (componentClass != null) {
-			comp = fetchOrMakeComponent(componentClass, wrapperItem, asmblr, mode);
-		}
+		//Class<MKC> componentClass = decideComponentClass(wrapperItem, wrapperItem);
+		//MKC comp = null;
+		//if (componentClass != null) {
+		MKC	comp = fetchOrMakeComponent(wrapperItem, wrapperItem, asmblr, mode);
+		//}
 		return comp;
 	}
 	/*
