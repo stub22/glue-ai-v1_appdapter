@@ -31,7 +31,7 @@ import com.hp.hpl.jena.rdf.listeners.{ObjectListener};
 
 import org.appdapter.core.log.BasicDebugger;
 
-import org.appdapter.bind.rdf.jena.model.{ModelStuff, JenaModelUtils};
+import org.appdapter.bind.rdf.jena.model.{ModelStuff, JenaModelUtils, JenaFileManagerUtils};
 // import org.appdapter.bind.rdf.jena.query.{JenaArqQueryFuncs, JenaArqResultSetProcessor};
 
 import org.appdapter.core.store.{Repo, BasicQueryProcessorImpl, BasicRepoImpl, QueryProcessor};
@@ -79,7 +79,7 @@ class SheetRepo(directoryModel : Model) extends DirectRepo(directoryModel) {
 			mainDset.replaceNamedModel(graphURI, sheetModel)
 		}		
 	}
-	def loadFileModelsIntoMainDataset() = {
+	def loadFileModelsIntoMainDataset(clList : java.util.List[ClassLoader]) = {
 		val mainDset : DataSource = getMainQueryDataset().asInstanceOf[DataSource];
 		
 		val nsJavaMap : java.util.Map[String, String] = myDirectoryModel.getNsPrefixMap()
@@ -111,8 +111,8 @@ class SheetRepo(directoryModel : Model) extends DirectRepo(directoryModel) {
 			val rdfURL = rPath + mPath;
 			
 			import com.hp.hpl.jena.util.FileManager;
-			// 	Same result?  		FileManager fmgr = Env.fileManager();	
-			val jenaFileMgr = FileManager.get(); 
+			val jenaFileMgr = JenaFileManagerUtils.getDefaultJenaFM
+			JenaFileManagerUtils.ensureClassLoadersRegisteredWithJenaFM(jenaFileMgr, clList)
 			try {
 				val fileModel =  jenaFileMgr.loadModel(rdfURL);
 					
@@ -145,8 +145,8 @@ object SheetRepo extends BasicDebugger {
 		val dirModel : Model = readDirectoryModelFromGoog(SemSheet.keyForBootSheet22, nsSheetNum, dirSheetNum) 
 		val sr = new SheetRepo(dirModel)
 		sr.loadSheetModelsIntoMainDataset()
-		
-		sr.loadFileModelsIntoMainDataset()
+		val clList = new java.util.ArrayList[ClassLoader];
+		sr.loadFileModelsIntoMainDataset(clList)
 		sr
 	}
 	import scala.collection.immutable.StringOps
