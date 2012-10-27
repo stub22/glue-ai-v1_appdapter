@@ -33,6 +33,15 @@ public class FreeIdent implements Ident {
 		myAbsUri = absUri;
 		myLocalName = localName;
 	}
+	public FreeIdent(String absUriWithOneHash) {
+		int len = absUriWithOneHash.length();
+		int hashIndex = absUriWithOneHash.indexOf('#');
+		if ((hashIndex < 0) || (hashIndex > len - 2)) {
+			throw new RuntimeException("Uri does not contain text after hash '#' [" + absUriWithOneHash + "]");
+		}
+		myAbsUri = absUriWithOneHash;
+		myLocalName = absUriWithOneHash.substring(hashIndex + 1);
+	}
 	@Override public String getAbsUriString() {
 		return myAbsUri;
 	}
