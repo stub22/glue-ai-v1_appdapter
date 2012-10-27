@@ -84,6 +84,10 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 	}	
 	@Override public Set<Object> assembleRootsFromNamedModel(Ident graphNameIdent) {
 		Model loadedModel = getNamedModel(graphNameIdent);
+		if (loadedModel == null) {
+			// We *could* return an empty set, instead.
+			return null;
+		}
 		Set<Object> results = AssemblerUtils.buildAllRootsInModel(loadedModel);
 		return results;
 	}
