@@ -20,6 +20,8 @@ import javax.swing.JPanel;
 
 /**
  * BoxPanels may be used to view many different boxes.
+ * The Kind-enum is a placeholder until the GUI browser is fully ontologized.
+ * Meanwhile, we can plug in anything as "OTHER".
  * 
  * @author Stu B. <www.texpedient.com>
  */

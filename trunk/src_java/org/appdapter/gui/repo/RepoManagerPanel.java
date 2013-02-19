@@ -22,9 +22,15 @@
 
 package org.appdapter.gui.repo;
 
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import org.appdapter.api.trigger.Box;
 import org.appdapter.gui.box.ScreenBoxPanel;
 import java.io.File;
 import javax.swing.JFileChooser;
+import javax.swing.JPopupMenu;
+import javax.swing.JTable;
+import org.appdapter.gui.browse.TriggerMenuFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,14 +41,15 @@ public class RepoManagerPanel  extends ScreenBoxPanel<MutableRepoBox> {
 	static Logger theLogger = LoggerFactory.getLogger(RepoManagerPanel.class);
 
 	private	MutableRepoBox			myFocusBox;
-	private	RepoGraphTableModel	myRGTM;
+	private	RepoGraphTableModel		myRGTM;
     /** Creates new form RepoManagerPanel */
     public RepoManagerPanel() {
         initComponents();
 		if (!java.beans.Beans.isDesignTime()) {
 			myRGTM = new RepoGraphTableModel();
 			myGraphTable.setModel(myRGTM);
-		}		
+			makeTablePopupHandler(myGraphTable);
+		}
     }
 
     /** This method is called from within the constructor to
@@ -132,7 +139,40 @@ public class RepoManagerPanel  extends ScreenBoxPanel<MutableRepoBox> {
 
         add(myVerticalSplit, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
+	private TriggerMenuFactory myTMF;
 
+	private void makeTablePopupHandler(JTable jTable) {
+		jTable.addMouseListener(new MouseAdapter() {
+
+			public void mouseReleased(MouseEvent e) {
+				if (e.isPopupTrigger()) {
+					JTable source = (JTable) e.getSource();
+					int row = source.rowAtPoint(e.getPoint());
+					int column = source.columnAtPoint(e.getPoint());
+
+					if (!source.isRowSelected(row)) {
+						source.changeSelection(row, column, false, false);
+					}
+					JPopupMenu cellPopMenu = fetchMenuForFocusCell(row, column);
+					if (cellPopMenu != null) {
+						cellPopMenu.show(e.getComponent(), e.getX(), e.getY());
+					}
+				}
+			}
+		});
+	}
+
+	private JPopupMenu fetchMenuForFocusCell(int row, int col) {
+		JPopupMenu popMenu = null;
+		Box cellSubBox = myRGTM.findSubBox(row, col);
+		if (cellSubBox != null) {
+			if (myTMF == null) {
+				myTMF = new TriggerMenuFactory(); // TODO: Needs type params
+			}
+			popMenu = myTMF.buildPopupMenu(cellSubBox);
+		}			
+		return popMenu;
+	}
 	private void myTF_graphNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_myTF_graphNameActionPerformed
 		// TODO add your handling code here:
 	}//GEN-LAST:event_myTF_graphNameActionPerformed
@@ -140,16 +180,13 @@ public class RepoManagerPanel  extends ScreenBoxPanel<MutableRepoBox> {
 	private void myBut_chooseFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_myBut_chooseFileActionPerformed
 		JFileChooser chooser = new JFileChooser(myFocusBox.getUploadHomePath());
 		/*
-		// Note: source for ExampleFileFilter can be found in FileChooserDemo,
-		// under the demo/jfc directory in the Java 2 SDK, Standard Edition.
-		ExampleFileFilter filter = new ExampleFileFilter();
-		filter.addExtension("jpg");
-		filter.addExtension("gif");
-		filter.setDescription("JPG & GIF Images");
-		chooser.setFileFilter(filter);
-		*/
+		 * // Note: source for ExampleFileFilter can be found in FileChooserDemo, // under the demo/jfc directory in
+		 * the Java 2 SDK, Standard Edition. ExampleFileFilter filter = new ExampleFileFilter();
+		 * filter.addExtension("jpg"); filter.addExtension("gif"); filter.setDescription("JPG & GIF Images");
+		 * chooser.setFileFilter(filter);
+		 */
 		int returnVal = chooser.showOpenDialog(this);
-		if(returnVal == JFileChooser.APPROVE_OPTION) {
+		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			File selectedFile = chooser.getSelectedFile();
 			String fileName = selectedFile.getPath();
 			String graphName = myTF_graphName.getText();
@@ -165,8 +202,6 @@ public class RepoManagerPanel  extends ScreenBoxPanel<MutableRepoBox> {
 		myFocusBox = b;
 		myRGTM.focusOnRepo(b);
 	}
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel myBottomPanel;
@@ -177,5 +212,4 @@ public class RepoManagerPanel  extends ScreenBoxPanel<MutableRepoBox> {
     private javax.swing.JPanel myTopPanel;
     private javax.swing.JSplitPane myVerticalSplit;
     // End of variables declaration//GEN-END:variables
-
 }
