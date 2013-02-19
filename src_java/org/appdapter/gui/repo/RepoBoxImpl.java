@@ -18,6 +18,7 @@ package org.appdapter.gui.repo;
 
 import org.appdapter.gui.box.ScreenBoxImpl;
 import org.appdapter.api.trigger.Trigger;
+import org.appdapter.api.trigger.Box;
 
 import com.hp.hpl.jena.query.Query;
 
@@ -38,9 +39,9 @@ import org.slf4j.LoggerFactory;
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public class RepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<TT>>> extends ScreenBoxImpl<TT> implements MutableRepoBox<TT> {
+public abstract class RepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<TT>>> extends ScreenBoxImpl<TT> implements MutableRepoBox<TT> {
 	static Logger theLogger = LoggerFactory.getLogger(RepoBoxImpl.class);
-	public static Repo.Mutable		myRepo;
+	private	 Repo.Mutable		myRepo;
 	
 	// Store		myStore;
 	// public static String	myStoreConfigPath;
@@ -48,7 +49,10 @@ public class RepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<TT>>> extends 
 	@Override public Repo getRepo() {
 		return myRepo;
 	}
-
+	
+	public void setRepo(Repo.Mutable repo) {
+		myRepo = repo;
+	}
 	@Override public void mount(String configPath) {
 		// This bonehead static method call does not allow us to construct a fancier subtype of BasicStoredMutableRepoImpl.
 		myRepo = BasicStoredMutableRepoImpl.openBasicRepoFromConfigPath(configPath, getClass().getClassLoader());
@@ -76,6 +80,5 @@ public class RepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<TT>>> extends 
 		return xmlOut;
 
 	}
-
 
 }

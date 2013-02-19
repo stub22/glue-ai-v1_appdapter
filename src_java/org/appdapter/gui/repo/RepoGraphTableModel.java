@@ -17,6 +17,9 @@
 package org.appdapter.gui.repo;
 
 import org.appdapter.core.store.Repo.GraphStat;
+
+import org.appdapter.api.trigger.Box;
+
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.table.AbstractTableModel;
@@ -33,12 +36,15 @@ public class RepoGraphTableModel extends AbstractTableModel {
 
 	private	List<GraphStat>	myCachedStats = new ArrayList<GraphStat>();
 
+	private	RepoBox		myFocusRB;
+	
 	protected void refreshStats(RepoBox repoBox) {
 		myCachedStats = repoBox.getAllGraphStats();
 		fireTableDataChanged();
 	}
 	protected void focusOnRepo(RepoBox repoBox) {
 		theLogger.info("Focusing on repo-box: " + repoBox);
+		myFocusRB = repoBox;
 		refreshStats(repoBox);
 	}
 	@Override public String getColumnName(int cidx) {
@@ -60,6 +66,19 @@ public class RepoGraphTableModel extends AbstractTableModel {
 			case 1: return new Long(stat.statementCount);
 			default: return new Double(-1.0);
 		}
+	}
+	// This sub box can be a source of triggers (for popup-menu), which might lead to another panel opening/refreshing.
+	// Currently it is only the row that matters (column is ignored).
+	public Box findSubBox(int rowIndex, int columnIndex) {
+		Box subBox = null;
+		GraphStat stat = myCachedStats.get(rowIndex);
+		if (stat != null) {
+			String graphURI = stat.graphURI;
+			if (myFocusRB != null) {
+				subBox = myFocusRB.findGraphBox(graphURI);
+			}
+		}
+		return subBox;
 	}
 
 }
