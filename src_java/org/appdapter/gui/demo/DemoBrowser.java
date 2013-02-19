@@ -18,17 +18,23 @@ package org.appdapter.gui.demo;
 
 import org.appdapter.demo.DemoServiceWrapFuncs;
 import javax.swing.tree.TreeModel;
+import org.appdapter.api.trigger.Box;
+import org.appdapter.api.trigger.MutableBox;
+import org.appdapter.api.trigger.Trigger;
 import org.appdapter.gui.box.ScreenBoxContextImpl;
 import org.appdapter.gui.box.ScreenBoxImpl;
 import org.appdapter.gui.box.ScreenBoxPanel;
 import org.appdapter.gui.box.ScreenBoxTreeNode;
 import org.appdapter.gui.box.DisplayContextProvider;
 import org.appdapter.api.trigger.TriggerImpl;
+import org.appdapter.core.store.Repo;
 import org.appdapter.gui.repo.RepoBoxImpl;
 import org.appdapter.gui.trigger.BootstrapTriggerFactory;
 import org.appdapter.gui.demo.triggers.BridgeTriggers;
 import org.appdapter.gui.demo.triggers.DatabaseTriggers;
 import org.appdapter.gui.demo.triggers.RepoTriggers;
+import org.appdapter.gui.repo.RepoBox;
+import org.appdapter.gui.repo.RepoModelBoxImpl;
 import org.appdapter.gui.trigger.SysTriggers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,21 +52,58 @@ public class DemoBrowser {
 	public static void main(String[] args) {
 		testLoggingSetup();
 		theLogger.info("DemoBrowser.main()-START");
-		DemoNavigatorCtrl tn = makeDemoNavigatorCtrl(args);
-		tn.launchFrame("Appdapter Demo Browser");
+		DemoNavigatorCtrl dnc = makeDemoNavigatorCtrl(args);
+		dnc.launchFrame("Appdapter Demo Browser");
 		theLogger.info("DemoBrowser.main()-END");		
 	}
-	public static DemoNavigatorCtrl makeDemoNavigatorCtrl(String[] args) {
+
+	public static interface RepoSubBoxFinder {
+		public  Box  findGraphBox(RepoBox parentBox, String graphURI);
+	}
+	public static RepoSubBoxFinder theRSBF;
+	public static class DemoRepoBoxImpl extends RepoBoxImpl {
+		RepoSubBoxFinder myRSBF;
+		
+		@Override public Box findGraphBox(String graphURI) {
+			if (myRSBF == null) {
+				myRSBF = theRSBF;
+			}
+			return myRSBF.findGraphBox(this, graphURI);
+		}
+	}
+	public static DemoNavigatorCtrl makeDemoNavigatorCtrl(String[] args) {	
+		RepoSubBoxFinder rsbf = new RepoSubBoxFinder() {
+			@Override public Box findGraphBox(RepoBox parentBox, String graphURI) {
+				theLogger.info("finding graph box for " + graphURI + " in " + parentBox);
+				MutableBox mb = new RepoModelBoxImpl();
+				TriggerImpl  dti = new SysTriggers.DumpTrigger();
+				dti.setShortLabel("ping-" + graphURI);
+				mb.attachTrigger(dti);
+				
+				Repo parentRepo = parentBox.getRepo();
+
+				return mb;
+			}
+		};
+		DemoNavigatorCtrl dnc = makeDemoNavigatorCtrl(args, rsbf);
+		return dnc;
+	}
+	public static DemoNavigatorCtrl makeDemoNavigatorCtrl(String[] args, RepoSubBoxFinder rsbf) {
+		theRSBF = rsbf;
 		// From this BoxImpl.class, is makeBCI is able to infer the full BT=BoxImpl<... tree?
-		ScreenBoxContextImpl bctx = makeBCI(ScreenBoxImpl.class, RepoBoxImpl.class);// makeBoxContextImpl(BoxImpl.class, TriggerImpl.class);
+		return makeDemoNavigatorCtrl(args, ScreenBoxImpl.class, DemoRepoBoxImpl.class);
+	}	
+	public static DemoNavigatorCtrl makeDemoNavigatorCtrl(String[] args, Class<? extends ScreenBoxImpl> boxClass,  
+				Class<? extends RepoBoxImpl> repoBoxClass) {
+		// From this BoxImpl.class, is makeBCI is able to infer the full BT=BoxImpl<... tree?
+		ScreenBoxContextImpl bctx = makeBCI(boxClass, repoBoxClass);
 		TreeModel tm = bctx.getTreeModel();
 		ScreenBoxTreeNode rootBTN = (ScreenBoxTreeNode) tm.getRoot();
 
 		DisplayContextProvider dcp = bctx;
 		DemoNavigatorCtrl tn = new DemoNavigatorCtrl(bctx, tm, rootBTN, dcp);
-		return tn;
-	}
-	
+		return tn;		
+	}	
 	public static <BT extends ScreenBoxImpl<TriggerImpl<BT>>, RBT extends RepoBoxImpl<TriggerImpl<RBT>>> 
 				ScreenBoxContextImpl makeBCI(Class<BT> boxClass, Class<RBT> repoBoxClass) {
 		TriggerImpl<BT> regTrigProto = makeTriggerPrototype(boxClass);
@@ -80,7 +123,7 @@ public class DemoBrowser {
 	 * @param <RBT>
 	 * @param regBoxClass
 	 * @param repoBoxClass
-	 * @param regTrigProto - defines the BT  trigger parameter type for screen boxes.  The repoTrigProto instance data is unused.
+	 * @param regTrigProto - defines the BT  trigger parameter type for screen boxes.  The regTrigProto instance data is unused.
 	 * @param repoTrigProto - defines the RBT trigger parameter type for repo boxes.  The repoTrigProto instance data is unused.
 	 * @return 
 	 */
