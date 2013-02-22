@@ -62,6 +62,8 @@
                 <configuration>
                     <instructions>
                         <Bundle-Activator>ext.bundle.math.symja.Activator</Bundle-Activator>
+						<!-- The following packages appear to not be exported by manifests of our deps above -->
+						<Private-Package>com.google.common.*,junit.*, org.junit.*, org.hamcrest.*</Private-Package>						
                     </instructions>
                 </configuration>
             </plugin>
