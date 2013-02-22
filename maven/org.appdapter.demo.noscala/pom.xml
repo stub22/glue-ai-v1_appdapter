@@ -111,7 +111,7 @@
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>ext.bundle.math.jscience_50SNAP</artifactId>
-			<version>${project.version}</version>
+			<version>1.0.9</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>org.osgi.core</artifactId>

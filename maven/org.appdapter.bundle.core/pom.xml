@@ -75,7 +75,7 @@
 			<groupId>${project.groupId}</groupId>
 			<artifactId>ext.bundle.math.jscience_50SNAP</artifactId>
 			<type>jar</type>
-			<version>${project.version}</version>
+			<version>1.0.9</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
