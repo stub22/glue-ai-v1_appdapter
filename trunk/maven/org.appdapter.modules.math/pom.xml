@@ -15,6 +15,7 @@
   
 	<modules>
 		<module>../ext.bundle.math.jscience</module>
+		<module>../ext.bundle.math.symja_jas</module>
 	</modules>  
 </project>
 <!--

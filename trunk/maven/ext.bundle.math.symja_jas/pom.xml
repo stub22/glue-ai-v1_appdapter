@@ -7,7 +7,7 @@
 		<version>1.0.10-SNAPSHOT</version>
 		<relativePath>../org.appdapter.modules.core/pom.xml</relativePath>
 	</parent>
-    <artifactId>ext.bundle.math.symja</artifactId>
+    <artifactId>ext.bundle.math.symja_jas</artifactId>
     <packaging>bundle</packaging>
 
     <name>${artifactId} - OSGi Bundle</name>
