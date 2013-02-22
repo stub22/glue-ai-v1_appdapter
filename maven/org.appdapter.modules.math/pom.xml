@@ -14,7 +14,11 @@
   <description>Parent module for all Appdapter math/numeric/probability related projects.</description>
   
 	<modules>
+		<!--  Disabling JScience wrapper build as of Version 1.0.10.  Archived builds may still be accessed
+		thru Appdapter version 1.0.9.
+		
 		<module>../ext.bundle.math.jscience</module>
+		-->
 		<module>../ext.bundle.math.symja_jas</module>
 	</modules>  
 </project>
