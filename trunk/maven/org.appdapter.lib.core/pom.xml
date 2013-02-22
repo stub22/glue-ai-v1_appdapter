@@ -191,7 +191,8 @@ central repo.
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>ext.bundle.math.jscience_50SNAP</artifactId>
-			<version>${project.version}</version>
+			<!-- Now frozen to use version 1.0.9, so we don't have to build JScience wrapper anymore -->
+			<version>1.0.9</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
