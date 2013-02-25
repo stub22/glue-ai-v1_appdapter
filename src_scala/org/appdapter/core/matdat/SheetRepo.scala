@@ -56,7 +56,7 @@ class SheetRepo(directoryModel : Model) extends DirectRepo(directoryModel) {
 			select ?container ?key ?sheet ?num 
 				{
 					?container  a ccrt:GoogSheetRepo; ccrt:key ?key.
-					?sheet a ccrt:GoogSheet; ccrt:sheetNumber ?num; ccrt:repo ?repo.
+					?sheet a ccrt:GoogSheet; ccrt:sheetNumber ?num; ccrt:repo ?container.
 				}
 		"""
 		
