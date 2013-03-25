@@ -108,7 +108,7 @@ public abstract class CachingComponentAssembler<MKC extends MutableKnownComponen
 		try {
 			knownComp = knownCompClass.newInstance();
 		} catch (Throwable t) {
-			theBackupLogger.error("Problem instantiating empty component", t);
+			theBackupLogger.error("Problem instantiating empty component of class {}", knownCompClass, t);
 		}
 		return knownComp;
 	}
