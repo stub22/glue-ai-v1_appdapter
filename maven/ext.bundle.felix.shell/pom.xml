@@ -28,6 +28,12 @@
 			
             <version>0.10.0</version>
 			<scope>runtime</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>org.eclipse.osgi</artifactId>
+                    <groupId>org.eclipse.osgi</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <artifactId>org.apache.felix.gogo.command</artifactId>
@@ -40,6 +46,10 @@
                     <artifactId>easymock</artifactId>
                     <groupId>org.easymock</groupId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>org.eclipse.osgi</artifactId>
+                    <groupId>org.eclipse.osgi</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -48,6 +58,12 @@
             <type>jar</type>
             <version>0.10.0</version>
 			<scope>runtime</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>org.eclipse.osgi</artifactId>
+                    <groupId>org.eclipse.osgi</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <artifactId>org.apache.felix.shell.remote</artifactId>
