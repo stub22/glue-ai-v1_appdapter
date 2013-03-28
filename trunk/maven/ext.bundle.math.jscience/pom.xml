@@ -67,15 +67,20 @@
 	  	--> 
                 <!-- IMPORTANT and UGLY: Comment out this dep on first build (against
                 your particular local maven_repo), then uncomment and rebuild -->
-		<dependency>
+		<!-- dependency>
 			<groupId>org.jscience</groupId>
 			<artifactId>jscience-mathematics</artifactId>
 			<version>5.0-SNAPSHOT</version>
 			<scope>provided</scope>
-		</dependency>
-                   
+		</dependency-->
+		<!--  this jscience exists?  -->
 		<dependency>
-			<groupId>javolution</groupId>
+			<groupId>org.jscience</groupId>
+			<artifactId>jscience</artifactId>
+			<version>4.3.1</version>
+		</dependency>
+       	<dependency>
+            <groupId>javolution</groupId>
 			<artifactId>javolution</artifactId>
 		  <!-- We tearfully have to re-export javolution, even though it's  supplied to us as a "bundle", 
 				because the embedded poms are entangled with the broken java.net repository, and 
@@ -130,6 +135,41 @@
 				</configuration>
 			</plugin>
 		</plugins>
+		<pluginManagement>
+			<plugins>
+				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											org.apache.maven.plugins
+										</groupId>
+										<artifactId>
+											maven-install-plugin
+										</artifactId>
+										<versionRange>
+											[2.3.1,)
+										</versionRange>
+										<goals>
+											<goal>install-file</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 	</build>
 
 	<profiles>
