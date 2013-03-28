@@ -17,6 +17,8 @@ package org.appdapter.bind.math.jscience.calculus;
 
 import java.util.List;
 import javolution.util.Index;
+
+import org.appdapter.core.math.number.Numeric;
 import org.appdapter.core.math.number.RealNumeric;
 import org.jscience.mathematics.number.FieldNumber;
 import org.jscience.mathematics.number.Float64;
@@ -95,11 +97,11 @@ public class Reals {
 			throw new UnsupportedOperationException("Not supported yet.");
 		}
 
-		@Override public Zero<FieldNumberWrapper<Real64, Float64>> asZero() {
+		@Override public Numeric.Zero<FieldNumberWrapper<Real64, Float64>> asZero() {
 			throw new UnsupportedOperationException("Not supported yet.");
 		}
 
-		@Override public Finite<FieldNumberWrapper<Real64, Float64>> asFinite() {
+		@Override public Numeric.Finite<FieldNumberWrapper<Real64, Float64>> asFinite() {
 			throw new UnsupportedOperationException("Not supported yet.");
 		}
 
