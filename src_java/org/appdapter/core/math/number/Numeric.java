@@ -94,7 +94,7 @@ public interface Numeric<N> {
 			@Override public Zero<BZN> asZero()			{	return this;	}
 			@Override public Finite<BZN> asFinite()		{	return this;	}
 
-			@Override public Positive<BZN> asPositive() {	throw downcastFailureException(Positive.class);	}
+			@Override public Numeric.Positive<BZN> asPositive() {	throw downcastFailureException(Numeric.Positive.class);	}
 
 		}
 	}
