@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" output="target/classes" path="src/main/java">
+		<attributes>
+			<attribute name="optional" value="true"/>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry excluding="**" kind="src" output="target/classes" path="src/main/resources">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="src" output="target/test-classes" path="src/test/java">
+		<attributes>
+			<attribute name="optional" value="true"/>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry excluding="org/appdapter/scafun/Lucky.scala|org/appdapter/scafun/OkFine.scala" kind="src" path="src/main/scala"/>
+	<classpathentry kind="src" path="src/test/scala"/>
+	<classpathentry exported="true" kind="con" path="org.scala-ide.sdt.launching.SCALA_CONTAINER"/>
+	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry exported="true" kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry exported="true" kind="lib" path="C:/Users/Administrator/.m2/repository/com/hp/hpl/jena/jena/2.6.4/jena-2.6.4.jar">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+			<attribute name="maven.groupId" value="com.hp.hpl.jena"/>
+			<attribute name="maven.artifactId" value="jena"/>
+			<attribute name="maven.version" value="2.6.4"/>
+			<attribute name="maven.scope" value="provided"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry exported="true" kind="lib" path="C:/Users/Administrator/.m2/repository/com/hp/hpl/jena/arq/2.8.7/arq-2.8.7.jar">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+			<attribute name="maven.groupId" value="com.hp.hpl.jena"/>
+			<attribute name="maven.artifactId" value="arq"/>
+			<attribute name="maven.version" value="2.8.7"/>
+			<attribute name="maven.scope" value="provided"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry exported="true" kind="lib" path="C:/Users/Administrator/.m2/repository/com/hp/hpl/jena/sdb/1.3.4/sdb-1.3.4.jar">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+			<attribute name="maven.groupId" value="com.hp.hpl.jena"/>
+			<attribute name="maven.artifactId" value="sdb"/>
+			<attribute name="maven.version" value="1.3.4"/>
+			<attribute name="maven.scope" value="provided"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry exported="true" kind="lib" path="C:/Users/Administrator/.m2/repository/dom4j/dom4j/1.6.1/dom4j-1.6.1.jar">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+			<attribute name="maven.groupId" value="dom4j"/>
+			<attribute name="maven.artifactId" value="dom4j"/>
+			<attribute name="maven.version" value="1.6.1"/>
+			<attribute name="maven.scope" value="provided"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/ext.bundle.apache_avro_151"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/ext.bundle.apache_qpid_010"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/ext.bundle.felix.shell"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/ext.bundle.jena_all_264"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/ext.bundle.math.symja_jas"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/ext.bundle.opengl.jmonkey"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/ext.bundle.opengl.nifty"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/ext.bundle.osgi.common"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/ext.bundle.xml.dom4j_161"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/org.robokind.api.animation"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/org.robokind.api.audio"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/org.robokind.api.messaging"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/org.robokind.api.motion"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/org.robokind.api.sensor"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/org.robokind.api.speech"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/org.robokind.api.speechrec"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/org.robokind.api.vision"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/org.robokind.avrogen.animation"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/org.robokind.avrogen.audio"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/org.robokind.avrogen.messaging"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/org.robokind.avrogen.motion"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/org.robokind.avrogen.speech"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/org.robokind.avrogen.speechrec"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/org.robokind.avrogen.vision"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/org.robokind.demo.robot.replication"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/org.robokind.extern.utils.apache_commons_configuration"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/org.robokind.extern.utils.messaging"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/org.robokind.extern.utils.xpp3"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/org.robokind.headless.animation"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/org.robokind.headless.messaging"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/org.robokind.headless.motion"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/org.robokind.impl.messaging"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/org.robokind.impl.motion"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/org.robokind.impl.motion.dynamixel"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/org.robokind.impl.motion.pololu"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/org.robokind.impl.sensor"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/org.robokind.impl.speech"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/org.robokind.impl.speechrec"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/org.robokind.impl.vision"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/org.robokind.integration.animation_motion"/>
+	<classpathentry kind="output" path="target/classes"/>
+</classpath>
