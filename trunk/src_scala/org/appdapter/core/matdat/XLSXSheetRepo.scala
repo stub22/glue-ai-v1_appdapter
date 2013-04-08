@@ -26,7 +26,8 @@ import org.appdapter.bind.csv.datmat.TestSheetReadMain;
 import au.com.bytecode.opencsv.CSVReader;
 
 import org.appdapter.core.log.BasicDebugger;
-import org.apache.poi.hssf.usermodel.{HSSFWorkbook,HSSFRow,HSSFCell};
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.{Workbook,Row,Cell,Sheet,Header};
 
 
 import com.hp.hpl.jena.rdf.model.{Model, Statement, Resource, Property, Literal, RDFNode, ModelFactory, InfModel}
@@ -64,6 +65,7 @@ import org.appdapter.help.repo.InitialBindingImpl;
 
 class XLSXSheetRepo(directoryModel : Model) extends SheetRepo(directoryModel) {
 
+ 
 	def loadSheetModelsIntoMainDataset() = {
 		val mainDset : DataSource = getMainQueryDataset().asInstanceOf[DataSource];
 		
@@ -85,58 +87,161 @@ class XLSXSheetRepo(directoryModel : Model) extends SheetRepo(directoryModel) {
 			val containerRes : Resource = qSoln.getResource("container");
 			val sheetRes : Resource = qSoln.getResource("sheet");
 			val sheetNum_Lit : Literal = qSoln.getLiteral("num")
-			val sheetKey_Lit : Literal = qSoln.getLiteral("key")
-			getLogger.debug("containerRes=" + containerRes + ", sheetRes=" + sheetRes + ", num=" + sheetNum_Lit + ", key=" + sheetKey_Lit)
+			val sheetLocation_Lit : Literal = qSoln.getLiteral("key")
+			getLogger.debug("containerRes=" + containerRes + ", sheetRes=" + sheetRes + ", num=" + sheetNum_Lit + ", key=" + sheetLocation_Lit)
 			
 			val sheetNum = sheetNum_Lit.getInt();
-			val sheetKey = sheetKey_Lit.getString();
-			val sheetModel : Model = XLSXSheetRepo.readModelSheet(sheetKey, sheetNum, nsJavaMap);
+			val sheetLocation = sheetLocation_Lit.getString();
+			val sheetModel : Model = XLSXSheetRepo.readModelSheet(sheetLocation, sheetNum, nsJavaMap);
 			getLogger.debug("Read sheetModel: {}" ,  sheetModel)
 			val graphURI = sheetRes.getURI();
 			mainDset.replaceNamedModel(graphURI, sheetModel)
 		}		
 	}
+
 }
 
 object XLSXSheetRepo extends BasicDebugger {
+
+  def getWorkbook(sheetLocation : String) : Workbook = {
+		val is = new FileInputStream(sheetLocation);
+		val workbook : Workbook = new HSSFWorkbook(is);
+		workbook;  
+  }
+	def getSheetAt(sheetLocation : String, sheetNum : Int) : Sheet = {
+	    val workbook = getWorkbook(sheetLocation); 
+		var sheet : Sheet = workbook.getSheetAt(sheetNum);		
+		sheet;
+	}
 	
-	def readModelSheet(sheetKey: String, sheetNum : Int,  nsJavaMap : java.util.Map[String, String]) : Model = {
-		val tgtModel : Model = ModelFactory.createDefaultModel();
+	def getSheetAt(sheetLocation : String, sheetName : String) : Sheet = {
+	    val workbook = getWorkbook(sheetLocation); 
+		var sheetNum = 0;
+		var sheet : Sheet = null;
+		var sheet2 : Sheet = null;
+		for(sheetNum <- 0 to workbook.getNumberOfSheets()) {
+			sheet = workbook.getSheetAt(sheetNum);
+			var sn = sheet.getSheetName();;
+		   if (sn.equalsIgnoreCase(sheetName)) return sheet;
+		   // cases like "Nspc.csv"
+		   if (sheetName.startsWith(sn)) sheet2 = sheet;		   
+		}	
+		// use the workbook API
+		workbook.getSheetAt(workbook.getSheetIndex(sheetName));
+	}
 		
-		tgtModel.setNsPrefixes (nsJavaMap)
+	def getSheetWidth(sheet : Sheet) : Int = {
+	    var maxWidth = -1;
+	    val i : Int = 0;
+		for (i <- 0  to sheet.getLastRowNum()) {
+		  val row : Row = sheet.getRow(i);
+		  val rw = row.getLastCellNum();
+		  if (rw > maxWidth) maxWidth = rw;
+		}
+		maxWidth;
+	}	
 		
-		val modelInsertProc = new SemSheet.ModelInsertSheetProc(tgtModel);
-		val is = new FileInputStream(sheetKey);
-		val workbook = new HSSFWorkbook(is);
-		var sheet = workbook.getSheetAt(sheetNum);
+	def makeSheetReader(sheetLocation : String, sheetNum : Int) : Reader = {
+	    val sheet = getSheetAt(sheetLocation, sheetNum);
+	    makeSheetReader(sheet)
+	}
+	def makeSheetReader(sheetLocation : String, sheetName : String) : Reader = {
+	    val sheet = getSheetAt(sheetLocation, sheetName);
+	    makeSheetReader(sheet)
+	}
+	
+	def makeSheetReader(sheet : Sheet) : Reader = {
+	    var width = getSheetWidth(sheet);
 		var i = 0;
 		val strBuff : StringBuffer = new StringBuffer();
 		for (i <- 0  to sheet.getLastRowNum()) {
 	
-		  val row : HSSFRow = sheet.getRow(i);
+		  val row : Row = sheet.getRow(i);
 	
+		  var rw = row.getLastCellNum();
 		  var j = 0;
-		    for (j <- 0 to row.getLastCellNum()) {
-		        val cell : HSSFCell = row.getCell(j);
-		        strBuff.append(cell.getStringCellValue() + ",");
+		    for (j <- 0 to rw) {
+		        val cell : Cell = row.getCell(j);
+		        if (j>0) strBuff.append(",");
+		        strBuff.append(cell.getStringCellValue());
+		    }
+		    // pad the rest
+		    for (j <- 0 to width-rw) {
+		       strBuff.append(",");
 		    }
 		    strBuff.append('\n');
 		}
-		val reader : Reader = new StringReader(strBuff.toString());
+		new StringReader(strBuff.toString());
+	}
+	
+
+  ///. Modeled on SheetRepo.loadTestSheetRepo
+	def loadXLSXSheetRepo(sheetLocation : String, namespaceSheetNum : Int, dirSheetNum : Int, 
+						fileModelCLs : java.util.List[ClassLoader]) : SheetRepo = {
+		// Read the namespaces and directory sheets into a single directory model.
+		val dirModel : Model = readDirectoryModelFromXLSX(sheetLocation, namespaceSheetNum, dirSheetNum) 
+		// Construct a repo around that directory
+		val shRepo = new XLSXSheetRepo(dirModel)
+		// Load the rest of the repo's initial *sheet* models, as instructed by the directory.
+		shRepo.loadSheetModelsIntoMainDataset()
+		// Load the rest of the repo's initial *file/resource* models, as instructed by the directory.
+		shRepo.loadFileModelsIntoMainDataset(fileModelCLs)
+		shRepo
+	}
+	
+	  ///. Modeled on SheetRepo.loadTestSheetRepo
+	def loadXLSXSheetRepo(sheetLocation : String, namespaceSheetName : String, dirSheetName : String, 
+						fileModelCLs : java.util.List[ClassLoader]) : SheetRepo = {
+		// Read the namespaces and directory sheets into a single directory model.
+		val dirModel : Model = readDirectoryModelFromXLSX(sheetLocation, namespaceSheetName, dirSheetName) 
+		// Construct a repo around that directory
+		val shRepo = new XLSXSheetRepo(dirModel)
+		// Load the rest of the repo's initial *sheet* models, as instructed by the directory.
+		shRepo.loadSheetModelsIntoMainDataset()
+		// Load the rest of the repo's initial *file/resource* models, as instructed by the directory.
+		shRepo.loadFileModelsIntoMainDataset(fileModelCLs)
+		shRepo
+	}
+	
+	def readModelSheet(sheetLocation: String, sheetNum : Int,  nsJavaMap : java.util.Map[String, String]) : Model = {
+		val tgtModel : Model = ModelFactory.createDefaultModel();		
+		tgtModel.setNsPrefixes (nsJavaMap)		
+		val modelInsertProc = new SemSheet.ModelInsertSheetProc(tgtModel);
+		val reader : Reader = makeSheetReader(sheetLocation,sheetNum);
 		MatrixData.processSheetR (reader, modelInsertProc.processRow);
 		getLogger.debug("tgtModel=" + tgtModel)
 		tgtModel;
 	}
 	  	
-	def readDirectoryModelFromXLSX(sheetKey : String, namespaceSheetNum : Int, dirSheetNum : Int) : Model = { 
+	def readModelSheet(sheetLocation: String, sheetName : String,  nsJavaMap : java.util.Map[String, String]) : Model = {
+		val tgtModel : Model = ModelFactory.createDefaultModel();		
+		tgtModel.setNsPrefixes (nsJavaMap)		
+		val modelInsertProc = new SemSheet.ModelInsertSheetProc(tgtModel);
+		val reader : Reader = makeSheetReader(sheetLocation,sheetName);
+		MatrixData.processSheetR (reader, modelInsertProc.processRow);
+		getLogger.debug("tgtModel=" + tgtModel)
+		tgtModel;
+	}
+	  	
+		
+	def readDirectoryModelFromXLSX(sheetLocation : String, namespaceSheetNum : Int, dirSheetNum : Int) : Model = { 
 		getLogger.debug("readDirectoryModelFromXLSX - start")
-		val namespaceSheetURL = WebSheet.makeGdocSheetQueryURL(sheetKey, namespaceSheetNum, None);
-		getLogger.debug("Made Namespace Sheet URL: " + namespaceSheetURL);
-		val nsJavaMap : java.util.Map[String, String] = MatrixData.readJavaMapFromSheet(namespaceSheetURL);
+		val namespaceSheetReader = makeSheetReader(sheetLocation, namespaceSheetNum);
+		val nsJavaMap : java.util.Map[String, String] = MatrixData.readJavaMapFromSheetR(namespaceSheetReader);
 		getLogger.debug("Got NS map: " + nsJavaMap)		
-		val dirModel : Model = readModelSheet(sheetKey, dirSheetNum, nsJavaMap);
+		val dirModel : Model = readModelSheet(sheetLocation, dirSheetNum, nsJavaMap);
 		dirModel;
 	}
+	
+	def readDirectoryModelFromXLSX(sheetLocation : String, namespaceSheetName : String, dirSheetName : String) : Model = { 
+		getLogger.debug("readDirectoryModelFromXLSX - start")
+		val namespaceSheetReader = makeSheetReader(sheetLocation, namespaceSheetName);
+		val nsJavaMap : java.util.Map[String, String] = MatrixData.readJavaMapFromSheetR(namespaceSheetReader);
+		getLogger.debug("Got NS map: " + nsJavaMap)		
+		val dirModel : Model = readModelSheet(sheetLocation, dirSheetName, nsJavaMap);
+		dirModel;
+	}
+		
 	private def loadTestXLSXSheetRepo() : XLSXSheetRepo = {
 		val nsSheetNum = 9;
 		val dirSheetNum = 8;

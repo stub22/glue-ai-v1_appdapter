@@ -34,10 +34,10 @@ import org.appdapter.core.matdat.{CsvFilesSheetRepo};
 
 object CsvFileRepoTester {
 	// Modeled on SheetRepo.loadTestSheetRepo
-	def loadSheetRepo(sheetKey : String, namespaceSheet : String, dirSheet : String,
+	def loadSheetRepo(sheetLoc : String, namespaceSheet : String, dirSheet : String,
 						fileModelCLs : java.util.List[ClassLoader]) : CsvFilesSheetRepo = {
 		// Read the namespaces and directory sheets into a single directory model.
-		val dirModel : Model = CsvFilesSheetRepo.readDirectoryModelFromCsvFiles(sheetKey, namespaceSheet, dirSheet, fileModelCLs) 
+		val dirModel : Model = CsvFilesSheetRepo.readDirectoryModelFromCsvFiles(sheetLoc, namespaceSheet, dirSheet, fileModelCLs) 
 		// Construct a repo around that directory
 		val shRepo = new CsvFilesSheetRepo(dirModel)
 		// Load the rest of the repo's initial *sheet* models, as instructed by the directory.
