@@ -45,40 +45,9 @@ import org.appdapter.help.repo.InitialBindingImpl
  */
 
 
-class SheetRepo(directoryModel : Model) extends DirectRepo(directoryModel) {
+abstract class SheetRepo(directoryModel : Model) extends DirectRepo(directoryModel) {
 
-	def loadSheetModelsIntoMainDataset() = {
-		val mainDset : DataSource = getMainQueryDataset().asInstanceOf[DataSource];
-		
-		val nsJavaMap : java.util.Map[String, String] = myDirectoryModel.getNsPrefixMap()
-		
-		val msqText = """
-			select ?container ?key ?sheet ?num 
-				{
-					?container  a ccrt:GoogSheetRepo; ccrt:key ?key.
-					?sheet a ccrt:GoogSheet; ccrt:sheetNumber ?num; ccrt:repo ?container.
-				}
-		"""
-		
-		val msRset = QueryHelper.execModelQueryWithPrefixHelp(myDirectoryModel, msqText);		
-		import scala.collection.JavaConversions._;
-		while (msRset.hasNext()) {
-			val qSoln : QuerySolution = msRset.next();
-			
-			val containerRes : Resource = qSoln.getResource("container");
-			val sheetRes : Resource = qSoln.getResource("sheet");
-			val sheetNum_Lit : Literal = qSoln.getLiteral("num")
-			val sheetKey_Lit : Literal = qSoln.getLiteral("key")
-			getLogger.debug("containerRes=" + containerRes + ", sheetRes=" + sheetRes + ", num=" + sheetNum_Lit + ", key=" + sheetKey_Lit)
-			
-			val sheetNum = sheetNum_Lit.getInt();
-			val sheetKey = sheetKey_Lit.getString();
-			val sheetModel : Model = SemSheet.readModelGDocSheet(sheetKey, sheetNum, nsJavaMap);
-			getLogger.debug("Read sheetModel: {}" ,  sheetModel)
-			val graphURI = sheetRes.getURI();
-			mainDset.replaceNamedModel(graphURI, sheetModel)
-		}		
-	}
+    /**  For All Subclasses    */
 	def loadFileModelsIntoMainDataset(clList : java.util.List[ClassLoader]) = {
 		val mainDset : DataSource = getMainQueryDataset().asInstanceOf[DataSource];
 		
@@ -129,47 +98,4 @@ class SheetRepo(directoryModel : Model) extends DirectRepo(directoryModel) {
 
 object SheetRepo extends BasicDebugger {
 	
-	def readDirectoryModelFromGoog(sheetKey : String, namespaceSheetNum : Int, dirSheetNum : Int) : Model = { 
-		getLogger.debug("readDirectoryModelFromGoog - start")
-		val namespaceSheetURL = WebSheet.makeGdocSheetQueryURL(sheetKey, namespaceSheetNum, None);
-		getLogger.debug("Made Namespace Sheet URL: " + namespaceSheetURL);
-		val nsJavaMap : java.util.Map[String, String] = MatrixData.readJavaMapFromSheet(namespaceSheetURL);
-		getLogger.debug("Got NS map: " + nsJavaMap)		
-		val dirModel : Model = SemSheet.readModelGDocSheet(sheetKey, dirSheetNum, nsJavaMap);
-		dirModel;
-	}
-	private def loadTestSheetRepo() : SheetRepo = {
-		val nsSheetNum = 9;
-		val dirSheetNum = 8;
-
-		val dirModel : Model = readDirectoryModelFromGoog(SemSheet.keyForBootSheet22, nsSheetNum, dirSheetNum) 
-		val sr = new SheetRepo(dirModel)
-		sr.loadSheetModelsIntoMainDataset()
-		val clList = new java.util.ArrayList[ClassLoader];
-		sr.loadFileModelsIntoMainDataset(clList)
-		sr
-	}
-	import scala.collection.immutable.StringOps
-	
-	def main(args: Array[String]) : Unit = {
-		
-		// Find a query with this info
-		val querySheetQName = "ccrt:qry_sheet_22";
-		val queryQName = "ccrt:find_lights_99"
-
-		// Plug a parameter in with this info
-		val lightsGraphVarName = "qGraph"
-		val lightsGraphQName = "ccrt:lights_camera_sheet_22"	
-		
-		// Run the resulting fully bound query, and print the results.
-		
-		val sr : SheetRepo = loadTestSheetRepo()
-		val qib = sr.makeInitialBinding
-		
-		qib.bindQName(lightsGraphVarName, lightsGraphQName)
-		
-		val solnJavaList : java.util.List[QuerySolution] = sr.queryIndirectForAllSolutions(querySheetQName, queryQName, qib.getQSMap);
-
-		println("Found solutions: " + solnJavaList)
-	}
 }

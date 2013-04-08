@@ -116,9 +116,14 @@ class MapSheetProc (headerRowCount : Int, val keyColIdx : Int, val vColIdx : Int
 }
 
 object MatrixData {
-	def processSheet(url : String, processor : MatrixRow => Unit) { 
-		
+  
+    def processSheet(url : String, processor : MatrixRow => Unit) {
 		val rawReader : Reader = TestSheetReadMain.makeSheetDataReader(url);
+    	processSheetR(rawReader, processor);
+    }
+    
+	def processSheetR(rawReader : Reader, processor : MatrixRow => Unit) { 
+		
 		val csvr : CSVReader = new CSVReader(rawReader);
 		
 		var done = false;
@@ -137,6 +142,12 @@ object MatrixData {
 	def readJavaMapFromSheet(sheetURL: String, headerCnt : Int = 1, keyColIdx : Int = 0, vlColIdx : Int = 1) : java.util.Map[String, String] = {
 		val mapProc = new MapSheetProc(headerCnt, keyColIdx, vlColIdx);
 		processSheet (sheetURL, mapProc.processRow);
+		mapProc.getJavaMap
+	}
+	
+	def readJavaMapFromSheetR(rawReader : Reader, headerCnt : Int = 1, keyColIdx : Int = 0, vlColIdx : Int = 1) : java.util.Map[String, String] = {
+		val mapProc = new MapSheetProc(headerCnt, keyColIdx, vlColIdx);
+		processSheetR (rawReader, mapProc.processRow);
 		mapProc.getJavaMap
 	}
 }
