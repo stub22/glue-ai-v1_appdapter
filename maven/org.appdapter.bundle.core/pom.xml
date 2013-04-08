@@ -45,6 +45,12 @@
 			<artifactId>org.osgi.compendium</artifactId>
 			<version>4.2.0</version>
 		</dependency>
+	<dependency>
+		<groupId>org.apache.poi</groupId>
+		<artifactId>poi</artifactId>
+		<version>3.9</version>
+	</dependency>
+			
 		<dependency>
 			<artifactId>h2</artifactId>
 			<groupId>com.h2database</groupId>
