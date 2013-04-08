@@ -20,7 +20,7 @@ package org.appdapter.core.matdat
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.Iterator;
-import java.io.InputStreamReader;
+import java.lang.StringBuffer;
 import java.io.FileInputStream;
 import org.appdapter.bind.csv.datmat.TestSheetReadMain;
 import au.com.bytecode.opencsv.CSVReader;
@@ -57,12 +57,12 @@ import org.appdapter.help.repo.InitialBindingImpl;
  * @author LogicMoo B. <www.logicmoo.com>
  * 
  * We implement a Excel Spreedsheet reader  backed Appdapter "repo" (read-only, but reloadable from updated source data).
- *   (easier to Save a CsvFilesledoc to CsvFiles Spreadsheet than several .csv files!)
+ *   (easier to Save a Google Doc to a Single XLSX Spreadsheet than several .csv files!)
  *   Uses Apache POI (@see http://poi.apache.org/)
  */
 
 
-class CsvFilesSheetRepo(directoryModel : Model) extends SheetRepo(directoryModel) {
+class XLSXSheetRepo(directoryModel : Model) extends SheetRepo(directoryModel) {
 
 	def loadSheetModelsIntoMainDataset() = {
 		val mainDset : DataSource = getMainQueryDataset().asInstanceOf[DataSource];
@@ -72,8 +72,8 @@ class CsvFilesSheetRepo(directoryModel : Model) extends SheetRepo(directoryModel
 		val msqText = """
 			select ?container ?key ?sheet ?num 
 				{
-					?container  a ccrt:CsvFilesRepo; ccrt:key ?key.
-					?sheet a ccrt:CsvFilesSheet; ccrt:sheetNameber ?num; ccrt:repo ?container.
+					?container  a ccrt:XLSXRepo; ccrt:key ?key.
+					?sheet a ccrt:XLSXSheet; ccrt:sheetNumber ?num; ccrt:repo ?container.
 				}
 		"""
 		
@@ -84,13 +84,13 @@ class CsvFilesSheetRepo(directoryModel : Model) extends SheetRepo(directoryModel
 			
 			val containerRes : Resource = qSoln.getResource("container");
 			val sheetRes : Resource = qSoln.getResource("sheet");
-			val sheetName_Lit : Literal = qSoln.getLiteral("num")
+			val sheetNum_Lit : Literal = qSoln.getLiteral("num")
 			val sheetKey_Lit : Literal = qSoln.getLiteral("key")
-			getLogger.debug("containerRes=" + containerRes + ", sheetRes=" + sheetRes + ", num=" + sheetName_Lit + ", key=" + sheetKey_Lit)
+			getLogger.debug("containerRes=" + containerRes + ", sheetRes=" + sheetRes + ", num=" + sheetNum_Lit + ", key=" + sheetKey_Lit)
 			
-			val sheetName = sheetName_Lit.getString();
+			val sheetNum = sheetNum_Lit.getInt();
 			val sheetKey = sheetKey_Lit.getString();
-			val sheetModel : Model = CsvFilesSheetRepo.readModelSheet(sheetKey, sheetName, nsJavaMap);
+			val sheetModel : Model = XLSXSheetRepo.readModelSheet(sheetKey, sheetNum, nsJavaMap);
 			getLogger.debug("Read sheetModel: {}" ,  sheetModel)
 			val graphURI = sheetRes.getURI();
 			mainDset.replaceNamedModel(graphURI, sheetModel)
@@ -98,37 +98,51 @@ class CsvFilesSheetRepo(directoryModel : Model) extends SheetRepo(directoryModel
 	}
 }
 
-object CsvFilesSheetRepo extends BasicDebugger {
+object XLSXSheetRepo extends BasicDebugger {
 	
-	def readModelSheet(sheetLoc: String, sheetName : String,  nsJavaMap : java.util.Map[String, String]) : Model = {
+	def readModelSheet(sheetKey: String, sheetNum : Int,  nsJavaMap : java.util.Map[String, String]) : Model = {
 		val tgtModel : Model = ModelFactory.createDefaultModel();
 		
 		tgtModel.setNsPrefixes (nsJavaMap)
 		
 		val modelInsertProc = new SemSheet.ModelInsertSheetProc(tgtModel);
-		val is = new FileInputStream(sheetLoc+sheetName);
-		val reader : Reader = new InputStreamReader(is);
+		val is = new FileInputStream(sheetKey);
+		val workbook = new HSSFWorkbook(is);
+		var sheet = workbook.getSheetAt(sheetNum);
+		var i = 0;
+		val strBuff : StringBuffer = new StringBuffer();
+		for (i <- 0  to sheet.getLastRowNum()) {
+	
+		  val row : HSSFRow = sheet.getRow(i);
+	
+		  var j = 0;
+		    for (j <- 0 to row.getLastCellNum()) {
+		        val cell : HSSFCell = row.getCell(j);
+		        strBuff.append(cell.getStringCellValue() + ",");
+		    }
+		    strBuff.append('\n');
+		}
+		val reader : Reader = new StringReader(strBuff.toString());
 		MatrixData.processSheetR (reader, modelInsertProc.processRow);
 		getLogger.debug("tgtModel=" + tgtModel)
 		tgtModel;
 	}
 	  	
-	def readDirectoryModelFromCsvFiles(sheetLoc : String, namespaceSheet : String, dirSheet : String,
-						fileModelCLs : java.util.List[ClassLoader]) : Model = { 
-		getLogger.debug("readDirectoryModelFromCsvFiles - start")
-		val namespaceSheetURL = sheetLoc + namespaceSheet;
+	def readDirectoryModelFromXLSX(sheetKey : String, namespaceSheetNum : Int, dirSheetNum : Int) : Model = { 
+		getLogger.debug("readDirectoryModelFromXLSX - start")
+		val namespaceSheetURL = WebSheet.makeGdocSheetQueryURL(sheetKey, namespaceSheetNum, None);
 		getLogger.debug("Made Namespace Sheet URL: " + namespaceSheetURL);
 		val nsJavaMap : java.util.Map[String, String] = MatrixData.readJavaMapFromSheet(namespaceSheetURL);
 		getLogger.debug("Got NS map: " + nsJavaMap)		
-		val dirModel : Model = readModelSheet(sheetLoc, dirSheet, nsJavaMap);
+		val dirModel : Model = readModelSheet(sheetKey, dirSheetNum, nsJavaMap);
 		dirModel;
 	}
-	private def loadTestCsvFilesSheetRepo() : CsvFilesSheetRepo = {
-		val nsSheetName = "Nspc.csv";
-		val dirSheetName = "Dir.csv";
+	private def loadTestXLSXSheetRepo() : XLSXSheetRepo = {
+		val nsSheetNum = 9;
+		val dirSheetNum = 8;
 
-		val dirModel : Model = readDirectoryModelFromCsvFiles(SemSheet.keyForCSVFilesBootSheet22, nsSheetName, dirSheetName, null) 
-		val sr = new CsvFilesSheetRepo(dirModel)
+		val dirModel : Model = readDirectoryModelFromXLSX(SemSheet.keyForXLSXBootSheet22, nsSheetNum, dirSheetNum) 
+		val sr = new XLSXSheetRepo(dirModel)
 		sr.loadSheetModelsIntoMainDataset()
 		val clList = new java.util.ArrayList[ClassLoader];
 		sr.loadFileModelsIntoMainDataset(clList)
@@ -148,7 +162,7 @@ object CsvFilesSheetRepo extends BasicDebugger {
 		
 		// Run the resulting fully bound query, and print the results.
 		
-		val sr : CsvFilesSheetRepo = loadTestCsvFilesSheetRepo()
+		val sr : XLSXSheetRepo = loadTestXLSXSheetRepo()
 		val qib = sr.makeInitialBinding
 		
 		qib.bindQName(lightsGraphVarName, lightsGraphQName)
@@ -158,16 +172,15 @@ object CsvFilesSheetRepo extends BasicDebugger {
 		println("Found solutions: " + solnJavaList)
 	}
 	
-			
-			
-		val nsSheetName22 = "Nspc.csv";
-		val dirSheetName22 = "Dir.csv";
-
+				
+	val nsSheetNum22 = 9;
+	val dirSheetNum22 = 8;
+	
 	def testSemSheet(args: Array[String]) : Unit = {
 	  	println("SemSheet test ");
-		val sheetLoc = SemSheet.keyForCSVFilesBootSheet22;
-		val namespaceSheetName = nsSheetName22;
-		val namespaceSheetURL = sheetLoc + namespaceSheetName;
+		val keyForXLSXBootSheet22 = SemSheet.keyForXLSXBootSheet22;
+		val namespaceSheetNum = nsSheetNum22;
+		val namespaceSheetURL = WebSheet.makeGdocSheetQueryURL(keyForXLSXBootSheet22, namespaceSheetNum, None);
 		println("Made Namespace Sheet URL: " + namespaceSheetURL);
 		// val namespaceMapProc = new MapSheetProc(1);
 		// MatrixData.processSheet (namespaceSheetURL, namespaceMapProc.processRow);
@@ -176,13 +189,13 @@ object CsvFilesSheetRepo extends BasicDebugger {
 		
 		println("Got NS map: " + nsJavaMap)
 		
-		val dirSheetName = dirSheetName22;
-		val dirModel : Model = readModelSheet(sheetLoc, dirSheetName, nsJavaMap);
+		val dirSheetNum = 8;
+		val dirModel : Model = readModelSheet(keyForXLSXBootSheet22, dirSheetNum, nsJavaMap);
 		
-		val queriesSheetName = "Qry.csv";
-		val queriesModel : Model = readModelSheet(sheetLoc, queriesSheetName, nsJavaMap);	
+		val queriesSheetNum = 12;
+		val queriesModel : Model = readModelSheet(keyForXLSXBootSheet22, queriesSheetNum, nsJavaMap);		
 		
-		val tqText = "select ?sheet { ?sheet a ccrt:CsvFilesSheet }";
+		val tqText = "select ?sheet { ?sheet a ccrt:XLSXSheet }";
 		
 		val trset = QueryHelper.execModelQueryWithPrefixHelp(dirModel, tqText);
 		val trxml = QueryHelper.buildQueryResultXML(trset);
@@ -225,4 +238,5 @@ object CsvFilesSheetRepo extends BasicDebugger {
 		 * 
 		 */
 	}
+	
 }

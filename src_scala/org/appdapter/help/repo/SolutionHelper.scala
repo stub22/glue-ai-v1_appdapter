@@ -19,7 +19,7 @@ package org.appdapter.help.repo
 import org.appdapter.core.name.{Ident, FreeIdent}
 import org.appdapter.core.store.{Repo}
 import org.appdapter.impl.store.{FancyRepo, QueryHelper, ResourceResolver};
-import org.appdapter.core.matdat.{SheetRepo}
+import org.appdapter.core.matdat.{GoogSheetRepo}
 import com.hp.hpl.jena.rdf.model.{Model, Statement, Resource, Property, Literal, RDFNode, ModelFactory, InfModel}
 
 import com.hp.hpl.jena.query.{Query, QueryFactory, QueryExecution, QueryExecutionFactory, QuerySolution, QuerySolutionMap, Syntax};
