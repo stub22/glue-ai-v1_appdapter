@@ -48,7 +48,7 @@ object ModTests {
 	def main(args: Array[String]) : Unit = {
 		println("ModTests - start")
 		val namespaceSheetNum = 9;
-		val namespaceSheetURL = WebSheet.makeGdocSheetQueryURL(SemSheet.keyForBootSheet22, namespaceSheetNum, None);
+		val namespaceSheetURL = WebSheet.makeGdocSheetQueryURL(SemSheet.keyForGoogBootSheet22, namespaceSheetNum, None);
 		println("Made Namespace Sheet URL: " + namespaceSheetURL);
 		// val namespaceMapProc = new MapSheetProc(1);
 		// MatrixData.processSheet (namespaceSheetURL, namespaceMapProc.processRow);
@@ -57,7 +57,7 @@ object ModTests {
 		
 		println("Got NS map: " + nsJavaMap)		
 		val reposSheetNum = 8;
-		val reposModel : Model = SemSheet.readModelGDocSheet(SemSheet.keyForBootSheet22, reposSheetNum, nsJavaMap);
+		val reposModel : Model = GoogSheetRepo.readModelSheet(SemSheet.keyForGoogBootSheet22, reposSheetNum, nsJavaMap);
 		
 
 	
@@ -95,7 +95,7 @@ event management, and transaction handling.
 		val deductionsListener = new PrintinListener("Deductions model");
 		
 		val queriesSheetNum = 12;
-		val queriesModel : Model = SemSheet.readModelGDocSheet(SemSheet.keyForBootSheet22, queriesSheetNum, nsJavaMap);		
+		val queriesModel : Model = GoogSheetRepo.readModelSheet(SemSheet.keyForGoogBootSheet22, queriesSheetNum, nsJavaMap);		
 		
 		val tqText = "select ?sheet { ?sheet a ccrt:GoogSheet }";
 		

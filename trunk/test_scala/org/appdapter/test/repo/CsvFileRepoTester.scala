@@ -20,26 +20,26 @@ import org.appdapter.core.name.{Ident, FreeIdent}
 import org.appdapter.core.store.{Repo, InitialBinding}
 import org.appdapter.help.repo.{RepoClient, RepoClientImpl, InitialBindingImpl}
 import org.appdapter.impl.store.{FancyRepo, DatabaseRepo, FancyRepoFactory}
-import org.appdapter.core.matdat.{SheetRepo}
+import org.appdapter.core.matdat.{GoogSheetRepo}
 import com.hp.hpl.jena.query.{QuerySolution}
 import com.hp.hpl.jena.rdf.model.{Model}
 import com.hp.hpl.jena.sparql.sse.SSE
 import com.hp.hpl.jena.sparql.modify.request.{UpdateCreate, UpdateLoad}
 import com.hp.hpl.jena.update.{GraphStore, GraphStoreFactory, UpdateAction, UpdateRequest}
 import com.hp.hpl.jena.sdb.{Store, SDBFactory};
-import org.appdapter.core.matdat.{CsvFileRepo};
+import org.appdapter.core.matdat.{CsvFilesSheetRepo};
 /**
  * @author Stu B. <www.texpedient.com>
  */
 
 object CsvFileRepoTester {
 	// Modeled on SheetRepo.loadTestSheetRepo
-	def loadSheetRepo(sheetKey : String, namespaceSheet : String, 
-						fileModelCLs : java.util.List[ClassLoader]) : CsvFileRepo = {
+	def loadSheetRepo(sheetKey : String, namespaceSheet : String, dirSheet : String,
+						fileModelCLs : java.util.List[ClassLoader]) : CsvFilesSheetRepo = {
 		// Read the namespaces and directory sheets into a single directory model.
-		val dirModel : Model = CsvFileRepo.readDirectoryModelFromGoog(sheetKey, namespaceSheet, fileModelCLs) 
+		val dirModel : Model = CsvFilesSheetRepo.readDirectoryModelFromCsvFiles(sheetKey, namespaceSheet, dirSheet, fileModelCLs) 
 		// Construct a repo around that directory
-		val shRepo = new CsvFileRepo(dirModel)
+		val shRepo = new CsvFilesSheetRepo(dirModel)
 		// Load the rest of the repo's initial *sheet* models, as instructed by the directory.
 		shRepo.loadSheetModelsIntoMainDataset()
 		// Load the rest of the repo's initial *file/resource* models, as instructed by the directory.
