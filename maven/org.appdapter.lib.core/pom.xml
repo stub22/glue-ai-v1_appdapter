@@ -1,4 +1,3 @@
-
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 <!-- Made using Maven archetype  scala-archetype-simple 1.3    
 (using Netbeans 7.0 "New Proj->Maven->From Archetype")
@@ -194,6 +193,12 @@ central repo.
 			<!-- Now frozen to use version 1.0.9, so we don't have to build JScience wrapper anymore -->
 			<version>1.0.9</version>
 		</dependency>
+	<dependency>
+		<groupId>org.apache.poi</groupId>
+		<artifactId>poi</artifactId>
+		<version>3.9</version>
+	</dependency>
+
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-simple</artifactId>
