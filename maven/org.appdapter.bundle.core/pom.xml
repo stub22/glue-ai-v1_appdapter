@@ -85,6 +85,8 @@
 			<version>${project.version}</version>
 			<scope>runtime</scope>
 		</dependency>
+        <!-- Included ow2 bundle to export apache.commons.logging.  
+            Needed by org.apache.poi -->
         <dependency>
             <groupId>org.ow2.bundles</groupId>
             <artifactId>ow2-bundles-externals-commons-logging</artifactId>
@@ -97,6 +99,8 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <!-- Included servicemix bundle to export apache.commons.codec.  
+            Needed by org.apache.poi -->
         <dependency>
             <groupId>org.apache.servicemix.bundles</groupId>
             <artifactId>org.apache.servicemix.bundles.commons-codec</artifactId>
