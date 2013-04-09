@@ -45,11 +45,6 @@
 			<artifactId>org.osgi.compendium</artifactId>
 			<version>4.2.0</version>
 		</dependency>
-	<dependency>
-		<groupId>org.apache.poi</groupId>
-		<artifactId>poi</artifactId>
-		<version>3.9</version>
-	</dependency>
 			
 		<dependency>
 			<artifactId>h2</artifactId>
@@ -90,6 +85,24 @@
 			<version>${project.version}</version>
 			<scope>runtime</scope>
 		</dependency>
+        <dependency>
+            <groupId>org.ow2.bundles</groupId>
+            <artifactId>ow2-bundles-externals-commons-logging</artifactId>
+            <version>1.0.24</version>
+            <scope>runtime</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>commons-logging-api</artifactId>
+                    <groupId>commons-logging</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.servicemix.bundles</groupId>
+            <artifactId>org.apache.servicemix.bundles.commons-codec</artifactId>
+            <version>1.3_3</version>
+            <scope>runtime</scope>
+        </dependency>
 	</dependencies>
 
 	<build>
@@ -114,6 +127,7 @@
 						
 						<Private-Package>org.xmldb.*,riotcmd.*</Private-Package>
 						-->						
+                        <Private-Package>org.apache.poi.*</Private-Package>
 					</instructions>
 				</configuration>
 			</plugin>
