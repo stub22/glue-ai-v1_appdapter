@@ -146,7 +146,7 @@ public class JenaResourceItem extends BaseItem implements ModelIdent {
 			//System.out.println("Found rdfList[" + linkName + "] = " + rdfList);
 			if (rdfList != null) {
 				List<RDFNode> javaNodeList = rdfList.asJavaList();
-				System.out.println("JavaNodeList = " + javaNodeList);
+				// System.out.println("JavaNodeList = " + javaNodeList);
 				for (RDFNode elementNode : javaNodeList) {
 					Resource res = elementNode.asResource();
 					JenaResourceItem jri = new JenaResourceItem(res);

@@ -69,7 +69,7 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 			Dataset ds = getMainQueryDataset();
 			result = JenaArqQueryFuncs.processDatasetQuery(ds, parsedQuery, initBinding, resProc);
 		} catch (Throwable t) {
-			logError("problem in processQuery", t);
+			getLogger().error("problem in processQuery [{}]", parsedQuery, t);
 		}
 		return result;
 	}
@@ -85,6 +85,7 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 	@Override public Set<Object> assembleRootsFromNamedModel(Ident graphNameIdent) {
 		Model loadedModel = getNamedModel(graphNameIdent);
 		if (loadedModel == null) {
+			getLogger().error("No model found at {}", graphNameIdent);
 			// We *could* return an empty set, instead.
 			return null;
 		}

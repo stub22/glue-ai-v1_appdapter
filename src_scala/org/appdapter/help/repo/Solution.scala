@@ -27,8 +27,8 @@ import com.hp.hpl.jena.rdf.model.{Resource, Literal, RDFNode, ModelFactory, InfM
  */
 
 // A very simple class so the Solution can be handed to external classes without them needing to depend directly on Jena
-class Solution(private val qsoln: QuerySolution) {
-	def getQuerySolution : QuerySolution = qsoln
+class Solution(private val myQSoln: QuerySolution) {
+	def getQuerySolution : QuerySolution = myQSoln
 	
 	def checkResultVar(vname : String) : Boolean = getQuerySolution.contains(vname)
 	def getLiteralResultVar(vname : String) : Literal = getQuerySolution.getLiteral(vname)
@@ -42,6 +42,7 @@ class Solution(private val qsoln: QuerySolution) {
 		val res : Resource = getQuerySolution.getResource(vname)
 		new FreeIdent(res.getURI, res.getLocalName)
 	}
+	override def toString() : String = "Solution[qSoln=" + myQSoln + "]"
 }
 
 

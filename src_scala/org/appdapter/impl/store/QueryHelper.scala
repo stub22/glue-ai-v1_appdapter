@@ -22,13 +22,14 @@ import com.hp.hpl.jena.rdf.model.{Model, Statement, Resource, Property, Literal,
 import com.hp.hpl.jena.query.{Query, QueryFactory, QueryExecution, QueryExecutionFactory, QuerySolution, Syntax};
 
 import com.hp.hpl.jena.query.{ResultSet, ResultSetFormatter, ResultSetRewindable, ResultSetFactory};
+import org.appdapter.core.log.BasicDebugger;
 
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
 
-object QueryHelper {
+object QueryHelper extends BasicDebugger {
 	
 	def execModelQueryWithPrefixHelp(model : Model, qText : String) : ResultSet = {
 
@@ -38,7 +39,7 @@ object QueryHelper {
 		val queryPrefixMapping : PrefixMapping = model;
 		query.setPrefixMapping(queryPrefixMapping);
 		QueryFactory.parse(query, qText, qBaseURI, Syntax.syntaxSPARQL); 
-
+		// getLogger().debug("Parsed Query {}", query);
 		val qSolnInit : QuerySolution = null; // Initial binding is optional, currently unused.
 		
 		val qExec = QueryExecutionFactory.create(query, model, qSolnInit);
