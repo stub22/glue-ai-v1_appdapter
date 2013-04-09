@@ -138,7 +138,7 @@
 						
 						<Private-Package>org.xmldb.*,riotcmd.*</Private-Package>
 						-->						
-                        <Private-Package>org.apache.poi.*, org.apache.xmlbeans.*, org.openxmlformats.*</Private-Package>
+                        <Private-Package>org.apache.poi.*, org.apache.xmlbeans.*, org.openxmlformats.*, schemaorg_apache_xmlbeans.*, schemasMicrosoftComOfficeExcel.*, schemasMicrosoftComOfficeOffice.*, schemasMicrosoftComVml.*</Private-Package>
 					</instructions>
 				</configuration>
 			</plugin>
