@@ -107,6 +107,12 @@
             <version>1.3_3</version>
             <scope>runtime</scope>
         </dependency>
+       <dependency>
+           <groupId>org.openl.rules</groupId>
+           <artifactId>org.openl.lib.poi.dev</artifactId>
+           <version>5.9.4.1</version>
+           <scope>runtime</scope>
+       </dependency>
 	</dependencies>
 
 	<build>
@@ -119,19 +125,20 @@
 				<configuration>
 					<instructions>
 						<!-- org.gjt.*;resolution:='optional', -->
-						<Import-Package>org.h2, *</Import-Package>
+						<Import-Package>com.sun.*;resolution:='optional', org.apache.*;resolution:='optional', org.h2, *</Import-Package>
 						<Bundle-Activator>org.appdapter.osgi.core.AppdapterCoreBundleActivator</Bundle-Activator>
 						<Export-Package>org.appdapter.*, au.com.bytecode.opencsv.*</Export-Package>
 						<!-- Horrid workaround for Class.forName() used in DynamicCachingComponentAssembler, could widen it to "*",
 							but better to get Jena code fixed to allow classloader setup.
 						-->
-						<DynamicImport-Package>org.cogchar.*</DynamicImport-Package>						
+						<DynamicImport-Package>org.cogchar.*</DynamicImport-Package>
+                        						
 						<!--
 						arq.*,com.hp.hpl.jena.*,org.openjena.*,etc.*,vocabularies.*
 						
 						<Private-Package>org.xmldb.*,riotcmd.*</Private-Package>
 						-->						
-                        <Private-Package>org.apache.poi.*</Private-Package>
+                        <Private-Package>org.apache.poi.*, org.apache.xmlbeans.*, org.openxmlformats.*</Private-Package>
 					</instructions>
 				</configuration>
 			</plugin>
