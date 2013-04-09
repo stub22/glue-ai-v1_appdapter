@@ -49,22 +49,26 @@ class GoogSheetRepo(directoryModel : Model) extends SheetRepo(directoryModel) {
 
 	def loadSheetModelsIntoMainDataset() = {
 		val mainDset : DataSource = getMainQueryDataset().asInstanceOf[DataSource];
+		val dirModel = getDirectoryModel;
 		
-		val nsJavaMap : java.util.Map[String, String] = myDirectoryModel.getNsPrefixMap()
-		
+		val nsJavaMap : java.util.Map[String, String] = dirModel.getNsPrefixMap()
+		// getLogger().debug("Dir Model NS Prefix Map {} ", nsJavaMap)
+		// getLogger().debug("Dir Model {}", dirModel)
 		val msqText = """
 			select ?container ?key ?sheet ?num 
 				{
-					?container  a ccrt:GoogRepo; ccrt:key ?key.
+					?container  a ccrt:GoogSheetRepo; ccrt:key ?key.
 					?sheet a ccrt:GoogSheet; ccrt:sheetNumber ?num; ccrt:repo ?container.
 				}
 		"""
 		
-		val msRset = QueryHelper.execModelQueryWithPrefixHelp(myDirectoryModel, msqText);		
+		val msRset = QueryHelper.execModelQueryWithPrefixHelp(dirModel, msqText);	
+		// getLogger.debug("Got  result set naming our input GoogSheets, from DirModel")
 		import scala.collection.JavaConversions._;
 		while (msRset.hasNext()) {
-			val qSoln : QuerySolution = msRset.next();
 			
+			val qSoln : QuerySolution = msRset.next();
+			// getLogger().debug("Got apparent solution {}", qSoln);
 			val containerRes : Resource = qSoln.getResource("container");
 			val sheetRes : Resource = qSoln.getResource("sheet");
 			val sheetNum_Lit : Literal = qSoln.getLiteral("num")
@@ -120,6 +124,8 @@ object GoogSheetRepo extends BasicDebugger {
 	import scala.collection.immutable.StringOps
 	
 	def main(args: Array[String]) : Unit = {
+		org.apache.log4j.BasicConfigurator.configure();
+		org.apache.log4j.Logger.getRootLogger().setLevel(org.apache.log4j.Level.ALL);
 		
 		// Find a query with this info
 		val querySheetQName = "ccrt:qry_sheet_22";
