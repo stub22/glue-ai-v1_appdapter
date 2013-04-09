@@ -183,6 +183,7 @@ public class BasicStoredMutableRepoImpl extends BasicRepoImpl implements Repo.St
 	 * @return 
 	 */
 	public static BasicStoredMutableRepoImpl openBasicRepoFromConfigPath(String storeConfigPath, ClassLoader optCL) {
+		getLoggerForClass(BasicStoredMutableRepoImpl.class).info("Getting Muttable Model from SdbStoreFactory: " + storeConfigPath);
 		Store s = SdbStoreFactory.connectSdbStoreFromResPath(storeConfigPath, optCL);
 		BasicStoredMutableRepoImpl repo = new BasicStoredMutableRepoImpl(s);
 		return repo;
