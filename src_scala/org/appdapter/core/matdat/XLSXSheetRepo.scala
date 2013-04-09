@@ -18,6 +18,8 @@ package org.appdapter.core.matdat
 
 import java.io.Reader;
 import java.io.StringReader;
+import java.io.InputStreamReader;
+import java.io.InputStream;
 import java.util.Iterator;
 import java.lang.StringBuffer;
 import java.io.FileInputStream;
@@ -69,6 +71,10 @@ class XLSXSheetRepo(directoryModel: Model, fmcls: java.util.List[ClassLoader]) e
   val fileModelCLs: java.util.List[ClassLoader] = fmcls;
 
   def loadSheetModelsIntoMainDataset() = {
+    loadSheetModelsIntoMainDatasetByNumber();
+    loadSheetModelsIntoMainDatasetByName();
+  }
+  def loadSheetModelsIntoMainDatasetByNumber() = {
     val mainDset: DataSource = getMainQueryDataset().asInstanceOf[DataSource];
 
     val nsJavaMap: java.util.Map[String, String] = myDirectoryModel.getNsPrefixMap()
@@ -105,7 +111,41 @@ class XLSXSheetRepo(directoryModel: Model, fmcls: java.util.List[ClassLoader]) e
       mainDset.replaceNamedModel(graphURI, sheetModel)
     }
   }
+  
+  
+    def loadSheetModelsIntoMainDatasetByName() = {
+    val mainDset: DataSource = getMainQueryDataset().asInstanceOf[DataSource];
 
+    val nsJavaMap: java.util.Map[String, String] = myDirectoryModel.getNsPrefixMap()
+
+    val msqText = """
+			select ?container ?key ?sheet ?name 
+				{
+					?container  a ccrt:XLSXRepo; ccrt:key ?key.
+					?sheet a ccrt:XLSXSheet; ccrt:sheetName ?name; ccrt:repo ?container.
+				}
+		"""
+
+    val msRset = QueryHelper.execModelQueryWithPrefixHelp(myDirectoryModel, msqText);
+    import scala.collection.JavaConversions._;
+    while (msRset.hasNext()) {
+      val qSoln: QuerySolution = msRset.next();
+
+      val containerRes: Resource = qSoln.getResource("container");
+      val sheetRes: Resource = qSoln.getResource("sheet");
+      val sheetNum_Lit: Literal = qSoln.getLiteral("name")
+      val sheetLocation_Lit: Literal = qSoln.getLiteral("key")
+      getLogger.debug("containerRes=" + containerRes + ", sheetRes=" + sheetRes + ", name=" + sheetNum_Lit + ", key=" + sheetLocation_Lit)
+
+      val sheetNum = sheetNum_Lit.getString();
+      val sheetLocation = sheetLocation_Lit.getString();
+      var sheetModel: Model = null;
+      sheetModel = XLSXSheetRepo.readModelSheet(sheetLocation, sheetNum, nsJavaMap, fileModelCLs);
+      getLogger.debug("Read sheetModel: {}", sheetModel)
+      val graphURI = sheetRes.getURI();
+      mainDset.replaceNamedModel(graphURI, sheetModel)
+    }
+  }
 }
 
 object XLSXSheetRepo extends BasicDebugger {
@@ -121,31 +161,63 @@ object XLSXSheetRepo extends BasicDebugger {
     maxWidth;
   }
 
+  def getWorkbook(is: InputStream, ext: String): Workbook = {
+    if (ext.equals("xlsx")) return new XSSFWorkbook(OPCPackage.open(is));
+    if (ext.equals("xls")) return new HSSFWorkbook(is);   
+    // openoffice documents
+    try {
+    	new XSSFWorkbook(OPCPackage.open(is));
+    } catch {
+       case e: Exception => new HSSFWorkbook(is);  
+    }
+  }
   def getWorkbook(sheetLocation: String, fileModelCLs: java.util.List[ClassLoader]): Workbook = {
     var stream = FileStreamUtils.openInputStream(sheetLocation, fileModelCLs);
-    val workbook: Workbook = new XSSFWorkbook(OPCPackage.open(stream));
-    workbook;
+    getWorkbook(stream, FileStreamUtils.getFileExt(sheetLocation))
   }
-  def getSheetAt(sheetLocation: String, sheetNum: Int, fileModelCLs: java.util.List[ClassLoader]): Sheet = {
+  def getSheetAt(sheetLocation: String, sheetNum: Int, fileModelCLs: java.util.List[ClassLoader]): Reader = {
     val workbook = getWorkbook(sheetLocation, fileModelCLs);
     var sheet: Sheet = workbook.getSheetAt(sheetNum);
-    sheet;
+    return makeSheetReader(sheet);
   }
 
-  def getSheetAt(sheetLocation: String, sheetName: String, fileModelCLs: java.util.List[ClassLoader]): Sheet = {
-    val workbook = getWorkbook(sheetLocation, fileModelCLs);
+  def getSheetAt(sheetLocation: String, sheetName: String, fileModelCLs: java.util.List[ClassLoader]): Reader = {
+    var workbook = getWorkbook(sheetLocation, fileModelCLs);
+    if (workbook == null) {
+
+      var ext: java.lang.String = FileStreamUtils.getFileExt(sheetName);
+      if (ext == null) return null;
+      if (ext.equals("csv")) {
+        var is = FileStreamUtils.openInputStream(sheetName, fileModelCLs);
+        if (is == null) is = FileStreamUtils.openInputStream(sheetLocation + sheetName, fileModelCLs);
+        if (is == null) return null;
+        return new InputStreamReader(is);         
+      }
+      if (ext.equals("xlsx") || ext.equals("xls")) {
+        var is = FileStreamUtils.openInputStream(sheetName,fileModelCLs);
+        if (is == null) is = FileStreamUtils.openInputStream(sheetLocation + sheetName,fileModelCLs);
+        if (is == null) return null;
+        workbook =  getWorkbook(is,ext);
+        if (workbook == null) return null;        
+        return makeSheetReader(workbook.getSheetAt(0));
+      }
+    }
     var sheetNum = 0;
-    var sheet: Sheet = null;
+    var sheet: Sheet = workbook.getSheetAt(workbook.getSheetIndex(sheetName));
+    // use the workbook API
+    if (sheet !=null ) return makeSheetReader(sheet);    
     var sheet2: Sheet = null;
     for (sheetNum <- 0 to workbook.getNumberOfSheets()) {
       sheet = workbook.getSheetAt(sheetNum);
-      var sn = sheet.getSheetName(); ;
-      if (sn.equalsIgnoreCase(sheetName)) return sheet;
+      var sn = sheet.getSheetName();
+      // found it by name
+      if (sn.equalsIgnoreCase(sheetName)) return makeSheetReader(sheet);
       // cases like "Nspc.csv"
       if (sheetName.startsWith(sn)) sheet2 = sheet;
     }
+    if (sheet2 !=null ) return makeSheetReader(sheet2);
     // use the workbook API
-    workbook.getSheetAt(workbook.getSheetIndex(sheetName));
+    return null;
   }
 
   def makeSheetReader(sheet: Sheet): Reader = {
@@ -204,34 +276,25 @@ object XLSXSheetRepo extends BasicDebugger {
     val tgtModel: Model = ModelFactory.createDefaultModel();
     tgtModel.setNsPrefixes(nsJavaMap)
     val modelInsertProc = new SemSheet.ModelInsertSheetProc(tgtModel);
-    val reader: Reader = makeSheetReader(sheetLocation, sheetNum, fileModelCLs);
+    val reader: Reader = getSheetAt(sheetLocation, sheetNum, fileModelCLs);
     MatrixData.processSheetR(reader, modelInsertProc.processRow);
     getLogger.debug("tgtModel=" + tgtModel)
     tgtModel;
   }
 
-  def readModelSheetN(sheetLocation: String, sheetName: String, nsJavaMap: java.util.Map[String, String], fileModelCLs: java.util.List[ClassLoader] ): Model = {
+  def readModelSheet(sheetLocation: String, sheetName: String, nsJavaMap: java.util.Map[String, String], fileModelCLs: java.util.List[ClassLoader] ): Model = {
     val tgtModel: Model = ModelFactory.createDefaultModel();
     tgtModel.setNsPrefixes(nsJavaMap)
     val modelInsertProc = new SemSheet.ModelInsertSheetProc(tgtModel);
-    val reader: Reader = makeSheetReader(sheetLocation, sheetName, fileModelCLs);
+    val reader: Reader = getSheetAt(sheetLocation, sheetName, fileModelCLs);
     MatrixData.processSheetR(reader, modelInsertProc.processRow);
     getLogger.debug("tgtModel=" + tgtModel)
     tgtModel;
-  }
-
-  def makeSheetReader(sheetLocation: String, sheetNum: Int, fileModelCLs: java.util.List[ClassLoader]): Reader = {
-    val sheet = getSheetAt(sheetLocation, sheetNum, fileModelCLs);
-    XLSXSheetRepo.makeSheetReader(sheet)
-  }
-  def makeSheetReader(sheetLocation: String, sheetName: String, fileModelCLs: java.util.List[ClassLoader]): Reader = {
-    val sheet = getSheetAt(sheetLocation, sheetName, fileModelCLs);
-    XLSXSheetRepo.makeSheetReader(sheet)
   }
 
   def readDirectoryModelFromXLSX(sheetLocation: String, namespaceSheetNum: Int, dirSheetNum: Int, fileModelCLs: java.util.List[ClassLoader]): Model = {
     getLogger.debug("readDirectoryModelFromXLSX - start")
-    val namespaceSheetReader = makeSheetReader(sheetLocation, namespaceSheetNum, fileModelCLs);
+    val namespaceSheetReader = getSheetAt(sheetLocation, namespaceSheetNum, fileModelCLs);
     val nsJavaMap: java.util.Map[String, String] = MatrixData.readJavaMapFromSheetR(namespaceSheetReader);
     getLogger.debug("Got NS map: " + nsJavaMap)
     val dirModel: Model = readModelSheet(sheetLocation, dirSheetNum, nsJavaMap, fileModelCLs);
@@ -240,10 +303,10 @@ object XLSXSheetRepo extends BasicDebugger {
 
   def readDirectoryModelFromXLSX(sheetLocation: String, namespaceSheetName: String, dirSheetName: String, fileModelCLs: java.util.List[ClassLoader]): Model = {
     getLogger.debug("readDirectoryModelFromXLSX - start")
-    val namespaceSheetReader = makeSheetReader(sheetLocation, namespaceSheetName, fileModelCLs);
+    val namespaceSheetReader = getSheetAt(sheetLocation, namespaceSheetName, fileModelCLs);
     val nsJavaMap: java.util.Map[String, String] = MatrixData.readJavaMapFromSheetR(namespaceSheetReader);
     getLogger.debug("Got NS map: " + nsJavaMap)
-    val dirModel: Model = XLSXSheetRepo.readModelSheetN(sheetLocation, dirSheetName, nsJavaMap, fileModelCLs);
+    val dirModel: Model = XLSXSheetRepo.readModelSheet(sheetLocation, dirSheetName, nsJavaMap, fileModelCLs);
     dirModel;
   }
 
