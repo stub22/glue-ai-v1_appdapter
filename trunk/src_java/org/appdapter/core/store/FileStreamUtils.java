@@ -16,20 +16,14 @@
 
 package org.appdapter.core.store;
 
-import org.appdapter.bind.rdf.jena.query.JenaArqQueryFuncs;
-import org.appdapter.bind.rdf.jena.query.JenaArqResultSetProcessor;
-
-import org.appdapter.bind.rdf.jena.assembly.AssemblerUtils;
-import org.appdapter.core.name.Ident;
-
-import com.hp.hpl.jena.query.Dataset;
-import com.hp.hpl.jena.query.Query;
-import com.hp.hpl.jena.query.QuerySolution;
-import com.hp.hpl.jena.rdf.model.Model;
-
-import java.net.*;
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Iterator;
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -37,9 +31,16 @@ import java.util.*;
 
 public class FileStreamUtils {
 
+	public static String getFileExt(String srcPath) {
+		int at = srcPath.lastIndexOf('.');
+		if (at < 0)
+			return null;
+		return srcPath.substring(at + 1).toLowerCase();
+	}
+
 	public static InputStream openInputStream(String srcPath,
 			java.util.List<ClassLoader> cls) {
-	
+
 		File file = new File(srcPath);
 		if (file.exists()) {
 			try {
@@ -53,14 +54,16 @@ public class FileStreamUtils {
 			URL url = classLoader.getResource(srcPath);
 			if (url != null)
 				try {
-					return url.openStream();
+					InputStream is = url.openStream();
+					if (is != null)
+						return is;
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-
 		}
-		if (!srcPath.contains(":")) srcPath = "file:" + srcPath;
+		if (!srcPath.contains(":"))
+			srcPath = "file:" + srcPath;
 		try {
 			return new URL(srcPath).openStream();
 		} catch (MalformedURLException e) {
