@@ -27,15 +27,19 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Iterator;
 
-import org.apache.poi.ss.usermodel.*;
-
-import com.hp.hpl.jena.sparql.pfunction.library.container;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
 
 public class FileStreamUtils {
+
+	static Logger theLogger = LoggerFactory.getLogger(FileStreamUtils.class);
 
 	public static String getFileExt(String srcPath) {
 		int at = srcPath.lastIndexOf('.');
@@ -45,6 +49,18 @@ public class FileStreamUtils {
 	}
 
 	public static Reader sheetToReader(Sheet sheet) {
+		String str = sheetToString(sheet);
+		getLogger().info(
+				"Reading Sheet " + sheet.getSheetName() + "as: \n " + str
+						+ "\n");
+		return new StringReader(str);
+	}
+
+	private static Logger getLogger() {
+		return theLogger;
+	}
+
+	public static String sheetToString(Sheet sheet) {
 		StringBuffer sheetBuff = new StringBuffer();
 		if (sheet.getPhysicalNumberOfRows() == 0) {
 			throw new RuntimeException("No rows on sheet: " + sheet);
@@ -90,7 +106,7 @@ public class FileStreamUtils {
 			}
 			sheetBuff.append(strBuff.toString().trim() + "\n");
 		}
-		return new StringReader(sheetBuff.toString().trim());
+		return sheetBuff.toString();
 	}
 
 	private static int getSheetWidth(Sheet sheet) {
@@ -109,42 +125,27 @@ public class FileStreamUtils {
 		final String separator = ",";
 		// If the fields contents should be formatted to confrom with Excel's
 		// convention....
-		if (true) {
 
-			// Firstly, check if there are any speech marks (") in the field;
-			// each occurrence must be escaped with another set of spech marks
-			// and then the entire field should be enclosed within another
-			// set of speech marks. Thus, "Yes" he said would become
-			// """Yes"" he said"
-			if (field.contains("\"")) {
-				buffer = new StringBuffer(field.replaceAll("\"", "\\\"\\\""));
+		// Firstly, check if there are any speech marks (") in the field;
+		// each occurrence must be escaped with another set of spech marks
+		// and then the entire field should be enclosed within another
+		// set of speech marks. Thus, "Yes" he said would become
+		// """Yes"" he said"
+		if (field.contains("\"")) {
+			buffer = new StringBuffer(field.replaceAll("\"", "\\\"\\\""));
+			buffer.insert(0, "\"");
+			buffer.append("\"");
+		} else {
+			// If the field contains either embedded separator or EOL
+			// characters, then escape the whole field by surrounding it
+			// with speech marks.
+			buffer = new StringBuffer(field);
+			if ((buffer.indexOf(separator)) > -1 || (buffer.indexOf("\n")) > -1) {
 				buffer.insert(0, "\"");
 				buffer.append("\"");
-			} else {
-				// If the field contains either embedded separator or EOL
-				// characters, then escape the whole field by surrounding it
-				// with speech marks.
-				buffer = new StringBuffer(field);
-				if ((buffer.indexOf(separator)) > -1
-						|| (buffer.indexOf("\n")) > -1) {
-					buffer.insert(0, "\"");
-					buffer.append("\"");
-				}
 			}
-			return (buffer.toString().trim());
 		}
-		// The only other formatting convention this class obeys is the UNIX one
-		// where any occurrence of the field separator or EOL character will
-		// be escaped by preceding it with a backslash.
-		else {
-			if (field.contains(separator)) {
-				field = field.replaceAll(separator, ("\\\\" + separator));
-			}
-			if (field.contains("\n")) {
-				field = field.replaceAll("\n", "\\\\\n");
-			}
-			return (field);
-		}
+		return (buffer.toString().trim());
 	}
 
 	public static InputStream openInputStream(String srcPath,
