@@ -90,7 +90,7 @@
         <dependency>
             <groupId>org.ow2.bundles</groupId>
             <artifactId>ow2-bundles-externals-commons-logging</artifactId>
-            <version>1.0.24</version>
+            <version>1.0.33</version>
             <scope>runtime</scope>
             <exclusions>
                 <exclusion>
