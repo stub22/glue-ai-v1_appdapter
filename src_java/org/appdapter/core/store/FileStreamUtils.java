@@ -16,20 +16,16 @@
 
 package org.appdapter.core.store;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.io.StringReader;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Iterator;
+import java.io.*;
+import java.net.*;
+import java.util.*;
 
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.hssf.usermodel.*;
+import org.apache.poi.xssf.usermodel.*;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.openxml4j.opc.*;
+import org.apache.poi.ss.usermodel.*;
+import org.openjena.atlas.io.InputStreamBuffered;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,6 +37,105 @@ public class FileStreamUtils {
 
 	static Logger theLogger = LoggerFactory.getLogger(FileStreamUtils.class);
 
+	public static Workbook getWorkbook(InputStream is, String extHint) throws IOException, InvalidFormatException {
+		if (is == null)
+			throw new IOException("Not input stream for hint: " + extHint);
+		try {
+			return WorkbookFactory.create(is);
+		} catch (Exception e0) {
+			if (extHint == null) {
+				extHint = "xlsx";
+			} else {
+				extHint = extHint.toLowerCase();
+			}
+			try {
+				if (extHint.endsWith("xlsx"))
+					return new XSSFWorkbook(OPCPackage.open(is));
+				if (extHint.endsWith("xls"))
+					return new HSSFWorkbook(is);
+				// openoffice documents
+				return new XSSFWorkbook(OPCPackage.open(is));
+			} catch (Exception e2) {
+				return new HSSFWorkbook(is);
+			}
+		}
+	}
+
+	public static Workbook getWorkbook(String sheetLocation, java.util.List<ClassLoader> fileModelCLs) throws InvalidFormatException, IOException {
+		InputStream stream = openInputStreamOrNull(sheetLocation, fileModelCLs);
+		if (stream == null)
+			throw new IOException("Location not found: " + sheetLocation);
+		return getWorkbook(stream, getFileExt(sheetLocation));
+	}
+
+	public static Reader getSheetReaderAt(String sheetLocation, String sheetName, java.util.List<ClassLoader> fileModelCLs) {
+		try {
+			return getSheetReaderAtCanThrow(sheetLocation, sheetName, fileModelCLs);
+		} catch (InvalidFormatException e) {
+			theLogger.error("getSheetReaderAtCanThrow ", e);
+		} catch (IOException e) {
+			theLogger.error("getSheetReaderAtCanThrow ", e);
+		}
+		return null;
+	}
+
+	@SuppressWarnings("unused")
+	public static Reader getSheetReaderAtCanThrow(String sheetLocation, String sheetName, java.util.List<ClassLoader> fileModelCLs) throws InvalidFormatException, IOException {
+		Workbook workbook = getWorkbook(sheetLocation, fileModelCLs);
+		if (workbook == null) {
+			InputStream is = openInputStreamOrNull(sheetName, fileModelCLs);
+			if (is == null)
+				is = openInputStreamOrNull(sheetLocation + sheetName, fileModelCLs);
+			if (is == null)
+				return NotFound(sheetLocation + sheetName);
+
+			String ext = getFileExt(sheetName);
+			if (ext != null && ext.endsWith("csv")) {
+				return new InputStreamReader(is);
+			}
+			workbook = getWorkbook(is, ext);
+			if (workbook == null)
+				return NotFound(sheetLocation + sheetName);
+			return sheetToReader(workbook.getSheetAt(0));
+		}
+		// i know this is dead code but it might not be soon
+		if (workbook == null)
+			return NotFound(sheetLocation + sheetName);
+		int sheetNumber = workbook.getSheetIndex(sheetName);
+		Sheet sheet = null;
+		if (sheetNumber >= 0)
+			sheet = workbook.getSheetAt(sheetNumber);
+		// use the workbook API
+		if (sheet != null)
+			return sheetToReader(sheet);
+		Sheet sheet2 = null;
+		int max = workbook.getNumberOfSheets() - 1;
+		String sheetNameS = matchableName(sheetName);
+		for (sheetNumber = 0; sheetNumber <= max; sheetNumber++) {
+			sheet = workbook.getSheetAt(sheetNumber);
+			String sn = matchableName(sheet.getSheetName());
+			// found it by name
+			if (sheetNameS.equals(sn))
+				return sheetToReader(sheet);
+			// cases like "Nspc.csv"
+			if (sheetNameS.startsWith(sn))
+				sheet2 = sheet;
+		}
+		if (sheet2 != null)
+			return sheetToReader(sheet2);
+		return NotFound(sheetLocation + sheetName);
+	}
+
+	private static String matchableName(String sheetName) {
+		if (sheetName == null)
+			return "";
+		return sheetName.replace(" ", "").replace(".csv", "").toLowerCase();
+	}
+
+	private static Reader NotFound(String string) throws IOException {
+		throw new FileNotFoundException(string);
+	}
+
 	public static String getFileExt(String srcPath) {
 		int at = srcPath.lastIndexOf('.');
 		if (at < 0)
@@ -50,10 +145,44 @@ public class FileStreamUtils {
 
 	public static Reader sheetToReader(Sheet sheet) {
 		String str = sheetToString(sheet);
-		getLogger().info(
-				"Reading Sheet " + sheet.getSheetName() + "as: \n " + str
-						+ "\n");
+		String sn = sheet.getSheetName();
+		getLogger().info("Reading Sheet " + sn + "as: \n " + str.substring(0, 10) + "\n");
+		saveFileString(sn, str);
 		return new StringReader(str);
+	}
+
+	public static void saveFileString(String sn) {
+		URL url;
+		try {
+			url = new URL(sn);
+			InputStream is = url.openStream();
+			BufferedInputStream bis = new BufferedInputStream(is);
+			ByteArrayOutputStream buf = new ByteArrayOutputStream();
+			int result = bis.read();
+			while (result != -1) {
+				byte b = (byte) result;
+				buf.write(b);
+				result = bis.read();
+			}
+
+			saveFileString(sn.replace(":", "-").replace("/", "-").replace(".", "-").replace("?", "-").replace("=", "-").replace("--", "-").replace("--", "-").replace("--", "-"), buf.toString());
+
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+
+	private static void saveFileString(String sn, String str) {
+		try {
+			FileWriter fw = new FileWriter(new File(sn + ".csv"));
+			fw.write(str);
+			fw.close();
+		} catch (IOException e) {
+			getLogger().error(" Saving Sheet " + sn + " { \n " + str + "\n }", e);
+			e.printStackTrace();
+		}
 	}
 
 	private static Logger getLogger() {
@@ -68,37 +197,10 @@ public class FileStreamUtils {
 		int width = getSheetWidth(sheet);
 		int maxInclusive = sheet.getLastRowNum();
 		for (int i = sheet.getFirstRowNum(); i <= maxInclusive; i++) {
-			StringBuffer strBuff = new StringBuffer();
 			Row row = sheet.getRow(i);
-
 			int rwInclusve = row.getLastCellNum();
-			for (int j = 0; j <= rwInclusve; j++) {
-				Cell cell = row.getCell(j);
-				if (j > 0)
-					strBuff.append(",");
-				if (cell == null)
-					continue;
-				switch (cell.getCellType()) {
-				case Cell.CELL_TYPE_NUMERIC:
-					strBuff.append(cell.getNumericCellValue());
-					continue;
-				case Cell.CELL_TYPE_BLANK:
-					continue;
-				case Cell.CELL_TYPE_STRING:
-					strBuff.append(escapeCSV(cell.getStringCellValue()));
-					continue;
-				case Cell.CELL_TYPE_FORMULA:
-					strBuff.append(escapeCSV(cell.getCellFormula()));
-					continue;
-				default:
-					break;
-				}
-				String str = cell.getStringCellValue();
-				if (str == null)
-					continue;
-				strBuff.append(str);
-			}
-
+			String str = getRowString(row, width);
+			StringBuffer strBuff = new StringBuffer(str);
 			// pad the rest
 			int pad = width - rwInclusve;
 			for (int j = 0; j < pad; j++) {
@@ -109,8 +211,62 @@ public class FileStreamUtils {
 		return sheetBuff.toString();
 	}
 
+	private static String getRowString(Row row, int width) {
+		int rwInclusve = row.getLastCellNum();
+		if (rwInclusve > width)
+			rwInclusve = width;
+		StringBuffer strBuff = new StringBuffer();
+
+		for (int j = 0; j <= rwInclusve; j++) {
+			Cell cell = row.getCell(j);
+			if (j > 0)
+				strBuff.append(",");
+
+			if (cell == null)
+				continue;
+			switch (cell.getCellType()) {
+			case Cell.CELL_TYPE_NUMERIC: {
+				String c = ("" + cell.getNumericCellValue() + " ").replace(".0 ", "");
+				strBuff.append(c);
+				continue;
+			}
+			case Cell.CELL_TYPE_BLANK:
+				continue;
+			case Cell.CELL_TYPE_STRING: {
+				String c = cell.getStringCellValue();
+				strBuff.append(escapeCSV(c));
+				continue;
+			}
+			case Cell.CELL_TYPE_FORMULA: {
+				String c = cell.getCellFormula();
+				theLogger.error("Formula really? " + c);
+				strBuff.append(escapeCSV(c));
+				continue;
+			}
+			default:
+				break;
+			}
+			String str = cell.getStringCellValue();
+			if (str == null)
+				continue;
+			strBuff.append(str);
+		}
+		return strBuff.toString();
+	}
+
 	private static int getSheetWidth(Sheet sheet) {
-		return sheet.getRow(sheet.getFirstRowNum()).getLastCellNum() + 1;
+		if (true)
+			return 0;
+		Row row = sheet.getRow(sheet.getFirstRowNum());
+		int hadStuff = -1;
+		for (int i = 0; i < row.getLastCellNum(); i++) {
+			Cell c = row.getCell(i);
+			if (c == null)
+				continue;
+			if (c.getCellType() == Cell.CELL_TYPE_STRING)
+				hadStuff = i;
+		}
+		return hadStuff;
 	}
 
 	private static Object escapeCSV(Object cellValue) {
@@ -121,8 +277,12 @@ public class FileStreamUtils {
 	}
 
 	private static String escapeEmbeddedCharacters(String field) {
-		StringBuffer buffer = null;
-		final String separator = ",";
+		if (field == null)
+			return "";
+		field = field.replace("\r\n", "\n").replace("\r", "\n").replace("\n", " ").trim();
+		if (field.length() == 0)
+			return field;
+
 		// If the fields contents should be formatted to confrom with Excel's
 		// convention....
 
@@ -131,25 +291,13 @@ public class FileStreamUtils {
 		// and then the entire field should be enclosed within another
 		// set of speech marks. Thus, "Yes" he said would become
 		// """Yes"" he said"
-		if (field.contains("\"")) {
-			buffer = new StringBuffer(field.replaceAll("\"", "\\\"\\\""));
-			buffer.insert(0, "\"");
-			buffer.append("\"");
-		} else {
-			// If the field contains either embedded separator or EOL
-			// characters, then escape the whole field by surrounding it
-			// with speech marks.
-			buffer = new StringBuffer(field);
-			if ((buffer.indexOf(separator)) > -1 || (buffer.indexOf("\n")) > -1) {
-				buffer.insert(0, "\"");
-				buffer.append("\"");
-			}
+		if (field.contains("\"") || field.contains("\n") || field.contains(",")) {
+			return "\"" + field.replaceAll("\"", "\"\"") + "\"";
 		}
-		return (buffer.toString().trim());
+		return field;
 	}
 
-	public static InputStream openInputStream(String srcPath,
-			java.util.List<ClassLoader> cls) {
+	public static InputStream openInputStreamOrNull(String srcPath, java.util.List<ClassLoader> cls) {
 
 		File file = new File(srcPath);
 		if (file.exists()) {

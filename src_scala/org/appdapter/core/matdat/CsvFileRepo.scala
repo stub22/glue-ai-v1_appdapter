@@ -66,7 +66,7 @@ class CsvFilesSheetRepo(directoryModel: Model, fmcls: java.util.List[ClassLoader
   val fileModelCLs: java.util.List[ClassLoader] = fmcls;
 
   override def loadSheetModelsIntoMainDataset() = {
-     loadSheetModelsIntoMainDatasetByPath(fileModelCLs);
+    loadSheetModelsIntoMainDatasetByPath(fileModelCLs);
     super.loadSheetModelsIntoMainDataset();
   }
 
@@ -75,14 +75,17 @@ class CsvFilesSheetRepo(directoryModel: Model, fmcls: java.util.List[ClassLoader
 object CsvFilesSheetRepo extends BasicDebugger {
 
   def getCsvSheetAt(sheetLocation: String, sheetName: String, fileModelCLs: java.util.List[ClassLoader]): Reader = {
-	  var ext: java.lang.String = FileStreamUtils.getFileExt(sheetName);
-	  if (ext.equals("xlsx") || ext.equals("xls")) {
-	    XLSXSheetRepo.getSheetAt(sheetLocation, sheetName, fileModelCLs);
-	  }
-	  var is = FileStreamUtils.openInputStream(sheetName, fileModelCLs);
-	  if (is == null) is = FileStreamUtils.openInputStream(sheetLocation + sheetName, fileModelCLs);
-	  if (is == null) return null;
-	  return new InputStreamReader(is);         
+    var ext: java.lang.String = FileStreamUtils.getFileExt(sheetName);
+    if (ext != null && (ext.equals("xlsx") || ext.equals("xls"))) {
+      XLSXSheetRepo.getSheetAt(sheetLocation, sheetName, fileModelCLs);
+    }
+    var is = FileStreamUtils.openInputStreamOrNull(sheetName, fileModelCLs);
+    if (is == null) is = FileStreamUtils.openInputStreamOrNull(sheetLocation + sheetName, fileModelCLs);
+    if (is == null) {
+      getLogger.error("Cant get getCsvSheetAt =" + sheetLocation + " " + sheetName)
+      return null;
+    }
+    return new InputStreamReader(is);
   }
 
   ///. Modeled on SheetRepo.loadTestSheetRepo
@@ -99,8 +102,7 @@ object CsvFilesSheetRepo extends BasicDebugger {
     shRepo
   }
 
-
-  def readModelSheet(sheetLocation: String, sheetName: String, nsJavaMap: java.util.Map[String, String], fileModelCLs: java.util.List[ClassLoader] ): Model = {
+  def readModelSheet(sheetLocation: String, sheetName: String, nsJavaMap: java.util.Map[String, String], fileModelCLs: java.util.List[ClassLoader]): Model = {
     val tgtModel: Model = ModelFactory.createDefaultModel();
     tgtModel.setNsPrefixes(nsJavaMap)
     val modelInsertProc = new SemSheet.ModelInsertSheetProc(tgtModel);
@@ -119,10 +121,10 @@ object CsvFilesSheetRepo extends BasicDebugger {
     dirModel;
   }
 
-    val nsSheetPath = "Nspc.csv";
-    val dirSheetPath = "Dir.csv";
+  val nsSheetPath = "Nspc.csv";
+  val dirSheetPath = "Dir.csv";
 
-    private def loadTestCsvFilesSheetRepo(): CsvFilesSheetRepo = {
+  private def loadTestCsvFilesSheetRepo(): CsvFilesSheetRepo = {
     val clList = new java.util.ArrayList[ClassLoader];
     val dirModel: Model = readDirectoryModelFromCsvFiles(SemSheet.keyForCSVFilesBootSheet22, nsSheetPath, dirSheetPath, clList)
     val sr = new CsvFilesSheetRepo(dirModel, clList)
