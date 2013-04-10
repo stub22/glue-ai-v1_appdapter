@@ -66,13 +66,13 @@ import org.appdapter.help.repo.InitialBindingImpl;
  *   Uses Apache POI (@see http://poi.apache.org/)
  */
 
-class XLSXSheetRepo(directoryModel: Model, fmcls: java.util.List[ClassLoader]) extends SheetRepo(directoryModel) {
+class XLSXSheetRepo(directoryModel: Model, fmcls: java.util.List[ClassLoader]) extends CsvFilesSheetRepo(directoryModel, fmcls) {
 
-  val fileModelCLs: java.util.List[ClassLoader] = fmcls;
 
-  def loadSheetModelsIntoMainDataset() = {
+  override def loadSheetModelsIntoMainDataset() = {
     loadSheetModelsIntoMainDatasetByNumber();
     loadSheetModelsIntoMainDatasetByName();
+    loadSheetModelsIntoMainDatasetByPath(fmcls);
   }
   def loadSheetModelsIntoMainDatasetByNumber() = {
     val mainDset: DataSource = getMainQueryDataset().asInstanceOf[DataSource];
@@ -202,12 +202,14 @@ object XLSXSheetRepo extends BasicDebugger {
         return makeSheetReader(workbook.getSheetAt(0));
       }
     }
-    var sheetNum = 0;
-    var sheet: Sheet = workbook.getSheetAt(workbook.getSheetIndex(sheetName));
+    var sheetNum = workbook.getSheetIndex(sheetName);
+    var sheet: Sheet =  null;    
+    if (sheetNum >= 0) sheet = workbook.getSheetAt(sheetNum);
     // use the workbook API
     if (sheet !=null ) return makeSheetReader(sheet);    
     var sheet2: Sheet = null;
-    for (sheetNum <- 0 to workbook.getNumberOfSheets()) {
+    var max = workbook.getNumberOfSheets() -1;
+    for (sheetNum <- 0 to max) {
       sheet = workbook.getSheetAt(sheetNum);
       var sn = sheet.getSheetName();
       // found it by name
@@ -216,32 +218,11 @@ object XLSXSheetRepo extends BasicDebugger {
       if (sheetName.startsWith(sn)) sheet2 = sheet;
     }
     if (sheet2 !=null ) return makeSheetReader(sheet2);
-    // use the workbook API
-    return null;
+    CsvFilesSheetRepo.getCsvSheetAt(sheetLocation,sheetName,fileModelCLs)
   }
 
   def makeSheetReader(sheet: Sheet): Reader = {
-    var width = getSheetWidth(sheet);
-    var i = 0;
-    val strBuff: StringBuffer = new StringBuffer();
-    for (i <- 0 to sheet.getLastRowNum()) {
-
-      val row: Row = sheet.getRow(i);
-
-      var rw = row.getLastCellNum();
-      var j = 0;
-      for (j <- 0 to rw) {
-        val cell: Cell = row.getCell(j);
-        if (j > 0) strBuff.append(",");
-        strBuff.append(cell.getStringCellValue());
-      }
-      // pad the rest
-      for (j <- 0 to width - rw) {
-        strBuff.append(",");
-      }
-      strBuff.append('\n');
-    }
-    new StringReader(strBuff.toString());
+	 FileStreamUtils.sheetToReader(sheet);
   }
 
   ///. Modeled on SheetRepo.loadTestSheetRepo
