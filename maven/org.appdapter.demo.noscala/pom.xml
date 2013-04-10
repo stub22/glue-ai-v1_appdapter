@@ -110,6 +110,11 @@
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
+			<artifactId>org.appdapter.lib.core</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>ext.bundle.math.jscience_50SNAP</artifactId>
 			<version>1.0.9</version>
 			<exclusions>
