@@ -16,6 +16,7 @@
 
 package org.appdapter.core.matdat
 
+import org.appdapter.core.store.{ FileStreamUtils };
 import java.io.Reader;
 import java.util.Iterator;
 import org.appdapter.bind.csv.datmat.TestSheetReadMain;
@@ -119,6 +120,7 @@ object MatrixData {
   
     def processSheet(url : String, processor : MatrixRow => Unit) {
 		val rawReader : Reader = TestSheetReadMain.makeSheetDataReader(url);
+		FileStreamUtils.saveFileString(url);
     	processSheetR(rawReader, processor);
     }
     
