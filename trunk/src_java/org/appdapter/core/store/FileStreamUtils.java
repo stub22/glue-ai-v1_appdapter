@@ -198,6 +198,8 @@ public class FileStreamUtils {
 		int maxInclusive = sheet.getLastRowNum();
 		for (int i = sheet.getFirstRowNum(); i <= maxInclusive; i++) {
 			Row row = sheet.getRow(i);
+			if (row == null)
+				continue;
 			int rwInclusve = row.getLastCellNum();
 			String str = getRowString(row, width);
 			StringBuffer strBuff = new StringBuffer(str);
@@ -243,6 +245,16 @@ public class FileStreamUtils {
 				strBuff.append(escapeCSV(c));
 				continue;
 			}
+			case Cell.CELL_TYPE_BOOLEAN: {
+				String c = "" + cell.getBooleanCellValue();
+				strBuff.append(escapeCSV(c));
+				continue;
+			}
+			case Cell.CELL_TYPE_ERROR: {
+				String c = "" + cell.getErrorCellValue();
+				strBuff.append(escapeCSV(c));
+				continue;
+			}			
 			default:
 				break;
 			}
@@ -255,8 +267,7 @@ public class FileStreamUtils {
 	}
 
 	private static int getSheetWidth(Sheet sheet) {
-		if (true)
-			return 0;
+		// if (true) return 0;
 		Row row = sheet.getRow(sheet.getFirstRowNum());
 		int hadStuff = -1;
 		for (int i = 0; i < row.getLastCellNum(); i++) {

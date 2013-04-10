@@ -120,7 +120,6 @@ object MatrixData {
   
     def processSheet(url : String, processor : MatrixRow => Unit) {
 		val rawReader : Reader = TestSheetReadMain.makeSheetDataReader(url);
-		FileStreamUtils.saveFileString(url);
     	processSheetR(rawReader, processor);
     }
     
