@@ -48,6 +48,10 @@ import org.appdapter.help.repo.InitialBindingImpl
 class GoogSheetRepo(directoryModel : Model) extends SheetRepo(directoryModel) {
 
 	def loadSheetModelsIntoMainDataset() = {
+	   loadGoogSheetModelsIntoMainDataset();
+	}
+	
+	def loadGoogSheetModelsIntoMainDataset() = {
 		val mainDset : DataSource = getMainQueryDataset().asInstanceOf[DataSource];
 		val dirModel = getDirectoryModel;
 		

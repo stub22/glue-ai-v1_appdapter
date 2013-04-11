@@ -48,7 +48,7 @@ import org.appdapter.help.repo.InitialBindingImpl
 abstract class SheetRepo(directoryModel : Model) extends DirectRepo(directoryModel) {
 
     /**  For All Subclasses    */
-	def loadFileModelsIntoMainDataset(clList : java.util.List[ClassLoader]) = {
+	final def loadFileModelsIntoMainDataset(clList : java.util.List[ClassLoader]) = {
 		val mainDset : DataSource = getMainQueryDataset().asInstanceOf[DataSource];
 		
 		val nsJavaMap : java.util.Map[String, String] = myDirectoryModel.getNsPrefixMap()
@@ -94,41 +94,6 @@ abstract class SheetRepo(directoryModel : Model) extends DirectRepo(directoryMod
 		}		
 	}
 	
-	def loadSheetModelsIntoMainDatasetByPath(clList : java.util.List[ClassLoader]) = {
-	    val mainDset: DataSource = getMainQueryDataset().asInstanceOf[DataSource];
-	
-	    val nsJavaMap: java.util.Map[String, String] = myDirectoryModel.getNsPrefixMap()
-	
-	    val msqText = """
-				select ?container ?key ?sheet ?name 
-					{
-						?container  a ccrt:CsvFilesRepo; ccrt:key ?key.
-						?sheet a ccrt:CsvFilesSheet;
-	      					ccrt:sheetPath ?name; ccrt:repo ?container.
-					}
-			"""
-	
-	    val msRset = QueryHelper.execModelQueryWithPrefixHelp(myDirectoryModel, msqText);
-	    import scala.collection.JavaConversions._;
-	    while (msRset.hasNext()) {
-	      val qSoln: QuerySolution = msRset.next();
-	
-	      val containerRes: Resource = qSoln.getResource("container");
-	      val sheetRes: Resource = qSoln.getResource("sheet");
-	      val sheetNum_Lit: Literal = qSoln.getLiteral("name")
-	      val sheetLocation_Lit: Literal = qSoln.getLiteral("key")
-	      getLogger.debug("containerRes=" + containerRes + ", sheetRes=" + sheetRes + ", name=" + sheetNum_Lit + ", key=" + sheetLocation_Lit)
-	
-	      val sheetNum = sheetNum_Lit.getString();
-	      val sheetLocation = sheetLocation_Lit.getString();
-	      var sheetModel: Model = null;
-	      sheetModel = CsvFilesSheetRepo.readModelSheet(sheetLocation, sheetNum, nsJavaMap, clList);
-	      getLogger.debug("Read sheetModel: {}", sheetModel)
-	      val graphURI = sheetRes.getURI();
-	      mainDset.replaceNamedModel(graphURI, sheetModel)
-    }
-  }
-
 }
 
 object SheetRepo extends BasicDebugger {
