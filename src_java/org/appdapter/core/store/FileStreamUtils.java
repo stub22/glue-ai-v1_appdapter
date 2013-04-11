@@ -70,6 +70,7 @@ public class FileStreamUtils {
 	
 	public static Reader getSheetReaderAt(String sheetLocation, String sheetName, java.util.List<ClassLoader> fileModelCLs) {
 		try {
+			theLogger.info("getSheetReaderAt: " + sheetLocation + " @ " + sheetName);
 			return getSheetReaderAtCanThrow(sheetLocation, sheetName, fileModelCLs);
 		} catch (InvalidFormatException e) {
 			theLogger.error("getSheetReaderAtCanThrow ", e);
