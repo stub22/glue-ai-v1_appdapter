@@ -69,11 +69,11 @@ import org.appdapter.help.repo.InitialBindingImpl;
 class XLSXSheetRepo(directoryModel: Model, fmcls: java.util.List[ClassLoader]) extends CsvFilesSheetRepo(directoryModel, fmcls) {
 
   override def loadSheetModelsIntoMainDataset() = {
-    loadSheetModelsIntoMainDatasetByName();
-    loadSheetModelsIntoMainDatasetByPath(fmcls);
+    super.loadSheetModelsIntoMainDataset();
+    loadSheetModelsIntoMainDatasetXlsWorkBooks();
   }
 
-  def loadSheetModelsIntoMainDatasetByName() = {
+  def loadSheetModelsIntoMainDatasetXlsWorkBooks() = {
     val mainDset: DataSource = getMainQueryDataset().asInstanceOf[DataSource];
 
     val nsJavaMap: java.util.Map[String, String] = myDirectoryModel.getNsPrefixMap()

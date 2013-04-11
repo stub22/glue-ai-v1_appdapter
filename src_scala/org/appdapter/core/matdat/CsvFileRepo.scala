@@ -66,8 +66,43 @@ class CsvFilesSheetRepo(directoryModel: Model, fmcls: java.util.List[ClassLoader
   val fileModelCLs: java.util.List[ClassLoader] = fmcls;
 
   override def loadSheetModelsIntoMainDataset() = {
-    loadSheetModelsIntoMainDatasetByPath(fileModelCLs);
+    loadSheetModelsIntoMainDatasetCsvFiles(fileModelCLs);
     super.loadSheetModelsIntoMainDataset();
+  }
+
+  	def loadSheetModelsIntoMainDatasetCsvFiles(clList : java.util.List[ClassLoader]) = {
+	    val mainDset: DataSource = getMainQueryDataset().asInstanceOf[DataSource];
+	
+	    val nsJavaMap: java.util.Map[String, String] = myDirectoryModel.getNsPrefixMap()
+	
+	    val msqText = """
+				select ?container ?key ?sheet ?name 
+					{
+						?container  a ccrt:CsvFilesRepo; ccrt:key ?key.
+						?sheet a ccrt:CsvFileSheet;
+	      					ccrt:sourcePath ?name; ccrt:repo ?container.
+					}
+			"""
+	
+	    val msRset = QueryHelper.execModelQueryWithPrefixHelp(myDirectoryModel, msqText);
+	    import scala.collection.JavaConversions._;
+	    while (msRset.hasNext()) {
+	      val qSoln: QuerySolution = msRset.next();
+	
+	      val containerRes: Resource = qSoln.getResource("container");
+	      val sheetRes: Resource = qSoln.getResource("sheet");
+	      val sheetPath_Lit: Literal = qSoln.getLiteral("name")
+	      val sheetLocation_Lit: Literal = qSoln.getLiteral("key")
+	      getLogger.debug("containerRes=" + containerRes + ", sheetRes=" + sheetRes + ", name=" + sheetPath_Lit + ", key=" + sheetLocation_Lit)
+	
+	      val sheetPath = sheetPath_Lit.getString();
+	      val sheetLocation = sheetLocation_Lit.getString();
+	      var sheetModel: Model = null;
+	      sheetModel = CsvFilesSheetRepo.readModelSheet(sheetLocation, sheetPath, nsJavaMap, clList);
+	      getLogger.debug("Read sheetModel: {}", sheetModel)
+	      val graphURI = sheetRes.getURI();
+	      mainDset.replaceNamedModel(graphURI, sheetModel)
+    }
   }
 
 }
