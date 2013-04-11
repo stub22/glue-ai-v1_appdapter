@@ -80,13 +80,14 @@ public class FileStreamUtils {
 	}
 	
 	public static boolean doBreak(Object... s) {
+		
 		PrintStream v = System.out;
 		new Exception("" + s[0]).fillInStackTrace().printStackTrace(v);
 		for (int i = 0; i < s.length; i++) {
-			v.println(s[i]);
+			getLogger().error("" + s[i]);
 		}
+		if (true) return false;
 		getLogger().info("Press enter to continue");
-		v.print("Press enter to continue");
 		System.console().readLine();
 		return true;
 	}
@@ -177,16 +178,16 @@ public class FileStreamUtils {
 				result = bis.read();
 			}
 			
-			saveFileString(sn.replaceAll(":", "-").replaceAll("/", "-").replaceAll(".", "-").replaceAll("?", "-").replaceAll("=", "-").replaceAll("--", "-"), buf.toString());
-			
+			saveFileString(sn.replaceAll(":", "-").replaceAll("/", "-").replaceAll(".", "-").replaceAll("?", "-").replaceAll("=", "-").replaceAll("--", "-"), buf.toString());			
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
 	}
 	
+	@SuppressWarnings("unused")
 	private static void saveFileString(String sn, String str) {
+		if (true) return;
 		try {
 			FileWriter fw = new FileWriter(new File(matchableName(sn) + ".csv"));
 			fw.write(str);
@@ -348,6 +349,7 @@ public class FileStreamUtils {
 		return field;
 	}
 	
+	@SuppressWarnings("rawtypes")
 	public static InputStream openInputStreamOrNull(String srcPath, java.util.List<ClassLoader> cls) {
 		
 		File file = new File(srcPath);
