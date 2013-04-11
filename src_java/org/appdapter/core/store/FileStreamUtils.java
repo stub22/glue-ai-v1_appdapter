@@ -79,6 +79,18 @@ public class FileStreamUtils {
 		return null;
 	}
 
+	public static boolean doBreak(Object... s) {
+		PrintStream v = System.out;
+		new Exception("" + s[0]).fillInStackTrace().printStackTrace(v);
+		for (int i = 0; i < s.length; i++) {
+			v.println(s[i]);
+		}
+		getLogger().info("Press enter to continue");
+		v.print("Press enter to continue");
+		System.console().readLine();
+		return true;
+	}
+
 	@SuppressWarnings("unused")
 	public static Reader getSheetReaderAtCanThrow(String sheetLocation, String sheetName, java.util.List<ClassLoader> fileModelCLs) throws InvalidFormatException, IOException {
 		Workbook workbook = getWorkbook(sheetLocation, fileModelCLs);
@@ -126,10 +138,10 @@ public class FileStreamUtils {
 		return NotFound(sheetLocation + sheetName);
 	}
 
-	private static String matchableName(String sheetName) {
+	public static String matchableName(String sheetName) {
 		if (sheetName == null)
 			return "";
-		return sheetName.replace(" ", "").replace(".csv", "").toLowerCase();
+		return (sheetName + " ").replace(".csv ", "").replace(".xlsx ", "").replaceAll("-", "").replaceAll(" ", "").toLowerCase();
 	}
 
 	private static Reader NotFound(String string) throws IOException {
@@ -146,7 +158,7 @@ public class FileStreamUtils {
 	public static Reader sheetToReader(Sheet sheet) {
 		String str = sheetToString(sheet);
 		String sn = sheet.getSheetName();
-		getLogger().info("Reading Sheet " + sn + "as: \n " + str.substring(0, 10) + "\n");
+		getLogger().debug("Reading Sheet " + sn + " " + str.length() + " bytes");
 		saveFileString(sn, str);
 		return new StringReader(str);
 	}
@@ -165,7 +177,7 @@ public class FileStreamUtils {
 				result = bis.read();
 			}
 
-			saveFileString(sn.replace(":", "-").replace("/", "-").replace(".", "-").replace("?", "-").replace("=", "-").replace("--", "-").replace("--", "-").replace("--", "-"), buf.toString());
+			saveFileString(sn.replaceAll(":", "-").replaceAll("/", "-").replaceAll(".", "-").replaceAll("?", "-").replaceAll("=", "-").replaceAll("--", "-"), buf.toString());
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -176,7 +188,7 @@ public class FileStreamUtils {
 
 	private static void saveFileString(String sn, String str) {
 		try {
-			FileWriter fw = new FileWriter(new File(sn + ".csv"));
+			FileWriter fw = new FileWriter(new File(matchableName(sn) + ".csv"));
 			fw.write(str);
 			fw.close();
 		} catch (IOException e) {
@@ -214,10 +226,21 @@ public class FileStreamUtils {
 	}
 
 	private static String getRowString(Row row, int width) {
+		return getRowString(row, width, false);
+	}
+
+	private static String getRowDebugString(Row row, int width) {
+		return getRowString(row, width, true);
+	}
+
+	private static String getRowString(Row row, int width, boolean debugString) {
 		int rwInclusve = row.getLastCellNum();
 		if (rwInclusve > width)
 			rwInclusve = width;
 		StringBuffer strBuff = new StringBuffer();
+		if (debugString) {
+			strBuff.append("##;; " + row.getSheet().getSheetName() + " rownum= " + row.getRowNum() + "\n\n");
+		}
 
 		for (int j = 0; j <= rwInclusve; j++) {
 			Cell cell = row.getCell(j);
@@ -226,42 +249,56 @@ public class FileStreamUtils {
 
 			if (cell == null)
 				continue;
+			String t, c;
+			String s = null;
+
 			switch (cell.getCellType()) {
-			case Cell.CELL_TYPE_NUMERIC: {
-				String c = ("" + cell.getNumericCellValue() + " ").replace(".0 ", "");
-				strBuff.append(c);
-				continue;
-			}
 			case Cell.CELL_TYPE_BLANK:
 				continue;
 			case Cell.CELL_TYPE_STRING: {
-				String c = cell.getStringCellValue();
+				c = cell.getStringCellValue();
 				strBuff.append(escapeCSV(c));
 				continue;
+			}
+
+			case Cell.CELL_TYPE_NUMERIC: {
+				t = "CELL_TYPE_NUMERIC";
+				c = ("" + cell.getNumericCellValue() + " ").replace(".0 ", "");
 			}
 			case Cell.CELL_TYPE_FORMULA: {
-				String c = cell.getCellFormula();
-				theLogger.error("Formula really? " + c);
-				strBuff.append(escapeCSV(c));
-				continue;
+				t = "CELL_TYPE_FORMULA";
+				c = cell.getCellFormula();
+				cell.setCellType(Cell.CELL_TYPE_STRING);
+				s = cell.getStringCellValue();
+				if (s != null && s.length() > 1) {
+					strBuff.append(escapeCSV(c));
+					continue;
+				}
 			}
 			case Cell.CELL_TYPE_BOOLEAN: {
-				String c = "" + cell.getBooleanCellValue();
-				strBuff.append(escapeCSV(c));
-				continue;
+				t = "CELL_TYPE_BOOLEAN";
+				c = "" + cell.getBooleanCellValue();
 			}
 			case Cell.CELL_TYPE_ERROR: {
-				String c = "" + cell.getErrorCellValue();
-				strBuff.append(escapeCSV(c));
-				continue;
-			}			
-			default:
-				break;
+				t = "CELL_TYPE_ERROR";
+				c = "" + cell.getErrorCellValue();
 			}
-			String str = cell.getStringCellValue();
-			if (str == null)
-				continue;
-			strBuff.append(str);
+			default: {
+				t = "CELL_TYPE_" + cell.getCellType();
+				c = cell.getStringCellValue();
+			}
+
+			}
+			cell.setCellType(Cell.CELL_TYPE_STRING);
+			String s = cell.getStringCellValue();
+			if (s == null || s.length() < 1) {
+				if (!debugString) {
+					doBreak(t + " really? " + c, "cell=" + cell, "cellAsString=" + s, "row.getClass= " + row.getClass(), "sheet=" + cell.getSheet().getSheetName(), "row=" + cell.getRow(), "rowstr = " + getRowDebugString(row, width));
+				}
+			}
+			c = s;
+			strBuff.append(escapeCSV(c));
+			continue;
 		}
 		return strBuff.toString();
 	}
