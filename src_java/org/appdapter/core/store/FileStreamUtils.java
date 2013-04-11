@@ -34,9 +34,9 @@ import org.slf4j.LoggerFactory;
  */
 
 public class FileStreamUtils {
-
+	
 	static Logger theLogger = LoggerFactory.getLogger(FileStreamUtils.class);
-
+	
 	public static Workbook getWorkbook(InputStream is, String extHint) throws IOException, InvalidFormatException {
 		if (is == null)
 			throw new IOException("Not input stream for hint: " + extHint);
@@ -60,14 +60,14 @@ public class FileStreamUtils {
 			}
 		}
 	}
-
+	
 	public static Workbook getWorkbook(String sheetLocation, java.util.List<ClassLoader> fileModelCLs) throws InvalidFormatException, IOException {
 		InputStream stream = openInputStreamOrNull(sheetLocation, fileModelCLs);
 		if (stream == null)
 			throw new IOException("Location not found: " + sheetLocation);
 		return getWorkbook(stream, getFileExt(sheetLocation));
 	}
-
+	
 	public static Reader getSheetReaderAt(String sheetLocation, String sheetName, java.util.List<ClassLoader> fileModelCLs) {
 		try {
 			return getSheetReaderAtCanThrow(sheetLocation, sheetName, fileModelCLs);
@@ -78,7 +78,7 @@ public class FileStreamUtils {
 		}
 		return null;
 	}
-
+	
 	public static boolean doBreak(Object... s) {
 		PrintStream v = System.out;
 		new Exception("" + s[0]).fillInStackTrace().printStackTrace(v);
@@ -90,7 +90,7 @@ public class FileStreamUtils {
 		System.console().readLine();
 		return true;
 	}
-
+	
 	@SuppressWarnings("unused")
 	public static Reader getSheetReaderAtCanThrow(String sheetLocation, String sheetName, java.util.List<ClassLoader> fileModelCLs) throws InvalidFormatException, IOException {
 		Workbook workbook = getWorkbook(sheetLocation, fileModelCLs);
@@ -100,7 +100,7 @@ public class FileStreamUtils {
 				is = openInputStreamOrNull(sheetLocation + sheetName, fileModelCLs);
 			if (is == null)
 				return NotFound(sheetLocation + sheetName);
-
+			
 			String ext = getFileExt(sheetName);
 			if (ext != null && ext.endsWith("csv")) {
 				return new InputStreamReader(is);
@@ -137,24 +137,24 @@ public class FileStreamUtils {
 			return sheetToReader(sheet2);
 		return NotFound(sheetLocation + sheetName);
 	}
-
+	
 	public static String matchableName(String sheetName) {
 		if (sheetName == null)
 			return "";
 		return (sheetName + " ").replace(".csv ", "").replace(".xlsx ", "").replaceAll("-", "").replaceAll(" ", "").toLowerCase();
 	}
-
+	
 	private static Reader NotFound(String string) throws IOException {
 		throw new FileNotFoundException(string);
 	}
-
+	
 	public static String getFileExt(String srcPath) {
 		int at = srcPath.lastIndexOf('.');
 		if (at < 0)
 			return null;
 		return srcPath.substring(at + 1).toLowerCase();
 	}
-
+	
 	public static Reader sheetToReader(Sheet sheet) {
 		String str = sheetToString(sheet);
 		String sn = sheet.getSheetName();
@@ -162,7 +162,7 @@ public class FileStreamUtils {
 		saveFileString(sn, str);
 		return new StringReader(str);
 	}
-
+	
 	public static void saveFileString(String sn) {
 		URL url;
 		try {
@@ -176,16 +176,16 @@ public class FileStreamUtils {
 				buf.write(b);
 				result = bis.read();
 			}
-
+			
 			saveFileString(sn.replaceAll(":", "-").replaceAll("/", "-").replaceAll(".", "-").replaceAll("?", "-").replaceAll("=", "-").replaceAll("--", "-"), buf.toString());
-
+			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
+		
 	}
-
+	
 	private static void saveFileString(String sn, String str) {
 		try {
 			FileWriter fw = new FileWriter(new File(matchableName(sn) + ".csv"));
@@ -196,11 +196,11 @@ public class FileStreamUtils {
 			e.printStackTrace();
 		}
 	}
-
+	
 	private static Logger getLogger() {
 		return theLogger;
 	}
-
+	
 	public static String sheetToString(Sheet sheet) {
 		StringBuffer sheetBuff = new StringBuffer();
 		if (sheet.getPhysicalNumberOfRows() == 0) {
@@ -224,15 +224,15 @@ public class FileStreamUtils {
 		}
 		return sheetBuff.toString();
 	}
-
+	
 	private static String getRowString(Row row, int width) {
 		return getRowString(row, width, false);
 	}
-
+	
 	private static String getRowDebugString(Row row, int width) {
 		return getRowString(row, width, true);
 	}
-
+	
 	private static String getRowString(Row row, int width, boolean debugString) {
 		int rwInclusve = row.getLastCellNum();
 		if (rwInclusve > width)
@@ -241,56 +241,59 @@ public class FileStreamUtils {
 		if (debugString) {
 			strBuff.append("##;; " + row.getSheet().getSheetName() + " rownum= " + row.getRowNum() + "\n\n");
 		}
-
+		
 		for (int j = 0; j <= rwInclusve; j++) {
 			Cell cell = row.getCell(j);
 			if (j > 0)
 				strBuff.append(",");
-
+			
 			if (cell == null)
 				continue;
 			String t, c;
 			String s = null;
-
+			
 			switch (cell.getCellType()) {
-			case Cell.CELL_TYPE_BLANK:
-				continue;
-			case Cell.CELL_TYPE_STRING: {
-				c = cell.getStringCellValue();
-				strBuff.append(escapeCSV(c));
-				continue;
-			}
-
-			case Cell.CELL_TYPE_NUMERIC: {
-				t = "CELL_TYPE_NUMERIC";
-				c = ("" + cell.getNumericCellValue() + " ").replace(".0 ", "");
-			}
-			case Cell.CELL_TYPE_FORMULA: {
-				t = "CELL_TYPE_FORMULA";
-				c = cell.getCellFormula();
-				cell.setCellType(Cell.CELL_TYPE_STRING);
-				s = cell.getStringCellValue();
-				if (s != null && s.length() > 1) {
+				case Cell.CELL_TYPE_BLANK:
+					continue;
+				case Cell.CELL_TYPE_STRING: {
+					c = cell.getStringCellValue();
 					strBuff.append(escapeCSV(c));
 					continue;
 				}
-			}
-			case Cell.CELL_TYPE_BOOLEAN: {
-				t = "CELL_TYPE_BOOLEAN";
-				c = "" + cell.getBooleanCellValue();
-			}
-			case Cell.CELL_TYPE_ERROR: {
-				t = "CELL_TYPE_ERROR";
-				c = "" + cell.getErrorCellValue();
-			}
-			default: {
-				t = "CELL_TYPE_" + cell.getCellType();
-				c = cell.getStringCellValue();
-			}
-
+				
+				case Cell.CELL_TYPE_NUMERIC: {
+					t = "CELL_TYPE_NUMERIC";
+					c = ("" + cell.getNumericCellValue() + " ").replace(".0 ", "").trim();
+					break;
+				}
+				case Cell.CELL_TYPE_FORMULA: {
+					t = "CELL_TYPE_FORMULA";
+					c = cell.getCellFormula();
+					break;
+				}
+				case Cell.CELL_TYPE_BOOLEAN: {
+					t = "CELL_TYPE_BOOLEAN";
+					c = "" + cell.getBooleanCellValue();
+					break;
+				}
+				case Cell.CELL_TYPE_ERROR: {
+					t = "CELL_TYPE_ERROR";
+					c = "" + cell.getErrorCellValue();
+					break;
+				}
+				default: {
+					t = "CELL_TYPE_" + cell.getCellType();
+					c = cell.getStringCellValue();
+					break;
+				}
 			}
 			cell.setCellType(Cell.CELL_TYPE_STRING);
-			String s = cell.getStringCellValue();
+			s = cell.getStringCellValue();
+			if (s != null && s.length() > 1) {
+				strBuff.append(escapeCSV(s));
+				continue;
+			}
+			
 			if (s == null || s.length() < 1) {
 				if (!debugString) {
 					doBreak(t + " really? " + c, "cell=" + cell, "cellAsString=" + s, "row.getClass= " + row.getClass(), "sheet=" + cell.getSheet().getSheetName(), "row=" + cell.getRow(), "rowstr = " + getRowDebugString(row, width));
@@ -302,7 +305,7 @@ public class FileStreamUtils {
 		}
 		return strBuff.toString();
 	}
-
+	
 	private static int getSheetWidth(Sheet sheet) {
 		// if (true) return 0;
 		Row row = sheet.getRow(sheet.getFirstRowNum());
@@ -316,24 +319,24 @@ public class FileStreamUtils {
 		}
 		return hadStuff;
 	}
-
+	
 	private static Object escapeCSV(Object cellValue) {
 		if (cellValue == null)
 			return "";
 		String cellValueStr = cellValue.toString();
 		return escapeEmbeddedCharacters(cellValueStr);
 	}
-
+	
 	private static String escapeEmbeddedCharacters(String field) {
 		if (field == null)
 			return "";
 		field = field.replace("\r\n", "\n").replace("\r", "\n").replace("\n", " ").trim();
 		if (field.length() == 0)
 			return field;
-
+		
 		// If the fields contents should be formatted to confrom with Excel's
 		// convention....
-
+		
 		// Firstly, check if there are any speech marks (") in the field;
 		// each occurrence must be escaped with another set of spech marks
 		// and then the entire field should be enclosed within another
@@ -344,9 +347,9 @@ public class FileStreamUtils {
 		}
 		return field;
 	}
-
+	
 	public static InputStream openInputStreamOrNull(String srcPath, java.util.List<ClassLoader> cls) {
-
+		
 		File file = new File(srcPath);
 		if (file.exists()) {
 			try {
