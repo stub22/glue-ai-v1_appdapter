@@ -43,7 +43,7 @@ central repo.
 	<parent>
 		<groupId>org.appdapter</groupId>
 		<artifactId>org.appdapter.modules.core</artifactId>
-		<version>1.0.10-SNAPSHOT</version>
+		<version>1.1.0</version>
 		<relativePath>../org.appdapter.modules.core/pom.xml</relativePath>
 	</parent>		
 	<artifactId>org.appdapter.lib.core</artifactId>
@@ -306,7 +306,7 @@ central repo.
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore></ignore>
+										<ignore />
 									</action>
 								</pluginExecution>
 							</pluginExecutions>
