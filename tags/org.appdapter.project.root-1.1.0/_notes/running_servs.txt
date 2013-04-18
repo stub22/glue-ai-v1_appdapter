@@ -1,0 +1,148 @@
+     [java] g! System Bundle (0) provides services:
+     [java] ------------------------------------
+     [java] objectClass = org.osgi.service.startlevel.StartLevel
+     [java] service.id = 1
+     [java] ----
+     [java] objectClass = org.osgi.service.packageadmin.PackageAdmin
+     [java] service.id = 2
+
+	 
+	 
+	 [java] g! Apache Felix Gogo Shell (52) provides services:
+     [java] -----------------------------------------------
+     [java] objectClass = org.apache.felix.service.command.Converter
+     [java] service.id = 11
+     [java] ----
+     [java] objectClass = org.apache.felix.gogo.shell.Builtin
+     [java] osgi.command.function = format, getopt, new, set, tac, type
+     [java] osgi.command.scope = gogo
+     [java] service.id = 12
+     [java] ----
+     [java] objectClass = org.apache.felix.gogo.shell.Procedural
+     [java] osgi.command.function = each, if, not, throw, try, until, while
+     [java] osgi.command.scope = gogo
+     [java] service.id = 13
+     [java] ----
+     [java] objectClass = org.apache.felix.gogo.shell.Posix
+     [java] osgi.command.function = cat, echo, grep
+     [java] osgi.command.scope = gogo
+     [java] service.id = 14
+     [java] ----
+     [java] objectClass = org.apache.felix.gogo.shell.Telnet
+     [java] osgi.command.function = telnetd
+     [java] osgi.command.scope = gogo
+     [java] service.id = 15
+     [java] ----
+     [java] objectClass = org.apache.felix.gogo.shell.Shell
+     [java] osgi.command.function = gosh, sh, source
+     [java] osgi.command.scope = gogo
+     [java] service.id = 16
+	 
+	 
+	  java] g! Apache Felix Gogo Command (53) provides services:
+     [java] -------------------------------------------------
+     [java] objectClass = org.apache.felix.gogo.command.Basic
+     [java] osgi.command.function = bundlelevel, frameworklevel, headers, help,
+install, inspect, lb, log, refresh, resolve, start, stop, uninstall, update, whi
+ch
+     [java] osgi.command.scope = felix
+     [java] service.id = 3
+     [java] ----
+     [java] objectClass = org.apache.felix.gogo.command.Files
+     [java] osgi.command.function = cd, ls
+     [java] osgi.command.scope = felix
+     [java] service.id = 4
+     [java] ----
+     [java] objectClass = org.apache.felix.gogo.command.OBR
+     [java] osgi.command.function = deploy, info, javadoc, list, repos, source
+     [java] osgi.command.scope = obr
+     [java] service.id = 5
+	 
+	 
+	 inspect service c 54
+     [java] g! Apache Felix Bundle Repository (54) provides services:
+     [java] ------------------------------------------------------
+     [java] objectClass = org.apache.felix.bundlerepository.RepositoryAdmin
+     [java] service.id = 6
+     [java] ----
+     [java] objectClass = org.apache.felix.shell.Command
+     [java] service.id = 7
+     [java] ----
+     [java] objectClass = org.osgi.service.url.URLStreamHandlerService
+     [java] service.id = 8
+     [java] url.handler.protocol = obr
+	 
+	 
+	 
+	 inspect service c 56
+     [java] g! Apache Felix Gogo Runtime (56) provides services:
+     [java] -------------------------------------------------
+     [java] objectClass = org.apache.felix.service.threadio.ThreadIO
+     [java] service.id = 9
+     [java] ----
+     [java] objectClass = org.apache.felix.service.command.CommandProcessor
+     [java] service.id = 10
+
+inspect service c 57
+     [java] g! g! Apache Felix Remote Shell (57) provides services:
+     [java] -------------------------------------------------
+     [java] Nothing
+
+inspect service c 58
+     [java] g! g! Apache Felix Shell Service (58) provides services:
+     [java] --------------------------------------------------
+     [java] objectClass = org.apache.felix.shell.ShellService, org.ungoverned.osgi.service.shell.ShellService
+     [java] service.id = 17
+     [java] ----
+     [java] objectClass = org.apache.felix.shell.Command
+     [java] service.id = 18
+     [java] ----
+     [java] objectClass = org.apache.felix.shell.Command, org.apache.felix.shell.CdCommand
+     [java] service.id = 19
+     [java] ----
+     [java] objectClass = org.apache.felix.shell.Command
+     [java] service.id = 20
+     [java] ----
+     [java] objectClass = org.apache.felix.shell.Command
+     [java] service.id = 21
+     [java] ----
+     [java] objectClass = org.apache.felix.shell.Command
+     [java] service.id = 22
+     [java] ----
+     [java] objectClass = org.apache.felix.shell.Command
+     [java] service.id = 23
+     [java] ----
+     [java] objectClass = org.apache.felix.shell.Command
+     [java] service.id = 24
+     [java] ----
+     [java] objectClass = org.apache.felix.shell.Command
+     [java] service.id = 25
+     [java] ----
+     [java] objectClass = org.apache.felix.shell.Command
+     [java] service.id = 26
+     [java] ----
+     [java] objectClass = org.apache.felix.shell.Command
+     [java] service.id = 27
+     [java] ----
+     [java] objectClass = org.apache.felix.shell.Command
+     [java] service.id = 28
+     [java] ----
+     [java] objectClass = org.apache.felix.shell.Command
+     [java] service.id = 29
+     [java] ----
+     [java] objectClass = org.apache.felix.shell.Command
+     [java] service.id = 30
+     [java] ----
+     [java] objectClass = org.apache.felix.shell.Command
+     [java] service.id = 31
+     [java] ----
+     [java] objectClass = org.apache.felix.shell.Command
+     [java] service.id = 32
+     [java] ----
+     [java] objectClass = org.apache.felix.shell.Command
+     [java] service.id = 33
+     [java] ----
+     [java] objectClass = org.apache.felix.shell.Command
+     [java] service.id = 34
+
+	 
