@@ -1,4 +1,4 @@
-package org.appdapter.gui.objbrowser.model;
+package org.appdapter.gui.pojo;
 
 import java.beans.SimpleBeanInfo;
 

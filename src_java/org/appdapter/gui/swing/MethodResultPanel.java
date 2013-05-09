@@ -4,9 +4,9 @@ import java.awt.BorderLayout;
 
 import javax.swing.JLabel;
 
-import org.appdapter.gui.objbrowser.model.POJOCollectionWithBoxContext;
-import org.appdapter.gui.objbrowser.model.Utility;
+import org.appdapter.gui.pojo.POJOCollectionWithBoxContext;
 import org.appdapter.gui.pojo.ScreenBoxedPOJORef;
+import org.appdapter.gui.pojo.Utility;
 import org.appdapter.gui.swing.impl.JVPanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +35,7 @@ class MethodResultPanel extends JVPanel {
   }
 
   public MethodResultPanel() {
-    this(Utility.getCurrentInstances());
+    this(Utility.getCurrentContext());
   }
 
   /**

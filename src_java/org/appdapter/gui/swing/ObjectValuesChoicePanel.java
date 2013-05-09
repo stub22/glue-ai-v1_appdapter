@@ -12,8 +12,8 @@ import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
 
-import org.appdapter.gui.objbrowser.model.POJOCollectionListener;
-import org.appdapter.gui.objbrowser.model.POJOCollectionWithBoxContext;
+import org.appdapter.gui.pojo.POJOCollectionListener;
+import org.appdapter.gui.pojo.POJOCollectionWithBoxContext;
 import org.appdapter.gui.swing.impl.JJPanel;
 
 /**
@@ -45,11 +45,13 @@ public class ObjectValuesChoicePanel extends JJPanel implements POJOCollectionLi
       context.addListener(this);
   }
 
-  public void addPropertyChangeListener(PropertyChangeListener p) {
+  @Override
+public void addPropertyChangeListener(PropertyChangeListener p) {
     propSupport.addPropertyChangeListener(p);
   }
 
-  public void removePropertyChangeListener(PropertyChangeListener p) {
+  @Override
+public void removePropertyChangeListener(PropertyChangeListener p) {
     propSupport.removePropertyChangeListener(p);
   }
 
@@ -58,11 +60,13 @@ public class ObjectValuesChoicePanel extends JJPanel implements POJOCollectionLi
   }
 
 
-  public void pojoAdded(Object obj) {
+  @Override
+public void pojoAdded(Object obj) {
     model.reload();
   }
 
-  public void pojoRemoved(Object obj) {
+  @Override
+public void pojoRemoved(Object obj) {
     model.reload();
   }
 
@@ -75,28 +79,33 @@ public class ObjectValuesChoicePanel extends JJPanel implements POJOCollectionLi
     combo.addMouseListener(this);
   }
 
-  public void mouseClicked(MouseEvent e) {
+  @Override
+public void mouseClicked(MouseEvent e) {
     if (e.isPopupTrigger()) {
       showMenu(e.getX() + 5, e.getY() + 5);
     }
   }
-  public void mousePressed(MouseEvent e) {
+  @Override
+public void mousePressed(MouseEvent e) {
     if (e.isPopupTrigger()) {
       showMenu(e.getX() + 5, e.getY() + 5);
     }
   }
 
-  public void mouseReleased(MouseEvent e) {
+  @Override
+public void mouseReleased(MouseEvent e) {
     if (e.isPopupTrigger()) {
       showMenu(e.getX() + 5, e.getY() + 5);
     }
   }
 
-  public void mouseEntered(MouseEvent e) {
+  @Override
+public void mouseEntered(MouseEvent e) {
     //@temp
     //label.setForeground(Color.blue);
   }
-  public void mouseExited(MouseEvent e) {
+  @Override
+public void mouseExited(MouseEvent e) {
     //label.setForeground(Color.black);
   }
 
@@ -126,7 +135,8 @@ public class ObjectValuesChoicePanel extends JJPanel implements POJOCollectionLi
       values.add("<null>");
     }
 
-    public synchronized void setSelectedItem(Object anItem) {
+    @Override
+	public synchronized void setSelectedItem(Object anItem) {
       Object old = selected;
       selected = anItem;
 
@@ -141,7 +151,8 @@ public class ObjectValuesChoicePanel extends JJPanel implements POJOCollectionLi
       }
     }
 
-    public Object getSelectedItem() {
+    @Override
+	public Object getSelectedItem() {
       if (selected == null)
         return "<null>";
       else
@@ -152,11 +163,13 @@ public class ObjectValuesChoicePanel extends JJPanel implements POJOCollectionLi
       return selected;
     }
 
-    public int getSize() {
+    @Override
+	public int getSize() {
       return values.size();
     }
 
-    public Object getElementAt(int index) {
+    @Override
+	public Object getElementAt(int index) {
       try {
         return values.get(index);
       } catch (Exception err) {
@@ -174,7 +187,5 @@ public class ObjectValuesChoicePanel extends JJPanel implements POJOCollectionLi
       setSelectedItem(selected);
     }
   }
-
-
 
 }

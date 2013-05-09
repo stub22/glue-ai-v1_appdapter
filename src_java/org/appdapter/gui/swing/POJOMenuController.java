@@ -7,8 +7,8 @@ import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 
-import org.appdapter.gui.objbrowser.model.POJOCollectionListener;
-import org.appdapter.gui.objbrowser.model.POJOCollectionWithBoxContext;
+import org.appdapter.gui.pojo.POJOCollectionListener;
+import org.appdapter.gui.pojo.POJOCollectionWithBoxContext;
 
 /**
  * The controller class for a object menu (JMenu or JPopupMenu), showing the list
@@ -102,13 +102,15 @@ class POJOMenuController implements POJOCollectionListener {
   }
 */
 
-  public void pojoAdded(Object obj) {
+  @Override
+public void pojoAdded(Object obj) {
     if (obj == object) {
       updateMenu();
     }
   }
 
-  public void pojoRemoved(Object obj) {
+  @Override
+public void pojoRemoved(Object obj) {
     if (obj == object) {
       updateMenu();
     }

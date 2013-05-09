@@ -47,7 +47,8 @@ public class PropertySheet extends JJPanel {
     );
   }
 
-  public Component add(String label, Component comp) {
+  @Override
+public Component add(String label, Component comp) {
     JLabel labelComponent = new JLabel(label);
 
     c.gridwidth = 1;
@@ -68,7 +69,8 @@ public class PropertySheet extends JJPanel {
     return null;
   }
 
-  public Component add(Component comp) {
+  @Override
+public Component add(Component comp) {
     c.gridwidth = 2;
     c.gridx = 0;
     c.gridy = y;

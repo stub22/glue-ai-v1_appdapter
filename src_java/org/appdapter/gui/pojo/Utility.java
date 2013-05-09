@@ -1,4 +1,4 @@
-package org.appdapter.gui.objbrowser.model;
+package org.appdapter.gui.pojo;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -23,7 +23,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.appdapter.gui.editors.BooleanEditor;
 import org.appdapter.gui.editors.ColorEditor;
@@ -31,13 +33,43 @@ import org.appdapter.gui.editors.DateEditor;
 import org.appdapter.gui.editors.IntEditor;
 
 public class Utility {
-	private static POJOCollectionWithBoxContext context = null;
+	public static POJOCollectionWithSwizzler context = new POJOCollectionImpl();
+
+	/*
+	 * public static void setDefaultContext(POJOCollectionWithSwizzler c) {
+	 * context = c; }
+	 * 
+	 * public static POJOCollectionWithSwizzler getDefaultContext() { return
+	 * context; }
+	 */
 	private static POJOCollectionWithBoxContext objectsContext = null;
+
+	public static Object asPOJO(Object object) {
+		// TODO Auto-generated method stub
+		if (object instanceof POJOSwizzler) {
+			object = ((org.appdapter.gui.pojo.POJOSwizzler) object).getObject();
+		}
+		return null;
+	}
+
+	public static POJOSwizzler asSwizzler(Object object) {
+
+		if (object instanceof POJOSwizzler) {
+			return ((org.appdapter.gui.pojo.POJOSwizzler) object);
+		}
+		return context.getBoxForObject(object);
+	}
+
+	public static List EMPTYLIST = new ArrayList();
+
+	public static List getTriggersFromBeanInfo(BeanInfo beanInfo) {
+		return EMPTYLIST;
+	}
 
 	/**
 	 * Returns the global objectsContext, or null if none has been set
 	 */
-	public static POJOCollectionWithBoxContext getCurrentInstances() {
+	public static POJOCollectionWithBoxContext getCurrentContext() {
 		return objectsContext;
 	}
 
@@ -51,39 +83,25 @@ public class Utility {
 	private Utility() {
 	}
 
-	public static void setDefaultContext(POJOCollectionWithBoxContext c) {
-		context = c;
-	}
-
-	public static POJOCollectionWithBoxContext getDefaultContext() {
-		return context;
-	}
-
 	public static void registerEditors() {
 		PropertyEditorManager.registerEditor(int.class, IntEditor.class);
 		PropertyEditorManager.registerEditor(Integer.class, IntEditor.class);
 
-		PropertyEditorManager
-				.registerEditor(boolean.class, BooleanEditor.class);
-		PropertyEditorManager
-				.registerEditor(Boolean.class, BooleanEditor.class);
+		PropertyEditorManager.registerEditor(boolean.class, BooleanEditor.class);
+		PropertyEditorManager.registerEditor(Boolean.class, BooleanEditor.class);
 
 		PropertyEditorManager.registerEditor(Color.class, ColorEditor.class);
 
 		PropertyEditorManager.registerEditor(Date.class, DateEditor.class);
 
-		PropertyEditorManager
-				.setEditorSearchPath(new String[] { "org.appdapter.gui.editors" });
+		PropertyEditorManager.setEditorSearchPath(new String[] { "org.appdapter.gui.editors" });
 	}
 
 	public static void setBeanInfoSearchPath() {
-		Introspector
-				.setBeanInfoSearchPath(new String[] { "org.appdapter.gui.editors" });
+		Introspector.setBeanInfoSearchPath(new String[] { "org.appdapter.gui.editors" });
 	}
 
-	public static Object invoke(Object obj0, Method method, Object... params)
-			throws IllegalArgumentException, IllegalAccessException,
-			InvocationTargetException {
+	public static Object invoke(Object obj0, Method method, Object... params) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
 		Object obj = obj0;
 		boolean isStatic = Modifier.isStatic(method.getModifiers());
 		Class[] ts = method.getParameterTypes();
@@ -113,14 +131,11 @@ public class Utility {
 	}
 
 	public static BeanInfo getPOJOInfo(Class c) throws IntrospectionException {
-		// TODO Auto-generated method stub
-		return null;
+		return Introspector.getBeanInfo(c);
 	}
 
-	public static BeanInfo getPOJOInfo(Class<? extends Object> class1,
-			int useAllBeaninfo) throws IntrospectionException {
-		// TODO Auto-generated method stub
-		return null;
+	public static BeanInfo getPOJOInfo(Class<? extends Object> c, int useAllBeaninfo) throws IntrospectionException {
+		return Introspector.getBeanInfo(c, useAllBeaninfo);
 	}
 
 	public static String loadFile(File file) throws IOException {
@@ -148,8 +163,7 @@ public class Utility {
 		writer.close();
 	}
 
-	public static void copyStream(InputStream from, OutputStream to)
-			throws IOException {
+	public static void copyStream(InputStream from, OutputStream to) throws IOException {
 		int i = from.read();
 		while (i > -1) {
 			to.write(i);
@@ -181,24 +195,20 @@ public class Utility {
 	public static void centerWindow(Window win) {
 		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
 		Dimension dim = win.getSize();
-		win.setLocation((screen.width / 2) - (dim.width / 2),
-				(screen.height / 2) - (dim.height / 2));
+		win.setLocation((screen.width / 2) - (dim.width / 2), (screen.height / 2) - (dim.height / 2));
 	}
 
-	public static Dimension getConstrainedDimension(Dimension min,
-			Dimension pref, Dimension max) {
+	public static Dimension getConstrainedDimension(Dimension min, Dimension pref, Dimension max) {
 		Dimension result = getMinDimension(max, getMaxDimension(min, pref));
 		return result;
 	}
 
 	public static Dimension getMaxDimension(Dimension a, Dimension b) {
-		return new Dimension(Math.max(a.width, b.width), Math.max(a.height,
-				b.height));
+		return new Dimension(Math.max(a.width, b.width), Math.max(a.height, b.height));
 	}
 
 	public static Dimension getMinDimension(Dimension a, Dimension b) {
-		return new Dimension(Math.min(a.width, b.width), Math.min(a.height,
-				b.height));
+		return new Dimension(Math.min(a.width, b.width), Math.min(a.height, b.height));
 	}
 
 	public static String getShortClassName(Class c) {
@@ -249,4 +259,5 @@ public class Utility {
 		objectIn.close();
 		return o;
 	}
+
 }

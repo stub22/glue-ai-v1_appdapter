@@ -1,8 +1,6 @@
 package org.appdapter.gui.pojo;
 
 import org.appdapter.api.trigger.Box;
-import org.appdapter.gui.box.ScreenBoxPanel;
-import org.appdapter.gui.objbrowser.model.POJOSwizzler;
 
 /**
  * A GUI component used to render a POJO in a user interface. The standard
@@ -11,7 +9,7 @@ import org.appdapter.gui.objbrowser.model.POJOSwizzler;
  * the POJO).
  */
 abstract public class ScreenBoxedPOJO<BoxType extends Box> extends
-		ScreenBoxPanel<BoxType> {
+	AbstractScreenBoxedPOJO<BoxType> {
 	private Object pojObject;
 
 	@Override
@@ -29,10 +27,12 @@ abstract public class ScreenBoxedPOJO<BoxType extends Box> extends
 		this.pojObject = pojObject;
 	}
 
+	@Override
 	public Object getPOJO() {
 		return pojObject;
 	}
 
+	@Override
 	public void setBean(Object newpojObject) {
 		Object oldpojObject = pojObject;
 		if (oldpojObject != newpojObject) {
@@ -42,9 +42,12 @@ abstract public class ScreenBoxedPOJO<BoxType extends Box> extends
 	}
 
 	/**
+	 * 
+	 * 
 	 * Called whenever the pojo is switched. Caused the GUI to update to render
 	 * the new pojObject instead.
 	 */
+	@Override
 	abstract protected void objectChanged(Object oldpojObject,
 			Object newpojObject);
 }

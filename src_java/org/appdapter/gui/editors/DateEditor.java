@@ -9,7 +9,7 @@ import java.util.Date;
 
 import javax.swing.JLabel;
 
-import org.appdapter.gui.objbrowser.model.Utility;
+import org.appdapter.gui.pojo.Utility;
 import org.appdapter.gui.swing.DateField;
 
 public class DateEditor extends PropertyEditorSupport implements PropertyChangeListener {
@@ -22,7 +22,8 @@ public class DateEditor extends PropertyEditorSupport implements PropertyChangeL
     setValue(Integer.valueOf(text));
   } */
 
-  public void setValue(Object newValue) {
+  @Override
+public void setValue(Object newValue) {
     if (!Utility.isEqual(newValue, getValue())) {
       Date date;
       try {
@@ -42,7 +43,8 @@ public class DateEditor extends PropertyEditorSupport implements PropertyChangeL
     }
   }
 
-  public Component getCustomEditor() {
+  @Override
+public Component getCustomEditor() {
     if (field == null) {
       try {
         field = new DateField();
@@ -58,11 +60,13 @@ public class DateEditor extends PropertyEditorSupport implements PropertyChangeL
     return field;
   }
 
-  public boolean supportsCustomEditor() {
+  @Override
+public boolean supportsCustomEditor() {
     return true;
   }
 
-  public void propertyChange(PropertyChangeEvent evt) {
+  @Override
+public void propertyChange(PropertyChangeEvent evt) {
     super.setValue(evt.getNewValue());
   }
 }

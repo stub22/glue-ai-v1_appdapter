@@ -11,7 +11,8 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 
-import org.appdapter.gui.objbrowser.ClassFinder;
+import org.appdapter.gui.util.ClassFinder;
+
 /**
  * A ComboBox model for lists of classes. The list of classes
  * is limited by choosing an ancestor, a certain
@@ -26,42 +27,43 @@ import org.appdapter.gui.objbrowser.ClassFinder;
  *
  */
 public class ClassSelectionComboBoxModel extends DefaultComboBoxModel {
-  public ClassSelectionComboBoxModel(Class ancestor) throws IOException {
-    super(getClassList(null, ancestor).toArray());
-  }
+	public ClassSelectionComboBoxModel(Class ancestor) throws IOException {
+		super(getClassList(null, ancestor).toArray());
+	}
 
-  public ClassSelectionComboBoxModel(String packageName, Class ancestor) throws IOException {
-    super(getClassList(packageName, ancestor).toArray());
-  }
+	public ClassSelectionComboBoxModel(String packageName, Class ancestor) throws IOException {
+		super(getClassList(packageName, ancestor).toArray());
+	}
 
-  /**
-   * Returns a sorted list of classes
-   */
-  private static List getClassList(String packageName, Class ancestor) throws IOException {
-    Set classSet = ClassFinder.getClasses(packageName, ancestor);
-    List classList = new LinkedList(classSet);
+	/**
+	 * Returns a sorted list of classes
+	 */
+	private static List getClassList(String packageName, Class ancestor) throws IOException {
+		Set classSet = ClassFinder.getClasses(packageName, ancestor);
+		List classList = new LinkedList(classSet);
 
-    Comparator classComparator = new Comparator() {
-      public int compare(Object a, Object b) {
-        return a.toString().compareTo(b.toString());
-      }
-    };
+		Comparator classComparator = new Comparator() {
+			@Override
+			public int compare(Object a, Object b) {
+				return a.toString().compareTo(b.toString());
+			}
+		};
 
-    Collections.sort(classList, classComparator);
-    return classList;
-  }
+		Collections.sort(classList, classComparator);
+		return classList;
+	}
 
-//===== Module test program ================================
+	//===== Module test program ================================
 
-  public static void mainly_not_used(String[] args) {
-    try {
-      JFrame frame = new JFrame("Test");
-      JComboBox combo = new JComboBox(new ClassSelectionComboBoxModel("org.appdapter.gui", org.appdapter.gui.objbrowser.PairTable.class));
-      frame.getContentPane().add(combo);
-      frame.pack();
-      frame.show();
-    } catch (Throwable err) {
-      err.printStackTrace();
-    }
-  }
+	public static void mainly_not_used(String[] args) {
+		try {
+			JFrame frame = new JFrame("Test");
+			JComboBox combo = new JComboBox(new ClassSelectionComboBoxModel("org.appdapter.gui", org.appdapter.gui.util.PairTable.class));
+			frame.getContentPane().add(combo);
+			frame.pack();
+			frame.show();
+		} catch (Throwable err) {
+			err.printStackTrace();
+		}
+	}
 }

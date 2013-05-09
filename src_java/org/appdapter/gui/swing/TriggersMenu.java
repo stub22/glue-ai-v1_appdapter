@@ -2,8 +2,8 @@ package org.appdapter.gui.swing;
 
 import javax.swing.JMenu;
 
-import org.appdapter.gui.objbrowser.model.POJOCollectionWithBoxContext;
-import org.appdapter.gui.objbrowser.model.Utility;
+import org.appdapter.gui.pojo.POJOCollectionWithBoxContext;
+import org.appdapter.gui.pojo.Utility;
 
 /**
  * A menu showing the available triggers for a boxed Pojo.
@@ -15,7 +15,7 @@ public class TriggersMenu extends JMenu{
   POJOMenuController controller;
 
   public TriggersMenu(Object object) {
-    this(Utility.getCurrentInstances(), object);
+    this(Utility.getCurrentContext(), object);
   }
   public TriggersMenu(POJOCollectionWithBoxContext context, Object object) {
     controller = new POJOMenuController(context, object, this);

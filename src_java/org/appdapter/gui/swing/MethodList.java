@@ -10,7 +10,7 @@ import java.util.List;
 
 import javax.swing.AbstractListModel;
 
-import org.appdapter.gui.objbrowser.model.Utility;
+import org.appdapter.gui.pojo.Utility;
 import org.appdapter.gui.swing.impl.JJList;
 
 /**
@@ -66,16 +66,19 @@ public class MethodList extends JJList {
 			return (Method) methods.get(index);
 		}
 
+		@Override
 		public Object getElementAt(int index) {
 			return getMethodAt(index).getName();
 		}
 
+		@Override
 		public int getSize() {
 			return methods.size();
 		}
 	}
 
 	class MethodComparator implements Comparator {
+		@Override
 		public int compare(Object first, Object second) {
 			Method a = (Method) first;
 			Method b = (Method) second;
@@ -84,6 +87,7 @@ public class MethodList extends JJList {
 			return nameA.compareTo(nameB);
 		}
 
+		@Override
 		public boolean equals(Object o) {
 			return (o instanceof MethodComparator);
 		}

@@ -1,6 +1,6 @@
 
 
-package org.appdapter.gui.objbrowser.model;
+package org.appdapter.gui.pojo;
 
 import java.awt.Button;
 import java.beans.PropertyChangeListener;
@@ -76,7 +76,8 @@ public class TestPOJO {
     return button;
   }
 
-  public String toString() {
+  @Override
+public String toString() {
     return name + " (" + hashCode() + ")";
   }
 }

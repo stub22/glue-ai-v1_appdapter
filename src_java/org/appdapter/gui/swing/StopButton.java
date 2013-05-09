@@ -25,7 +25,8 @@ public class StopButton extends StateButton {
   public StopButton() {
   }
 
-  public void initIcons() {
+  @Override
+public void initIcons() {
 	  Graphics g;
 
     Image im;

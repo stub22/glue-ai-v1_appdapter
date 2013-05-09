@@ -24,13 +24,15 @@ package org.appdapter.gui.repo;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.gui.box.ScreenBoxPanel;
+import org.appdapter.gui.pojo.AbstractScreenBoxedPOJO;
+import org.appdapter.gui.pojo.ScreenBoxedPOJOWithProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public class ModelMatrixPanel extends ScreenBoxPanel {
+public class ModelMatrixPanel extends ScreenBoxedPOJOWithProperties {
 	static Logger theLogger = LoggerFactory.getLogger(ModelMatrixPanel.class);
     /** Creates new form ModelMatrixPanel */
     public ModelMatrixPanel() {
@@ -160,5 +162,8 @@ public class ModelMatrixPanel extends ScreenBoxPanel {
 	@Override public void focusOnBox(Box b) {
 		theLogger.info("Focusing on box: " + b);
 	}
-
+	
+	@Override public Object getPOJO() {
+		return this;
+	}
 }

@@ -6,8 +6,8 @@ import java.lang.reflect.Constructor;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import org.appdapter.gui.objbrowser.model.POJOCollectionWithBoxContext;
-import org.appdapter.gui.objbrowser.model.Utility;
+import org.appdapter.gui.pojo.POJOCollectionWithBoxContext;
+import org.appdapter.gui.pojo.Utility;
 import org.appdapter.gui.swing.impl.JJPanel;
 
 /**

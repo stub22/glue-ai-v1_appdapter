@@ -1,4 +1,4 @@
-package org.appdapter.gui.objbrowser.model;
+package org.appdapter.gui.pojo;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -12,14 +12,16 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Set;
 
+import org.appdapter.api.trigger.BoxImpl;
+import org.appdapter.gui.box.ScreenBoxImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 /**
  * A POJOCollection is a container of objects and corresponding POJOSwizzlers,
@@ -43,14 +45,12 @@ import org.slf4j.LoggerFactory;
  * 
  */
 @SuppressWarnings("serial")
-public class POJOCollectionImpl implements VetoableChangeListener,
-		PropertyChangeListener, Serializable, POJOCollection {
+public class POJOCollectionImpl implements VetoableChangeListener, PropertyChangeListener, Serializable, POJOCollectionWithSwizzler {
 	// ==== Static variables ===================
 	private static Logger theLogger = LoggerFactory.getLogger(POJOCollectionImpl.class);
 
 	// ==== Transient instance variables ===================
-	transient private PropertyChangeSupport propSupport = new PropertyChangeSupport(
-			this);
+	transient private PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
 	transient private Set collectionListeners = new HashSet();
 
 	// ===== Serializable instance variables ================
@@ -82,8 +82,7 @@ public class POJOCollectionImpl implements VetoableChangeListener,
 	 * @see org.appdapter.gui.objbrowser.model.IPOJOCollection#createAndAddPOJO(java.lang.Class)
 	 */
 	@Override
-	public synchronized Object createAndAddPOJO(Class cl)
-			throws InstantiationException, IllegalAccessException {
+	public synchronized Object createAndAddPOJO(Class cl) throws InstantiationException, IllegalAccessException {
 		// Create the object
 		Object obj = cl.newInstance();
 
@@ -94,16 +93,24 @@ public class POJOCollectionImpl implements VetoableChangeListener,
 	}
 
 	/* (non-Javadoc)
-	 * @see org.appdapter.gui.objbrowser.model.IPOJOCollection#addPOJO(java.lang.Object)
+	 * @see java.util.Collection#add(java.lang.Object)
 	 */
 	@Override
 	public synchronized boolean addPOJO(Object obj) {
+		try {
+			return addPOJOMaybe(obj);
+		} catch (PropertyVetoException e) {
+			e.printStackTrace();
+			return containsPOJO(obj);
+		}
+	}
+
+	public boolean addPOJOMaybe(Object obj) throws PropertyVetoException {
 		if (containsPOJO(obj)) {
 			return false;
 		} else {
 			// Create the object swizzler, with a unique name
-			POJOSwizzler swizzler = new POJOSwizzler(generateUniqueName(obj),
-					obj);
+			POJOSwizzler swizzler = new ScreenBoxImpl(generateUniqueName(obj), obj);
 
 			// Add it
 			// objectsToSwizzlers.put(obj, swizzler);
@@ -145,19 +152,6 @@ public class POJOCollectionImpl implements VetoableChangeListener,
 			// Update the name index
 			// nameIndex.remove(swizzler.getName());
 
-			// Deselect it if necessary
-			if (selected == obj) {
-				try {
-					// The object will fire a PropertyChangeEvent which I will
-					// catch, so I don't need to do setSelectedPOJO(null)
-					swizzler.setSelected(false);
-				} catch (PropertyVetoException err) {
-					theLogger.warn(
-							"In POJOCollection.removePOJO(...) I was unable to deselect the removed object. I'll ignore the problem, i.e. leave it selected and remove it anyway.",
-							err);
-				}
-			}
-
 			// notify collectionListeners
 			Iterator it = collectionListeners.iterator();
 			while (it.hasNext()) {
@@ -193,19 +187,10 @@ public class POJOCollectionImpl implements VetoableChangeListener,
 	}
 
 	/* (non-Javadoc)
-	 * @see org.appdapter.gui.objbrowser.model.IPOJOCollection#getPOJOAt(int)
-	 */
-	@Override
-	public Object getPOJOAt(int index) {
-		return swizzlerList.get(index);
-	}
-
-	/* (non-Javadoc)
 	 * @see org.appdapter.gui.objbrowser.model.IPOJOCollection#containsPOJO(java.lang.Object)
 	 */
 	@Override
 	public boolean containsPOJO(Object object) {
-		// return objectList.contains(object);
 		return containsSwizzler(getSwizzler(object));// containsKey(object);
 	}
 
@@ -216,22 +201,6 @@ public class POJOCollectionImpl implements VetoableChangeListener,
 	public boolean containsSwizzler(POJOSwizzler swizzler) {
 		return swizzlerList.contains(swizzler);
 		// return objectsToSwizzlers.containsValue(object);
-	}
-
-	/* (non-Javadoc)
-	 * @see org.appdapter.gui.objbrowser.model.IPOJOCollection#getPOJOCollectionOfType(java.lang.Class)
-	 */
-	@Override
-	public Set getPOJOCollectionOfType(Class type) {
-		Set result = new HashSet();
-		Iterator it = swizzlerList.iterator();
-		while (it.hasNext()) {
-			POJOSwizzler obj = (POJOSwizzler) it.next();
-			if (obj.isInstance(type)) {
-				result.add(obj);
-			}
-		}
-		return result;
 	}
 
 	/* (non-Javadoc)
@@ -347,17 +316,13 @@ public class POJOCollectionImpl implements VetoableChangeListener,
 					try {
 						setSelectedPOJO(object);
 					} catch (PropertyVetoException err) {
-						theLogger.warn(
-								"The POJOCollection was notified that a object has been selected, and when trying to update the internal state a PropertyVetoException occurred",
-								err);
+						theLogger.warn("The POJOCollection was notified that a object has been selected, and when trying to update the internal state a PropertyVetoException occurred", err);
 					}
 				} else if (newValue.equals(new Boolean(false))) {
 					try {
 						setSelectedPOJO(null);
 					} catch (PropertyVetoException err) {
-						theLogger.warn(
-								"The POJOCollection was notified that a object has been deselected, and when trying to update the internal state a PropertyVetoException occurred",
-								err);
+						theLogger.warn("The POJOCollection was notified that a object has been deselected, and when trying to update the internal state a PropertyVetoException occurred", err);
 					}
 				}
 			}
@@ -368,22 +333,16 @@ public class POJOCollectionImpl implements VetoableChangeListener,
 	 * @see org.appdapter.gui.objbrowser.model.IPOJOCollection#setSelectedPOJO(java.lang.Object)
 	 */
 	@Override
-	public synchronized void setSelectedPOJO(Object object)
-			throws PropertyVetoException {
+	public synchronized void setSelectedPOJO(Object object) throws PropertyVetoException {
+		object = Utility.asPOJO(object);
 		if (selected != object && containsPOJO(object)) {
 
 			// Deselect the old swizzler (if any)
 			Object oldSelected = selected;
 			POJOSwizzler oldSwizzler = getSwizzler(oldSelected);
-			if (oldSwizzler != null) {
-				oldSwizzler.setSelected(false);
-			}
 
 			// Update my "selected" instance variable
 			selected = object;
-
-			// Make sure the corresponding swizzler knows its selected
-			getSwizzler(selected).setSelected(true);
 
 			// Fire a property change
 			propSupport.firePropertyChange("selected", oldSelected, selected);
@@ -395,8 +354,7 @@ public class POJOCollectionImpl implements VetoableChangeListener,
 	 * @see org.appdapter.gui.objbrowser.model.IPOJOCollection#vetoableChange(java.beans.PropertyChangeEvent)
 	 */
 	@Override
-	public void vetoableChange(PropertyChangeEvent evt)
-			throws PropertyVetoException {
+	public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
 		if (evt.getPropertyName().equals("name")) {
 			// The name of a swizzler has changed. Make sure there are no name
 			// collisions
@@ -406,9 +364,7 @@ public class POJOCollectionImpl implements VetoableChangeListener,
 				String name = (String) evt.getNewValue();
 				POJOSwizzler otherSwizzler = findSwizzler(name);
 				if (otherSwizzler != null && otherSwizzler != swizzler) {
-					throw new PropertyVetoException(
-							"Another object already has the name '" + name
-									+ "'", evt);
+					throw new PropertyVetoException("Another object already has the name '" + name + "'", evt);
 				}
 			}
 		}
@@ -429,8 +385,7 @@ public class POJOCollectionImpl implements VetoableChangeListener,
 		theLogger.debug("Successfully saved!");
 	}
 
-	static public POJOCollection load(File source) throws IOException,
-			ClassNotFoundException {
+	static public POJOCollectionWithSwizzler load(File source) throws IOException, ClassNotFoundException {
 		FileInputStream fileIn = new FileInputStream(source);
 		ObjectInputStream objectIn = new ObjectInputStream(fileIn);
 		POJOCollectionImpl b = (POJOCollectionImpl) objectIn.readObject();
@@ -492,5 +447,45 @@ public class POJOCollectionImpl implements VetoableChangeListener,
 	public Object getSelectedBean() {
 		// TODO Auto-generated method stub
 		return selected;
+	}
+
+	@Override
+	public POJOCollection getCollection() {
+		// TODO Auto-generated method stub
+		return this;
+	}
+
+	@Override
+	public POJOCollectionWithSwizzler getCollectionWithSwizzler() {
+		// TODO Auto-generated method stub
+		return this;
+	}
+
+	@Override
+	public <T> Collection<T> getPOJOCollectionOfType(Class<T> type) {
+		Set result = new HashSet();
+		Iterator it = swizzlerList.iterator();
+		while (it.hasNext()) {
+			POJOSwizzler obj = (POJOSwizzler) it.next();
+			if (obj.isInstance(type)) {
+				result.add(obj);
+			}
+		}
+		return result;
+	}
+
+	@Override
+	public boolean containsSwizzler(ScreenBoxImpl swizzler) {
+		return containsPOJO(swizzler.getObject());
+	}
+
+	@Override
+	public BoxImpl findBoxByName(String name) {
+		return findSwizzler(name);
+	}
+
+	@Override
+	public ScreenBoxImpl getBoxForObject(Object object) {
+		return (ScreenBoxImpl) getSwizzler(object);
 	}
 }

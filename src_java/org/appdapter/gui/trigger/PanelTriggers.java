@@ -36,6 +36,9 @@ public class PanelTriggers {
 	public static class OpenTrigger <VB extends ScreenBox<TriggerImpl<VB>>> extends  TriggerImpl<VB> {
 		private ScreenBoxPanel.Kind	myPanelKind;
 
+		public OpenTrigger() {
+			super();
+		}
 		/**
 		 * 
 		 * @param kind - ScreenBoxImpl base class knows how to make certain kinds of utility ScreenBoxPanels.  

@@ -22,9 +22,9 @@ import javax.swing.JScrollPane;
 import javax.swing.OverlayLayout;
 import javax.swing.border.Border;
 
-import org.appdapter.gui.objbrowser.model.POJOCollectionWithBoxContext;
-import org.appdapter.gui.objbrowser.model.Utility;
+import org.appdapter.gui.pojo.POJOCollectionWithBoxContext;
 import org.appdapter.gui.pojo.ScreenBoxedPOJORef;
+import org.appdapter.gui.pojo.Utility;
 import org.appdapter.gui.swing.impl.JJPanel;
 
 
@@ -56,7 +56,7 @@ public class CollectionContentsPanel extends JJPanel implements ScreenBoxedPOJOR
   }
 
   public CollectionContentsPanel(Collection collection) throws Exception {
-    this(Utility.getCurrentInstances(), collection);
+    this(Utility.getCurrentContext(), collection);
   }
 
   private void initGUI() {
@@ -76,7 +76,8 @@ public class CollectionContentsPanel extends JJPanel implements ScreenBoxedPOJOR
     buttonPanel.add(new JLabel("To add objects just drag them into the panel below."));
     reloadButton.addActionListener(
       new ActionListener() {
-        public void actionPerformed(ActionEvent event) {
+        @Override
+		public void actionPerformed(ActionEvent event) {
           reloadContents();
         }
       }
@@ -95,7 +96,8 @@ public class CollectionContentsPanel extends JJPanel implements ScreenBoxedPOJOR
     reloadContents();
   }
 
-  public void objectRemoved(Object object, Collection parent) {
+  @Override
+public void objectRemoved(Object object, Collection parent) {
     reloadContents();
   }
 
@@ -116,15 +118,19 @@ public class CollectionContentsPanel extends JJPanel implements ScreenBoxedPOJOR
 
 //======= Drag/Drop methods ====================================0
 
-  public void dragEnter(DropTargetDragEvent event) {
+  @Override
+public void dragEnter(DropTargetDragEvent event) {
     event.acceptDrag (DnDConstants.ACTION_MOVE);
   }
 
-  public void dragExit(DropTargetEvent dtde) {
+  @Override
+public void dragExit(DropTargetEvent dtde) {
   }
-  public void dragOver(DropTargetDragEvent dtde) {
+  @Override
+public void dragOver(DropTargetDragEvent dtde) {
   }
-  public void drop(DropTargetDropEvent event) {
+  @Override
+public void drop(DropTargetDropEvent event) {
     Transferable t = event.getTransferable();
     try {
       Object o = t.getTransferData(new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType));
@@ -134,6 +140,7 @@ public class CollectionContentsPanel extends JJPanel implements ScreenBoxedPOJOR
       new ErrorDialog("An error occurred while handling a drop operation", err).show();
     }
   }
-  public void dropActionChanged(DropTargetDragEvent dtde) {
+  @Override
+public void dropActionChanged(DropTargetDragEvent dtde) {
   }
 }

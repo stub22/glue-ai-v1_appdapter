@@ -68,7 +68,8 @@ public class ScrollButtonPanel extends JVPanel implements ActionListener {
     listeners.removeElement(l);
   }
 
-  public void actionPerformed(ActionEvent evt) {
+  @Override
+public void actionPerformed(ActionEvent evt) {
     ActionEvent evt2 = null;
     if (evt.getSource() == incButton) {
       evt2 = new ActionEvent(this, INCREMENT, "increment");
@@ -91,7 +92,8 @@ public class ScrollButtonPanel extends JVPanel implements ActionListener {
     return decButton;
   }
 
-  public Dimension getPreferredSize() {
+  @Override
+public Dimension getPreferredSize() {
     int w, h;
     w = width;
     if (target == null)
@@ -101,7 +103,8 @@ public class ScrollButtonPanel extends JVPanel implements ActionListener {
     return new Dimension(w, h);
   }
 
-  public Dimension getMinimumSize() {
+  @Override
+public Dimension getMinimumSize() {
     return getPreferredSize();
   }
 

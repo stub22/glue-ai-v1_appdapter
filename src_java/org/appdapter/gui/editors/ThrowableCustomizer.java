@@ -4,7 +4,8 @@ import org.appdapter.gui.pojo.ScreenBoxedPOJOWithProperties;
 import org.appdapter.gui.swing.ErrorPanel;
 
 public class ThrowableCustomizer extends ScreenBoxedPOJOWithProperties {
-  protected void initGUI() {
+  @Override
+protected void initGUI() {
     super.initGUI();
 
     String name;

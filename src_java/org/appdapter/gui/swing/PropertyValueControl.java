@@ -24,9 +24,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import org.appdapter.gui.objbrowser.model.POJOCollectionWithBoxContext;
-import org.appdapter.gui.objbrowser.model.Utility;
+import org.appdapter.gui.pojo.POJOCollectionWithBoxContext;
 import org.appdapter.gui.pojo.ScreenBoxedPOJORef;
+import org.appdapter.gui.pojo.Utility;
 import org.appdapter.gui.swing.impl.JJPanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
 public class PropertyValueControl extends JJPanel implements PropertyChangeListener {
   static Logger theLogger = LoggerFactory.getLogger(PropertyValueControl.class);
 
-  POJOCollectionWithBoxContext context = Utility.getCurrentInstances();
+  POJOCollectionWithBoxContext context = Utility.getCurrentContext();
 
   Class type = null;
   Object value = null;
@@ -72,7 +72,7 @@ public class PropertyValueControl extends JJPanel implements PropertyChangeListe
   }
 
   public PropertyValueControl(Class type, boolean editable) {
-    this(Utility.getCurrentInstances(), type, editable);
+    this(Utility.getCurrentContext(), type, editable);
   }
 
   /**
@@ -342,7 +342,8 @@ public class PropertyValueControl extends JJPanel implements PropertyChangeListe
       currentEditor.addPropertyChangeListener(this);
   }
 
-  public void propertyChange(PropertyChangeEvent evt) {
+  @Override
+public void propertyChange(PropertyChangeEvent evt) {
     if (isBound() && evt.getSource() == source) {
       //the source object's property changed...
       readBoundValue();
@@ -453,11 +454,11 @@ public class PropertyValueControl extends JJPanel implements PropertyChangeListe
       } else if (type == Short.TYPE) {
         return new Short((short) 0);
       } else if (type == Long.TYPE) {
-        return new Long((long) 0);
+        return new Long(0);
       } else if (type == Short.TYPE) {
         return new Short((short) 0);
       } else if (type == Double.TYPE) {
-        return new Double((double) 0);
+        return new Double(0);
       } else if (type == Character.TYPE) {
         return new Character((char) 0);
       } else if (type == Byte.TYPE) {
@@ -487,7 +488,8 @@ public class PropertyValueControl extends JJPanel implements PropertyChangeListe
       return this.getValue();
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
+    @Override
+	public void propertyChange(PropertyChangeEvent evt) {
       Object object = evt.getNewValue();
       //BeanWrapper object = (BeanWrapper) val;
       try {
@@ -500,7 +502,8 @@ public class PropertyValueControl extends JJPanel implements PropertyChangeListe
       }
     }
 
-    public void setValue(Object newValue) {
+    @Override
+	public void setValue(Object newValue) {
       Object oldValue = super.getValue();
       if (!Utility.isEqual(oldValue, newValue)) {
         super.setValue(newValue);
@@ -536,7 +539,8 @@ public class PropertyValueControl extends JJPanel implements PropertyChangeListe
       }
     }
 
-    public Component getCustomEditor() {
+    @Override
+	public Component getCustomEditor() {
       if (editable) {
         if (choice == null) {
           choice = new ObjectValuesChoicePanel(context, type, getPOJO());
@@ -553,7 +557,8 @@ public class PropertyValueControl extends JJPanel implements PropertyChangeListe
       }
     }
 
-    public boolean supportsCustomEditor() {
+    @Override
+	public boolean supportsCustomEditor() {
       return true;
     }
   }
@@ -567,7 +572,8 @@ public class PropertyValueControl extends JJPanel implements PropertyChangeListe
       readValue();
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
+    @Override
+	public void propertyChange(PropertyChangeEvent evt) {
       readValue();
     }
 
@@ -588,18 +594,22 @@ public class PropertyValueControl extends JJPanel implements PropertyChangeListe
       addFocusListener(this);
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
+    @Override
+	public void propertyChange(PropertyChangeEvent evt) {
       readValue();
     }
 
-    public void actionPerformed(ActionEvent evt) {
+    @Override
+	public void actionPerformed(ActionEvent evt) {
       writeValue();
     }
 
-    public void focusGained(FocusEvent e) {
+    @Override
+	public void focusGained(FocusEvent e) {
     }
 
-    public void focusLost(FocusEvent e) {
+    @Override
+	public void focusLost(FocusEvent e) {
       writeValue();
     }
 
@@ -636,11 +646,13 @@ public class PropertyValueControl extends JJPanel implements PropertyChangeListe
       setMaximumRowCount(10);
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
+    @Override
+	public void propertyChange(PropertyChangeEvent evt) {
       readValue();
     }
 
-    public void actionPerformed(ActionEvent evt) {
+    @Override
+	public void actionPerformed(ActionEvent evt) {
       writeValue();
     }
 
