@@ -130,7 +130,7 @@ public class Utility {
 		return method.invoke(obj, params);
 	}
 
-	public static BeanInfo getPOJOInfo(Class c) throws IntrospectionException {
+	public static BeanInfo getBeanInfo(Class c) throws IntrospectionException {
 		return Introspector.getBeanInfo(c);
 	}
 

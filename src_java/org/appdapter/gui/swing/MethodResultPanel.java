@@ -5,7 +5,7 @@ import java.awt.BorderLayout;
 import javax.swing.JLabel;
 
 import org.appdapter.gui.pojo.POJOCollectionWithBoxContext;
-import org.appdapter.gui.pojo.ScreenBoxedPOJORef;
+import org.appdapter.gui.pojo.ScreenBoxedPOJORefPanel;
 import org.appdapter.gui.pojo.Utility;
 import org.appdapter.gui.swing.impl.JVPanel;
 import org.slf4j.Logger;
@@ -21,7 +21,7 @@ class MethodResultPanel extends JVPanel {
   static Logger theLogger = LoggerFactory.getLogger(MethodResultPanel.class);
 
   JLabel label;
-  ScreenBoxedPOJORef value = null;
+  ScreenBoxedPOJORefPanel value = null;
   POJOCollectionWithBoxContext context;
   boolean isVoid = false;
 
@@ -64,7 +64,7 @@ class MethodResultPanel extends JVPanel {
         if (value != null) {
           remove(value);
         }
-        value = new ScreenBoxedPOJORef(context, object, true, true, true);
+        value = new ScreenBoxedPOJORefPanel(context, object, true, true, true);
 
         add("Center", value);
         invalidate();

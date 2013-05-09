@@ -20,9 +20,10 @@ import javax.swing.OverlayLayout;
 import javax.swing.border.Border;
 
 import org.appdapter.gui.pojo.POJOCollectionWithBoxContext;
-import org.appdapter.gui.pojo.ScreenBoxedPOJORef;
+import org.appdapter.gui.pojo.ScreenBoxedPOJORefPanel;
 import org.appdapter.gui.pojo.Utility;
 import org.appdapter.gui.swing.impl.JJPanel;
+import org.appdapter.gui.swing.impl.JVPanel;
 
 
 /**
@@ -31,7 +32,7 @@ import org.appdapter.gui.swing.impl.JJPanel;
  *
  * 
  */
-public class ArrayContentsPanel extends JJPanel implements ScreenBoxedPOJORef.RemoveListener, DropTargetListener {
+public class ArrayContentsPanel extends JVPanel implements ScreenBoxedPOJORefPanel.RemoveListener, DropTargetListener {
 
   Object array;
   POJOCollectionWithBoxContext context;

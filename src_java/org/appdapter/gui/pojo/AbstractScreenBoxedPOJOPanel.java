@@ -9,8 +9,7 @@ import org.appdapter.gui.box.ScreenBoxPanel;
  * ScreenBoxedPOJOWithProperties (a complete window with all the details about
  * the POJO).
  */
-abstract public class AbstractScreenBoxedPOJO<BoxType extends Box> extends
-		ScreenBoxPanel<BoxType> {
+abstract public class AbstractScreenBoxedPOJOPanel<BoxType extends Box> extends ScreenBoxPanel<BoxType> implements GetSetObject {
 
 	@Override
 	public void focusOnBox(Box b) {
@@ -24,10 +23,10 @@ abstract public class AbstractScreenBoxedPOJO<BoxType extends Box> extends
 	 * 
 	 */
 	@Override
-	abstract public Object getPOJO();
+	abstract public Object getObject();
 
-	public void setBean(Object newpojObject) {
-		Object oldpojObject = getPOJO();
+	public void setObject(Object newpojObject) {
+		Object oldpojObject = getObject();
 		if (oldpojObject != newpojObject) {
 			objectChanged(oldpojObject, newpojObject);
 		}

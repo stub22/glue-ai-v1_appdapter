@@ -1,15 +1,15 @@
 package org.appdapter.gui.editors;
 
-import org.appdapter.gui.pojo.ScreenBoxedPOJOWithProperties;
+import org.appdapter.gui.pojo.ScreenBoxedPOJOWithPropertiesPanel;
 import org.appdapter.gui.swing.ErrorPanel;
 
-public class ThrowableCustomizer extends ScreenBoxedPOJOWithProperties {
+public class ThrowableCustomizer extends ScreenBoxedPOJOWithPropertiesPanel {
   @Override
 protected void initGUI() {
     super.initGUI();
 
     String name;
-    Throwable object = (Throwable) getPOJO();
+    Throwable object = (Throwable) getObject();
     if (object instanceof Error) {
       name = "Error";
     } else if (object instanceof RuntimeException) {
