@@ -22,7 +22,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JTextField;
 
-import org.appdapter.gui.swing.impl.JJPanel;
+import org.appdapter.gui.swing.impl.JVPanel;
 
 /**
 * A textfield for handling dates.  Displays date in short format according to
@@ -36,7 +36,7 @@ import org.appdapter.gui.swing.impl.JJPanel;
 * @author Henrik
 * @version 1.0
 */
-public class DateField extends JJPanel implements KeyListener, ActionListener, FocusListener {
+public class DateField extends JVPanel implements KeyListener, ActionListener, FocusListener {
 	/**
 	* Property constant (used in PropertyChangeEvents)
 	*/

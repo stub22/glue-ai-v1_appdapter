@@ -16,8 +16,8 @@
 package org.appdapter.gui.box;
 
 import org.appdapter.api.trigger.Box;
-import org.appdapter.gui.pojo.AbstractScreenBoxedPOJO;
-import org.appdapter.gui.pojo.ScreenBoxedPOJO;
+import org.appdapter.gui.pojo.AbstractScreenBoxedPOJOPanel;
+import org.appdapter.gui.pojo.ScreenBoxedPOJOPanel;
 
 import javax.swing.JPanel;
 
@@ -33,6 +33,7 @@ public abstract class ScreenBoxPanel<BoxType extends Box> extends JPanel {
 		MATRIX,
 		DB_MANAGER,
 		REPO_MANAGER,
+		OBJECT_PROPERTIES,
 		OTHER
 	}
 	/** Make the display of this panel foocus on a particular box.
@@ -47,5 +48,5 @@ public abstract class ScreenBoxPanel<BoxType extends Box> extends JPanel {
 	 *  This can be 'this' object
 	 * 
 	 */
-	abstract public Object getPOJO();
+	abstract public Object getObject();
 }

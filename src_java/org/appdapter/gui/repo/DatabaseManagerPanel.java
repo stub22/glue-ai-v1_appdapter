@@ -24,13 +24,13 @@ package org.appdapter.gui.repo;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.gui.box.ScreenBoxPanel;
-import org.appdapter.gui.pojo.AbstractScreenBoxedPOJO;
+import org.appdapter.gui.pojo.AbstractScreenBoxedPOJOPanel;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
 
-public class DatabaseManagerPanel extends AbstractScreenBoxedPOJO {
+public class DatabaseManagerPanel extends AbstractScreenBoxedPOJOPanel {
 
     /** Creates new form DatabaseManagerPanel */
     public DatabaseManagerPanel() {
@@ -63,7 +63,7 @@ public class DatabaseManagerPanel extends AbstractScreenBoxedPOJO {
 	}
 
 	@Override
-	public Object getPOJO() {
+	public Object getObject() {
 		return this;
 	}
 

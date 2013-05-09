@@ -22,7 +22,7 @@ import org.appdapter.api.trigger.Trigger;
  * 
  * 
  */
-abstract public class POJOSwizzler<TrigType extends Trigger<? extends BoxImpl<TrigType>>> extends BoxImpl<TrigType> implements java.io.Serializable {
+abstract public class POJOSwizzler<TrigType extends Trigger<? extends BoxImpl<TrigType>>> extends BoxImpl<TrigType> implements java.io.Serializable, GetSetObject {
 	// ==== Transient instance variables =============
 	transient PropertyChangeSupport propSupport = new PropertyChangeSupport(
 			this);
@@ -118,7 +118,7 @@ abstract public class POJOSwizzler<TrigType extends Trigger<? extends BoxImpl<Tr
 	 */
 	public BeanInfo getBeanInfo() {
 		try {
-			return Utility.getPOJOInfo(getPojoClass(),
+			return Utility.getPOJOInfo(getPOJOClass(),
 					Introspector.USE_ALL_BEANINFO);
 		} catch (IntrospectionException e) {
 			// TODO Auto-generated catch block
@@ -134,7 +134,7 @@ abstract public class POJOSwizzler<TrigType extends Trigger<? extends BoxImpl<Tr
 		}
 	}
 
-	public Class<? extends Object> getPojoClass() {
+	public Class<? extends Object> getPOJOClass() {
 		return getObject().getClass();
 	}
 

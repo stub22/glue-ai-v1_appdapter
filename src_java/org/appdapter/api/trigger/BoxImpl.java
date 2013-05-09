@@ -30,7 +30,6 @@ import org.appdapter.gui.pojo.POJOSwizzler;
 public abstract class BoxImpl <TrigType extends Trigger<? extends BoxImpl<TrigType>>> extends KnownComponentImpl 
 			implements MutableBox<TrigType> {
 	
-	
 	private	BoxContext						myBoxContext;
 
 	private List<TrigType>				myTriggers = new ArrayList<TrigType>();

@@ -48,6 +48,12 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	private Map<ScreenBoxPanel.Kind, ScreenBoxPanel> myPanelMap = new HashMap<ScreenBoxPanel.Kind, ScreenBoxPanel>();
 
 	private Object object;
+	
+	
+	@Override
+	public void setObject(Object obj) {
+		object = obj;
+	}
 
 	public ScreenBoxImpl() {
 		object = this;
@@ -71,14 +77,14 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	}
 
 	@Override
-	public Class<? extends Object> getPojoClass() {
-		return super.getPojoClass();
+	public Class<? extends Object> getPOJOClass() {
+		return super.getPOJOClass();
 	}
 
 	@Override
 	public List<Class> getTypes() {
 		List al = new ArrayList<Class>();
-		al.add(getPojoClass());
+		al.add(getPOJOClass());
 		al.add(getClass());
 		return al;
 	}
@@ -144,6 +150,9 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 		case DB_MANAGER:
 			bp = new DatabaseManagerPanel();
 			break;
+		case OBJECT_PROPERTIES:
+			bp = new DatabaseManagerPanel();
+			break;			
 		case OTHER:
 			bp = makeOtherPanel();
 			break;

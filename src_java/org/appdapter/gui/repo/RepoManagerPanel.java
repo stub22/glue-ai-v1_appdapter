@@ -31,15 +31,15 @@ import javax.swing.JFileChooser;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import org.appdapter.gui.browse.TriggerMenuFactory;
-import org.appdapter.gui.pojo.AbstractScreenBoxedPOJO;
-import org.appdapter.gui.pojo.ScreenBoxedPOJO;
+import org.appdapter.gui.pojo.AbstractScreenBoxedPOJOPanel;
+import org.appdapter.gui.pojo.ScreenBoxedPOJOPanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public class RepoManagerPanel extends AbstractScreenBoxedPOJO<MutableRepoBox> {
+public class RepoManagerPanel extends AbstractScreenBoxedPOJOPanel<MutableRepoBox> {
 	static Logger theLogger = LoggerFactory.getLogger(RepoManagerPanel.class);
 
 	private	MutableRepoBox			myFocusBox;
@@ -217,8 +217,9 @@ public class RepoManagerPanel extends AbstractScreenBoxedPOJO<MutableRepoBox> {
     
     
 	@Override
-	public Object getPOJO() {
+	public Object getObject() {
 		if (myFocusBox!=null) return myFocusBox;
 		return this;
 	}
+
 }

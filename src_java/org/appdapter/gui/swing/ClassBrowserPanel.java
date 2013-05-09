@@ -11,8 +11,9 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import org.appdapter.gui.pojo.POJOCollectionWithBoxContext;
-import org.appdapter.gui.pojo.ScreenBoxedPOJOWithProperties;
+import org.appdapter.gui.pojo.ScreenBoxedPOJOWithPropertiesPanel;
 import org.appdapter.gui.pojo.Utility;
+import org.appdapter.gui.swing.impl.JVPanel;
 
 
 /**
@@ -21,7 +22,7 @@ import org.appdapter.gui.pojo.Utility;
  *
  * @author Henrk Kniberg
  */
-public class ClassBrowserPanel extends JPanel implements ActionListener {
+public class ClassBrowserPanel extends JVPanel implements ActionListener {
   POJOCollectionWithBoxContext context;
 
   JTextField text;
@@ -77,7 +78,7 @@ public void actionPerformed(ActionEvent evt) {
     classPanel.removeAll();
     try {
       Class cl = Class.forName(text.getText());
-      ScreenBoxedPOJOWithProperties view = new ScreenBoxedPOJOWithProperties(context, cl);
+      ScreenBoxedPOJOWithPropertiesPanel view = new ScreenBoxedPOJOWithPropertiesPanel(context, cl);
       classPanel.add("Center", view);
     } catch (Exception err) {
       classPanel.add("Center", new JLabel(err.toString()));
