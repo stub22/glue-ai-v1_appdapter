@@ -19,15 +19,18 @@ public class BooleanEditor extends PropertyEditorSupport  {
   public BooleanEditor() {
   }
 
-  public void setAsText(String text) throws IllegalArgumentException {
+  @Override
+public void setAsText(String text) throws IllegalArgumentException {
     setValue(Boolean.valueOf(text));
   }
 
-  public String getAsText() {
+  @Override
+public String getAsText() {
     return "" + getValue();
   }
 
-  public void setValue(Object value) {
+  @Override
+public void setValue(Object value) {
     if (value instanceof Boolean) {
       super.setValue(value);
       if (gui != null)
@@ -39,19 +42,21 @@ public class BooleanEditor extends PropertyEditorSupport  {
     try {
       return ((Boolean) getValue()).booleanValue();
     } catch (Exception err) {
-    	err.printStackTrace();
+    //	err.printStackTrace();
       return false;
     }
   }
 
-  public Component getCustomEditor() {
+  @Override
+public Component getCustomEditor() {
     if (gui == null) {
       gui = new GUI();
     }
     return gui;
   }
 
-  public boolean supportsCustomEditor() {
+  @Override
+public boolean supportsCustomEditor() {
     return true;
   }
 
@@ -63,7 +68,8 @@ public class BooleanEditor extends PropertyEditorSupport  {
       addChangeListener(this);
     }
 
-    public void stateChanged(ChangeEvent e) {
+    @Override
+	public void stateChanged(ChangeEvent e) {
       boolean state = getState();
       if (state != getBooleanValue())
         setValue(new Boolean(getState()));

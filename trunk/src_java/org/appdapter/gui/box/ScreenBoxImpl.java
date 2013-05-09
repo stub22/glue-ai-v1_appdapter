@@ -16,14 +16,18 @@
 
 package org.appdapter.gui.box;
 
-import org.appdapter.api.trigger.BoxImpl;
+import java.beans.PropertyVetoException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.gui.browse.DisplayContext;
+import org.appdapter.gui.pojo.POJOSwizzler;
 import org.appdapter.gui.repo.DatabaseManagerPanel;
 import org.appdapter.gui.repo.ModelMatrixPanel;
 import org.appdapter.gui.repo.RepoManagerPanel;
-import java.util.HashMap;
-import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,27 +39,63 @@ import org.slf4j.LoggerFactory;
  * <br/> 
  * @author Stu B. <www.texpedient.com>
  */
-public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<TrigType>>> extends BoxImpl<TrigType> implements ScreenBox<TrigType> {
+public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<TrigType>>> extends POJOSwizzler<TrigType> implements ScreenBox<TrigType> {
 	static Logger theLogger = LoggerFactory.getLogger(ScreenBoxImpl.class);
 	// Because it's a "provider", we have an extra layer of indirection between box and display, enabling independence.
-	private DisplayContextProvider			myDCP;
-	
+	private DisplayContextProvider myDCP;
 
 	// A box may have up to one panel for any kind.
-	private	Map<ScreenBoxPanel.Kind, ScreenBoxPanel>	myPanelMap = new HashMap<ScreenBoxPanel.Kind, ScreenBoxPanel>();
+	private Map<ScreenBoxPanel.Kind, ScreenBoxPanel> myPanelMap = new HashMap<ScreenBoxPanel.Kind, ScreenBoxPanel>();
 
+	private Object object;
 
-	@Override public void setDisplayContextProvider(DisplayContextProvider dcp) {
+	public ScreenBoxImpl() {
+		object = this;
+	}
+
+	public ScreenBoxImpl(Object object) {
+		this.object = object;
+	}
+
+	public ScreenBoxImpl(String uniqueName, Object obj) throws PropertyVetoException {
+		this(obj);
+		setName(uniqueName);
+	}
+
+	@Override
+	public Object getObject() {
+		if (object != this)
+			return object;
+		theLogger.warn("Default implementation of getObject() for {} is returning 'this'", getShortLabel());
+		return this;
+	}
+
+	@Override
+	public Class<? extends Object> getPojoClass() {
+		return super.getPojoClass();
+	}
+
+	@Override
+	public List<Class> getTypes() {
+		List al = new ArrayList<Class>();
+		al.add(getPojoClass());
+		al.add(getClass());
+		return al;
+	}
+
+	@Override
+	public void setDisplayContextProvider(DisplayContextProvider dcp) {
 		myDCP = dcp;
 	}
 
-	
-	@Override public DisplayContext getDisplayContext() {
+	@Override
+	public DisplayContext getDisplayContext() {
 		if (myDCP != null) {
 			return myDCP.findDisplayContext(this);
 		}
 		return null;
 	}
+
 	/**
 	 * The box panel returned might be one that we "made" earlier, 
 	 * or one that we make right now,
@@ -63,7 +103,8 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	 * @param kind
 	 * @return 
 	 */
-	@Override public ScreenBoxPanel findBoxPanel(ScreenBoxPanel.Kind kind) {
+	@Override
+	public ScreenBoxPanel findBoxPanel(ScreenBoxPanel.Kind kind) {
 		ScreenBoxPanel bp = getBoxPanel(kind);
 		if (bp == null) {
 			bp = makeBoxPanel(kind);
@@ -78,6 +119,7 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 		}
 		myPanelMap.put(kind, bp);
 	}
+
 	protected ScreenBoxPanel getBoxPanel(ScreenBoxPanel.Kind kind) {
 		return myPanelMap.get(kind);
 	}
@@ -92,21 +134,21 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	 */
 	protected ScreenBoxPanel makeBoxPanel(ScreenBoxPanel.Kind kind) {
 		ScreenBoxPanel bp = null;
-		switch(kind) {
+		switch (kind) {
 		case MATRIX:
 			bp = new ModelMatrixPanel();
-		break;
+			break;
 		case REPO_MANAGER:
 			bp = new RepoManagerPanel();
-		break;
+			break;
 		case DB_MANAGER:
 			bp = new DatabaseManagerPanel();
-		break;
+			break;
 		case OTHER:
 			bp = makeOtherPanel();
-		break;
+			break;
 		default:
-				throw new RuntimeException("Found unexpected ScreenBoxPanelKind: " + kind);
+			throw new RuntimeException("Found unexpected ScreenBoxPanelKind: " + kind);
 		}
 		if (bp != null) {
 			// Subclasses might do something fancier to share panels among instances.
@@ -114,6 +156,7 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 		}
 		return bp;
 	}
+
 	/** Override this to create an app-specific ScreenBoxPanel kind, and configure
 	 * your app to request a panel of kind "OTHER", using BrowseTabFuncs.openBoxPanelAndFocus,
 	 * PanelTriggers.OpenTrigger, or your own mechanism.  Note that your ScreenBoxPanel
@@ -123,10 +166,11 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	 * to findBoxPanel themselves.
 	 * @return 
 	 */
-	protected ScreenBoxPanel makeOtherPanel() { 
+	protected ScreenBoxPanel makeOtherPanel() {
 		theLogger.warn("Default implementation of makeOtherPanel() for {} is returning null", getShortLabel());
 		return null;
 	}
+
 	public void dump() {
 		theLogger.info("DUMP-DUMP-DE-DUMP");
 	}

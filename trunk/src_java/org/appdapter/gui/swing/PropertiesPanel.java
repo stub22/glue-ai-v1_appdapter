@@ -10,8 +10,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 
-import org.appdapter.gui.objbrowser.model.POJOCollectionWithBoxContext;
-import org.appdapter.gui.objbrowser.model.Utility;
+import org.appdapter.gui.pojo.POJOCollectionWithBoxContext;
+import org.appdapter.gui.pojo.Utility;
 import org.appdapter.gui.swing.impl.JJPanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,7 +78,7 @@ public class PropertiesPanel extends JJPanel {
     return panel;
   } */
 
- /* class MyTableModel extends AbstractTableModel {
+ /* class DougysTableModel extends AbstractTableModel {
     public int getRowCount() {
     }
     public int getColumnCount() {
@@ -88,7 +88,8 @@ public class PropertiesPanel extends JJPanel {
   }*/
 
   class PropertyComparator implements Comparator {
-    public int compare(Object first, Object second) {
+    @Override
+	public int compare(Object first, Object second) {
       PropertyDescriptor a = (PropertyDescriptor) first;
       PropertyDescriptor b = (PropertyDescriptor) second;
       String nameA = a.getName();
@@ -96,7 +97,8 @@ public class PropertiesPanel extends JJPanel {
       return nameA.compareTo(nameB);
     }
 
-    public boolean equals(Object o) {
+    @Override
+	public boolean equals(Object o) {
       return (o instanceof PropertyComparator);
     }
   }

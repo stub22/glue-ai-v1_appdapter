@@ -14,7 +14,7 @@ import java.beans.VetoableChangeSupport;
 
 import javax.swing.JTextField;
 
-import org.appdapter.gui.objbrowser.model.Utility;
+import org.appdapter.gui.pojo.Utility;
 import org.appdapter.gui.swing.impl.JVPanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,18 +68,22 @@ public class NumberField extends JVPanel implements ActionListener, KeyListener,
 	 * All PropertyChangeListeners will receive property change events when the
 	 * date changes.
 	 */
+	@Override
 	public void addPropertyChangeListener(PropertyChangeListener p) {
 		propSupport.addPropertyChangeListener(p);
 	}
 
+	@Override
 	public void removePropertyChangeListener(PropertyChangeListener p) {
 		propSupport.removePropertyChangeListener(p);
 	}
 
+	@Override
 	public void addVetoableChangeListener(VetoableChangeListener v) {
 		vetoSupport.addVetoableChangeListener(v);
 	}
 
+	@Override
 	public void removeVetoableChangeListener(VetoableChangeListener v) {
 		vetoSupport.removeVetoableChangeListener(v);
 	}
@@ -125,6 +129,7 @@ public class NumberField extends JVPanel implements ActionListener, KeyListener,
 	/**
 	 * Event handling routine
 	 */
+	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (textfield.isEditable() && e.getSource() == scrollPanel) {
 			if (e.getID() == ScrollButtonPanel.DECREMENT)
@@ -139,12 +144,14 @@ public class NumberField extends JVPanel implements ActionListener, KeyListener,
 	/**
 	 * Event handling routine
 	 */
+	@Override
 	public void focusGained(FocusEvent evt) {
 	}
 
 	/**
 	 * Event handling routine
 	 */
+	@Override
 	public void focusLost(FocusEvent evt) {
 		readValue();
 	}
@@ -180,6 +187,7 @@ public class NumberField extends JVPanel implements ActionListener, KeyListener,
 	/**
 	 * Event handling routine
 	 */
+	@Override
 	public void keyPressed(KeyEvent e) {
 		if (textfield.isEditable()) {
 			if (e.getKeyCode() == KeyEvent.VK_UP) {
@@ -206,12 +214,14 @@ public class NumberField extends JVPanel implements ActionListener, KeyListener,
 	/**
 	 * Event handling routine
 	 */
+	@Override
 	public void keyReleased(KeyEvent e) {
 	}
 
 	/**
 	 * Event handling routine
 	 */
+	@Override
 	public void keyTyped(KeyEvent e) {
 	}
 
@@ -293,11 +303,11 @@ public class NumberField extends JVPanel implements ActionListener, KeyListener,
 			} else if (type == Float.class) {
 				return new Float(n.floatValue());
 			} else if (type == Short.class) {
-				return new Short((short) (n.shortValue()));
+				return new Short((n.shortValue()));
 			} else if (type == Double.class) {
 				return new Double(n.doubleValue());
 			} else if (type == Byte.class) {
-				return new Byte((byte) (n.byteValue()));
+				return new Byte((n.byteValue()));
 			} else {
 				throw new IllegalArgumentException("Invalid number class: "
 						+ type);

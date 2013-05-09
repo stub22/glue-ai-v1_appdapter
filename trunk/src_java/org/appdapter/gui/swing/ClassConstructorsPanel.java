@@ -13,8 +13,8 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.border.EtchedBorder;
 
-import org.appdapter.gui.objbrowser.model.POJOCollectionWithBoxContext;
-import org.appdapter.gui.objbrowser.model.Utility;
+import org.appdapter.gui.pojo.POJOCollectionWithBoxContext;
+import org.appdapter.gui.pojo.Utility;
 import org.appdapter.gui.swing.impl.JJPanel;
 
 /**
@@ -41,12 +41,13 @@ public class ClassConstructorsPanel extends JJPanel implements ActionListener {
   }
 
   public ClassConstructorsPanel(Class cls) throws Exception {
-    this(Utility.getCurrentInstances(), cls);
+    this(Utility.getCurrentContext(), cls);
   }
 
 //==== Event handlers =============================
 
-  public void actionPerformed(ActionEvent evt) {
+  @Override
+public void actionPerformed(ActionEvent evt) {
     Constructor c = (Constructor) buttons.get(evt.getSource());
     if (c != null) {
       ConstructorParametersPanel p;

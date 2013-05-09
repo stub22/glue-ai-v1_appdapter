@@ -1,6 +1,6 @@
 
 
-package org.appdapter.gui.objbrowser;
+package org.appdapter.gui.util;
 import java.io.PrintStream;
 import java.util.Enumeration;
 import java.util.Hashtable;

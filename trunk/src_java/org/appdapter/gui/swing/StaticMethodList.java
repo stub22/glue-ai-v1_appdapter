@@ -58,7 +58,8 @@ import org.appdapter.gui.swing.impl.JJList;
       }
     }
 
-    public Object getElementAt(int index) {
+    @Override
+	public Object getElementAt(int index) {
       try {
         return getMethodAt(index).getName();
       } catch (Exception err) {
@@ -66,13 +67,15 @@ import org.appdapter.gui.swing.impl.JJList;
       }
     }
 
-    public int getSize() {
+    @Override
+	public int getSize() {
       return methods.size();
     }
   }
 
   class MethodComparator implements Comparator {
-    public int compare(Object first, Object second) {
+    @Override
+	public int compare(Object first, Object second) {
       Method a = (Method) first;
       Method b = (Method) second;
       String nameA = a.getName();
@@ -80,7 +83,8 @@ import org.appdapter.gui.swing.impl.JJList;
       return nameA.compareTo(nameB);
     }
 
-    public boolean equals(Object o) {
+    @Override
+	public boolean equals(Object o) {
       return (o instanceof MethodComparator);
     }
   }

@@ -1,6 +1,6 @@
 
 
-package org.appdapter.gui.objbrowser.model;
+package org.appdapter.gui.pojo;
 
 public interface POJOCollectionListener {
   public void pojoAdded(Object obj);

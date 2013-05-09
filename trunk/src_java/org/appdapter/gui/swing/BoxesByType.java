@@ -11,8 +11,8 @@ import java.util.Map;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 
-import org.appdapter.gui.objbrowser.model.POJOCollectionWithBoxContext;
-import org.appdapter.gui.objbrowser.model.Utility;
+import org.appdapter.gui.pojo.POJOCollectionWithBoxContext;
+import org.appdapter.gui.pojo.Utility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +45,7 @@ public class BoxesByType {
 		this.objectClass = objectClass;
 
 		if (context == null) {
-			this.context = Utility.getDefaultContext();
+			this.context = Utility.getCurrentContext();
 		} else {
 			this.context = context;
 		}
@@ -126,14 +126,17 @@ public class BoxesByType {
 	}
 
 	class Model extends AbstractTableModel {
+		@Override
 		public int getRowCount() {
 			return objects.size();
 		}
 
+		@Override
 		public int getColumnCount() {
 			return props.length;
 		}
 
+		@Override
 		public String getColumnName(int columnIndex) {
 			return props[columnIndex].getDisplayName();
 		}
@@ -151,6 +154,7 @@ public class BoxesByType {
 		 * }
 		 */
 
+		@Override
 		public boolean isCellEditable(int rowIndex, int columnIndex) {
 			return false;
 			// return props[columnIndex].getWriteMethod() != null;
@@ -160,6 +164,7 @@ public class BoxesByType {
 			return objects.get(rowIndex);
 		}
 
+		@Override
 		public Object getValueAt(int rowIndex, int columnIndex) {
 			Object object = getPOJOAt(rowIndex);
 			PropertyDescriptor prop = props[columnIndex];

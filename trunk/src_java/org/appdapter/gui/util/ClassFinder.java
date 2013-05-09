@@ -1,4 +1,4 @@
-package org.appdapter.gui.objbrowser;
+package org.appdapter.gui.util;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,7 +11,7 @@ import java.util.StringTokenizer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import org.appdapter.gui.objbrowser.model.Utility;
+import org.appdapter.gui.pojo.Utility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

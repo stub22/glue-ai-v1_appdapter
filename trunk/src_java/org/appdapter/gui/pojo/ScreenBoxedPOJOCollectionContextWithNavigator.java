@@ -1,4 +1,4 @@
-package org.appdapter.gui.objbrowser;
+package org.appdapter.gui.pojo;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -21,31 +21,30 @@ import javax.swing.AbstractAction;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
-import javax.swing.JDesktopPane;
 import javax.swing.JInternalFrame;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
 
-import org.appdapter.gui.objbrowser.model.POJOCollection;
-import org.appdapter.gui.objbrowser.model.POJOCollectionListener;
-import org.appdapter.gui.objbrowser.model.POJOCollectionWithBoxContext;
-import org.appdapter.gui.objbrowser.model.POJOSwizzler;
-import org.appdapter.gui.objbrowser.model.Utility;
-import org.appdapter.gui.pojo.ScreenBoxedPOJOWithProperties;
+import org.apache.poi.ss.formula.eval.NotImplementedException;
+import org.appdapter.demo.ObjectNavigatorGUI;
+import org.appdapter.gui.box.ScreenBoxImpl;
+import org.appdapter.gui.demo.ObjectNavigator.Icons;
+import org.appdapter.gui.demo.RenameDialog;
 import org.appdapter.gui.swing.ErrorDialog;
+import org.appdapter.gui.util.PairTable;
 
 /**
  * A POJOCollectionContext implementation that uses a ObjectNavigator.
  * 
  * 
  */
-public class ScreenBoxedPOJOCollectionContextWithNavigator implements
-		POJOCollectionWithBoxContext {
+public class ScreenBoxedPOJOCollectionContextWithNavigator implements POJOCollectionWithBoxContext {
+
 	// ==== Static variables =================
 	private static boolean ALLOW_MULTIPLE_WINDOWS = false;
 
 	// ==== Instance variables ================
-	ObjectNavigator gui;
+	ObjectNavigatorGUI gui;
 	PairTable objectFrames = new PairTable();
 	PairTable objectGUIs = new PairTable();
 	JInternalFrame classBrowser = null;
@@ -57,45 +56,60 @@ public class ScreenBoxedPOJOCollectionContextWithNavigator implements
 	 * Creates a new context linked to the given GUI. All operations will use
 	 * either the given GUI or the ObjectNavigator that it represents
 	 */
-	public ScreenBoxedPOJOCollectionContextWithNavigator(ObjectNavigator gui) {
+	public ScreenBoxedPOJOCollectionContextWithNavigator(ObjectNavigatorGUI gui) {
 		this.gui = gui;
 		if (gui == null) {
-			throw new NullPointerException(
-					"The ObjectNavigator GUI cannot be null for a POJOCollectionContext");
+			throw new NullPointerException("The ObjectNavigator GUI cannot be null for a POJOCollectionContext");
 		}
 	}
 
 	// ==== Property getters and setters ==================
 
-	public POJOCollection getPOJOs() {
-		return gui.getDisplayedCollection();
+	@Override
+	public POJOCollection getCollection() {
+		return gui.getCollectionWithSwizzler();
+	}
+
+	@Override
+	public POJOCollectionWithSwizzler getCollectionWithSwizzler() {
+		return gui.getCollectionWithSwizzler();
+	}
+
+	@Override
+	public int getPOJOCount() {
+		return getCollection().getPOJOCount();
 	}
 
 	// ==== Implementation of POJOCollectionContext interface ============
 
+	@Override
 	public Collection getPOJOCollectionOfType(Class c) {
-		return getPOJOs().getPOJOCollectionOfType(c);
+		return getCollection().getPOJOCollectionOfType(c);
 	}
 
+	@Override
 	public boolean containsPOJO(Object o) {
-		return getPOJOs().containsPOJO(o);
+		return getCollection().containsPOJO(o);
 	}
 
+	@Override
 	public void addListener(POJOCollectionListener l) {
-		getPOJOs().addListener(l);
+		getCollection().addListener(l);
 	}
 
-	public void removeListener(
-			org.appdapter.gui.objbrowser.model.POJOCollectionListener l) {
-		getPOJOs().removeListener(l);
+	@Override
+	public void removeListener(org.appdapter.gui.pojo.POJOCollectionListener l) {
+		getCollection().removeListener(l);
 	}
 
+	@Override
 	public Object findPOJO(String name) {
-		return getPOJOs().findPOJO(name);
+		return getCollection().findPOJO(name);
 	}
 
+	@Override
 	public String getPOJOName(Object o) {
-		POJOSwizzler wrapper = getPOJOs().getSwizzler(o);
+		POJOSwizzler wrapper = getCollectionWithSwizzler().getBoxForObject(o);
 		if (wrapper == null) {
 			return "" + o;
 		} else {
@@ -109,8 +123,9 @@ public class ScreenBoxedPOJOCollectionContextWithNavigator implements
 	 * @returns true if the object was added, false if the object was already
 	 *          there
 	 */
+	@Override
 	public boolean addPOJO(Object object) {
-		return getPOJOs().addPOJO(object);
+		return getCollection().addPOJO(object);
 	}
 
 	/**
@@ -119,16 +134,18 @@ public class ScreenBoxedPOJOCollectionContextWithNavigator implements
 	 * @returns true if the object was removed, false if that object wasn't in
 	 *          this context
 	 */
+	@Override
 	public boolean removePOJO(Object object) {
-		return getPOJOs().removePOJO(object);
+		return getCollection().removePOJO(object);
 	}
 
 	/**
 	 * Returns all actions that can be carried out on the given object
 	 */
+	@Override
 	public Collection getActions(Object object) {
 		Collection actions = new LinkedList();
-		if (getPOJOs().containsPOJO(object)) {
+		if (getCollection().containsPOJO(object)) {
 			actions.add(new RenameAction(object));
 			actions.add(new RemoveAction(object));
 		} else {
@@ -144,17 +161,17 @@ public class ScreenBoxedPOJOCollectionContextWithNavigator implements
 	/**
 	 * Opens up a GUI to show the details of the given object
 	 */
+	@Override
 	public void showScreenBox(Object object) throws Exception {
-		JInternalFrame existing = (JInternalFrame) objectFrames
-				.findBrother(object);
+		JInternalFrame existing = (JInternalFrame) objectFrames.findBrother(object);
 
 		if (existing == null || ALLOW_MULTIPLE_WINDOWS) {
 
 			// Get a wrapper for the object, or create a temporary wrapper if
 			// necessary
-			POJOSwizzler wrapper = getPOJOs().getSwizzler(object);
+			POJOSwizzler wrapper = getCollectionWithSwizzler().getBoxForObject(object);
 			if (wrapper == null) {
-				wrapper = new POJOSwizzler(object);
+				wrapper = new ScreenBoxImpl(object);
 			}
 
 			// Get the object info and descriptor
@@ -164,8 +181,7 @@ public class ScreenBoxedPOJOCollectionContextWithNavigator implements
 			Component view;
 			Class customizerClass = findCustomizerClass(object.getClass());
 			if (customizerClass != null) {
-				Customizer customizer = (Customizer) customizerClass
-						.newInstance();
+				Customizer customizer = (Customizer) customizerClass.newInstance();
 				customizer.setObject(object);
 				view = (Component) customizer;
 			} else {
@@ -173,11 +189,10 @@ public class ScreenBoxedPOJOCollectionContextWithNavigator implements
 			}
 
 			// Get an icon for the object
-			Icon icon = getIcon(wrapper);// .getIcon();
+			Icon icon = getIcon(wrapper.getBeanInfo());
 
 			// Create an internal frame to hold the GUI
-			JInternalFrame frame = new JInternalFrame(getPOJOName(object),
-					true, true, true, true);
+			JInternalFrame frame = new JInternalFrame(getPOJOName(object), true, true, true, true);
 			frame.setResizable(true);
 
 			// Put the GUI and icon in the frame
@@ -185,12 +200,10 @@ public class ScreenBoxedPOJOCollectionContextWithNavigator implements
 			frame.getContentPane().add(view);
 
 			// Make the size correct
-			JDesktopPane desk = gui.getDesk();
+			JComponent desk = gui.getDesk();
 			Dimension preferred = frame.getPreferredSize();
 			Dimension deskSize = desk.getSize();
-			Dimension size = new Dimension(Math.min(preferred.width,
-					deskSize.width),
-					Math.min(preferred.height, deskSize.height));
+			Dimension size = new Dimension(Math.min(preferred.width, deskSize.width), Math.min(preferred.height, deskSize.height));
 			frame.setSize(size);
 
 			// If necessary, add this to the list of object frames
@@ -218,12 +231,7 @@ public class ScreenBoxedPOJOCollectionContextWithNavigator implements
 
 	// ==== Other public methods =========================
 
-	private Icon getIcon(POJOSwizzler wrapper) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public ObjectNavigator getGUI() {
+	public ObjectNavigatorGUI getGUI() {
 		return gui;
 	}
 
@@ -246,10 +254,9 @@ public class ScreenBoxedPOJOCollectionContextWithNavigator implements
 				f.show();
 
 			} else if (object instanceof JComponent) {
-				JInternalFrame f = new JInternalFrame(object.getName(), true,
-						true, true, true);
-				f.setFrameIcon(getIcon(new POJOSwizzler(object).getBeanInfo()));
-				f.getContentPane().add((JComponent) object);
+				JInternalFrame f = new JInternalFrame(object.getName(), true, true, true, true);
+				f.setFrameIcon(getIcon(new ScreenBoxImpl(object).getBeanInfo()));
+				f.getContentPane().add(object);
 				if (!ALLOW_MULTIPLE_WINDOWS)
 					objectGUIs.add(object, f);
 				f.addInternalFrameListener(listener);
@@ -264,13 +271,12 @@ public class ScreenBoxedPOJOCollectionContextWithNavigator implements
 					objectGUIs.add(object, window);
 				window.addWindowListener(listener);
 				window.setSize(window.getPreferredSize());
-				org.appdapter.gui.objbrowser.model.Utility.centerWindow(window);
+				org.appdapter.gui.pojo.Utility.centerWindow(window);
 				window.show();
 
 			} else {
-				JInternalFrame f = new JInternalFrame(object.getName(), true,
-						true, true, true);
-				f.getContentPane().add((Component) object);
+				JInternalFrame f = new JInternalFrame(object.getName(), true, true, true, true);
+				f.getContentPane().add(object);
 				f.setSize(f.getPreferredSize());
 				if (!ALLOW_MULTIPLE_WINDOWS)
 					objectGUIs.add(object, f);
@@ -317,14 +323,17 @@ public class ScreenBoxedPOJOCollectionContextWithNavigator implements
 	 * known icon for the object.
 	 */
 	static class UnknownIcon implements Icon, java.io.Serializable {
+		@Override
 		public int getIconWidth() {
 			return 16;
 		}
 
+		@Override
 		public int getIconHeight() {
 			return 16;
 		}
 
+		@Override
 		public void paintIcon(Component c, Graphics g, int x, int y) {
 			g.setColor(Color.blue);
 			g.setFont(new Font("serif", Font.BOLD, 12));
@@ -332,6 +341,7 @@ public class ScreenBoxedPOJOCollectionContextWithNavigator implements
 		}
 	}
 
+	@Override
 	public void showError(String msg, Throwable error) {
 		try {
 			if (error == null) {
@@ -340,9 +350,7 @@ public class ScreenBoxedPOJOCollectionContextWithNavigator implements
 				showScreenBox(error); // @temp
 			}
 		} catch (Throwable err) {
-			new ErrorDialog(
-					"A new error occurred while trying to display the original error '"
-							+ error + "'!", err).show();
+			new ErrorDialog("A new error occurred while trying to display the original error '" + error + "'!", err).show();
 		}
 	}
 
@@ -374,12 +382,11 @@ public class ScreenBoxedPOJOCollectionContextWithNavigator implements
 			this.object = object;
 		}
 
+		@Override
 		public void actionPerformed(ActionEvent evt) {
-			POJOSwizzler wrapper = getPOJOs().getSwizzler(object);
+			POJOSwizzler wrapper = Utility.asSwizzler(object);
 			if (wrapper != null) {
-				RenameDialog dialog = new RenameDialog(
-						ScreenBoxedPOJOCollectionContextWithNavigator.this,
-						wrapper);
+				RenameDialog dialog = new RenameDialog(ScreenBoxedPOJOCollectionContextWithNavigator.this, wrapper);
 				dialog.show();
 			}
 		}
@@ -393,6 +400,7 @@ public class ScreenBoxedPOJOCollectionContextWithNavigator implements
 			this.object = object;
 		}
 
+		@Override
 		public void actionPerformed(ActionEvent evt) {
 			removePOJO(object);
 		}
@@ -406,6 +414,7 @@ public class ScreenBoxedPOJOCollectionContextWithNavigator implements
 			this.object = object;
 		}
 
+		@Override
 		public void actionPerformed(ActionEvent evt) {
 			showObjectGUI((Component) object);
 		}
@@ -419,6 +428,7 @@ public class ScreenBoxedPOJOCollectionContextWithNavigator implements
 			this.object = object;
 		}
 
+		@Override
 		public void actionPerformed(ActionEvent evt) {
 			addPOJO(object);
 		}
@@ -432,6 +442,7 @@ public class ScreenBoxedPOJOCollectionContextWithNavigator implements
 			this.object = object;
 		}
 
+		@Override
 		public void actionPerformed(ActionEvent evt) {
 			try {
 				showScreenBox(object);
@@ -447,6 +458,7 @@ public class ScreenBoxedPOJOCollectionContextWithNavigator implements
 	 * Window event adapter class, used to find out when child windows close
 	 */
 	class Adapter extends WindowAdapter implements InternalFrameListener {
+		@Override
 		public void windowClosing(WindowEvent e) {
 			Object source = e.getSource();
 			if (source == classBrowser) {
@@ -461,12 +473,15 @@ public class ScreenBoxedPOJOCollectionContextWithNavigator implements
 			}
 		}
 
+		@Override
 		public void internalFrameActivated(InternalFrameEvent e) {
 		}
 
+		@Override
 		public void internalFrameClosed(InternalFrameEvent e) {
 		}
 
+		@Override
 		public void internalFrameClosing(InternalFrameEvent e) {
 			Object source = e.getSource();
 			if (source == classBrowser) {
@@ -481,16 +496,27 @@ public class ScreenBoxedPOJOCollectionContextWithNavigator implements
 			}
 		}
 
+		@Override
 		public void internalFrameDeactivated(InternalFrameEvent e) {
 		}
 
+		@Override
 		public void internalFrameDeiconified(InternalFrameEvent e) {
 		}
 
+		@Override
 		public void internalFrameIconified(InternalFrameEvent e) {
 		}
 
+		@Override
 		public void internalFrameOpened(InternalFrameEvent e) {
 		}
 	}
+
+	@Override
+	public void reload() {
+		throw new NotImplementedException("reload this screenbox");
+
+	}
+
 }

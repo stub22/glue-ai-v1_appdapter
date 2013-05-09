@@ -31,13 +31,15 @@ import javax.swing.JFileChooser;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import org.appdapter.gui.browse.TriggerMenuFactory;
+import org.appdapter.gui.pojo.AbstractScreenBoxedPOJO;
+import org.appdapter.gui.pojo.ScreenBoxedPOJO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public class RepoManagerPanel  extends ScreenBoxPanel<MutableRepoBox> {
+public class RepoManagerPanel extends AbstractScreenBoxedPOJO<MutableRepoBox> {
 	static Logger theLogger = LoggerFactory.getLogger(RepoManagerPanel.class);
 
 	private	MutableRepoBox			myFocusBox;
@@ -212,4 +214,11 @@ public class RepoManagerPanel  extends ScreenBoxPanel<MutableRepoBox> {
     private javax.swing.JPanel myTopPanel;
     private javax.swing.JSplitPane myVerticalSplit;
     // End of variables declaration//GEN-END:variables
+    
+    
+	@Override
+	public Object getPOJO() {
+		if (myFocusBox!=null) return myFocusBox;
+		return this;
+	}
 }

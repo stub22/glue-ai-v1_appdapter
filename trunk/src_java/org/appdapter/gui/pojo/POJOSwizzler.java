@@ -1,4 +1,4 @@
-package org.appdapter.gui.objbrowser.model;
+package org.appdapter.gui.pojo;
 
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
@@ -8,7 +8,10 @@ import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
+import java.util.List;
 
+import org.appdapter.api.trigger.BoxImpl;
+import org.appdapter.api.trigger.Trigger;
 
 /**
  * A wrapper for objects used in the ObjectNavigator system. It holds an object,
@@ -19,35 +22,21 @@ import java.beans.VetoableChangeSupport;
  * 
  * 
  */
-public class POJOSwizzler implements java.io.Serializable {
+abstract public class POJOSwizzler<TrigType extends Trigger<? extends BoxImpl<TrigType>>> extends BoxImpl<TrigType> implements java.io.Serializable {
 	// ==== Transient instance variables =============
 	transient PropertyChangeSupport propSupport = new PropertyChangeSupport(
 			this);
 	transient VetoableChangeSupport vetoSupport = new VetoableChangeSupport(
 			this);
 
-	// ==== Serializable instance variables ===============
-	Object object;
-	String name = null;
-	boolean selected = false;
+	protected String name = null;
 
 	// ==== Constructors ==================================
-
 	/**
 	 * Creates a new Swizzler for the given object and assigns it a default
 	 * name.
 	 */
-	public POJOSwizzler(Object object) {
-		this.object = object;
-		this.name = getDefaultName(object);
-	}
-
-	/**
-	 * Creates a new Swizzler for the given object, with the given name.
-	 */
-	public POJOSwizzler(String name, Object object) {
-		this.object = object;
-		this.name = name;
+	public POJOSwizzler() {
 	}
 
 	// ==== Event listener registration =============
@@ -91,41 +80,20 @@ public class POJOSwizzler implements java.io.Serializable {
 	// ===== Property getters and setters ========================
 
 	/**
-	 * Changes the selection state.
-	 * 
-	 * @throws PropertyVetoException
-	 *             if someone refused to allow selection state change
-	 */
-	public void setSelected(boolean newSelected) throws PropertyVetoException {
-		if (newSelected != selected) {
-			checkTransient();
-			boolean oldSelected = selected;
-			vetoSupport.fireVetoableChange("selected",
-					new Boolean(oldSelected), new Boolean(newSelected));
-			this.selected = newSelected;
-			propSupport.firePropertyChange("selected",
-					new Boolean(oldSelected), new Boolean(newSelected));
-		}
-	}
-
-	/**
-	 * True if this object is selected
-	 */
-	public boolean isSelected() {
-		return selected;
-	}
-
-	/**
 	 * Returns the object that this object wrapper represents
 	 */
-	public Object getObject() {
-		return object;
-	}
+	abstract public Object getObject();
 
+	/**
+	 * Returns the Class[]s that this object wrapper represents
+	 */
+	abstract public List<Class> getTypes();
+	
 	/**
 	 * Returns the name of this object
 	 */
 	public String getName() {
+		if (name==null) return getIdent().toString();
 		return name;
 	}
 
@@ -173,8 +141,10 @@ public class POJOSwizzler implements java.io.Serializable {
 	/**
 	 * Returns the name of this object
 	 */
+	@Override
 	public String toString() {
-		return getName();
+		return super.toString();
+		//return getName();
 	}
 
 	// ========= Utility methods =================
@@ -202,10 +172,11 @@ public class POJOSwizzler implements java.io.Serializable {
 	}
 
 	public boolean representsObject(Object test) {
-		return object.equals(test);
+		return getObject().equals(test);
 	}
 
 	public boolean isNamed(String test) {
 		return name.equals(test);
 	}
+
 }
