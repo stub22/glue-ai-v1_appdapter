@@ -1,61 +1,99 @@
-
-
 package org.appdapter.gui.swing;
+
 import java.util.Collection;
 import java.util.Vector;
 
-import org.appdapter.gui.objbrowser.model.POJOCollectionListener;
-import org.appdapter.gui.objbrowser.model.POJOCollectionWithBoxContext;
+import org.appdapter.gui.pojo.POJOCollection;
+import org.appdapter.gui.pojo.POJOCollectionListener;
+import org.appdapter.gui.pojo.POJOCollectionWithBoxContext;
+import org.appdapter.gui.pojo.POJOCollectionWithSwizzler;
 
-public class EmptyPOJOCollectionContext implements POJOCollectionWithBoxContext{
-  /**
-   * Adds a new object, if it wasn't already there
-   *
-   * @returns true if the object was added, false if the object was already there
-   */
-  public boolean addPOJO(Object object) {
-    return false;
-  }
+public class EmptyPOJOCollectionContext implements POJOCollectionWithBoxContext {
+	/**
+	 * Adds a new object, if it wasn't already there
+	 * 
+	 * @returns true if the object was added, false if the object was already
+	 *          there
+	 */
+	@Override
+	public boolean addPOJO(Object object) {
+		return false;
+	}
 
-  /**
-   * Removes a object, if it is there
-   *
-   * @returns true if the object was removed, false if that object wasn't in this context
-   */
-  public boolean removePOJO(Object object) {
-    return false;
-  }
+	/**
+	 * Removes a object, if it is there
+	 * 
+	 * @returns true if the object was removed, false if that object wasn't in
+	 *          this context
+	 */
+	@Override
+	public boolean removePOJO(Object object) {
+		return false;
+	}
 
-  public Collection getPOJOCollectionOfType(Class type) {
-    return new Vector();
-  }
+	@Override
+	public Collection getPOJOCollectionOfType(Class type) {
+		return new Vector();
+	}
 
-  public boolean containsPOJO(Object object) {
-    return false;
-  }
+	@Override
+	public boolean containsPOJO(Object object) {
+		return false;
+	}
 
-  public void showScreenBox(Object object) {
-  }
+	@Override
+	public void showScreenBox(Object object) {
+	}
 
-  public void addListener(POJOCollectionListener o) {
-  }
+	@Override
+	public void addListener(POJOCollectionListener o) {
+	}
 
-  public void removeListener(POJOCollectionListener o) {
-  }
+	@Override
+	public void removeListener(POJOCollectionListener o) {
+	}
 
-  public Collection getActions(Object object) {
-    return new Vector();
-  }
+	@Override
+	public Collection getActions(Object object) {
+		return new Vector();
+	}
 
-  public Object findPOJO(String name) {
-    return null;
-  }
+	@Override
+	public Object findPOJO(String name) {
+		return null;
+	}
 
-  public String getPOJOName(Object object) {
-    return "" + object;
-  }
+	@Override
+	public String getPOJOName(Object object) {
+		return "" + object;
+	}
 
-  public void showError(String msg, Throwable err) {
-    new ErrorDialog(msg, err).show();
-  }
+	@Override
+	public void showError(String msg, Throwable err) {
+		new ErrorDialog(msg, err).show();
+	}
+
+	@Override
+	public int getPOJOCount() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public POJOCollection getCollection() {
+		// TODO Auto-generated method stub
+		return this;
+	}
+
+	@Override
+	public POJOCollectionWithSwizzler getCollectionWithSwizzler() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void reload() {
+		// TODO Auto-generated method stub
+		
+	}
 }

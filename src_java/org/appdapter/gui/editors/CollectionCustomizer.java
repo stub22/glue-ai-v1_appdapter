@@ -13,7 +13,8 @@ import org.appdapter.gui.swing.ErrorPanel;
 public class CollectionCustomizer extends ScreenBoxedPOJOWithProperties implements ChangeListener {
   CollectionContentsPanel contents;
 
-  protected void initGUI() {
+  @Override
+protected void initGUI() {
     super.initGUI();
     try {
       contents = new CollectionContentsPanel((Collection) getPOJO());
@@ -24,7 +25,8 @@ public class CollectionCustomizer extends ScreenBoxedPOJOWithProperties implemen
     }
   }
 
-  public void stateChanged(ChangeEvent evt) {
+  @Override
+public void stateChanged(ChangeEvent evt) {
     if (tabs.getSelectedIndex() == 0) {
       if (contents != null) {
         contents.reloadContents();

@@ -39,7 +39,7 @@ public class ImageDisplayField extends JWindow {
   public void setIcon(Icon icon) {
     iconView.setIcon(icon);
     pack();
-    org.appdapter.gui.objbrowser.model.Utility.centerWindow(this);
+    org.appdapter.gui.pojo.Utility.centerWindow(this);
   }
 
   public Icon getIcon() {
@@ -55,7 +55,8 @@ public class ImageDisplayField extends JWindow {
   }
 
   class Adapter extends MouseAdapter {
-    public void mouseClicked(MouseEvent e) {
+    @Override
+	public void mouseClicked(MouseEvent e) {
       if (closeOnClick)
         dispose();
     }

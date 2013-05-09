@@ -24,11 +24,13 @@ package org.appdapter.gui.repo;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.gui.box.ScreenBoxPanel;
+import org.appdapter.gui.pojo.AbstractScreenBoxedPOJO;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public class DatabaseManagerPanel extends ScreenBoxPanel {
+
+public class DatabaseManagerPanel extends AbstractScreenBoxedPOJO {
 
     /** Creates new form DatabaseManagerPanel */
     public DatabaseManagerPanel() {
@@ -60,6 +62,10 @@ public class DatabaseManagerPanel extends ScreenBoxPanel {
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 
+	@Override
+	public Object getPOJO() {
+		return this;
+	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables

@@ -9,8 +9,6 @@ import javax.swing.JLabel;
 import javax.swing.JTabbedPane;
 
 import org.appdapter.api.trigger.Box;
-import org.appdapter.gui.objbrowser.model.POJOCollectionWithBoxContext;
-import org.appdapter.gui.objbrowser.model.Utility;
 import org.appdapter.gui.swing.ErrorPanel;
 import org.appdapter.gui.swing.MethodsPanel;
 import org.appdapter.gui.swing.PropertiesPanel;
@@ -23,25 +21,27 @@ import org.appdapter.gui.swing.PropertiesPanel;
  * 
  */
 public class ScreenBoxedPOJOWithProperties<BoxType extends Box> extends
-		ScreenBoxedPOJO<BoxType> implements Customizer {
+		AbstractScreenBoxedPOJO<BoxType> implements Customizer {
 	protected POJOCollectionWithBoxContext context;
 	protected JTabbedPane tabs;
+	private Object object;
 
 	public ScreenBoxedPOJOWithProperties(
 			POJOCollectionWithBoxContext context, Object object) {
-		super(object);
+		this.object = object;
 		this.context = context;
 		initGUI();
 	}
 
 	public ScreenBoxedPOJOWithProperties(Object object) {
-		this(Utility.getCurrentInstances(), object);
+		this(Utility.getCurrentContext(), object);
 	}
 
 	public ScreenBoxedPOJOWithProperties() {
 		this(null);
 	}
 
+	@Override
 	public Dimension getPreferredSize() {
 		/*
 		 * Dimension dim = super.getPreferredSize(); int w,h; w =
@@ -51,10 +51,12 @@ public class ScreenBoxedPOJOWithProperties<BoxType extends Box> extends
 				super.getPreferredSize(), getMaximumSize());
 	}
 
+	@Override
 	public Dimension getMinimumSize() {
 		return new Dimension(400, 350);
 	}
 
+	@Override
 	public Dimension getMaximumSize() {
 		return new Dimension(800, 600); // Toolkit.getDefaultToolkit().getScreenSize();
 	}
@@ -63,6 +65,7 @@ public class ScreenBoxedPOJOWithProperties<BoxType extends Box> extends
 	 * Delegates directly to setBean(...). This method is needed to conform to
 	 * the Customizer interface.
 	 */
+	@Override
 	public void setObject(Object o) {
 		setBean(o);
 	}
@@ -71,6 +74,7 @@ public class ScreenBoxedPOJOWithProperties<BoxType extends Box> extends
 	 * This method is needed to conform to the Customizer interface. It doesn't
 	 * do anything yet.
 	 */
+	@Override
 	public void addPropertyChangeListener(PropertyChangeListener listener) {
 	}
 
@@ -78,9 +82,11 @@ public class ScreenBoxedPOJOWithProperties<BoxType extends Box> extends
 	 * This method is needed to conform to the Customizer interface. It doesn't
 	 * do anything yet.
 	 */
+	@Override
 	public void removePropertyChangeListener(PropertyChangeListener listener) {
 	}
 
+	@Override
 	protected void objectChanged(Object oldBean, Object newBean) {
 		removeAll();
 		initGUI();
@@ -123,4 +129,11 @@ public class ScreenBoxedPOJOWithProperties<BoxType extends Box> extends
 			add(new JLabel("null"));
 		}
 	}
+
+	@Override
+	public Object getPOJO() {
+		if (object==null) return this;
+		return object;
+	}
+
 }

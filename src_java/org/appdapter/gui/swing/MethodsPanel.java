@@ -14,8 +14,8 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import org.appdapter.gui.objbrowser.model.POJOCollectionWithBoxContext;
-import org.appdapter.gui.objbrowser.model.Utility;
+import org.appdapter.gui.pojo.POJOCollectionWithBoxContext;
+import org.appdapter.gui.pojo.Utility;
 import org.appdapter.gui.swing.impl.JVPanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +41,7 @@ public class MethodsPanel extends JVPanel implements ActionListener, ListSelecti
 
 
   public MethodsPanel(Object object) throws Exception {
-    this(Utility.getCurrentInstances(), object);
+    this(Utility.getCurrentContext(), object);
   }
 
   public MethodsPanel(POJOCollectionWithBoxContext context, Object object) throws Exception {
@@ -54,7 +54,8 @@ public class MethodsPanel extends JVPanel implements ActionListener, ListSelecti
     initGUI();
   }
 
-  public void valueChanged(ListSelectionEvent e) {
+  @Override
+public void valueChanged(ListSelectionEvent e) {
     Method current = methodList.getSelectedMethod();
 
     paramPanel.setMethod(current);
@@ -106,7 +107,8 @@ public class MethodsPanel extends JVPanel implements ActionListener, ListSelecti
     methodList.addListSelectionListener(this);
   }
 
-  public void actionPerformed(ActionEvent evt) {
+  @Override
+public void actionPerformed(ActionEvent evt) {
     if (evt.getSource() == executeButton) {
       Method method = methodList.getSelectedMethod();
       if (method != null) {

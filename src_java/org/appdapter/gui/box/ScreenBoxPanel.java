@@ -16,6 +16,9 @@
 package org.appdapter.gui.box;
 
 import org.appdapter.api.trigger.Box;
+import org.appdapter.gui.pojo.AbstractScreenBoxedPOJO;
+import org.appdapter.gui.pojo.ScreenBoxedPOJO;
+
 import javax.swing.JPanel;
 
 /**
@@ -37,4 +40,12 @@ public abstract class ScreenBoxPanel<BoxType extends Box> extends JPanel {
 	 * @param b - a box to focus on
 	 */
 	public abstract void focusOnBox(BoxType b);
+	
+	
+	/** Return the live object in which we think we are updating 
+	 * 
+	 *  This can be 'this' object
+	 * 
+	 */
+	abstract public Object getPOJO();
 }

@@ -15,8 +15,8 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import org.appdapter.gui.objbrowser.model.POJOCollectionWithBoxContext;
-import org.appdapter.gui.objbrowser.model.Utility;
+import org.appdapter.gui.pojo.POJOCollectionWithBoxContext;
+import org.appdapter.gui.pojo.Utility;
 import org.appdapter.gui.swing.impl.JJPanelList;
 
 
@@ -37,7 +37,7 @@ public class StaticMethodsPanel extends JJPanelList implements ActionListener, L
   MethodResultPanel resultPanel;
 
   public StaticMethodsPanel(Class cls) throws Exception {
-    this(Utility.getCurrentInstances(), cls);
+    this(Utility.getCurrentContext(), cls);
   }
 
   public StaticMethodsPanel(POJOCollectionWithBoxContext context, Class cls) throws Exception {
@@ -46,7 +46,8 @@ public class StaticMethodsPanel extends JJPanelList implements ActionListener, L
     initGUI();
   }
 
-  public void valueChanged(ListSelectionEvent e) {
+  @Override
+public void valueChanged(ListSelectionEvent e) {
     Method current = methodList.getSelectedMethod();
 
     paramPanel.setMethod(current);
@@ -93,7 +94,8 @@ public class StaticMethodsPanel extends JJPanelList implements ActionListener, L
     methodList.addListSelectionListener(this);
   }
 
-  public void actionPerformed(ActionEvent evt) {
+  @Override
+public void actionPerformed(ActionEvent evt) {
     if (evt.getSource() == executeButton) {
       Method method = methodList.getSelectedMethod();
       if (method != null) {

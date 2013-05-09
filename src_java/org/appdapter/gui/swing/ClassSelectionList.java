@@ -30,9 +30,9 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import org.appdapter.gui.objbrowser.ClassFinder;
-import org.appdapter.gui.objbrowser.model.Utility;
+import org.appdapter.gui.pojo.Utility;
 import org.appdapter.gui.swing.impl.JJPanelList;
+import org.appdapter.gui.util.ClassFinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -192,6 +192,7 @@ public class ClassSelectionList extends JJPanelList {
 		// create new list control and override getToolTipText method to display
 		// tooltip containing info about class or interface
 		list = new JList(model) {
+			@Override
 			public String getToolTipText(java.awt.event.MouseEvent ev) {
 				if (ev == null)
 					return null;
@@ -259,6 +260,7 @@ public class ClassSelectionList extends JJPanelList {
 	 * @param l
 	 *            The listener to add.
 	 */
+	@Override
 	public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
 		propertySupport.addPropertyChangeListener(l);
 	}
@@ -269,6 +271,7 @@ public class ClassSelectionList extends JJPanelList {
 	 * @param l
 	 *            The listener to remove.
 	 */
+	@Override
 	public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
 		propertySupport.removePropertyChangeListener(l);
 	}
@@ -480,6 +483,7 @@ public class ClassSelectionList extends JJPanelList {
 			this.data = data;
 		}
 
+		@Override
 		public int compareTo(Object o) {
 			ListData listData = (ListData) o;
 			Class c = listData.getData();
@@ -512,6 +516,7 @@ public class ClassSelectionList extends JJPanelList {
 		 * 
 		 * @return string representation of class.
 		 */
+		@Override
 		public String toString() {
 			return getClassName(data);
 		}
@@ -552,6 +557,7 @@ public class ClassSelectionList extends JJPanelList {
 		 *            True if the specified cell has the focus.
 		 * @return label component configured to display cell for list
 		 */
+		@Override
 		public Component getListCellRendererComponent(JList list, Object value,
 				int index, boolean isSelected, boolean cellHasFocus) {
 			try {
@@ -582,6 +588,7 @@ public class ClassSelectionList extends JJPanelList {
 		 * @param g
 		 *            the specified Graphics window
 		 */
+		@Override
 		public void paint(Graphics g) {
 			Icon icon = getIcon();
 
@@ -630,6 +637,7 @@ public class ClassSelectionList extends JJPanelList {
 		 * @param e
 		 *            The event that characterizes the change.
 		 */
+		@Override
 		public void valueChanged(ListSelectionEvent e) {
 			ListSelectionModel lsm = (ListSelectionModel) e.getSource();
 
@@ -748,6 +756,7 @@ public class ClassSelectionList extends JJPanelList {
 		 *            an index into this list.
 		 * @see javax.swing.DefaultListModel#getElementAt(int )
 		 */
+		@Override
 		public Object getElementAt(int index) {
 			return getValues().get(index);
 		}
@@ -758,6 +767,7 @@ public class ClassSelectionList extends JJPanelList {
 		 * @return the number of components in this list.
 		 * @see Vector#size()
 		 */
+		@Override
 		public int getSize() {
 			return getValues().size();
 		}

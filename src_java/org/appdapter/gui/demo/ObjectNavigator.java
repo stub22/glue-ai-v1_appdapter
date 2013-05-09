@@ -1,22 +1,37 @@
-package org.appdapter.gui.objbrowser;
+package org.appdapter.gui.demo;
 
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Event;
 import java.awt.FileDialog;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.io.NotSerializableException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Vector;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BoxLayout;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JApplet;
-import javax.swing.JDesktopPane;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -24,10 +39,12 @@ import javax.swing.JMenuBar;
 import javax.swing.JTextArea;
 import javax.swing.JToolBar;
 
-import org.appdapter.gui.objbrowser.model.POJOCollection;
-import org.appdapter.gui.objbrowser.model.POJOCollectionImpl;
-import org.appdapter.gui.objbrowser.model.Settings;
-import org.appdapter.gui.objbrowser.model.Utility;
+import org.appdapter.demo.ObjectNavigatorGUI;
+import org.appdapter.gui.pojo.POJOCollectionImpl;
+import org.appdapter.gui.pojo.POJOCollectionWithBoxContext;
+import org.appdapter.gui.pojo.POJOCollectionWithSwizzler;
+import org.appdapter.gui.pojo.ScreenBoxedPOJOCollectionContextWithNavigator;
+import org.appdapter.gui.pojo.Utility;
 import org.appdapter.gui.swing.TriggersMenu;
 import org.appdapter.gui.swing.impl.JBox;
 import org.slf4j.Logger;
@@ -40,9 +57,10 @@ import org.slf4j.LoggerFactory;
  * 
  */
 @SuppressWarnings("serial")
-public class ObjectNavigator extends JFrame implements PropertyChangeListener {
+public class ObjectNavigator extends JFrame implements PropertyChangeListener, org.appdapter.demo.ObjectNavigatorGUI {
 
 	static public class AsApplet extends JApplet {
+		@Override
 		public void init() {
 			JBox box = new JBox(BoxLayout.Y_AXIS);
 			getContentPane().setLayout(new BorderLayout());
@@ -59,8 +77,7 @@ public class ObjectNavigator extends JFrame implements PropertyChangeListener {
 			} catch (Exception err) {
 				JTextArea text = new JTextArea();
 				text.setEditable(false);
-				text.setText("Darn, an error occurred!\nPlease email this to henrik@kniberg.com, thanks!\n\n"
-						+ err.toString());
+				text.setText("Darn, an error occurred!\nPlease email this to henrik@kniberg.com, thanks!\n\n" + err.toString());
 				box.add(text);
 			}
 		}
@@ -69,10 +86,12 @@ public class ObjectNavigator extends JFrame implements PropertyChangeListener {
 	// ==== Static variables ===========
 	static ObjectNavigator defaultFrame = null;
 	static Logger theLogger = LoggerFactory.getLogger(ObjectNavigator.class);
+	private static DemoNavigatorCtrl dnc;
+	private static boolean dncSetup;
 
 	// ==== Instance variables ==========
-	POJOCollection collection;
-	ScreenBoxedPOJOCollectionContextWithNavigator context;
+	POJOCollectionWithSwizzler collection;
+	POJOCollectionWithBoxContext context;
 
 	// The currently opened ObjectNavigator file (may be null)
 	File file = null;
@@ -94,7 +113,7 @@ public class ObjectNavigator extends JFrame implements PropertyChangeListener {
 
 	// ==== Main method ==========================
 	public static void main(String[] args) {
-	
+
 		theLogger.info("Starting ObjectNavigator...");
 
 		try {
@@ -103,7 +122,8 @@ public class ObjectNavigator extends JFrame implements PropertyChangeListener {
 			// frame.pack();
 
 			frame.setSize(800, 600);
-			org.appdapter.gui.objbrowser.model.Utility.centerWindow(frame);
+			org.appdapter.gui.pojo.Utility.centerWindow(frame);
+			dnc = DemoBrowser.makeDemoNavigatorCtrl(args);
 			frame.show();
 			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			theLogger.info("ObjectNavigator is now running!");
@@ -117,9 +137,8 @@ public class ObjectNavigator extends JFrame implements PropertyChangeListener {
 	/**
 	 * Creates a new ObjectNavigator that shows the given collection
 	 */
-	public ObjectNavigator(POJOCollection collection) {
-		String version = ObjectNavigator.class.getPackage()
-				.getImplementationVersion();
+	public ObjectNavigator(POJOCollectionWithSwizzler collection) {
+		String version = getClass().getPackage().getImplementationVersion();
 		if (version == null) {
 			setTitle("ObjectNavigator");
 		} else {
@@ -131,14 +150,14 @@ public class ObjectNavigator extends JFrame implements PropertyChangeListener {
 		} catch (Throwable err) {
 		}
 		this.context = new ScreenBoxedPOJOCollectionContextWithNavigator(this);
-		setPOJOs(collection);
+		setPOJOSwizzler(collection);
 	}
 
 	/**
 	 * Creates a new ObjectNavigator that shows a new POJOCollection
 	 */
 	public ObjectNavigator() {
-		this(new POJOCollectionImpl());
+		this(Utility.context);
 	}
 
 	// ====== Property getters ==============
@@ -147,30 +166,32 @@ public class ObjectNavigator extends JFrame implements PropertyChangeListener {
 		return panel;
 	}
 
-	public JDesktopPane getDesk() {
+	@Override
+	public JComponent getDesk() {
 		return panel.getDesk();
 	}
 
-	public static ObjectNavigator getDefaultFrame() {
+	public static ObjectNavigatorGUI getDefaultFrame() {
 		return defaultFrame;
 	}
 
-	public ScreenBoxedPOJOCollectionContextWithNavigator getChildCollectionWithContext() {
+	public POJOCollectionWithBoxContext getChildCollectionWithContext() {
 		return context;
 	}
 
 	/**
 	 * The current ObjectNavigator being displayed
 	 */
-	public POJOCollection getDisplayedCollection() {
+	@Override
+	public POJOCollectionWithSwizzler getCollectionWithSwizzler() {
 		return collection;
 	}
 
 	/**
 	 * Sets the collection to be displayed
 	 */
-	private void setPOJOs(POJOCollection newCollection) {
-		POJOCollection oldCollection = collection;
+	private void setPOJOSwizzler(POJOCollectionWithSwizzler newCollection) {
+		POJOCollectionWithSwizzler oldCollection = collection;
 		if (newCollection != oldCollection) {
 			this.collection = newCollection;
 			this.panel = new POJOCollectionViewPanelWithContext(context);
@@ -188,6 +209,7 @@ public class ObjectNavigator extends JFrame implements PropertyChangeListener {
 
 	// ==== Property notification methods ===============
 
+	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
 		if (evt.getSource() == collection) {
 			if (evt.getPropertyName().equals("selected")) {
@@ -196,15 +218,14 @@ public class ObjectNavigator extends JFrame implements PropertyChangeListener {
 		}
 	}
 
+	@Override
 	protected void processEvent(AWTEvent e) {
 		if (e.getID() == Event.WINDOW_DESTROY) {
 			theLogger.info("Shutting down ObjectNavigator...");
 			try {
 				Settings.saveToFile();
 			} catch (Exception err) {
-				theLogger.warn(
-						"Warning - failed to save settings: "
-								+ err.getMessage(), err);
+				theLogger.warn("Warning - failed to save settings: " + err.getMessage(), err);
 			}
 			removeAll();
 			dispose();
@@ -216,9 +237,16 @@ public class ObjectNavigator extends JFrame implements PropertyChangeListener {
 	// ==== Action execution methods =======================
 	private void makeRepoNav() {
 		try {
-			Class.forName("org.cogchar.gui.demo.RepoNavigator")
-					.getMethod("mainly_not_here", new Class[] { String.class })
-					.invoke(new String[0]);
+			if (dnc != null) {
+				if (!dncSetup) {
+					dncSetup = true;
+					dnc.launchFrame("Appdapter Demo Browser");
+				}
+				// dnc.getFrame().setVisible(true);
+				dnc.getFrame().show();
+				return;
+			}
+			Class.forName("org.cogchar.gui.demo.RepoNavigator").getMethod("main", new Class[] { String.class }).invoke(new String[0]);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -227,8 +255,7 @@ public class ObjectNavigator extends JFrame implements PropertyChangeListener {
 	}
 
 	void openCollection() {
-		FileDialog dialog = new FileDialog(this, "Load ObjectNavigator",
-				FileDialog.LOAD);
+		FileDialog dialog = new FileDialog(this, "Load ObjectNavigator", FileDialog.LOAD);
 		dialog.show();
 		String fileName = dialog.getFile();
 		String directory = dialog.getDirectory();
@@ -240,7 +267,7 @@ public class ObjectNavigator extends JFrame implements PropertyChangeListener {
 	void openCollection(File file) {
 		if (file.exists()) {
 			try {
-				setPOJOs(POJOCollectionImpl.load(file));
+				setPOJOSwizzler(POJOCollectionImpl.load(file));
 				Settings.addRecentFile(file);
 				fileMenu.refreshRecentFileList();
 			} catch (Exception err) {
@@ -253,7 +280,7 @@ public class ObjectNavigator extends JFrame implements PropertyChangeListener {
 
 	void newCollection() {
 		// @feature ask save changes?
-		setPOJOs(new POJOCollectionImpl());
+		setPOJOSwizzler(new POJOCollectionImpl());
 		file = null;
 		checkControls();
 	}
@@ -267,8 +294,7 @@ public class ObjectNavigator extends JFrame implements PropertyChangeListener {
 	}
 
 	void saveCollectionAs() {
-		FileDialog dialog = new FileDialog(this, "Save ObjectNavigator",
-				FileDialog.SAVE);
+		FileDialog dialog = new FileDialog(this, "Save ObjectNavigator", FileDialog.SAVE);
 		dialog.setFile("mycollection.ser");
 		dialog.show();
 		String fileName = dialog.getFile();
@@ -287,8 +313,7 @@ public class ObjectNavigator extends JFrame implements PropertyChangeListener {
 		try {
 			collection.save(file);
 		} catch (NotSerializableException err) {
-			context.showError(
-					"This collection contains an unserializable object", err);
+			context.showError("This collection contains an unserializable object", err);
 		} catch (Exception err) {
 			context.showError("Saving failed", err);
 		}
@@ -358,6 +383,7 @@ public class ObjectNavigator extends JFrame implements PropertyChangeListener {
 			super("Save", Icons.saveCollection);
 		}
 
+		@Override
 		public void actionPerformed(ActionEvent evt) {
 			saveCollection();
 		}
@@ -368,6 +394,7 @@ public class ObjectNavigator extends JFrame implements PropertyChangeListener {
 			super("Save as...", Icons.saveCollectionAs);
 		}
 
+		@Override
 		public void actionPerformed(ActionEvent evt) {
 			saveCollectionAs();
 		}
@@ -378,6 +405,7 @@ public class ObjectNavigator extends JFrame implements PropertyChangeListener {
 			super("New", Icons.newCollection);
 		}
 
+		@Override
 		public void actionPerformed(ActionEvent evt) {
 			newCollection();
 		}
@@ -388,6 +416,7 @@ public class ObjectNavigator extends JFrame implements PropertyChangeListener {
 			super("Open", Icons.openCollection);
 		}
 
+		@Override
 		public void actionPerformed(ActionEvent evt) {
 			openCollection();
 		}
@@ -398,6 +427,7 @@ public class ObjectNavigator extends JFrame implements PropertyChangeListener {
 			super("Search ObjectNavigator...", Icons.search);
 		}
 
+		@Override
 		public void actionPerformed(ActionEvent evt) {
 			makeRepoNav();
 		}
@@ -412,6 +442,7 @@ public class ObjectNavigator extends JFrame implements PropertyChangeListener {
 			this.file = file;
 		}
 
+		@Override
 		public void actionPerformed(ActionEvent evt) {
 			openCollection(file);
 		}
@@ -461,6 +492,155 @@ public class ObjectNavigator extends JFrame implements PropertyChangeListener {
 			add(saveAsAction);
 			addSeparator();
 			add(searchAction);
+		}
+	}
+
+	/**
+	 * Contains settings for the ObjectNavigator application
+	 * 
+	 * 
+	 */
+	static public class Settings implements java.io.Serializable {
+		private final static String FILENAME = Settings.class.getName() + ".ser";
+		private final static int RECENT_FILE_COUNT = 5;
+		transient static Settings settings;
+
+		public List recentFiles;
+
+		public Settings() {
+			recentFiles = new LinkedList();
+		}
+
+		public static void addRecentFile(File file) {
+			if (file != null && !settings.recentFiles.contains(file)) {
+				settings.recentFiles.add(0, file);
+			}
+			while (settings.recentFiles.size() > 5) {
+				settings.recentFiles.remove(4);
+			}
+		}
+
+		public static Iterator getRecentFiles() {
+			return settings.recentFiles.iterator();
+		}
+
+		static {
+			if (getFile().exists()) {
+				try {
+					loadFromFile();
+				} catch (Exception err) {
+					System.err.println("Warning - settings could not be loaded: " + err.getMessage());
+					settings = new Settings();
+				}
+			} else {
+				settings = new Settings();
+			}
+		}
+
+		@Override
+		protected void finalize() {
+			try {
+				saveToFile();
+			} catch (Exception err) {
+				System.err.println("Warning - settings could not be saved: " + err.getMessage());
+			}
+		}
+
+		public static void loadFromFile() throws Exception {
+			InputStream fileIn = new FileInputStream(getFile());
+			ObjectInputStream objectIn = new ObjectInputStream(fileIn);
+			settings = (Settings) (objectIn.readObject());
+			objectIn.close();
+			fileIn.close();
+		}
+
+		public static void saveToFile() throws Exception {
+			FileOutputStream fileOut = new FileOutputStream(getFile());
+			ObjectOutputStream objectOut = new ObjectOutputStream(fileOut);
+			objectOut.writeObject(settings);
+			objectOut.close();
+			fileOut.close();
+		}
+
+		private static File getFile() {
+			File homeDir = new File(System.getProperties().getProperty("user.home"));
+			return new File(homeDir, FILENAME);
+		}
+
+	}
+
+	public static class Icons {
+		static Logger theLogger = LoggerFactory.getLogger(Icon.class);
+
+		static Icon saveCollection = new DummyIcon();
+		static Icon saveCollectionAs = new DummyIcon();
+		static Icon newCollection = new DummyIcon();
+		static Icon openCollection = new DummyIcon();
+		static Icon recentFile = new DummyIcon();
+		static Icon search = new DummyIcon();
+
+		public static Icon addToCollection = new DummyIcon();
+		public static Icon removeFromCollection = new DummyIcon();
+		public static Icon viewBean = new DummyIcon();
+		public static Icon properties = new DummyIcon();
+
+		static Icon mainFrame = new DummyIcon();
+
+		private Icons() {
+		}
+
+		static {
+			saveCollection = loadIcon("saveCollection.gif");
+			saveCollectionAs = loadIcon("saveCollectionAs.gif");
+			newCollection = loadIcon("newCollection.gif");
+			openCollection = loadIcon("openCollection.gif");
+			recentFile = loadIcon("recentFile.gif");
+			search = loadIcon("search.gif");
+			addToCollection = loadIcon("addToCollection.gif");
+			removeFromCollection = loadIcon("removeFromCollection.gif");
+			viewBean = loadIcon("viewObject.gif");
+			properties = loadIcon("properties.gif");
+			mainFrame = loadIcon("mainFrame.gif");
+		}
+
+		static Image loadImage(String filename) {
+			Toolkit tk = Toolkit.getDefaultToolkit();
+			Image i = null;
+			try {
+				i = tk.getImage(Icons.class.getResource("icons/" + filename));
+			} catch (Exception err) {
+				theLogger.warn("Warning - icon '" + filename + "' could not be loaded: " + err, err);
+			}
+			return i;
+		}
+
+		static Icon loadIcon(String filename) {
+			try {
+				Object r = Icons.class.getResource(".");
+				return new ImageIcon(Icons.class.getResource("icons/" + filename));
+			} catch (Exception err) {
+				theLogger.warn("Warning - icon '" + filename + "' could not be loaded: " + err, err);
+				return new DummyIcon();
+			}
+		}
+
+		static class DummyIcon implements Icon, java.io.Serializable {
+			@Override
+			public int getIconWidth() {
+				return 16;
+			}
+
+			@Override
+			public int getIconHeight() {
+				return 16;
+			}
+
+			@Override
+			public void paintIcon(Component c, Graphics g, int x, int y) {
+				g.setColor(Color.blue);
+				g.setFont(new Font("serif", Font.BOLD, 12));
+				g.drawString("?", x, y + 12);
+			}
 		}
 	}
 }

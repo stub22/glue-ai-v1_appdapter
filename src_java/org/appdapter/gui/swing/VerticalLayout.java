@@ -48,14 +48,16 @@ public class VerticalLayout implements LayoutManager {
      * @param name the component name
      * @param comp the component to be added
      */
-    public void addLayoutComponent(String name, Component comp) {
+    @Override
+	public void addLayoutComponent(String name, Component comp) {
     }
 
     /**
      * Removes the specified component from the layout.
      * @param comp the component ot be removed
      */
-    public void removeLayoutComponent(Component comp) {
+    @Override
+	public void removeLayoutComponent(Component comp) {
     }
 
     public void setAlignment(int align) {
@@ -73,7 +75,8 @@ public class VerticalLayout implements LayoutManager {
      *
      * @see #minimumLayoutSize
      */
-    public Dimension preferredLayoutSize(Container target) {
+    @Override
+	public Dimension preferredLayoutSize(Container target) {
       Dimension dim = new Dimension(0, 0);
  	    int nmembers = target.getComponentCount();
 
@@ -100,7 +103,8 @@ public class VerticalLayout implements LayoutManager {
      * @param parent the component to be laid out
      * @see #preferredLayoutSize
      */
-    public Dimension minimumLayoutSize(Container target) {
+    @Override
+	public Dimension minimumLayoutSize(Container target) {
       Dimension dim = new Dimension(0, 0);
  	    int nmembers = target.getComponentCount();
 
@@ -125,7 +129,8 @@ public class VerticalLayout implements LayoutManager {
      * Lays out the container in the specified panel.
      * @param parent the component which needs to be laid out
      */
-    public void layoutContainer(Container target) {
+    @Override
+	public void layoutContainer(Container target) {
     	Insets insets = target.getInsets();
     	int maxheight = target.getSize().height - (insets.top + insets.bottom + vgap*2);
     	int nmembers = target.getComponentCount();

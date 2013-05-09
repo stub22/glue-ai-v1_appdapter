@@ -15,8 +15,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
-import org.appdapter.gui.objbrowser.model.POJOCollectionWithBoxContext;
-import org.appdapter.gui.objbrowser.model.Utility;
+import org.appdapter.gui.pojo.POJOCollectionWithBoxContext;
+import org.appdapter.gui.pojo.Utility;
 import org.appdapter.gui.swing.impl.JBox;
 import org.appdapter.gui.swing.impl.JJPanel;
 
@@ -30,7 +30,7 @@ public class ErrorPanel extends JJPanel {
     super();
     this.message = message;
     this.error = error;
-    this.context = Utility.getDefaultContext();
+    this.context = Utility.getCurrentContext();
     createGUI();
   }
 
@@ -73,7 +73,8 @@ public class ErrorPanel extends JJPanel {
       buttonPanel.add(viewButton);
       viewButton.addActionListener(
         new ActionListener() {
-          public void actionPerformed(ActionEvent evt) {
+          @Override
+		public void actionPerformed(ActionEvent evt) {
             try {
               context.showScreenBox(error);
             } catch (Throwable err) {

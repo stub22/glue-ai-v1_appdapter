@@ -43,6 +43,12 @@ public abstract class RepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<TT>>>
 	static Logger theLogger = LoggerFactory.getLogger(RepoBoxImpl.class);
 	private	 Repo.Mutable		myRepo;
 	
+	
+	@Override
+	public Object getObject() {
+		return getRepo();
+	}
+	
 	// Store		myStore;
 	// public static String	myStoreConfigPath;
 

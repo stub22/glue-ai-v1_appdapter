@@ -13,7 +13,8 @@ import org.appdapter.gui.swing.StaticMethodsPanel;
  * 
  */
 public class ClassCustomizer extends ScreenBoxedPOJOWithProperties {
-  protected void initGUI() {
+  @Override
+protected void initGUI() {
     super.initGUI();
 
     try {

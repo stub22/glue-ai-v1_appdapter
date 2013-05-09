@@ -6,8 +6,8 @@ import java.lang.reflect.Method;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import org.appdapter.gui.objbrowser.model.POJOCollectionWithBoxContext;
-import org.appdapter.gui.objbrowser.model.Utility;
+import org.appdapter.gui.pojo.POJOCollectionWithBoxContext;
+import org.appdapter.gui.pojo.Utility;
 import org.appdapter.gui.swing.impl.JVPanel;
 
 /**
@@ -25,7 +25,7 @@ public class MethodParametersPanel extends JVPanel {
   JPanel childPanel;
 
   public MethodParametersPanel() {
-    this(Utility.getCurrentInstances());
+    this(Utility.getCurrentContext());
   }
 
   public MethodParametersPanel(POJOCollectionWithBoxContext context) {

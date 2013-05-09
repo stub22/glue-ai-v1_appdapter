@@ -7,7 +7,7 @@ import java.awt.BorderLayout;
 import javax.swing.JDialog;
 import javax.swing.WindowConstants;
 
-import org.appdapter.gui.objbrowser.model.Utility;
+import org.appdapter.gui.pojo.Utility;
 
 public class ErrorDialog extends JDialog {
 

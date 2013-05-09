@@ -20,14 +20,15 @@ import java.awt.BorderLayout;
 import java.awt.event.MouseAdapter;
 
 import javax.swing.JFrame;
+import javax.swing.WindowConstants;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
-import org.appdapter.api.trigger.Box;
 
+import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContext;
-import org.appdapter.gui.box.ScreenBoxTreeNode;
-import org.appdapter.gui.box.DisplayContextProvider;
 import org.appdapter.api.trigger.MutableBox;
+import org.appdapter.gui.box.DisplayContextProvider;
+import org.appdapter.gui.box.ScreenBoxTreeNode;
 import org.appdapter.gui.browse.BrowsePanel;
 import org.appdapter.gui.browse.TriggerMenuFactory;
 
@@ -63,7 +64,7 @@ public class DemoNavigatorCtrl {
 		if (myJFrame == null) {
 			myJFrame = new JFrame(title);
 
-			myJFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+			myJFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 			myJFrame.getContentPane().add(myBP, BorderLayout.CENTER);
 
 			myJFrame.pack();

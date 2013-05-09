@@ -35,7 +35,8 @@ public class PlayButton extends StateButton {
 		}
   }
 
-  public void initIcons() {
+  @Override
+public void initIcons() {
 	  Graphics g;
 
     Image im;

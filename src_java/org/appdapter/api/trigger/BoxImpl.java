@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.appdapter.core.component.KnownComponent;
 import org.appdapter.core.component.KnownComponentImpl;
+import org.appdapter.gui.pojo.POJOSwizzler;
 
 
 /**
@@ -28,6 +29,7 @@ import org.appdapter.core.component.KnownComponentImpl;
 
 public abstract class BoxImpl <TrigType extends Trigger<? extends BoxImpl<TrigType>>> extends KnownComponentImpl 
 			implements MutableBox<TrigType> {
+	
 	
 	private	BoxContext						myBoxContext;
 
