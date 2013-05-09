@@ -23,7 +23,7 @@ import javax.swing.OverlayLayout;
 import javax.swing.border.Border;
 
 import org.appdapter.gui.pojo.POJOCollectionWithBoxContext;
-import org.appdapter.gui.pojo.ScreenBoxedPOJORef;
+import org.appdapter.gui.pojo.ScreenBoxedPOJORefPanel;
 import org.appdapter.gui.pojo.Utility;
 import org.appdapter.gui.swing.impl.JJPanel;
 
@@ -34,7 +34,7 @@ import org.appdapter.gui.swing.impl.JJPanel;
  *
  * 
  */
-public class CollectionContentsPanel extends JJPanel implements ScreenBoxedPOJORef.RemoveListener, DropTargetListener {
+public class CollectionContentsPanel extends JJPanel implements ScreenBoxedPOJORefPanel.RemoveListener, DropTargetListener {
 
   Collection collection;
   POJOCollectionWithBoxContext context;
@@ -107,7 +107,7 @@ public void objectRemoved(Object object, Collection parent) {
     Iterator it = collection.iterator();
     while (it.hasNext()) {
       Object object = it.next();
-      ScreenBoxedPOJORef view = new ScreenBoxedPOJORef(context, object, true, true, true, collection);
+      ScreenBoxedPOJORefPanel view = new ScreenBoxedPOJORefPanel(context, object, true, true, true, collection);
       view.setRemoveListener(this);
       panel.add(view);
     }

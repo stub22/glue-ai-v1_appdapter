@@ -8,8 +8,8 @@ import org.appdapter.api.trigger.Box;
  * ScreenBoxedPOJOWithProperties (a complete window with all the details about
  * the POJO).
  */
-abstract public class ScreenBoxedPOJO<BoxType extends Box> extends
-	AbstractScreenBoxedPOJO<BoxType> {
+abstract public class ScreenBoxedPOJOPanel<BoxType extends Box> extends
+	AbstractScreenBoxedPOJOPanel<BoxType> {
 	private Object pojObject;
 
 	@Override
@@ -17,10 +17,10 @@ abstract public class ScreenBoxedPOJO<BoxType extends Box> extends
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 
-	public ScreenBoxedPOJO() {
+	public ScreenBoxedPOJOPanel() {
 	}
 
-	public ScreenBoxedPOJO(Object pojObject) {
+	public ScreenBoxedPOJOPanel(Object pojObject) {
 		if (pojObject instanceof POJOSwizzler) {
 			throw new ClassCastException("Need to pass the rraw object here! " + pojObject);
 		}
@@ -28,12 +28,12 @@ abstract public class ScreenBoxedPOJO<BoxType extends Box> extends
 	}
 
 	@Override
-	public Object getPOJO() {
+	public Object getObject() {
 		return pojObject;
 	}
 
 	@Override
-	public void setBean(Object newpojObject) {
+	public void setObject(Object newpojObject) {
 		Object oldpojObject = pojObject;
 		if (oldpojObject != newpojObject) {
 			pojObject = newpojObject;

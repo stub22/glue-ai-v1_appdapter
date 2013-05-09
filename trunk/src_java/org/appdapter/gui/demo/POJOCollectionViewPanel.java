@@ -10,8 +10,8 @@ import javax.swing.border.Border;
 import org.appdapter.gui.pojo.POJOCollectionListener;
 import org.appdapter.gui.pojo.POJOCollectionWithBoxContext;
 import org.appdapter.gui.pojo.POJOSwizzler;
-import org.appdapter.gui.pojo.ScreenBoxedPOJO;
-import org.appdapter.gui.pojo.ScreenBoxedPOJORef;
+import org.appdapter.gui.pojo.ScreenBoxedPOJOPanel;
+import org.appdapter.gui.pojo.ScreenBoxedPOJORefPanel;
 import org.appdapter.gui.swing.VerticalLayout;
 import org.appdapter.gui.swing.impl.JJPanel;
 
@@ -84,7 +84,7 @@ public class POJOCollectionViewPanel extends JJPanel implements POJOCollectionLi
 		panel.removeAll();
 
 		for (POJOSwizzler object : context.getCollectionWithSwizzler().getSwizzlers()) {
-			ScreenBoxedPOJO view = new ScreenBoxedPOJORef(context, object.getObject(), true, true, true);
+			ScreenBoxedPOJOPanel view = new ScreenBoxedPOJORefPanel(context, object.getObject(), true, true, true);
 			panel.add(view);
 		}
 		invalidate();

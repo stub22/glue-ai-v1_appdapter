@@ -34,7 +34,7 @@ public class BoxesByType {
 
 	public BoxesByType(POJOCollectionWithBoxContext context, List objects, Class objectClass,
 			String[] propNames) throws Exception {
-		objectInfo = Utility.getPOJOInfo(objectClass);
+		objectInfo = Utility.getBeanInfo(objectClass);
 
 		if (objects == null) {
 			this.objects = new LinkedList();

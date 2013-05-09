@@ -185,7 +185,7 @@ public class ScreenBoxedPOJOCollectionContextWithNavigator implements POJOCollec
 				customizer.setObject(object);
 				view = (Component) customizer;
 			} else {
-				view = new ScreenBoxedPOJOWithProperties(this, object);
+				view = new ScreenBoxedPOJOWithPropertiesPanel(this, object);
 			}
 
 			// Get an icon for the object
@@ -355,7 +355,7 @@ public class ScreenBoxedPOJOCollectionContextWithNavigator implements POJOCollec
 	}
 
 	private Class findCustomizerClass(Class c) throws IntrospectionException {
-		BeanInfo objectInfo = Utility.getPOJOInfo(c);
+		BeanInfo objectInfo = Utility.getBeanInfo(c);
 		Class customizerClass = null;
 		BeanDescriptor descriptor = objectInfo.getBeanDescriptor();
 		if (descriptor != null) {

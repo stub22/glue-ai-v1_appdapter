@@ -20,24 +20,24 @@ import org.appdapter.gui.swing.PropertiesPanel;
  * 
  * 
  */
-public class ScreenBoxedPOJOWithProperties<BoxType extends Box> extends
-		AbstractScreenBoxedPOJO<BoxType> implements Customizer {
+public class ScreenBoxedPOJOWithPropertiesPanel<BoxType extends Box> extends
+		AbstractScreenBoxedPOJOPanel<BoxType> implements Customizer, GetSetObject {
 	protected POJOCollectionWithBoxContext context;
 	protected JTabbedPane tabs;
 	private Object object;
 
-	public ScreenBoxedPOJOWithProperties(
+	public ScreenBoxedPOJOWithPropertiesPanel(
 			POJOCollectionWithBoxContext context, Object object) {
 		this.object = object;
 		this.context = context;
 		initGUI();
 	}
 
-	public ScreenBoxedPOJOWithProperties(Object object) {
+	public ScreenBoxedPOJOWithPropertiesPanel(Object object) {
 		this(Utility.getCurrentContext(), object);
 	}
 
-	public ScreenBoxedPOJOWithProperties() {
+	public ScreenBoxedPOJOWithPropertiesPanel() {
 		this(null);
 	}
 
@@ -64,11 +64,13 @@ public class ScreenBoxedPOJOWithProperties<BoxType extends Box> extends
 	/**
 	 * Delegates directly to setBean(...). This method is needed to conform to
 	 * the Customizer interface.
-	 */
 	@Override
 	public void setObject(Object o) {
-		setBean(o);
+	
 	}
+
+	 *
+	 */
 
 	/**
 	 * This method is needed to conform to the Customizer interface. It doesn't
@@ -95,7 +97,7 @@ public class ScreenBoxedPOJOWithProperties<BoxType extends Box> extends
 	protected void initGUI() {
 		tabs = new JTabbedPane();
 
-		Object object = getPOJO();
+		Object object = getObject();
 
 		if (object != null) {
 
@@ -131,7 +133,7 @@ public class ScreenBoxedPOJOWithProperties<BoxType extends Box> extends
 	}
 
 	@Override
-	public Object getPOJO() {
+	public Object getObject() {
 		if (object==null) return this;
 		return object;
 	}
