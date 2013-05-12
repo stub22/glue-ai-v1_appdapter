@@ -150,9 +150,10 @@ public interface Module<Ctx> {
 	 */
 	
 	public void releaseModule(); 
-		
-	/*
-	 *  May be called at any time to indicate that the module should stop() as soon as possible.
+	/**
+	 * Correct way for application to ask the module to stop.
+	 * May be called at any time to indicate that the module should stop() as soon as possible.
+	 * 
 	 */
 	public void markStopRequested();
 	/*
