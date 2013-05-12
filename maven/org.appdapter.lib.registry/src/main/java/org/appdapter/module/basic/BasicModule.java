@@ -34,6 +34,10 @@ public abstract class BasicModule<Ctx> extends KnownComponentImpl implements Mod
 	@Override public State getState() {
 		return myState;
 	}
+	/**
+	 * Correct way for application to ask the module to stop.
+	 * @return 
+	 */	
 	@Override public void markStopRequested() {
 		myStopRequestedFlag = true;
 	}

@@ -28,6 +28,6 @@ package org.appdapter.core.store;
  * Convincing?  Hmmm....
  */
 
-public class RepoClient {
+public class JavaRepoClient {
 
 }
