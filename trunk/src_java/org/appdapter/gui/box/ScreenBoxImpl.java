@@ -23,8 +23,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.appdapter.api.trigger.Trigger;
+import org.appdapter.gui.box.ScreenBoxPanel.Kind;
 import org.appdapter.gui.browse.DisplayContext;
 import org.appdapter.gui.pojo.POJOSwizzler;
+import org.appdapter.gui.pojo.ScreenBoxedPOJOWithPropertiesPanel;
 import org.appdapter.gui.repo.DatabaseManagerPanel;
 import org.appdapter.gui.repo.ModelMatrixPanel;
 import org.appdapter.gui.repo.RepoManagerPanel;
@@ -139,7 +141,10 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	 * @return 
 	 */
 	protected ScreenBoxPanel makeBoxPanel(ScreenBoxPanel.Kind kind) {
-		ScreenBoxPanel bp = null;
+		ScreenBoxPanel bp = null;	
+		if (true) {
+			kind = Kind.OBJECT_PROPERTIES;
+		}
 		switch (kind) {
 		case MATRIX:
 			bp = new ModelMatrixPanel();
@@ -151,7 +156,7 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 			bp = new DatabaseManagerPanel();
 			break;
 		case OBJECT_PROPERTIES:
-			bp = new DatabaseManagerPanel();
+			bp = new ScreenBoxedPOJOWithPropertiesPanel(getObject());
 			break;			
 		case OTHER:
 			bp = makeOtherPanel();

@@ -12,6 +12,7 @@ import java.util.List;
 
 import org.appdapter.api.trigger.BoxImpl;
 import org.appdapter.api.trigger.Trigger;
+import org.appdapter.core.name.Ident;
 
 /**
  * A wrapper for objects used in the ObjectNavigator system. It holds an object,
@@ -24,12 +25,19 @@ import org.appdapter.api.trigger.Trigger;
  */
 abstract public class POJOSwizzler<TrigType extends Trigger<? extends BoxImpl<TrigType>>> extends BoxImpl<TrigType> implements java.io.Serializable, GetSetObject {
 	// ==== Transient instance variables =============
-	transient PropertyChangeSupport propSupport = new PropertyChangeSupport(
-			this);
-	transient VetoableChangeSupport vetoSupport = new VetoableChangeSupport(
-			this);
+	transient PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
+	transient VetoableChangeSupport vetoSupport = new VetoableChangeSupport(this);
 
-	protected String name = null;
+	@Override
+	public List<TrigType> getTriggers() {
+		List<TrigType> tgs = super.getTriggers();
+		for (Class cls : getTypes()) {
+			Utility.addClassLevelTriggers(cls, tgs, this);
+		}
+		return tgs;
+	}
+
+	protected String _name = null;
 
 	// ==== Constructors ==================================
 	/**
@@ -88,13 +96,25 @@ abstract public class POJOSwizzler<TrigType extends Trigger<? extends BoxImpl<Tr
 	 * Returns the Class[]s that this object wrapper represents
 	 */
 	abstract public List<Class> getTypes();
-	
+
 	/**
 	 * Returns the name of this object
 	 */
 	public String getName() {
-		if (name==null) return getIdent().toString();
-		return name;
+		if (_name == null) {
+			Ident ident = getIdent();
+			if (ident != null) {
+				_name = ident.getAbsUriString();
+			} else {
+				Object object = getObject();
+				if (object != null) {
+					_name = Utility.generateUniqueName(object);
+				} else {
+					_name = Utility.generateUniqueName(this);
+				}
+			}
+		}
+		return _name;
 	}
 
 	/**
@@ -104,11 +124,12 @@ abstract public class POJOSwizzler<TrigType extends Trigger<? extends BoxImpl<Tr
 	 *             if someone refused to allow the name to change
 	 */
 	public void setName(String newName) throws PropertyVetoException {
+		String name = getName();
 		if (!(newName.equals(name))) {
 			checkTransient();
 			String oldName = name;
 			vetoSupport.fireVetoableChange("name", oldName, newName);
-			this.name = newName;
+			this._name = newName;
 			propSupport.firePropertyChange("name", oldName, newName);
 		}
 	}
@@ -118,14 +139,12 @@ abstract public class POJOSwizzler<TrigType extends Trigger<? extends BoxImpl<Tr
 	 */
 	public BeanInfo getBeanInfo() {
 		try {
-			return Utility.getPOJOInfo(getPOJOClass(),
-					Introspector.USE_ALL_BEANINFO);
+			return Utility.getPOJOInfo(getPOJOClass(), Introspector.USE_ALL_BEANINFO);
 		} catch (IntrospectionException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			try {
-				return Utility.getPOJOInfo(Object.class,
-						Introspector.USE_ALL_BEANINFO);
+				return Utility.getPOJOInfo(Object.class, Introspector.USE_ALL_BEANINFO);
 			} catch (IntrospectionException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -135,7 +154,10 @@ abstract public class POJOSwizzler<TrigType extends Trigger<? extends BoxImpl<Tr
 	}
 
 	public Class<? extends Object> getPOJOClass() {
-		return getObject().getClass();
+		Object obj = getObject();
+		if (obj != null)
+			return obj.getClass();
+		return getClass();
 	}
 
 	/**
@@ -176,6 +198,7 @@ abstract public class POJOSwizzler<TrigType extends Trigger<? extends BoxImpl<Tr
 	}
 
 	public boolean isNamed(String test) {
+		String name = getName();
 		return name.equals(test);
 	}
 

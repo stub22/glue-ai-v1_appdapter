@@ -158,8 +158,13 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 			Object obj = source;
 			try {
 				Method readMethod = property.getReadMethod();
-				if (readMethod == null)
+				if (readMethod == null) {
+					String pn = property.getDisplayName();
+					return;
+				}
+				if (readMethod == null) {
 					throw new Exception("readMethod = null for object " + obj + " and property '" + property.getName() + "'!!!");
+				}
 				Object boundValue = readMethod.invoke(obj, new Object[0]);
 				setValue(boundValue);
 			} catch (Exception err) {
@@ -213,6 +218,7 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 	public Object getObject() {
 		return value;
 	}
+
 	/**
 	 * Returns the type of this PropertyValueControl, if there is a fixed
 	 * type. For example if this is String then this PropertyValueControl
