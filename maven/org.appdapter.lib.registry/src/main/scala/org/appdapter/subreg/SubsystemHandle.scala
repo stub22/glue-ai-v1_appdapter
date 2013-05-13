@@ -16,14 +16,14 @@
 
 package org.appdapter.subreg
 
-import org.appdapter.api.registry.VerySimpleRegistry;
-import org.appdapter.core.log.BasicDebugger;
-import org.appdapter.api.facade.SubsystemRegistryFuncs;
-import org.appdapter.api.facade.FacadeRegistry;
-import org.appdapter.api.facade.FacadeSpec;
-import org.appdapter.api.facade.Maker;
-
-import org.appdapter.osgi.registry.RegistryServiceFuncs;
+import org.appdapter.api.facade.FacadeSpec
+import org.appdapter.subreg.FacadeHandle
+import org.appdapter.api.facade.FacadeRegistry
+import org.appdapter.api.facade.Maker
+import org.appdapter.api.facade.SubsystemRegistryFuncs
+import org.appdapter.api.registry.VerySimpleRegistry
+import org.appdapter.core.log.BasicDebugger
+import org.appdapter.osgi.registry.RegistryServiceFuncs
 
 /**
  * @author Stu B. <www.texpedient.com>

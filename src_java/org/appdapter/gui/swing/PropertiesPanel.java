@@ -41,6 +41,9 @@ public class PropertiesPanel extends JJPanel implements GetSetObject {
 	}
 
 	public void setObject(Object object) {
+		if (object == this)  {
+			return;
+		}
 		this.object = object;
 		removeAll();
 		//setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));

@@ -48,6 +48,11 @@ public abstract class RepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<TT>>>
 	public Object getObject() {
 		return getRepo();
 	}
+	@Override
+	public void setObject(Object obj) {
+		// TODO Auto-generated method stub
+		setRepo((Repo.Mutable)obj);
+	}
 	
 	// Store		myStore;
 	// public static String	myStoreConfigPath;

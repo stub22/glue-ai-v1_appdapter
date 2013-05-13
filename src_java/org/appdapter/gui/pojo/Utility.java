@@ -97,6 +97,18 @@ public class Utility {
 		PropertyEditorManager.setEditorSearchPath(new String[] { "org.appdapter.gui.editors" });
 	}
 
+	static int ADD_ALL = 255;
+	static int ADD_FROM_PASTE_SRC_ONLY = 255;
+	static int ADD_FROM_PASTE_TARG_ONLY = 255;
+
+	public static <TrigType> void addClassLevelTriggers(Class cls, List<TrigType> tgs, POJOSwizzler pojoSwizzler) {
+		addClassLevelTriggers(cls, tgs, pojoSwizzler, 255);
+	}
+
+	public static <TrigType> void addClassLevelTriggers(Class cls, List<TrigType> tgs, POJOSwizzler pojoSwizzler, int rulesOfAdd) {
+
+	}
+
 	public static void setBeanInfoSearchPath() {
 		Introspector.setBeanInfoSearchPath(new String[] { "org.appdapter.gui.editors" });
 	}
@@ -258,6 +270,33 @@ public class Utility {
 		Object o = objectIn.readObject();
 		objectIn.close();
 		return o;
+	}
+
+	/**
+	 * Generates a default name for the given object, while will be something
+	 * like "Button1", "Button2", etc.
+	 */
+	public static String generateUniqueName(Object object) {
+		if (object == null)
+			return "<null>";
+		String className = Utility.getShortClassName(object.getClass());
+		int counter = 1;
+		boolean done = false;
+		String name = "???";
+		while (!done) {
+			name = className + counter;
+			Object otherPOJO = context.findPOJO(name);
+			if (otherPOJO == null) {
+				done = true;
+			} else {
+				++counter;
+			}
+		}
+		return name;
+	}
+
+	public static int identityHashCode(Object object) {
+		return System.identityHashCode(object);
 	}
 
 }
