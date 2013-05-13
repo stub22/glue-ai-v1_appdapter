@@ -78,8 +78,8 @@ public class POJOCollectionImpl implements VetoableChangeListener, PropertyChang
 
 	// ==== Manipulating the collection of objects ==================
 
-	/* (non-Javadoc)
-	 * @see org.appdapter.gui.objbrowser.model.IPOJOCollection#createAndAddPOJO(java.lang.Class)
+	/**
+	 * {@inheritDoc}
 	 */
 	@Override
 	public synchronized Object createAndAddPOJO(Class cl) throws InstantiationException, IllegalAccessException {
@@ -135,8 +135,8 @@ public class POJOCollectionImpl implements VetoableChangeListener, PropertyChang
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.appdapter.gui.objbrowser.model.IPOJOCollection#removePOJO(java.lang.Object)
+	/**
+	 * {@inheritDoc}
 	 */
 	@Override
 	public synchronized boolean removePOJO(Object obj) {
@@ -165,8 +165,8 @@ public class POJOCollectionImpl implements VetoableChangeListener, PropertyChang
 
 	// ==== Queries ========================
 
-	/* (non-Javadoc)
-	 * @see org.appdapter.gui.objbrowser.model.IPOJOCollection#getSwizzlers()
+	/**
+	 * {@inheritDoc}
 	 */
 	@Override
 	public Iterable<POJOSwizzler> getSwizzlers() {
@@ -178,24 +178,24 @@ public class POJOCollectionImpl implements VetoableChangeListener, PropertyChang
 		return list;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.appdapter.gui.objbrowser.model.IPOJOCollection#getPOJOCount()
+	/**
+	 * {@inheritDoc}
 	 */
 	@Override
 	public int getPOJOCount() {
 		return swizzlerList.size();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.appdapter.gui.objbrowser.model.IPOJOCollection#containsPOJO(java.lang.Object)
+	/**
+	 * {@inheritDoc}
 	 */
 	@Override
 	public boolean containsPOJO(Object object) {
 		return containsSwizzler(getSwizzler(object));// containsKey(object);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.appdapter.gui.objbrowser.model.IPOJOCollection#containsSwizzler(org.appdapter.gui.objbrowser.model.POJOSwizzler)
+	/**
+	 * {@inheritDoc}
 	 */
 	@Override
 	public boolean containsSwizzler(POJOSwizzler swizzler) {
@@ -203,8 +203,8 @@ public class POJOCollectionImpl implements VetoableChangeListener, PropertyChang
 		// return objectsToSwizzlers.containsValue(object);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.appdapter.gui.objbrowser.model.IPOJOCollection#findPOJO(java.lang.String)
+	/**
+	 * {@inheritDoc}
 	 */
 	@Override
 	public Object findPOJO(String name) {
@@ -216,8 +216,8 @@ public class POJOCollectionImpl implements VetoableChangeListener, PropertyChang
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.appdapter.gui.objbrowser.model.IPOJOCollection#findSwizzler(java.lang.String)
+	/**
+	 * {@inheritDoc}
 	 */
 	@Override
 	public POJOSwizzler findSwizzler(String name) {
@@ -228,8 +228,8 @@ public class POJOCollectionImpl implements VetoableChangeListener, PropertyChang
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.appdapter.gui.objbrowser.model.IPOJOCollection#getSwizzler(java.lang.Object)
+	/**
+	 * {@inheritDoc}
 	 */
 	@Override
 	public POJOSwizzler getSwizzler(Object object) {
@@ -244,8 +244,8 @@ public class POJOCollectionImpl implements VetoableChangeListener, PropertyChang
 
 	// ===== Manipulating the selected object ===============
 
-	/* (non-Javadoc)
-	 * @see org.appdapter.gui.objbrowser.model.IPOJOCollection#getSelectedPOJO()
+	/**
+	 * {@inheritDoc}
 	 */
 	@Override
 	public Object getSelectedPOJO() {
@@ -254,32 +254,32 @@ public class POJOCollectionImpl implements VetoableChangeListener, PropertyChang
 
 	// ==== Event listener registration ======================
 
-	/* (non-Javadoc)
-	 * @see org.appdapter.gui.objbrowser.model.IPOJOCollection#addPropertyChangeListener(java.beans.PropertyChangeListener)
+	/**
+	 * {@inheritDoc}
 	 */
 	@Override
 	public void addPropertyChangeListener(PropertyChangeListener p) {
 		propSupport.addPropertyChangeListener(p);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.appdapter.gui.objbrowser.model.IPOJOCollection#removePropertyChangeListener(java.beans.PropertyChangeListener)
+	/**
+	 * {@inheritDoc}
 	 */
 	@Override
 	public void removePropertyChangeListener(PropertyChangeListener p) {
 		propSupport.removePropertyChangeListener(p);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.appdapter.gui.objbrowser.model.IPOJOCollection#addListener(org.appdapter.gui.objbrowser.model.POJOCollectionListener)
+	/**
+	 * {@inheritDoc}
 	 */
 	@Override
 	public void addListener(POJOCollectionListener l) {
 		collectionListeners.add(l);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.appdapter.gui.objbrowser.model.IPOJOCollection#removeListener(org.appdapter.gui.objbrowser.model.POJOCollectionListener)
+	/**
+	 * {@inheritDoc}
 	 */
 	@Override
 	public void removeListener(POJOCollectionListener l) {
@@ -288,8 +288,8 @@ public class POJOCollectionImpl implements VetoableChangeListener, PropertyChang
 
 	// ===== Property notifications (i.e. others notifying me) =========
 
-	/* (non-Javadoc)
-	 * @see org.appdapter.gui.objbrowser.model.IPOJOCollection#propertyChange(java.beans.PropertyChangeEvent)
+	/**
+	 * {@inheritDoc}
 	 */
 	@Override
 	public synchronized void propertyChange(PropertyChangeEvent evt) {
@@ -329,8 +329,8 @@ public class POJOCollectionImpl implements VetoableChangeListener, PropertyChang
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.appdapter.gui.objbrowser.model.IPOJOCollection#setSelectedPOJO(java.lang.Object)
+	/**
+	 * {@inheritDoc}
 	 */
 	@Override
 	public synchronized void setSelectedPOJO(Object object) throws PropertyVetoException {
@@ -350,8 +350,8 @@ public class POJOCollectionImpl implements VetoableChangeListener, PropertyChang
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.appdapter.gui.objbrowser.model.IPOJOCollection#vetoableChange(java.beans.PropertyChangeEvent)
+	/**
+	 * {@inheritDoc}
 	 */
 	@Override
 	public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
@@ -372,8 +372,8 @@ public class POJOCollectionImpl implements VetoableChangeListener, PropertyChang
 
 	// ====== Save and load operations ================================
 
-	/* (non-Javadoc)
-	 * @see org.appdapter.gui.objbrowser.model.IPOJOCollection#save(java.io.File)
+	/**
+	 * {@inheritDoc}
 	 */
 	@Override
 	public void save(File destination) throws IOException {
@@ -422,26 +422,12 @@ public class POJOCollectionImpl implements VetoableChangeListener, PropertyChang
 	 * Generates a default name for the given object, while will be something
 	 * like "Button1", "Button2", etc.
 	 */
-	private String generateUniqueName(Object object) {
-		String className = Utility.getShortClassName(object.getClass());
-
-		int counter = 1;
-		boolean done = false;
-		String name = "???";
-		while (!done) {
-			name = className + counter;
-			Object otherPOJO = findPOJO(name);
-			if (otherPOJO == null) {
-				done = true;
-			} else {
-				++counter;
-			}
-		}
-		return name;
+	public String generateUniqueName(Object object) {
+		return Utility.generateUniqueName(object);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.appdapter.gui.objbrowser.model.IPOJOCollection#getSelectedBean()
+	/**
+	 * {@inheritDoc}
 	 */
 	@Override
 	public Object getSelectedBean() {
