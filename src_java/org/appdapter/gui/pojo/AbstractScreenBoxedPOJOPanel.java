@@ -2,6 +2,7 @@ package org.appdapter.gui.pojo;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.gui.box.ScreenBoxPanel;
+import org.slf4j.LoggerFactory;
 
 /**
  * A GUI component used to render a POJO in a user interface. The standard
@@ -9,11 +10,12 @@ import org.appdapter.gui.box.ScreenBoxPanel;
  * ScreenBoxedPOJOWithProperties (a complete window with all the details about
  * the POJO).
  */
-abstract public class AbstractScreenBoxedPOJOPanel<BoxType extends Box> extends ScreenBoxPanel<BoxType> implements GetSetObject {
+abstract public class AbstractScreenBoxedPOJOPanel<BoxType extends Box> extends
+		ScreenBoxPanel<BoxType> implements GetSetObject {
 
 	@Override
 	public void focusOnBox(Box b) {
-		throw new UnsupportedOperationException("Not supported yet.");
+		LoggerFactory.getLogger(getClass().getName()).info("Focusing on box: " + b);
 	}
 
 	/**

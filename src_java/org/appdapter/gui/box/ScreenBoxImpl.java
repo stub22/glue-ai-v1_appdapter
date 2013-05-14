@@ -33,6 +33,8 @@ import org.appdapter.gui.repo.RepoManagerPanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import scala.tools.nsc.util.HashSet;
+
 /**  Base implementation of our demo Swing Panel boxes. 
  * The default implementation can own one swing panel of each "Kind".
  * This owner does not actually create any kind of GUI resource until it is asked to
@@ -85,10 +87,10 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 
 	@Override
 	public List<Class> getTypes() {
-		List al = new ArrayList<Class>();
+		java.util.HashSet al = new java.util.HashSet<Class>();
 		al.add(getPOJOClass());
 		al.add(getClass());
-		return al;
+		return new ArrayList<Class>(al);
 	}
 
 	@Override
@@ -141,10 +143,7 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	 * @return 
 	 */
 	protected ScreenBoxPanel makeBoxPanel(ScreenBoxPanel.Kind kind) {
-		ScreenBoxPanel bp = null;	
-		if (true) {
-			kind = Kind.OBJECT_PROPERTIES;
-		}
+		ScreenBoxPanel bp = null;
 		switch (kind) {
 		case MATRIX:
 			bp = new ModelMatrixPanel();
@@ -154,10 +153,7 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 			break;
 		case DB_MANAGER:
 			bp = new DatabaseManagerPanel();
-			break;
-		case OBJECT_PROPERTIES:
-			bp = new ScreenBoxedPOJOWithPropertiesPanel(getObject());
-			break;			
+			break;		
 		case OTHER:
 			bp = makeOtherPanel();
 			break;

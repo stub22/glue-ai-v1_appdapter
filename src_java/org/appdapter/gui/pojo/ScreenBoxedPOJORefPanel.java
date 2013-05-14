@@ -55,6 +55,10 @@ public class ScreenBoxedPOJORefPanel<BoxType extends Box> extends ScreenBoxedPOJ
 
 	//Invisible panel in front that captures menu events and drag/drop events
 	JPanel frontGlass;
+	
+	@Override public void focusOnBox(Box b) {
+		
+	}
 
 	JLabel label;
 	IconView iconView;
