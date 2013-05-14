@@ -45,10 +45,10 @@ public class BootstrapTriggerFactory { // <TT extends Trigger<? extends MutableB
 		}
 		return trig;
 	}
-	public <RTT extends TriggerImpl<ScreenBoxImpl<RTT>>> RTT putTriggerOnBox(MutableBox<? super RTT> mbox, Class<RTT> trigClass, String trigName) {
+	public <RTTS extends ScreenBoxImpl<RTT>, RTT extends TriggerImpl<RTTS>> RTT putTriggerOnBox(MutableBox<? super RTT> mbox, Class<RTT> trigClass, String trigName) {
 		return null;
 	}
-	public <BT extends ScreenBoxImpl<TriggerImpl<BT>>> TriggerImpl<BT> attachNewTrigger(BT box, Class<? extends TriggerImpl<BT>> trigClass,  String trigName) {
+	public <BTS extends TriggerImpl<BT>, BT extends ScreenBoxImpl<BTS>> TriggerImpl<BT> attachNewTrigger(BT box, Class<? extends TriggerImpl<BT>> trigClass,  String trigName) {
 		TriggerImpl<BT> trig = null;
 		try {
 			trig = trigClass.newInstance();
@@ -58,8 +58,9 @@ public class BootstrapTriggerFactory { // <TT extends Trigger<? extends MutableB
 		}
 		return trig;
 	}
-	public <BT extends ScreenBoxImpl<TriggerImpl<BT>>> void attachTrigger(BT box, TriggerImpl<BT> trigger,  String trigName) {
-		trigger.setShortLabel(trigName);
-		box.attachTrigger(trigger);
+	
+	public <BTS extends TriggerImpl<BT>, BT extends ScreenBoxImpl<BTS>> void attachTrigger(BT box, TriggerImpl<BT> trigger,  String trigName) {
+		trigger.setShortLabel(trigName);	
+		box.attachTrigger((BTS) trigger);
 	}
 }
