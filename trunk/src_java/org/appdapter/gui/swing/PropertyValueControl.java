@@ -34,8 +34,10 @@ import org.appdapter.gui.swing.impl.JVPanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PropertyValueControl extends JVPanel implements PropertyChangeListener, GetSetObject {
-	static Logger theLogger = LoggerFactory.getLogger(PropertyValueControl.class);
+public class PropertyValueControl extends JVPanel implements
+		PropertyChangeListener, GetSetObject {
+	static Logger theLogger = LoggerFactory
+			.getLogger(PropertyValueControl.class);
 
 	POJOCollectionWithBoxContext context = Utility.getCurrentContext();
 
@@ -55,13 +57,15 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 		this((Object) null, editable);
 	}
 
-	public PropertyValueControl(POJOCollectionWithBoxContext context, Object source, PropertyDescriptor property) {
+	public PropertyValueControl(POJOCollectionWithBoxContext context,
+			Object source, PropertyDescriptor property) {
 		if (context != null)
 			this.context = context;
 		bind(source, property);
 	}
 
-	public PropertyValueControl(POJOCollectionWithBoxContext context, Object source, String propertyName) throws IntrospectionException {
+	public PropertyValueControl(POJOCollectionWithBoxContext context,
+			Object source, String propertyName) throws IntrospectionException {
 		this(context, source, getPropertyDescriptor(source, propertyName));
 	}
 
@@ -69,7 +73,8 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 		this(null, source, property);
 	}
 
-	public PropertyValueControl(Object source, String propertyName) throws IntrospectionException {
+	public PropertyValueControl(Object source, String propertyName)
+			throws IntrospectionException {
 		this(source, getPropertyDescriptor(source, propertyName));
 	}
 
@@ -78,11 +83,12 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 	}
 
 	/**
-	 * Creates an unbound PropertyValueControl of the given type. It will
-	 * be initialized to a default value, for non-primitive this is null and
-	 * for primitives it is 0, false, or whatever.
+	 * Creates an unbound PropertyValueControl of the given type. It will be
+	 * initialized to a default value, for non-primitive this is null and for
+	 * primitives it is 0, false, or whatever.
 	 */
-	public PropertyValueControl(POJOCollectionWithBoxContext context, Class type, boolean editable) {
+	public PropertyValueControl(POJOCollectionWithBoxContext context,
+			Class type, boolean editable) {
 		this.context = context;
 		this.type = type;
 		this.editable = editable;
@@ -113,7 +119,7 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 		this.source = source;
 		this.type = property.getPropertyType();
 		this.editable = (property.getWriteMethod() != null);
-		//readBoundValue();
+		// readBoundValue();
 		recreateGUI();
 	}
 
@@ -140,7 +146,8 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 		}
 	}
 
-	private static PropertyDescriptor getPropertyDescriptor(Object object, String propName) throws IntrospectionException {
+	private static PropertyDescriptor getPropertyDescriptor(Object object,
+			String propName) throws IntrospectionException {
 		BeanInfo info = Introspector.getBeanInfo(object.getClass());
 		PropertyDescriptor[] array = info.getPropertyDescriptors();
 		int len = array.length;
@@ -155,6 +162,7 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 
 	private void readBoundValue() {
 		if (isBound()) {
+			Throwable realCause;
 			Object obj = source;
 			try {
 				Method readMethod = property.getReadMethod();
@@ -163,21 +171,37 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 					return;
 				}
 				if (readMethod == null) {
-					throw new Exception("readMethod = null for object " + obj + " and property '" + property.getName() + "'!!!");
+					throw new Exception("readMethod = null for object " + obj
+							+ " and property '" + property.getName() + "'!!!");
 				}
 				Object boundValue = readMethod.invoke(obj, new Object[0]);
 				setValue(boundValue);
+				return;
+
+			} catch (InvocationTargetException err) {
+				realCause = err.getCause();
 			} catch (Exception err) {
-				theLogger.error("An error occurred", err);
-				try {
-					setValue(null);
-				} catch (Exception err2) {
-					theLogger.error("An error occurred", err2);
+				realCause = err;
+				Throwable rc = realCause.getCause();
+				while (rc != null && rc != realCause) {
+					realCause = rc;
+					rc = realCause.getCause();
 				}
 			}
+			try {
+				setValue(null);
+			} catch (Exception err2) {
+				theLogger.error("An error occurred", err2);
+			}
+			if (realCause instanceof java.awt.IllegalComponentStateException)
+				return;
+			theLogger.error("An error occurred", realCause);
+
 		} else {
-			theLogger.warn("PropertyValueControl warning: ValueView.readBoundValue should only be called if value is bound!");
+			theLogger
+					.warn("PropertyValueControl warning: ValueView.readBoundValue should only be called if value is bound!");
 		}
+
 	}
 
 	private void readEditorValue() {
@@ -198,7 +222,8 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 				Object obj = source;
 				property.getWriteMethod().invoke(obj, new Object[] { value });
 			} else {
-				theLogger.warn("PropertyValueControl warning: ValueView.writeBoundValue should only be called if value is bound!");
+				theLogger
+						.warn("PropertyValueControl warning: ValueView.writeBoundValue should only be called if value is bound!");
 			}
 		}
 	}
@@ -220,18 +245,18 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 	}
 
 	/**
-	 * Returns the type of this PropertyValueControl, if there is a fixed
-	 * type. For example if this is String then this PropertyValueControl
-	 * can only be used to create and view Strings.
+	 * Returns the type of this PropertyValueControl, if there is a fixed type.
+	 * For example if this is String then this PropertyValueControl can only be
+	 * used to create and view Strings.
 	 */
 	public Class getFixedType() {
 		return type;
 	}
 
 	/**
-	 * Returns the current type of the value in this PropertyValueControl.
-	 * If there is a fixed type that will be returned instead. If the
-	 * there is no value set and no fixed type, null will be returned.
+	 * Returns the current type of the value in this PropertyValueControl. If
+	 * there is a fixed type that will be returned instead. If the there is no
+	 * value set and no fixed type, null will be returned.
 	 */
 	public Class getCurrentType() {
 		if (type == null) {
@@ -262,9 +287,9 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 	}
 
 	/**
-	 * Sets the value in this PropertyValueControl to the default
-	 * for the variable type. For example if the type is String the value
-	 * will be null, if the type is int the value will be 0, etc.
+	 * Sets the value in this PropertyValueControl to the default for the
+	 * variable type. For example if the type is String the value will be null,
+	 * if the type is int the value will be 0, etc.
 	 */
 	public void resetValue() throws Exception {
 		Class currentType = getCurrentType();
@@ -286,19 +311,22 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 		if (!Utility.isEqual(newValue, oldValue)) {
 			Class oldType = getCurrentType();
 
-			//@warning !!!!  the code below was commented out
-			//because I was having trouble with int.class vs Integer.class
-			//(and stuff like that).  This may cause trouble...
+			// @warning !!!! the code below was commented out
+			// because I was having trouble with int.class vs Integer.class
+			// (and stuff like that). This may cause trouble...
 
-			//make sure type is correct, if restriction is set.
-			/*if (newValue != null || type != null) {// && !(type.isAssignableFrom(newValue.getClass()))) {
-			  throw new IllegalArgumentException("object must be of type " + type + " - " + newValue + " is invalid.");
-			} */
+			// make sure type is correct, if restriction is set.
+			/*
+			 * if (newValue != null || type != null) {// &&
+			 * !(type.isAssignableFrom(newValue.getClass()))) { throw new
+			 * IllegalArgumentException("object must be of type " + type + " - "
+			 * + newValue + " is invalid."); }
+			 */
 
 			this.value = newValue;
 			Class newType = getCurrentType();
 			if (newType == oldType) {
-				//if this is bound, update the object's property value.
+				// if this is bound, update the object's property value.
 				if (isBound()) {
 					try {
 						writeBoundValue();
@@ -325,26 +353,26 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 		Component comp = null;
 
 		if (type == null) {
-			//untyped, so I can assume it is unbound
+			// untyped, so I can assume it is unbound
 			if (value == null) {
-				//I have no idea what the type should be
+				// I have no idea what the type should be
 				currentEditor = getEditor(String.class, editable);
 				currentEditor.setValue(null);
 				comp = getEditorComponent(currentEditor, editable);
 			} else {
-				//AHA, I have a value, that means I can check the current type!
+				// AHA, I have a value, that means I can check the current type!
 				Class currentType = value.getClass();
 				currentEditor = getEditor(currentType, editable);
 				currentEditor.setValue(value);
 				comp = getEditorComponent(currentEditor, editable);
 			}
 		} else {
-			//The type is fixed
+			// The type is fixed
 			currentEditor = getEditor(type, editable);
-			//currentEditor.setValue(value);
+			// currentEditor.setValue(value);
 			comp = getEditorComponent(currentEditor, editable);
 			if (isBound()) {
-				//It is bound, so I have to listen for changes
+				// It is bound, so I have to listen for changes
 				readBoundValue();
 				listenToSource();
 			}
@@ -364,17 +392,17 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
 		if (isBound() && evt.getSource() == source) {
-			//the source object's property changed...
+			// the source object's property changed...
 			readBoundValue();
 		} else if (evt.getSource() == currentEditor) {
-			//the editor's value changed
+			// the editor's value changed
 			readEditorValue();
 		}
 	}
 
 	/**
-	* Start listening to the source object
-	*/
+	 * Start listening to the source object
+	 */
 	private void listenToSource() {
 		try {
 			if (source != null) {
@@ -394,8 +422,8 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 	}
 
 	/**
-	* Stop listening to the source object
-	*/
+	 * Stop listening to the source object
+	 */
 	private void stopListeningToSource() {
 		try {
 			if (source != null) {
@@ -429,8 +457,8 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 			if (editable || isTypeMutable()) {
 				comp = editor.getCustomEditor();
 			} else {
-				//if this is, for example, an uneditable Integer,
-				//we only want to show a simple label.
+				// if this is, for example, an uneditable Integer,
+				// we only want to show a simple label.
 				comp = new TextBasedViewComponent(editor);
 			}
 		} else {
@@ -448,13 +476,15 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 	}
 
 	/**
-	* "Mutable" classes are basically anything
-	* except String and Number subclasses, i.e stuff
-	* you can modify after creation.
-	*/
+	 * "Mutable" classes are basically anything except String and Number
+	 * subclasses, i.e stuff you can modify after creation.
+	 */
 	private boolean isTypeMutable() {
 		Class type = getCurrentType();
-		return !(String.class.isAssignableFrom(type) || Number.class.isAssignableFrom(type) || Boolean.class.isAssignableFrom(type) || Color.class.isAssignableFrom(type) || type.isPrimitive());
+		return !(String.class.isAssignableFrom(type)
+				|| Number.class.isAssignableFrom(type)
+				|| Boolean.class.isAssignableFrom(type)
+				|| Color.class.isAssignableFrom(type) || type.isPrimitive());
 	}
 
 	private static Object getDefaultValue(Class type) {
@@ -478,13 +508,17 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 			} else if (type == Byte.TYPE) {
 				return new Byte((byte) 0);
 			} else {
-				theLogger.error("Strange, I don't recognize the primitive type " + type + ", so I can't determine the default value. I will use null.");
+				theLogger
+						.error("Strange, I don't recognize the primitive type "
+								+ type
+								+ ", so I can't determine the default value. I will use null.");
 				return null;
 			}
 		}
 	}
 
-	class BeanReferenceEditor extends PropertyEditorSupport implements PropertyChangeListener {
+	class BeanReferenceEditor extends PropertyEditorSupport implements
+			PropertyChangeListener {
 		boolean editable;
 		Class type = null;
 		ObjectValuesChoicePanel choice = null;
@@ -505,7 +539,7 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 		@Override
 		public void propertyChange(PropertyChangeEvent evt) {
 			Object object = evt.getNewValue();
-			//BeanWrapper object = (BeanWrapper) val;
+			// BeanWrapper object = (BeanWrapper) val;
 			try {
 				if (object == null)
 					PropertyValueControl.this.setValue(null);
@@ -557,7 +591,8 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 		public Component getCustomEditor() {
 			if (editable) {
 				if (choice == null) {
-					choice = new ObjectValuesChoicePanel(context, type, getObject());
+					choice = new ObjectValuesChoicePanel(context, type,
+							getObject());
 					choice.addPropertyChangeListener(this);
 				}
 				return choice;
@@ -577,7 +612,8 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 		}
 	}
 
-	class TextBasedViewComponent extends JLabel implements PropertyChangeListener {
+	class TextBasedViewComponent extends JLabel implements
+			PropertyChangeListener {
 		PropertyEditor editor;
 
 		public TextBasedViewComponent(PropertyEditor editor) {
@@ -598,7 +634,8 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 		}
 	}
 
-	class TextBasedInputComponent extends JTextField implements PropertyChangeListener, ActionListener, FocusListener {
+	class TextBasedInputComponent extends JTextField implements
+			PropertyChangeListener, ActionListener, FocusListener {
 		PropertyEditor editor;
 
 		public TextBasedInputComponent(PropertyEditor editor) {
@@ -647,9 +684,10 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 	}
 
 	/**
-	  Displays a list of fixed values to choose from.
-	*/
-	class ComboBoxInputComponent extends JComboBox implements PropertyChangeListener, ActionListener {
+	 * Displays a list of fixed values to choose from.
+	 */
+	class ComboBoxInputComponent extends JComboBox implements
+			PropertyChangeListener, ActionListener {
 		PropertyEditor editor;
 
 		public ComboBoxInputComponent(PropertyEditor editor) {
@@ -676,7 +714,9 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 				try {
 					editor.setAsText(selected.toString());
 				} catch (Exception err) {
-					theLogger.error("An error occurred while setting value of property '" + property + "'", err);
+					theLogger.error(
+							"An error occurred while setting value of property '"
+									+ property + "'", err);
 				}
 				readValue();
 			}
