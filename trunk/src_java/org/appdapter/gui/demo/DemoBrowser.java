@@ -103,16 +103,25 @@ public class DemoBrowser {
 		DisplayContextProvider dcp = bctx;
 		DemoNavigatorCtrl tn = new DemoNavigatorCtrl(bctx, tm, rootBTN, dcp);
 		return tn;		
-	}	
-	public static <BT extends ScreenBoxImpl<TriggerImpl<BT>>, RBT extends RepoBoxImpl<TriggerImpl<RBT>>> 
-				ScreenBoxContextImpl makeBCI(Class<BT> boxClass, Class<RBT> repoBoxClass) {
+	}
+	/**
+	 * <code>
+	 * 	<BT extends ScreenBoxImpl<TriggerImpl<BT>>, RBT extends RepoBoxImpl<TriggerImpl<RBT>>> 
+	 *		ScreenBoxContextImpl makeBCI(Class<BT> boxClass, Class<RBT> repoBoxClass) {.. }
+	 * </code>
+	 */
+	public static <BTI extends TriggerImpl<BT>, BT extends ScreenBoxImpl<BTI>, 
+		RBTI extends TriggerImpl<RBT>, RBT extends RepoBoxImpl<RBTI>> 
+	ScreenBoxContextImpl makeBCI(Class<BT> boxClass, Class<RBT> repoBoxClass) {
 		TriggerImpl<BT> regTrigProto = makeTriggerPrototype(boxClass);
 		TriggerImpl<RBT> repoTrigProto = makeTriggerPrototype(repoBoxClass);
 		return makeBoxContextImpl(boxClass, repoBoxClass, regTrigProto, repoTrigProto);
 	}
-	public static <BT extends ScreenBoxImpl<TriggerImpl<BT>>> TriggerImpl<BT> makeTriggerPrototype(Class<BT> boxClass) {
+	@SuppressWarnings("unchecked")
+	public static <BTS extends TriggerImpl<BT>, BT extends ScreenBoxImpl<BTS>, TBT extends TriggerImpl<BT>> 
+	   TBT makeTriggerPrototype(Class<BT> boxClass) {
 		// The trigger subtype does not matter - what matters is capturing BT into the type.
-		return new SysTriggers.QuitTrigger<BT>();
+		return (TBT) new SysTriggers.QuitTrigger().makeTrigger(boxClass);
 	}
 	// static class ConcBootstrapTF extends BootstrapTriggerFactory<TriggerImpl<BoxImpl<TriggerImpl>>> {
 	// }  //   TT extends TriggerImpl<BT>
@@ -127,23 +136,24 @@ public class DemoBrowser {
 	 * @param repoTrigProto - defines the RBT trigger parameter type for repo boxes.  The repoTrigProto instance data is unused.
 	 * @return 
 	 */
-	public static <BT extends ScreenBoxImpl<TriggerImpl<BT>>, RBT extends RepoBoxImpl<TriggerImpl<RBT>>> ScreenBoxContextImpl 
+	public static <TBT extends TriggerImpl<BT>, BT extends ScreenBoxImpl<TBT>,TRBT extends TriggerImpl<RBT>, RBT extends RepoBoxImpl<TRBT>> ScreenBoxContextImpl 
 				makeBoxContextImpl(Class<BT> regBoxClass, Class<RBT> repoBoxClass, TriggerImpl<BT> regTrigProto,
 					TriggerImpl<RBT> repoTrigProto) {
 		try {
 			ScreenBoxContextImpl bctx = new ScreenBoxContextImpl();
-			BT rootBox = DemoServiceWrapFuncs.makeTestBoxImpl(regBoxClass, regTrigProto, "rooty");
+
+			BT rootBox = (BT) DemoServiceWrapFuncs.makeTestBoxImpl((Class)regBoxClass, regTrigProto, "rooty");
 			bctx.contextualizeAndAttachRootBox(rootBox);
 
 			BootstrapTriggerFactory btf = new BootstrapTriggerFactory();
 			btf.attachTrigger(rootBox, new SysTriggers.QuitTrigger(), "quit");
 
 
-			BT repoBox = DemoServiceWrapFuncs.makeTestChildBoxImpl(rootBox, regBoxClass, regTrigProto, "repo");
-			BT appBox = DemoServiceWrapFuncs.makeTestChildBoxImpl(rootBox, regBoxClass, regTrigProto, "app");
-			BT sysBox = DemoServiceWrapFuncs.makeTestChildBoxImpl(rootBox, regBoxClass, regTrigProto, "sys");
+			BT repoBox = (BT)DemoServiceWrapFuncs.makeTestChildBoxImpl(rootBox,(Class) regBoxClass, regTrigProto, "repo");
+			BT appBox = (BT)DemoServiceWrapFuncs.makeTestChildBoxImpl(rootBox, (Class) regBoxClass, regTrigProto, "app");
+			BT sysBox = (BT)DemoServiceWrapFuncs.makeTestChildBoxImpl(rootBox, (Class) regBoxClass, regTrigProto, "sys");
 
-			RBT r1Box = DemoServiceWrapFuncs.makeTestChildBoxImpl(repoBox,  repoBoxClass, repoTrigProto, "h2.td_001");
+			RBT r1Box =(RBT) DemoServiceWrapFuncs.makeTestChildBoxImpl(repoBox, (Class) repoBoxClass, repoTrigProto, "h2.td_001");
 
 			btf.attachTrigger(r1Box, new DatabaseTriggers.InitTrigger(), "openDB");
 			btf.attachTrigger(r1Box, new RepoTriggers.OpenTrigger(), "openMetaRepo");
@@ -153,21 +163,21 @@ public class DemoBrowser {
 			btf.attachTrigger(r1Box, new RepoTriggers.DumpStatsTrigger(), "dump stats");
 			DemoServiceWrapFuncs.attachPanelOpenTrigger(r1Box, "manage repo", ScreenBoxPanel.Kind.REPO_MANAGER);
 
-			RBT r2Box = DemoServiceWrapFuncs.makeTestChildBoxImpl(repoBox, repoBoxClass, repoTrigProto, "repo_002");
+			RBT r2Box = (RBT) DemoServiceWrapFuncs.makeTestChildBoxImpl(repoBox, (Class)repoBoxClass, repoTrigProto, "repo_002");
 			btf.attachTrigger(r2Box, new SysTriggers.DumpTrigger(), "dumpD");
 			btf.attachTrigger(r2Box, new SysTriggers.DumpTrigger(), "dumpC");
 			btf.attachTrigger(r2Box, new SysTriggers.DumpTrigger(), "dumpA");
 
-			BT fishBox = DemoServiceWrapFuncs.makeTestChildBoxImpl(appBox, regBoxClass, regTrigProto, "fishy");
+			BT fishBox =(BT) DemoServiceWrapFuncs.makeTestChildBoxImpl(appBox, (Class) regBoxClass, regTrigProto, "fishy");
 			DemoServiceWrapFuncs.attachPanelOpenTrigger(fishBox, "open-matrix-f", ScreenBoxPanel.Kind.MATRIX);
 
 			btf.attachTrigger(fishBox, new SysTriggers.DumpTrigger(), "dumpF");
 
-			BT pumappBox = DemoServiceWrapFuncs.makeTestChildBoxImpl(appBox, regBoxClass, regTrigProto, "pumapp");
+			BT pumappBox =(BT) DemoServiceWrapFuncs.makeTestChildBoxImpl(appBox, (Class) regBoxClass, regTrigProto, "pumapp");
 			DemoServiceWrapFuncs.attachPanelOpenTrigger(pumappBox, "open-matrix-p", ScreenBoxPanel.Kind.MATRIX);
 			btf.attachTrigger(pumappBox, new SysTriggers.DumpTrigger(), "dumpP");
 
-			BT buckTreeBox = DemoServiceWrapFuncs.makeTestChildBoxImpl(appBox, regBoxClass, regTrigProto, "bucksum");
+			BT buckTreeBox = (BT) DemoServiceWrapFuncs.makeTestChildBoxImpl(appBox, (Class) regBoxClass, regTrigProto, "bucksum");
 			btf.attachTrigger(buckTreeBox, new BridgeTriggers.MountSubmenuFromTriplesTrigger(), "loadSubmenus");
 		
 /*
