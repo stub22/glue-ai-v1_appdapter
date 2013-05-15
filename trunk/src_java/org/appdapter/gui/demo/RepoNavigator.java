@@ -224,7 +224,7 @@ public class RepoNavigator extends DemoNavigatorCtrl implements ObjectNavigatorG
 		return new SysTriggers.QuitTrigger();
 	}
 
-	static class ScreenModelBox extends BoxOne {
+	static class ScreenModelBox extends ScreenBoxImpl {
 
 		final String myURI;
 		private Model myModel;
@@ -243,7 +243,7 @@ public class RepoNavigator extends DemoNavigatorCtrl implements ObjectNavigatorG
 		}
 	}
 
-	static class ScreenGraphTrigger extends TriggerOne /*
+	static class ScreenGraphTrigger extends TriggerImpl /*
 													   * with FullTrigger<GraphBox>
 													   */{
 
@@ -257,7 +257,7 @@ public class RepoNavigator extends DemoNavigatorCtrl implements ObjectNavigatorG
 			return getClass().getName() + "[name=" + myDebugName + "]";
 		}
 
-		@Override public void fire(BoxOne targetBox) {
+		@Override public void fire(Box targetBox) {
 			getLogger().debug(this.toString() + " firing on " + targetBox.toString());
 
 		}
