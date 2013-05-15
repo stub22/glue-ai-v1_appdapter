@@ -16,7 +16,6 @@
 package org.appdapter.gui.demo;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import javax.swing.JComponent;
@@ -28,14 +27,12 @@ import javax.swing.tree.TreeModel;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContext;
-import org.appdapter.api.trigger.BoxImpl;
 import org.appdapter.api.trigger.MutableBox;
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.api.trigger.TriggerImpl;
 import org.appdapter.core.name.FreeIdent;
 import org.appdapter.core.store.Repo;
 import org.appdapter.core.store.Repo.WithDirectory;
-import org.appdapter.demo.DemoResources;
 import org.appdapter.demo.DemoServiceWrapFuncs;
 import org.appdapter.demo.ObjectNavigatorGUI;
 import org.appdapter.gui.box.DisplayContextProvider;
@@ -43,14 +40,9 @@ import org.appdapter.gui.box.ScreenBoxContextImpl;
 import org.appdapter.gui.box.ScreenBoxImpl;
 import org.appdapter.gui.box.ScreenBoxPanel;
 import org.appdapter.gui.box.ScreenBoxTreeNode;
-import org.appdapter.gui.browse.BrowsePanel;
-import org.appdapter.gui.demo.DemoNavigatorCtrl;
 import org.appdapter.gui.demo.triggers.BridgeTriggers;
 import org.appdapter.gui.demo.triggers.DatabaseTriggers;
 import org.appdapter.gui.demo.triggers.RepoTriggers;
-import org.appdapter.gui.pojo.POJOApp;
-import org.appdapter.gui.pojo.POJOCollection;
-import org.appdapter.gui.pojo.POJOCollectionListener;
 import org.appdapter.gui.pojo.POJOCollectionWithSwizzler;
 import org.appdapter.gui.pojo.Utility;
 import org.appdapter.gui.repo.MutableRepoBox;
@@ -60,8 +52,6 @@ import org.appdapter.gui.repo.RepoModelBoxImpl;
 import org.appdapter.gui.trigger.BootstrapTriggerFactory;
 import org.appdapter.gui.trigger.SysTriggers;
 import org.appdapter.impl.store.QueryHelper;
-import org.appdapter.scafun.BoxOne;
-import org.appdapter.scafun.TriggerOne;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -284,7 +274,7 @@ public class RepoNavigator extends DemoNavigatorCtrl implements ObjectNavigatorG
 			// repo.getDirectoryModelClient();
 			QuerySolution qInitBinding = null;
 			String qText = "";
-			ResultSet rset = QueryHelper.execModelQueryWithPrefixHelp(repo.getDirectoryModel(), "select distinct ?s ?o {?s a ?o}");
+			/*ResultSet rset = QueryHelper.execModelQueryWithPrefixHelp(repo.getDirectoryModel(), "select distinct ?s ?o {?s a ?o}");
 
 			// cp to list (since will be doing this differntly later)
 			List<QuerySolution> solnList = new ArrayList<QuerySolution>();
@@ -308,7 +298,7 @@ public class RepoNavigator extends DemoNavigatorCtrl implements ObjectNavigatorG
 				gt.setShortLabel("have-some-fun with uri=" + gs);
 				graphBox.attachTrigger(gt);
 				ctx.contextualizeAndAttachChildBox(this, graphBox);
-			}
+			}*/
 		}
 
 		@Override public Repo getRepo() {

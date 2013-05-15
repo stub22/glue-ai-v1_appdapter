@@ -15,12 +15,11 @@
  */
 package org.appdapter.gui.box;
 
-import org.appdapter.api.trigger.Box;
-import org.appdapter.gui.browse.BrowsePanel;
-import org.appdapter.gui.browse.DisplayContext;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
-import javax.swing.tree.TreeNode;
+
+import org.appdapter.api.trigger.Box;
+import org.appdapter.gui.browse.DisplayContext;
 
 /**
  * @author Stu B. <www.texpedient.com>

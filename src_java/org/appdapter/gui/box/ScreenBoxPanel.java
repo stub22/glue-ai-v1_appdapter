@@ -17,10 +17,6 @@ package org.appdapter.gui.box;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.gui.browse.ButtonTabComponent;
-import org.appdapter.gui.pojo.AbstractScreenBoxedPOJOPanel;
-import org.appdapter.gui.pojo.ScreenBoxedPOJOPanel;
-
-import javax.swing.JPanel;
 
 /**
  * BoxPanels may be used to view many different boxes.

@@ -15,8 +15,8 @@
  */
 package org.appdapter.gui.box;
 
-import org.appdapter.api.trigger.Trigger;
 import org.appdapter.api.trigger.Box;
+import org.appdapter.api.trigger.Trigger;
 import org.appdapter.core.component.KnownComponent;
 import org.appdapter.gui.browse.DisplayContext;
 
