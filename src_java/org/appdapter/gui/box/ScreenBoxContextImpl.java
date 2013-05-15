@@ -16,11 +16,6 @@
 
 package org.appdapter.gui.box;
 
-import org.appdapter.api.trigger.MutableBox;
-import org.appdapter.api.trigger.Box;
-import org.appdapter.api.trigger.BoxContextImpl;
-import org.appdapter.gui.browse.DisplayContext;
-
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -29,6 +24,11 @@ import javax.swing.table.TableModel;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
+
+import org.appdapter.api.trigger.Box;
+import org.appdapter.api.trigger.BoxContextImpl;
+import org.appdapter.api.trigger.MutableBox;
+import org.appdapter.gui.browse.DisplayContext;
 
 /**
  * @author Stu B. <www.texpedient.com>

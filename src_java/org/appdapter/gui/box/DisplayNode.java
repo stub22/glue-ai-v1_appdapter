@@ -2,8 +2,6 @@ package org.appdapter.gui.box;
 
 import java.util.Enumeration;
 
-import javax.swing.tree.TreeNode;
-
 import org.appdapter.api.trigger.Box;
 import org.appdapter.gui.browse.DisplayContext;
 
