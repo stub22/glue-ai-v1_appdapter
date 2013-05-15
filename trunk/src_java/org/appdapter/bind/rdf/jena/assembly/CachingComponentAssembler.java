@@ -55,7 +55,7 @@ public abstract class CachingComponentAssembler<MKC extends MutableKnownComponen
 	private Logger myLogger = LoggerFactory.getLogger(getClass());
 	private static Logger theBackupLogger = LoggerFactory.getLogger(CachingComponentAssembler.class);
 	
-	private	static Map<Class, ComponentCache> theCachesByAssmblrSubclass = new HashMap<Class, ComponentCache>();
+	//private	static Map<Class, ComponentCache> theCachesByAssmblrSubclass = new HashMap<Class, ComponentCache>();
 
 	// private	BasicDebugger myDebugger = new BasicDebugger(getClass());
 	
@@ -72,22 +72,30 @@ public abstract class CachingComponentAssembler<MKC extends MutableKnownComponen
 		return myReader;
 	}
 	
+    protected AssemblerSession getSession(){
+        return AssemblerUtils.getDefaultSession();
+    }
+    
 	protected ComponentCache<MKC>	getCache() { 
 		Class	tc = getClass();
 		// Not really type-safe, ugh.
-		ComponentCache<MKC> cc = theCachesByAssmblrSubclass.get(tc);
+        Map<Class, ComponentCache> map = AssemblerUtils.getComponentCacheMap(getSession());
+		ComponentCache<MKC> cc = map.get(tc);
 		if (cc == null) { 
 			cc = new ComponentCache<MKC>();
-			theCachesByAssmblrSubclass.put(tc, cc);
+			map.put(tc, cc);
 		}
 		return cc;
 	}
+    
+    /* This will be removed
 	public static void clearCacheForAssemblerSubclass(Class c) {
-		theCachesByAssmblrSubclass.put(c, null);
+		//theCachesByAssmblrSubclass.put(c, null);
 	}
 	public static void clearAllSubclassCaches() { 
-		theCachesByAssmblrSubclass = new HashMap<Class, ComponentCache>();
-	}
+		//theCachesByAssmblrSubclass = new HashMap<Class, ComponentCache>();
+	}//*/
+    
 	protected abstract Class<MKC> decideComponentClass(Ident componentID, Item componentConfigItem);
 	protected abstract void initExtendedFieldsAndLinks(MKC comp, Item configItem, Assembler asmblr, Mode mode);
 	
