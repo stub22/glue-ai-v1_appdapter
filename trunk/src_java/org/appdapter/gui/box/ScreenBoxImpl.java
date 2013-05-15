@@ -23,17 +23,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.appdapter.api.trigger.Trigger;
-import org.appdapter.gui.box.ScreenBoxPanel.Kind;
 import org.appdapter.gui.browse.DisplayContext;
 import org.appdapter.gui.pojo.POJOBox;
-import org.appdapter.gui.pojo.ScreenBoxedPOJOWithPropertiesPanel;
 import org.appdapter.gui.repo.DatabaseManagerPanel;
 import org.appdapter.gui.repo.ModelMatrixPanel;
 import org.appdapter.gui.repo.RepoManagerPanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import scala.tools.nsc.util.HashSet;
 
 /**
 /**  Base implementation of our demo Swing Panel boxes. 
