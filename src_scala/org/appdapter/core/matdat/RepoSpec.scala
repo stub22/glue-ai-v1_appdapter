@@ -17,7 +17,7 @@
 package org.appdapter.core.matdat
 import org.appdapter.core.name.{Ident, FreeIdent}
 import org.appdapter.core.store.{Repo, InitialBinding}
-import org.appdapter.help.repo.{RepoClient, RepoClientImpl} 
+import org.appdapter.help.repo.{RepoClient, RepoClientImpl}
 import org.appdapter.core.matdat.{SheetRepo, GoogSheetRepo, XLSXSheetRepo}
 /**
  * @author Stu B. <www.texpedient.com>
@@ -63,19 +63,19 @@ abstract class RepoSpec {
 case class OnlineSheetRepoSpec(sheetKey : String, namespaceSheetNum : Int, dirSheetNum : Int, 
 							fileModelCLs : java.util.List[ClassLoader]) extends RepoSpec {
 	override def makeRepo() : Repo.WithDirectory = {
-		RepoTester.loadGoogSheetRepo(sheetKey, namespaceSheetNum, dirSheetNum, fileModelCLs)
+		RepoLoader.loadGoogSheetRepo(sheetKey, namespaceSheetNum, dirSheetNum, fileModelCLs)
 	}
 }
 case class OfflineXlsSheetRepoSpec(sheetLocation : String, namespaceSheet : String, dirSheet : String, 
 							fileModelCLs : java.util.List[ClassLoader]) extends RepoSpec {
 	override def makeRepo() : Repo.WithDirectory = {
-		RepoTester.loadXLSXSheetRepo(sheetLocation, namespaceSheet, dirSheet, fileModelCLs)
+		RepoLoader.loadXLSXSheetRepo(sheetLocation, namespaceSheet, dirSheet, fileModelCLs)
 	}
 }
 case class DatabaseRepoSpec(configPath : String, optConfResCL : ClassLoader, dirGraphID : Ident) extends RepoSpec {
 	def this(cPath : String,  optCL : ClassLoader,  dirGraphUriPrefix : String, dirGraphLocalName : String) 
 			= this(cPath, optCL, new FreeIdent(dirGraphUriPrefix + dirGraphLocalName, dirGraphLocalName))
 	override def makeRepo() : Repo.WithDirectory = {
-		RepoTester.loadDatabaseRepo(configPath, optConfResCL, dirGraphID)
+		RepoLoader.loadDatabaseRepo(configPath, optConfResCL, dirGraphID)
 	}			
 }
