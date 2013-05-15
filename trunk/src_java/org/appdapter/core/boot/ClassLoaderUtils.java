@@ -22,7 +22,7 @@ import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
 
-import org.osgi.framework.BundleContext;
+//import org.osgi.framework.BundleContext;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
 import org.slf4j.Logger;
@@ -63,7 +63,7 @@ public class ClassLoaderUtils {
 		}
 		return null;
 	}
-    
+    /*
     public static void registerClassLoader(BundleContext context, ClassLoader loader, String resourceClassLoaderType){
         if(context == null || loader == null){
             return;
@@ -75,7 +75,7 @@ public class ClassLoaderUtils {
         props.put(RESOURCE_CLASSLOADER_TYPE, resourceClassLoaderType);
         context.registerService(ClassLoader.class.getName(), loader, props);
     }
-        
+      
     public static List<ClassLoader> getFileResourceClassLoaders(BundleContext context, String resourceClassLoaderType){
         List<ClassLoader> resourceLoaders = new ArrayList<ClassLoader>();
         if(context == null){
@@ -112,5 +112,5 @@ public class ClassLoaderUtils {
             return null;
         }
         return (ClassLoader)obj;
-    }
+    }*/
 }
