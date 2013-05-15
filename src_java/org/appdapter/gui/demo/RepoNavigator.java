@@ -51,12 +51,10 @@ import org.appdapter.gui.repo.RepoBoxImpl;
 import org.appdapter.gui.repo.RepoModelBoxImpl;
 import org.appdapter.gui.trigger.BootstrapTriggerFactory;
 import org.appdapter.gui.trigger.SysTriggers;
-import org.appdapter.impl.store.QueryHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.hp.hpl.jena.query.QuerySolution;
-import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.Model;
 
 //import org.cogchar.blob.emit.OmniLoaderRepo;
