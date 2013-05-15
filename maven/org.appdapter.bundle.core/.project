@@ -1,24 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>org.appdapter.bundle.core</name>
-	<comment></comment>
-	<projects>
-	</projects>
-	<buildSpec>
-		<buildCommand>
-			<name>org.eclipse.jdt.core.javabuilder</name>
-			<arguments>
-			</arguments>
-		</buildCommand>
-		<buildCommand>
-			<name>org.eclipse.m2e.core.maven2Builder</name>
-			<arguments>
-			</arguments>
-		</buildCommand>
-	</buildSpec>
-	<natures>
-		<nature>org.eclipse.pde.PluginNature</nature>
-		<nature>org.eclipse.jdt.core.javanature</nature>
-		<nature>org.eclipse.m2e.core.maven2Nature</nature>
-	</natures>
+  <name>org.appdapter.bundle.core</name>
+  <comment>Primary Appdapter OSGi Bundle, &quot;depend on me!&quot;, has no dependencies on a particular 
+			OSGi framework implementation, no SLF4J concrete binding, and no builtin shell.
+			Includes the contents of both the &quot;core&quot; and &quot;registry&quot; bundes from the &quot;lib&quot; tier. NO_M2ECLIPSE_SUPPORT: Project files created with the maven-eclipse-plugin are not supported in M2Eclipse.</comment>
+  <projects>
+    <project>org.appdapter.lib.core</project>
+    <project>ext.bundle.jena_all_264</project>
+    <project>ext.bundle.xml.dom4j_161</project>
+    <project>org.appdapter.lib.registry</project>
+    <project>ext.bundle.osgi.common</project>
+  </projects>
+  <buildSpec>
+    <buildCommand>
+      <name>org.eclipse.jdt.core.javabuilder</name>
+    </buildCommand>
+  </buildSpec>
+  <natures>
+    <nature>org.eclipse.jdt.core.javanature</nature>
+  </natures>
 </projectDescription>
