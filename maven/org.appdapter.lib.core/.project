@@ -1,24 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>org.appdapter.lib.core</name>
-	<comment></comment>
-	<projects>
-	</projects>
-	<buildSpec>
-		<buildCommand>
-			<name>org.scala-ide.sdt.core.scalabuilder</name>
-			<arguments>
-			</arguments>
-		</buildCommand>
-		<buildCommand>
-			<name>org.eclipse.m2e.core.maven2Builder</name>
-			<arguments>
-			</arguments>
-		</buildCommand>
-	</buildSpec>
-	<natures>
-		<nature>org.scala-ide.sdt.core.scalanature</nature>
-		<nature>org.eclipse.jdt.core.javanature</nature>
-		<nature>org.eclipse.m2e.core.maven2Nature</nature>
-	</natures>
+  <name>org.appdapter.lib.core</name>
+  <comment>Appdapter Maven project including Java and Scala, produces jar, not bundle.  Excludes concrete SLF4J binding. NO_M2ECLIPSE_SUPPORT: Project files created with the maven-eclipse-plugin are not supported in M2Eclipse.</comment>
+  <projects>
+    <project>ext.bundle.jena_all_264</project>
+    <project>ext.bundle.xml.dom4j_161</project>
+  </projects>
+  <buildSpec>
+    <buildCommand>
+      <name>org.eclipse.jdt.core.javabuilder</name>
+    </buildCommand>
+  </buildSpec>
+  <natures>
+    <nature>org.eclipse.jdt.core.javanature</nature>
+  </natures>
 </projectDescription>

@@ -1,24 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>ext.bundle.osgi.common</name>
-	<comment></comment>
-	<projects>
-	</projects>
-	<buildSpec>
-		<buildCommand>
-			<name>org.eclipse.jdt.core.javabuilder</name>
-			<arguments>
-			</arguments>
-		</buildCommand>
-		<buildCommand>
-			<name>org.eclipse.m2e.core.maven2Builder</name>
-			<arguments>
-			</arguments>
-		</buildCommand>
-	</buildSpec>
-	<natures>
-		<nature>org.eclipse.pde.PluginNature</nature>
-		<nature>org.eclipse.jdt.core.javanature</nature>
-		<nature>org.eclipse.m2e.core.maven2Nature</nature>
-	</natures>
+  <name>ext.bundle.osgi.common</name>
+  <comment>OSGi platform dependency wrapper - of dubious value, so far!  This bundle sets up dependencies on specific versions of OSGi common components.
+				It doesn&apos;t really work right yet, since the deps are marked &quot;provided&quot; and are not propagated
+				to client projects.  You can pretty much ignore this project!. NO_M2ECLIPSE_SUPPORT: Project files created with the maven-eclipse-plugin are not supported in M2Eclipse.</comment>
+  <projects/>
+  <buildSpec>
+    <buildCommand>
+      <name>org.eclipse.jdt.core.javabuilder</name>
+    </buildCommand>
+  </buildSpec>
+  <natures>
+    <nature>org.eclipse.jdt.core.javanature</nature>
+  </natures>
 </projectDescription>

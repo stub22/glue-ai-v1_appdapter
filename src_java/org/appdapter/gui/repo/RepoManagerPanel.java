@@ -200,7 +200,7 @@ public class RepoManagerPanel extends AbstractScreenBoxedPOJOPanel<MutableRepoBo
 		}
 	}//GEN-LAST:event_myBut_chooseFileActionPerformed
 
-	@Override public void focusOnBox(MutableRepoBox b) {
+	public void focusOnBox(MutableRepoBox b) {
 		myFocusBox = b;
 		myRGTM.focusOnRepo(b);
 	}
