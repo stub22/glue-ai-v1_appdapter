@@ -16,18 +16,18 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import org.appdapter.gui.demo.ObjectNavigator.Icons;
-import org.appdapter.gui.pojo.POJOCollectionWithBoxContext;
-import org.appdapter.gui.pojo.POJOSwizzler;
+import org.appdapter.gui.pojo.POJOApp;
+import org.appdapter.gui.pojo.POJOBox;
 import org.appdapter.gui.swing.impl.JBox;
 
 public class RenameDialog extends JFrame {
 	public JTextField nameField = new JTextField(10);
 	public JButton okButton = new JButton("OK");
 	public JButton cancelButton = new JButton("Cancel");
-	POJOSwizzler object;
-	POJOCollectionWithBoxContext context;
+	POJOBox object;
+	POJOApp context;
 
-	public RenameDialog(POJOCollectionWithBoxContext context, POJOSwizzler object) {
+	public RenameDialog(POJOApp context, POJOBox object) {
 		super("Rename");
 		this.context = context;
 		setIconImage(Icons.loadImage("mainFrame.gif"));
@@ -53,39 +53,33 @@ public class RenameDialog extends JFrame {
 		org.appdapter.gui.pojo.Utility.centerWindow(this);
 
 		nameField.getDocument().addDocumentListener(new DocumentListener() {
-			@Override
-			public void insertUpdate(DocumentEvent evt) {
+			@Override public void insertUpdate(DocumentEvent evt) {
 				checkControls();
 			}
 
-			@Override
-			public void changedUpdate(DocumentEvent evt) {
+			@Override public void changedUpdate(DocumentEvent evt) {
 				checkControls();
 			}
 
-			@Override
-			public void removeUpdate(DocumentEvent evt) {
+			@Override public void removeUpdate(DocumentEvent evt) {
 				checkControls();
 			}
 		});
 
 		nameField.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
+			@Override public void actionPerformed(ActionEvent evt) {
 				okPressed();
 			}
 		});
 
 		cancelButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
+			@Override public void actionPerformed(ActionEvent evt) {
 				dispose();
 			}
 		});
 
 		okButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
+			@Override public void actionPerformed(ActionEvent evt) {
 				okPressed();
 			}
 		});

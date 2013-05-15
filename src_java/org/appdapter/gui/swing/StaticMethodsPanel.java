@@ -15,7 +15,7 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import org.appdapter.gui.pojo.POJOCollectionWithBoxContext;
+import org.appdapter.gui.pojo.POJOApp;
 import org.appdapter.gui.pojo.Utility;
 import org.appdapter.gui.swing.impl.JJPanelList;
 
@@ -27,7 +27,7 @@ import org.appdapter.gui.swing.impl.JJPanelList;
  * 
  */
 public class StaticMethodsPanel extends JJPanelList implements ActionListener, ListSelectionListener {
-  POJOCollectionWithBoxContext context;
+  POJOApp context;
   Class cls;
 
   StaticMethodList methodList;
@@ -40,7 +40,7 @@ public class StaticMethodsPanel extends JJPanelList implements ActionListener, L
     this(Utility.getCurrentContext(), cls);
   }
 
-  public StaticMethodsPanel(POJOCollectionWithBoxContext context, Class cls) throws Exception {
+  public StaticMethodsPanel(POJOApp context, Class cls) throws Exception {
     this.context = context;
     this.cls = cls;
     initGUI();

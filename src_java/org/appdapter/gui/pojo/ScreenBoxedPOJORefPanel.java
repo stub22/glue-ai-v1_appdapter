@@ -51,7 +51,7 @@ public class ScreenBoxedPOJORefPanel<BoxType extends Box> extends ScreenBoxedPOJ
 	boolean showPropButton;
 	boolean showIcon;
 	boolean showLabel;
-	POJOCollectionWithBoxContext context;
+	POJOApp context;
 
 	//Invisible panel in front that captures menu events and drag/drop events
 	JPanel frontGlass;
@@ -77,7 +77,7 @@ public class ScreenBoxedPOJORefPanel<BoxType extends Box> extends ScreenBoxedPOJ
 	/**
 	 * @param parent if a parent is provided, a "remove" button will be added allowing you to remove this object from the given collection
 	 */
-	public ScreenBoxedPOJORefPanel(POJOCollectionWithBoxContext context, Object object, boolean showLabel, boolean showIcon, boolean showPropButton, Collection parent) {
+	public ScreenBoxedPOJORefPanel(POJOApp context, Object object, boolean showLabel, boolean showIcon, boolean showPropButton, Collection parent) {
 		super(object);
 		this.context = context;
 		this.showLabel = showLabel;
@@ -93,7 +93,7 @@ public class ScreenBoxedPOJORefPanel<BoxType extends Box> extends ScreenBoxedPOJ
 		dragSource.createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_MOVE, this);
 	}
 
-	public ScreenBoxedPOJORefPanel(POJOCollectionWithBoxContext context, Object object, boolean showLabel, boolean showIcon, boolean showPropButton) {
+	public ScreenBoxedPOJORefPanel(POJOApp context, Object object, boolean showLabel, boolean showIcon, boolean showPropButton) {
 		this(context, object, showLabel, showIcon, showPropButton, null);
 	}
 

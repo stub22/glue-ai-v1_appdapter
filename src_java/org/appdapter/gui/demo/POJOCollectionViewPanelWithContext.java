@@ -16,8 +16,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import org.appdapter.demo.ObjectNavigatorGUI;
-import org.appdapter.gui.pojo.POJOCollection;
-import org.appdapter.gui.pojo.POJOCollectionWithBoxContext;
+import org.appdapter.gui.pojo.POJOApp;
 import org.appdapter.gui.pojo.POJOCollectionWithSwizzler;
 import org.appdapter.gui.pojo.Utility;
 import org.appdapter.gui.swing.impl.JJPanel;
@@ -30,26 +29,20 @@ public class POJOCollectionViewPanelWithContext extends JJPanel implements Actio
 	POJOCollectionViewPanel list;
 	JButton classBrowserButton;
 	JTextField classField;
-	POJOCollectionWithBoxContext context;
+	POJOApp context;
 
-	public POJOCollectionViewPanelWithContext(POJOCollectionWithBoxContext context) {
+	public POJOCollectionViewPanelWithContext(POJOApp context) {
 		this.context = context;
 		Utility.registerEditors();
 		Utility.setBeanInfoSearchPath();
 		initGUI();
 	}
 
-	@Override
-	public JLayeredPane getDesk() {
+	@Override public JLayeredPane getDesk() {
 		return desk;
 	}
 
-	public POJOCollection getCollection() {
-		return context.getCollection();
-	}
-
-	@Override
-	public void actionPerformed(ActionEvent evt) {
+	@Override public void actionPerformed(ActionEvent evt) {
 		if (evt.getSource() == classField || evt.getSource() == classBrowserButton) {
 			openClassBrowser();
 		}
@@ -122,24 +115,30 @@ public class POJOCollectionViewPanelWithContext extends JJPanel implements Actio
 		classBrowserButton.setEnabled(selectedClass != null);
 	}
 
-	@Override
-	public void insertUpdate(DocumentEvent e) {
+	@Override public void insertUpdate(DocumentEvent e) {
 		classFieldChanged();
 	}
 
-	@Override
-	public void removeUpdate(DocumentEvent e) {
+	@Override public void removeUpdate(DocumentEvent e) {
 		classFieldChanged();
 	}
 
-	@Override
-	public void changedUpdate(DocumentEvent e) {
+	@Override public void changedUpdate(DocumentEvent e) {
 		classFieldChanged();
 	}
 
-	@Override
-	public POJOCollectionWithSwizzler getCollectionWithSwizzler() {
+	@Override public POJOCollectionWithSwizzler getCollectionWithSwizzler() {
 		return context.getCollectionWithSwizzler();
+	}
+
+	@Override public void showMessage(String string) {
+		try {
+			Utility.getCurrentContext().showScreenBox(string);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 	}
 
 }

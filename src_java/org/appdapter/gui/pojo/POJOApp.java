@@ -7,7 +7,7 @@ import java.util.Collection;
  * 
  * 
  */
-public interface POJOCollectionWithBoxContext extends POJOCollection, Reloadable {
+public interface POJOApp extends Reloadable {
 
 	/**
 	 * Opens up a GUI to show the details of the given object
@@ -25,6 +25,14 @@ public interface POJOCollectionWithBoxContext extends POJOCollection, Reloadable
 	 * Displays the given error message somehow
 	 */
 	public void showError(String msg, Throwable err);
+
+	public Object findPOJO(String n);
+
+	//public POJOCollection getCollection();
+
+	public POJOCollectionWithSwizzler getCollectionWithSwizzler();
+
+	public void addListener(POJOCollectionListener cl);
 
 	// public POJOCollectionWithSwizzler getWithSwizzler();
 }

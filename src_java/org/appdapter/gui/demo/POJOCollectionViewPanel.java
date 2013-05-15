@@ -8,8 +8,8 @@ import javax.swing.JScrollPane;
 import javax.swing.border.Border;
 
 import org.appdapter.gui.pojo.POJOCollectionListener;
-import org.appdapter.gui.pojo.POJOCollectionWithBoxContext;
-import org.appdapter.gui.pojo.POJOSwizzler;
+import org.appdapter.gui.pojo.POJOApp;
+import org.appdapter.gui.pojo.POJOBox;
 import org.appdapter.gui.pojo.ScreenBoxedPOJOPanel;
 import org.appdapter.gui.pojo.ScreenBoxedPOJORefPanel;
 import org.appdapter.gui.swing.VerticalLayout;
@@ -20,12 +20,12 @@ import org.appdapter.gui.swing.impl.JJPanel;
  */
 public class POJOCollectionViewPanel extends JJPanel implements POJOCollectionListener {
 
-	POJOCollectionWithBoxContext context;
+	POJOApp context;
 	JPanel panel;
 	JScrollPane scroll;
 	Border defaultScrollBorder;
 
-	public POJOCollectionViewPanel(POJOCollectionWithBoxContext context) {
+	public POJOCollectionViewPanel(POJOApp context) {
 		super();
 		this.context = context;
 		initGUI();
@@ -83,7 +83,7 @@ public class POJOCollectionViewPanel extends JJPanel implements POJOCollectionLi
 	public void reloadContents() {
 		panel.removeAll();
 
-		for (POJOSwizzler object : context.getCollectionWithSwizzler().getSwizzlers()) {
+		for (POJOBox object : context.getCollectionWithSwizzler().getSwizzlers()) {
 			ScreenBoxedPOJOPanel view = new ScreenBoxedPOJORefPanel(context, object.getObject(), true, true, true);
 			panel.add(view);
 		}

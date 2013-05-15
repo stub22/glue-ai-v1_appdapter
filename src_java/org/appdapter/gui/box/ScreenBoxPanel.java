@@ -16,6 +16,7 @@
 package org.appdapter.gui.box;
 
 import org.appdapter.api.trigger.Box;
+import org.appdapter.gui.browse.ButtonTabComponent;
 import org.appdapter.gui.pojo.AbstractScreenBoxedPOJOPanel;
 import org.appdapter.gui.pojo.ScreenBoxedPOJOPanel;
 
@@ -28,21 +29,17 @@ import javax.swing.JPanel;
  * 
  * @author Stu B. <www.texpedient.com>
  */
-public abstract class ScreenBoxPanel<BoxType extends Box> extends JPanel {
+public abstract class ScreenBoxPanel<BoxType extends Box> extends ButtonTabComponent {
 	public enum Kind {
-		MATRIX,
-		DB_MANAGER,
-		REPO_MANAGER,
-		OBJECT_PROPERTIES,
-		OTHER
+		MATRIX, DB_MANAGER, REPO_MANAGER, OBJECT_PROPERTIES, OTHER
 	}
+
 	/** Make the display of this panel foocus on a particular box.
 	 * 
 	 * @param b - a box to focus on
 	 */
 	public abstract void focusOnBox(BoxType b);
-	
-	
+
 	/** Return the live object in which we think we are updating 
 	 * 
 	 *  This can be 'this' object

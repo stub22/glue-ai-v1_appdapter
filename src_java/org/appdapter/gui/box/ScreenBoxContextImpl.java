@@ -20,24 +20,37 @@ import org.appdapter.api.trigger.MutableBox;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContextImpl;
 import org.appdapter.gui.browse.DisplayContext;
+
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+
+import javax.swing.table.TableModel;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreeNode;
 
 /**
  * @author Stu B. <www.texpedient.com>
  *
  * This class operates on raw box types.
  */
-public class ScreenBoxContextImpl extends BoxContextImpl implements DisplayContextProvider  {
-	private	ScreenBoxTreeNode			myRootNode;
-	private	DefaultTreeModel	myTreeModel;
-	public ScreenBoxContextImpl() { }
-	private void setRootNode(ScreenBoxTreeNode rootNode) {
-		myRootNode = rootNode;
+public class ScreenBoxContextImpl extends BoxContextImpl implements DisplayContextProvider {
+	private ScreenBoxTreeNode myRootNode;
+	private DefaultTreeModel myTreeModel;
+	private TableModel myTableModel;
+
+	public static enum DisplayType {
+		TREE, PANEL, MODAL, TOSTRING,
 	}
+
+	public ScreenBoxContextImpl() {
+	}
+
+	private void setRootNode(DisplayNode rootNode) {
+		myRootNode = (ScreenBoxTreeNode) rootNode;
+	}
+
 	public Box getRootBox() {
 		Box result = null;
 		if (myRootNode != null) {
@@ -45,63 +58,79 @@ public class ScreenBoxContextImpl extends BoxContextImpl implements DisplayConte
 		}
 		return result;
 	}
-	private ScreenBoxTreeNode findNodeForBox(Box b) {
+
+	private DisplayNode findNodeForBox(Box b) {
 		return myRootNode.findDescendantNodeForBox(b);
 	}
+
 	public Box getParentBox(Box child) {
-		ScreenBoxTreeNode childNode = findNodeForBox(child);
-		return ((ScreenBoxTreeNode) childNode.getParent()).getBox();
+		DisplayNode childNode = findNodeForBox(child);
+		Object parent = childNode.getParent();
+		if (parent instanceof Box)
+			return ((Box) parent);
+		if (parent instanceof DisplayNode)
+			return ((DisplayNode) parent).getBox();
+
+		return ((DisplayNode) childNode.getParent()).getBox();
 	}
+
 	// TODO:  Pass in the class parent of the expected children
 	public List<Box> getOpenChildBoxes(Box parent) {
 		List<Box> results = new ArrayList<Box>();
-		ScreenBoxTreeNode parentNode = findNodeForBox(parent);
+		DisplayNode parentNode = findNodeForBox(parent);
 		Enumeration childNodeEnum = parentNode.children();
 		while (childNodeEnum.hasMoreElements()) {
-			ScreenBoxTreeNode btn = (ScreenBoxTreeNode) childNodeEnum.nextElement();
+			DisplayNode btn = (DisplayNode) childNodeEnum.nextElement();
 			Box childBox = btn.getBox();
 			results.add(childBox);
 		}
 		return results;
 	}
 
-	public	DisplayContext	findDisplayContext(Box viewable) {
-		ScreenBoxTreeNode btn = findNodeForBox(viewable);
+	public DisplayContext findDisplayContext(Box viewable) {
+		DisplayNode btn = findNodeForBox(viewable);
 		return btn.findDisplayContext();
 	}
+
 	public void contextualizeAndAttachRootBox(MutableBox rootBox) {
-		ScreenBoxTreeNode rootNode = new ScreenBoxTreeNode(rootBox);
+		DisplayNode rootNode = new ScreenBoxTreeNode(rootBox);
 		setRootNode(rootNode);
 		rootBox.setContext(this);
-		((ScreenBox)	rootBox).setDisplayContextProvider(this);
+		((ScreenBox) rootBox).setDisplayContextProvider(this);
 	}
-	private ScreenBoxTreeNode attachChildBoxNode(ScreenBoxTreeNode parentNode, Box childBox) {
+
+	private DisplayNode attachChildBoxNode(DisplayNode parentNode, Box childBox) {
 		//  childBox should already have context(==this) and displayContext.
 		if (childBox.getBoxContext() != this) {
 			throw new RuntimeException("Refusing to attach a childBox[" + childBox + "] which is not in this context [" + this + "]");
 		}
-		ScreenBoxTreeNode childNode = new ScreenBoxTreeNode(childBox);
+		DisplayNode childNode = new ScreenBoxTreeNode(childBox);
 		parentNode.add(childNode);
 		if (myTreeModel != null) {
-			myTreeModel.reload(parentNode);
+			if (parentNode instanceof TreeNode)
+				myTreeModel.reload((TreeNode) parentNode);
 		}
 		return childNode;
 	}
+
 	public void contextualizeAndAttachChildBox(Box<?> parentBox, MutableBox<?> childBox) {
-		ScreenBoxTreeNode parentNode = findNodeForBox(parentBox);
+		DisplayNode parentNode = findNodeForBox(parentBox);
 		if (parentNode == null) {
 			throw new RuntimeException("Can't find node for parentBox: " + parentBox);
 		}
 		childBox.setContext(this);
-		ScreenBoxTreeNode childNode = attachChildBoxNode(parentNode, childBox);
+
+		DisplayNode childNode = attachChildBoxNode(parentNode, childBox);
 		((ScreenBox) childBox).setDisplayContextProvider(this);
 	}
+
 	public TreeModel getTreeModel() {
 		if (myTreeModel == null) {
 			myTreeModel = new DefaultTreeModel(myRootNode);
 		}
 		return myTreeModel;
 	}
+
 	public void reloadTreeModel() {
 		TreeModel tm = getTreeModel();
 		DefaultTreeModel dtm = (DefaultTreeModel) tm;

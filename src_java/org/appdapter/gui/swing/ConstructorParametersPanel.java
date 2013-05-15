@@ -6,7 +6,7 @@ import java.lang.reflect.Constructor;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import org.appdapter.gui.pojo.POJOCollectionWithBoxContext;
+import org.appdapter.gui.pojo.POJOApp;
 import org.appdapter.gui.pojo.Utility;
 import org.appdapter.gui.swing.impl.JJPanel;
 
@@ -17,17 +17,17 @@ import org.appdapter.gui.swing.impl.JJPanel;
  * 
  */
 public class ConstructorParametersPanel extends JJPanel {
-  POJOCollectionWithBoxContext context;
+  POJOApp context;
   Constructor currentConstructor = null;
   PropertyValueControl[] paramViews = null;
   JPanel childPanel;
 
-  public ConstructorParametersPanel(POJOCollectionWithBoxContext context) {
+  public ConstructorParametersPanel(POJOApp context) {
     this.context = context;
     setLayout(new BorderLayout());
   }
 
-  public ConstructorParametersPanel(POJOCollectionWithBoxContext context, Constructor c) {
+  public ConstructorParametersPanel(POJOApp context, Constructor c) {
     this.context = context;
     setLayout(new BorderLayout());
     setConstructor(c);

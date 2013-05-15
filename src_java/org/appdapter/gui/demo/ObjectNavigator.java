@@ -41,7 +41,7 @@ import javax.swing.JToolBar;
 
 import org.appdapter.demo.ObjectNavigatorGUI;
 import org.appdapter.gui.pojo.POJOCollectionImpl;
-import org.appdapter.gui.pojo.POJOCollectionWithBoxContext;
+import org.appdapter.gui.pojo.POJOApp;
 import org.appdapter.gui.pojo.POJOCollectionWithSwizzler;
 import org.appdapter.gui.pojo.ScreenBoxedPOJOCollectionContextWithNavigator;
 import org.appdapter.gui.pojo.Utility;
@@ -91,7 +91,7 @@ public class ObjectNavigator extends JFrame implements PropertyChangeListener, o
 
 	// ==== Instance variables ==========
 	POJOCollectionWithSwizzler collection;
-	POJOCollectionWithBoxContext context;
+	POJOApp context;
 
 	// The currently opened ObjectNavigator file (may be null)
 	File file = null;
@@ -175,7 +175,7 @@ public class ObjectNavigator extends JFrame implements PropertyChangeListener, o
 		return defaultFrame;
 	}
 
-	public POJOCollectionWithBoxContext getChildCollectionWithContext() {
+	public POJOApp getChildCollectionWithContext() {
 		return context;
 	}
 
@@ -642,5 +642,10 @@ public class ObjectNavigator extends JFrame implements PropertyChangeListener, o
 				g.drawString("?", x, y + 12);
 			}
 		}
+	}
+
+	@Override public void showMessage(String string) {
+		// TODO Auto-generated method stub
+		
 	}
 }

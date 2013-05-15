@@ -18,6 +18,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Set;
 
+import javax.management.RuntimeErrorException;
+
 import org.appdapter.api.trigger.BoxImpl;
 import org.appdapter.gui.box.ScreenBoxImpl;
 import org.slf4j.Logger;
@@ -41,7 +43,7 @@ import org.slf4j.LoggerFactory;
  * POJOCollectionContextListeners can register to find out when objects are
  * added or removed.
  * 
- * @see POJOSwizzler
+ * @see POJOBox
  * 
  */
 @SuppressWarnings("serial")
@@ -61,7 +63,7 @@ public class POJOCollectionImpl implements VetoableChangeListener, PropertyChang
 
 	// An ordered list of objects
 	// private List objectList = new LinkedList();
-	private LinkedList<POJOSwizzler> swizzlerList = new LinkedList<POJOSwizzler>();
+	private LinkedList<POJOBox> swizzlerList = new LinkedList<POJOBox>();
 	// private LinkedList objectList = new LinkedList();
 
 	// The currently selected object
@@ -81,8 +83,7 @@ public class POJOCollectionImpl implements VetoableChangeListener, PropertyChang
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public synchronized Object createAndAddPOJO(Class cl) throws InstantiationException, IllegalAccessException {
+	@Override public synchronized Object createAndAddPOJO(Class cl) throws InstantiationException, IllegalAccessException {
 		// Create the object
 		Object obj = cl.newInstance();
 
@@ -95,8 +96,7 @@ public class POJOCollectionImpl implements VetoableChangeListener, PropertyChang
 	/* (non-Javadoc)
 	 * @see java.util.Collection#add(java.lang.Object)
 	 */
-	@Override
-	public synchronized boolean addPOJO(Object obj) {
+	@Override public synchronized boolean addPOJO(Object obj) {
 		try {
 			return addPOJOMaybe(obj);
 		} catch (PropertyVetoException e) {
@@ -110,7 +110,7 @@ public class POJOCollectionImpl implements VetoableChangeListener, PropertyChang
 			return false;
 		} else {
 			// Create the object swizzler, with a unique name
-			POJOSwizzler swizzler = new ScreenBoxImpl(generateUniqueName(obj), obj);
+			POJOBox swizzler = new ScreenBoxImpl(generateUniqueName(obj), obj);
 
 			// Add it
 			// objectsToSwizzlers.put(obj, swizzler);
@@ -138,11 +138,10 @@ public class POJOCollectionImpl implements VetoableChangeListener, PropertyChang
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public synchronized boolean removePOJO(Object obj) {
+	@Override public synchronized boolean removePOJO(Object obj) {
 		if (containsPOJO(obj)) {
 			// Find the swizzler
-			POJOSwizzler swizzler = getSwizzler(obj);
+			POJOBox swizzler = getSwizzler(obj);
 
 			// Remove it
 			// objectsToSwizzlers.remove(obj);
@@ -168,8 +167,7 @@ public class POJOCollectionImpl implements VetoableChangeListener, PropertyChang
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public Iterable<POJOSwizzler> getSwizzlers() {
+	@Override public Iterable<POJOBox> getSwizzlers() {
 		LinkedList list = new LinkedList();
 		Iterator it = swizzlerList.iterator();
 		while (it.hasNext()) {
@@ -181,24 +179,21 @@ public class POJOCollectionImpl implements VetoableChangeListener, PropertyChang
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public int getPOJOCount() {
+	@Override public int getPOJOCount() {
 		return swizzlerList.size();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public boolean containsPOJO(Object object) {
+	@Override public boolean containsPOJO(Object object) {
 		return containsSwizzler(getSwizzler(object));// containsKey(object);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public boolean containsSwizzler(POJOSwizzler swizzler) {
+	@Override public boolean containsSwizzler(POJOBox swizzler) {
 		return swizzlerList.contains(swizzler);
 		// return objectsToSwizzlers.containsValue(object);
 	}
@@ -206,9 +201,8 @@ public class POJOCollectionImpl implements VetoableChangeListener, PropertyChang
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public Object findPOJO(String name) {
-		POJOSwizzler swizzler = findSwizzler(name);
+	@Override public Object findPOJO(String name) {
+		POJOBox swizzler = findSwizzler(name);
 		if (swizzler == null) {
 			return null;
 		} else {
@@ -219,9 +213,8 @@ public class POJOCollectionImpl implements VetoableChangeListener, PropertyChang
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public POJOSwizzler findSwizzler(String name) {
-		for (POJOSwizzler swizzler : getSwizzlers()) {
+	@Override public POJOBox findSwizzler(String name) {
+		for (POJOBox swizzler : getSwizzlers()) {
 			if (swizzler.isNamed(name))
 				return swizzler;
 		}
@@ -231,15 +224,48 @@ public class POJOCollectionImpl implements VetoableChangeListener, PropertyChang
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public POJOSwizzler getSwizzler(Object object) {
+	@Override public POJOBox getSwizzler(Object object) {
 		if (object == null)
 			return null;
-		for (POJOSwizzler swizzler : swizzlerList) {
-			if (swizzler.representsObject(object))
-				return swizzler;
+		if (object instanceof POJOBox)
+			return (POJOBox) object;
+
+		synchronized (swizzlerList) {
+			for (POJOBox swizzler : swizzlerList) {
+				if (swizzler.representsObject(object))
+					return swizzler;
+			}
+			POJOBox swizzler;
+			try {
+				swizzler = makeWrapper(object);
+			} catch (PropertyVetoException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				throw new RuntimeException(e);
+			}
+			swizzlerList.add(swizzler);
+
+			// Add myself as listener
+			swizzler.addVetoableChangeListener(this);
+			swizzler.addPropertyChangeListener(this);
+
+			// Update the name index
+			// nameIndex.put(swizzler.getName(), swizzler);
+
+			// notify collectionListeners
+			Iterator it = collectionListeners.iterator();
+			while (it.hasNext()) {
+				// @temp
+				((POJOCollectionListener) it.next()).pojoAdded(object);
+			}
+			return swizzler;
 		}
-		return null;
+	}
+
+	private POJOBox makeWrapper(Object object) throws PropertyVetoException {
+		Class gc = object.getClass();
+		POJOBox swizzler = new ScreenBoxImpl(generateUniqueName(object), object);
+		return swizzler;
 	}
 
 	// ===== Manipulating the selected object ===============
@@ -247,8 +273,7 @@ public class POJOCollectionImpl implements VetoableChangeListener, PropertyChang
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public Object getSelectedPOJO() {
+	@Override public Object getSelectedPOJO() {
 		return selected;
 	}
 
@@ -257,32 +282,28 @@ public class POJOCollectionImpl implements VetoableChangeListener, PropertyChang
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public void addPropertyChangeListener(PropertyChangeListener p) {
+	@Override public void addPropertyChangeListener(PropertyChangeListener p) {
 		propSupport.addPropertyChangeListener(p);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public void removePropertyChangeListener(PropertyChangeListener p) {
+	@Override public void removePropertyChangeListener(PropertyChangeListener p) {
 		propSupport.removePropertyChangeListener(p);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public void addListener(POJOCollectionListener l) {
+	@Override public void addListener(POJOCollectionListener l) {
 		collectionListeners.add(l);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public void removeListener(POJOCollectionListener l) {
+	@Override public void removeListener(POJOCollectionListener l) {
 		collectionListeners.remove(l);
 	}
 
@@ -291,11 +312,10 @@ public class POJOCollectionImpl implements VetoableChangeListener, PropertyChang
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public synchronized void propertyChange(PropertyChangeEvent evt) {
+	@Override public synchronized void propertyChange(PropertyChangeEvent evt) {
 		if (evt.getPropertyName().equals("name")) {
 			// Name has changed - so update the name index
-			POJOSwizzler object = (POJOSwizzler) (evt.getSource());
+			POJOBox object = (POJOBox) (evt.getSource());
 			if (containsPOJO(object.getObject())) {
 				String newName = (String) evt.getNewValue();
 				String oldName = (String) evt.getOldValue();
@@ -309,7 +329,7 @@ public class POJOCollectionImpl implements VetoableChangeListener, PropertyChang
 			// Selection has changed. Call notifySelected or notifyDeselected
 			// to update my internal state
 			Boolean newValue = (Boolean) evt.getNewValue();
-			POJOSwizzler swizzler = (POJOSwizzler) evt.getSource();
+			POJOBox swizzler = (POJOBox) evt.getSource();
 			Object object = swizzler.getObject();
 			if (containsPOJO(object)) {
 				if (newValue.equals(new Boolean(true))) {
@@ -332,14 +352,13 @@ public class POJOCollectionImpl implements VetoableChangeListener, PropertyChang
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public synchronized void setSelectedPOJO(Object object) throws PropertyVetoException {
+	@Override public synchronized void setSelectedPOJO(Object object) throws PropertyVetoException {
 		object = Utility.asPOJO(object);
 		if (selected != object && containsPOJO(object)) {
 
 			// Deselect the old swizzler (if any)
 			Object oldSelected = selected;
-			POJOSwizzler oldSwizzler = getSwizzler(oldSelected);
+			POJOBox oldSwizzler = getSwizzler(oldSelected);
 
 			// Update my "selected" instance variable
 			selected = object;
@@ -353,16 +372,15 @@ public class POJOCollectionImpl implements VetoableChangeListener, PropertyChang
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
+	@Override public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
 		if (evt.getPropertyName().equals("name")) {
 			// The name of a swizzler has changed. Make sure there are no name
 			// collisions
-			POJOSwizzler swizzler = (POJOSwizzler) (evt.getSource());
+			POJOBox swizzler = (POJOBox) (evt.getSource());
 			Object object = swizzler.getObject();
 			if (containsPOJO(object)) {
 				String name = (String) evt.getNewValue();
-				POJOSwizzler otherSwizzler = findSwizzler(name);
+				POJOBox otherSwizzler = findSwizzler(name);
 				if (otherSwizzler != null && otherSwizzler != swizzler) {
 					throw new PropertyVetoException("Another object already has the name '" + name + "'", evt);
 				}
@@ -375,8 +393,7 @@ public class POJOCollectionImpl implements VetoableChangeListener, PropertyChang
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public void save(File destination) throws IOException {
+	@Override public void save(File destination) throws IOException {
 		theLogger.debug("Saving collection to " + destination);
 		FileOutputStream fileOut = new FileOutputStream(destination);
 		ObjectOutputStream objectOut = new ObjectOutputStream(fileOut);
@@ -410,7 +427,7 @@ public class POJOCollectionImpl implements VetoableChangeListener, PropertyChang
 			propSupport = new PropertyChangeSupport(this);
 		}
 
-		for (POJOSwizzler b : getSwizzlers()) {
+		for (POJOBox b : getSwizzlers()) {
 			b.addVetoableChangeListener(this);
 			b.addPropertyChangeListener(this);
 		}
@@ -423,36 +440,35 @@ public class POJOCollectionImpl implements VetoableChangeListener, PropertyChang
 	 * like "Button1", "Button2", etc.
 	 */
 	public String generateUniqueName(Object object) {
+		if (object instanceof Class) {
+			return ((Class) object).getCanonicalName();
+		}
 		return Utility.generateUniqueName(object);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public Object getSelectedBean() {
+	@Override public Object getSelectedBean() {
 		// TODO Auto-generated method stub
 		return selected;
 	}
 
-	@Override
-	public POJOCollection getCollection() {
+	@Override public POJOCollection getCollection() {
 		// TODO Auto-generated method stub
 		return this;
 	}
 
-	@Override
-	public POJOCollectionWithSwizzler getCollectionWithSwizzler() {
+	@Override public POJOCollectionWithSwizzler getCollectionWithSwizzler() {
 		// TODO Auto-generated method stub
 		return this;
 	}
 
-	@Override
-	public <T> Collection<T> getPOJOCollectionOfType(Class<T> type) {
+	@Override public <T> Collection<T> getPOJOCollectionOfType(Class<T> type) {
 		Set result = new HashSet();
 		Iterator it = swizzlerList.iterator();
 		while (it.hasNext()) {
-			POJOSwizzler obj = (POJOSwizzler) it.next();
+			POJOBox obj = (POJOBox) it.next();
 			if (obj.isInstance(type)) {
 				result.add(obj);
 			}
@@ -460,18 +476,19 @@ public class POJOCollectionImpl implements VetoableChangeListener, PropertyChang
 		return result;
 	}
 
-	@Override
-	public boolean containsSwizzler(ScreenBoxImpl swizzler) {
+	@Override public boolean containsSwizzler(ScreenBoxImpl swizzler) {
 		return containsPOJO(swizzler.getObject());
 	}
 
-	@Override
-	public BoxImpl findBoxByName(String name) {
+	@Override public BoxImpl findBoxByName(String name) {
 		return findSwizzler(name);
 	}
 
-	@Override
-	public ScreenBoxImpl getBoxForObject(Object object) {
+	@Override public ScreenBoxImpl findOrCreateBox(Object object) {
 		return (ScreenBoxImpl) getSwizzler(object);
+	}
+
+	@Override public POJOApp getPOJOApp() {
+		return Utility.getCurrentContext();
 	}
 }

@@ -31,7 +31,7 @@ public interface POJOCollectionWithSwizzler extends POJOCollection {
 	 * bit slow! Avoid whenever possible. The code can be optimized for this,
 	 * but it isn't right now.
 	 */
-	public abstract Iterable<POJOSwizzler> getSwizzlers();
+	public abstract Iterable<POJOBox> getSwizzlers();
 
 	/**
 	 * Returns the current number of objects in the collection
@@ -53,7 +53,7 @@ public interface POJOCollectionWithSwizzler extends POJOCollection {
 	 * ScreenBoxImpl who's object corresponds to the given one. Returns null if
 	 * the ObjectNavigator does not contain the given object.
 	 */
-	public abstract ScreenBoxImpl getBoxForObject(Object object);
+	public abstract ScreenBoxImpl findOrCreateBox(Object object);
 
 	/**
 	 * Returns the currently selected object, or null if none.
@@ -73,14 +73,12 @@ public interface POJOCollectionWithSwizzler extends POJOCollection {
 	/**
 	 * Listeners will find out when objects are added or removed
 	 */
-	@Override
-	public abstract void addListener(POJOCollectionListener l);
+	@Override public abstract void addListener(POJOCollectionListener l);
 
 	/**
 	 * Listeners will find out when objects are added or removed
 	 */
-	@Override
-	public abstract void removeListener(POJOCollectionListener l);
+	@Override public abstract void removeListener(POJOCollectionListener l);
 
 	/**
 	 * This is used for ScreenBoxImpls to tell their POJOCollection that a
@@ -115,10 +113,12 @@ public interface POJOCollectionWithSwizzler extends POJOCollection {
 
 	public abstract Object getSelectedBean();
 
-	POJOSwizzler findSwizzler(String name);
+	POJOBox findSwizzler(String name);
 
-	POJOSwizzler getSwizzler(Object object);
+	POJOBox getSwizzler(Object object);
 
-	boolean containsSwizzler(POJOSwizzler swizzler);
+	boolean containsSwizzler(POJOBox swizzler);
+
+	public abstract POJOApp getPOJOApp();
 
 }
