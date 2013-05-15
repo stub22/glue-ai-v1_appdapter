@@ -17,6 +17,8 @@
 package org.appdapter.core.boot;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -27,12 +29,12 @@ import org.slf4j.LoggerFactory;
  */
 
 public class ClassLoaderUtils {
-    private final static Logger theLogger = LoggerFactory.getLogger(ClassLoaderUtils.class.getName());
-    
-    public final static String RESOURCE_CLASSLOADER_TYPE = "ResourceClassLoaderType";
-    public final static String ALL_RESOURCE_CLASSLOADER_TYPES = "*";
-    
-	public static URL findResourceURL (String path, List<ClassLoader> cLoaders) {
+	private final static Logger theLogger = LoggerFactory.getLogger(ClassLoaderUtils.class.getName());
+
+	public final static String RESOURCE_CLASSLOADER_TYPE = "ResourceClassLoaderType";
+	public final static String ALL_RESOURCE_CLASSLOADER_TYPES = "*";
+
+	public static URL findResourceURL(String path, List<ClassLoader> cLoaders) {
 		for (ClassLoader cl : cLoaders) {
 			// This method will first search the parent class loader for the resource; if the parent is null the path of
 			// the class loader built-in to the virtual machine is searched. That failing, this method will invoke 
@@ -44,8 +46,8 @@ public class ClassLoaderUtils {
 		}
 		return null;
 	}
-    
-	public static ClassLoader findResourceClassLoader (String path, List<ClassLoader> cLoaders) {
+
+	public static ClassLoader findResourceClassLoader(String path, List<ClassLoader> cLoaders) {
 		for (ClassLoader cl : cLoaders) {
 			// This method will first search the parent class loader for the resource; if the parent is null the path of
 			// the class loader built-in to the virtual machine is searched. That failing, this method will invoke 
@@ -57,54 +59,71 @@ public class ClassLoaderUtils {
 		}
 		return null;
 	}
-    /*
-    public static void registerClassLoader(BundleContext context, ClassLoader loader, String resourceClassLoaderType){
-        if(context == null || loader == null){
-            return;
-        }
-        if(resourceClassLoaderType == null){
-            resourceClassLoaderType = "UNKNOWN";
-        }
-        Dictionary<String,String> props = new Hashtable<String, String>();
-        props.put(RESOURCE_CLASSLOADER_TYPE, resourceClassLoaderType);
-        context.registerService(ClassLoader.class.getName(), loader, props);
-    }
-      
-    public static List<ClassLoader> getFileResourceClassLoaders(BundleContext context, String resourceClassLoaderType){
-        List<ClassLoader> resourceLoaders = new ArrayList<ClassLoader>();
-        if(context == null){
-            return resourceLoaders;
-        }
-        if(resourceClassLoaderType == null || resourceClassLoaderType.isEmpty()){
-            resourceClassLoaderType = ALL_RESOURCE_CLASSLOADER_TYPES;
-        }
-        ServiceReference[] loaders = null;
-        String filter = "(" + RESOURCE_CLASSLOADER_TYPE + "=" + resourceClassLoaderType + ")";
-        try{
-             loaders = context.getServiceReferences(ClassLoader.class.getName(), filter);
-        }catch(InvalidSyntaxException ex){
-            theLogger.warn("Syntax error with file resource ClassLoader filter string: " + filter + ".");
-        }
-        if(loaders == null || loaders.length == 0){
-            return resourceLoaders;
-        }
-        for(ServiceReference ref : loaders){
-            ClassLoader l = getLoader(context, ref);
-            if(l != null){
-                resourceLoaders.add(l);
-            }
-        }
-        return resourceLoaders;
-    }
-    
-    private static ClassLoader getLoader(BundleContext context, ServiceReference ref){
-        if(context == null || ref == null){
-            return null;
-        }
-        Object obj = context.getService(ref);
-        if(obj == null || !ClassLoader.class.isAssignableFrom(obj.getClass())){
-            return null;
-        }
-        return (ClassLoader)obj;
-    }*/
+
+	public static List<ClassLoader> getFileResourceClassLoaders(String resourceClassLoaderType) {
+		List<ClassLoader> resourceLoaders = new ArrayList<ClassLoader>();
+		addIfNew(resourceLoaders, ClassLoader.class.getClassLoader());
+		addIfNew(resourceLoaders, ClassLoaderUtils.class.getClassLoader());
+		return resourceLoaders;
+	}
+
+	private static <T> boolean addIfNew(Collection<T> col, T e) {
+		if (e == null)
+			return false;
+		if (col.contains(e))
+			return false;
+		col.add(e);
+		return true;
+	}
+
+	/*
+	public static void registerClassLoader(BundleContext context, ClassLoader loader, String resourceClassLoaderType){
+	    if(context == null || loader == null){
+	        return;
+	    }
+	    if(resourceClassLoaderType == null){
+	        resourceClassLoaderType = "UNKNOWN";
+	    }
+	    Dictionary<String,String> props = new Hashtable<String, String>();
+	    props.put(RESOURCE_CLASSLOADER_TYPE, resourceClassLoaderType);
+	    context.registerService(ClassLoader.class.getName(), loader, props);
+	}
+	  
+	public static List<ClassLoader> getFileResourceClassLoaders(BundleContext context, String resourceClassLoaderType){
+	    List<ClassLoader> resourceLoaders = new ArrayList<ClassLoader>();
+	    if(context == null){
+	        return resourceLoaders;
+	    }
+	    if(resourceClassLoaderType == null || resourceClassLoaderType.isEmpty()){
+	        resourceClassLoaderType = ALL_RESOURCE_CLASSLOADER_TYPES;
+	    }
+	    ServiceReference[] loaders = null;
+	    String filter = "(" + RESOURCE_CLASSLOADER_TYPE + "=" + resourceClassLoaderType + ")";
+	    try{
+	         loaders = context.getServiceReferences(ClassLoader.class.getName(), filter);
+	    }catch(InvalidSyntaxException ex){
+	        theLogger.warn("Syntax error with file resource ClassLoader filter string: " + filter + ".");
+	    }
+	    if(loaders == null || loaders.length == 0){
+	        return resourceLoaders;
+	    }
+	    for(ServiceReference ref : loaders){
+	        ClassLoader l = getLoader(context, ref);
+	        if(l != null){
+	            resourceLoaders.add(l);
+	        }
+	    }
+	    return resourceLoaders;
+	}
+	
+	private static ClassLoader getLoader(BundleContext context, ServiceReference ref){
+	    if(context == null || ref == null){
+	        return null;
+	    }
+	    Object obj = context.getService(ref);
+	    if(obj == null || !ClassLoader.class.isAssignableFrom(obj.getClass())){
+	        return null;
+	    }
+	    return (ClassLoader)obj;
+	}*/
 }
