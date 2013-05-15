@@ -345,8 +345,8 @@ object ReloadingRepoTest {
   final val THEATER_GROUP_QN = "csi:theater_group_44";
 
   def main(args: Array[String]) = {
-    val fileResModelCLs: java.util.List[ClassLoader] =
-      ClassLoaderUtils.getFileResourceClassLoaders(null, ClassLoaderUtils.ALL_RESOURCE_CLASSLOADER_TYPES);
+    val fileResModelCLs: java.util.List[ClassLoader] = 
+      ClassLoaderUtils.getFileResourceClassLoaders(ClassLoaderUtils.ALL_RESOURCE_CLASSLOADER_TYPES);
     val repoSpec = new OnlineSheetRepoSpec(ReloadingRepoTest.BMC_SHEET_KEY, ReloadingRepoTest.BMC_NAMESPACE_SHEET_NUM, ReloadingRepoTest.BMC_DIRECTORY_SHEET_NUM, fileResModelCLs);
     val repo: OmniLoaderRepo = repoSpec.makeRepo.asInstanceOf[OmniLoaderRepo];
     repo.addToWhackmole();
