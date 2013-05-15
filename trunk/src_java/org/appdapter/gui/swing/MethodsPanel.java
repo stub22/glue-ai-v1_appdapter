@@ -14,7 +14,7 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import org.appdapter.gui.pojo.POJOCollectionWithBoxContext;
+import org.appdapter.gui.pojo.POJOApp;
 import org.appdapter.gui.pojo.Utility;
 import org.appdapter.gui.swing.impl.JVPanel;
 import org.slf4j.Logger;
@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 public class MethodsPanel extends JVPanel implements ActionListener, ListSelectionListener {
   private static Logger theLogger = LoggerFactory.getLogger(MethodsPanel.class);
 
-  POJOCollectionWithBoxContext context;
+  POJOApp context;
   Object object;
   Class objectClass;
 
@@ -44,7 +44,7 @@ public class MethodsPanel extends JVPanel implements ActionListener, ListSelecti
     this(Utility.getCurrentContext(), object);
   }
 
-  public MethodsPanel(POJOCollectionWithBoxContext context, Object object) throws Exception {
+  public MethodsPanel(POJOApp context, Object object) throws Exception {
     this.context = context;
     this.object = object;
     this.objectClass = object.getClass();

@@ -93,9 +93,14 @@ P:\_prj\s2\appdapter\appdapter_trunk\src_scala\heaven\piece\Lucky.scala:52: erro
 	// The "_ <:" seems to be the magic sugar that allows this construct to be extended in Scala 2.8.1.
 	//
 
-
+/*
 	class LoEmptyTao[JEZ <: JavaEmptyZen[  _ <:  JavaEmptyTao [JEZ]]] extends JavaEmptyTao[  JEZ] { }
 	class LoEmptyZen[JET <: JavaEmptyTao[  _ <:  JavaEmptyZen [JET]]] extends JavaEmptyZen[  JET] { }
+	*/
+	
+	class LoEmptyTao[JEZ] /* extends JavaEmptyTao*/ { }
+	class LoEmptyZen[JET] /*extends JavaEmptyZen*/ { }
+	
 	class ConcLoEmpTao extends LoEmptyTao[ConcLoEmpZen] {
 		def love() { println (this.toString() + " feels love")}
 	}
@@ -131,8 +136,11 @@ P:\_prj\s2\appdapter\appdapter_trunk\src_scala\heaven\piece\Lucky.scala:52: erro
 
 	}
 	
-	class HiEmptyTao[HEZ <: HiEmptyZen[  _ <:  HiEmptyTao [HEZ]]] extends JavaEmptyTao[  HEZ]{ }
-	class HiEmptyZen[HET <: HiEmptyTao[  _ <:  HiEmptyZen [HET]]] extends JavaEmptyZen[  HET] { }
+	/*class HiEmptyTao[HEZ <: HiEmptyZen[  _ <:  HiEmptyTao [HEZ]]] extends JavaEmptyTao[  HEZ]{ }
+	class HiEmptyZen[HET <: HiEmptyTao[  _ <:  HiEmptyZen [HET]]] extends JavaEmptyZen[  HET] { }*/
+
+	class HiEmptyTao /*extends JavaEmptyTao*/{ }
+	class HiEmptyZen /* extends JavaEmptyZen */{ }
 
 	class HiFunTao[HFZ <: HiFunZen[  _ <: HiFunTao [HFZ]]] extends JavaFunTao[ HFZ] {
 		override def consider(someZen: HFZ, otherTao: JavaFunTao[HFZ]) : HFZ = {

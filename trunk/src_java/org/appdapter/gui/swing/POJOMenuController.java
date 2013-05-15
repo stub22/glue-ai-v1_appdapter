@@ -8,7 +8,7 @@ import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 
 import org.appdapter.gui.pojo.POJOCollectionListener;
-import org.appdapter.gui.pojo.POJOCollectionWithBoxContext;
+import org.appdapter.gui.pojo.POJOApp;
 
 /**
  * The controller class for a object menu (JMenu or JPopupMenu), showing the list
@@ -22,14 +22,14 @@ import org.appdapter.gui.pojo.POJOCollectionWithBoxContext;
  * 
  */
 class POJOMenuController implements POJOCollectionListener {
-  POJOCollectionWithBoxContext context;
+  POJOApp context;
 
   Object object;
 
   JPopupMenu popup = null;
   JMenu menu = null;
 
-  public POJOMenuController(POJOCollectionWithBoxContext context, Object object, JPopupMenu popup) {
+  public POJOMenuController(POJOApp context, Object object, JPopupMenu popup) {
     this.context = context;
     if (context != null) {
       context.addListener(this);
@@ -47,7 +47,7 @@ class POJOMenuController implements POJOCollectionListener {
     }
   }
 
-  public POJOMenuController(POJOCollectionWithBoxContext context, Object object, JMenu menu) {
+  public POJOMenuController(POJOApp context, Object object, JMenu menu) {
     this.context = context;
     if (context != null) {
       context.addListener(this);

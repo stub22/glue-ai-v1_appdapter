@@ -10,7 +10,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import org.appdapter.gui.pojo.POJOCollectionWithBoxContext;
+import org.appdapter.gui.pojo.POJOApp;
 import org.appdapter.gui.pojo.ScreenBoxedPOJOWithPropertiesPanel;
 import org.appdapter.gui.pojo.Utility;
 import org.appdapter.gui.swing.impl.JVPanel;
@@ -23,14 +23,14 @@ import org.appdapter.gui.swing.impl.JVPanel;
  * @author Henrk Kniberg
  */
 public class ClassBrowserPanel extends JVPanel implements ActionListener {
-  POJOCollectionWithBoxContext context;
+  POJOApp context;
 
   JTextField text;
   JButton okButton;
   JPanel topPanel = new JPanel();
   JPanel classPanel = new JPanel();
 
-  public ClassBrowserPanel(POJOCollectionWithBoxContext context) {
+  public ClassBrowserPanel(POJOApp context) {
     this.context = context;
     initGUI();
   }

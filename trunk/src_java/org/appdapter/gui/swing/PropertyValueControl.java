@@ -26,7 +26,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import org.appdapter.gui.pojo.GetSetObject;
-import org.appdapter.gui.pojo.POJOCollectionWithBoxContext;
+import org.appdapter.gui.pojo.POJOApp;
 import org.appdapter.gui.pojo.ScreenBoxedPOJORefPanel;
 import org.appdapter.gui.pojo.Utility;
 import org.appdapter.gui.swing.impl.JJPanel;
@@ -39,7 +39,7 @@ public class PropertyValueControl extends JVPanel implements
 	static Logger theLogger = LoggerFactory
 			.getLogger(PropertyValueControl.class);
 
-	POJOCollectionWithBoxContext context = Utility.getCurrentContext();
+	POJOApp context = Utility.getCurrentContext();
 
 	Class type = null;
 	Object value = null;
@@ -57,14 +57,14 @@ public class PropertyValueControl extends JVPanel implements
 		this((Object) null, editable);
 	}
 
-	public PropertyValueControl(POJOCollectionWithBoxContext context,
+	public PropertyValueControl(POJOApp context,
 			Object source, PropertyDescriptor property) {
 		if (context != null)
 			this.context = context;
 		bind(source, property);
 	}
 
-	public PropertyValueControl(POJOCollectionWithBoxContext context,
+	public PropertyValueControl(POJOApp context,
 			Object source, String propertyName) throws IntrospectionException {
 		this(context, source, getPropertyDescriptor(source, propertyName));
 	}
@@ -87,7 +87,7 @@ public class PropertyValueControl extends JVPanel implements
 	 * initialized to a default value, for non-primitive this is null and for
 	 * primitives it is 0, false, or whatever.
 	 */
-	public PropertyValueControl(POJOCollectionWithBoxContext context,
+	public PropertyValueControl(POJOApp context,
 			Class type, boolean editable) {
 		this.context = context;
 		this.type = type;
@@ -612,8 +612,7 @@ public class PropertyValueControl extends JVPanel implements
 		}
 	}
 
-	class TextBasedViewComponent extends JLabel implements
-			PropertyChangeListener {
+	class TextBasedViewComponent extends JLabel implements PropertyChangeListener {
 		PropertyEditor editor;
 
 		public TextBasedViewComponent(PropertyEditor editor) {
@@ -622,14 +621,32 @@ public class PropertyValueControl extends JVPanel implements
 			readValue();
 		}
 
-		@Override
-		public void propertyChange(PropertyChangeEvent evt) {
+		@Override public void propertyChange(PropertyChangeEvent evt) {
 			readValue();
 		}
 
+		@Override public String getText() {
+			try {
+				return super.getText();
+			} catch (Exception e) {
+				return e.getMessage();
+			}
+		}
+
+		String getEditorAsText() {
+			try {
+				return editor.getAsText();
+			} catch (Exception e) {
+				//e.printStackTrace();
+				//return e.getMessage();
+				return null;
+			}
+		}
+
 		private void readValue() {
-			if (!Utility.isEqual(getText(), editor.getAsText())) {
-				setText(editor.getAsText());
+			String et = getEditorAsText();
+			if (!Utility.isEqual(getText(), et)) {
+				setText(et);
 			}
 		}
 	}

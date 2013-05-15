@@ -21,7 +21,7 @@ abstract public class ScreenBoxedPOJOPanel<BoxType extends Box> extends
 	}
 
 	public ScreenBoxedPOJOPanel(Object pojObject) {
-		if (pojObject instanceof POJOSwizzler) {
+		if (pojObject instanceof POJOBox) {
 			throw new ClassCastException("Need to pass the rraw object here! " + pojObject);
 		}
 		this.pojObject = pojObject;

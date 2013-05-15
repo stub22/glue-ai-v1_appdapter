@@ -29,16 +29,24 @@ import org.slf4j.LoggerFactory;
  */
 public class PanelTriggers {
 	static Logger theLogger = LoggerFactory.getLogger(PanelTriggers.class);
-	public enum Kind {
-		OPEN,
-		CLOSE
-	}
-	public static class OpenTrigger <VB extends ScreenBox<TriggerImpl<VB>>> extends  TriggerImpl<VB> {
-		private ScreenBoxPanel.Kind	myPanelKind;
+
+	/*
+		public enum Kind {
+			OPEN, CLOSE
+		}
+	*/
+	public static class OpenTrigger<VB extends ScreenBox<TriggerImpl<VB>>> extends TriggerImpl<VB> {
+		private ScreenBoxPanel.Kind myPanelKind;
 
 		public OpenTrigger() {
 			super();
 		}
+
+		public OpenTrigger(ScreenBoxPanel.Kind k) {
+			super();
+			myPanelKind = k;
+		}
+
 		/**
 		 * 
 		 * @param kind - ScreenBoxImpl base class knows how to make certain kinds of utility ScreenBoxPanels.  
@@ -54,9 +62,10 @@ public class PanelTriggers {
 			BrowseTabFuncs.openBoxPanelAndFocus(dc, targetVB, myPanelKind);
 		}
 	}
-	public static class CloseTrigger  <VB extends ScreenBox<TriggerImpl<VB>>> extends  TriggerImpl<VB> {
+
+	public static class CloseTrigger<VB extends ScreenBox<TriggerImpl<VB>>> extends TriggerImpl<VB> {
 		@Override public void fire(VB targetBox) {
-			theLogger.info(toString() + "-closing viewableBox: " + targetBox);	
+			theLogger.info(toString() + "-closing viewableBox: " + targetBox);
 		}
 	}
 }

@@ -19,7 +19,7 @@ import javax.swing.JScrollPane;
 import javax.swing.OverlayLayout;
 import javax.swing.border.Border;
 
-import org.appdapter.gui.pojo.POJOCollectionWithBoxContext;
+import org.appdapter.gui.pojo.POJOApp;
 import org.appdapter.gui.pojo.ScreenBoxedPOJORefPanel;
 import org.appdapter.gui.pojo.Utility;
 import org.appdapter.gui.swing.impl.JJPanel;
@@ -35,7 +35,7 @@ import org.appdapter.gui.swing.impl.JVPanel;
 public class ArrayContentsPanel extends JVPanel implements ScreenBoxedPOJORefPanel.RemoveListener, DropTargetListener {
 
   Object array;
-  POJOCollectionWithBoxContext context;
+  POJOApp context;
   JPanel panel;
   JScrollPane scroll;
   Border defaultScrollBorder;

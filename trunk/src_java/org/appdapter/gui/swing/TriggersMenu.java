@@ -2,7 +2,7 @@ package org.appdapter.gui.swing;
 
 import javax.swing.JMenu;
 
-import org.appdapter.gui.pojo.POJOCollectionWithBoxContext;
+import org.appdapter.gui.pojo.POJOApp;
 import org.appdapter.gui.pojo.Utility;
 
 /**
@@ -11,13 +11,14 @@ import org.appdapter.gui.pojo.Utility;
  *
  * 
  */
-public class TriggersMenu extends JMenu{
-  POJOMenuController controller;
+public class TriggersMenu extends JMenu {
+	POJOMenuController controller;
 
-  public TriggersMenu(Object object) {
-    this(Utility.getCurrentContext(), object);
-  }
-  public TriggersMenu(POJOCollectionWithBoxContext context, Object object) {
-    controller = new POJOMenuController(context, object, this);
-  }
+	public TriggersMenu(Object object) {
+		this(Utility.getCurrentContext(), object);
+	}
+
+	public TriggersMenu(POJOApp context, Object object) {
+		controller = new POJOMenuController(context, object, this);
+	}
 }

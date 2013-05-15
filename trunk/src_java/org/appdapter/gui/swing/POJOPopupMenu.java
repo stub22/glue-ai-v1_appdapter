@@ -2,7 +2,7 @@ package org.appdapter.gui.swing;
 
 import javax.swing.JPopupMenu;
 
-import org.appdapter.gui.pojo.POJOCollectionWithBoxContext;
+import org.appdapter.gui.pojo.POJOApp;
 import org.appdapter.gui.pojo.Utility;
 
 /**
@@ -16,7 +16,7 @@ public class POJOPopupMenu extends JPopupMenu{
     this(Utility.getCurrentContext(), object);
   }
 
-  public POJOPopupMenu(POJOCollectionWithBoxContext context, Object object) {
+  public POJOPopupMenu(POJOApp context, Object object) {
     controller = new POJOMenuController(context, object, this);
   }
 
