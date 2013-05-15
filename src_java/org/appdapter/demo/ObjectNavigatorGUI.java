@@ -10,4 +10,6 @@ public interface ObjectNavigatorGUI {
 
 	JComponent getDesk();
 
+	void showMessage(String string);
+
 }

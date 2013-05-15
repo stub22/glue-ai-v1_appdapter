@@ -1,19 +1,19 @@
-
-
 package org.appdapter.gui.swing;
+
 import java.awt.BorderLayout;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.Collection;
 import java.util.LinkedList;
 
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
 
+import org.appdapter.gui.pojo.POJOApp;
 import org.appdapter.gui.pojo.POJOCollectionListener;
-import org.appdapter.gui.pojo.POJOCollectionWithBoxContext;
 import org.appdapter.gui.swing.impl.JJPanel;
 
 /**
@@ -22,170 +22,160 @@ import org.appdapter.gui.swing.impl.JJPanel;
  *
  */
 public class ObjectValuesChoicePanel extends JJPanel implements POJOCollectionListener, MouseListener {
-  POJOCollectionWithBoxContext context = new EmptyPOJOCollectionContext();
-  PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
+	POJOApp context = new EmptyPOJOCollectionContext();
+	PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
 
-  Class type;
-  JComboBox combo;
-  Model model;
+	Class type;
+	JComboBox combo;
+	Model model;
 
-  public ObjectValuesChoicePanel(Class type, Object value) {
-    this(null, type, value);
-  }
+	public ObjectValuesChoicePanel(Class type, Object value) {
+		this(null, type, value);
+	}
 
-  public ObjectValuesChoicePanel(POJOCollectionWithBoxContext context, Class type, Object value) {
-    this.type = type;
-    if (context != null)
-      this.context = context;
-    if (type == null)
-      type = Object.class;
-    initGUI();
-    combo.setSelectedItem(value);
-    if (context != null)
-      context.addListener(this);
-  }
+	public ObjectValuesChoicePanel(POJOApp context, Class type, Object value) {
+		this.type = type;
+		if (context != null)
+			this.context = context;
+		if (type == null)
+			type = Object.class;
+		initGUI();
+		combo.setSelectedItem(value);
+		if (context != null)
+			context.addListener(this);
+	}
 
-  @Override
-public void addPropertyChangeListener(PropertyChangeListener p) {
-    propSupport.addPropertyChangeListener(p);
-  }
+	@Override public void addPropertyChangeListener(PropertyChangeListener p) {
+		propSupport.addPropertyChangeListener(p);
+	}
 
-  @Override
-public void removePropertyChangeListener(PropertyChangeListener p) {
-    propSupport.removePropertyChangeListener(p);
-  }
+	@Override public void removePropertyChangeListener(PropertyChangeListener p) {
+		propSupport.removePropertyChangeListener(p);
+	}
 
-  public void setSelection(Object object) {
-    model.setSelectedItem(object);
-  }
+	public void setSelection(Object object) {
+		model.setSelectedItem(object);
+	}
 
+	@Override public void pojoAdded(Object obj) {
+		model.reload();
+	}
 
-  @Override
-public void pojoAdded(Object obj) {
-    model.reload();
-  }
+	@Override public void pojoRemoved(Object obj) {
+		model.reload();
+	}
 
-  @Override
-public void pojoRemoved(Object obj) {
-    model.reload();
-  }
+	private void initGUI() {
+		model = new Model();
+		combo = new JComboBox(model);
+		combo.setEditable(false);
+		setLayout(new BorderLayout());
+		add("Center", combo);
+		combo.addMouseListener(this);
+	}
 
-  private void initGUI() {
-    model = new Model();
-    combo = new JComboBox(model);
-    combo.setEditable(false);
-    setLayout(new BorderLayout());
-    add("Center", combo);
-    combo.addMouseListener(this);
-  }
+	@Override public void mouseClicked(MouseEvent e) {
+		if (e.isPopupTrigger()) {
+			showMenu(e.getX() + 5, e.getY() + 5);
+		}
+	}
 
-  @Override
-public void mouseClicked(MouseEvent e) {
-    if (e.isPopupTrigger()) {
-      showMenu(e.getX() + 5, e.getY() + 5);
-    }
-  }
-  @Override
-public void mousePressed(MouseEvent e) {
-    if (e.isPopupTrigger()) {
-      showMenu(e.getX() + 5, e.getY() + 5);
-    }
-  }
+	@Override public void mousePressed(MouseEvent e) {
+		if (e.isPopupTrigger()) {
+			showMenu(e.getX() + 5, e.getY() + 5);
+		}
+	}
 
-  @Override
-public void mouseReleased(MouseEvent e) {
-    if (e.isPopupTrigger()) {
-      showMenu(e.getX() + 5, e.getY() + 5);
-    }
-  }
+	@Override public void mouseReleased(MouseEvent e) {
+		if (e.isPopupTrigger()) {
+			showMenu(e.getX() + 5, e.getY() + 5);
+		}
+	}
 
-  @Override
-public void mouseEntered(MouseEvent e) {
-    //@temp
-    //label.setForeground(Color.blue);
-  }
-  @Override
-public void mouseExited(MouseEvent e) {
-    //label.setForeground(Color.black);
-  }
+	@Override public void mouseEntered(MouseEvent e) {
+		//@temp
+		//label.setForeground(Color.blue);
+	}
 
-  public Object getSelection() {
-    return model.getSelectedItem();
-  }
+	@Override public void mouseExited(MouseEvent e) {
+		//label.setForeground(Color.black);
+	}
 
-  private void showMenu(int x, int y) {
-    Object object = model.getSelectedBean();
-    if (object != null) {
-      POJOPopupMenu menu = new POJOPopupMenu(object);
-      add(menu);
-      menu.show(this, x, y);
-    }
-  }
+	public Object getSelection() {
+		return model.getSelectedItem();
+	}
 
-  class Model extends AbstractListModel implements ComboBoxModel {
-    //Vector listeners = new Vector();
-    java.util.List values;
-    Object selected = null;
+	private void showMenu(int x, int y) {
+		Object object = model.getSelectedBean();
+		if (object != null) {
+			POJOPopupMenu menu = new POJOPopupMenu(object);
+			add(menu);
+			menu.show(this, x, y);
+		}
+	}
 
-    public Model() {
-      if (context == null)
-        values = new LinkedList();
-      else
-        values = new LinkedList(context.getPOJOCollectionOfType(type));
-      values.add("<null>");
-    }
+	class Model extends AbstractListModel implements ComboBoxModel {
+		//Vector listeners = new Vector();
+		java.util.List values;
+		Object selected = null;
 
-    @Override
-	public synchronized void setSelectedItem(Object anItem) {
-      Object old = selected;
-      selected = anItem;
+		@SuppressWarnings("unchecked") public Model() {
+			if (context == null)
+				values = new LinkedList();
+			else {
+				Collection col = context.getCollectionWithSwizzler().getPOJOCollectionOfType(type);
+				values = new LinkedList(col);
+			}
+			values.add("<null>");
+		}
 
-      //if (old != selected)
-      //  notifyListeners();
+		@Override public synchronized void setSelectedItem(Object anItem) {
+			Object old = selected;
+			selected = anItem;
 
-      if (selected != null && !values.contains(selected))
-        values.add(selected);
-      fireContentsChanged(this, -1, -1);
-      if (selected != old) {
-        propSupport.firePropertyChange("selection", old, selected);
-      }
-    }
+			//if (old != selected)
+			//  notifyListeners();
 
-    @Override
-	public Object getSelectedItem() {
-      if (selected == null)
-        return "<null>";
-      else
-        return selected;
-    }
+			if (selected != null && !values.contains(selected))
+				values.add(selected);
+			fireContentsChanged(this, -1, -1);
+			if (selected != old) {
+				propSupport.firePropertyChange("selection", old, selected);
+			}
+		}
 
-    public Object getSelectedBean() {
-      return selected;
-    }
+		@Override public Object getSelectedItem() {
+			if (selected == null)
+				return "<null>";
+			else
+				return selected;
+		}
 
-    @Override
-	public int getSize() {
-      return values.size();
-    }
+		public Object getSelectedBean() {
+			return selected;
+		}
 
-    @Override
-	public Object getElementAt(int index) {
-      try {
-        return values.get(index);
-      } catch (Exception err) {
-        return null;
-      }
-    }
+		@Override public int getSize() {
+			return values.size();
+		}
 
-    public synchronized void reload() {
-      Object selected = getSelectedBean();
-      if (values == null)
-        values = new LinkedList();
-      else
-        values = new LinkedList(context.getPOJOCollectionOfType(type));
-      values.add("<null>");
-      setSelectedItem(selected);
-    }
-  }
+		@Override public Object getElementAt(int index) {
+			try {
+				return values.get(index);
+			} catch (Exception err) {
+				return null;
+			}
+		}
+
+		public synchronized void reload() {
+			Object selected = getSelectedBean();
+			if (values == null)
+				values = new LinkedList();
+			else
+				values = new LinkedList(context.getCollectionWithSwizzler().getPOJOCollectionOfType(type));
+			values.add("<null>");
+			setSelectedItem(selected);
+		}
+	}
 
 }

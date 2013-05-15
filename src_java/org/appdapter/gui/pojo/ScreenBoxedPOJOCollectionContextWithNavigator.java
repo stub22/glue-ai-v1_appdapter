@@ -38,7 +38,7 @@ import org.appdapter.gui.util.PairTable;
  * 
  * 
  */
-public class ScreenBoxedPOJOCollectionContextWithNavigator implements POJOCollectionWithBoxContext {
+public class ScreenBoxedPOJOCollectionContextWithNavigator implements POJOApp, POJOCollection {
 
 	// ==== Static variables =================
 	private static boolean ALLOW_MULTIPLE_WINDOWS = false;
@@ -65,51 +65,42 @@ public class ScreenBoxedPOJOCollectionContextWithNavigator implements POJOCollec
 
 	// ==== Property getters and setters ==================
 
-	@Override
-	public POJOCollection getCollection() {
+	@Override public POJOCollection getCollection() {
 		return gui.getCollectionWithSwizzler();
 	}
 
-	@Override
-	public POJOCollectionWithSwizzler getCollectionWithSwizzler() {
+	@Override public POJOCollectionWithSwizzler getCollectionWithSwizzler() {
 		return gui.getCollectionWithSwizzler();
 	}
 
-	@Override
-	public int getPOJOCount() {
+	@Override public int getPOJOCount() {
 		return getCollection().getPOJOCount();
 	}
 
 	// ==== Implementation of POJOCollectionContext interface ============
 
-	@Override
-	public Collection getPOJOCollectionOfType(Class c) {
+	@Override public Collection getPOJOCollectionOfType(Class c) {
 		return getCollection().getPOJOCollectionOfType(c);
 	}
 
-	@Override
-	public boolean containsPOJO(Object o) {
+	@Override public boolean containsPOJO(Object o) {
 		return getCollection().containsPOJO(o);
 	}
 
-	@Override
-	public void addListener(POJOCollectionListener l) {
+	@Override public void addListener(POJOCollectionListener l) {
 		getCollection().addListener(l);
 	}
 
-	@Override
-	public void removeListener(org.appdapter.gui.pojo.POJOCollectionListener l) {
+	@Override public void removeListener(org.appdapter.gui.pojo.POJOCollectionListener l) {
 		getCollection().removeListener(l);
 	}
 
-	@Override
-	public Object findPOJO(String name) {
+	@Override public Object findPOJO(String name) {
 		return getCollection().findPOJO(name);
 	}
 
-	@Override
-	public String getPOJOName(Object o) {
-		POJOSwizzler wrapper = getCollectionWithSwizzler().getBoxForObject(o);
+	@Override public String getPOJOName(Object o) {
+		POJOBox wrapper = getCollectionWithSwizzler().findOrCreateBox(o);
 		if (wrapper == null) {
 			return "" + o;
 		} else {
@@ -123,8 +114,7 @@ public class ScreenBoxedPOJOCollectionContextWithNavigator implements POJOCollec
 	 * @returns true if the object was added, false if the object was already
 	 *          there
 	 */
-	@Override
-	public boolean addPOJO(Object object) {
+	@Override public boolean addPOJO(Object object) {
 		return getCollection().addPOJO(object);
 	}
 
@@ -134,16 +124,14 @@ public class ScreenBoxedPOJOCollectionContextWithNavigator implements POJOCollec
 	 * @returns true if the object was removed, false if that object wasn't in
 	 *          this context
 	 */
-	@Override
-	public boolean removePOJO(Object object) {
+	@Override public boolean removePOJO(Object object) {
 		return getCollection().removePOJO(object);
 	}
 
 	/**
 	 * Returns all actions that can be carried out on the given object
 	 */
-	@Override
-	public Collection getActions(Object object) {
+	@Override public Collection getActions(Object object) {
 		Collection actions = new LinkedList();
 		if (getCollection().containsPOJO(object)) {
 			actions.add(new RenameAction(object));
@@ -161,15 +149,18 @@ public class ScreenBoxedPOJOCollectionContextWithNavigator implements POJOCollec
 	/**
 	 * Opens up a GUI to show the details of the given object
 	 */
-	@Override
-	public void showScreenBox(Object object) throws Exception {
+	@Override public void showScreenBox(Object object) throws Exception {
 		JInternalFrame existing = (JInternalFrame) objectFrames.findBrother(object);
 
 		if (existing == null || ALLOW_MULTIPLE_WINDOWS) {
 
+			if (object instanceof String) {
+				gui.showMessage("" + object);
+				return;
+			}
 			// Get a wrapper for the object, or create a temporary wrapper if
 			// necessary
-			POJOSwizzler wrapper = getCollectionWithSwizzler().getBoxForObject(object);
+			POJOBox wrapper = getCollectionWithSwizzler().findOrCreateBox(object);
 			if (wrapper == null) {
 				wrapper = new ScreenBoxImpl(object);
 			}
@@ -323,26 +314,22 @@ public class ScreenBoxedPOJOCollectionContextWithNavigator implements POJOCollec
 	 * known icon for the object.
 	 */
 	static class UnknownIcon implements Icon, java.io.Serializable {
-		@Override
-		public int getIconWidth() {
+		@Override public int getIconWidth() {
 			return 16;
 		}
 
-		@Override
-		public int getIconHeight() {
+		@Override public int getIconHeight() {
 			return 16;
 		}
 
-		@Override
-		public void paintIcon(Component c, Graphics g, int x, int y) {
+		@Override public void paintIcon(Component c, Graphics g, int x, int y) {
 			g.setColor(Color.blue);
 			g.setFont(new Font("serif", Font.BOLD, 12));
 			g.drawString("@", x, y + 12);
 		}
 	}
 
-	@Override
-	public void showError(String msg, Throwable error) {
+	@Override public void showError(String msg, Throwable error) {
 		try {
 			if (error == null) {
 				new ErrorDialog(msg, error).show();
@@ -382,9 +369,8 @@ public class ScreenBoxedPOJOCollectionContextWithNavigator implements POJOCollec
 			this.object = object;
 		}
 
-		@Override
-		public void actionPerformed(ActionEvent evt) {
-			POJOSwizzler wrapper = Utility.asSwizzler(object);
+		@Override public void actionPerformed(ActionEvent evt) {
+			POJOBox wrapper = Utility.findOrCreateBox(object);
 			if (wrapper != null) {
 				RenameDialog dialog = new RenameDialog(ScreenBoxedPOJOCollectionContextWithNavigator.this, wrapper);
 				dialog.show();
@@ -400,8 +386,7 @@ public class ScreenBoxedPOJOCollectionContextWithNavigator implements POJOCollec
 			this.object = object;
 		}
 
-		@Override
-		public void actionPerformed(ActionEvent evt) {
+		@Override public void actionPerformed(ActionEvent evt) {
 			removePOJO(object);
 		}
 	}
@@ -414,8 +399,7 @@ public class ScreenBoxedPOJOCollectionContextWithNavigator implements POJOCollec
 			this.object = object;
 		}
 
-		@Override
-		public void actionPerformed(ActionEvent evt) {
+		@Override public void actionPerformed(ActionEvent evt) {
 			showObjectGUI((Component) object);
 		}
 	}
@@ -428,8 +412,7 @@ public class ScreenBoxedPOJOCollectionContextWithNavigator implements POJOCollec
 			this.object = object;
 		}
 
-		@Override
-		public void actionPerformed(ActionEvent evt) {
+		@Override public void actionPerformed(ActionEvent evt) {
 			addPOJO(object);
 		}
 	}
@@ -442,8 +425,7 @@ public class ScreenBoxedPOJOCollectionContextWithNavigator implements POJOCollec
 			this.object = object;
 		}
 
-		@Override
-		public void actionPerformed(ActionEvent evt) {
+		@Override public void actionPerformed(ActionEvent evt) {
 			try {
 				showScreenBox(object);
 			} catch (Throwable err) {
@@ -458,8 +440,7 @@ public class ScreenBoxedPOJOCollectionContextWithNavigator implements POJOCollec
 	 * Window event adapter class, used to find out when child windows close
 	 */
 	class Adapter extends WindowAdapter implements InternalFrameListener {
-		@Override
-		public void windowClosing(WindowEvent e) {
+		@Override public void windowClosing(WindowEvent e) {
 			Object source = e.getSource();
 			if (source == classBrowser) {
 				// classBrowser.removeWindowListener(this);
@@ -473,16 +454,13 @@ public class ScreenBoxedPOJOCollectionContextWithNavigator implements POJOCollec
 			}
 		}
 
-		@Override
-		public void internalFrameActivated(InternalFrameEvent e) {
+		@Override public void internalFrameActivated(InternalFrameEvent e) {
 		}
 
-		@Override
-		public void internalFrameClosed(InternalFrameEvent e) {
+		@Override public void internalFrameClosed(InternalFrameEvent e) {
 		}
 
-		@Override
-		public void internalFrameClosing(InternalFrameEvent e) {
+		@Override public void internalFrameClosing(InternalFrameEvent e) {
 			Object source = e.getSource();
 			if (source == classBrowser) {
 				classBrowser.removeInternalFrameListener(this);
@@ -496,25 +474,20 @@ public class ScreenBoxedPOJOCollectionContextWithNavigator implements POJOCollec
 			}
 		}
 
-		@Override
-		public void internalFrameDeactivated(InternalFrameEvent e) {
+		@Override public void internalFrameDeactivated(InternalFrameEvent e) {
 		}
 
-		@Override
-		public void internalFrameDeiconified(InternalFrameEvent e) {
+		@Override public void internalFrameDeiconified(InternalFrameEvent e) {
 		}
 
-		@Override
-		public void internalFrameIconified(InternalFrameEvent e) {
+		@Override public void internalFrameIconified(InternalFrameEvent e) {
 		}
 
-		@Override
-		public void internalFrameOpened(InternalFrameEvent e) {
+		@Override public void internalFrameOpened(InternalFrameEvent e) {
 		}
 	}
 
-	@Override
-	public void reload() {
+	@Override public void reload() {
 		throw new NotImplementedException("reload this screenbox");
 
 	}

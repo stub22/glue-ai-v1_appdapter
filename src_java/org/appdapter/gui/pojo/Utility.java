@@ -5,9 +5,11 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.beans.BeanInfo;
+import java.beans.FeatureDescriptor;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyEditorManager;
+import java.beans.PropertyVetoException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -24,16 +26,43 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 
+import org.appdapter.gui.demo.ObjectNavigator;
+import org.appdapter.gui.demo.RepoNavigator;
 import org.appdapter.gui.editors.BooleanEditor;
 import org.appdapter.gui.editors.ColorEditor;
 import org.appdapter.gui.editors.DateEditor;
 import org.appdapter.gui.editors.IntEditor;
+import org.slf4j.Logger;
 
 public class Utility {
+
+	static Logger theLogger = org.slf4j.LoggerFactory.getLogger(Utility.class);
+	private static final Class[] CLASS0 = new Class[0];
+
 	public static POJOCollectionWithSwizzler context = new POJOCollectionImpl();
+
+	public static POJOApp pojoApp;
+	public static RepoNavigator repoNav;
+	public static ObjectNavigator objectNavigator;
+
+	public static POJOApp getCurrentPOJOApp() {
+		if (pojoApp != null)
+			return pojoApp;
+		if (repoNav != null) {
+			pojoApp = new ScreenBoxedPOJOCollectionContextWithNavigator(repoNav);
+			return pojoApp;
+		}
+		if (objectNavigator != null) {
+			pojoApp = new ScreenBoxedPOJOCollectionContextWithNavigator(objectNavigator);
+			return pojoApp;
+		}
+		return null;
+	}
 
 	/*
 	 * public static void setDefaultContext(POJOCollectionWithSwizzler c) {
@@ -42,22 +71,28 @@ public class Utility {
 	 * public static POJOCollectionWithSwizzler getDefaultContext() { return
 	 * context; }
 	 */
-	private static POJOCollectionWithBoxContext objectsContext = null;
+	//public static POJOApp objectsContext = null;
 
 	public static Object asPOJO(Object object) {
 		// TODO Auto-generated method stub
-		if (object instanceof POJOSwizzler) {
-			object = ((org.appdapter.gui.pojo.POJOSwizzler) object).getObject();
+		if (object instanceof POJOBox) {
+			object = ((org.appdapter.gui.pojo.POJOBox) object).getObject();
 		}
 		return null;
 	}
 
-	public static POJOSwizzler asSwizzler(Object object) {
+	public static POJOBox findOrCreateBox(Object object) {
 
-		if (object instanceof POJOSwizzler) {
-			return ((org.appdapter.gui.pojo.POJOSwizzler) object);
+		if (object instanceof POJOBox) {
+			return ((org.appdapter.gui.pojo.POJOBox) object);
 		}
-		return context.getBoxForObject(object);
+		try {
+			return context.findOrCreateBox(object);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		}
 	}
 
 	public static List EMPTYLIST = new ArrayList();
@@ -69,15 +104,25 @@ public class Utility {
 	/**
 	 * Returns the global objectsContext, or null if none has been set
 	 */
-	public static POJOCollectionWithBoxContext getCurrentContext() {
-		return objectsContext;
+	public static POJOApp getCurrentContext() {
+		return getCurrentPOJOApp();
+	}
+
+	public static POJOCollectionWithSwizzler getCurrentContext2() {
+		if (context != null)
+			return context;
+		return null;
 	}
 
 	/**
 	 * Sets the global objects context
 	 */
-	public static void setInstancesOfObjects(POJOCollectionWithBoxContext newValue) {
-		objectsContext = newValue;
+	public static void setInstancesOfObjects(POJOCollectionWithSwizzler newValue) {
+		context = (POJOCollectionWithSwizzler) newValue;
+	}
+
+	public static void setInstancesOfObjects(POJOApp newValue) {
+		pojoApp = newValue;
 	}
 
 	private Utility() {
@@ -101,16 +146,56 @@ public class Utility {
 	static int ADD_FROM_PASTE_SRC_ONLY = 255;
 	static int ADD_FROM_PASTE_TARG_ONLY = 255;
 
-	public static <TrigType> void addClassLevelTriggers(Class cls, List<TrigType> tgs, POJOSwizzler pojoSwizzler) {
-		addClassLevelTriggers(cls, tgs, pojoSwizzler, 255);
+	public static <TrigType> void addClassLevelTriggers(Class cls, List<TrigType> tgs, POJOBox poj) {
+		HashSet<Class> flat = new HashSet<Class>();
+		addClasses(cls, flat);
+		for (Class cls2 : flat) {
+			addClassLevelTriggersPerClass(cls2, tgs, poj, ADD_ALL);
+		}
 	}
 
-	public static <TrigType> void addClassLevelTriggers(Class cls, List<TrigType> tgs, POJOSwizzler pojoSwizzler, int rulesOfAdd) {
+	public static <TrigType> void addClasses(Class cls, HashSet<Class> classesVisited) {
+		if (cls == null)
+			return;
+		if (classesVisited.contains(cls))
+			return;
+		classesVisited.add(cls);
+		addClasses(cls, classesVisited);
+		for (Class cls2 : cls.getInterfaces()) {
+			addClasses(cls2, classesVisited);
+		}
+		addClasses(cls.getSuperclass(), classesVisited);
+	}
+
+	@SuppressWarnings("unchecked") public static <TrigType> void addClassLevelTriggersPerClass(Class cls, List<TrigType> tgs, POJOBox poj, int rulesOfAdd) {
+		try {
+			BeanInfo bi = getBeanInfo(cls);
+			if (bi == null)
+				return;
+			addFeatureTriggers(cls, bi.getMethodDescriptors(), tgs, poj, rulesOfAdd);
+			addFeatureTriggers(cls, bi.getEventSetDescriptors(), tgs, poj, rulesOfAdd);
+			addFeatureTriggers(cls, bi.getPropertyDescriptors(), tgs, poj, rulesOfAdd);
+		} catch (Exception e) {
+			e.printStackTrace();
+
+		}
+	}
+
+	@SuppressWarnings("unchecked") public static <TrigType> void addFeatureTriggers(Class cls, FeatureDescriptor[] fd, List<TrigType> tgs, POJOBox poj, int rulesOfAdd) {
+		for (FeatureDescriptor f : fd) {
+			TriggerForInstance tfi = new TriggerForInstance(cls, poj, f);
+			if (!tgs.contains(tfi))
+				tgs.add((TrigType) tfi);
+		}
 
 	}
 
 	public static void setBeanInfoSearchPath() {
 		Introspector.setBeanInfoSearchPath(new String[] { "org.appdapter.gui.editors" });
+	}
+
+	public static Object invokeFromUI(Object obj0, Method method) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+		return invoke(obj0, method);
 	}
 
 	public static Object invoke(Object obj0, Method method, Object... params) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
@@ -297,6 +382,25 @@ public class Utility {
 
 	public static int identityHashCode(Object object) {
 		return System.identityHashCode(object);
+	}
+
+	public static void setLastResult(Object whereFrom, Object obj, Class expected) {
+		GetSetObject pnl = Utility.getPanelFor(expected);
+		if (pnl != null) {
+			try {
+				pnl.setObject(obj);
+			} catch (InvocationTargetException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} else {
+			theLogger.info("result from " + whereFrom + " was " + obj);
+		}
+
+	}
+
+	private static GetSetObject getPanelFor(Class expected) {
+		return null;
 	}
 
 }

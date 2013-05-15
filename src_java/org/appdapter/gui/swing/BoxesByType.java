@@ -11,7 +11,7 @@ import java.util.Map;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 
-import org.appdapter.gui.pojo.POJOCollectionWithBoxContext;
+import org.appdapter.gui.pojo.POJOApp;
 import org.appdapter.gui.pojo.Utility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,13 +26,13 @@ public class BoxesByType {
 	}
 
 	List objects;
-	POJOCollectionWithBoxContext context;
+	POJOApp context;
 	BeanInfo objectInfo;
 	PropertyDescriptor[] props;
 	Class objectClass;
 	Model model;
 
-	public BoxesByType(POJOCollectionWithBoxContext context, List objects, Class objectClass,
+	public BoxesByType(POJOApp context, List objects, Class objectClass,
 			String[] propNames) throws Exception {
 		objectInfo = Utility.getBeanInfo(objectClass);
 

@@ -4,7 +4,7 @@ import java.awt.BorderLayout;
 
 import javax.swing.JLabel;
 
-import org.appdapter.gui.pojo.POJOCollectionWithBoxContext;
+import org.appdapter.gui.pojo.POJOApp;
 import org.appdapter.gui.pojo.ScreenBoxedPOJORefPanel;
 import org.appdapter.gui.pojo.Utility;
 import org.appdapter.gui.swing.impl.JVPanel;
@@ -22,10 +22,10 @@ class MethodResultPanel extends JVPanel {
 
   JLabel label;
   ScreenBoxedPOJORefPanel value = null;
-  POJOCollectionWithBoxContext context;
+  POJOApp context;
   boolean isVoid = false;
 
-  public MethodResultPanel(POJOCollectionWithBoxContext context) {
+  public MethodResultPanel(POJOApp context) {
     this.context = context;
     label = new JLabel("Return value:  ");
     //value = new PropertyValueControl(false);

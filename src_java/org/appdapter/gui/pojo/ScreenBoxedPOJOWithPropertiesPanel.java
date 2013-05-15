@@ -20,14 +20,12 @@ import org.appdapter.gui.swing.PropertiesPanel;
  * 
  * 
  */
-public class ScreenBoxedPOJOWithPropertiesPanel<BoxType extends Box> extends
-		AbstractScreenBoxedPOJOPanel<BoxType> implements Customizer, GetSetObject {
-	protected POJOCollectionWithBoxContext context;
+public class ScreenBoxedPOJOWithPropertiesPanel<BoxType extends Box> extends AbstractScreenBoxedPOJOPanel<BoxType> implements Customizer, GetSetObject {
+	protected POJOApp context;
 	protected JTabbedPane tabs;
 	private Object object;
 
-	public ScreenBoxedPOJOWithPropertiesPanel(
-			POJOCollectionWithBoxContext context, Object object) {
+	public ScreenBoxedPOJOWithPropertiesPanel(POJOApp context, Object object) {
 		this.object = object;
 		this.context = context;
 		initGUI();
@@ -41,23 +39,19 @@ public class ScreenBoxedPOJOWithPropertiesPanel<BoxType extends Box> extends
 		this(null);
 	}
 
-	@Override
-	public Dimension getPreferredSize() {
+	@Override public Dimension getPreferredSize() {
 		/*
 		 * Dimension dim = super.getPreferredSize(); int w,h; w =
 		 * Math.min(dim.width + 30, 350); h = Math.min(dim.height + 30, 500);
 		 */
-		return Utility.getConstrainedDimension(getMinimumSize(),
-				super.getPreferredSize(), getMaximumSize());
+		return Utility.getConstrainedDimension(getMinimumSize(), super.getPreferredSize(), getMaximumSize());
 	}
 
-	@Override
-	public Dimension getMinimumSize() {
+	@Override public Dimension getMinimumSize() {
 		return new Dimension(400, 350);
 	}
 
-	@Override
-	public Dimension getMaximumSize() {
+	@Override public Dimension getMaximumSize() {
 		return new Dimension(800, 600); // Toolkit.getDefaultToolkit().getScreenSize();
 	}
 
@@ -76,20 +70,17 @@ public class ScreenBoxedPOJOWithPropertiesPanel<BoxType extends Box> extends
 	 * This method is needed to conform to the Customizer interface. It doesn't
 	 * do anything yet.
 	 */
-	@Override
-	public void addPropertyChangeListener(PropertyChangeListener listener) {
+	@Override public void addPropertyChangeListener(PropertyChangeListener listener) {
 	}
 
 	/**
 	 * This method is needed to conform to the Customizer interface. It doesn't
 	 * do anything yet.
 	 */
-	@Override
-	public void removePropertyChangeListener(PropertyChangeListener listener) {
+	@Override public void removePropertyChangeListener(PropertyChangeListener listener) {
 	}
 
-	@Override
-	protected void objectChanged(Object oldBean, Object newBean) {
+	@Override protected void objectChanged(Object oldBean, Object newBean) {
 		removeAll();
 		initGUI();
 	}
@@ -109,10 +100,10 @@ public class ScreenBoxedPOJOWithPropertiesPanel<BoxType extends Box> extends
 					MethodsPanel methods = new MethodsPanel(context, object);
 					tabs.addTab("Class Methods", methods);
 				} catch (Exception err) {
-					tabs.addTab("Methods", new ErrorPanel(
-							"Could not show methods", err));
+					tabs.addTab("Methods", new ErrorPanel("Could not show methods", err));
 				}
-			} else {
+			}
+			{
 
 				PropertiesPanel props = new PropertiesPanel(context, object);
 				tabs.addTab("Properties", props);
@@ -121,8 +112,7 @@ public class ScreenBoxedPOJOWithPropertiesPanel<BoxType extends Box> extends
 					MethodsPanel methods = new MethodsPanel(context, object);
 					tabs.addTab("Methods", methods);
 				} catch (Exception err) {
-					tabs.addTab("Methods", new ErrorPanel(
-							"Could not show methods", err));
+					tabs.addTab("Methods", new ErrorPanel("Could not show methods", err));
 				}
 			}
 			setLayout(new BorderLayout());
@@ -132,9 +122,9 @@ public class ScreenBoxedPOJOWithPropertiesPanel<BoxType extends Box> extends
 		}
 	}
 
-	@Override
-	public Object getObject() {
-		if (object==null) return this;
+	@Override public Object getObject() {
+		if (object == null)
+			return this;
 		return object;
 	}
 

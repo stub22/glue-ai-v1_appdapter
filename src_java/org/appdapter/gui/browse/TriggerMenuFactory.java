@@ -18,6 +18,7 @@ package org.appdapter.gui.browse;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.gui.box.ScreenBoxImpl;
+import org.appdapter.gui.pojo.UIAware;
 import org.appdapter.core.component.KnownComponent;
 import org.appdapter.api.trigger.Trigger;
 import java.awt.event.ActionEvent;
@@ -75,6 +76,9 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 
 	public JPopupMenu buildPopupMenu(Box<TT> box) {
 		JPopupMenu popup = new JPopupMenu();
+		if (box instanceof UIAware) {
+			((UIAware) box).visitComponent(popup);
+		}
 		for (TT trig : box.getTriggers()) {
 			popup.add(makeMenuItem(box, trig));
 		}
@@ -83,6 +87,9 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 
 	public JMenuItem makeMenuItem(final Box<TT> b, final TT trig) {
 		JMenuItem jmi = new JMenuItem(trig.getShortLabel());
+		if (trig instanceof UIAware) {
+			((UIAware) trig).visitComponent(jmi);
+		}
 		jmi.addActionListener(new ActionListener() {
 
 			public void actionPerformed(ActionEvent e) {

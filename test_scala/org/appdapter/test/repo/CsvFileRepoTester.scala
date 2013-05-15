@@ -39,7 +39,7 @@ object CsvFileRepoTester {
 		// Read the namespaces and directory sheets into a single directory model.
 		val dirModel : Model = CsvFilesSheetRepo.readDirectoryModelFromCsvFiles(sheetLoc, namespaceSheet, dirSheet, fileModelCLs) 
 		// Construct a repo around that directory
-		val shRepo = new CsvFilesSheetRepo(dirModel)
+		val shRepo = new CsvFilesSheetRepo(dirModel, fileModelCLs)
 		// Load the rest of the repo's initial *sheet* models, as instructed by the directory.
 		shRepo.loadSheetModelsIntoMainDataset()
 		// Load the rest of the repo's initial *file/resource* models, as instructed by the directory.

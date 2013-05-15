@@ -15,7 +15,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
-import org.appdapter.gui.pojo.POJOCollectionWithBoxContext;
+import org.appdapter.gui.pojo.POJOApp;
 import org.appdapter.gui.pojo.Utility;
 import org.appdapter.gui.swing.impl.JBox;
 import org.appdapter.gui.swing.impl.JJPanel;
@@ -24,7 +24,7 @@ public class ErrorPanel extends JJPanel {
   Throwable error;
   String message;
   JButton viewButton;
-  POJOCollectionWithBoxContext context;
+  POJOApp context;
 
   public ErrorPanel(String message, Throwable error) {
     super();

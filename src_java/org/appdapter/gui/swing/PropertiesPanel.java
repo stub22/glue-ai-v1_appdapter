@@ -9,7 +9,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 
 import org.appdapter.gui.pojo.GetSetObject;
-import org.appdapter.gui.pojo.POJOCollectionWithBoxContext;
+import org.appdapter.gui.pojo.POJOApp;
 import org.appdapter.gui.pojo.Utility;
 import org.appdapter.gui.swing.impl.JJPanel;
 import org.slf4j.Logger;
@@ -18,14 +18,14 @@ import org.slf4j.LoggerFactory;
 public class PropertiesPanel extends JJPanel implements GetSetObject {
 	static Logger theLogger = LoggerFactory.getLogger(PropertiesPanel.class);
 	
-	POJOCollectionWithBoxContext context = new EmptyPOJOCollectionContext();
+	POJOApp context = new EmptyPOJOCollectionContext();
 	Object object = null;
 
 	private PropertyComparator propertyComparator = new PropertyComparator();
 
 	// private LessString lessString = new LessString();
 
-	public PropertiesPanel(POJOCollectionWithBoxContext context, Object object) {
+	public PropertiesPanel(POJOApp context, Object object) {
 		if (context != null)
 			this.context = context;
 		setObject(object);

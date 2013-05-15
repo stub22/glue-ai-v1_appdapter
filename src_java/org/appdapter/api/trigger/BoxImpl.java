@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.appdapter.core.component.KnownComponent;
 import org.appdapter.core.component.KnownComponentImpl;
-import org.appdapter.gui.pojo.POJOSwizzler;
+import org.appdapter.gui.pojo.POJOBox;
 
 
 /**

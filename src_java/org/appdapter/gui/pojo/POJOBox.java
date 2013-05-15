@@ -13,6 +13,8 @@ import java.util.List;
 import org.appdapter.api.trigger.BoxImpl;
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.core.name.Ident;
+import org.appdapter.gui.box.ScreenBoxPanel;
+import org.appdapter.gui.util.PromiscuousClassUtils;
 
 /**
  * A wrapper for objects used in the ObjectNavigator system. It holds an object,
@@ -23,13 +25,14 @@ import org.appdapter.core.name.Ident;
  * 
  * 
  */
-abstract public class POJOSwizzler<TrigType extends Trigger<? extends BoxImpl<TrigType>>> extends BoxImpl<TrigType> implements java.io.Serializable, GetSetObject {
+abstract public class POJOBox<TrigType extends Trigger<? extends BoxImpl<TrigType>>> extends
+
+BoxImpl<TrigType> implements java.io.Serializable, GetSetObject {
 	// ==== Transient instance variables =============
 	transient PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
 	transient VetoableChangeSupport vetoSupport = new VetoableChangeSupport(this);
 
-	@Override
-	public List<TrigType> getTriggers() {
+	@Override public List<TrigType> getTriggers() {
 		List<TrigType> tgs = super.getTriggers();
 		for (Class cls : getTypes()) {
 			Utility.addClassLevelTriggers(cls, tgs, this);
@@ -44,7 +47,7 @@ abstract public class POJOSwizzler<TrigType extends Trigger<? extends BoxImpl<Tr
 	 * Creates a new Swizzler for the given object and assigns it a default
 	 * name.
 	 */
-	public POJOSwizzler() {
+	public POJOBox() {
 	}
 
 	// ==== Event listener registration =============
@@ -132,6 +135,10 @@ abstract public class POJOSwizzler<TrigType extends Trigger<? extends BoxImpl<Tr
 			this._name = newName;
 			propSupport.firePropertyChange("name", oldName, newName);
 		}
+		String os = getShortLabel();
+		if (os == null) {
+			setShortLabel(newName);
+		}
 	}
 
 	/**
@@ -163,8 +170,7 @@ abstract public class POJOSwizzler<TrigType extends Trigger<? extends BoxImpl<Tr
 	/**
 	 * Returns the name of this object
 	 */
-	@Override
-	public String toString() {
+	@Override public String toString() {
 		return super.toString();
 		//return getName();
 	}
@@ -172,6 +178,7 @@ abstract public class POJOSwizzler<TrigType extends Trigger<? extends BoxImpl<Tr
 	// ========= Utility methods =================
 
 	public static String getDefaultName(Object object) {
+		if (object==null) return "<null>";
 		Class type = object.getClass();
 		if (type == Class.class)
 			return ((Class) object).getName();
@@ -200,6 +207,29 @@ abstract public class POJOSwizzler<TrigType extends Trigger<? extends BoxImpl<Tr
 	public boolean isNamed(String test) {
 		String name = getName();
 		return name.equals(test);
+	}
+
+	static public DisplayType getDisplayType(Class expected) {
+		expected = PromiscuousClassUtils.nonPrimitiveTypeFor(expected);
+		if (Number.class.isAssignableFrom(expected)) {
+			return DisplayType.TOSTRING;
+		}
+		if (expected == String.class) {
+			return DisplayType.TOSTRING;
+		}
+		return DisplayType.PANEL;
+	}
+
+	public ScreenBoxPanel getPropertiesPanel() {
+		Object obj = getObject();
+		if (obj == this) {
+			ScreenBoxedPOJORefPanel pnl = new ScreenBoxedPOJORefPanel(obj);
+			pnl.setName(getShortLabel());
+			return pnl;
+		}
+		ScreenBoxedPOJOWithPropertiesPanel pnl = new ScreenBoxedPOJOWithPropertiesPanel(obj);
+		pnl.setName(getShortLabel());
+		return pnl;
 	}
 
 }

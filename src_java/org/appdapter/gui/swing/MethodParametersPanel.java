@@ -6,7 +6,7 @@ import java.lang.reflect.Method;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import org.appdapter.gui.pojo.POJOCollectionWithBoxContext;
+import org.appdapter.gui.pojo.POJOApp;
 import org.appdapter.gui.pojo.Utility;
 import org.appdapter.gui.swing.impl.JVPanel;
 
@@ -19,7 +19,7 @@ import org.appdapter.gui.swing.impl.JVPanel;
  * 
  */
 public class MethodParametersPanel extends JVPanel {
-  POJOCollectionWithBoxContext context;
+  POJOApp context;
   Method currentMethod = null;
   PropertyValueControl[] paramViews = null;
   JPanel childPanel;
@@ -28,7 +28,7 @@ public class MethodParametersPanel extends JVPanel {
     this(Utility.getCurrentContext());
   }
 
-  public MethodParametersPanel(POJOCollectionWithBoxContext context) {
+  public MethodParametersPanel(POJOApp context) {
     this.context = context;
     setLayout(new BorderLayout());
   }

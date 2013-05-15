@@ -37,13 +37,16 @@ import org.appdapter.gui.browse.TriggerMenuFactory;
  */
 public class DemoNavigatorCtrl {
 
+	private TreeModel myTM;
+	private BoxContext myBoxCtx;
+	private ScreenBoxTreeNode myRootBTN;
+	private DisplayContextProvider myDCP;
+	private BrowsePanel myBP;
+	private JFrame myJFrame;
 
-	private		TreeModel				myTM;
-	private		BoxContext				myBoxCtx;
-	private		ScreenBoxTreeNode		myRootBTN;
-	private		DisplayContextProvider	myDCP;
-	private		BrowsePanel				myBP;
-	private		JFrame					myJFrame;
+	public BrowsePanel getBrowsePanel() {
+		return myBP;
+	}
 
 	public DemoNavigatorCtrl(BoxContext bc, TreeModel tm, ScreenBoxTreeNode rootBTN, DisplayContextProvider dcp) {
 		myBoxCtx = bc;
@@ -53,6 +56,7 @@ public class DemoNavigatorCtrl {
 
 		setupBrowsePanel();
 	}
+
 	private void setupBrowsePanel() {
 		myBP = new BrowsePanel(myTM);
 		myRootBTN.setDisplayContext(myBP);
@@ -60,6 +64,7 @@ public class DemoNavigatorCtrl {
 		MouseAdapter menuMA = tmf.makePopupMouseAdapter();
 		myBP.addTreeMouseAdapter(menuMA);
 	}
+
 	public void launchFrame(String title) {
 		if (myJFrame == null) {
 			myJFrame = new JFrame(title);
@@ -74,14 +79,16 @@ public class DemoNavigatorCtrl {
 			throw new RuntimeException("Frame already launched!");
 		}
 	}
+
 	public void addBoxToRoot(MutableBox childBox, boolean reload) {
-		Box rootBox =  myBoxCtx.getRootBox();
+		Box rootBox = myBoxCtx.getRootBox();
 		myBoxCtx.contextualizeAndAttachChildBox(rootBox, childBox);
 		if (reload) {
 			((DefaultTreeModel) myTM).reload();
 		}
 	}
-	public JFrame getFrame() { 
+
+	public JFrame getFrame() {
 		return myJFrame;
 	}
 }
