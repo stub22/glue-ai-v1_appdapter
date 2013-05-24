@@ -15,67 +15,96 @@
  */
 
 package org.appdapter.core.matdat
-import org.appdapter.core.name.{Ident, FreeIdent}
-import org.appdapter.core.store.{Repo, InitialBinding}
-import org.appdapter.help.repo.{RepoClient, RepoClientImpl}
-import org.appdapter.core.matdat.{SheetRepo, GoogSheetRepo, XLSXSheetRepo}
+import com.hp.hpl.jena.rdf.model.Model
+import org.appdapter.core.name.FreeIdent
+import org.appdapter.core.name.Ident
+import org.appdapter.core.store.Repo
+import org.appdapter.help.repo.RepoClient
+import org.appdapter.help.repo.RepoClientImpl
+//import org.appdapter.core.matdat.{SheetRepo, GoogSheetRepo, XLSXSheetRepo}
 /**
  * @author Stu B. <www.texpedient.com>
  */
 
 object RepoSpecDefaultNames {
-	// These 2 string constants establish repo-client wrapper defaults, giving a default 
-	// query context to easily fetch from.
-	// Either value may be bypassed/overidden using either 
-	//      A) Overrides of the RepoSpec methods below 
-	//   or B) The more general forms of queryIndirect_. 
-	/**
-	// 1) Default query *source* graph QName used in directory model (Sheet or RDF).
-	// We read SPARQL text from this graph, which we use to query *other* graphs.  
-	// This graph is typically not used as a regular data graph by  other low-order 
-	// query operations, although there is no prohibition or protection from doing so 
-	// at this time.   This query source graph may be overridden using the more general
-	// forms of queryIndirect_.
-	*/
-	
-	final val DFLT_QRY_SRC_GRAPH_QN = "ccrt:qry_sheet_22"
-	
-	// 2) default variable name for a single target graph in a SPARQL query.
-	// This is used in the convenience forms of queryIndirect that handle many common
-	// use cases, wherein the query needs a single graph to operate on that is switched
-	// by application logic or user selection.
-	
-	final val DFLT_TGT_GRAPH_SPARQL_VAR = "qGraph"	
+  // These 2 string constants establish repo-client wrapper defaults, giving a default 
+  // query context to easily fetch from.
+  // Either value may be bypassed/overidden using either 
+  //      A) Overrides of the RepoSpec methods below 
+  //   or B) The more general forms of queryIndirect_. 
+  /**
+   * // 1) Default query *source* graph QName used in directory model (Sheet or RDF).
+   * // We read SPARQL text from this graph, which we use to query *other* graphs.
+   * // This graph is typically not used as a regular data graph by  other low-order
+   * // query operations, although there is no prohibition or protection from doing so
+   * // at this time.   This query source graph may be overridden using the more general
+   * // forms of queryIndirect_.
+   */
+
+  final val DFLT_QRY_SRC_GRAPH_QN = "ccrt:qry_sheet_22"
+
+  // 2) default variable name for a single target graph in a SPARQL query.
+  // This is used in the convenience forms of queryIndirect that handle many common
+  // use cases, wherein the query needs a single graph to operate on that is switched
+  // by application logic or user selection.
+
+  final val DFLT_TGT_GRAPH_SPARQL_VAR = "qGraph"
 }
 
-abstract class RepoSpec {
+abstract class RepoSpecScala extends RepoSpecJava {
 
-	
-	def makeRepo() : Repo.WithDirectory;
-	
-	def makeRepoClient(repo : Repo.WithDirectory) : RepoClient =  {
-		new RepoClientImpl(repo, getDfltTgtGraphSparqlVarName, getDfltQrySrcGraphQName);
-	}
-	
-	def getDfltQrySrcGraphQName = RepoSpecDefaultNames.DFLT_QRY_SRC_GRAPH_QN;
-	def getDfltTgtGraphSparqlVarName : String = RepoSpecDefaultNames.DFLT_TGT_GRAPH_SPARQL_VAR;
+  def makeRepo(): Repo.WithDirectory;
+
+  def makeRepoClient(repo: Repo.WithDirectory): RepoClient = {
+    new RepoClientImpl(repo, getDfltTgtGraphSparqlVarName, getDfltQrySrcGraphQName);
+  }
+
+  def getDfltQrySrcGraphQName = RepoSpecDefaultNames.DFLT_QRY_SRC_GRAPH_QN;
+  def getDfltTgtGraphSparqlVarName: String = RepoSpecDefaultNames.DFLT_TGT_GRAPH_SPARQL_VAR;
 }
-case class OnlineSheetRepoSpec(sheetKey : String, namespaceSheetNum : Int, dirSheetNum : Int, 
-							fileModelCLs : java.util.List[ClassLoader]) extends RepoSpec {
-	override def makeRepo() : Repo.WithDirectory = {
-		RepoLoader.loadGoogSheetRepo(sheetKey, namespaceSheetNum, dirSheetNum, fileModelCLs)
-	}
+case class GoogSheetRepoSpec(sheetKey: String, namespaceSheetNum: Int, dirSheetNum: Int,
+  fileModelCLs: java.util.List[ClassLoader] = null) extends RepoSpecScala {
+  override def makeRepo(): SheetRepo = {
+    GoogSheetRepoLoader.makeGoogSheetRepo(sheetKey, namespaceSheetNum, dirSheetNum, fileModelCLs, this)
+  }
+  override def toString: String = "goog:/" + sheetKey + "/" + namespaceSheetNum + "/" + dirSheetNum
 }
-case class OfflineXlsSheetRepoSpec(sheetLocation : String, namespaceSheet : String, dirSheet : String, 
-							fileModelCLs : java.util.List[ClassLoader]) extends RepoSpec {
-	override def makeRepo() : Repo.WithDirectory = {
-		RepoLoader.loadXLSXSheetRepo(sheetLocation, namespaceSheet, dirSheet, fileModelCLs)
-	}
+case class OfflineXlsSheetRepoSpec(sheetLocation: String, namespaceSheet: String, dirSheet: String,
+  fileModelCLs: java.util.List[ClassLoader] = null) extends RepoSpecScala {
+  override def makeRepo(): SheetRepo = {
+    XLSXSheetRepoLoader.loadXLSXSheetRepo(sheetLocation, namespaceSheet, dirSheet, fileModelCLs, this)
+  }
+  override def toString: String = "xlsx:/" + sheetLocation + "/" + namespaceSheet + "/" + dirSheet
 }
-case class DatabaseRepoSpec(configPath : String, optConfResCL : ClassLoader, dirGraphID : Ident) extends RepoSpec {
-	def this(cPath : String,  optCL : ClassLoader,  dirGraphUriPrefix : String, dirGraphLocalName : String) 
-			= this(cPath, optCL, new FreeIdent(dirGraphUriPrefix + dirGraphLocalName, dirGraphLocalName))
-	override def makeRepo() : Repo.WithDirectory = {
-		RepoLoader.loadDatabaseRepo(configPath, optConfResCL, dirGraphID)
-	}			
+case class DatabaseRepoSpec(configPath: String, optConfResCL: ClassLoader, dirGraphID: Ident) extends RepoSpecScala {
+  def this(cPath: String, optCL: ClassLoader, dirGraphUriPrefix: String, dirGraphLocalName: String) = this(cPath, optCL, new FreeIdent(dirGraphUriPrefix + dirGraphLocalName, dirGraphLocalName))
+  override def makeRepo(): Repo.WithDirectory = {
+    RepoLoader.loadDatabaseRepo(configPath, optConfResCL, dirGraphID)
+  }
+}
+/**
+ * Takes a directory model and uses Goog, Xlsx, Pipeline,CSV,.ttl,rdf sources and loads them
+ */
+case class FromStringRepoSpec(var myDebugName: String, var dirModelURI: String)
+  extends RepoSpecScala {
+
+  override def makeRepo(): SheetRepo = {
+    val colon = dirModelURI.indexOf(":/");
+    val proto = dirModelURI.substring(0, colon);
+    val path = dirModelURI.substring(colon + 1);
+    val v3: Array[String] = path.split('/')
+    val fileModelCLs: java.util.List[ClassLoader] = null;
+
+    if (proto.equals("xlsx")) {
+      null
+      //(new OfflineXlsSheetRepoSpec(v3[0],v3[1],v3[2])).makeRepo;
+      //RepoLoader.loadXLSXSheetRepo(v3[0], v3[1], v3[2], fileModelCLs)
+    } else if (proto.equals("goog")) {
+      //RepoLoader.loadXLSXSheetRepo(v3[0],v3[1].toInt,Integer.parseInt(v3[2]), fileCls)     
+      //(new OnlineXlsSheetRepoSpec(v3[0],v3[1].toInt,v3[2].toInt)).makeRepo;
+      null
+    } else {
+      null
+    }
+  }
 }

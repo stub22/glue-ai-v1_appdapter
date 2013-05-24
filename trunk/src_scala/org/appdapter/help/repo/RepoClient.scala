@@ -18,10 +18,11 @@ package org.appdapter.help.repo
 
 import org.appdapter.core.name.Ident
 import org.appdapter.core.store.{Repo, InitialBinding, ModelClient}
+import org.appdapter.help.repo.RepoClient
 
 // import org.appdapter.impl.store.{FancyRepo};
 
-trait RepoClient extends ModelClient {
+trait RepoClientScala extends RepoClient {
   
 	/** 
 	 * @return currently cached Repo.WithDirectory
@@ -63,6 +64,12 @@ trait RepoClient extends ModelClient {
 	 */
 	def queryIndirectForAllSolutions(queryQN: String, targetGraphQN : String) : SolutionList
 
+		/*
+	 * Assume a single input binding, which is the target graph, given in this case by a String QName.  
+	 * Assume the name of that SPARQL variable is known (i.e. client will use default/current value, e.g. "qGraph".
+	 */
+	def queryIndirectForAllSolutionsJ(queryQN: String, targetGraphQN : String) : Object
+	
 	/**
 	 * Assume two bindings:  One for the target graph, and one other ident binding.
 	 * This case is used a lot.

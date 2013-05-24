@@ -65,16 +65,38 @@ import org.appdapter.help.repo.InitialBindingImpl;
  *   (easier to Save a Google Doc to a Single XLSX Spreadsheet than several .csv files!)
  *   Uses Apache POI (@see http://poi.apache.org/)
  */
-
-class XLSXSheetRepo(directoryModel: Model, fmcls: java.util.List[ClassLoader]) extends CsvFilesSheetRepo(directoryModel, fmcls) {
+/*
+abstract class XLSXSheetRepo_Unused(directoryModel: Model, fmcls: java.util.List[ClassLoader]) extends CsvFilesSheetRepo_Unused(directoryModel, fmcls) {
 
   override def loadSheetModelsIntoMainDataset() = {
     super.loadSheetModelsIntoMainDataset();
-    loadSheetModelsIntoMainDatasetXlsWorkBooks();
+    loadXlsWorkBookSheetModelsIntoMainDataset();
   }
 
-  def loadSheetModelsIntoMainDatasetXlsWorkBooks() = {
+  def loadXlsWorkBookSheetModelsIntoMainDataset() = {
     val mainDset: DataSource = getMainQueryDataset().asInstanceOf[DataSource];
+    val dirModel = getDirectoryModel;
+    XLSXSheetRepoLoader.loadSheetModelsIntoTargetDataset(this, mainDset, dirModel, fileModelCLs);
+  }
+
+}*/
+
+/// this is a registerable loader
+class XLSXSheetRepoLoader {
+  def getContainerType(): String = {
+    return "ccrt:XlsxWorkbookRepo";
+  }
+  def getSheetType(): String = {
+    return "ccrt:XlsxSheet";
+  }
+  def loadModelsIntoTargetDataset(repo: SheetRepo, mainDset: DataSource, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
+    XLSXSheetRepoLoader.loadSheetModelsIntoTargetDataset(repo, mainDset, dirModel, fileModelCLs)
+  }
+}
+
+object XLSXSheetRepoLoader extends BasicDebugger {
+
+  def loadSheetModelsIntoTargetDataset(repo: SheetRepo, mainDset: DataSource, myDirectoryModel: Model, fileModelCLs: java.util.List[ClassLoader]) = {
 
     val nsJavaMap: java.util.Map[String, String] = myDirectoryModel.getNsPrefixMap()
 
@@ -99,36 +121,27 @@ class XLSXSheetRepo(directoryModel: Model, fmcls: java.util.List[ClassLoader]) e
 
       val sheetName = sheetName_Lit.getString();
       val sheetLocation = sheetLocation_Lit.getString();
-      var sheetModel: Model = XLSXSheetRepo.readModelSheet(sheetLocation, sheetName, nsJavaMap, fileModelCLs);
+      var sheetModel: Model = XLSXSheetRepoLoader.readModelSheet(sheetLocation, sheetName, nsJavaMap, fileModelCLs);
       getLogger.debug("Read sheetModel: {}", sheetModel)
       val graphURI = sheetRes.getURI();
       mainDset.replaceNamedModel(graphURI, sheetModel)
     }
   }
-}
-
-object XLSXSheetRepo extends BasicDebugger {
 
   def getSheetAt(sheetLocation: String, sheetName: String, fileModelCLs: java.util.List[ClassLoader]): Reader = {
     var reader = FileStreamUtils.getSheetReaderAt(sheetLocation, sheetName, fileModelCLs);
     if (reader == null) {
-      reader = CsvFilesSheetRepo.getCsvSheetAt(sheetLocation, sheetName, fileModelCLs);
+      reader = CsvFilesSheetRepoLoader.getCsvSheetAt(sheetLocation, sheetName, fileModelCLs);
     }
     reader;
   }
 
   ///. Modeled on SheetRepo.loadTestSheetRepo
   def loadXLSXSheetRepo(sheetLocation: String, namespaceSheetName: String, dirSheetName: String,
-    fileModelCLs: java.util.List[ClassLoader]): SheetRepo = {
+    fileModelCLs: java.util.List[ClassLoader], repoSpec: RepoSpec): SheetRepo = {
     // Read the namespaces and directory sheets into a single directory model.
     val dirModel: Model = readDirectoryModelFromXLSX(sheetLocation, namespaceSheetName, dirSheetName, fileModelCLs: java.util.List[ClassLoader])
-    // Construct a repo around that directory
-    val shRepo = new XLSXSheetRepo(dirModel, fileModelCLs)
-    // Load the rest of the repo's initial *sheet* models, as instructed by the directory.
-    shRepo.loadSheetModelsIntoMainDataset()
-    // Load the rest of the repo's initial *file/resource* models, as instructed by the directory.
-    shRepo.loadFileModelsIntoMainDataset(fileModelCLs)
-    shRepo
+    RepoLoader.makeSheetRepo(repoSpec, dirModel);
   }
 
   def readModelSheet(sheetLocation: String, sheetName: String, nsJavaMap: java.util.Map[String, String], fileModelCLs: java.util.List[ClassLoader]): Model = {
@@ -146,17 +159,13 @@ object XLSXSheetRepo extends BasicDebugger {
     val namespaceSheetReader = getSheetAt(sheetLocation, namespaceSheetName, fileModelCLs);
     val nsJavaMap: java.util.Map[String, String] = MatrixData.readJavaMapFromSheetR(namespaceSheetReader);
     getLogger.debug("Got NS map: " + nsJavaMap)
-    val dirModel: Model = XLSXSheetRepo.readModelSheet(sheetLocation, dirSheetName, nsJavaMap, fileModelCLs);
+    val dirModel: Model = XLSXSheetRepoLoader.readModelSheet(sheetLocation, dirSheetName, nsJavaMap, fileModelCLs);
     dirModel;
   }
 
-  private def loadTestXLSXSheetRepo(): XLSXSheetRepo = {
+  private def loadTestXLSXSheetRepo(): SheetRepo = {
     val clList = new java.util.ArrayList[ClassLoader];
-    val dirModel: Model = readDirectoryModelFromXLSX(SemSheet.keyForXLSXBootSheet22, nsSheetName22, dirSheetName22, clList)
-    val sr = new XLSXSheetRepo(dirModel, clList)
-    sr.loadSheetModelsIntoMainDataset()
-    sr.loadFileModelsIntoMainDataset(clList)
-    sr
+    loadXLSXSheetRepo(SemSheet.keyForXLSXBootSheet22, nsSheetName22, dirSheetName22, clList, null)
   }
   import scala.collection.immutable.StringOps
 
@@ -172,7 +181,7 @@ object XLSXSheetRepo extends BasicDebugger {
 
     // Run the resulting fully bound query, and print the results.
 
-    val sr: XLSXSheetRepo = loadTestXLSXSheetRepo()
+    val sr: SheetRepo = loadTestXLSXSheetRepo()
     val qib = sr.makeInitialBinding
 
     qib.bindQName(lightsGraphVarName, lightsGraphQName)
@@ -235,7 +244,7 @@ object XLSXSheetRepo extends BasicDebugger {
       val qtxtString = qtxtLit.getString();
       val zzRset = QueryHelper.execModelQueryWithPrefixHelp(dirModel, qtxtString);
       val zzRSxml = QueryHelper.buildQueryResultXML(zzRset);
-      println("Query using qTxt got: " + zzRSxml)
+      println("Query using qTxt got: " + zzRSxml);
 
       //		logInfo("Got qsoln" + qSoln + " with s=[" + qSoln.get("s") + "], p=[" + qSoln.get("p") + "], o=[" 
       //						+ qSoln.get("o") +"]");

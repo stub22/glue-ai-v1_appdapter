@@ -18,7 +18,6 @@ package org.appdapter.api.trigger;
 import org.appdapter.api.trigger.MutableBox;
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.api.trigger.Box;
-import org.appdapter.gui.browse.DisplayContext;
 import java.util.List;
 
 /**
