@@ -15,10 +15,16 @@
  */
 package org.appdapter.core.store;
 
-import org.appdapter.core.store.*;
-
 /**
  * @author Stu B. <www.texpedient.com>
+ * 
+ * This class will eventually replace the org.appdapter.help.repo trait,
+ * currently being prototyped in Scala.
+ * 
+ * Really?  Why do we need to do that?
+ * 
+ * Because its a key interface that we want non-Scala folks to be able to read.
+ * Convincing?  Hmmm....
  */
 abstract public class RepoSpecJava extends RepoSpec {
 

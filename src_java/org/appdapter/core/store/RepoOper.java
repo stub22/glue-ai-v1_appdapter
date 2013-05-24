@@ -19,9 +19,9 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 
-import org.appdapter.api.trigger.*;
-import org.appdapter.api.trigger.AnyOper.*;
-import org.appdapter.gui.*;
+import org.appdapter.api.trigger.AnyOper;
+import org.appdapter.api.trigger.Box;
+import org.appdapter.api.trigger.TriggerImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

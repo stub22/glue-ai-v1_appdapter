@@ -20,7 +20,7 @@ import org.appdapter.bind.rdf.jena.assembly.DynamicCachingComponentAssembler;
 import org.appdapter.core.component.ComponentAssemblyNames;
 import org.appdapter.core.name.Ident;
 import org.appdapter.core.item.Item;
-import org.appdapter.gui.box.ScreenBoxImpl;
+import org.appdapter.api.trigger.ScreenBox;
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.api.trigger.BoxAssemblyNames;
 import com.hp.hpl.jena.rdf.model.Resource;
@@ -35,13 +35,13 @@ import org.slf4j.LoggerFactory;
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public class BoxAssembler extends DynamicCachingComponentAssembler<ScreenBoxImpl> {
+public class BoxAssembler extends DynamicCachingComponentAssembler<ScreenBox> {
 	static Logger theLogger = LoggerFactory.getLogger(BoxAssembler.class);
 
 	public BoxAssembler(Resource builderConfRes) {
 		super(builderConfRes);
 	}
-	@Override protected void initExtendedFieldsAndLinks(ScreenBoxImpl box, Item configItem, Assembler asmblr, Mode mode) {
+	@Override protected void initExtendedFieldsAndLinks(ScreenBox box, Item configItem, Assembler asmblr, Mode mode) {
 		theLogger.info("bonus box init here");
 		List<Object> linkedTriggers = getReader().findOrMakeLinkedObjects(configItem, BoxAssemblyNames.P_trigger, asmblr, mode, null);
 		for (Object lt : linkedTriggers) {
