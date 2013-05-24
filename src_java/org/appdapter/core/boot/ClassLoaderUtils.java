@@ -19,7 +19,10 @@ package org.appdapter.core.boot;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+
+import javax.swing.LookAndFeel;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,8 +65,9 @@ public class ClassLoaderUtils {
 
 	public static List<ClassLoader> getFileResourceClassLoaders(String resourceClassLoaderType) {
 		List<ClassLoader> resourceLoaders = new ArrayList<ClassLoader>();
-		addIfNew(resourceLoaders, ClassLoader.class.getClassLoader());
+		addIfNew(resourceLoaders, Thread.currentThread().getContextClassLoader());
 		addIfNew(resourceLoaders, ClassLoaderUtils.class.getClassLoader());
+		addIfNew(resourceLoaders, ClassLoader.class.getClassLoader());
 		return resourceLoaders;
 	}
 

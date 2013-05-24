@@ -207,9 +207,9 @@ object SemSheet {
 	val keyForCSVFilesBootSheet22 = "file:GluePuma_HRKR50_TestFull - ";	
 
 	def main(args: Array[String]) : Unit = {
-	  GoogSheetRepo.testSemSheet(args);
-	  CsvFilesSheetRepo.testSemSheet(args);
-	  XLSXSheetRepo.testSemSheet(args);
+	  GoogSheetRepoLoader.testSemSheet(args);
+	  CsvFilesSheetRepoLoader.testSemSheet(args);
+	  XLSXSheetRepoLoader.testSemSheet(args);
 	}
 
 }
