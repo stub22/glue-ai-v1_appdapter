@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.appdapter.gui.browse;
+package org.appdapter.gui.box;
 
 import javax.swing.JTabbedPane;
 

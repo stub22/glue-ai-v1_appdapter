@@ -16,11 +16,10 @@
 
 package org.appdapter.gui.trigger;
 
-import org.appdapter.gui.box.ScreenBoxPanel;
+import org.appdapter.gui.box.*;
 import org.appdapter.api.trigger.TriggerImpl;
 import org.appdapter.gui.box.ScreenBox;
 import org.appdapter.gui.browse.BrowseTabFuncs;
-import org.appdapter.gui.browse.DisplayContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

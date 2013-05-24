@@ -26,6 +26,8 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.tree.TreeModel;
 
+import org.appdapter.gui.box.*;
+
 /**
  * @author Stu B. <www.texpedient.com>
  */
