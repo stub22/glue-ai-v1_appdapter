@@ -14,52 +14,50 @@
  *  limitations under the License.
  */
 
-
 package org.appdapter.osgi.felix.shell;
 
-
-import org.appdapter.gui.demo.DemoBrowser;
+import org.appdapter.demo.DemoBrowser;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.appdapter.gui.demo.DemoNavigatorCtrl;
+import org.appdapter.demo.DemoNavigatorCtrl;
 import javax.swing.JFrame;
 import org.appdapter.osgi.core.BundleActivatorBase;
 
 public class AppdapterFelixShellBundleActivator extends BundleActivatorBase {
 	static Logger theLogger = LoggerFactory.getLogger(AppdapterFelixShellBundleActivator.class);
-	
-	private JFrame	myDemoJFrame;
-	
+
+	private JFrame myDemoJFrame;
+
 	@Override protected Logger getLogger() {
 		return theLogger;
-	}	
-	
-    @Override public void start(BundleContext context) throws Exception {
-		
+	}
+
+	@Override public void start(BundleContext context) throws Exception {
+
 		forceLog4jConfig();
 		super.start(context);
 
 		theLogger.info("Starting demo browser[");
-		
+
 		String args[] = null;
 		DemoNavigatorCtrl dnc = DemoBrowser.makeDemoNavigatorCtrl(args);
 		dnc.launchFrame("org.appdapter.osgi.felix.shell - DemoBrowser");
 		myDemoJFrame = dnc.getFrame();
 		// DemoBrowser.main(null);
 		theLogger.info("]Finished starting browser, bundle activation .start() complete.");
-    }
+	}
 
-    @Override public void stop(BundleContext context) throws Exception {
+	@Override public void stop(BundleContext context) throws Exception {
 		String windupMsg = getClass().getCanonicalName() + ".stop(ctx=" + context + ")";
-		theLogger.info("[SLF4J] " + windupMsg);		
+		theLogger.info("[SLF4J] " + windupMsg);
 		System.out.println("[System.out]" + windupMsg);
-		theLogger.info("[SLF4J] disposing of demo window" );	
+		theLogger.info("[SLF4J] disposing of demo window");
 		myDemoJFrame.dispose();
-		theLogger.info("[SLF4J] finished dispose()" );	
+		theLogger.info("[SLF4J] finished dispose()");
 		super.stop(context);
-    }
+	}
 
 }
