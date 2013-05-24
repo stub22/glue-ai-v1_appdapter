@@ -14,15 +14,14 @@
  *  limitations under the License.
  */
 
-package org.appdapter.gui.box;
+package org.appdapter.api.trigger;
 
-import org.appdapter.api.trigger.BoxContext;
-import org.appdapter.gui.browse.DisplayContext;
+import org.appdapter.core.component.ComponentAssemblyNames;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
 
-public interface ScreenBoxContext extends BoxContext {
-	public DisplayContext	findDisplayContext(ScreenBox viewable);
+public class ScreenBoxAssemblyNames extends ComponentAssemblyNames {
+
 }

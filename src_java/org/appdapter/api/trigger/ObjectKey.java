@@ -1,4 +1,4 @@
-package org.appdapter.gui.box;
+package org.appdapter.api.trigger;
 
 import java.util.WeakHashMap;
 

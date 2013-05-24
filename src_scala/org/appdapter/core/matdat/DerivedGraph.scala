@@ -20,8 +20,8 @@ import com.hp.hpl.jena.rdf.model.ModelFactory
 import org.appdapter.core.log.BasicDebugger
 import org.appdapter.core.name.Ident
 import org.appdapter.core.name.Ident
-import org.appdapter.core.store.Repo
-import org.appdapter.help.repo.RepoClient
+import org.appdapter.core.store.{ RepoSpec, RepoOper, RepoClient, RepoSpecJava, Repo, InitialBinding }
+import org.appdapter.help.repo. { RepoClientImpl, RepoClientScala, InitialBindingImpl}
 import org.appdapter.help.repo.SolutionList
 
 /**

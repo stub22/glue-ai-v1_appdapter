@@ -15,10 +15,13 @@
  */
 
 package org.appdapter.core.matdat
+
 import org.appdapter.core.name.{Ident, FreeIdent}
 import org.appdapter.core.store.{Repo, InitialBinding }
 import org.appdapter.impl.store.{FancyRepo}
-import org.appdapter.help.repo.{RepoClient, RepoClientImpl, InitialBindingImpl} 
+import org.appdapter.core.store.{ RepoSpec, RepoOper, RepoClient, RepoSpecJava, Repo, InitialBinding }
+import org.appdapter.help.repo. { RepoClientImpl, RepoClientScala, InitialBindingImpl}
+
 
 /**
  * @author Stu B. <www.texpedient.com>

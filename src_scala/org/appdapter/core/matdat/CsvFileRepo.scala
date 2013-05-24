@@ -43,6 +43,9 @@ import com.hp.hpl.jena.shared.{ PrefixMapping }
 import com.hp.hpl.jena.rdf.listeners.{ ObjectListener };
 
 import org.appdapter.core.log.BasicDebugger;
+import org.appdapter.core.store.{ RepoSpec, RepoOper, RepoClient, RepoSpecJava, Repo, InitialBinding }
+import org.appdapter.help.repo. { RepoClientImpl, RepoClientScala, InitialBindingImpl}
+
 
 import org.appdapter.bind.rdf.jena.model.{ ModelStuff, JenaModelUtils, JenaFileManagerUtils };
 // import org.appdapter.bind.rdf.jena.query.{JenaArqQueryFuncs, JenaArqResultSetProcessor};
@@ -242,7 +245,7 @@ object CsvFilesSheetRepoLoader extends BasicDebugger {
     // Does not disturb the original result set
     val qqrxml = QueryHelper.buildQueryResultXML(qqrsrw);
 
-    import scala.collection.JavaConversions._;
+import scala.collection.JavaConversions._;
 
     println("Got query-query-test result-XML: \n" + qqrxml);
     qqrsrw.reset();

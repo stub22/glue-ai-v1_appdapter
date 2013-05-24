@@ -13,15 +13,14 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+package org.appdapter.core.store;
 
-package org.appdapter.gui.box;
-
-import org.appdapter.core.component.ComponentAssemblyNames;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
+abstract public class RepoSpec {
+	public abstract Repo.WithDirectory makeRepo();
 
-public class ScreenBoxAssemblyNames extends ComponentAssemblyNames {
-
+	public abstract org.appdapter.core.store.RepoClient makeRepoClient(Repo.WithDirectory spec);
 }

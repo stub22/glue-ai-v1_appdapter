@@ -13,73 +13,68 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.appdapter.gui.box;
+package org.appdapter.api.trigger;
 
+import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
-
-import org.appdapter.api.trigger.Box;
-import org.appdapter.gui.browse.DisplayContext;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public class ScreenBoxTreeNode extends DefaultMutableTreeNode implements DisplayNode {
-	private		DisplayContext		myDisplayContext;
+public class ScreenBoxTreeNode extends DefaultMutableTreeNode implements DisplayContext {
+	private DisplayContext myDisplayContext;
 
-	
 	public ScreenBoxTreeNode() {
 		super();
 	}
+
 	public ScreenBoxTreeNode(Box box) {
 		super(box);
 	}
+
 	public ScreenBoxTreeNode(Box box, boolean allowsChildren) {
 		super(box, allowsChildren);
 	}
+
 	/* (non-Javadoc)
 	 * @see org.appdapter.gui.box.DisplayNode#setDisplayContext(org.appdapter.gui.browse.DisplayContext)
 	 */
-	@Override
 	public void setDisplayContext(DisplayContext dc) {
 		myDisplayContext = dc;
 	}
-	/* (non-Javadoc)
+
+	/*
 	 * @see org.appdapter.gui.box.DisplayNode#getDisplayContext()
 	 */
-	@Override
+
 	public DisplayContext getDisplayContext() {
 		return myDisplayContext;
 	}
+
 	public DisplayContext findDisplayContext() {
 		DisplayContext foundDC = getDisplayContext();
 		if (foundDC == null) {
-			DisplayNode parentNode = (DisplayNode) getParent();
+			ScreenBoxTreeNode parentNode = (ScreenBoxTreeNode) getParent();
 			if (parentNode != null) {
-				foundDC = parentNode.findDisplayContext();
+				foundDC = parentNode.getDisplayContext();
 			}
 		}
 		return foundDC;
 	}
-	/* (non-Javadoc)
-	 * @see org.appdapter.gui.box.DisplayNode#getBox()
-	 */
-	@Override
+
 	public Box getBox() {
 		return (Box) getUserObject();
 	}
-	/* (non-Javadoc)
-	 * @see org.appdapter.gui.box.DisplayNode#findDescendantNodeForBox(org.appdapter.api.trigger.Box)
-	 */
-	@Override
-	public DisplayNode findDescendantNodeForBox(Box b) {
+
+	public ScreenBoxTreeNode findDescendantNodeForBox(Box b) {
 		if (b == getUserObject()) {
 			return this;
 		} else {
 			int childCount = getChildCount();
-			for (int i=0; i < childCount; i++) {
-				DisplayNode childNode = (DisplayNode) getChildAt(i);
-				DisplayNode matchNode = childNode.findDescendantNodeForBox(b);
+			for (int i = 0; i < childCount; i++) {
+				ScreenBoxTreeNode childNode = (ScreenBoxTreeNode) getChildAt(i);
+				ScreenBoxTreeNode matchNode = childNode.findDescendantNodeForBox(b);
 				if (matchNode != null) {
 					return matchNode;
 				}
@@ -87,8 +82,13 @@ public class ScreenBoxTreeNode extends DefaultMutableTreeNode implements Display
 		}
 		return null;
 	}
-	@Override public void add(DisplayNode childNode) {
+
+	@Override public void add(MutableTreeNode childNode) {
 		super.add((MutableTreeNode) childNode);
-		
+
+	}
+
+	@Override public JTabbedPane getBoxPanelTabPane() {
+		return myDisplayContext.getBoxPanelTabPane();
 	}
 }

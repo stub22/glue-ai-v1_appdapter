@@ -21,10 +21,9 @@ import com.hp.hpl.jena.query.QuerySolution
 import com.hp.hpl.jena.rdf.model.Literal
 import com.hp.hpl.jena.rdf.model.Model
 import com.hp.hpl.jena.rdf.model.Resource
-import org.appdapter.core.matdat.RepoSpec
+import org.appdapter.core.store.{RepoSpec,RepoOper}
 import org.appdapter.bind.rdf.jena.model.JenaFileManagerUtils
 import org.appdapter.core.boot.ClassLoaderUtils
-import org.appdapter.gui.demo.RepoOper
 import org.appdapter.impl.store.{ DirectRepo, QueryHelper }
 import org.appdapter.core.name.Ident
 
