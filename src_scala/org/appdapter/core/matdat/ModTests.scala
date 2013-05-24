@@ -57,7 +57,7 @@ object ModTests {
 		
 		println("Got NS map: " + nsJavaMap)		
 		val reposSheetNum = 8;
-		val reposModel : Model = GoogSheetRepo.readModelSheet(SemSheet.keyForGoogBootSheet22, reposSheetNum, nsJavaMap);
+		val reposModel : Model = GoogSheetRepoLoader.readModelSheet(SemSheet.keyForGoogBootSheet22, reposSheetNum, nsJavaMap);
 		
 
 	
@@ -95,7 +95,7 @@ event management, and transaction handling.
 		val deductionsListener = new PrintinListener("Deductions model");
 		
 		val queriesSheetNum = 12;
-		val queriesModel : Model = GoogSheetRepo.readModelSheet(SemSheet.keyForGoogBootSheet22, queriesSheetNum, nsJavaMap);		
+		val queriesModel : Model = GoogSheetRepoLoader.readModelSheet(SemSheet.keyForGoogBootSheet22, queriesSheetNum, nsJavaMap);		
 		
 		val tqText = "select ?sheet { ?sheet a ccrt:GoogSheet }";
 		

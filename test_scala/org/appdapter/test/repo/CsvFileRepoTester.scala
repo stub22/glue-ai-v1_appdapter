@@ -20,14 +20,17 @@ import org.appdapter.core.name.{Ident, FreeIdent}
 import org.appdapter.core.store.{Repo, InitialBinding}
 import org.appdapter.help.repo.{RepoClient, RepoClientImpl, InitialBindingImpl}
 import org.appdapter.impl.store.{FancyRepo, DatabaseRepo, FancyRepoFactory}
-import org.appdapter.core.matdat.{GoogSheetRepo}
 import com.hp.hpl.jena.query.{QuerySolution}
 import com.hp.hpl.jena.rdf.model.{Model}
 import com.hp.hpl.jena.sparql.sse.SSE
 import com.hp.hpl.jena.sparql.modify.request.{UpdateCreate, UpdateLoad}
 import com.hp.hpl.jena.update.{GraphStore, GraphStoreFactory, UpdateAction, UpdateRequest}
-import com.hp.hpl.jena.sdb.{Store, SDBFactory};
-import org.appdapter.core.matdat.{CsvFilesSheetRepo};
+import com.hp.hpl.jena.sdb.{Store, SDBFactory}
+import org.appdapter.core.matdat.CsvFilesSheetRepoLoader
+import org.appdapter.core.matdat.OmniLoaderRepo
+import org.appdapter.core.matdat.SheetRepo
+//import matdat.CsvFilesSheetRepoLoader
+//import org.appdapter.core.matdat.{CsvFilesSheetRepo};
 /**
  * @author Stu B. <www.texpedient.com>
  */
@@ -35,16 +38,8 @@ import org.appdapter.core.matdat.{CsvFilesSheetRepo};
 object CsvFileRepoTester {
 	// Modeled on SheetRepo.loadTestSheetRepo
 	def loadSheetRepo(sheetLoc : String, namespaceSheet : String, dirSheet : String,
-						fileModelCLs : java.util.List[ClassLoader]) : CsvFilesSheetRepo = {
-		// Read the namespaces and directory sheets into a single directory model.
-		val dirModel : Model = CsvFilesSheetRepo.readDirectoryModelFromCsvFiles(sheetLoc, namespaceSheet, dirSheet, fileModelCLs) 
-		// Construct a repo around that directory
-		val shRepo = new CsvFilesSheetRepo(dirModel, fileModelCLs)
-		// Load the rest of the repo's initial *sheet* models, as instructed by the directory.
-		shRepo.loadSheetModelsIntoMainDataset()
-		// Load the rest of the repo's initial *file/resource* models, as instructed by the directory.
-		shRepo.loadFileModelsIntoMainDataset(fileModelCLs)
-		shRepo
+						fileModelCLs : java.util.List[ClassLoader]) : SheetRepo = {
+	  CsvFilesSheetRepoLoader.loadCsvFilesSheetRepo(sheetLoc, namespaceSheet, dirSheet, fileModelCLs, null);
 	}
 	def loadDatabaseRepo(configPath : String, optConfigResolveCL : ClassLoader, dirGraphID : Ident) : DatabaseRepo = {
 		 val dbRepo = FancyRepoFactory.makeDatabaseRepo(configPath, optConfigResolveCL, dirGraphID)
@@ -67,7 +62,7 @@ object CsvFileRepoTester {
 	}
 }
 // Currently we're on   Jena 2.6.4, ARQ 2.8.7, SDB 1.3.4
-
+/*
 class CsvFileRepoTesterDontBreakSDB(sdbStore : Store, dirGraphID : Ident) extends DatabaseRepo(sdbStore, dirGraphID){
 //	Current docs for GraphStoreFactory (more recent than the code version we're using) say,
 //	regarding   GraphStoreFactory. reate(Dataset dataset)
@@ -84,7 +79,7 @@ class CsvFileRepoTesterDontBreakSDB(sdbStore : Store, dirGraphID : Ident) extend
        // val graphStore : GraphStore  = GraphStoreFactory.create() ;
 	   // 
 
-	   val readStore : Store = getStore();
+	   val readStore : Store = super.getStore();
 	   val sdbUpdateGraphStore : GraphStore = SDBFactory.connectGraphStore(readStore);
 	   		
         // A sequence of operations
@@ -109,3 +104,4 @@ class CsvFileRepoTesterDontBreakSDB(sdbStore : Store, dirGraphID : Ident) extend
         SSE.write(sdbUpdateGraphStore) ;		
 	}
 }
+*/

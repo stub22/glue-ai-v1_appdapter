@@ -15,74 +15,64 @@
  */
 
 package org.appdapter.core.matdat
-import org.appdapter.core.name.{Ident, FreeIdent}
-import org.appdapter.core.store.{Repo, InitialBinding}
-import org.appdapter.help.repo.{RepoClient, RepoClientImpl, InitialBindingImpl} 
-import org.appdapter.impl.store.{FancyRepo, DatabaseRepo, FancyRepoFactory};
-import org.appdapter.core.matdat.{SheetRepo, GoogSheetRepo, XLSXSheetRepo, OmniLoaderRepo}
-import com.hp.hpl.jena.query.{QuerySolution} // Query, QueryFactory, QueryExecution, QueryExecutionFactory, , QuerySolutionMap, Syntax};
-import com.hp.hpl.jena.rdf.model.{Model}
+import org.appdapter.core.name.{ Ident, FreeIdent }
+import org.appdapter.core.store.{ Repo, InitialBinding }
+import org.appdapter.help.repo.{ RepoClient, RepoClientImpl, InitialBindingImpl }
+import org.appdapter.impl.store.{ FancyRepo, DatabaseRepo, FancyRepoFactory }
+import com.hp.hpl.jena.query.{ QuerySolution }
+import com.hp.hpl.jena.rdf.model.{ Model }
 import org.appdapter.core.log.BasicDebugger;
+import org.appdapter.bind.rdf.jena.sdb.SdbStoreFactory
+import com.hp.hpl.jena.sdb.Store
+import java.util.Date
 /**
  * @author Stu B. <www.texpedient.com>
  */
 
 object RepoLoader extends BasicDebugger {
-	// Modeled on SheetRepo.loadTestSheetRepo
-	def loadGoogSheetRepo(sheetKey : String, namespaceSheetNum : Int, dirSheetNum : Int, 
-						fileModelCLs : java.util.List[ClassLoader]) : SheetRepo = {
-		// Read the namespaces and directory sheets into a single directory model.
-		val dirModel : Model = GoogSheetRepo.readDirectoryModelFromGoog(sheetKey, namespaceSheetNum, dirSheetNum) 
-		// Construct a repo around that directory        
-        //val shRepo = new GoogSheetRepo(dirModel);
-        // Doug's locally testing this replacement
-		val spec = new OnlineSheetRepoSpec(sheetKey,namespaceSheetNum,dirSheetNum,fileModelCLs);
-        val shRepo = new OmniLoaderRepo(spec, "goog:" + sheetKey + "/" + namespaceSheetNum + "/" + dirSheetNum, dirModel, fileModelCLs)
-		// Load the rest of the repo's initial *sheet* models, as instructed by the directory.
-		getLogger().debug("Loading Sheet Models") 
-		shRepo.loadSheetModelsIntoMainDataset()
-		// Load the rest of the repo's initial *file/resource* models, as instructed by the directory.
-		//getLogger().debug("Loading File Models")
-		//shRepo.loadFileModelsIntoMainDataset(fileModelCLs)
-		shRepo
-	}
-	
-		// Modeled on SheetRepo.loadTestSheetRepo
-	def loadXLSXSheetRepo(sheetLocation : String, namespaceSheetName : String, dirSheetName : String, 
-						fileModelCLs : java.util.List[ClassLoader]) : SheetRepo = {
-		// Read the namespaces and directory sheets into a single directory model.
-		val dirModel : Model = XLSXSheetRepo.readDirectoryModelFromXLSX(sheetLocation, namespaceSheetName, dirSheetName, fileModelCLs) 
-		// Construct a repo around that directory
-        //val shRepo = new XLSXSheetRepo(dirModel, fileModelCLs);   
-		// Doug's locally testing this replacement   
-		val spec = new OfflineXlsSheetRepoSpec(sheetLocation, namespaceSheetName, dirSheetName, fileModelCLs);
-        val shRepo = new OmniLoaderRepo(spec, "xlsx:" + sheetLocation + "/" + namespaceSheetName + "/" + dirSheetName, dirModel, fileModelCLs)
-		// Load the rest of the repo's initial *sheet* models, as instructed by the directory.
-		getLogger().debug("Loading Sheet Models") 
-		shRepo.loadSheetModelsIntoMainDataset()
-		// Load the rest of the repo's initial *file/resource* models, as instructed by the directory.
-		//getLogger().debug("Loading File Models")
-		//shRepo.loadFileModelsIntoMainDataset(fileModelCLs)
-		shRepo
-	}
-	
-	def loadDatabaseRepo(configPath : String, optConfigResolveCL : ClassLoader, dirGraphID : Ident) : DatabaseRepo = {
-		 val dbRepo = FancyRepoFactory.makeDatabaseRepo(configPath, optConfigResolveCL, dirGraphID)
-		 dbRepo;
-	}
-	
-	def testRepoDirect(repo : Repo.WithDirectory, querySheetQName : String, queryQName: String, tgtGraphSparqlVN: String, tgtGraphQName : String) : Unit = {
-		// Here we manually set up a binding, as you would usually allow RepoClient
-		// to do for you, instead:
-		val qib : InitialBinding = repo.makeInitialBinding
-		qib.bindQName(tgtGraphSparqlVN, tgtGraphQName)
-		
-		// Run the resulting fully bound query, and print the results.		
-		val solnJavaList : java.util.List[QuerySolution] = repo.queryIndirectForAllSolutions(querySheetQName, queryQName, qib.getQSMap);
+  def makeDatabaseRepo(repoConfResPath: String, optCL: ClassLoader, dirGraphID: Ident): DatabaseRepo = {
+    val s: Store = SdbStoreFactory.connectSdbStoreFromResPath(repoConfResPath, optCL);
+    new DatabaseRepo(s, dirGraphID);
+  }
 
-		println("Found solutions for " + queryQName + " in " + tgtGraphQName + " : " + solnJavaList)
-	}
-	
-	def copyAllRepoModels(sourceRepo : Repo.WithDirectory, targetRepo : Repo.WithDirectory) : Unit = {
-	}
+  def addInvisbleInfo(in: String, k: String, v: String): String = {
+    in + "/*" + k + "=" + v + "*/"
+  }
+  def makeSheetRepo(spec: RepoSpec, dirModel: Model, fileModelCLs: java.util.List[ClassLoader] = null, dirGraphID: Ident = null): SheetRepo = {
+    val specURI = spec.toString();
+    var serial = System.identityHashCode(this);
+    var myDebugName = RepoLoader.addInvisbleInfo(specURI, "time", "" + new Date());
+    if (dirGraphID != null) {
+      myDebugName = RepoLoader.addInvisbleInfo(myDebugName, "id", "" + dirGraphID);
+    }
+    // Construct a repo around that directory        
+    val shRepo = new OmniLoaderRepo(spec, specURI, myDebugName, dirModel, fileModelCLs)
+    // Load the rest of the repo's initial *sheet* models, as instructed by the directory.
+    getLogger().debug("Loading Sheet Models")
+    shRepo.loadSheetModelsIntoMainDataset()
+    // Load the rest of the repo's initial *file/resource* models, as instructed by the directory.
+    getLogger().debug("Loading File Models")
+    shRepo.loadDerivedModelsIntoMainDataset(fileModelCLs)
+    shRepo
+  }
+
+  def loadDatabaseRepo(configPath: String, optConfigResolveCL: ClassLoader, dirGraphID: Ident): DatabaseRepo = {
+    val dbRepo = FancyRepoFactory.makeDatabaseRepo(configPath, optConfigResolveCL, dirGraphID)
+    dbRepo;
+  }
+
+  def testRepoDirect(repo: Repo.WithDirectory, querySheetQName: String, queryQName: String, tgtGraphSparqlVN: String, tgtGraphQName: String): Unit = {
+    // Here we manually set up a binding, as you would usually allow RepoClient
+    // to do for you, instead:
+    val qib: InitialBinding = repo.makeInitialBinding
+    qib.bindQName(tgtGraphSparqlVN, tgtGraphQName)
+
+    // Run the resulting fully bound query, and print the results.		
+    val solnJavaList: java.util.List[QuerySolution] = repo.queryIndirectForAllSolutions(querySheetQName, queryQName, qib.getQSMap);
+
+    println("Found solutions for " + queryQName + " in " + tgtGraphQName + " : " + solnJavaList)
+  }
+
+  def copyAllRepoModels(sourceRepo: Repo.WithDirectory, targetRepo: Repo.WithDirectory): Unit = {
+  }
 }
