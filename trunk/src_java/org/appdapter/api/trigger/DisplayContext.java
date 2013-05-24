@@ -16,12 +16,10 @@
 
 package org.appdapter.api.trigger;
 
-import javax.swing.JTabbedPane;
-
 /**
  * @author Stu B. <www.texpedient.com>
  */
 public interface DisplayContext {
 	// TODO : replace this with general BoxPanelSwitchableView
-	public JTabbedPane getBoxPanelTabPane();
+	public BoxPanelSwitchableView getBoxPanelTabPane();
 }

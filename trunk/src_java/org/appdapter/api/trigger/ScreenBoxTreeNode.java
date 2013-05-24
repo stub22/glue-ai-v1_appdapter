@@ -15,7 +15,7 @@
  */
 package org.appdapter.api.trigger;
 
-import javax.swing.*;
+import javax.swing.JTabbedPane;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 
@@ -88,7 +88,7 @@ public class ScreenBoxTreeNode extends DefaultMutableTreeNode implements Display
 
 	}
 
-	@Override public JTabbedPane getBoxPanelTabPane() {
+	@Override public BoxPanelSwitchableView getBoxPanelTabPane() {
 		return myDisplayContext.getBoxPanelTabPane();
 	}
 }

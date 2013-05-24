@@ -15,7 +15,19 @@
  */
 package org.appdapter.demo;
 
+/**
+ * 
+ * Projects that want to use Appdapter Demos and Tests need a set of interfaces that exist in Appdapter
+ * That is what this package is for.. though notice there is not implementation.. but going to allow packages like 
+ * org.appdapter.gui to register demos during the use of org.appdaptor.bundle loading
+ * 
+ * 
+ * @author Administrator
+ *
+ */
+
 import java.net.URL;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
