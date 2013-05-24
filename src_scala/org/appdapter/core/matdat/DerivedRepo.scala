@@ -36,11 +36,8 @@ import org.appdapter.impl.store.DirectRepo
 import scala.collection.JavaConversions.asScalaSet
 import org.appdapter.impl.store.QueryHelper
 import org.appdapter.help.repo.RepoClientImpl
-import org.appdapter.gui.demo.RepoOper
-import org.appdapter.core.matdat.RepoSpecScala
-import org.appdapter.core.matdat.RepoSpecDefaultNames
-import org.appdapter.core.matdat.RepoSpecScala
-import org.appdapter.core.matdat.RepoSpecDefaultNames
+import org.appdapter.core.store.{ RepoSpec, RepoOper, RepoClient, RepoSpecJava, Repo, InitialBinding }
+import org.appdapter.help.repo. { RepoClientImpl, RepoClientScala, InitialBindingImpl}
 
 /**
  * @author LogicMOO <www.logicmoo.org>

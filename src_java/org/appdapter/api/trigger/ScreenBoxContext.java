@@ -13,15 +13,14 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.appdapter.core.matdat;
 
-import org.appdapter.core.store.Repo;
+package org.appdapter.api.trigger;
+
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
-abstract public class RepoSpec {
-	public abstract Repo.WithDirectory makeRepo();
 
-	public abstract org.appdapter.help.repo.RepoClient makeRepoClient(Repo.WithDirectory spec);
+public interface ScreenBoxContext extends BoxContext {
+	public DisplayContext	findDisplayContext(ScreenBox viewable);
 }

@@ -18,7 +18,7 @@ package org.appdapter.help.repo
 
 import org.appdapter.core.name.Ident
 import org.appdapter.core.store.{Repo, InitialBinding, ModelClient}
-import org.appdapter.help.repo.RepoClient
+import org.appdapter.core.store.{RepoSpec,RepoOper, RepoClient}
 
 // import org.appdapter.impl.store.{FancyRepo};
 

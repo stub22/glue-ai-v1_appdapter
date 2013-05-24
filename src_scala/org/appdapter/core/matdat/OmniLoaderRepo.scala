@@ -18,11 +18,11 @@ package org.appdapter.core.matdat
 
 import com.hp.hpl.jena.query.Dataset
 import com.hp.hpl.jena.rdf.model.Model
-import org.appdapter.core.store.Repo
-import org.appdapter.gui.demo.DemoBrowser
-import org.appdapter.gui.demo.RepoOper
+import org.appdapter.core.store.{ RepoSpec, RepoOper, RepoClient, RepoSpecJava, Repo, InitialBinding }
+import org.appdapter.help.repo. { RepoClientImpl, RepoClientScala, InitialBindingImpl}
 
-class OmniLoaderRepo(myRepoSpecStart: org.appdapter.core.matdat.RepoSpec, myDebugNameIn: String, myBasePathIn: String,
+
+class OmniLoaderRepo(myRepoSpecStart: org.appdapter.core.store.RepoSpec, myDebugNameIn: String, myBasePathIn: String,
   directoryModel: Model, fmcls: java.util.List[ClassLoader])
   extends SheetRepo(directoryModel: Model, fmcls: java.util.List[ClassLoader])
   with RepoOper.Reloadable {
@@ -93,22 +93,22 @@ object OmniLoaderRepoTest {
   
   def main(args: Array[String]) = {
     print("Start Whackamole");
-    val repoNav = DemoBrowser.makeDemoNavigatorCtrl(null);
+    //val repoNav = DemoBrowser.makeDemoNavigatorCtrl(null);
     print("Create a Goog Sheet Spec");
     val repoSpec = new GoogSheetRepoSpec(OmniLoaderRepoTest.BMC_SHEET_KEY, OmniLoaderRepoTest.BMC_NAMESPACE_SHEET_NUM, OmniLoaderRepoTest.BMC_DIRECTORY_SHEET_NUM);
     val repo = repoSpec.makeRepo;
     repo.loadSheetModelsIntoMainDataset();
     repo.loadDerivedModelsIntoMainDataset(null);
     print("Make RepoFabric");
-    val rf = new RepoFabric();
-    print("Make FabricBox");
-    val fb = new FabricBox(rf);
-    fb.setShortLabel("Short Label")
+    //val rf = new RepoFabric();
+    //print("Make FabricBox");
+    //val fb = new FabricBox(rf);
+    //fb.setShortLabel("Short Label")
     // Add this as an "entry" in the RepoFabric 
-    print("Add to Entry");
-    rf.addEntry(new SimplistRepoSpec(repo))
-    print("Resync");
-    repoNav.getBrowsePanel().getCollectionWithSwizzler().addPOJO("Test OmniLoaderRepo", repo);
+    //print("Add to Entry");
+    //rf.addEntry(new SimplistRepoSpec(repo))
+    //print("Resync");
+    //repoNav.getBrowsePanel().getCollectionWithSwizzler().addPOJO("Test OmniLoaderRepo", repo);
     //repo.addToWhackmole();
     java.lang.Thread.sleep(60000000);
   }

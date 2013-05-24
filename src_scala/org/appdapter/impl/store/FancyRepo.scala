@@ -34,7 +34,8 @@ import org.appdapter.core.name.Ident
 import org.appdapter.help.repo.InitialBindingImpl
 import org.appdapter.core.log.Loggable
 import com.hp.hpl.jena.sdb.Store
-import org.appdapter.core.matdat.RepoSpec
+import org.appdapter.core.store.{ RepoSpec, RepoOper, RepoClient, RepoSpecJava, Repo, InitialBinding }
+import org.appdapter.help.repo. { RepoClientImpl, RepoClientScala, InitialBindingImpl}
 import java.util.Date
 
 /**
