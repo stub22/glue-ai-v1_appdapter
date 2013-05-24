@@ -16,8 +16,9 @@
 
 package org.appdapter.core.matdat
 import org.appdapter.core.name.{ Ident, FreeIdent }
-import org.appdapter.core.store.{ Repo, InitialBinding }
-import org.appdapter.help.repo.{ RepoClient, RepoClientImpl, InitialBindingImpl }
+import org.appdapter.core.store.{ RepoSpec, RepoOper, RepoClient, RepoSpecJava, Repo, InitialBinding }
+import org.appdapter.help.repo. { RepoClientImpl, RepoClientScala, InitialBindingImpl}
+
 import org.appdapter.impl.store.{ FancyRepo, DatabaseRepo, FancyRepoFactory }
 import com.hp.hpl.jena.query.{ QuerySolution }
 import com.hp.hpl.jena.rdf.model.{ Model }

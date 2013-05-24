@@ -18,9 +18,8 @@ package org.appdapter.core.matdat
 import com.hp.hpl.jena.rdf.model.Model
 import org.appdapter.core.name.FreeIdent
 import org.appdapter.core.name.Ident
-import org.appdapter.core.store.Repo
-import org.appdapter.help.repo.RepoClient
-import org.appdapter.help.repo.RepoClientImpl
+import org.appdapter.core.store.{ RepoSpec, RepoOper, RepoClient, RepoSpecJava, Repo }
+import org.appdapter.help.repo. { RepoClientImpl, RepoClientScala}
 //import org.appdapter.core.matdat.{SheetRepo, GoogSheetRepo, XLSXSheetRepo}
 /**
  * @author Stu B. <www.texpedient.com>

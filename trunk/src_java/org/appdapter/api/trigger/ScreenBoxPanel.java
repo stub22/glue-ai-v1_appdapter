@@ -13,10 +13,10 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.appdapter.gui.box;
+package org.appdapter.api.trigger;
 
-import org.appdapter.api.trigger.Box;
-import org.appdapter.gui.browse.ButtonTabComponent;
+import javax.swing.*;
+
 
 /**
  * BoxPanels may be used to view many different boxes.
@@ -25,7 +25,7 @@ import org.appdapter.gui.browse.ButtonTabComponent;
  * 
  * @author Stu B. <www.texpedient.com>
  */
-public abstract class ScreenBoxPanel<BoxType extends Box> extends ButtonTabComponent {
+public abstract class ScreenBoxPanel<BoxType extends Box> extends JPanel {
 	public enum Kind {
 		MATRIX, DB_MANAGER, REPO_MANAGER, OBJECT_PROPERTIES, OTHER
 	}

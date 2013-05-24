@@ -13,21 +13,14 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.appdapter.gui.box;
 
-import org.appdapter.api.trigger.Box;
-import org.appdapter.api.trigger.Trigger;
-import org.appdapter.core.component.KnownComponent;
-import org.appdapter.gui.browse.DisplayContext;
+package org.appdapter.api.trigger;
+
+import org.appdapter.gui.*;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public interface ScreenBox<TT extends Trigger<? extends ScreenBox<TT>>> extends Box<TT>, KnownComponent {
-
-	public DisplayContext getDisplayContext();
-	
-	void setDisplayContextProvider(DisplayContextProvider dcp);	
-
-	public ScreenBoxPanel findBoxPanel(ScreenBoxPanel.Kind kind);
+public interface DisplayContextProvider {
+	public	DisplayContext		 findDisplayContext(Box b);
 }

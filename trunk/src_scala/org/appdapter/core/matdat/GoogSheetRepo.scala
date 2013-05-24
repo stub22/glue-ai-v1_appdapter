@@ -31,7 +31,9 @@ import org.appdapter.core.store.{ Repo, BasicQueryProcessorImpl, BasicRepoImpl, 
 import org.appdapter.impl.store.{ DirectRepo, QueryHelper, ResourceResolver }
 import org.appdapter.help.repo.InitialBindingImpl
 import org.appdapter.core.boot.ClassLoaderUtils
-import org.appdapter.core.matdat.RepoSpec
+import org.appdapter.core.store.{ RepoSpec, RepoOper, RepoClient, RepoSpecJava, Repo, InitialBinding }
+import org.appdapter.help.repo. { RepoClientImpl, RepoClientScala, InitialBindingImpl}
+
 
 /**
  * @author Stu B. <www.texpedient.com>
