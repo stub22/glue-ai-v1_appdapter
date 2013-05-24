@@ -15,7 +15,7 @@
  */
 package org.appdapter.api.trigger;
 
-import javax.swing.*;
+import javax.swing.JPanel;
 
 
 /**

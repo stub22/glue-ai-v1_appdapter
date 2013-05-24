@@ -16,8 +16,6 @@
 
 package org.appdapter.api.trigger;
 
-import org.appdapter.gui.*;
-
 /**
  * @author Stu B. <www.texpedient.com>
  */

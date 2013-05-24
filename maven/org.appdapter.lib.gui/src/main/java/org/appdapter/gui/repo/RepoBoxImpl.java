@@ -16,25 +16,20 @@
 
 package org.appdapter.gui.repo;
 
-import org.appdapter.gui.box.ScreenBoxImpl;
-import org.appdapter.api.trigger.Trigger;
-import org.appdapter.api.trigger.Box;
-
-import com.hp.hpl.jena.query.Query;
-
-
 import java.util.List;
+
+import org.appdapter.api.trigger.Trigger;
+import org.appdapter.bind.rdf.jena.query.JenaArqQueryFuncs;
+import org.appdapter.bind.rdf.jena.query.JenaArqResultSetProcessor;
 import org.appdapter.core.store.BasicStoredMutableRepoImpl;
 import org.appdapter.core.store.Repo;
 import org.appdapter.core.store.Repo.GraphStat;
-
-import com.hp.hpl.jena.query.ResultSet;
-import org.appdapter.bind.rdf.jena.query.JenaArqQueryFuncs;
-import org.appdapter.bind.rdf.jena.query.JenaArqResultSetProcessor;
-
-
+import org.appdapter.gui.trigger.ScreenBoxImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.hp.hpl.jena.query.Query;
+import com.hp.hpl.jena.query.ResultSet;
 
 /**
  * @author Stu B. <www.texpedient.com>

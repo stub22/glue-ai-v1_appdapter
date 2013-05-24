@@ -30,6 +30,7 @@ import org.appdapter.api.trigger.BoxContext;
 import org.appdapter.api.trigger.MutableBox;
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.api.trigger.TriggerImpl;
+import org.appdapter.core.matdat.*;
 import org.appdapter.core.name.FreeIdent;
 import org.appdapter.core.store.Repo;
 import org.appdapter.core.store.Repo.WithDirectory;
