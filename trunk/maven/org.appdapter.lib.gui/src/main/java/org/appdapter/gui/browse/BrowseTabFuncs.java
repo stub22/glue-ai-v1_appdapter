@@ -19,9 +19,7 @@ package org.appdapter.gui.browse;
 import java.util.WeakHashMap;
 
 import org.appdapter.api.trigger.BoxImpl;
-import org.appdapter.gui.box.ObjectKey;
-import org.appdapter.gui.box.ScreenBoxPanel;
-import org.appdapter.gui.box.ScreenBox;
+import org.appdapter.gui.box.*;
 import javax.swing.JTabbedPane;
 
 /**
