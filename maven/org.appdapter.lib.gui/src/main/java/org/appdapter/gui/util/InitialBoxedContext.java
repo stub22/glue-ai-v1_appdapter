@@ -32,8 +32,7 @@ import org.appdapter.gui.util.ObjectFinder.Found;
  * @author Administrator
  * 
  */
-public class InitialBoxedContext extends InitialContext implements Context,
-		HRKRefinement {
+public class InitialBoxedContext extends InitialContext implements Context, HRKRefinement {
 
 	Context ctx;
 
@@ -67,8 +66,7 @@ public class InitialBoxedContext extends InitialContext implements Context,
 	 *                In a naming exception is encountered.
 	 * @see javax.naming.spi.NamingManager#getURLContext
 	 */
-	@Override
-	public Context getURLOrDefaultInitCtx(String name) throws NamingException {
+	@Override public Context getURLOrDefaultInitCtx(String name) throws NamingException {
 		if (NamingManager.hasInitialContextFactoryBuilder()) {
 			return getDefaultInitCtx();
 		}
@@ -135,8 +133,7 @@ public class InitialBoxedContext extends InitialContext implements Context,
 	 * 
 	 * @see javax.naming.spi.NamingManager#getURLContext
 	 */
-	@Override
-	public Context getURLOrDefaultInitCtx(Name name) throws NamingException {
+	@Override public Context getURLOrDefaultInitCtx(Name name) throws NamingException {
 		if (NamingManager.hasInitialContextFactoryBuilder()) {
 			return getDefaultInitCtx();
 		}
@@ -174,8 +171,7 @@ public class InitialBoxedContext extends InitialContext implements Context,
 	 * @exception NamingException
 	 *                If a naming exception was encountered.
 	 */
-	@Override
-	final protected Context getDefaultInitCtx() throws NamingException {
+	@Override final protected Context getDefaultInitCtx() throws NamingException {
 		if (!gotDefault) {
 			defaultInitCtx = NamingManager.getInitialContext(myProps);
 			gotDefault = true;
@@ -193,8 +189,7 @@ public class InitialBoxedContext extends InitialContext implements Context,
 		// TODO Auto-generated constructor stub
 	}
 
-	public InitialBoxedContext(Hashtable<?, ?> environment)
-			throws NamingException {
+	public InitialBoxedContext(Hashtable<?, ?> environment) throws NamingException {
 		super(environment);
 		ctx = new InitialContext(environment);
 		initAtLeastOnce();
@@ -219,8 +214,7 @@ public class InitialBoxedContext extends InitialContext implements Context,
 		initAtLeastOnce();
 	}
 
-	@Override
-	public Object lookup(String name) throws NamingException {
+	@Override public Object lookup(String name) throws NamingException {
 		return lookup(getURLOrDefaultInitCtx(name), name, null);
 	}
 
@@ -229,8 +223,7 @@ public class InitialBoxedContext extends InitialContext implements Context,
 		return lookup(getURLOrDefaultInitCtx(name), name, class1);
 	}
 
-	public static <T, O extends T> O lookup(Context context, String name,
-			Class<T> class1) throws NamingException {
+	public static <T, O extends T> O lookup(Context context, String name, Class<T> class1) throws NamingException {
 		O obj = lookup(context, name, class1, false);
 		if (obj != null)
 			return obj;
@@ -240,9 +233,7 @@ public class InitialBoxedContext extends InitialContext implements Context,
 		return obj;
 	}
 
-	@SuppressWarnings("unchecked")
-	public static <T, O extends T> O lookup(Context context, String name,
-			Class<T> class1, boolean createIfNotFound) throws NamingException {
+	@SuppressWarnings("unchecked") public static <T, O extends T> O lookup(Context context, String name, Class<T> class1, boolean createIfNotFound) throws NamingException {
 		String lname = name;
 		if (name == null) {
 			name = class1.getSimpleName();
@@ -253,8 +244,7 @@ public class InitialBoxedContext extends InitialContext implements Context,
 
 			for (NamingResolver res : namingResolvers) {
 				Collection<Object> dontUse = new LinkedList();
-				Found<T> v = res
-						.lookup(name, class1, createIfNotFound, dontUse);
+				Found<T> v = res.lookup(name, class1, createIfNotFound, dontUse);
 				if (v != null) {
 					return (O) v.getValue();
 				}
@@ -265,155 +255,121 @@ public class InitialBoxedContext extends InitialContext implements Context,
 		}
 	}
 
-	@Override
-	public Object lookup(Name name) throws NamingException {
+	@Override public Object lookup(Name name) throws NamingException {
 		return getURLOrDefaultInitCtx(name).lookup(name);
 	}
 
-	@Override
-	public void bind(String name, Object obj) throws NamingException {
+	@Override public void bind(String name, Object obj) throws NamingException {
 		getURLOrDefaultInitCtx(name).bind(name, obj);
 	}
 
-	@Override
-	public void bind(Name name, Object obj) throws NamingException {
+	@Override public void bind(Name name, Object obj) throws NamingException {
 		getURLOrDefaultInitCtx(name).bind(name, obj);
 	}
 
-	@Override
-	public void rebind(String name, Object obj) throws NamingException {
+	@Override public void rebind(String name, Object obj) throws NamingException {
 		getURLOrDefaultInitCtx(name).rebind(name, obj);
 	}
 
-	@Override
-	public void rebind(Name name, Object obj) throws NamingException {
+	@Override public void rebind(Name name, Object obj) throws NamingException {
 		getURLOrDefaultInitCtx(name).rebind(name, obj);
 	}
 
-	@Override
-	public void unbind(String name) throws NamingException {
+	@Override public void unbind(String name) throws NamingException {
 		getURLOrDefaultInitCtx(name).unbind(name);
 	}
 
-	@Override
-	public void unbind(Name name) throws NamingException {
+	@Override public void unbind(Name name) throws NamingException {
 		getURLOrDefaultInitCtx(name).unbind(name);
 	}
 
-	@Override
-	public void rename(String oldName, String newName) throws NamingException {
+	@Override public void rename(String oldName, String newName) throws NamingException {
 		getURLOrDefaultInitCtx(oldName).rename(oldName, newName);
 	}
 
-	@Override
-	public void rename(Name oldName, Name newName) throws NamingException {
+	@Override public void rename(Name oldName, Name newName) throws NamingException {
 		getURLOrDefaultInitCtx(oldName).rename(oldName, newName);
 	}
 
-	@Override
-	public NamingEnumeration<NameClassPair> list(String name)
-			throws NamingException {
+	@Override public NamingEnumeration<NameClassPair> list(String name) throws NamingException {
 		return (getURLOrDefaultInitCtx(name).list(name));
 	}
 
-	@Override
-	public NamingEnumeration<NameClassPair> list(Name name)
-			throws NamingException {
+	@Override public NamingEnumeration<NameClassPair> list(Name name) throws NamingException {
 		return (getURLOrDefaultInitCtx(name).list(name));
 	}
 
-	@Override
-	public NamingEnumeration<Binding> listBindings(String name)
-			throws NamingException {
+	@Override public NamingEnumeration<Binding> listBindings(String name) throws NamingException {
 		return getURLOrDefaultInitCtx(name).listBindings(name);
 	}
 
-	@Override
-	public NamingEnumeration<Binding> listBindings(Name name)
-			throws NamingException {
+	@Override public NamingEnumeration<Binding> listBindings(Name name) throws NamingException {
 		return getURLOrDefaultInitCtx(name).listBindings(name);
 	}
 
-	@Override
-	public void destroySubcontext(String name) throws NamingException {
+	@Override public void destroySubcontext(String name) throws NamingException {
 		getURLOrDefaultInitCtx(name).destroySubcontext(name);
 	}
 
-	@Override
-	public void destroySubcontext(Name name) throws NamingException {
+	@Override public void destroySubcontext(Name name) throws NamingException {
 		getURLOrDefaultInitCtx(name).destroySubcontext(name);
 	}
 
-	@Override
-	public Context createSubcontext(String name) throws NamingException {
+	@Override public Context createSubcontext(String name) throws NamingException {
 		return getURLOrDefaultInitCtx(name).createSubcontext(name);
 	}
 
-	@Override
-	public Context createSubcontext(Name name) throws NamingException {
+	@Override public Context createSubcontext(Name name) throws NamingException {
 		return getURLOrDefaultInitCtx(name).createSubcontext(name);
 	}
 
-	@Override
-	public Object lookupLink(String name) throws NamingException {
+	@Override public Object lookupLink(String name) throws NamingException {
 		return getURLOrDefaultInitCtx(name).lookupLink(name);
 	}
 
-	@Override
-	public Object lookupLink(Name name) throws NamingException {
+	@Override public Object lookupLink(Name name) throws NamingException {
 		return getURLOrDefaultInitCtx(name).lookupLink(name);
 	}
 
-	@Override
-	public NameParser getNameParser(String name) throws NamingException {
+	@Override public NameParser getNameParser(String name) throws NamingException {
 		return getURLOrDefaultInitCtx(name).getNameParser(name);
 	}
 
-	@Override
-	public NameParser getNameParser(Name name) throws NamingException {
+	@Override public NameParser getNameParser(Name name) throws NamingException {
 		return getURLOrDefaultInitCtx(name).getNameParser(name);
 	}
 
-	@Override
-	public Name composeName(Name name, Name prefix) throws NamingException {
+	@Override public Name composeName(Name name, Name prefix) throws NamingException {
 		// TODO Auto-generated method stub
 		return getURLOrDefaultInitCtx(name).composeName(name, prefix);
 	}
 
-	@Override
-	public String composeName(String name, String prefix)
-			throws NamingException {
+	@Override public String composeName(String name, String prefix) throws NamingException {
 		// TODO Auto-generated method stub
 		return getURLOrDefaultInitCtx(name).composeName(name, prefix);
 	}
 
-	@Override
-	public Object addToEnvironment(String propName, Object propVal)
-			throws NamingException {
+	@Override public Object addToEnvironment(String propName, Object propVal) throws NamingException {
 		// TODO Auto-generated method stub
 		return getRealCtx().addToEnvironment(propName, propVal);
 	}
 
-	@Override
-	public Object removeFromEnvironment(String propName) throws NamingException {
+	@Override public Object removeFromEnvironment(String propName) throws NamingException {
 		// TODO Auto-generated method stub
 		return getRealCtx().removeFromEnvironment(propName);
 	}
 
-	@Override
-	public Hashtable<?, ?> getEnvironment() throws NamingException {
+	@Override public Hashtable<?, ?> getEnvironment() throws NamingException {
 		// TODO Auto-generated method stub
 		return getRealCtx().getEnvironment();
 	}
 
-	@Override
-	public void close() throws NamingException {
+	@Override public void close() throws NamingException {
 		// TODO Auto-generated method stub
 		getRealCtx().close();
 	}
 
-	@Override
-	public String getNameInNamespace() throws NamingException {
+	@Override public String getNameInNamespace() throws NamingException {
 		// TODO Auto-generated method stub
 		return getRealCtx().getNameInNamespace();
 	}
@@ -469,8 +425,7 @@ public class InitialBoxedContext extends InitialContext implements Context,
 		}
 	}
 
-	private static void saveSomewhere(Context ctx, String name, Object obj,
-			Class... ifaces) {
+	private static void saveSomewhere(Context ctx, String name, Object obj, Class... ifaces) {
 		if (ifaces == null || ifaces.length == 0)
 			ifaces = obj.getClass().getInterfaces();
 		if (ifaces.length == 1 && ifaces[0] == null) {
@@ -482,8 +437,7 @@ public class InitialBoxedContext extends InitialContext implements Context,
 		}
 		if (ifaces.length == 1) {
 			Class face = ifaces[0];
-			saveOnNames(ctx, obj, name, face.getSimpleName(), face.getName(),
-					Debuggable.objKey(obj));
+			saveOnNames(ctx, obj, name, face.getSimpleName(), face.getName(), Debuggable.objKey(obj));
 			return;
 		}
 

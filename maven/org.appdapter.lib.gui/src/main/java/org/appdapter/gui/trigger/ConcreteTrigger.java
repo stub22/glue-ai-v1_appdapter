@@ -16,8 +16,8 @@
 
 package org.appdapter.gui.trigger;
 
-import org.appdapter.gui.box.ScreenBoxImpl;
 import org.appdapter.api.trigger.TriggerImpl;
+import org.appdapter.gui.box.ScreenBoxImpl;
 
 /**
  * @author Stu B. <www.texpedient.com>

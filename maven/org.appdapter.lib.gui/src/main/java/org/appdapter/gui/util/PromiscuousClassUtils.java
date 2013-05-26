@@ -3,28 +3,69 @@ package org.appdapter.gui.util;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+
+import org.appdapter.gui.pojo.Utility;
+import org.slf4j.LoggerFactory;
+
+import sun.reflect.Reflection;
 
 abstract public class PromiscuousClassUtils {
 
 	static NamingResolver namingResolver = new ClassLoadingNamingResolver();
 
-	public static ArrayList<Class> classesSeen = new ArrayList<Class>();
+	public static HashSet<Class> classesSeen = new HashSet<Class>();
+	public static Map<String, Class> classnameToClass = new HashMap();
 
-	public static Class<?> rememberClass(Class<?> findClass) {
+	public static <T> Class<T> rememberClass(String named, Class<T> findClass) {
 		synchronized (classesSeen) {
 			addIfNew(classesSeen, findClass);
 		}
+		try {
+			String cn = named;
+			try {
+				String cn0 = findClass.getCanonicalName();
+				if (cn0 != null && named.compareTo(cn0) != 0) {
+					classnameToClass.put(cn0, findClass);
+				}
+			} catch (Throwable err) {
+				debugLog("while trying to 'rememberClass' " + named + " " + " " + findClass + " had " + err);
+			}
+
+			try {
+				String cn1 = findClass.getName();
+				if (cn1 != null && named.compareTo(cn1) != 0) {
+					classnameToClass.put(cn1, findClass);
+				}
+			} catch (Throwable err) {
+				debugLog("while trying to 'rememberClass' " + named + " " + " " + findClass + " had " + err);
+			}
+			if (cn != null) {
+				classnameToClass.put(cn, findClass);
+			}
+		} catch (Exception e) {
+
+		}
 		return findClass;
+	}
+
+	private static void debugLog(String msg) {
+		LoggerFactory.getLogger(PromiscuousClassUtils.class).debug(msg);
 	}
 
 	public static ArrayList<ClassLoader> allClassLoaders = new ArrayList<ClassLoader>();
 
 	public static FromManyClassLoader many;
+
+	private static Map<String, Throwable> classNotFoundYet = new HashMap<String, Throwable>();
 
 	public synchronized static FromManyClassLoader getPromiscuousClassLoader() {
 		if (many == null) {
@@ -46,7 +87,7 @@ abstract public class PromiscuousClassUtils {
 
 	public static Collection<Class> getImplementingClasses(Class interfaceClass) {
 		PromiscuousClassUtils.ensureOntoligized(interfaceClass);
-		ArrayList<Class> foundClasses = new ArrayList<Class>();
+		HashSet<Class> foundClasses = new HashSet<Class>();
 		for (Class type : getInstalledClasses()) {
 			if (!isCreateable(type))
 				continue;
@@ -70,6 +111,8 @@ abstract public class PromiscuousClassUtils {
 	public static boolean isCreateable(Class type) {
 		if (type.isInterface())
 			return false;
+		if (Modifier.isAbstract(type.getModifiers()))
+			return false;
 		Constructor[] v = type.getConstructors();
 		if (v == null || v.length == 0)
 			return false;
@@ -85,6 +128,16 @@ abstract public class PromiscuousClassUtils {
 		if (element instanceof HRKRefinement) {
 			list.add(0, element);
 			return true;
+		}
+		list.add(element);
+		return true;
+	}
+
+	public static <T> boolean addIfNew(Collection<T> list, T element) {
+		if (list.contains(element))
+			return false;
+		if (element instanceof HRKRefinement.DontAdd) {
+			return false;
 		}
 		list.add(element);
 		return true;
@@ -122,7 +175,7 @@ abstract public class PromiscuousClassUtils {
 		return changed;
 	}
 
-	private static Collection<Class> getInstalledClasses() {
+	public static ArrayList<Class> getInstalledClasses() {
 		synchronized (classesSeen) {
 			return new ArrayList<Class>(classesSeen);
 		}
@@ -140,26 +193,72 @@ abstract public class PromiscuousClassUtils {
 		namingResolver.toString();
 	}
 
+	private static Map<ClassLoader, ClassLoader> switchedOutClassLoader = new HashMap<ClassLoader, ClassLoader>();
+
 	public static IsolatingClassLoaderBase coerceClassloader(ClassLoader cl2) {
 		if (cl2 instanceof IsolatingClassLoaderBase)
 			return (IsolatingClassLoaderBase) cl2;
-		addClassloader(cl2);
-		return new IsolatedClassLoader(cl2);
+		IsolatedClassLoader icl = (IsolatedClassLoader) switchedOutClassLoader.get(cl2);
+		if (icl == null) {
+			addClassloader(cl2);
+			icl = new IsolatedClassLoader(cl2);
+			switchedOutClassLoader.put(cl2, icl);
+		}
+		return icl;
+	}
+
+	public static <T> Class<T> forName(String className, boolean initialize, ClassLoader loader) throws ClassNotFoundException, NoClassDefFoundError {
+		ClassNotFoundException cnf = null;
+		LinkageError ncde = null;
+		try {
+			return (Class<T>) rememberClass(className, (Class<T>) Class.forName(className, initialize, loader));
+		} catch (LinkageError e) {
+			ncde = e;
+			classNotFoundYet.put(className, e);
+		} catch (ClassNotFoundException e) {
+			cnf = e;
+		} catch (Throwable e) {
+			e.printStackTrace();
+		}
+		try {
+			Class c = (Class<T>) findPromiscuousClass(className);
+			if (c == null)
+				throw new NoClassDefFoundError(className);
+			return rememberClass(className, c);
+		} catch (Throwable e) {
+			if (cnf != null)
+				throw cnf;
+			if (ncde != null)
+				throw ncde;
+			if (e instanceof ClassNotFoundException)
+				throw (ClassNotFoundException) e;
+			if (e instanceof LinkageError)
+				throw (LinkageError) e;
+			throw new ClassNotFoundException(className, e);
+		}
+	}
+
+	public static Class findPromiscuousClass(String className) throws ClassNotFoundException {
+		return getPromiscuousClassLoader().findClass(className);
 	}
 
 	public static <T> Class<T> forName(String className) throws ClassNotFoundException {
-		try {
-			return (Class<T>) Class.forName(className);
-		} catch (ClassNotFoundException e) {
-			Class c = getPromiscuousClassLoader().findClass(className);
-			if (c != null) {
-				return c;
-			}
-			return c;
-		} catch (Throwable e) {
-			e.printStackTrace();
+		return forName(className, true, getCallerClassLoader());
+	}
+
+	// Returns the invoker's class loader, or null if none.
+	// NOTE: This must always be invoked when there is exactly one intervening
+	// frame from the core libraries on the stack between this method's
+	// invocation and the desired invoker.
+	static ClassLoader getCallerClassLoader() {
+		// NOTE use of more generic Reflection.getCallerClass()
+		Class caller = Reflection.getCallerClass(3);
+		// This can be null if the VM is requesting it
+		if (caller == null) {
 			return null;
 		}
+		// CANT Circumvent security check
+		return caller.getClassLoader();
 	}
 
 	public static <T> Class<T> OneInstC(String p, String c) {
@@ -217,16 +316,31 @@ abstract public class PromiscuousClassUtils {
 		return true;
 	}
 
-	@SuppressWarnings("unchecked")
-	static public <T> T callProtectedMethodNullOnUncheck(Object from, String methodName, Object... args) {
+	@SuppressWarnings("unchecked") static public <T> T callProtectedMethodNullOnUncheck(Object from, String methodName, Object... args) {
+		Throwable whyBroken = null;
 		try {
 			return callProtectedMethod(true, from, methodName, args);
-		} catch (NoSuchMethodException e) {
-			return null;
-		} catch (InvocationTargetException e) {
-			Throwable whyBroken = e.getCause();
+		} catch (Throwable e) {
+			whyBroken = e;
+			while (whyBroken.getCause() != null && whyBroken.getCause() != whyBroken) {
+				whyBroken = whyBroken.getCause();
+				if (whyBroken instanceof NoSuchMethodException) {
+					return null;
+				}
+				if (whyBroken instanceof ClassNotFoundException) {
+					return null;
+				}
+				if (whyBroken instanceof NoClassDefFoundError) {
+					return null;
+				}
+			}
 			Debuggable.UnhandledException(whyBroken);
-			throw Debuggable.asRuntimeException(whyBroken);
+			whyBroken.printStackTrace();
+			if (whyBroken instanceof Error)
+				throw ((Error) whyBroken);
+			if (whyBroken instanceof RuntimeException)
+				throw ((RuntimeException) whyBroken);
+			throw Utility.reThrowable(whyBroken);
 		}
 	}
 
@@ -254,8 +368,7 @@ abstract public class PromiscuousClassUtils {
 		throw new ClassCastException("cant make non primitive from :" + wrapper);
 	}
 
-	@SuppressWarnings("unchecked")
-	static public <T> T callProtectedMethod(boolean skipNSM, Object from, String methodName, Object... args) throws InvocationTargetException, NoSuchMethodException {
+	@SuppressWarnings("unchecked") static public <T> T callProtectedMethod(boolean skipNSM, Object from, String methodName, Object... args) throws InvocationTargetException, NoSuchMethodException {
 		Throwable whyBroken = null;
 		Method foundm = null;
 		try {

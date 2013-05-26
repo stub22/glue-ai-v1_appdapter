@@ -16,13 +16,12 @@
 
 package org.appdapter.gui.demo.triggers;
 
-import org.appdapter.api.trigger.TriggerImpl;
-import org.appdapter.gui.repo.MutableRepoBox;
-import org.appdapter.gui.repo.RepoBox;
-import org.appdapter.core.store.Repo.GraphStat;
-
-
 import java.util.List;
+
+import org.appdapter.api.trigger.TriggerImpl;
+import org.appdapter.core.store.MutableRepoBox;
+import org.appdapter.core.store.RepoBox;
+import org.appdapter.core.store.Repo.GraphStat;
 import org.appdapter.demo.DemoResources;
 
 /**

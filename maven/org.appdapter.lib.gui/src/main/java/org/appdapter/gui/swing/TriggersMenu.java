@@ -14,11 +14,12 @@ import org.appdapter.gui.pojo.Utility;
 public class TriggersMenu extends JMenu {
 	POJOMenuController controller;
 
-	public TriggersMenu(Object object) {
-		this(Utility.getCurrentContext(), object);
+	public TriggersMenu(String title, Object object) {
+		this(title, Utility.getCurrentContext(), object);
 	}
 
-	public TriggersMenu(POJOApp context, Object object) {
+	public TriggersMenu(String title, POJOApp context, Object object) {
+		super(title);
 		controller = new POJOMenuController(context, object, this);
 	}
 }

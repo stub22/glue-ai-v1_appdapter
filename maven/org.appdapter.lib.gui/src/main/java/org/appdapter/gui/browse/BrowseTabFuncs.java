@@ -19,8 +19,12 @@ package org.appdapter.gui.browse;
 import java.util.WeakHashMap;
 
 import org.appdapter.api.trigger.BoxImpl;
-import org.appdapter.gui.box.*;
-import javax.swing.JTabbedPane;
+import org.appdapter.api.trigger.BoxPanelSwitchableView;
+import org.appdapter.api.trigger.DisplayContext;
+import org.appdapter.api.trigger.ObjectKey;
+import org.appdapter.api.trigger.ScreenBox;
+import org.appdapter.api.trigger.ScreenBoxPanel;
+import org.appdapter.gui.pojo.Utility;
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -30,31 +34,33 @@ public class BrowseTabFuncs {
 	static WeakHashMap<String, BoxImpl> boxKeyToImpl = new WeakHashMap<String, BoxImpl>();
 
 	protected static boolean isBoxTabKnown_maybe(DisplayContext dc, BoxImpl nonPanel) {
-		JTabbedPane tabbedPane = dc.getBoxPanelTabPane();
+		BoxPanelSwitchableView tabbedPane = dc.getBoxPanelTabPane();
 		String key = ObjectKey.factory.getKeyName(tabbedPane, nonPanel);
 		return boxKeyToImpl.containsKey(key);
 	}
 
 	protected static boolean isBoxTabKnown(DisplayContext dc, String label) {
-		JTabbedPane tabbedPane = dc.getBoxPanelTabPane();
+		BoxPanelSwitchableView tabbedPane = dc.getBoxPanelTabPane();
 		String key = ObjectKey.factory.getKeyName(tabbedPane, label);
 		return boxKeyToImpl.containsKey(key);
 	}
 
 	protected static boolean isBoxTabKnown_maybe_not(DisplayContext dc, ScreenBoxPanel bp) {
-		JTabbedPane tabbedPane = dc.getBoxPanelTabPane();
-		return ((tabbedPane.indexOfComponent(bp) >= 0) ? true : false);
+		BoxPanelSwitchableView tabbedPane = dc.getBoxPanelTabPane();
+		if (tabbedPane.indexOfTabComponent(bp) >= 0) {
+			Utility.theLogger.warn("gettign subcomponent!" + bp);
+			return true;
+		}
+		return false;
 	}
 
-	protected static void setSelectedBoxTab(DisplayContext dc,
-			ScreenBoxPanel boxP) {
-		JTabbedPane tabbedPane = dc.getBoxPanelTabPane();
+	protected static void setSelectedBoxTab(DisplayContext dc, ScreenBoxPanel boxP) {
+		BoxPanelSwitchableView tabbedPane = dc.getBoxPanelTabPane();
 		tabbedPane.setSelectedComponent(boxP);
 	}
 
-	protected static void addBoxTab(DisplayContext dc, ScreenBoxPanel boxP,
-			String label) {
-		JTabbedPane tabbedPane = dc.getBoxPanelTabPane();
+	protected static void addBoxTab(DisplayContext dc, ScreenBoxPanel boxP, String label) {
+		BoxPanelSwitchableView tabbedPane = dc.getBoxPanelTabPane();
 		tabbedPane.add(label, boxP);
 	}
 
@@ -69,8 +75,7 @@ public class BrowseTabFuncs {
 	 *       But! we can only have one panel of each kind per box
 	 * @param kind
 	 */
-	public static void openBoxPanelAndFocus(DisplayContext dc, ScreenBox boxI,
-			ScreenBoxPanel.Kind kind) {
+	public static void openBoxPanelAndFocus(DisplayContext dc, ScreenBox boxI, ScreenBoxPanel.Kind kind) {
 
 		ScreenBoxPanel boxP = boxI.findBoxPanel(kind);
 		String tabLabel = kind.toString() + "-" + boxI.getShortLabel();

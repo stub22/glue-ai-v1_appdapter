@@ -8,16 +8,18 @@ import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
+import java.lang.reflect.Array;
+import java.util.HashSet;
 import java.util.List;
 
 import org.appdapter.api.trigger.BoxImpl;
+import org.appdapter.api.trigger.ScreenBoxPanel;
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.core.name.Ident;
-import org.appdapter.gui.box.ScreenBoxPanel;
 import org.appdapter.gui.util.PromiscuousClassUtils;
 
 /**
- * A wrapper for objects used in the ObjectNavigator system. It holds an object,
+ * A wrapper for objects used in the ScreenBox system. It holds an object,
  * a name, and info about whether it is selected or not. The "name" and
  * "selected" properties are bound and constrained, i.e. you can listen to
  * changes using addPropertyChangeListener, and you can also prevent changes in
@@ -27,10 +29,73 @@ import org.appdapter.gui.util.PromiscuousClassUtils;
  */
 abstract public class POJOBox<TrigType extends Trigger<? extends BoxImpl<TrigType>>> extends
 
-BoxImpl<TrigType> implements java.io.Serializable, GetSetObject {
+BoxImpl<TrigType> implements java.io.Serializable, GetSetObject, Convertable {
 	// ==== Transient instance variables =============
 	transient PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
 	transient VetoableChangeSupport vetoSupport = new VetoableChangeSupport(this);
+
+	@Override public <T> T[] getObjects(Class<T> type) {
+		HashSet<Object> objs = new HashSet<Object>();
+		if (this.canConvert(type)) {
+			T one = convertTo(type);
+			objs.add(one);
+		}
+		for (Object o : getObjects()) {
+			if (type.isInstance(o)) {
+				objs.add(o);
+			}
+		}
+		return objs.toArray((T[]) Array.newInstance(type, objs.size()));
+	}
+
+	@Override public <T> boolean canConvert(Class<T> c) {
+		for (Object o : getObjects()) {
+			if (o == null)
+				continue;
+			if (!c.isInstance(o))
+				continue;
+			try {
+				final T madeIT = (T) o;
+				if (madeIT != null)
+					return true;
+			} catch (Exception e) {
+				getLogger().error("JVM Issue (canConvert)", e);
+			}
+			return true;
+		}
+		return false;
+	}
+
+	@Override public <T> T convertTo(Class<T> c) {
+		for (Object o : getObjects()) {
+			if (o == null)
+				continue;
+			if (!c.isInstance(o))
+				continue;
+			try {
+				return c.cast(o);
+			} catch (Exception e) {
+				getLogger().error("JVM Issue (canConvert)", e);
+				return (T) o;
+			}
+		}
+		throw new ClassCastException("Cannot convert " + getDebugName() + " to " + c);
+	}
+
+	public String getDebugName() {
+		return getObject().toString();
+	}
+
+	/** 
+	 * This returns the decomposed Mixins
+	 * @return
+	 */
+	public Object[] getObjects() {
+		Object o = getObject();
+		if (o != null && o != this)
+			return new Object[] { o, this, getName(), getIdent() };
+		return new Object[] { this, getName(), getIdent() };
+	}
 
 	@Override public List<TrigType> getTriggers() {
 		List<TrigType> tgs = super.getTriggers();
@@ -178,7 +243,8 @@ BoxImpl<TrigType> implements java.io.Serializable, GetSetObject {
 	// ========= Utility methods =================
 
 	public static String getDefaultName(Object object) {
-		if (object==null) return "<null>";
+		if (object == null)
+			return "<null>";
 		Class type = object.getClass();
 		if (type == Class.class)
 			return ((Class) object).getName();
@@ -220,14 +286,17 @@ BoxImpl<TrigType> implements java.io.Serializable, GetSetObject {
 		return DisplayType.PANEL;
 	}
 
-	public ScreenBoxPanel getPropertiesPanel() {
+	final public ScreenBoxPanel getPropertiesPanel() {
 		Object obj = getObject();
+		if (obj instanceof ScreenBoxPanel) {
+			return (ScreenBoxPanel) obj;
+		}
 		if (obj == this) {
-			ScreenBoxedPOJORefPanel pnl = new ScreenBoxedPOJORefPanel(obj);
+			ScreenBoxPanel pnl = new BasicObjectCustomizer(Utility.getCurrentContext(), obj);
 			pnl.setName(getShortLabel());
 			return pnl;
 		}
-		ScreenBoxedPOJOWithPropertiesPanel pnl = new ScreenBoxedPOJOWithPropertiesPanel(obj);
+		ScreenBoxPanel pnl = new BasicObjectCustomizer(Utility.getCurrentContext(), obj);
 		pnl.setName(getShortLabel());
 		return pnl;
 	}

@@ -26,16 +26,17 @@ import javax.swing.tree.TreeModel;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContext;
+import org.appdapter.api.trigger.DisplayContextProvider;
 import org.appdapter.api.trigger.MutableBox;
-import org.appdapter.gui.box.DisplayContextProvider;
-import org.appdapter.gui.box.ScreenBoxTreeNode;
+import org.appdapter.api.trigger.ScreenBoxTreeNode;
+import org.appdapter.demo.DemoNavigatorCtrl;
 import org.appdapter.gui.browse.BrowsePanel;
 import org.appdapter.gui.browse.TriggerMenuFactory;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public class DemoNavigatorCtrl {
+public class DemoNavigatorCtrlImpl implements DemoNavigatorCtrl {
 
 	private TreeModel myTM;
 	private BoxContext myBoxCtx;
@@ -48,12 +49,11 @@ public class DemoNavigatorCtrl {
 		return myBP;
 	}
 
-	public DemoNavigatorCtrl(BoxContext bc, TreeModel tm, ScreenBoxTreeNode rootBTN, DisplayContextProvider dcp) {
+	public DemoNavigatorCtrlImpl(BoxContext bc, TreeModel tm, ScreenBoxTreeNode rootBTN, DisplayContextProvider dcp) {
 		myBoxCtx = bc;
 		myTM = tm;
 		myRootBTN = rootBTN;
 		myDCP = dcp;
-
 		setupBrowsePanel();
 	}
 
@@ -67,11 +67,11 @@ public class DemoNavigatorCtrl {
 
 	public void launchFrame(String title) {
 		if (myJFrame == null) {
-			myJFrame = new JFrame(title);
-
+			myJFrame = new JFrame();
+			myJFrame.setTitle(title);
 			myJFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 			myJFrame.getContentPane().add(myBP, BorderLayout.CENTER);
-
+			myBP.checkParent();
 			myJFrame.pack();
 
 			myJFrame.setVisible(true);
@@ -91,4 +91,5 @@ public class DemoNavigatorCtrl {
 	public JFrame getFrame() {
 		return myJFrame;
 	}
+
 }

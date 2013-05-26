@@ -22,7 +22,6 @@ import javax.swing.border.Border;
 import org.appdapter.gui.pojo.POJOApp;
 import org.appdapter.gui.pojo.ScreenBoxedPOJORefPanel;
 import org.appdapter.gui.pojo.Utility;
-import org.appdapter.gui.swing.impl.JJPanel;
 import org.appdapter.gui.swing.impl.JVPanel;
 
 

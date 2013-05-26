@@ -2,7 +2,6 @@ package org.appdapter.gui.util;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Modifier;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -37,21 +36,39 @@ public class ClassFinder {
 	/**
 	 * Class with these modifiers are skipped while searching the JVM classes.
 	 */
-	private static final int defaultUndesirableClassModifiers = Modifier.ABSTRACT | Modifier.INTERFACE | Modifier.PRIVATE | Modifier.PROTECTED;
+	private static final int defaultUndesirableClassModifiers = 0;//Modifier.ABSTRACT | Modifier.INTERFACE | Modifier.PRIVATE | Modifier.PROTECTED;
 
 	/**
 	 * Returns a set of all classes that implement or extend
 	 * the given class, directly or indirectly.
 	 */
-	public static Set getClasses(Class ancestor) throws IOException {
-		return getClasses("", ancestor);
+	public static Set<Class> getClasses(Class ancestor) throws IOException {
+		theLogger.trace("Scaning for subclasses of " + ancestor);
+		if (class_Cache != null && class_Cache.size() > 10) {
+			return (Set<Class>) PromiscuousClassUtils.getImplementingClasses(ancestor);
+		}
+		Set<Class> set = getClasses("", ancestor);
+		theLogger.trace("returning " + set.size() + "  subclasses of " + ancestor);
+		return set;
+	}
+
+	public static Set class_Cache = null;
+
+	public static Set<Class> getAllClasses() throws IOException {
+		if (class_Cache == null) {
+			class_Cache = PromiscuousClassUtils.classesSeen;
+			synchronized (class_Cache) {
+				class_Cache.addAll(getClasses("", null));
+			}
+		}
+		return class_Cache;
 	}
 
 	/**
 	 * Returns a set of all classes within the given package (recursively)
 	 * that implement or extend the given class, directly or indirectly.
 	 */
-	public static Set getClasses(String packageName, Class ancestor) throws IOException {
+	public static Set<Class> getClasses(String packageName, Class ancestor) throws IOException {
 		return getClasses(packageName, ancestor, null, null, defaultUndesirableClassModifiers);
 	}
 
@@ -59,7 +76,7 @@ public class ClassFinder {
 	 * Returns a set of all classes within the given package (recursively)
 	 * that implement or extend the given class, directly or indirectly.
 	 */
-	public static Set getClasses(String packageName, Class ancestor, ClassLoader classLoader, String dirsString) throws IOException {
+	public static Set<Class> getClasses(String packageName, Class ancestor, ClassLoader classLoader, String dirsString) throws IOException {
 		return getClasses(packageName, ancestor, classLoader, dirsString, defaultUndesirableClassModifiers);
 	}
 
@@ -69,7 +86,7 @@ public class ClassFinder {
 	 * All classes that have at least one modifier from <code>undesirableClassModifiers</code>
 	 * set are skipped.
 	 */
-	public static Set getClasses(String packageName, Class ancestor, ClassLoader classLoader, String dirsString, int undesirableClassModifiers) throws IOException {
+	public static Set<Class> getClasses(String packageName, Class ancestor, ClassLoader classLoader, String dirsString, int undesirableClassModifiers) throws IOException {
 		Set classes = new HashSet();
 
 		if (packageName == null) {
@@ -79,6 +96,8 @@ public class ClassFinder {
 		if (classLoader == null)
 			//use the default class loader for this class
 			classLoader = ClassFinder.class.getClassLoader();
+
+		classLoader = PromiscuousClassUtils.coerceClassloader(classLoader);
 
 		//Get all class names
 		Set allClassNames = getAllClassNames(dirsString);
@@ -95,16 +114,25 @@ public class ClassFinder {
 				try {
 					Class cls = null;
 					try {
-						cls = Class.forName(className, false, classLoader);
+						cls = PromiscuousClassUtils.forName(className, false, classLoader);
 					} catch (NoClassDefFoundError ncdfe) {
 						//ignore the exception because nothing can be do in this case
 						continue;
 					}
-					if (ancestor.isAssignableFrom(cls) && (cls.getModifiers() & undesirableClassModifiers) == 0) {
+					if (cls == null) {
+						logError("Cant find class called " + className, null);
+						continue;
+					}
+					if ((ancestor == null || ancestor.isAssignableFrom(cls)) && (cls.getModifiers() & undesirableClassModifiers) == 0) {
 						classes.add(cls);
 					}
 				} catch (Throwable err) {
 					//Something went wrong. Skip it and move on.
+					if (err.getCause() != null)
+						err = err.getCause();
+					if (err instanceof ClassNotFoundException) {
+						continue;
+					}
 					logError("Class '" + className + "' could not be loaded - I will ignore it", err);
 				}
 			}
@@ -133,7 +161,16 @@ public class ClassFinder {
 	/**
 	 * Returns a set of all class names currently available in this JVM
 	 */
-	public static Set getAllClassNames() throws IOException {
+	static Set classNames_Cache = new HashSet();
+
+	private static Set getAllClassNames() throws IOException {
+		if (classNames_Cache == null || classPathFiles_Cache.size() == 0) {
+			classNames_Cache = getAllClassNames0();
+		}
+		return classNames_Cache;
+	}
+
+	public static Set getAllClassNames0() throws IOException {
 		return getAllClassNames(null);
 	}
 
@@ -167,7 +204,16 @@ public class ClassFinder {
 	 * Returns a set of files containing all the
 	 * class path JARs, ZIPs, and directories
 	 */
+	static Set classPathFiles_Cache = new HashSet();
+
 	private static Set getClassPathFiles() {
+		if (classPathFiles_Cache == null || classPathFiles_Cache.size() == 0) {
+			classPathFiles_Cache = getClassPathFiles0();
+		}
+		return classPathFiles_Cache;
+	}
+
+	private static Set getClassPathFiles0() {
 		Set classPathFiles = new HashSet();
 
 		//Get the global class path and ext dirs
@@ -312,7 +358,7 @@ public class ClassFinder {
 	}
 
 	private static void logError(String msg, Throwable err) {
-		theLogger.error(msg, err);
+		//theLogger.error(msg, err);
 	}
 
 }

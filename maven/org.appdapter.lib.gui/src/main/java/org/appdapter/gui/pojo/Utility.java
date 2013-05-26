@@ -5,11 +5,12 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.beans.BeanInfo;
+import java.beans.Customizer;
 import java.beans.FeatureDescriptor;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
+import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
-import java.beans.PropertyVetoException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -21,6 +22,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -29,36 +31,80 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 
+import javax.swing.Action;
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.tools.FileObject;
+
+import org.appdapter.api.trigger.Box;
+import org.appdapter.api.trigger.BoxPanelSwitchableView;
+import org.appdapter.core.log.BasicDebugger;
+import org.appdapter.core.log.Debuggable;
+import org.appdapter.core.log.Loggable;
+import org.appdapter.demo.ObjectNavigatorGUI;
+import org.appdapter.gui.browse.BoxPanelSwitchableViewImpl;
+import org.appdapter.gui.demo.LargeClassChooser;
 import org.appdapter.gui.demo.ObjectNavigator;
-import org.appdapter.gui.demo.RepoNavigator;
 import org.appdapter.gui.editors.BooleanEditor;
+import org.appdapter.gui.editors.ClassCustomizer;
+import org.appdapter.gui.editors.CollectionCustomizer;
 import org.appdapter.gui.editors.ColorEditor;
 import org.appdapter.gui.editors.DateEditor;
 import org.appdapter.gui.editors.IntEditor;
+import org.appdapter.gui.editors.ThrowableCustomizer;
+import org.appdapter.gui.util.PromiscuousClassUtils;
 import org.slf4j.Logger;
 
 public class Utility {
 
-	static Logger theLogger = org.slf4j.LoggerFactory.getLogger(Utility.class);
+	public static Logger theLogger = org.slf4j.LoggerFactory.getLogger(Utility.class);
 	private static final Class[] CLASS0 = new Class[0];
 
-	public static POJOCollectionWithSwizzler context = new POJOCollectionImpl();
-
+	// ==== Instance variables ==========
+	public static JMenuBar appMenuBar = new JMenuBar();
+	public static NamedObjectCollection context = new POJOCollectionImpl();
 	public static POJOApp pojoApp;
-	public static RepoNavigator repoNav;
+	public static ObjectNavigatorGUI mainDisplayContext;
 	public static ObjectNavigator objectNavigator;
+	public static BoxPanelSwitchableView tabbedPanels = new BoxPanelSwitchableViewImpl();
+	public static LargeClassChooser selectionOfCollectionPanel;
+
+	public static BoxPanelSwitchableView getBoxPanelTabPane() {
+		return tabbedPanels;
+	}
+
+	private static GetSetObject getPanelFor(Class expected) {
+		return null;
+	}
+
+	public static JFrame getAppFrame() {
+		return (JFrame) mainDisplayContext.getRealPanelTabPane().getTopLevelAncestor();
+	}
+
+	public static JMenuBar getMenuBar() {
+		return appMenuBar;
+	}
+
+	/**
+	 * The current ObjectNavigator being displayed
+	 */
+	static public NamedObjectCollection getCollectionWithSwizzler() {
+		return context;
+	}
 
 	public static POJOApp getCurrentPOJOApp() {
 		if (pojoApp != null)
 			return pojoApp;
-		if (repoNav != null) {
-			pojoApp = new ScreenBoxedPOJOCollectionContextWithNavigator(repoNav);
+		if (mainDisplayContext != null) {
+			pojoApp = new BrowsePanelContolApp(mainDisplayContext);
 			return pojoApp;
 		}
 		if (objectNavigator != null) {
-			pojoApp = new ScreenBoxedPOJOCollectionContextWithNavigator(objectNavigator);
+			pojoApp = new BrowsePanelContolApp((ObjectNavigatorGUI) objectNavigator);
 			return pojoApp;
 		}
 		return null;
@@ -84,14 +130,13 @@ public class Utility {
 	public static POJOBox findOrCreateBox(Object object) {
 
 		if (object instanceof POJOBox) {
-			return ((org.appdapter.gui.pojo.POJOBox) object);
+			return ((POJOBox) object);
 		}
 		try {
-			return context.findOrCreateBox(object);
+			return (POJOBox) context.findOrCreateBox(object);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			throw new RuntimeException(e);
+			theLogger.error("findOrCreateBox", object, e);
+			throw reThrowable(e);
 		}
 	}
 
@@ -105,10 +150,11 @@ public class Utility {
 	 * Returns the global objectsContext, or null if none has been set
 	 */
 	public static POJOApp getCurrentContext() {
-		return getCurrentPOJOApp();
+		pojoApp = getCurrentPOJOApp();
+		return pojoApp;
 	}
 
-	public static POJOCollectionWithSwizzler getCurrentContext2() {
+	public static NamedObjectCollection getCurrentContext2() {
 		if (context != null)
 			return context;
 		return null;
@@ -117,8 +163,8 @@ public class Utility {
 	/**
 	 * Sets the global objects context
 	 */
-	public static void setInstancesOfObjects(POJOCollectionWithSwizzler newValue) {
-		context = (POJOCollectionWithSwizzler) newValue;
+	public static void setInstancesOfObjects(NamedObjectCollection newValue) {
+		context = (NamedObjectCollection) newValue;
 	}
 
 	public static void setInstancesOfObjects(POJOApp newValue) {
@@ -140,18 +186,47 @@ public class Utility {
 		PropertyEditorManager.registerEditor(Date.class, DateEditor.class);
 
 		PropertyEditorManager.setEditorSearchPath(new String[] { "org.appdapter.gui.editors" });
+		//ClassFinder.getClasses(PropertyEditor);
+
+		registerCustomizer(ClassCustomizer.class, Class.class);
+		registerCustomizer(CollectionCustomizer.class, Collection.class);
+		registerCustomizer(ThrowableCustomizer.class, Throwable.class);
+
+		//registerCustomizer(IndexedCustomizer.class, Object[].class);
+		//registerCustomizer(IndexedCustomizer.class, List.class);
+	}
+
+	private static void registerCustomizer(Class<?> customizer, Class<?>... clz) {
+		FunctionalClassRegistry.addDelegateClass(Customizer.class, customizer, clz);
 	}
 
 	static int ADD_ALL = 255;
 	static int ADD_FROM_PASTE_SRC_ONLY = 255;
 	static int ADD_FROM_PASTE_TARG_ONLY = 255;
+	//public static FileMenu fileMenu = new FileMenu();
+	public static JMenu fileMenu;
+
+	static {
+		registerEditors();
+	}
 
 	public static <TrigType> void addClassLevelTriggers(Class cls, List<TrigType> tgs, POJOBox poj) {
+		HashSet<Class> skippedTriggersClasses = getSkippedTriggerClasses();
 		HashSet<Class> flat = new HashSet<Class>();
 		addClasses(cls, flat);
 		for (Class cls2 : flat) {
+			if (skippedTriggersClasses.contains(cls2))
+				continue;
 			addClassLevelTriggersPerClass(cls2, tgs, poj, ADD_ALL);
 		}
+	}
+
+	private static HashSet<Class> getSkippedTriggerClasses() {
+		HashSet<Class> flat = new HashSet<Class>();
+		flat.add(Object.class);
+		flat.add(BasicDebugger.class);
+		flat.add(Loggable.class);
+		return flat;
 	}
 
 	public static <TrigType> void addClasses(Class cls, HashSet<Class> classesVisited) {
@@ -169,14 +244,15 @@ public class Utility {
 
 	@SuppressWarnings("unchecked") public static <TrigType> void addClassLevelTriggersPerClass(Class cls, List<TrigType> tgs, POJOBox poj, int rulesOfAdd) {
 		try {
-			BeanInfo bi = getBeanInfo(cls);
+			boolean onlyThisClass = true;
+			BeanInfo bi = getBeanInfo(cls, onlyThisClass);
 			if (bi == null)
 				return;
 			addFeatureTriggers(cls, bi.getMethodDescriptors(), tgs, poj, rulesOfAdd);
 			addFeatureTriggers(cls, bi.getEventSetDescriptors(), tgs, poj, rulesOfAdd);
 			addFeatureTriggers(cls, bi.getPropertyDescriptors(), tgs, poj, rulesOfAdd);
 		} catch (Exception e) {
-			e.printStackTrace();
+			theLogger.error("" + cls, e);
 
 		}
 	}
@@ -202,13 +278,19 @@ public class Utility {
 		Object obj = obj0;
 		boolean isStatic = Modifier.isStatic(method.getModifiers());
 		Class[] ts = method.getParameterTypes();
+		Class objNeedsToBe = method.getDeclaringClass();
 		int ml = ts.length;
-		if (ml == 0) {
-			if (isStatic)
-				obj = null;
-			return method.invoke(obj);
+		if (isStatic)
+			obj = null;
+		else {
+			obj = recast(obj, objNeedsToBe);
 		}
 		int pl = params.length;
+
+		method.setAccessible(true);
+		if (ml == 0) {
+			return method.invoke(obj);
+		}
 		// not an array of array
 		if (pl > 1 && ml == pl) {
 			if (isStatic)
@@ -222,13 +304,64 @@ public class Utility {
 				method.invoke(obj, (Object[]) p0);
 			}
 		}
-		if (isStatic)
-			obj = null;
 		return method.invoke(obj, params);
 	}
 
+	public static <T> T recast(Object obj, Class<T> objNeedsToBe) {
+		return recast(obj, objNeedsToBe, null);
+	}
+
+	public static <T> T recast(Object obj, Class<T> objNeedsToBe, LinkedList<Object> except) {
+		if (obj == null)
+			return null;
+		if (obj instanceof Convertable) {
+			Convertable cvt = (Convertable) obj;
+			if (cvt.canConvert(objNeedsToBe)) {
+				return cvt.convertTo(objNeedsToBe);
+			}
+		}
+		if (objNeedsToBe.isInstance(obj)) {
+			try {
+				return (T) obj;
+			} catch (Exception e) {
+				throw reThrowable(e);
+			}
+		}
+		T result;
+		try {
+			result = (T) obj;
+		} catch (Exception e) {
+			throw reThrowable(e);
+		}
+		return result;
+	}
+
+	public static RuntimeException reThrowable(Throwable e) {
+		if (e instanceof InvocationTargetException)
+			e = e.getCause();
+		if (e instanceof RuntimeException)
+			return (RuntimeException) e;
+		if (e instanceof Error)
+			throw (Error) e;
+		return new RuntimeException(e);
+	}
+
 	public static BeanInfo getBeanInfo(Class c) throws IntrospectionException {
-		return Introspector.getBeanInfo(c);
+		return getBeanInfo(c, false);
+	}
+
+	public static BeanInfo getBeanInfo(Class c, boolean onlythisClass) throws IntrospectionException {
+		Class stopAtClass = null;//Object.class;// c.getSuperclass();
+		if (onlythisClass) {
+			stopAtClass = c.getSuperclass();
+			if (stopAtClass == null && !c.isInterface()) {
+				stopAtClass = Object.class;
+			}
+		}
+		if (stopAtClass == c) {
+			stopAtClass = null;
+		}
+		return Introspector.getBeanInfo(c, stopAtClass);
 	}
 
 	public static BeanInfo getPOJOInfo(Class<? extends Object> c, int useAllBeaninfo) throws IntrospectionException {
@@ -390,8 +523,7 @@ public class Utility {
 			try {
 				pnl.setObject(obj);
 			} catch (InvocationTargetException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				theLogger.error("" + pnl, e);
 			}
 		} else {
 			theLogger.info("result from " + whereFrom + " was " + obj);
@@ -399,8 +531,89 @@ public class Utility {
 
 	}
 
-	private static GetSetObject getPanelFor(Class expected) {
+	public static Class<? extends Customizer> findCustomizerClass(Class objClass) {
+		try {
+			Class<? extends Customizer> c = FunctionalClassRegistry.findImplmentingForMatch(Customizer.class, objClass);
+			if (c != null)
+				return c;
+			return makeCustomizerFromEditor(objClass);
+		} catch (Throwable e) {
+			// TODO Auto-generated catch block
+			theLogger.error(" " + objClass, e);
+			return null;
+		}
+	}
+
+	private static Class makeCustomizerFromEditor(Class objClass) {
+		PropertyEditor pe = findEditor(objClass);
+		if (pe != null) {
+			return UseEditor.class;
+		}
 		return null;
 	}
 
+	/**
+	 * Locate a value editor for a given target type.
+	 *
+	 * @param targetType  The Class object for the type to be edited
+	 * @return An editor object for the given target class. 
+	 * The result is null if no suitable editor can be found.
+	 */
+	public static PropertyEditor findEditor(Class targetType) {
+		try {
+			PropertyEditor ped = PropertyEditorManager.findEditor(targetType);
+			if (ped != null)
+				return ped;
+			Class<? extends PropertyEditor> pe = FunctionalClassRegistry.findImplmentingForMatch(PropertyEditor.class, targetType);
+			if (pe == null) {
+				return null;
+			}
+			ped = pe.newInstance();
+			return ped;
+		} catch (Throwable e) {
+			Debuggable.UnhandledException(e);
+			return null;
+		}
+	}
+
+	public static List getSearchableClassList() {
+		// TODO Auto-generated method stub
+		return PromiscuousClassUtils.getInstalledClasses();
+	}
+
+	public static <T> T newInstance(Class<T> customizerClass) throws InstantiationException, IllegalAccessException {
+		for (Constructor cons : customizerClass.getDeclaredConstructors()) {
+			if (cons.getParameterTypes().length == 0) {
+				cons.setAccessible(true);
+
+				try {
+					return (T) cons.newInstance();
+				} catch (Exception e) {
+				}
+			}
+		}
+		for (Constructor cons : customizerClass.getDeclaredConstructors()) {
+			if (cons.getParameterTypes().length == 0) {
+				cons.setAccessible(true);
+
+				try {
+					return (T) cons.newInstance();
+				} catch (Exception e) {
+				}
+			}
+		}
+		T customizer = (T) customizerClass.newInstance();
+		return customizer;
+	}
+
+	public static Action getConfigObject(String path, Class<Action> class1) {
+		Debuggable.notImplemented();
+		return null;
+	}
+
+	public static FileObject getConfigFile(String path) {
+		// TODO Auto-generated method stub
+		Debuggable.notImplemented();
+		return null;
+	}
 }

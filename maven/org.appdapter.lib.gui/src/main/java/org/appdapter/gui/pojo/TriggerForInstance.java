@@ -11,42 +11,121 @@ import java.lang.reflect.Modifier;
 
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
-import javax.swing.JTabbedPane;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContext;
-import org.appdapter.api.trigger.MutableBox;
+import org.appdapter.api.trigger.BoxPanelSwitchableView;
+import org.appdapter.api.trigger.ScreenBoxPanel;
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.api.trigger.TriggerImpl;
+import org.appdapter.core.component.KnownComponent;
 import org.appdapter.core.name.Ident;
-import org.appdapter.gui.box.ScreenBoxPanel;
-import org.appdapter.gui.browse.ButtonTabComponent;
 import org.appdapter.gui.util.PromiscuousClassUtils;
 
-public class TriggerForInstance extends TriggerImpl implements UIAware {
+public class TriggerForInstance extends TriggerImpl implements UIAware, Comparable<Trigger> {
+
+	/**
+	 * Compares this object with the specified object for order. 
+	 *
+	 * <p>The subclasser must ensure <tt>sgn(x.compareTo(y)) ==
+	 * -sgn(y.compareTo(x))</tt> for all <tt>x</tt> and <tt>y</tt>.  (This
+	 * implies that <tt>x.compareTo(y)</tt> must throw an exception iff
+	 * <tt>y.compareTo(x)</tt> throws an exception.)
+	 *
+	 * @param   o the Trigger to be compared.
+	 * @return  a 0 = if the objects are the same
+	 *   +/-1 if the triggers have the same side effect
+	 *   +/-2 if the triggers have a different side effect 
+	 *
+	 * @throws ClassCastException if the specified object's type prevents it
+	 *         from being compared to this object.
+	 */
+	@Override public int compareTo(@SuppressWarnings("rawtypes") Trigger o) {
+		if (this == o)
+			return 0;
+		else if (this == null)
+			return 2;
+
+		if (equalsByObject(o))
+			return 0;
+
+		boolean ej = equalJob(o);
+
+		int labelDif = toString().compareTo(o.toString());
+		if (ej)
+			return (int) Math.signum(labelDif);
+		return labelDif;
+	}
+
+	private boolean equalsByObject(Trigger o) {
+		if (this == o)
+			return true;
+		else if (this == null)
+			return false;
+		if (!(o instanceof TriggerForInstance)) {
+			return false;
+		}
+		TriggerForInstance tfi = (TriggerForInstance) o;
+		Method rm = this.getMethod();
+		if (rm != null) {
+			Method om = tfi.getMethod();
+			if (om != null)
+				return rm.getName().equals(om.getName());
+		}
+		if (tfi.getFieldSummary().equals(getFieldSummary()))
+			return true;
+		return false;
+	}
 
 	Class _clazz;
 	Object _object;
 	FeatureDescriptor _featureDescriptor;
+	private static Class[] CLASS0 = new Class[0];
 
 	@Override public boolean equals(Object obj) {
-		// TODO Auto-generated method stub
 		if (!(obj instanceof Trigger)) {
 			return false;
 		}
 		Trigger other = (Trigger) obj;
-		if (other.toString().equals(toString()))
+		if (equalsByObject(other))
 			return true;
-		if (other instanceof TriggerForInstance) {
-			TriggerForInstance tfi = (TriggerForInstance) obj;
-			Method rm = this.getMethod();
-			if (rm != null) {
-				Method om = tfi.getMethod();
-				if (om != null)
-					return rm.getName().equals(om.getName());
+		if (equalJob(other))
+			return true;
+		return false;
+	}
+
+	public boolean equalJob(Trigger obj) {
+		if (equalsByObject(obj))
+			return true;
+
+		KnownComponent other = (KnownComponent) obj;
+		/// assume they are named the same
+		if (other.getShortLabel().equals(getShortLabel()))
+			return true;
+
+		// for now assume a different job if a different datatype
+		if (!(other instanceof TriggerForInstance)) {
+			return false;
+		}
+
+		TriggerForInstance tfi = (TriggerForInstance) obj;
+		Class rt = getReturnType();
+		if (rt != tfi.getReturnType())
+			return false;
+		Method rm = this.getMethod();
+		if (rm != null) {
+			Method om = tfi.getMethod();
+			if (om != null) {
+				boolean sameMName = rm.getName().equals(om.getName());
+				if (sameMName)
+					return true;
+				return false;
 			}
 		}
-		return false;
+		if (rt == void.class)
+			return false;
+		return true;
+
 	}
 
 	@Override public void setIdent(Ident id) {
@@ -92,11 +171,68 @@ public class TriggerForInstance extends TriggerImpl implements UIAware {
 		_object = obj;
 		_featureDescriptor = fd;
 		setDescription(describeFD(fd));
-		setShortLabel(getMenuName());
+		setShortLabel(getMenuPath());
 	}
 
 	public String getMenuName() {
-		return (" " + _featureDescriptor.getDisplayName() + " ").replace(" get", "Show ").replace(" set", "Replace ");
+		return (" " + _featureDescriptor.getDisplayName() + " ").replace(" get", "Show ").replace(" set", "Replace ").trim();
+	}
+
+	public String getMenuPath() {
+		String s = getMenuName();
+		if (isStatic()) {
+			s = "Static|" + s;
+		}
+		s = Utility.getShortClassName(classOrFirstInterface(_clazz)) + "|" + s;
+		Class getRet = getReturnType();
+		/*if (getRet == void.class) {
+			s = "Invoke|" + s;
+		} else {
+			s = _featureDescriptor.getClass().getSimpleName() + "|" + s;
+		}*/
+		s = s.replace("PropertyDescriptor|", "Show ");
+		return s;
+	}
+
+	private Class classOrFirstInterface(Class _clazz2) {
+		if (_clazz2 == null)
+			return null;
+		if (_clazz2.isInterface())
+			return _clazz2;
+		for (Class c : _clazz2.getInterfaces()) {
+			if (c.getPackage().getName().startsWith("j"))
+				continue;
+			return c;
+		}
+		return _clazz2;
+	}
+
+	private boolean isStatic() {
+		Method m = getMethod();
+		if (m == null)
+			return false;
+		return Modifier.isStatic(m.getModifiers());
+	}
+
+	private Class getDeclaringClass() {
+		Method m = getMethod();
+		if (m == null)
+			return _clazz;
+		return m.getDeclaringClass();
+	}
+
+	private Class getReturnType() {
+		Method m = getMethod();
+		if (m == null)
+			return void.class;
+		return m.getReturnType();
+	}
+
+	private Class[] getParameters() {
+		Method m = getMethod();
+		if (m == null)
+			return CLASS0;
+		return m.getParameterTypes();
 	}
 
 	private static String describeFD(FeatureDescriptor fd) {
@@ -164,7 +300,7 @@ public class TriggerForInstance extends TriggerImpl implements UIAware {
 			Method m = getReadMethodObject(_featureDescriptor);
 			if (m != null) {
 				Class rt = m.getReturnType();
-				Object obj = Utility.invoke(_object, m);
+				Object obj = Utility.invokeFromUI(_object, m);
 				if (rt != void.class)
 					addSubResult(targetBox, obj, rt);
 				return;
@@ -172,7 +308,7 @@ public class TriggerForInstance extends TriggerImpl implements UIAware {
 			getLogger().debug(this.toString() + " firing on " + targetBox.toString());
 		} catch (InvocationTargetException e) {
 			throw e;
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			throw new InvocationTargetException(e);
 		}
 	}
@@ -194,7 +330,7 @@ public class TriggerForInstance extends TriggerImpl implements UIAware {
 		if (expected == String.class) {
 			Utility.setLastResult(this, obj, expected);
 			try {
-				POJOApp app = Utility.getCurrentPOJOApp();
+				POJOApp app = Utility.getCurrentContext();
 				app.showScreenBox(obj);
 				return;
 			} catch (Exception e) {
@@ -222,19 +358,15 @@ public class TriggerForInstance extends TriggerImpl implements UIAware {
 			BoxContext bc = targetBox.getBoxContext();
 			ScreenBoxPanel pnl = boxed.getPropertiesPanel();
 			switch (dt) {
-			case PANEL: {
-				JTabbedPane jtp = Utility.repoNav.getBoxPanelTabPane();
-				jtp.add(pnl);
-				return;
-			}
 			case MODAL: {
-				JComponent jtp = Utility.repoNav.getDesk();
-				jtp.add(pnl);
+				BoxPanelSwitchableView jtp = Utility.getBoxPanelTabPane();
+				jtp.add(pnl.getName(), pnl);
 				return;
 			}
+			case PANEL:
 			default: {
-				JComponent jtp = Utility.repoNav.getDesk();
-				jtp.add(pnl);
+				BoxPanelSwitchableView jtp = Utility.mainDisplayContext.getBoxPanelTabPane();
+				jtp.add(pnl.getName(), pnl);
 				break;
 			}
 			}

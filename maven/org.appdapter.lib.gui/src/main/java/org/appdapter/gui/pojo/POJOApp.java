@@ -30,7 +30,7 @@ public interface POJOApp extends Reloadable {
 
 	//public POJOCollection getCollection();
 
-	public POJOCollectionWithSwizzler getCollectionWithSwizzler();
+	public NamedObjectCollection getPOJOSession();
 
 	public void addListener(POJOCollectionListener cl);
 
