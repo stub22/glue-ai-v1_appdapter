@@ -126,7 +126,7 @@ public class DemoBrowserImpl {
 		}
 	}
 
-	public static DemoNavigatorCtrl makeDemoNavigatorCtrl(String[] args) {
+	public static DemoNavigatorCtrlImpl makeDemoNavigatorCtrl(String[] args) {
 		RepoSubBoxFinder rsbf = new RepoSubBoxFinder() {
 			@Override public Box findGraphBox(RepoBox parentBox, String graphURI) {
 				theLogger.info("finding graph box for " + graphURI + " in " + parentBox);
@@ -140,24 +140,24 @@ public class DemoBrowserImpl {
 				return mb;
 			}
 		};
-		DemoNavigatorCtrl dnc = makeDemoNavigatorCtrl(args, rsbf);
+		DemoNavigatorCtrlImpl dnc = makeDemoNavigatorCtrl(args, rsbf);
 		return dnc;
 	}
 
-	public static DemoNavigatorCtrl makeDemoNavigatorCtrl(String[] args, RepoSubBoxFinder rsbf) {
+	public static DemoNavigatorCtrlImpl makeDemoNavigatorCtrl(String[] args, RepoSubBoxFinder rsbf) {
 		theRSBF = rsbf;
 		// From this BoxImpl.class, is makeBCI is able to infer the full BT=BoxImpl<... tree?
 		return makeDemoNavigatorCtrl(args, ScreenBoxImpl.class, DemoRepoBoxImpl.class);
 	}
 
-	public static DemoNavigatorCtrl makeDemoNavigatorCtrl(String[] args, Class<? extends ScreenBoxImpl> boxClass, Class<? extends RepoBoxImpl> repoBoxClass) {
+	public static DemoNavigatorCtrlImpl makeDemoNavigatorCtrl(String[] args, Class<? extends ScreenBoxImpl> boxClass, Class<? extends RepoBoxImpl> repoBoxClass) {
 		// From this BoxImpl.class, is makeBCI is able to infer the full BT=BoxImpl<... tree?
 		ScreenBoxContextImpl bctx = makeBCI(boxClass, repoBoxClass);
 		TreeModel tm = bctx.getTreeModel();
 		ScreenBoxTreeNode rootBTN = (ScreenBoxTreeNode) tm.getRoot();
 
 		DisplayContextProvider dcp = bctx;
-		DemoNavigatorCtrl tn = new DemoNavigatorCtrlImpl(bctx, tm, rootBTN, dcp);
+		DemoNavigatorCtrlImpl tn = new DemoNavigatorCtrlImpl(bctx, tm, rootBTN, dcp);
 		return tn;
 	}
 

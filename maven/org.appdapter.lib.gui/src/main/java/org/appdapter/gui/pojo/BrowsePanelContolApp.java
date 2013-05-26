@@ -188,7 +188,7 @@ public class BrowsePanelContolApp implements POJOApp, POJOCollection {
 	 */
 	private Component asPanel(String name, Class c, Component view) {
 
-		if (view instanceof JPanel && false) {
+		if (view instanceof JPanel) {
 			setPanelSize((JPanel) view);
 			BoxPanelSwitchableView bsv = Utility.getBoxPanelTabPane();
 			bsv.add(name, view);
