@@ -1,0 +1,105 @@
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.appdapter</groupId>
+		<artifactId>org.appdapter.modules.core</artifactId>
+		<version>1.1.1-SNAPSHOT</version>
+		<relativePath>../org.appdapter.modules.core/pom.xml</relativePath>
+	</parent>		
+	<artifactId>org.appdapter.lib.gui</artifactId>
+	<packaging>jar</packaging>
+	<name>${project.artifactId} - POJO</name>
+	<url>http://www.appdapter.org</url>
+	<description>Pluggable object GUI with Editor registration</description>
+
+
+	<dependencies>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>org.appdapter.lib.core</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+        <dependency>
+            <groupId>com.jidesoft</groupId>
+            <artifactId>jide-oss</artifactId>
+            <version>3.5.5</version>
+        </dependency>
+        
+   <dependency>
+            <groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>3.8.1</version>
+			<scope>test</scope>
+		</dependency>
+		<!--
+			Enable to see SLF4J debug output (instead of System.out.println) in local tests.
+			We don't bundle this dep, because SLF4J is based on user choosing *their own* 
+			impl jar.  Unfortunately, the SLF4J default impl is NOPLogger, which does nothing,
+			which is why we supply the Sys.out.println fallback in BasicDebugger. 
+			
+			Better policy would be to use scope=test, but currently we aren't using the whole
+			"test" rigamarole of Maven / Junit / ScalaSpecs, etc...
+		
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-simple</artifactId>
+			<version>1.5.8</version>
+			<scope>runtime</scope>
+		</dependency>
+		-->
+	</dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.scala-tools</groupId>
+               <artifactId>maven-scala-plugin</artifactId>
+				<version>2.15.2</version>			   
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+        <pluginManagement>
+        	<plugins>
+        		<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+        		<plugin>
+        			<groupId>org.eclipse.m2e</groupId>
+        			<artifactId>lifecycle-mapping</artifactId>
+        			<version>1.0.0</version>
+        			<configuration>
+        				<lifecycleMappingMetadata>
+        					<pluginExecutions>
+        						<pluginExecution>
+        							<pluginExecutionFilter>
+        								<groupId>
+        									org.scala-tools
+        								</groupId>
+        								<artifactId>
+        									maven-scala-plugin
+        								</artifactId>
+        								<versionRange>
+        									[2.15.2,)
+        								</versionRange>
+        								<goals>
+        									<goal>compile</goal>
+        								</goals>
+        							</pluginExecutionFilter>
+        							<action>
+        								<ignore />
+        							</action>
+        						</pluginExecution>
+        					</pluginExecutions>
+        				</lifecycleMappingMetadata>
+        			</configuration>
+        		</plugin>
+        	</plugins>
+        </pluginManagement>
+    </build>	
+</project>

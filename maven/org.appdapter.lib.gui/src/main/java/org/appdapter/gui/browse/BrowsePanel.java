@@ -52,6 +52,7 @@ import org.appdapter.gui.pojo.BrowsePanelContolApp;
 import org.appdapter.gui.pojo.NamedObjectCollection;
 import org.appdapter.gui.pojo.Utility;
 
+import com.jidesoft.swing.JideScrollPane;
 import com.jidesoft.swing.JideSplitPane;
 import com.jidesoft.swing.JideTabbedPane;
 import com.jidesoft.tree.StyledTreeCellRenderer;
@@ -349,7 +350,7 @@ public class BrowsePanel extends javax.swing.JPanel implements DisplayContext, O
 	private javax.swing.JPanel myLowerPanel;
 	private javax.swing.JMenuBar myTopFrameMenu;
 	private javax.swing.JTree myTree;
-	private JScrollPane myTreeScrollPane;
+	private JideScrollPane myTreeScrollPane;
 
 	// End of variables declaration//GEN-END:variables
 
