@@ -1,9 +1,9 @@
 package org.appdapter.gui.demo;
 
 import java.awt.AWTEvent;
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Event;
 import java.awt.FileDialog;
 import java.awt.Font;
@@ -27,26 +27,23 @@ import java.util.Vector;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JApplet;
-import javax.swing.JComponent;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
-import javax.swing.JTextArea;
 import javax.swing.JToolBar;
 
+import org.appdapter.api.trigger.BoxPanelSwitchableView;
+import org.appdapter.demo.DemoBrowser;
+import org.appdapter.demo.DemoNavigatorCtrl;
+import org.appdapter.demo.DemoNavigatorCtrlFactory;
 import org.appdapter.demo.ObjectNavigatorGUI;
-import org.appdapter.gui.pojo.POJOCollectionImpl;
+import org.appdapter.gui.pojo.NamedObjectCollection;
 import org.appdapter.gui.pojo.POJOApp;
-import org.appdapter.gui.pojo.POJOCollectionWithSwizzler;
-import org.appdapter.gui.pojo.ScreenBoxedPOJOCollectionContextWithNavigator;
+import org.appdapter.gui.pojo.POJOCollectionImpl;
 import org.appdapter.gui.pojo.Utility;
 import org.appdapter.gui.swing.TriggersMenu;
-import org.appdapter.gui.swing.impl.JBox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,50 +54,26 @@ import org.slf4j.LoggerFactory;
  * 
  */
 @SuppressWarnings("serial")
-public class ObjectNavigator extends JFrame implements PropertyChangeListener, org.appdapter.demo.ObjectNavigatorGUI {
-
-	static public class AsApplet extends JApplet {
-		@Override
-		public void init() {
-			JBox box = new JBox(BoxLayout.Y_AXIS);
-			getContentPane().setLayout(new BorderLayout());
-			getContentPane().add("Center", box);
-
-			try {
-				// setLayout(new BorderLayout());
-				// add("Center", new POJOCollectionPanel());
-
-				box.add(new JLabel("Opening ObjectNavigator in a new window..."));
-				(new ObjectNavigator()).show();
-				// setVisible(false);
-				// setSize(0, 0);
-			} catch (Exception err) {
-				JTextArea text = new JTextArea();
-				text.setEditable(false);
-				text.setText("Darn, an error occurred!\nPlease email this to henrik@kniberg.com, thanks!\n\n" + err.toString());
-				box.add(text);
-			}
-		}
-	}
+public class ObjectNavigator /* extends JPanel*/implements PropertyChangeListener {
 
 	// ==== Static variables ===========
-	static ObjectNavigator defaultFrame = null;
+	//static ObjectNavigator defaultFrame = null;
 	static Logger theLogger = LoggerFactory.getLogger(ObjectNavigator.class);
 	private static DemoNavigatorCtrl dnc;
 	private static boolean dncSetup;
 
 	// ==== Instance variables ==========
-	POJOCollectionWithSwizzler collection;
+	NamedObjectCollection collection;
 	POJOApp context;
 
 	// The currently opened ObjectNavigator file (may be null)
 	File file = null;
 
 	// ==== GUI elements ===================
-	JMenuBar menuBar;
+	//static JMenuBar menuBar = Utility.getMenuBar();
 	FileMenu fileMenu;
-	POJOCollectionViewPanelWithContext panel;
-	JToolBar toolbar;
+	//POJOCollectionViewPanelWithContext panel;
+	//JToolBar toolbar;
 	// JButton aboutButton;
 	TriggersMenu selectedMenu;
 
@@ -117,15 +90,23 @@ public class ObjectNavigator extends JFrame implements PropertyChangeListener, o
 		theLogger.info("Starting ObjectNavigator...");
 
 		try {
-			ObjectNavigator frame = new ObjectNavigator();
-			Utility.setInstancesOfObjects(frame.getChildCollectionWithContext());
+			//ObjectNavigator frame = new ObjectNavigator();
+			//Utility.setInstancesOfObjects(frame.getChildCollectionWithContext());
 			// frame.pack();
+			DemoNavigatorCtrlFactory crtlMaker = new DemoNavigatorCtrlFactory() {
 
-			frame.setSize(800, 600);
-			org.appdapter.gui.pojo.Utility.centerWindow(frame);
+				@Override public DemoNavigatorCtrl initialize(String[] main) {
+					return DemoBrowserImpl.makeDemoNavigatorCtrl(main);
+				}
+
+			};
+			DemoBrowser.registerDemo(crtlMaker);
+			//frame.setSize(800, 600);
+			//org.appdapter.gui.pojo.Utility.centerWindow(frame);
 			dnc = DemoBrowser.makeDemoNavigatorCtrl(args);
-			frame.show();
-			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+			dnc.launchFrame("This is ObjectNavigator");
+			//frame.show();
+			//frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			theLogger.info("ObjectNavigator is now running!");
 		} catch (Exception err) {
 			theLogger.error("ObjectNavigator could not be started", err);
@@ -137,42 +118,24 @@ public class ObjectNavigator extends JFrame implements PropertyChangeListener, o
 	/**
 	 * Creates a new ObjectNavigator that shows the given collection
 	 */
-	public ObjectNavigator(POJOCollectionWithSwizzler collection) {
-		String version = getClass().getPackage().getImplementationVersion();
-		if (version == null) {
-			setTitle("ObjectNavigator");
-		} else {
-			setTitle("ObjectNavigator version " + version);
-		}
-
-		try {
-			setIconImage(Icons.loadImage("mainFrame.gif"));
-		} catch (Throwable err) {
-		}
-		this.context = new ScreenBoxedPOJOCollectionContextWithNavigator(this);
+	public ObjectNavigator(LargeClassChooser pnl, POJOApp context, NamedObjectCollection collection) {
+		this.panel = pnl;
+		this.context = context;
 		setPOJOSwizzler(collection);
 	}
 
-	/**
-	 * Creates a new ObjectNavigator that shows a new POJOCollection
-	 */
-	public ObjectNavigator() {
-		this(Utility.context);
+	private JFrame getFrame() {
+		return Utility.getAppFrame();
 	}
 
 	// ====== Property getters ==============
 
-	public POJOCollectionViewPanelWithContext getPOJOCollectionPanel() {
-		return panel;
-	}
-
-	@Override
-	public JComponent getDesk() {
-		return panel.getDesk();
+	public LargeClassChooser getPOJOCollectionPanel() {
+		return Utility.selectionOfCollectionPanel;
 	}
 
 	public static ObjectNavigatorGUI getDefaultFrame() {
-		return defaultFrame;
+		return Utility.mainDisplayContext;
 	}
 
 	public POJOApp getChildCollectionWithContext() {
@@ -182,23 +145,22 @@ public class ObjectNavigator extends JFrame implements PropertyChangeListener, o
 	/**
 	 * The current ObjectNavigator being displayed
 	 */
-	@Override
-	public POJOCollectionWithSwizzler getCollectionWithSwizzler() {
+	public NamedObjectCollection getCollectionWithSwizzler() {
 		return collection;
 	}
+
+	final LargeClassChooser panel;
 
 	/**
 	 * Sets the collection to be displayed
 	 */
-	private void setPOJOSwizzler(POJOCollectionWithSwizzler newCollection) {
-		POJOCollectionWithSwizzler oldCollection = collection;
+	private void setPOJOSwizzler(NamedObjectCollection newCollection) {
+		NamedObjectCollection oldCollection = collection;
 		if (newCollection != oldCollection) {
 			this.collection = newCollection;
-			this.panel = new POJOCollectionViewPanelWithContext(context);
-			getContentPane().removeAll();
-			initGUI();
-			invalidate();
-			validate();
+			//panel = Utility.selectionOfCollectionPanel;
+			panel.invalidate();
+			panel.validate();
 			if (oldCollection != null)
 				oldCollection.removePropertyChangeListener(this);
 			if (newCollection != null)
@@ -209,8 +171,7 @@ public class ObjectNavigator extends JFrame implements PropertyChangeListener, o
 
 	// ==== Property notification methods ===============
 
-	@Override
-	public void propertyChange(PropertyChangeEvent evt) {
+	@Override public void propertyChange(PropertyChangeEvent evt) {
 		if (evt.getSource() == collection) {
 			if (evt.getPropertyName().equals("selected")) {
 				updateSelectedMenu();
@@ -218,7 +179,6 @@ public class ObjectNavigator extends JFrame implements PropertyChangeListener, o
 		}
 	}
 
-	@Override
 	protected void processEvent(AWTEvent e) {
 		if (e.getID() == Event.WINDOW_DESTROY) {
 			theLogger.info("Shutting down ObjectNavigator...");
@@ -227,11 +187,12 @@ public class ObjectNavigator extends JFrame implements PropertyChangeListener, o
 			} catch (Exception err) {
 				theLogger.warn("Warning - failed to save settings: " + err.getMessage(), err);
 			}
-			removeAll();
-			dispose();
+			panel.removeAll();
+			getFrame().dispose();
 			theLogger.info("ObjectNavigator is now shut down!");
 		}
-		super.processEvent(e);
+		if (panel != (Object) this)
+			;//panel.handleEvent(e);
 	}
 
 	// ==== Action execution methods =======================
@@ -255,7 +216,7 @@ public class ObjectNavigator extends JFrame implements PropertyChangeListener, o
 	}
 
 	void openCollection() {
-		FileDialog dialog = new FileDialog(this, "Load ObjectNavigator", FileDialog.LOAD);
+		FileDialog dialog = new FileDialog(getFrame(), "Load ObjectNavigator", FileDialog.LOAD);
 		dialog.show();
 		String fileName = dialog.getFile();
 		String directory = dialog.getDirectory();
@@ -294,7 +255,7 @@ public class ObjectNavigator extends JFrame implements PropertyChangeListener, o
 	}
 
 	void saveCollectionAs() {
-		FileDialog dialog = new FileDialog(this, "Save ObjectNavigator", FileDialog.SAVE);
+		FileDialog dialog = new FileDialog(getFrame(), "Save ObjectNavigator", FileDialog.SAVE);
 		dialog.setFile("mycollection.ser");
 		dialog.show();
 		String fileName = dialog.getFile();
@@ -326,6 +287,7 @@ public class ObjectNavigator extends JFrame implements PropertyChangeListener, o
 	// ==== Private methods ===================
 
 	private void updateSelectedMenu() {
+		JMenuBar menuBar = Utility.getMenuBar();
 		if (selectedMenu != null) {
 			menuBar.remove(selectedMenu);
 			selectedMenu = null;
@@ -333,12 +295,12 @@ public class ObjectNavigator extends JFrame implements PropertyChangeListener, o
 
 		Object selected = collection.getSelectedBean();
 		if (selected != null) {
-			selectedMenu = new TriggersMenu(selected);
+			selectedMenu = new TriggersMenu("With Selected", selected);
 			menuBar.add(selectedMenu);
 		}
-		invalidate();
-		validate();
-		repaint();
+		panel.invalidate();
+		panel.validate();
+		panel.repaint();
 	}
 
 	void checkControls() {
@@ -349,20 +311,19 @@ public class ObjectNavigator extends JFrame implements PropertyChangeListener, o
 	 * Creates and initialized the GUI components within the ObjectNavigator.
 	 * Should only be called once.
 	 */
-	private void initGUI() {
-		if (defaultFrame == null) {
-			defaultFrame = this;
+	public JMenu getMenu() {
+
+		//panel.setLayout(new BorderLayout());
+		//Utility.selectionOfCollectionPanel = new LargeClassChooser(context);
+		if (fileMenu == null) {
+			Utility.fileMenu = fileMenu = new FileMenu();
 		}
-		getContentPane().setLayout(new BorderLayout());
-		panel = new POJOCollectionViewPanelWithContext(context);
+		checkControls();
+		//menuBar.add(fileMenu);
+		return fileMenu;
 
-		menuBar = new JMenuBar();
-		fileMenu = new FileMenu();
-		menuBar.add(fileMenu);
-		setJMenuBar(menuBar);
-
-		toolbar = new MyToolBar();
-		toolbar.setFloatable(true);
+		//toolbar = new MyToolBar();
+		//toolbar.setFloatable(true);
 
 		// JPanel northPanel = new JPanel();
 		// northPanel.setLayout(new BorderLayout());
@@ -370,21 +331,23 @@ public class ObjectNavigator extends JFrame implements PropertyChangeListener, o
 
 		// aboutButton = new ActionButton(aboutAction);
 		// northPanel.add("East", aboutButton);
-
-		getContentPane().add("Center", panel);
-		getContentPane().add("North", toolbar);
-		checkControls();
+		//panel.add(Utility.selectionOfCollectionPanel);
+		//getContentPane().add("Center", Utility.selectionOfCollectionPanel);
+		//getContentPane().add("North", toolbar);
 	}
 
 	// ==== Action classes =================================
+
+	private Container getContentPane() {
+		return panel;
+	}
 
 	class SaveAction extends AbstractAction {
 		SaveAction() {
 			super("Save", Icons.saveCollection);
 		}
 
-		@Override
-		public void actionPerformed(ActionEvent evt) {
+		@Override public void actionPerformed(ActionEvent evt) {
 			saveCollection();
 		}
 	}
@@ -394,8 +357,7 @@ public class ObjectNavigator extends JFrame implements PropertyChangeListener, o
 			super("Save as...", Icons.saveCollectionAs);
 		}
 
-		@Override
-		public void actionPerformed(ActionEvent evt) {
+		@Override public void actionPerformed(ActionEvent evt) {
 			saveCollectionAs();
 		}
 	}
@@ -405,8 +367,7 @@ public class ObjectNavigator extends JFrame implements PropertyChangeListener, o
 			super("New", Icons.newCollection);
 		}
 
-		@Override
-		public void actionPerformed(ActionEvent evt) {
+		@Override public void actionPerformed(ActionEvent evt) {
 			newCollection();
 		}
 	}
@@ -416,19 +377,17 @@ public class ObjectNavigator extends JFrame implements PropertyChangeListener, o
 			super("Open", Icons.openCollection);
 		}
 
-		@Override
-		public void actionPerformed(ActionEvent evt) {
+		@Override public void actionPerformed(ActionEvent evt) {
 			openCollection();
 		}
 	}
 
 	class SearchAction extends AbstractAction {
 		SearchAction() {
-			super("Search ObjectNavigator...", Icons.search);
+			super("Search...", Icons.search);
 		}
 
-		@Override
-		public void actionPerformed(ActionEvent evt) {
+		@Override public void actionPerformed(ActionEvent evt) {
 			makeRepoNav();
 		}
 
@@ -442,8 +401,7 @@ public class ObjectNavigator extends JFrame implements PropertyChangeListener, o
 			this.file = file;
 		}
 
-		@Override
-		public void actionPerformed(ActionEvent evt) {
+		@Override public void actionPerformed(ActionEvent evt) {
 			openCollection(file);
 		}
 	}
@@ -537,8 +495,7 @@ public class ObjectNavigator extends JFrame implements PropertyChangeListener, o
 			}
 		}
 
-		@Override
-		protected void finalize() {
+		@Override protected void finalize() {
 			try {
 				saveToFile();
 			} catch (Exception err) {
@@ -625,18 +582,15 @@ public class ObjectNavigator extends JFrame implements PropertyChangeListener, o
 		}
 
 		static class DummyIcon implements Icon, java.io.Serializable {
-			@Override
-			public int getIconWidth() {
+			@Override public int getIconWidth() {
 				return 16;
 			}
 
-			@Override
-			public int getIconHeight() {
+			@Override public int getIconHeight() {
 				return 16;
 			}
 
-			@Override
-			public void paintIcon(Component c, Graphics g, int x, int y) {
+			@Override public void paintIcon(Component c, Graphics g, int x, int y) {
 				g.setColor(Color.blue);
 				g.setFont(new Font("serif", Font.BOLD, 12));
 				g.drawString("?", x, y + 12);
@@ -644,8 +598,12 @@ public class ObjectNavigator extends JFrame implements PropertyChangeListener, o
 		}
 	}
 
-	@Override public void showMessage(String string) {
-		// TODO Auto-generated method stub
-		
+	public void showMessage(String string) {
+		Utility.mainDisplayContext.showMessage(string);
 	}
+
+	public BoxPanelSwitchableView getBoxPanelTabPane() {
+		return Utility.mainDisplayContext.getBoxPanelTabPane();
+	}
+
 }

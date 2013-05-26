@@ -16,32 +16,33 @@
 
 package org.appdapter.gui.assembly;
 
-import org.appdapter.bind.rdf.jena.assembly.DynamicCachingComponentAssembler;
-import org.appdapter.core.component.ComponentAssemblyNames;
-import org.appdapter.core.name.Ident;
-import org.appdapter.core.item.Item;
-import org.appdapter.api.trigger.ScreenBox;
-import org.appdapter.api.trigger.Trigger;
-import org.appdapter.api.trigger.BoxAssemblyNames;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.assembler.Assembler;
-import com.hp.hpl.jena.assembler.Mode;
 import java.util.List;
 import java.util.Set;
+
+import org.appdapter.api.trigger.BoxAssemblyNames;
+import org.appdapter.api.trigger.Trigger;
+import org.appdapter.bind.rdf.jena.assembly.DynamicCachingComponentAssembler;
+import org.appdapter.core.component.ComponentAssemblyNames;
+import org.appdapter.core.item.Item;
 import org.appdapter.core.item.ItemFuncs;
+import org.appdapter.gui.box.ScreenBoxImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.hp.hpl.jena.assembler.Assembler;
+import com.hp.hpl.jena.assembler.Mode;
+import com.hp.hpl.jena.rdf.model.Resource;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public class BoxAssembler extends DynamicCachingComponentAssembler<ScreenBox> {
+public class BoxAssembler extends DynamicCachingComponentAssembler<ScreenBoxImpl> {
 	static Logger theLogger = LoggerFactory.getLogger(BoxAssembler.class);
 
 	public BoxAssembler(Resource builderConfRes) {
 		super(builderConfRes);
 	}
-	@Override protected void initExtendedFieldsAndLinks(ScreenBox box, Item configItem, Assembler asmblr, Mode mode) {
+	@Override protected void initExtendedFieldsAndLinks(ScreenBoxImpl box, Item configItem, Assembler asmblr, Mode mode) {
 		theLogger.info("bonus box init here");
 		List<Object> linkedTriggers = getReader().findOrMakeLinkedObjects(configItem, BoxAssemblyNames.P_trigger, asmblr, mode, null);
 		for (Object lt : linkedTriggers) {

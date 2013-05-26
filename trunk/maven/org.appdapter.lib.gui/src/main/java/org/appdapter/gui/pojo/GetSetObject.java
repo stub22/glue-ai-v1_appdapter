@@ -6,5 +6,4 @@ public interface GetSetObject {
 	Object getObject();
 
 	void setObject(Object obj) throws InvocationTargetException;
-
 }

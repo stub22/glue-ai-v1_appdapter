@@ -1,5 +1,3 @@
-
-
 package org.appdapter.gui.swing;
 
 import java.awt.BorderLayout;
@@ -12,81 +10,79 @@ import javax.swing.event.DocumentListener;
 
 import org.appdapter.gui.pojo.Utility;
 import org.appdapter.gui.swing.impl.JJPanel;
+import org.appdapter.gui.util.PromiscuousClassUtils;
 
 /**
   A GUI widget that lets you select a class.
 */
 public class ClassSelectionField extends JJPanel {
-  JTextField text = new JTextField(20);
-  Class selectedClass = null;
-  PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
+	JTextField text = new JTextField(20);
+	Class selectedClass = null;
+	PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
 
-  public ClassSelectionField() {
-    setLayout(new BorderLayout());
-    add(text);
+	//private AutoCompletion myAutoCompletion;
 
-    text.getDocument().addDocumentListener(
-      new DocumentListener() {
-        @Override
-		public void insertUpdate(DocumentEvent e) {
-          checkControls();
-        }
+	public ClassSelectionField() {
+		setLayout(new BorderLayout());
+		add(text);
 
-        @Override
-		public void removeUpdate(DocumentEvent e) {
-          checkControls();
-        }
+		text.getDocument().addDocumentListener(new DocumentListener() {
+			@Override public void insertUpdate(DocumentEvent e) {
+				checkControls();
+			}
 
-        @Override
-		public void changedUpdate(DocumentEvent e) {
-          checkControls();
-        }
-      }
-    );
-  }
+			@Override public void removeUpdate(DocumentEvent e) {
+				checkControls();
+			}
 
-  @Override
-public void addPropertyChangeListener(PropertyChangeListener p) {
-    propSupport.addPropertyChangeListener(p);
-  }
+			@Override public void changedUpdate(DocumentEvent e) {
+				checkControls();
+			}
+		});
+		//..	myAutoCompletion = new AutoCompletion(text, Utility.getSearchableClassList());
 
-  @Override
-public void removePropertyChangeListener(PropertyChangeListener p) {
-    propSupport.removePropertyChangeListener(p);
-  }
+	}
 
-  public Class getSelectedClass() {
-    return selectedClass;
-  }
+	@Override public void addPropertyChangeListener(PropertyChangeListener p) {
+		propSupport.addPropertyChangeListener(p);
+	}
 
-  public void setSelectedClass(Class newValue) {
-    setSelectedClass(newValue, true);
-  }
+	@Override public void removePropertyChangeListener(PropertyChangeListener p) {
+		propSupport.removePropertyChangeListener(p);
+	}
 
-  private void setSelectedClass(Class newValue, boolean updateTextField) {
-    Class oldValue = selectedClass;
-    if (!Utility.isEqual(oldValue, newValue)) {
-      selectedClass = newValue;
+	public Class getSelectedClass() {
+		return selectedClass;
+	}
 
-      //Make sure the contents of the text field corresponds
-      //to the selected class
-      if (updateTextField) {
-        if (selectedClass == null) {
-          text.setText("");
-        } else {
-          text.setText(selectedClass.getName());
-        }
-      }
+	public void setSelectedClass(Class newValue) {
+		setSelectedClass(newValue, true);
+	}
 
-      propSupport.firePropertyChange("selectedClass", oldValue, newValue);
-    }
-  }
+	private void setSelectedClass(Class newValue, boolean updateTextField) {
+		Class oldValue = selectedClass;
+		if (!Utility.isEqual(oldValue, newValue)) {
+			selectedClass = newValue;
 
-  private void checkControls() {
-    try {
-      setSelectedClass(Class.forName(text.getText()), false);
-    } catch (Exception err) {
-      setSelectedClass(null);
-    }
-  }
+			//Make sure the contents of the text field corresponds
+			//to the selected class
+			if (updateTextField) {
+				if (selectedClass == null) {
+					text.setText("");
+				} else {
+					text.setText(selectedClass.getName());
+				}
+			}
+
+			propSupport.firePropertyChange("selectedClass", oldValue, newValue);
+		}
+	}
+
+	private void checkControls() {
+		try {
+			setSelectedClass(PromiscuousClassUtils.forName(text.getText()), false);
+		} catch (Exception err) {
+			setSelectedClass(null);
+		}
+	}
 }

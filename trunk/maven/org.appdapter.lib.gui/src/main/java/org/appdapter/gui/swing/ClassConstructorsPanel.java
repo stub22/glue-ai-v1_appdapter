@@ -47,8 +47,8 @@ public class ClassConstructorsPanel extends JJPanel implements ActionListener {
 	@Override public void actionPerformed(ActionEvent evt) {
 		Constructor c = (Constructor) buttons.get(evt.getSource());
 		if (c != null) {
-			ConstructorParametersPanel p;
-			p = (ConstructorParametersPanel) panels.get(evt.getSource());
+			MethodParametersPanel p;
+			p = (MethodParametersPanel) panels.get(evt.getSource());
 			try {
 				executeConstructor(c, p.getValues());
 			} catch (Throwable err) {
@@ -70,7 +70,7 @@ public class ClassConstructorsPanel extends JJPanel implements ActionListener {
 		if (constructor != null) {
 			Object newObject = constructor.newInstance(params);
 			if (context != null) {
-				context.getCollectionWithSwizzler().addPOJO(newObject);
+				context.getPOJOSession().addPOJO(newObject);
 			}
 		}
 	}
@@ -92,8 +92,8 @@ public class ClassConstructorsPanel extends JJPanel implements ActionListener {
 			pbutton.setLayout(new FlowLayout(FlowLayout.RIGHT));
 			pbutton.add(button);
 
-			ConstructorParametersPanel pparams;
-			pparams = new ConstructorParametersPanel(context, c);
+			MethodParametersPanel pparams;
+			pparams = new MethodParametersPanel(context, c);
 
 			JPanel pmain = new JPanel();
 			pmain.setLayout(new BorderLayout());

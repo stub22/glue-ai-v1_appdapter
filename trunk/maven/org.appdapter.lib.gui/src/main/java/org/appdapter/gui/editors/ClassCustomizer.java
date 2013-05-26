@@ -13,22 +13,20 @@ import org.appdapter.gui.swing.StaticMethodsPanel;
  * 
  */
 public class ClassCustomizer extends ScreenBoxedPOJOWithPropertiesPanel {
-  @Override
-protected void initGUI() {
-    super.initGUI();
+	@Override protected void initSubClassGUI() {
 
-    try {
-      ClassConstructorsPanel constructors = new ClassConstructorsPanel((Class) getObject());
-      tabs.insertTab("Constructors", null, constructors, null, 0);
-    } catch (Exception err) {
-      tabs.insertTab("Constructors", null, new ErrorPanel("Could not show constructors", err), null, 0);
-    }
+		try {
+			ClassConstructorsPanel constructors = new ClassConstructorsPanel((Class) getObject());
+			tabs.insertTab("Constructors", null, constructors, null, 0);
+		} catch (Exception err) {
+			tabs.insertTab("Constructors", null, new ErrorPanel("Could not show constructors", err), null, 0);
+		}
 
-    try {
-      StaticMethodsPanel statics = new StaticMethodsPanel((Class) getObject());
-      tabs.insertTab("Static methods", null, statics, null, 1);
-    } catch (Exception err) {
-      tabs.insertTab("Static methods", null, new ErrorPanel("Could not show static methods", err), null, 1);
-    }
-  }
+		try {
+			StaticMethodsPanel statics = new StaticMethodsPanel((Class) getObject());
+			tabs.insertTab("Static methods", null, statics, null, 1);
+		} catch (Exception err) {
+			tabs.insertTab("Static methods", null, new ErrorPanel("Could not show static methods", err), null, 1);
+		}
+	}
 }

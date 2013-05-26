@@ -16,15 +16,16 @@
 
 package org.appdapter.gui.assembly;
 
-import org.appdapter.bind.rdf.jena.assembly.DynamicCachingComponentAssembler;
-import org.appdapter.core.name.Ident;
-import org.appdapter.core.item.Item;
 import org.appdapter.api.trigger.TriggerImpl;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.assembler.Assembler;
-import com.hp.hpl.jena.assembler.Mode;
+import org.appdapter.bind.rdf.jena.assembly.DynamicCachingComponentAssembler;
+import org.appdapter.core.item.Item;
+import org.appdapter.core.name.Ident;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.hp.hpl.jena.assembler.Assembler;
+import com.hp.hpl.jena.assembler.Mode;
+import com.hp.hpl.jena.rdf.model.Resource;
 
 /**
  * @author Stu B. <www.texpedient.com>

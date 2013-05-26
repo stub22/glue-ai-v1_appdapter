@@ -13,8 +13,7 @@ import java.util.List;
  * A class loader to allow for loading of other jars that are added as a URL.
  * 
  */
-public final class IsolatedClassLoader extends IsolatingClassLoaderBase
-		implements HRKRefinement {
+public final class IsolatedClassLoader extends IsolatingClassLoaderBase implements HRKRefinement {
 	/** Dynamically added URLs. */
 	private final Collection<URL> urls;
 
@@ -34,8 +33,7 @@ public final class IsolatedClassLoader extends IsolatingClassLoaderBase
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public void addURL(final URL url) {
+	@Override public void addURL(final URL url) {
 		if (urls.contains(url)) {
 			return;
 		}
@@ -50,55 +48,49 @@ public final class IsolatedClassLoader extends IsolatingClassLoaderBase
 	 * @param additions
 	 *            URLs to add.
 	 */
-	@Override
-	public void addURLs(final URL[] additions) {
+	@Override public void addURLs(final URL[] additions) {
 		for (URL url : additions) {
 			addURL(url);
 		}
 	}
 
-	@Override
-	protected Class<?> findClass(String name) throws ClassNotFoundException {
-		return rememberClass(super.findClass(name));
+	@Override protected Class<?> findClass(String name) throws ClassNotFoundException {
+		return rememberClass(name, super.findClass(name));
 	}
 
-	@Override
-	public URL findResource(String name) {
+	@Override public URL findResource(String name) {
 		return super.findResource(name);
 	}
 
-	@Override
-	public Enumeration<URL> findResources(String name) throws IOException {
+	@Override public Enumeration<URL> findResources(String name) throws IOException {
 		return super.findResources(name);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public Class<?> loadClass(final String name) throws ClassNotFoundException {
+	@Override public Class<?> loadClass(final String name) throws ClassNotFoundException {
 		ClassNotFoundException orig = null;
 		try {
-			return rememberClass(loadClassUseSystem(name, true));
+			return rememberClass(name, loadClassUseSystem(name, false));
 		} catch (ClassNotFoundException e) {
 			orig = e;
 		}
 		try {
-			return rememberClass(loadClassUseSystem(name, false));
+			return rememberClass(name, loadClassUseSystem(name, true));
 		} catch (ClassNotFoundException e) {
 			throw orig;
 		}
 	}
 
-	public Class<?> loadClassUseSystem(final String name, boolean useSystem)
-			throws ClassNotFoundException {
+	public Class<?> loadClassUseSystem(final String name, boolean useSystem) throws ClassNotFoundException {
 		Class<?> loadedClass = findLoadedClass(name);
 		if (loadedClass != null)
 			return loadedClass;
 
 		try {
 			if (useSystem || name.startsWith("java.")) {
-				loadedClass = Class.forName(name);
+				loadedClass = PromiscuousClassUtils.forName(name, false, null);
 			} else {
 				loadedClass = findClass(name);
 			}
@@ -108,12 +100,11 @@ public final class IsolatedClassLoader extends IsolatingClassLoaderBase
 		}
 		if (loadedClass == null) {
 			if (useSystem || name.startsWith("java.")) {
-				final ClassLoader systemLoader = ClassLoader
-						.getSystemClassLoader();
+				final ClassLoader systemLoader = ClassLoader.getSystemClassLoader();
 				loadedClass = systemLoader.loadClass(name);
 			} else {
 				loadedClass = loadClass(name, false); // same as
-														// super.loadClass(name);
+													  // super.loadClass(name);
 			}
 		}
 
@@ -127,8 +118,7 @@ public final class IsolatedClassLoader extends IsolatingClassLoaderBase
 	 * 
 	 * @return the search path of URLs for loading classes and resources.
 	 */
-	@Override
-	public URL[] getURLs() {
+	@Override public URL[] getURLs() {
 		URL[] surls = super.getURLs();
 		if (surls.length != urls.size()) {
 			throw new RuntimeException("Bad get URLS! ");
@@ -139,8 +129,7 @@ public final class IsolatedClassLoader extends IsolatingClassLoaderBase
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public boolean addPaths(List<Object> strings, boolean includeParent) {
+	@Override public boolean addPaths(List<Object> strings, boolean includeParent) {
 		boolean changed = addCollection(strings, this, getURLs());
 		if (includeParent) {
 			if (pathsOf(strings, getParent(), includeParent))
@@ -149,8 +138,7 @@ public final class IsolatedClassLoader extends IsolatingClassLoaderBase
 		return changed;
 	}
 
-	public static <ET> boolean addCollection(List<Object> strings,
-			ClassLoader thiz, ET[] elems) {
+	public static <ET> boolean addCollection(List<Object> strings, ClassLoader thiz, ET[] elems) {
 		boolean changed = false;
 		if (PromiscuousClassUtils.addAllNew(strings, elems))
 			changed = true;

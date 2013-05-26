@@ -12,6 +12,7 @@ import org.appdapter.api.trigger.Box;
 import org.appdapter.gui.swing.ErrorPanel;
 import org.appdapter.gui.swing.MethodsPanel;
 import org.appdapter.gui.swing.PropertiesPanel;
+import org.slf4j.LoggerFactory;
 
 /**
  * A panel containing a complete GUI for a object, including properties,
@@ -20,10 +21,23 @@ import org.appdapter.gui.swing.PropertiesPanel;
  * 
  * 
  */
-public class ScreenBoxedPOJOWithPropertiesPanel<BoxType extends Box> extends AbstractScreenBoxedPOJOPanel<BoxType> implements Customizer, GetSetObject {
+@SuppressWarnings("serial")
+abstract public class ScreenBoxedPOJOWithPropertiesPanel<BoxType extends Box>
+
+extends AbstractScreenBoxedPOJOPanel<BoxType> implements Customizer, GetSetObject {
 	protected POJOApp context;
 	protected JTabbedPane tabs;
 	private Object object;
+
+	protected abstract void initSubClassGUI() throws Throwable;
+
+	public ScreenBoxedPOJOWithPropertiesPanel() {
+		this(null);
+	}
+
+	public ScreenBoxedPOJOWithPropertiesPanel(Object object) {
+		this(Utility.getCurrentContext(), object);
+	}
 
 	public ScreenBoxedPOJOWithPropertiesPanel(POJOApp context, Object object) {
 		this.object = object;
@@ -31,12 +45,22 @@ public class ScreenBoxedPOJOWithPropertiesPanel<BoxType extends Box> extends Abs
 		initGUI();
 	}
 
-	public ScreenBoxedPOJOWithPropertiesPanel(Object object) {
-		this(Utility.getCurrentContext(), object);
-	}
+	boolean initedGuiOnce = false;
 
-	public ScreenBoxedPOJOWithPropertiesPanel() {
-		this(null);
+	public final void initGUI() {
+		if (initedGuiOnce == true)
+			return;
+		if (object == null)
+			return;
+		initedGuiOnce = true;
+		try {
+			initGUI_super();
+			initSubClassGUI();
+		} catch (Throwable e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			initedGuiOnce = false;
+		}
 	}
 
 	@Override public Dimension getPreferredSize() {
@@ -65,6 +89,10 @@ public class ScreenBoxedPOJOWithPropertiesPanel<BoxType extends Box> extends Abs
 
 	 *
 	 */
+	public void setBean(Object obj) {
+		setObject(obj);
+		initGUI();
+	}
 
 	/**
 	 * This method is needed to conform to the Customizer interface. It doesn't
@@ -80,12 +108,20 @@ public class ScreenBoxedPOJOWithPropertiesPanel<BoxType extends Box> extends Abs
 	@Override public void removePropertyChangeListener(PropertyChangeListener listener) {
 	}
 
-	@Override protected void objectChanged(Object oldBean, Object newBean) {
+	/**
+	 * Called whenever the pojo is switched. Caused the GUI to update to render
+	 * the new pojObject instead.
+	 */
+	@Override protected void objectChanged(Object oldValue, Object newValue) {
+		super.firePropertyChange("value", oldValue, newValue);
 		removeAll();
 		initGUI();
 	}
 
-	protected void initGUI() {
+	public void initGUI_super() throws Throwable {
+		if (object == null) {
+			return;
+		}
 		tabs = new JTabbedPane();
 
 		Object object = getObject();
@@ -118,14 +154,31 @@ public class ScreenBoxedPOJOWithPropertiesPanel<BoxType extends Box> extends Abs
 			setLayout(new BorderLayout());
 			add("Center", tabs);
 		} else {
-			add(new JLabel("null"));
+			add(new JLabel("ERROR object is null!? " + getObject()));
 		}
 	}
 
+	@Override public void focusOnBox(Box b) {
+		LoggerFactory.getLogger(getClass().getName()).info("Focusing on box: " + b);
+	}
+
+	/**
+	 * Return the live object in which we think we are updating
+	 * 
+	 * This can be 'this' object
+	 * 
+	 */
 	@Override public Object getObject() {
-		if (object == null)
-			return this;
 		return object;
+	}
+
+	public void setObject(Object newpojObject) {
+		Object oldpojObject = getObject();
+		if (oldpojObject != newpojObject) {
+			objectChanged(oldpojObject, newpojObject);
+		}
+		object = newpojObject;
+		initGUI();
 	}
 
 }

@@ -7,7 +7,7 @@ public interface POJOCollection {
 
 	public POJOCollection getCollection();
 
-	public POJOCollectionWithSwizzler getCollectionWithSwizzler();
+	public NamedObjectCollection getPOJOSession();
 	
 	/**
 	 * Adds the given object to the ObjectNavigator, if it does not already

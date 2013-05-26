@@ -3,10 +3,10 @@ package org.appdapter.gui.swing;
 import java.util.Collection;
 import java.util.Vector;
 
+import org.appdapter.gui.pojo.NamedObjectCollection;
+import org.appdapter.gui.pojo.POJOApp;
 import org.appdapter.gui.pojo.POJOCollection;
 import org.appdapter.gui.pojo.POJOCollectionListener;
-import org.appdapter.gui.pojo.POJOApp;
-import org.appdapter.gui.pojo.POJOCollectionWithSwizzler;
 import org.appdapter.gui.pojo.Utility;
 
 public class EmptyPOJOCollectionContext implements POJOApp, POJOCollection {
@@ -73,7 +73,7 @@ public class EmptyPOJOCollectionContext implements POJOApp, POJOCollection {
 		return this;
 	}
 
-	@Override public POJOCollectionWithSwizzler getCollectionWithSwizzler() {
+	@Override public NamedObjectCollection getPOJOSession() {
 		// TODO Auto-generated method stub
 		return Utility.getCurrentContext2();
 	}

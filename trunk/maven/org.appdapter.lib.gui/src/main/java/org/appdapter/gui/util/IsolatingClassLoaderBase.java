@@ -28,7 +28,7 @@ abstract public class IsolatingClassLoaderBase extends URLClassLoader implements
 	@Override
 	final public Class loadClass(String class_name, boolean resolve)
 			throws ClassNotFoundException {
-		return PromiscuousClassUtils.rememberClass(loadClassRemember(
+		return PromiscuousClassUtils.rememberClass(class_name, loadClassRemember(
 				class_name, resolve));
 	}
 
