@@ -17,12 +17,12 @@
 package org.appdapter.demo;
 
 import org.appdapter.api.trigger.Box;
-import org.appdapter.bind.rdf.jena.assembly.CachingComponentAssembler;
 import org.appdapter.api.trigger.BoxContext;
-import org.appdapter.gui.box.ScreenBoxImpl;
-import org.appdapter.gui.box.ScreenBoxPanel;
 import org.appdapter.api.trigger.MutableBox;
+import org.appdapter.api.trigger.ScreenBoxPanel;
 import org.appdapter.api.trigger.TriggerImpl;
+import org.appdapter.bind.rdf.jena.assembly.CachingComponentAssembler;
+import org.appdapter.gui.box.ScreenBoxImpl;
 import org.appdapter.gui.trigger.PanelTriggers;
 
 /**
@@ -35,6 +35,7 @@ public class DemoServiceWrapFuncs {
 		result.setDescription("full description for box with label: " + label);
 		return result;
 	}
+
 	/**
 	 * Makes a ScreenBox, using the type of trigProto to define the allowed trigger type of the box.
 	 * The data/contents of trigProto is not used.
@@ -51,6 +52,7 @@ public class DemoServiceWrapFuncs {
 		result.setDescription("full description for box with label: " + label);
 		return result;
 	}
+
 	/** Make a ScreenBox and attach it as a child to an existing parentBox.
 	 * trigProto to define the allowed trigger type of the new box.
 	 * The data/contents of trigProto is not used.
@@ -63,8 +65,7 @@ public class DemoServiceWrapFuncs {
 	 * @param label
 	 * @return 
 	 */
-	public static <BT extends ScreenBoxImpl<TT>, TT extends TriggerImpl<BT>> BT makeTestChildBoxImpl(Box parentBox, 
-					Class<BT> childBoxClass,  TT trigProto, String label) {
+	public static <BT extends ScreenBoxImpl<TT>, TT extends TriggerImpl<BT>> BT makeTestChildBoxImpl(Box parentBox, Class<BT> childBoxClass, TT trigProto, String label) {
 		BT result = null;
 		BoxContext ctx = parentBox.getBoxContext();
 		result = makeTestBoxImpl(childBoxClass, trigProto, label);
