@@ -14,11 +14,14 @@
  *  limitations under the License.
  */
 
-package org.appdapter.gui.trigger;
+package org.appdapter.gui.box;
 
 import java.beans.PropertyVetoException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -26,8 +29,10 @@ import org.appdapter.api.trigger.DisplayContext;
 import org.appdapter.api.trigger.DisplayContextProvider;
 import org.appdapter.api.trigger.ScreenBox;
 import org.appdapter.api.trigger.ScreenBoxPanel;
+import org.appdapter.api.trigger.ScreenBoxPanel.Kind;
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.gui.pojo.POJOBox;
+import org.appdapter.gui.pojo.Utility;
 import org.appdapter.gui.repo.DatabaseManagerPanel;
 import org.appdapter.gui.repo.ModelMatrixPanel;
 import org.appdapter.gui.repo.RepoManagerPanel;
@@ -43,7 +48,10 @@ import org.slf4j.LoggerFactory;
  * <br/> 
  * @author Stu B. <www.texpedient.com>
  */
-public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<TrigType>>> extends POJOBox<TrigType> implements ScreenBox<TrigType> {
+public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<TrigType>>>
+
+extends POJOBox<TrigType> implements ScreenBox<TrigType> {
+
 	static Logger theLogger = LoggerFactory.getLogger(ScreenBoxImpl.class);
 	// Because it's a "provider", we have an extra layer of indirection between
 	// box and display, enabling independence.
@@ -105,7 +113,7 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 		if (myDCP != null) {
 			return myDCP.findDisplayContext(this);
 		}
-		return null;
+		return Utility.mainDisplayContext;
 	}
 
 	/**
@@ -144,29 +152,25 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	 * @return 
 	 */
 	protected ScreenBoxPanel makeBoxPanel(ScreenBoxPanel.Kind kind) {
-		ScreenBoxPanel bp = null;
-		switch (kind) {
-		case MATRIX:
-			bp = new ModelMatrixPanel();
-			break;
-		case REPO_MANAGER:
-			bp = new RepoManagerPanel();
-			break;
-		case DB_MANAGER:
-			bp = new DatabaseManagerPanel();
-			break;
-		case OTHER:
-			bp = makeOtherPanel();
-			break;
-		default:
-			throw new RuntimeException("Found unexpected ScreenBoxPanelKind: " + kind);
-		}
+		ScreenBoxPanel bp = makeBoxPanelForKind(kind);
 		if (bp != null) {
 			// Subclasses might do something fancier to share panels among
 			// instances.
 			putBoxPanel(kind, bp);
 		}
 		return bp;
+	}
+
+	protected ScreenBoxPanel makeBoxPanelForKind(Kind kind) {
+		if (kind == Kind.MATRIX)
+			return new ModelMatrixPanel();
+		if (kind == Kind.REPO_MANAGER)
+			return new RepoManagerPanel();
+		if (kind == Kind.DB_MANAGER)
+			return new DatabaseManagerPanel();
+		if (kind == Kind.OTHER)
+			return makeOtherPanel();
+		throw new RuntimeException("Found unexpected ScreenBoxPanelKind: " + kind);
 	}
 
 	/**
@@ -190,4 +194,17 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 		theLogger.info("DUMP-DUMP-DE-DUMP");
 	}
 
+	@Override public <T> T[] getObjects(Class<T> type) {
+		HashSet<Object> objs = new HashSet<Object>();
+		if (this.canConvert(type)) {
+			T one = convertTo(type);
+			objs.add(one);
+		}
+		for (Object o : getObjects()) {
+			if (type.isInstance(o)) {
+				objs.add(o);
+			}
+		}
+		return objs.toArray((T[]) Array.newInstance(type, objs.size()));
+	}
 }

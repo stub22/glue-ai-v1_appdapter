@@ -11,11 +11,9 @@ public abstract class Debuggable extends PromiscuousClassUtils {
 
 	public static int PRINT_DEPTH = 3;
 
-	public static Logger LOGGER = Logger.getLogger(Debuggable.class
-			.getSimpleName());
+	public static Logger LOGGER = Logger.getLogger(Debuggable.class.getSimpleName());
 
-	@Override
-	public String toString() {
+	@Override public String toString() {
 		return toInfoStringF(this, PRINT_DEPTH);
 	}
 
@@ -24,8 +22,7 @@ public abstract class Debuggable extends PromiscuousClassUtils {
 	}
 
 	public static <T extends Object> T NoSuchClassImpl(Object... objects) {
-		String dstr = "NoSuchClassImpl"
-				+ Debuggable.toInfoStringA(objects, ":", PRINT_DEPTH);
+		String dstr = "NoSuchClassImpl" + Debuggable.toInfoStringA(objects, ":", PRINT_DEPTH);
 
 		RuntimeException rte = warn(dstr);
 		// if (true) return null;
@@ -42,6 +39,11 @@ public abstract class Debuggable extends PromiscuousClassUtils {
 		return rte;
 	}
 
+	public static String trace(Object... objects) {
+		String dstr = Debuggable.toInfoStringA(objects, " : ", PRINT_DEPTH);
+		return dstr;
+	}
+
 	public static String toInfoStringA(Object[] params, String sep, int depth) {
 		if (params == null)
 			return "<Null[]>";
@@ -55,8 +57,7 @@ public abstract class Debuggable extends PromiscuousClassUtils {
 		for (int i = 0; i < params.length; i++) {
 			String str = "" + params[i];
 			Object next = params[i];
-			if ((next instanceof String)
-					&& (str.startsWith("=") || str.endsWith("]"))) {
+			if ((next instanceof String) && (str.startsWith("=") || str.endsWith("]"))) {
 				sb.append(next);
 				continue;
 			}
@@ -126,8 +127,7 @@ public abstract class Debuggable extends PromiscuousClassUtils {
 
 	private static boolean declaresToString(Class<? extends Object> class1) {
 		try {
-			Class declOn = class1.getMethod("toString", CLASSES0)
-					.getDeclaringClass();
+			Class declOn = class1.getMethod("toString", CLASSES0).getDeclaringClass();
 			return declOn != Object.class;
 		} catch (SecurityException e) {
 		} catch (NoSuchMethodException e) {
@@ -136,8 +136,7 @@ public abstract class Debuggable extends PromiscuousClassUtils {
 	}
 
 	static ThreadLocal<HashSet<String>> DontDescend = new ThreadLocal<HashSet<String>>() {
-		@Override
-		protected HashSet<String> initialValue() {
+		@Override protected HashSet<String> initialValue() {
 			return new HashSet<String>();
 		}
 	};
@@ -177,8 +176,7 @@ public abstract class Debuggable extends PromiscuousClassUtils {
 				f.setAccessible(true);
 				try {
 					Object val = f.get(o);
-					sb.append(f.getName() + "=" + toInfoStringV(val, depth)
-							+ ",");
+					sb.append(f.getName() + "=" + toInfoStringV(val, depth) + ",");
 				} catch (Error e) {
 					UnhandledException(e);
 				} catch (Exception e) {
@@ -191,8 +189,7 @@ public abstract class Debuggable extends PromiscuousClassUtils {
 	}
 
 	public static String objKey(Object o) {
-		return "cls=" + toInfoStringC(o.getClass()) + ",inst="
-				+ java.lang.System.identityHashCode(o);
+		return "cls=" + toInfoStringC(o.getClass()) + ",inst=" + java.lang.System.identityHashCode(o);
 	}
 
 	private static String toInfoStringC(Class c) {
@@ -229,5 +226,12 @@ public abstract class Debuggable extends PromiscuousClassUtils {
 			throw ((Error) e);
 		}
 		return new RuntimeException(e.getMessage(), e);
+	}
+
+	public static <T> T notImplemented(Object... params) {
+		String msg = "notImplemented: " + toInfoStringA(params, ",", PRINT_DEPTH);
+		if (true)
+			throw new AbstractMethodError(msg);
+		return (T) null;
 	}
 }

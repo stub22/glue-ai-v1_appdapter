@@ -10,12 +10,10 @@ import java.awt.event.FocusListener;
 import java.beans.BeanInfo;
 import java.beans.EventSetDescriptor;
 import java.beans.IntrospectionException;
-import java.beans.Introspector;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyDescriptor;
 import java.beans.PropertyEditor;
-import java.beans.PropertyEditorManager;
 import java.beans.PropertyEditorSupport;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -29,15 +27,12 @@ import org.appdapter.gui.pojo.GetSetObject;
 import org.appdapter.gui.pojo.POJOApp;
 import org.appdapter.gui.pojo.ScreenBoxedPOJORefPanel;
 import org.appdapter.gui.pojo.Utility;
-import org.appdapter.gui.swing.impl.JJPanel;
 import org.appdapter.gui.swing.impl.JVPanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PropertyValueControl extends JVPanel implements
-		PropertyChangeListener, GetSetObject {
-	static Logger theLogger = LoggerFactory
-			.getLogger(PropertyValueControl.class);
+public class PropertyValueControl extends JVPanel implements PropertyChangeListener, GetSetObject, ValueEditor {
+	static Logger theLogger = LoggerFactory.getLogger(PropertyValueControl.class);
 
 	POJOApp context = Utility.getCurrentContext();
 
@@ -57,15 +52,13 @@ public class PropertyValueControl extends JVPanel implements
 		this((Object) null, editable);
 	}
 
-	public PropertyValueControl(POJOApp context,
-			Object source, PropertyDescriptor property) {
+	public PropertyValueControl(POJOApp context, Object source, PropertyDescriptor property) {
 		if (context != null)
 			this.context = context;
 		bind(source, property);
 	}
 
-	public PropertyValueControl(POJOApp context,
-			Object source, String propertyName) throws IntrospectionException {
+	public PropertyValueControl(POJOApp context, Object source, String propertyName) throws IntrospectionException {
 		this(context, source, getPropertyDescriptor(source, propertyName));
 	}
 
@@ -73,8 +66,7 @@ public class PropertyValueControl extends JVPanel implements
 		this(null, source, property);
 	}
 
-	public PropertyValueControl(Object source, String propertyName)
-			throws IntrospectionException {
+	public PropertyValueControl(Object source, String propertyName) throws IntrospectionException {
 		this(source, getPropertyDescriptor(source, propertyName));
 	}
 
@@ -87,8 +79,7 @@ public class PropertyValueControl extends JVPanel implements
 	 * initialized to a default value, for non-primitive this is null and for
 	 * primitives it is 0, false, or whatever.
 	 */
-	public PropertyValueControl(POJOApp context,
-			Class type, boolean editable) {
+	public PropertyValueControl(POJOApp context, Class type, boolean editable) {
 		this.context = context;
 		this.type = type;
 		this.editable = editable;
@@ -146,9 +137,8 @@ public class PropertyValueControl extends JVPanel implements
 		}
 	}
 
-	private static PropertyDescriptor getPropertyDescriptor(Object object,
-			String propName) throws IntrospectionException {
-		BeanInfo info = Introspector.getBeanInfo(object.getClass());
+	private static PropertyDescriptor getPropertyDescriptor(Object object, String propName) throws IntrospectionException {
+		BeanInfo info = Utility.getBeanInfo(object.getClass());
 		PropertyDescriptor[] array = info.getPropertyDescriptors();
 		int len = array.length;
 		for (int i = 0; i < len; ++i) {
@@ -171,8 +161,7 @@ public class PropertyValueControl extends JVPanel implements
 					return;
 				}
 				if (readMethod == null) {
-					throw new Exception("readMethod = null for object " + obj
-							+ " and property '" + property.getName() + "'!!!");
+					throw new Exception("readMethod = null for object " + obj + " and property '" + property.getName() + "'!!!");
 				}
 				Object boundValue = readMethod.invoke(obj, new Object[0]);
 				setValue(boundValue);
@@ -198,8 +187,7 @@ public class PropertyValueControl extends JVPanel implements
 			theLogger.error("An error occurred", realCause);
 
 		} else {
-			theLogger
-					.warn("PropertyValueControl warning: ValueView.readBoundValue should only be called if value is bound!");
+			theLogger.warn("PropertyValueControl warning: ValueView.readBoundValue should only be called if value is bound!");
 		}
 
 	}
@@ -222,8 +210,7 @@ public class PropertyValueControl extends JVPanel implements
 				Object obj = source;
 				property.getWriteMethod().invoke(obj, new Object[] { value });
 			} else {
-				theLogger
-						.warn("PropertyValueControl warning: ValueView.writeBoundValue should only be called if value is bound!");
+				theLogger.warn("PropertyValueControl warning: ValueView.writeBoundValue should only be called if value is bound!");
 			}
 		}
 	}
@@ -297,8 +284,7 @@ public class PropertyValueControl extends JVPanel implements
 		setValue(defaultValue);
 	}
 
-	@Override
-	public void setObject(Object newValue) throws InvocationTargetException {
+	@Override public void setObject(Object newValue) throws InvocationTargetException {
 		try {
 			setValue(newValue);
 		} catch (Exception e) {
@@ -389,8 +375,7 @@ public class PropertyValueControl extends JVPanel implements
 			currentEditor.addPropertyChangeListener(this);
 	}
 
-	@Override
-	public void propertyChange(PropertyChangeEvent evt) {
+	@Override public void propertyChange(PropertyChangeEvent evt) {
 		if (isBound() && evt.getSource() == source) {
 			// the source object's property changed...
 			readBoundValue();
@@ -442,8 +427,17 @@ public class PropertyValueControl extends JVPanel implements
 		}
 	}
 
+	/**
+	 * Locate a value editor for a given target type.
+	 *
+	 * @param type  The Class object for the type to be edited
+	 * @return An editor object for the given target class. 
+	 * The result is null if no suitable editor can be found.
+	 */
+
 	private PropertyEditor getEditor(Class type, boolean editable) {
-		PropertyEditor editor = PropertyEditorManager.findEditor(type);
+		PropertyEditor editor = Utility.findEditor(type);
+
 		if (editor == null) {
 			return new BeanReferenceEditor(type, editable);
 		} else {
@@ -481,10 +475,7 @@ public class PropertyValueControl extends JVPanel implements
 	 */
 	private boolean isTypeMutable() {
 		Class type = getCurrentType();
-		return !(String.class.isAssignableFrom(type)
-				|| Number.class.isAssignableFrom(type)
-				|| Boolean.class.isAssignableFrom(type)
-				|| Color.class.isAssignableFrom(type) || type.isPrimitive());
+		return !(String.class.isAssignableFrom(type) || Number.class.isAssignableFrom(type) || Boolean.class.isAssignableFrom(type) || Color.class.isAssignableFrom(type) || type.isPrimitive());
 	}
 
 	private static Object getDefaultValue(Class type) {
@@ -508,17 +499,13 @@ public class PropertyValueControl extends JVPanel implements
 			} else if (type == Byte.TYPE) {
 				return new Byte((byte) 0);
 			} else {
-				theLogger
-						.error("Strange, I don't recognize the primitive type "
-								+ type
-								+ ", so I can't determine the default value. I will use null.");
+				theLogger.error("Strange, I don't recognize the primitive type " + type + ", so I can't determine the default value. I will use null.");
 				return null;
 			}
 		}
 	}
 
-	class BeanReferenceEditor extends PropertyEditorSupport implements
-			PropertyChangeListener {
+	public class BeanReferenceEditor extends PropertyEditorSupport implements PropertyChangeListener {
 		boolean editable;
 		Class type = null;
 		ObjectValuesChoicePanel choice = null;
@@ -536,8 +523,7 @@ public class PropertyValueControl extends JVPanel implements
 			return this.getValue();
 		}
 
-		@Override
-		public void propertyChange(PropertyChangeEvent evt) {
+		@Override public void propertyChange(PropertyChangeEvent evt) {
 			Object object = evt.getNewValue();
 			// BeanWrapper object = (BeanWrapper) val;
 			try {
@@ -550,8 +536,7 @@ public class PropertyValueControl extends JVPanel implements
 			}
 		}
 
-		@Override
-		public void setValue(Object newValue) {
+		@Override public void setValue(Object newValue) {
 			Object oldValue = super.getValue();
 			if (!Utility.isEqual(oldValue, newValue)) {
 				super.setValue(newValue);
@@ -587,12 +572,10 @@ public class PropertyValueControl extends JVPanel implements
 			}
 		}
 
-		@Override
-		public Component getCustomEditor() {
+		@Override public Component getCustomEditor() {
 			if (editable) {
 				if (choice == null) {
-					choice = new ObjectValuesChoicePanel(context, type,
-							getObject());
+					choice = new ObjectValuesChoicePanel(context, type, getObject());
 					choice.addPropertyChangeListener(this);
 				}
 				return choice;
@@ -606,8 +589,7 @@ public class PropertyValueControl extends JVPanel implements
 			}
 		}
 
-		@Override
-		public boolean supportsCustomEditor() {
+		@Override public boolean supportsCustomEditor() {
 			return true;
 		}
 	}
@@ -635,6 +617,9 @@ public class PropertyValueControl extends JVPanel implements
 
 		String getEditorAsText() {
 			try {
+				Object isNull = editor.getValue();
+				if (isNull == null)
+					return null;
 				return editor.getAsText();
 			} catch (Exception e) {
 				//e.printStackTrace();
@@ -651,8 +636,7 @@ public class PropertyValueControl extends JVPanel implements
 		}
 	}
 
-	class TextBasedInputComponent extends JTextField implements
-			PropertyChangeListener, ActionListener, FocusListener {
+	class TextBasedInputComponent extends JTextField implements PropertyChangeListener, ActionListener, FocusListener, InputComponent {
 		PropertyEditor editor;
 
 		public TextBasedInputComponent(PropertyEditor editor) {
@@ -662,22 +646,18 @@ public class PropertyValueControl extends JVPanel implements
 			addFocusListener(this);
 		}
 
-		@Override
-		public void propertyChange(PropertyChangeEvent evt) {
+		@Override public void propertyChange(PropertyChangeEvent evt) {
 			readValue();
 		}
 
-		@Override
-		public void actionPerformed(ActionEvent evt) {
+		@Override public void actionPerformed(ActionEvent evt) {
 			writeValue();
 		}
 
-		@Override
-		public void focusGained(FocusEvent e) {
+		@Override public void focusGained(FocusEvent e) {
 		}
 
-		@Override
-		public void focusLost(FocusEvent e) {
+		@Override public void focusLost(FocusEvent e) {
 			writeValue();
 		}
 
@@ -703,8 +683,7 @@ public class PropertyValueControl extends JVPanel implements
 	/**
 	 * Displays a list of fixed values to choose from.
 	 */
-	class ComboBoxInputComponent extends JComboBox implements
-			PropertyChangeListener, ActionListener {
+	class ComboBoxInputComponent extends JComboBox implements PropertyChangeListener, ActionListener, InputComponent {
 		PropertyEditor editor;
 
 		public ComboBoxInputComponent(PropertyEditor editor) {
@@ -715,13 +694,11 @@ public class PropertyValueControl extends JVPanel implements
 			setMaximumRowCount(10);
 		}
 
-		@Override
-		public void propertyChange(PropertyChangeEvent evt) {
+		@Override public void propertyChange(PropertyChangeEvent evt) {
 			readValue();
 		}
 
-		@Override
-		public void actionPerformed(ActionEvent evt) {
+		@Override public void actionPerformed(ActionEvent evt) {
 			writeValue();
 		}
 
@@ -731,9 +708,7 @@ public class PropertyValueControl extends JVPanel implements
 				try {
 					editor.setAsText(selected.toString());
 				} catch (Exception err) {
-					theLogger.error(
-							"An error occurred while setting value of property '"
-									+ property + "'", err);
+					theLogger.error("An error occurred while setting value of property '" + property + "'", err);
 				}
 				readValue();
 			}

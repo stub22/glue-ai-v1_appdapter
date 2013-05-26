@@ -6,10 +6,10 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 
-import org.appdapter.api.trigger.BoxImpl;
+import org.appdapter.api.trigger.Box;
 import org.appdapter.gui.box.ScreenBoxImpl;
 
-public interface POJOCollectionWithSwizzler extends POJOCollection {
+public interface NamedObjectCollection extends POJOCollection {
 
 	/**
 	 * Creates a new object of the given class and adds to this collection. The
@@ -22,16 +22,23 @@ public interface POJOCollectionWithSwizzler extends POJOCollection {
 	 * @throws IllegalAccessException
 	 *             if the given class or initializer is not accessible.
 	 * 
-	 * @returns the newly created ScreenBoxImpl
+	 * @returns the newly created Box
 	 */
 	public abstract Object createAndAddPOJO(Class cl) throws InstantiationException, IllegalAccessException;
 
 	/**
-	 * Returns an iterator over all the object swizzlers. NOTE - this could be a
+	 * Returns an iterator over all the object boxs. NOTE - this could be a
 	 * bit slow! Avoid whenever possible. The code can be optimized for this,
 	 * but it isn't right now.
 	 */
-	public abstract Iterable<POJOBox> getSwizzlers();
+	public abstract Iterable<Box> getBoxes();
+
+	/**
+	 * Returns an iterator over all the object screen boxes. NOTE - this could be a
+	 * bit slow! Avoid whenever possible. The code can be optimized for this,
+	 * but it isn't right now.
+	 */
+	public abstract Iterable<POJOBox> getScreenBoxes();
 
 	/**
 	 * Returns the current number of objects in the collection
@@ -39,21 +46,21 @@ public interface POJOCollectionWithSwizzler extends POJOCollection {
 	//public abstract int getPOJOCount();
 
 	/**
-	 * Checks if this collection contains the given object swizzler
+	 * Checks if this collection contains the given object box
 	 */
-	public abstract boolean containsSwizzler(ScreenBoxImpl swizzler);
+	public abstract boolean containsBox(Box box);
 
 	/**
-	 * Returns the swizzler with the given name, or null if none.
+	 * Returns the box with the given name, or null if none.
 	 */
-	public abstract BoxImpl findBoxByName(String name);
+	public abstract Box findBoxByName(String name);
 
 	/**
-	 * Returns the swizzler corresponding to the given object, i.e the
-	 * ScreenBoxImpl who's object corresponds to the given one. Returns null if
+	 * Returns the box corresponding to the given object, i.e the
+	 * Box who's object corresponds to the given one. Returns null if
 	 * the ObjectNavigator does not contain the given object.
 	 */
-	public abstract ScreenBoxImpl findOrCreateBox(Object object);
+	public abstract POJOBox findOrCreateBox(Object object);
 
 	/**
 	 * Returns the currently selected object, or null if none.
@@ -113,11 +120,9 @@ public interface POJOCollectionWithSwizzler extends POJOCollection {
 
 	public abstract Object getSelectedBean();
 
-	POJOBox findSwizzler(String name);
+	Box findBox(String name);
 
-	POJOBox getSwizzler(Object object);
-
-	boolean containsSwizzler(POJOBox swizzler);
+	Box getBox(Object object);
 
 	public abstract POJOApp getPOJOApp();
 

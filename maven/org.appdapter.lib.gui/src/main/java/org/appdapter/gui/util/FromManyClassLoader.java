@@ -10,12 +10,10 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 
-
 /**
  * A class loader to allow for loading of other jars that are added as a URL.
  */
-public final class FromManyClassLoader extends IsolatingClassLoaderBase
-		implements HRKRefinement.DontAdd {
+public final class FromManyClassLoader extends IsolatingClassLoaderBase implements HRKRefinement.DontAdd {
 	/** Dynamically added ClassLoaders. */
 	private final Collection<ClassLoader> classLoadersToSearch;
 
@@ -25,8 +23,7 @@ public final class FromManyClassLoader extends IsolatingClassLoaderBase
 	 * @param parent
 	 *            the parent class loader.
 	 */
-	public FromManyClassLoader(final Collection<ClassLoader> list,
-			ClassLoader parent) {
+	public FromManyClassLoader(final Collection<ClassLoader> list, ClassLoader parent) {
 		super(new URL[0], parent);
 		classLoadersToSearch = list;
 	}
@@ -34,8 +31,7 @@ public final class FromManyClassLoader extends IsolatingClassLoaderBase
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public void addURL(final URL url) {
+	@Override public void addURL(final URL url) {
 		super.addURL_super(url);
 	}
 
@@ -48,46 +44,55 @@ public final class FromManyClassLoader extends IsolatingClassLoaderBase
 		}
 	}
 
-	@Override
-	public Class<?> findClass(String name) throws ClassNotFoundException {
+	@Override public Class<?> findClass(String name) throws ClassNotFoundException {
+		Throwable cnf;
 		for (ClassLoader cl : getClassLoadersToSearch()) {
-			Class<?> result = PromiscuousClassUtils
-					.callProtectedMethodNullOnUncheck(cl, "findClass", name);
-			if (isSomething(result))
-				return rememberClass(result);
+			try {
+				if (cl == getParent()) {
+					continue;
+				}
+				Class<?> result = PromiscuousClassUtils.callProtectedMethodNullOnUncheck(cl, "findClass", name);
+				if (isSomething(result))
+					return rememberClass(name, result);
+			} catch (Throwable e) {
+				e.printStackTrace();
+				continue;
+			}
 		}
-		return rememberClass(super.findClass(name));
+		return rememberClass(name, super.findClass(name));
 	}
 
 	static Class[] CLASS_STRING_1 = new Class[] { String.class };
 
-	@Override
-	public URL findResource(String name) {
+	@Override public URL findResource(String name) {
 		for (ClassLoader cl : getClassLoadersToSearch()) {
-			URL result = PromiscuousClassUtils
-					.callProtectedMethodNullOnUncheck(cl, "findResource", name);
-			if (isSomething(result))
-				return result;
+			if (cl == getParent()) {
+				continue;
+			}
+			try {
+				URL result = PromiscuousClassUtils.callProtectedMethodNullOnUncheck(cl, "findResource", name);
+				if (isSomething(result))
+					return result;
+			} catch (Throwable e) {
+				e.printStackTrace();
+				continue;
+			}
 		}
 		return super.findResource(name);
 	}
 
 	private Class<?> findLoadedClassFromOne(String name) {
 		for (ClassLoader cl : getClassLoadersToSearch()) {
-			Class<?> result = PromiscuousClassUtils
-					.callProtectedMethodNullOnUncheck(cl, "findLoadedClass",
-							name);
+			Class<?> result = PromiscuousClassUtils.callProtectedMethodNullOnUncheck(cl, "findLoadedClass", name);
 			if (isSomething(result))
-				return rememberClass(result);
+				return rememberClass(name, result);
 		}
-		return rememberClass(super.findLoadedClass(name));
+		return rememberClass(name, super.findLoadedClass(name));
 	}
 
-	@Override
-	public Enumeration<URL> findResources(String name) throws IOException {
+	@Override public Enumeration<URL> findResources(String name) throws IOException {
 		for (ClassLoader cl : getClassLoadersToSearch()) {
-			Enumeration<URL> result = PromiscuousClassUtils
-					.callProtectedMethodNullOnUncheck(cl, "findResources", name);
+			Enumeration<URL> result = PromiscuousClassUtils.callProtectedMethodNullOnUncheck(cl, "findResources", name);
 			if (isSomething(result))
 				return result;
 		}
@@ -97,23 +102,21 @@ public final class FromManyClassLoader extends IsolatingClassLoaderBase
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public Class<?> loadClass(final String name) throws ClassNotFoundException {
+	@Override public Class<?> loadClass(final String name) throws ClassNotFoundException {
 		ClassNotFoundException orig = null;
 		try {
-			return rememberClass(loadClassUseSystem(name, true));
+			return rememberClass(name, loadClassUseSystem(name, true));
 		} catch (ClassNotFoundException e) {
 			orig = e;
 		}
 		try {
-			return rememberClass(loadClassUseSystem(name, false));
+			return rememberClass(name, loadClassUseSystem(name, false));
 		} catch (ClassNotFoundException e) {
 			throw orig;
 		}
 	}
 
-	public Class<?> loadClassUseSystem(final String name, boolean useSystem)
-			throws ClassNotFoundException {
+	public Class<?> loadClassUseSystem(final String name, boolean useSystem) throws ClassNotFoundException {
 		Class<?> loadedClass = findLoadedClassFromOne(name);
 		if (loadedClass == null) {
 			try {
@@ -128,8 +131,7 @@ public final class FromManyClassLoader extends IsolatingClassLoaderBase
 			}
 			if (loadedClass == null) {
 				if (useSystem || name.startsWith("java.")) {
-					final ClassLoader systemLoader = ClassLoader
-							.getSystemClassLoader();
+					final ClassLoader systemLoader = ClassLoader.getSystemClassLoader();
 					loadedClass = systemLoader.loadClass(name);
 				} else {
 					loadedClass = super.loadClass(name);
@@ -142,8 +144,7 @@ public final class FromManyClassLoader extends IsolatingClassLoaderBase
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public boolean addPaths(List<Object> strings, boolean includeParent) {
+	@Override public boolean addPaths(List<Object> strings, boolean includeParent) {
 		boolean changed = false;
 		for (ClassLoader url : getClassLoadersToSearch()) {
 			if (pathsOf(strings, url, includeParent))

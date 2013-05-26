@@ -43,7 +43,12 @@ import org.slf4j.LoggerFactory;
  * 
  * 
  */
-public class ScreenBoxedPOJORefPanel<BoxType extends Box> extends ScreenBoxedPOJOPanel<Box> implements PropertyChangeListener, MouseListener, ActionListener, DragGestureListener, Transferable, DragSourceListener {
+public class ScreenBoxedPOJORefPanel<BoxType extends Box>
+
+extends AbstractScreenBoxedPOJOPanel<Box>
+
+implements PropertyChangeListener, MouseListener, ActionListener, DragGestureListener, Transferable, DragSourceListener {
+
 	private final static Color selectedColor = Color.blue;
 	private final static Color normalColor = Color.black;
 	private static Logger theLogger = LoggerFactory.getLogger(ScreenBoxedPOJORefPanel.class);
@@ -55,9 +60,9 @@ public class ScreenBoxedPOJORefPanel<BoxType extends Box> extends ScreenBoxedPOJ
 
 	//Invisible panel in front that captures menu events and drag/drop events
 	JPanel frontGlass;
-	
+
 	@Override public void focusOnBox(Box b) {
-		
+
 	}
 
 	JLabel label;
@@ -78,7 +83,7 @@ public class ScreenBoxedPOJORefPanel<BoxType extends Box> extends ScreenBoxedPOJ
 	 * @param parent if a parent is provided, a "remove" button will be added allowing you to remove this object from the given collection
 	 */
 	public ScreenBoxedPOJORefPanel(POJOApp context, Object object, boolean showLabel, boolean showIcon, boolean showPropButton, Collection parent) {
-		super(object);
+		//super(object);
 		this.context = context;
 		this.showLabel = showLabel;
 		this.showIcon = showIcon;
@@ -93,6 +98,20 @@ public class ScreenBoxedPOJORefPanel<BoxType extends Box> extends ScreenBoxedPOJ
 		dragSource.createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_MOVE, this);
 	}
 
+	private Object pojObject;
+
+	@Override public Object getObject() {
+		return pojObject;
+	}
+
+	@Override public void setObject(Object newpojObject) {
+		Object oldpojObject = pojObject;
+		if (oldpojObject != newpojObject) {
+			pojObject = newpojObject;
+			objectChanged(oldpojObject, newpojObject);
+		}
+	}
+
 	public ScreenBoxedPOJORefPanel(POJOApp context, Object object, boolean showLabel, boolean showIcon, boolean showPropButton) {
 		this(context, object, showLabel, showIcon, showPropButton, null);
 	}
@@ -105,8 +124,7 @@ public class ScreenBoxedPOJORefPanel<BoxType extends Box> extends ScreenBoxedPOJ
 		this.removeListener = l;
 	}
 
-	@Override
-	public void propertyChange(PropertyChangeEvent evt) {
+	@Override public void propertyChange(PropertyChangeEvent evt) {
 		if (label != null) {
 			if (context == null) {
 				label.setText(getObject().toString());
@@ -127,8 +145,7 @@ public class ScreenBoxedPOJORefPanel<BoxType extends Box> extends ScreenBoxedPOJ
 		//}
 	}
 
-	@Override
-	public void mouseClicked(MouseEvent e) {
+	@Override public void mouseClicked(MouseEvent e) {
 		if (e.isPopupTrigger()) {
 			showMenu(e.getX() + 5, e.getY() + 5);
 		} else {
@@ -138,33 +155,28 @@ public class ScreenBoxedPOJORefPanel<BoxType extends Box> extends ScreenBoxedPOJ
 		}
 	}
 
-	@Override
-	public void mousePressed(MouseEvent e) {
+	@Override public void mousePressed(MouseEvent e) {
 		if (e.isPopupTrigger()) {
 			showMenu(e.getX() + 5, e.getY() + 5);
 		} else {
 		}
 	}
 
-	@Override
-	public void mouseReleased(MouseEvent e) {
+	@Override public void mouseReleased(MouseEvent e) {
 		if (e.isPopupTrigger()) {
 			showMenu(e.getX() + 5, e.getY() + 5);
 		}
 	}
 
-	@Override
-	public void mouseEntered(MouseEvent e) {
+	@Override public void mouseEntered(MouseEvent e) {
 		//label.setForeground(Color.blue);
 	}
 
-	@Override
-	public void mouseExited(MouseEvent e) {
+	@Override public void mouseExited(MouseEvent e) {
 		//label.setForeground(Color.black);
 	}
 
-	@Override
-	public void actionPerformed(ActionEvent evt) {
+	@Override public void actionPerformed(ActionEvent evt) {
 		if (evt.getSource() == propButton) {
 			if (context != null) {
 				try {
@@ -183,14 +195,12 @@ public class ScreenBoxedPOJORefPanel<BoxType extends Box> extends ScreenBoxedPOJ
 
 	//==== Drag/drop methods ==========================
 
-	@Override
-	public void dragGestureRecognized(DragGestureEvent event) {
+	@Override public void dragGestureRecognized(DragGestureEvent event) {
 		theLogger.debug("source dragGestureRecognized");
 		dragSource.startDrag(event, DragSource.DefaultMoveDrop, this, this);
 	}
 
-	@Override
-	public DataFlavor[] getTransferDataFlavors() {
+	@Override public DataFlavor[] getTransferDataFlavors() {
 		try {
 			return new DataFlavor[] { new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType) };
 		} catch (ClassNotFoundException err) {
@@ -199,40 +209,32 @@ public class ScreenBoxedPOJORefPanel<BoxType extends Box> extends ScreenBoxedPOJ
 		}
 	}
 
-	@Override
-	public boolean isDataFlavorSupported(DataFlavor flavor) {
+	@Override public boolean isDataFlavorSupported(DataFlavor flavor) {
 		return flavor.getMimeType().equals(DataFlavor.javaJVMLocalObjectMimeType);
 	}
 
-	@Override
-	public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException {
+	@Override public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException {
 		return getObject();
 	}
 
-	@Override
-	public void dragEnter(DragSourceDragEvent dsde) {
+	@Override public void dragEnter(DragSourceDragEvent dsde) {
 	}
 
-	@Override
-	public void dragOver(DragSourceDragEvent dsde) {
+	@Override public void dragOver(DragSourceDragEvent dsde) {
 	}
 
-	@Override
-	public void dropActionChanged(DragSourceDragEvent dsde) {
+	@Override public void dropActionChanged(DragSourceDragEvent dsde) {
 	}
 
-	@Override
-	public void dragExit(DragSourceEvent dse) {
+	@Override public void dragExit(DragSourceEvent dse) {
 	}
 
-	@Override
-	public void dragDropEnd(DragSourceDropEvent dsde) {
+	@Override public void dragDropEnd(DragSourceDropEvent dsde) {
 	}
 
 	//=================================================================
 
-	@Override
-	protected void objectChanged(Object oldBean, Object newBean) {
+	@Override protected void objectChanged(Object oldBean, Object newBean) {
 		removeAll();
 		initGUI();
 	}
@@ -246,7 +248,8 @@ public class ScreenBoxedPOJORefPanel<BoxType extends Box> extends ScreenBoxedPOJ
 		}
 	}
 
-	private void initGUI() {
+	public void initGUI() {
+
 		setLayout(new OverlayLayout(this));
 
 		JPanel panel = new JPanel();
@@ -306,13 +309,11 @@ public class ScreenBoxedPOJORefPanel<BoxType extends Box> extends ScreenBoxedPOJ
 			setToolTipText("Open a property window for this object");
 		}
 
-		@Override
-		public Dimension getPreferredSize() {
+		@Override public Dimension getPreferredSize() {
 			return new Dimension(16, 16);
 		}
 
-		@Override
-		public Dimension getMinimumSize() {
+		@Override public Dimension getMinimumSize() {
 			return getPreferredSize();
 		}
 	}
@@ -330,13 +331,11 @@ public class ScreenBoxedPOJORefPanel<BoxType extends Box> extends ScreenBoxedPOJ
 			setToolTipText("Removes this object from its parent collection");
 		}
 
-		@Override
-		public Dimension getPreferredSize() {
+		@Override public Dimension getPreferredSize() {
 			return new Dimension(16, 16);
 		}
 
-		@Override
-		public Dimension getMinimumSize() {
+		@Override public Dimension getMinimumSize() {
 			return getPreferredSize();
 		}
 	}

@@ -7,8 +7,8 @@ import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 
-import org.appdapter.gui.pojo.POJOCollectionListener;
 import org.appdapter.gui.pojo.POJOApp;
+import org.appdapter.gui.pojo.POJOCollectionListener;
 
 /**
  * The controller class for a object menu (JMenu or JPopupMenu), showing the list

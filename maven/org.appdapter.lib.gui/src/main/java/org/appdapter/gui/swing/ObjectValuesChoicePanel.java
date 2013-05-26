@@ -123,7 +123,7 @@ public class ObjectValuesChoicePanel extends JJPanel implements POJOCollectionLi
 			if (context == null)
 				values = new LinkedList();
 			else {
-				Collection col = context.getCollectionWithSwizzler().getPOJOCollectionOfType(type);
+				Collection col = context.getPOJOSession().getPOJOCollectionOfType(type);
 				values = new LinkedList(col);
 			}
 			values.add("<null>");
@@ -172,7 +172,7 @@ public class ObjectValuesChoicePanel extends JJPanel implements POJOCollectionLi
 			if (values == null)
 				values = new LinkedList();
 			else
-				values = new LinkedList(context.getCollectionWithSwizzler().getPOJOCollectionOfType(type));
+				values = new LinkedList(context.getPOJOSession().getPOJOCollectionOfType(type));
 			values.add("<null>");
 			setSelectedItem(selected);
 		}
