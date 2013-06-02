@@ -16,7 +16,11 @@
 
 package org.appdapter.gui.repo;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+
+import javax.swing.UIDefaults.LazyValue;
 
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.bind.rdf.jena.query.JenaArqQueryFuncs;
@@ -26,6 +30,9 @@ import org.appdapter.core.store.MutableRepoBox;
 import org.appdapter.core.store.Repo;
 import org.appdapter.core.store.Repo.GraphStat;
 import org.appdapter.gui.box.ScreenBoxImpl;
+import org.appdapter.gui.browse.DisplayContext;
+import org.appdapter.gui.pojo.Utility;
+import org.appdapter.gui.util.Debuggable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,9 +44,14 @@ import com.hp.hpl.jena.query.ResultSet;
  */
 public abstract class RepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<TT>>> extends ScreenBoxImpl<TT> implements MutableRepoBox<TT> {
 	static Logger theLogger = LoggerFactory.getLogger(RepoBoxImpl.class);
-	private Repo.Mutable myRepo;
+	private LazySlow<Repo.Mutable> myRepo;
 
-	@Override final public Object getObject() {
+	@Override public DisplayContext getDisplayContext() {
+		// TODO Auto-generated method stub
+		return super.getDisplayContext();
+	}
+
+	@Override final public Object getValue() {
 		return getRepo();
 	}
 
@@ -56,17 +68,30 @@ public abstract class RepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<TT>>>
 	}
 
 	public Repo.Mutable getMRepo() {
-		return myRepo;
+		if (myRepo == null) {
+			theLogger.warn("Returning null from " + this);
+		}
+		try {
+			return myRepo.get();
+		} catch (InterruptedException e) {
+			throw Utility.reThrowable(e);
+		} catch (ExecutionException e) {
+			throw Utility.reThrowable(e);
+		}
 	}
 
 	public void setRepo(Repo.Mutable repo) {
-		myRepo = repo;
+		myRepo.setReady(repo);
 	}
 
 	@Override public void mount(String configPath) {
+		final String m_configPath = configPath;
 		// This bonehead static method call does not allow us to construct a fancier subtype of BasicStoredMutableRepoImpl.
-		Repo.Mutable myRepo = BasicStoredMutableRepoImpl.openBasicRepoFromConfigPath(configPath, getClass().getClassLoader());
-		setRepo(myRepo);
+		myRepo = new LazySlow.GetSet<Repo.Mutable>() {
+			@Override protected Repo.Mutable doGet() {
+				return BasicStoredMutableRepoImpl.openBasicRepoFromConfigPath(m_configPath, getClass().getClassLoader());
+			}
+		};
 	}
 
 	@Override public void formatStoreIfNeeded() {

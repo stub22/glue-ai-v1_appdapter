@@ -17,7 +17,9 @@
 package org.appdapter.gui.demo;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.event.MouseAdapter;
+import java.beans.PropertyVetoException;
 
 import javax.swing.JFrame;
 import javax.swing.WindowConstants;
@@ -26,21 +28,28 @@ import javax.swing.tree.TreeModel;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContext;
-import org.appdapter.api.trigger.DisplayContextProvider;
 import org.appdapter.api.trigger.MutableBox;
-import org.appdapter.api.trigger.ScreenBoxTreeNode;
-import org.appdapter.demo.DemoNavigatorCtrl;
+import org.appdapter.demo.ObjectNavigatorGUI;
+import org.appdapter.gui.box.BoxPanelSwitchableView;
+import org.appdapter.gui.box.ScreenBoxImpl;
+import org.appdapter.gui.box.ScreenBoxTreeNode;
 import org.appdapter.gui.browse.BrowsePanel;
+import org.appdapter.gui.browse.DisplayContext;
+import org.appdapter.gui.browse.DisplayContextProvider;
+import org.appdapter.gui.browse.ScreenBoxTreeNodeImpl;
 import org.appdapter.gui.browse.TriggerMenuFactory;
+import org.appdapter.gui.pojo.DisplayType;
+import org.appdapter.gui.pojo.NamedObjectCollection;
+import org.appdapter.gui.pojo.Utility;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public class DemoNavigatorCtrlImpl implements DemoNavigatorCtrl {
+public class DemoNavigatorCtrlImpl extends DemoNavigatorCtrl implements ObjectNavigatorGUI {
 
 	private TreeModel myTM;
 	private BoxContext myBoxCtx;
-	private ScreenBoxTreeNode myRootBTN;
+	private ScreenBoxTreeNodeImpl myRootBTN;
 	private DisplayContextProvider myDCP;
 	private BrowsePanel myBP;
 	private JFrame myJFrame;
@@ -52,13 +61,13 @@ public class DemoNavigatorCtrlImpl implements DemoNavigatorCtrl {
 	public DemoNavigatorCtrlImpl(BoxContext bc, TreeModel tm, ScreenBoxTreeNode rootBTN, DisplayContextProvider dcp) {
 		myBoxCtx = bc;
 		myTM = tm;
-		myRootBTN = rootBTN;
+		myRootBTN = (ScreenBoxTreeNodeImpl) rootBTN;
 		myDCP = dcp;
 		setupBrowsePanel();
 	}
 
 	private void setupBrowsePanel() {
-		myBP = new BrowsePanel(myTM);
+		Utility.browserPanel = myBP = new BrowsePanel(myTM);
 		myRootBTN.setDisplayContext(myBP);
 		TriggerMenuFactory tmf = new TriggerMenuFactory(); // TODO: Needs type params
 		MouseAdapter menuMA = tmf.makePopupMouseAdapter();
@@ -66,6 +75,7 @@ public class DemoNavigatorCtrlImpl implements DemoNavigatorCtrl {
 	}
 
 	public void launchFrame(String title) {
+		myJFrame = Utility.getAppFrame();
 		if (myJFrame == null) {
 			myJFrame = new JFrame();
 			myJFrame.setTitle(title);
@@ -76,6 +86,7 @@ public class DemoNavigatorCtrlImpl implements DemoNavigatorCtrl {
 
 			myJFrame.setVisible(true);
 		} else {
+
 			throw new RuntimeException("Frame already launched!");
 		}
 	}
@@ -88,8 +99,45 @@ public class DemoNavigatorCtrlImpl implements DemoNavigatorCtrl {
 		}
 	}
 
+	public void showScreenBox(Object anyObject) {
+		Utility.mainDisplayContext.showScreenBox(anyObject);
+	}
+
 	public JFrame getFrame() {
 		return myJFrame;
+	}
+
+	@Override public DisplayContext findOrCreateDisplayContext(String title, Object object, DisplayType displayType) throws UnsatisfiedLinkError {
+		ScreenBoxImpl sbi;
+		try {
+			sbi = new ScreenBoxImpl(title, object);
+			return Utility.mainDisplayContext.findOrCreateDisplayContext(title, sbi, displayType);
+		} catch (PropertyVetoException e) {
+			e.printStackTrace();
+			return null;
+		}
+
+	}
+
+	@Override public Component getComponent() {
+		return myBP;
+	}
+
+	@Override public NamedObjectCollection getNamedObjectCollection() {
+		return myBP.getNamedObjectCollection();
+	}
+
+	@Override public void showMessage(String message) {
+		myBP.showMessage(message);
+	}
+
+	public BoxPanelSwitchableView getBoxPanelTabPane() {
+		return myBP.getBoxPanelTabPane();
+	}
+
+	@Override public void addObject(String title, Object child, DisplayType attachType, boolean showAsap) throws UnsatisfiedLinkError {
+		myBP.getBoxPanelTabPane().addObject(title, child, attachType, showAsap);
+
 	}
 
 }

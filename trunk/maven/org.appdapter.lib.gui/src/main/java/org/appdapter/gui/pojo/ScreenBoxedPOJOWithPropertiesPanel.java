@@ -9,6 +9,8 @@ import javax.swing.JLabel;
 import javax.swing.JTabbedPane;
 
 import org.appdapter.api.trigger.Box;
+import org.appdapter.gui.box.GetSetObject;
+import org.appdapter.gui.box.POJOApp;
 import org.appdapter.gui.swing.ErrorPanel;
 import org.appdapter.gui.swing.MethodsPanel;
 import org.appdapter.gui.swing.PropertiesPanel;
@@ -112,9 +114,10 @@ extends AbstractScreenBoxedPOJOPanel<BoxType> implements Customizer, GetSetObjec
 	 * Called whenever the pojo is switched. Caused the GUI to update to render
 	 * the new pojObject instead.
 	 */
-	@Override protected void objectChanged(Object oldValue, Object newValue) {
+	@Override public void objectValueChanged(Object oldValue, Object newValue) {
 		super.firePropertyChange("value", oldValue, newValue);
 		removeAll();
+		object = newValue;
 		initGUI();
 	}
 
@@ -124,7 +127,7 @@ extends AbstractScreenBoxedPOJOPanel<BoxType> implements Customizer, GetSetObjec
 		}
 		tabs = new JTabbedPane();
 
-		Object object = getObject();
+		Object object = getValue();
 
 		if (object != null) {
 
@@ -154,11 +157,12 @@ extends AbstractScreenBoxedPOJOPanel<BoxType> implements Customizer, GetSetObjec
 			setLayout(new BorderLayout());
 			add("Center", tabs);
 		} else {
-			add(new JLabel("ERROR object is null!? " + getObject()));
+			add(new JLabel("ERROR object is null!? " + getValue()));
 		}
 	}
 
 	@Override public void focusOnBox(Box b) {
+		setObject(b);
 		LoggerFactory.getLogger(getClass().getName()).info("Focusing on box: " + b);
 	}
 
@@ -168,17 +172,8 @@ extends AbstractScreenBoxedPOJOPanel<BoxType> implements Customizer, GetSetObjec
 	 * This can be 'this' object
 	 * 
 	 */
-	@Override public Object getObject() {
+	@Override public Object getValue() {
 		return object;
-	}
-
-	public void setObject(Object newpojObject) {
-		Object oldpojObject = getObject();
-		if (oldpojObject != newpojObject) {
-			objectChanged(oldpojObject, newpojObject);
-		}
-		object = newpojObject;
-		initGUI();
 	}
 
 }

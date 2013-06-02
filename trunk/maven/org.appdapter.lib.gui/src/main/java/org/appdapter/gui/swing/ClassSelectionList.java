@@ -3,6 +3,7 @@ package org.appdapter.gui.swing;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Insets;
@@ -10,6 +11,7 @@ import java.awt.Point;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
+import java.net.URL;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -192,13 +194,11 @@ public class ClassSelectionList extends JJPanelList {
 		// create new list control and override getToolTipText method to display
 		// tooltip containing info about class or interface
 		list = new JList(model) {
-			@Override
-			public String getToolTipText(java.awt.event.MouseEvent ev) {
+			@Override public String getToolTipText(java.awt.event.MouseEvent ev) {
 				if (ev == null)
 					return null;
 				// gets collection index from position of cursor on the screen
-				int index = list
-						.locationToIndex(new Point(ev.getX(), ev.getY()));
+				int index = list.locationToIndex(new Point(ev.getX(), ev.getY()));
 				if (index > -1)
 					return getClassDefString(index);
 				else
@@ -240,8 +240,9 @@ public class ClassSelectionList extends JJPanelList {
 		packageInfo.setText(" ");
 		try {
 			// set package info image
-			packageInfo.setIcon(new ImageIcon(getClass().getResource(
-					ICON_PACKAGE)));
+			URL url = getClass().getResource(ICON_PACKAGE);
+			if (url != null)
+				packageInfo.setIcon(new ImageIcon(url));
 		} catch (Throwable e) {
 			theLogger.warn("SET COMPONENTS EXCEPTION - set icon for package", e);
 		}
@@ -250,8 +251,7 @@ public class ClassSelectionList extends JJPanelList {
 		// set black color for infopackage label
 		packageInfo.setForeground(java.awt.Color.black);
 		// create border around control
-		setBorder(new javax.swing.border.TitledBorder(
-				new javax.swing.border.EtchedBorder()));
+		setBorder(new javax.swing.border.TitledBorder(new javax.swing.border.EtchedBorder()));
 	}
 
 	/**
@@ -260,8 +260,7 @@ public class ClassSelectionList extends JJPanelList {
 	 * @param l
 	 *            The listener to add.
 	 */
-	@Override
-	public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
+	@Override public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
 		propertySupport.addPropertyChangeListener(l);
 	}
 
@@ -271,8 +270,7 @@ public class ClassSelectionList extends JJPanelList {
 	 * @param l
 	 *            The listener to remove.
 	 */
-	@Override
-	public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
+	@Override public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
 		propertySupport.removePropertyChangeListener(l);
 	}
 
@@ -298,15 +296,12 @@ public class ClassSelectionList extends JJPanelList {
 			try {
 				packageInfo.setText(getPackageName(selectedClass));
 			} catch (Throwable e) {
-				theLogger.warn(
-						"==== SET SELECTED CLASS EXCEPTION - set package info text !",
-						e);
+				theLogger.warn("==== SET SELECTED CLASS EXCEPTION - set package info text !", e);
 				packageInfo.setText("");
 			}
 		}
 
-		propertySupport.firePropertyChange(PROP_SELECTED_CLASS,
-				oldSelectedClass, selectedClass);
+		propertySupport.firePropertyChange(PROP_SELECTED_CLASS, oldSelectedClass, selectedClass);
 	}
 
 	/**
@@ -333,9 +328,7 @@ public class ClassSelectionList extends JJPanelList {
 			Class superClass = _class.getSuperclass();
 			// if class extends Object, info about class specialization is not
 			// displayed on tooltip
-			if (superClass != null
-					&& !superClass.getName().equalsIgnoreCase(
-							"java.lang.Object"))
+			if (superClass != null && !superClass.getName().equalsIgnoreCase("java.lang.Object"))
 				result = result + " extends " + getClassName(superClass);
 			// display info about interfaces implemented by class
 			Class[] interfaces = _class.getInterfaces();
@@ -483,8 +476,7 @@ public class ClassSelectionList extends JJPanelList {
 			this.data = data;
 		}
 
-		@Override
-		public int compareTo(Object o) {
+		@Override public int compareTo(Object o) {
 			ListData listData = (ListData) o;
 			Class c = listData.getData();
 			String thisClass = Utility.getShortClassName(data);
@@ -516,8 +508,7 @@ public class ClassSelectionList extends JJPanelList {
 		 * 
 		 * @return string representation of class.
 		 */
-		@Override
-		public String toString() {
+		@Override public String toString() {
 			return getClassName(data);
 		}
 	}
@@ -557,9 +548,7 @@ public class ClassSelectionList extends JJPanelList {
 		 *            True if the specified cell has the focus.
 		 * @return label component configured to display cell for list
 		 */
-		@Override
-		public Component getListCellRendererComponent(JList list, Object value,
-				int index, boolean isSelected, boolean cellHasFocus) {
+		@Override public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 			try {
 				setComponentOrientation(list.getComponentOrientation());
 				setEnabled(list.isEnabled());
@@ -569,10 +558,8 @@ public class ClassSelectionList extends JJPanelList {
 				Icon icon = ld.getIcon();
 				if (icon != null)
 					setIcon(icon);
-				bColor = (isSelected ? list.getSelectionBackground() : list
-						.getBackground());
-				fColor = (isSelected ? list.getSelectionForeground() : list
-						.getForeground());
+				bColor = (isSelected ? list.getSelectionBackground() : list.getBackground());
+				fColor = (isSelected ? list.getSelectionForeground() : list.getForeground());
 				hasFocus = cellHasFocus;
 			} catch (Throwable e) {
 				theLogger.warn("getListCellRendererComponent Exception", e);
@@ -588,8 +575,7 @@ public class ClassSelectionList extends JJPanelList {
 		 * @param g
 		 *            the specified Graphics window
 		 */
-		@Override
-		public void paint(Graphics g) {
+		@Override public void paint(Graphics g) {
 			Icon icon = getIcon();
 
 			try {
@@ -601,18 +587,15 @@ public class ClassSelectionList extends JJPanelList {
 				int offset = 0;
 				if (icon != null && getText() != null) {
 					Insets ins = getInsets();
-					offset = ins.left + icon.getIconWidth() + getIconTextGap()
-							- 3;
+					offset = ins.left + icon.getIconWidth() + getIconTextGap() - 3;
 				}
 				g.fillRect(offset, 0, getWidth() - offset - 1, getHeight() - 1);
 				// if cell has focus draw rectangle over selection and correct
 				// text look like (adds font 3D effect)
 				if (hasFocus) {
-					g.draw3DRect(offset + 1, 1, getWidth() - offset - 2,
-							getHeight() - 2, false);
+					g.draw3DRect(offset + 1, 1, getWidth() - offset - 2, getHeight() - 2, false);
 					g.setColor(new Color(96, 96, 156));
-					g.drawRect(offset, 0, getWidth() - offset - 1,
-							getHeight() - 1);
+					g.drawRect(offset, 0, getWidth() - offset - 1, getHeight() - 1);
 					g.setColor(new Color(225, 225, 255));
 					g.drawString(getText(), offset + 4, getHeight() - 3);
 				}
@@ -637,8 +620,7 @@ public class ClassSelectionList extends JJPanelList {
 		 * @param e
 		 *            The event that characterizes the change.
 		 */
-		@Override
-		public void valueChanged(ListSelectionEvent e) {
+		@Override public void valueChanged(ListSelectionEvent e) {
 			ListSelectionModel lsm = (ListSelectionModel) e.getSource();
 
 			if (e.getValueIsAdjusting() == false) {
@@ -711,14 +693,11 @@ public class ClassSelectionList extends JJPanelList {
 					int mod = _class.getModifiers();
 					try {
 						if (Modifier.isInterface(mod))
-							values.add(new ListData(new ImageIcon(getClass()
-									.getResource(ICON_INTERFACE)), _class));
+							values.add(new ListData(new ImageIcon(getClass().getResource(ICON_INTERFACE)), _class));
 						else if (Modifier.isAbstract(mod))
-							values.add(new ListData(new ImageIcon(getClass()
-									.getResource(ICON_ABSTRACT_CLASS)), _class));
+							values.add(new ListData(new ImageIcon(getClass().getResource(ICON_ABSTRACT_CLASS)), _class));
 						else
-							values.add(new ListData(new ImageIcon(getClass()
-									.getResource(ICON_CLASS)), _class));
+							values.add(new ListData(new ImageIcon(getClass().getResource(ICON_CLASS)), _class));
 					} catch (NullPointerException npe) {
 						theLogger.warn("An error occurred", npe);
 						values.add(new ListData((ImageIcon) null, _class));
@@ -726,9 +705,7 @@ public class ClassSelectionList extends JJPanelList {
 				}
 				Collections.sort(values);
 			} catch (IOException err) {
-				new ErrorDialog(
-						"An error occurred while getting the list of classes",
-						err).show();
+				new ErrorDialog("An error occurred while getting the list of classes", err).show();
 				values = new LinkedList();
 			}
 			fireContentsChanged(this, 0, oldSize);
@@ -756,8 +733,7 @@ public class ClassSelectionList extends JJPanelList {
 		 *            an index into this list.
 		 * @see javax.swing.DefaultListModel#getElementAt(int )
 		 */
-		@Override
-		public Object getElementAt(int index) {
+		@Override public Object getElementAt(int index) {
 			return getValues().get(index);
 		}
 
@@ -767,8 +743,7 @@ public class ClassSelectionList extends JJPanelList {
 		 * @return the number of components in this list.
 		 * @see Vector#size()
 		 */
-		@Override
-		public int getSize() {
+		@Override public int getSize() {
 			return getValues().size();
 		}
 	}
@@ -777,10 +752,14 @@ public class ClassSelectionList extends JJPanelList {
 
 	public static void main(String[] args) {
 		try {
-			JFrame frame = new JFrame("Test");
+			JFrame frame = new JFrame("Test") {
+				public java.awt.Dimension getPreferredSize() {
+					return new Dimension(400, 400);
+				};
+			};
 			ClassSelectionList list = new ClassSelectionList();
-			list.setAncestor(Comparable.class);
-			// list.setPackageName("org.appdapter.gui");
+			list.setAncestor(Object.class);
+			list.setPackageName("org.appdapter.gui");
 			frame.getContentPane().add(list);
 			frame.pack();
 			frame.show();
@@ -788,5 +767,4 @@ public class ClassSelectionList extends JJPanelList {
 			err.printStackTrace();
 		}
 	}
-
 }

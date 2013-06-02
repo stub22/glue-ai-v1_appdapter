@@ -2,7 +2,7 @@ package org.appdapter.gui.swing;
 
 import javax.swing.JPopupMenu;
 
-import org.appdapter.gui.pojo.POJOApp;
+import org.appdapter.gui.box.POJOApp;
 import org.appdapter.gui.pojo.Utility;
 
 /**

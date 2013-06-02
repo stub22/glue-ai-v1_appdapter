@@ -16,11 +16,11 @@ implements ChangeListener {
 
 	@Override protected void initSubClassGUI() {
 		try {
-			contents = new CollectionContentsPanel((Collection) getObject());
+			contents = new CollectionContentsPanel((Collection) getValue());
 			tabs.insertTab("Contents", null, contents, null, 0);
 			tabs.addChangeListener(this);
 		} catch (Exception err) {
-			tabs.insertTab("Contents", null, new ErrorPanel("The contents of " + getObject() + " could not be shown", err), null, 0);
+			tabs.insertTab("Contents", null, new ErrorPanel("The contents of " + getValue() + " could not be shown", err), null, 0);
 		}
 	}
 

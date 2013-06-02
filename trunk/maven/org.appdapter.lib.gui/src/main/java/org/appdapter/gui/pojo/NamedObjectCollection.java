@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.appdapter.api.trigger.Box;
+import org.appdapter.gui.box.POJOApp;
 import org.appdapter.gui.box.ScreenBoxImpl;
 
 public interface NamedObjectCollection extends POJOCollection {
@@ -125,5 +126,7 @@ public interface NamedObjectCollection extends POJOCollection {
 	Box getBox(Object object);
 
 	public abstract POJOApp getPOJOApp();
+
+	POJOBox findOrCreatePOJO(String title, Object obj) throws PropertyVetoException;
 
 }

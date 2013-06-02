@@ -12,10 +12,13 @@ import java.lang.reflect.Array;
 import java.util.HashSet;
 import java.util.List;
 
+import org.appdapter.api.trigger.AnyOper.UIHidden;
 import org.appdapter.api.trigger.BoxImpl;
-import org.appdapter.api.trigger.ScreenBoxPanel;
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.core.name.Ident;
+import org.appdapter.gui.box.Convertable;
+import org.appdapter.gui.box.GetSetObject;
+import org.appdapter.gui.box.ScreenBoxPanel;
 import org.appdapter.gui.util.PromiscuousClassUtils;
 
 /**
@@ -27,12 +30,17 @@ import org.appdapter.gui.util.PromiscuousClassUtils;
  * 
  * 
  */
-abstract public class POJOBox<TrigType extends Trigger<? extends BoxImpl<TrigType>>> extends
+@UIHidden
+abstract public class POJOBox<TrigType extends Trigger<? extends POJOBox<TrigType>>> extends
 
 BoxImpl<TrigType> implements java.io.Serializable, GetSetObject, Convertable {
 	// ==== Transient instance variables =============
 	transient PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
 	transient VetoableChangeSupport vetoSupport = new VetoableChangeSupport(this);
+
+	public String registeredWithName;
+
+	public abstract org.appdapter.gui.pojo.DisplayType getDisplayType();
 
 	@Override public <T> T[] getObjects(Class<T> type) {
 		HashSet<Object> objs = new HashSet<Object>();
@@ -83,7 +91,11 @@ BoxImpl<TrigType> implements java.io.Serializable, GetSetObject, Convertable {
 	}
 
 	public String getDebugName() {
-		return getObject().toString();
+		try {
+			return getValue().toString();
+		} catch (Exception e) {
+			return super.toString();
+		}
 	}
 
 	/** 
@@ -91,10 +103,10 @@ BoxImpl<TrigType> implements java.io.Serializable, GetSetObject, Convertable {
 	 * @return
 	 */
 	public Object[] getObjects() {
-		Object o = getObject();
+		Object o = getValue();
 		if (o != null && o != this)
-			return new Object[] { o, this, getName(), getIdent() };
-		return new Object[] { this, getName(), getIdent() };
+			return new Object[] { o, this, getUniqueName(), getIdent() };
+		return new Object[] { this, getUniqueName(), getIdent() };
 	}
 
 	@Override public List<TrigType> getTriggers() {
@@ -105,7 +117,7 @@ BoxImpl<TrigType> implements java.io.Serializable, GetSetObject, Convertable {
 		return tgs;
 	}
 
-	protected String _name = null;
+	protected String _uname = null;
 
 	// ==== Constructors ==================================
 	/**
@@ -158,7 +170,7 @@ BoxImpl<TrigType> implements java.io.Serializable, GetSetObject, Convertable {
 	/**
 	 * Returns the object that this object wrapper represents
 	 */
-	abstract public Object getObject();
+	abstract public Object getValue();
 
 	/**
 	 * Returns the Class[]s that this object wrapper represents
@@ -168,21 +180,21 @@ BoxImpl<TrigType> implements java.io.Serializable, GetSetObject, Convertable {
 	/**
 	 * Returns the name of this object
 	 */
-	public String getName() {
-		if (_name == null) {
+	final public String getUniqueName() {
+		if (_uname == null) {
 			Ident ident = getIdent();
 			if (ident != null) {
-				_name = ident.getAbsUriString();
+				_uname = ident.getAbsUriString();
 			} else {
-				Object object = getObject();
+				Object object = getValue();
 				if (object != null) {
-					_name = Utility.generateUniqueName(object);
+					_uname = Utility.generateUniqueName(object);
 				} else {
-					_name = Utility.generateUniqueName(this);
+					_uname = Utility.generateUniqueName(this);
 				}
 			}
 		}
-		return _name;
+		return _uname;
 	}
 
 	/**
@@ -191,13 +203,13 @@ BoxImpl<TrigType> implements java.io.Serializable, GetSetObject, Convertable {
 	 * @throws PropertyVetoException
 	 *             if someone refused to allow the name to change
 	 */
-	public void setName(String newName) throws PropertyVetoException {
-		String name = getName();
+	public void setUniqueName(String newName) throws PropertyVetoException {
+		String name = getUniqueName();
 		if (!(newName.equals(name))) {
 			checkTransient();
 			String oldName = name;
 			vetoSupport.fireVetoableChange("name", oldName, newName);
-			this._name = newName;
+			this._uname = newName;
 			propSupport.firePropertyChange("name", oldName, newName);
 		}
 		String os = getShortLabel();
@@ -226,7 +238,7 @@ BoxImpl<TrigType> implements java.io.Serializable, GetSetObject, Convertable {
 	}
 
 	public Class<? extends Object> getPOJOClass() {
-		Object obj = getObject();
+		Object obj = getValue();
 		if (obj != null)
 			return obj.getClass();
 		return getClass();
@@ -263,15 +275,15 @@ BoxImpl<TrigType> implements java.io.Serializable, GetSetObject, Convertable {
 	}
 
 	public boolean isInstance(Class type) {
-		return type.isInstance(getObject());
+		return type.isInstance(getValue());
 	}
 
 	public boolean representsObject(Object test) {
-		return getObject().equals(test);
+		return getValue().equals(test);
 	}
 
 	public boolean isNamed(String test) {
-		String name = getName();
+		String name = getUniqueName();
 		return name.equals(test);
 	}
 
@@ -287,7 +299,7 @@ BoxImpl<TrigType> implements java.io.Serializable, GetSetObject, Convertable {
 	}
 
 	final public ScreenBoxPanel getPropertiesPanel() {
-		Object obj = getObject();
+		Object obj = getValue();
 		if (obj instanceof ScreenBoxPanel) {
 			return (ScreenBoxPanel) obj;
 		}

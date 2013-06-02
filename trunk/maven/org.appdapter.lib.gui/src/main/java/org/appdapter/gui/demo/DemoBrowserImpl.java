@@ -29,10 +29,7 @@ import javax.swing.tree.TreeModel;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContext;
-import org.appdapter.api.trigger.DisplayContextProvider;
 import org.appdapter.api.trigger.MutableBox;
-import org.appdapter.api.trigger.ScreenBoxPanel;
-import org.appdapter.api.trigger.ScreenBoxTreeNode;
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.api.trigger.TriggerImpl;
 import org.appdapter.core.name.FreeIdent;
@@ -40,12 +37,15 @@ import org.appdapter.core.store.MutableRepoBox;
 import org.appdapter.core.store.Repo;
 import org.appdapter.core.store.Repo.WithDirectory;
 import org.appdapter.core.store.RepoBox;
-import org.appdapter.demo.DemoBrowser;
-import org.appdapter.demo.DemoNavigatorCtrl;
+import org.appdapter.demo.DemoNavigatorCtrlFactory;
 import org.appdapter.demo.DemoServiceWrapFuncs;
 import org.appdapter.demo.ObjectNavigatorGUI;
-import org.appdapter.gui.box.ScreenBoxContextImpl;
 import org.appdapter.gui.box.ScreenBoxImpl;
+import org.appdapter.gui.box.ScreenBoxPanel;
+import org.appdapter.gui.box.ScreenBoxTreeNode;
+import org.appdapter.gui.browse.DisplayContextProvider;
+import org.appdapter.gui.browse.ScreenBoxContextImpl;
+import org.appdapter.gui.browse.ScreenBoxTreeNodeImpl;
 import org.appdapter.gui.demo.triggers.BridgeTriggers;
 import org.appdapter.gui.demo.triggers.DatabaseTriggers;
 import org.appdapter.gui.demo.triggers.RepoTriggers;
@@ -81,11 +81,35 @@ public class DemoBrowserImpl {
 		theLogger.info("[SLF4J] - DemoBrowser.pretendToBeAwesome()");
 	}
 
+	static public boolean defaultExampleCode = false;
+
+	// ==== Main method ==========================
 	public static void main(String[] args) {
 		testLoggingSetup();
 		theLogger.info("DemoBrowser.main()-START");
-		DemoNavigatorCtrl dnc = makeDemoNavigatorCtrl(args);
-		dnc.launchFrame("Appdapter Demo Browser");
+		DemoNavigatorCtrl dnc;
+		try {
+			//ObjectNavigator frame = new ObjectNavigator();
+			//Utility.setInstancesOfObjects(frame.getChildCollectionWithContext());
+			// frame.pack();
+			DemoNavigatorCtrlFactory crtlMaker = new DemoNavigatorCtrlFactory() {
+
+				@Override public DemoNavigatorCtrl initialize(String[] main) {
+					return makeDemoNavigatorCtrl(main, defaultExampleCode);
+				}
+
+			};
+			DemoBrowser.registerDemo(crtlMaker);
+			//frame.setSize(800, 600);
+			//org.appdapter.gui.pojo.Utility.centerWindow(frame);
+			dnc = DemoBrowser.makeDemoNavigatorCtrl(args);
+			dnc.launchFrame("This is ObjectNavigator");
+			//frame.show();
+			//frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+			theLogger.info("ObjectNavigator is now running!");
+		} catch (Exception err) {
+			theLogger.error("ObjectNavigator could not be started", err);
+		}
 		theLogger.info("DemoBrowser.main()-END");
 	}
 
@@ -96,7 +120,7 @@ public class DemoBrowserImpl {
 				getContentPane().setLayout(new BorderLayout());
 				getContentPane().add("Center", box);
 				box.add(new JLabel("Opening DemoNavigatorCtrl in a new window..."));
-				DemoNavigatorCtrl dnc = DemoBrowser.makeDemoNavigatorCtrl(new String[0]);
+				DemoNavigatorCtrl dnc = makeDemoNavigatorCtrl(new String[0], false);
 				dnc.launchFrame("Appdapter Demo Browser");
 				setVisible(false);
 				setSize(0, 0);
@@ -126,7 +150,7 @@ public class DemoBrowserImpl {
 		}
 	}
 
-	public static DemoNavigatorCtrlImpl makeDemoNavigatorCtrl(String[] args) {
+	public static DemoNavigatorCtrl makeDemoNavigatorCtrl(String[] args, boolean isExampleCode) {
 		RepoSubBoxFinder rsbf = new RepoSubBoxFinder() {
 			@Override public Box findGraphBox(RepoBox parentBox, String graphURI) {
 				theLogger.info("finding graph box for " + graphURI + " in " + parentBox);
@@ -140,24 +164,24 @@ public class DemoBrowserImpl {
 				return mb;
 			}
 		};
-		DemoNavigatorCtrlImpl dnc = makeDemoNavigatorCtrl(args, rsbf);
+		DemoNavigatorCtrlImpl dnc = makeDemoNavigatorCtrl(args, rsbf, isExampleCode);
 		return dnc;
 	}
 
-	public static DemoNavigatorCtrlImpl makeDemoNavigatorCtrl(String[] args, RepoSubBoxFinder rsbf) {
+	public static DemoNavigatorCtrlImpl makeDemoNavigatorCtrl(String[] args, RepoSubBoxFinder rsbf, boolean isExampleCode) {
 		theRSBF = rsbf;
 		// From this BoxImpl.class, is makeBCI is able to infer the full BT=BoxImpl<... tree?
-		return makeDemoNavigatorCtrl(args, ScreenBoxImpl.class, DemoRepoBoxImpl.class);
+		return makeDemoNavigatorCtrl(args, ScreenBoxImpl.class, DemoRepoBoxImpl.class, isExampleCode);
 	}
 
-	public static DemoNavigatorCtrlImpl makeDemoNavigatorCtrl(String[] args, Class<? extends ScreenBoxImpl> boxClass, Class<? extends RepoBoxImpl> repoBoxClass) {
+	public static DemoNavigatorCtrlImpl makeDemoNavigatorCtrl(String[] args, Class<? extends ScreenBoxImpl> boxClass, Class<? extends RepoBoxImpl> repoBoxClass, boolean isExampleCode) {
 		// From this BoxImpl.class, is makeBCI is able to infer the full BT=BoxImpl<... tree?
-		ScreenBoxContextImpl bctx = makeBCI(boxClass, repoBoxClass);
+		ScreenBoxContextImpl bctx = makeBCI(boxClass, repoBoxClass, isExampleCode);
 		TreeModel tm = bctx.getTreeModel();
-		ScreenBoxTreeNode rootBTN = (ScreenBoxTreeNode) tm.getRoot();
+		ScreenBoxTreeNodeImpl rootBTN = (ScreenBoxTreeNodeImpl) tm.getRoot();
 
 		DisplayContextProvider dcp = bctx;
-		DemoNavigatorCtrlImpl tn = new DemoNavigatorCtrlImpl(bctx, tm, rootBTN, dcp);
+		DemoNavigatorCtrlImpl tn = new DemoNavigatorCtrlImpl(bctx, tm, (ScreenBoxTreeNodeImpl) rootBTN, dcp);
 		return tn;
 	}
 
@@ -168,10 +192,10 @@ public class DemoBrowserImpl {
 	 * </code>
 	 */
 	public static <BTI extends TriggerImpl<BT>, BT extends ScreenBoxImpl<BTI>, RBTI extends TriggerImpl<RBT>, RBT extends RepoBoxImpl<RBTI>> ScreenBoxContextImpl makeBCI(Class<BT> boxClass,
-			Class<RBT> repoBoxClass) {
+			Class<RBT> repoBoxClass, boolean isExampleCode) {
 		TriggerImpl<BT> regTrigProto = makeTriggerPrototype(boxClass);
 		TriggerImpl<RBT> repoTrigProto = makeTriggerPrototype(repoBoxClass);
-		return makeBoxContextImpl(boxClass, repoBoxClass, regTrigProto, repoTrigProto, true);
+		return makeBoxContextImpl(boxClass, repoBoxClass, regTrigProto, repoTrigProto, isExampleCode);
 	}
 
 	@SuppressWarnings("unchecked") public static <BTS extends TriggerImpl<BT>, BT extends ScreenBoxImpl<BTS>, TBT extends TriggerImpl<BT>> TBT makeTriggerPrototype(Class<BT> boxClass) {
@@ -404,7 +428,7 @@ public class DemoBrowserImpl {
 		try {
 			ScreenBoxContextImpl bctx = new ScreenBoxContextImpl();
 
-			BT rootBox = (BT) DemoServiceWrapFuncs.makeTestBoxImpl((Class) regBoxClass, (TriggerImpl) regTrigProto, "rooty");
+			BT rootBox = (BT) DemoServiceWrapFuncs.makeTestBoxImpl((Class) regBoxClass, (TriggerImpl) regTrigProto, "All Objects");
 			bctx.contextualizeAndAttachRootBox(rootBox);
 
 			BootstrapTriggerFactory btf = new BootstrapTriggerFactory();
@@ -415,6 +439,8 @@ public class DemoBrowserImpl {
 			BT repoBox = (BT) DemoServiceWrapFuncs.makeTestChildBoxImpl(rootBox, (Class) regBoxClass, regTrigProtoE, "repo");
 			BT appBox = (BT) DemoServiceWrapFuncs.makeTestChildBoxImpl(rootBox, (Class) regBoxClass, regTrigProtoE, "app");
 			BT sysBox = (BT) DemoServiceWrapFuncs.makeTestChildBoxImpl(rootBox, (Class) regBoxClass, regTrigProtoE, "sys");
+
+			//if (!isExampleCode) 				return bctx;
 
 			RBT r1Box = (RBT) DemoServiceWrapFuncs.makeTestChildBoxImpl(repoBox, (Class) repoBoxClass, regTrigProtoE, "h2.td_001");
 

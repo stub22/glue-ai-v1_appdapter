@@ -20,7 +20,7 @@ object OkFine {
   def main(args: Array[String]) :Unit = {
 	  	println("OkFine "); //  + portfolioValue.toString());
 		println("Mapping stuff to other stuff, blending dynamic approximation and ironic detachment.");
-		LuckyTest.test();
+		//LuckyTest.test();
 		/* Our basis functions produce values using no side effects, and no system access.  We do not read or write
 		 * files or sockets or other goodies in any of our basis functions.  Nor do we create any random number
 		 * generators, although we may use such an RNG if passed in to us.  The objects queried by our basis

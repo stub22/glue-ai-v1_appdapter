@@ -212,9 +212,9 @@ public abstract class Debuggable extends PromiscuousClassUtils {
 		return Logger.getLogger(name.getSimpleName());
 	}
 
-	public static void UnhandledException(Throwable e1) {
-		e1.printStackTrace();
-		warn("e=" + e1.getMessage());
+	public static void UnhandledException(Throwable e) {
+		e.printStackTrace();
+		warn("e=" + e.getMessage());
 	}
 
 	public static RuntimeException asRuntimeException(Throwable e) {

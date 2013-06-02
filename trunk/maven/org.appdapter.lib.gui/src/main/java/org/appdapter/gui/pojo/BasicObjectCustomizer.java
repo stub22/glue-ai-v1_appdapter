@@ -1,6 +1,7 @@
 package org.appdapter.gui.pojo;
 
 import org.appdapter.api.trigger.Box;
+import org.appdapter.gui.box.POJOApp;
 
 public class BasicObjectCustomizer extends ScreenBoxedPOJOWithPropertiesPanel<Box> {
 	public BasicObjectCustomizer() {
@@ -13,8 +14,8 @@ public class BasicObjectCustomizer extends ScreenBoxedPOJOWithPropertiesPanel<Bo
 	protected void initSubClassGUI() {
 	}
 
-	@Override public Object getObject() {
-		Object o = super.getObject();
+	@Override public Object getValue() {
+		Object o = super.getValue();
 		if (o == this) {
 			throw new AbstractMethodError();
 		}

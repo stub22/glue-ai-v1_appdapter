@@ -10,7 +10,7 @@ public class UseEditor extends ScreenBoxedPOJOWithPropertiesPanel implements Cus
 	private Component custEditor;
 	private PropertyEditor ec;
 
-	@Override public void setObject(Object bean) {
+	@Override public void objectValueChanged(Object oval, Object bean) {
 		Class targetType = bean.getClass();
 		PropertyEditor ec = Utility.findEditor(targetType);
 		// TODO Auto-generated method stub

@@ -23,8 +23,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import org.appdapter.gui.pojo.GetSetObject;
-import org.appdapter.gui.pojo.POJOApp;
+import org.appdapter.gui.box.GetSetObject;
+import org.appdapter.gui.box.POJOApp;
 import org.appdapter.gui.pojo.ScreenBoxedPOJORefPanel;
 import org.appdapter.gui.pojo.Utility;
 import org.appdapter.gui.swing.impl.JVPanel;
@@ -227,10 +227,6 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 		return value;
 	}
 
-	public Object getObject() {
-		return value;
-	}
-
 	/**
 	 * Returns the type of this PropertyValueControl, if there is a fixed type.
 	 * For example if this is String then this PropertyValueControl can only be
@@ -287,8 +283,16 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 	@Override public void setObject(Object newValue) throws InvocationTargetException {
 		try {
 			setValue(newValue);
+		} catch (RuntimeException e) {
+			throw e;
+		} catch (Error e) {
+			throw e;
+		} catch (InvocationTargetException e) {
+			throw e;
 		} catch (Exception e) {
-			throw new InvocationTargetException(e);
+			throw new RuntimeException(e);
+		} catch (Throwable e) {
+			throw new RuntimeException(e);
 		}
 	}
 

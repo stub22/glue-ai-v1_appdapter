@@ -7,7 +7,7 @@ import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 
-import org.appdapter.gui.pojo.POJOApp;
+import org.appdapter.gui.box.POJOApp;
 import org.appdapter.gui.pojo.POJOCollectionListener;
 
 /**
@@ -41,7 +41,7 @@ class POJOMenuController implements POJOCollectionListener {
       if (context == null) {
         popup.setLabel("" + object);
       } else {
-        popup.setLabel(context.getPOJOName(object));
+        popup.setLabel(context.getBoxName(object));
       }
       initMenu();
     }
@@ -60,7 +60,7 @@ class POJOMenuController implements POJOCollectionListener {
       if (context == null) {
         menu.setText("" + object);
       } else {
-        menu.setText(context.getPOJOName(object));
+        menu.setText(context.getBoxName(object));
       }
       initMenu();
     }
@@ -76,7 +76,7 @@ class POJOMenuController implements POJOCollectionListener {
 
   private void initMenu() {
     if (context != null) {
-      Collection actions = context.getActions(object);
+      Collection actions = context.getCollectionUtilAppActions(object);
       Iterator it = actions.iterator();
       while(it.hasNext()) {
         Action action = (Action) it.next();

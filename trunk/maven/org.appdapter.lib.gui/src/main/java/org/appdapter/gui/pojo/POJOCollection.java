@@ -7,7 +7,7 @@ public interface POJOCollection {
 
 	public POJOCollection getCollection();
 
-	public NamedObjectCollection getPOJOSession();
+	public NamedObjectCollection getNamedObjectCollection();
 	
 	/**
 	 * Adds the given object to the ObjectNavigator, if it does not already
@@ -52,7 +52,7 @@ public interface POJOCollection {
 	/**
 	 * Returns the object with the given name, or null if none.
 	 */
-	public abstract Object findPOJO(String name);
+	public abstract Object findObjectByName(String name);
 
 	/**
 	 * Listeners will be notifed when the currently object selection is changed.
