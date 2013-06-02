@@ -22,14 +22,12 @@ import com.hp.hpl.jena.assembler.Mode;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.util.FileManager;
-import java.util.HashMap;
 
 import java.util.HashSet;
-import java.util.Map;
+import java.util.Iterator;
 import java.util.Set;
 
 import org.appdapter.bind.rdf.jena.model.JenaFileManagerUtils;
-import org.appdapter.core.component.ComponentCache;
 
 import org.appdapter.core.log.BasicDebugger;
 import org.slf4j.Logger;
@@ -42,44 +40,7 @@ import org.slf4j.LoggerFactory;
 public class AssemblerUtils {
 	static Logger theLogger = LoggerFactory.getLogger(AssemblerUtils.class);
 	static BasicDebugger theDbg = new BasicDebugger();
-    
-    private static AssemblerSession theDefaultSession = new AssemblerSession();
-    private static Map<AssemblerSession,Map<Class, ComponentCache>> theSessionComponentCacheMap = new HashMap<AssemblerSession, Map<Class, ComponentCache>>();
-    
-    /**
-     * Clears all of the objects of a given type from the object cache.
-     * 
-     * @param c The Type of cache that is too be cleared
-     * @param s The session that owns the caches
-     */
-    public static void clearCacheForAssemblerSubclassForSession(Class c, AssemblerSession s) {
-        Map<Class, ComponentCache> map = AssemblerUtils.getComponentCacheMap(s);
-        map.put(c, null);
-	}
-    
-    /**
-     * Clears all of the caches in a given session.
-     * 
-     * @param s The session that owns the caches
-     */
-	public static void clearAllSubclassCachesForSession(AssemblerSession s) { 
-        Map<Class, ComponentCache> map = AssemblerUtils.getComponentCacheMap(s);
-        map.clear();
-	}
-    
-    
-    public static AssemblerSession getDefaultSession(){
-        return theDefaultSession;
-    }
-    
-    public static Map<Class, ComponentCache> getComponentCacheMap(AssemblerSession session){
-        Map<Class, ComponentCache> map = theSessionComponentCacheMap.get(session);
-        if(map == null){
-            map = new HashMap<Class, ComponentCache>();
-            theSessionComponentCacheMap.put(session, map);
-        }
-        return map;
-    }
+
 
 	public static Set<Object>	buildAllRootsInModel(Assembler jenaAssembler, Model jenaModel, Mode jenaAssemblyMode) {
 		Set<Object> results = new HashSet<Object>();

@@ -24,7 +24,7 @@ import com.hp.hpl.jena.rdf.model.{Model, Statement, Resource, Property, Literal,
  * @author Stu B. <www.texpedient.com>
  */
 
-class InitialBindingImpl(val myModelClient : ModelClient) extends InitialBinding {
+class InitialBindingImpl(private val myModelClient : ModelClient) extends InitialBinding {
 	private val	mySolutionMap = new QuerySolutionMap();
 	
 	def getQSMap : QuerySolutionMap = mySolutionMap

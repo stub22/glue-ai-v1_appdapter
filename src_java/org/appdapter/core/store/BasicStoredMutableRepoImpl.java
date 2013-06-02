@@ -58,6 +58,7 @@ import org.appdapter.bind.rdf.jena.sdb.GraphUploadTask;
 
 import org.appdapter.core.name.Ident;
 
+import org.appdapter.demo.DemoResources;
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -66,7 +67,6 @@ import org.appdapter.core.name.Ident;
  *
  * http://jena.apache.org/documentation/javadoc/sdb/com/hp/hpl/jena/sdb/Store.html
  */
-
 public class BasicStoredMutableRepoImpl extends BasicRepoImpl implements Repo.Stored, Repo.Mutable {
 
 	private Store myStore;
@@ -212,6 +212,6 @@ public class BasicStoredMutableRepoImpl extends BasicRepoImpl implements Repo.St
 		}
 		return stats;
 	}
-
+	
 	
 }
