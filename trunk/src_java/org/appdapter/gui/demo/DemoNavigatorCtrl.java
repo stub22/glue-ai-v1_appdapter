@@ -36,6 +36,9 @@ import org.appdapter.gui.browse.TriggerMenuFactory;
  */
 public class DemoNavigatorCtrl {
 
+	public void addRepo(String s, Object o) {
+
+	}
 
 	private		TreeModel				myTM;
 	private		BoxContext				myBoxCtx;
