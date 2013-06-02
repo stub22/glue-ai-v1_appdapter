@@ -21,7 +21,7 @@ import org.appdapter.core.log.BasicDebugger
 import org.appdapter.core.name.Ident
 import org.appdapter.core.name.Ident
 import org.appdapter.core.store.{ RepoSpec, RepoOper, RepoClient, RepoSpecJava, Repo, InitialBinding }
-import org.appdapter.help.repo. { RepoClientImpl, RepoClientScala, InitialBindingImpl}
+//import org.appdapter.help.repo. { RepoClientImpl, RepoClientScala, InitialBindingImpl}
 import org.appdapter.help.repo.SolutionList
 
 /**
@@ -56,7 +56,7 @@ object DerivedGraphSpecReader extends BasicDebugger {
    * pplnGraphQN:  The QName of a graph = model = tab, as registered with dset and/or dirModel
    */
   def queryDerivedGraphSpecs(rc: RepoClient, pplnQueryQN: String, pplnGraphQN: String): Set[DerivedGraphSpec] = {
-    val solList: SolutionList = rc.queryIndirectForAllSolutionsJ(pplnQueryQN, pplnGraphQN).asInstanceOf[SolutionList];
+    val solList: SolutionList = rc.queryIndirectForAllSolutions(pplnQueryQN, pplnGraphQN).asInstanceOf[SolutionList];
 
     val resultMMap = new scala.collection.mutable.HashMap[Ident, DerivedGraphSpec]()
     val resultJMap = new java.util.HashMap[Ident, DerivedGraphSpec]();

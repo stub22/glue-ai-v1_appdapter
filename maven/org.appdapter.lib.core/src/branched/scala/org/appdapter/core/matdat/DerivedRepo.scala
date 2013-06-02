@@ -16,28 +16,16 @@
 
 package org.appdapter.core.matdat
 
-import com.hp.hpl.jena.query.DataSource
-import com.hp.hpl.jena.query.Dataset
-import com.hp.hpl.jena.query.QuerySolution
-import com.hp.hpl.jena.rdf.model.Model
-import com.hp.hpl.jena.rdf.model.ModelFactory
+import com.hp.hpl.jena.query.{QuerySolution, Dataset, DataSource}
+import com.hp.hpl.jena.rdf.model.{ModelFactory, Model}
+import java.util.{Set, List}
 import org.appdapter.core.log.BasicDebugger
-import org.appdapter.core.name.Ident
-import org.appdapter.core.store.{ Repo, SpecialRepoLoader }
-import com.hp.hpl.jena.query.Dataset
-import com.hp.hpl.jena.rdf.model.Model
-import com.hp.hpl.jena.sdb.Store
-import java.util.List
-import java.util.Set
-import org.appdapter.core.name.Ident
-import com.hp.hpl.jena.query.QuerySolution
-import org.appdapter.help.repo.InitialBindingImpl
-import org.appdapter.impl.store.DirectRepo
-import scala.collection.JavaConversions.asScalaSet
-import org.appdapter.impl.store.QueryHelper
+import org.appdapter.core.name.{Ident}
+import org.appdapter.core.store.{RepoOper,  Repo, SpecialRepoLoader}
 import org.appdapter.help.repo.RepoClientImpl
-import org.appdapter.core.store.{ RepoSpec, RepoOper, RepoClient, RepoSpecJava, Repo, InitialBinding }
-import org.appdapter.help.repo. { RepoClientImpl, RepoClientScala, InitialBindingImpl}
+import org.appdapter.impl.store.{QueryHelper, DirectRepo}
+import scala.collection.JavaConversions.asScalaSet
+//import org.appdapter.help.repo. { RepoClientImpl, RepoClientScala, InitialBindingImpl}
 
 /**
  * @author LogicMOO <www.logicmoo.org>
@@ -118,7 +106,7 @@ object DerivedRepoLoader {
 
       val dbgArray = Array[Object](modelRes, modelName);
       loadPipeline(modelName, repo, mainDset, myDirectoryModel, fileModelCLs);
-      repo.warn("DerivedModelsIntoMainDataset modelRes={}, modelName={}", dbgArray);
+      repo.getLogger().warn("DerivedModelsIntoMainDataset modelRes={}, modelName={}", dbgArray);
       //val msRset = QueryHelper.execModelQueryWithPrefixHelp(mainDset.getNamedModel(modelName), msqText2);
 
       // DerivedGraphSpecReader.queryDerivedGraphSpecs(getRepoClient,DerivedGraphSpecReader.PIPELINE_QUERY_QN,modelName)
