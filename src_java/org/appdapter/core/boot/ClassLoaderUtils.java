@@ -19,11 +19,13 @@ package org.appdapter.core.boot;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.Dictionary;
+import java.util.Hashtable;
 import java.util.List;
 
-import javax.swing.LookAndFeel;
-
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.InvalidSyntaxException;
+import org.osgi.framework.ServiceReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,7 +82,7 @@ public class ClassLoaderUtils {
 		return true;
 	}
 
-	/*
+	
 	public static void registerClassLoader(BundleContext context, ClassLoader loader, String resourceClassLoaderType){
 	    if(context == null || loader == null){
 	        return;
@@ -129,5 +131,5 @@ public class ClassLoaderUtils {
 	        return null;
 	    }
 	    return (ClassLoader)obj;
-	}*/
+	}
 }
