@@ -16,6 +16,7 @@
 
 package org.appdapter.api.trigger;
 
+import org.appdapter.api.trigger.Box;
 
 /**
  * @author Stu B. <www.texpedient.com>

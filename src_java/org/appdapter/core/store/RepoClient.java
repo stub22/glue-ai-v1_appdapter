@@ -13,13 +13,21 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.appdapter.core.store;
 
+package org.appdapter.core.store;
 
 /**
  * @author Stu B. <www.texpedient.com>
+ * 
+ * This class will eventually replace the org.appdapter.help.repo trait,
+ * currently being prototyped in Scala.
+ * 
+ * Really?  Why do we need to do that?
+ * 
+ * Because its a key interface that we want non-Scala folks to be able to read.
+ * Convincing?  Hmmm....
  */
-public interface RepoClient extends ModelClient {
 
-	abstract Object queryIndirectForAllSolutionsJ(String s, String s2);
+public class RepoClient {
+
 }

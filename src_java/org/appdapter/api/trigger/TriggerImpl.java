@@ -16,6 +16,8 @@
 
 package org.appdapter.api.trigger;
 
+import org.appdapter.api.trigger.MutableTrigger;
+import org.appdapter.api.trigger.Box;
 import org.appdapter.core.component.KnownComponentImpl;
 
 

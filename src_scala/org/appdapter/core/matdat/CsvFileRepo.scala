@@ -43,9 +43,6 @@ import com.hp.hpl.jena.shared.{ PrefixMapping }
 import com.hp.hpl.jena.rdf.listeners.{ ObjectListener };
 
 import org.appdapter.core.log.BasicDebugger;
-import org.appdapter.core.store.{ RepoSpec, RepoOper, RepoClient, RepoSpecJava, Repo, InitialBinding }
-import org.appdapter.help.repo. { RepoClientImpl, RepoClientScala, InitialBindingImpl}
-
 
 import org.appdapter.bind.rdf.jena.model.{ ModelStuff, JenaModelUtils, JenaFileManagerUtils };
 // import org.appdapter.bind.rdf.jena.query.{JenaArqQueryFuncs, JenaArqResultSetProcessor};
@@ -63,44 +60,22 @@ import org.appdapter.help.repo.InitialBindingImpl;
  *   (easier to Save a Google Doc to a Single CsvFiles Spreadsheet than several .csv files!)
  *   Uses Apache POI (@see http://poi.apache.org/)
  */
-/*
-abstract class CsvFilesSheetRepo_Unused(directoryModel: Model, fmcls: java.util.List[ClassLoader]) extends GoogSheetRepo_Unused(directoryModel, fmcls) {
 
-  //val fileModelCLs: java.util.List[ClassLoader] = fmcls;
+class CsvFilesSheetRepo(directoryModel: Model, fmcls: java.util.List[ClassLoader] = null) extends GoogSheetRepo(directoryModel) {
+  
+  val fileModelCLs: java.util.List[ClassLoader] = fmcls;
 
   override def loadSheetModelsIntoMainDataset() = {
     loadSheetModelsIntoMainDatasetCsvFiles(fileModelCLs);
     super.loadSheetModelsIntoMainDataset();
   }
 
-  def loadSheetModelsIntoMainDatasetCsvFiles(fileModelCLs: java.util.List[ClassLoader]) = {
-    val mainDset: DataSource = getMainQueryDataset().asInstanceOf[DataSource];
-    val dirModel = getDirectoryModel;
-    CsvFilesSheetRepoLoader.loadSheetModelsIntoTargetDataset(this, mainDset, dirModel, fileModelCLs);
-  }
-
-}*/
-
-/// this is a registerable loader
-class CsvFilesSheetRepoLoader {
-  def getContainerType(): String = {
-    return "ccrt:CsvFilesRepo";
-  }
-  def getSheetType(): String = {
-    return "ccrt:CsvFileSheet";
-  }
-  def loadModelsIntoTargetDataset(repo: SheetRepo, mainDset: DataSource, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
-    CsvFilesSheetRepoLoader.loadSheetModelsIntoTargetDataset(repo, mainDset, dirModel, fileModelCLs)
-  }
-}
-
-object CsvFilesSheetRepoLoader extends BasicDebugger {
-
-  def loadSheetModelsIntoTargetDataset(repo: SheetRepo, mainDset: DataSource, myDirectoryModel: Model, fileModelCLs: java.util.List[ClassLoader]) = {
-
-    val nsJavaMap: java.util.Map[String, String] = myDirectoryModel.getNsPrefixMap()
-
-    val msqText = """
+  	def loadSheetModelsIntoMainDatasetCsvFiles(clList : java.util.List[ClassLoader]) = {
+	    val mainDset: DataSource = getMainQueryDataset().asInstanceOf[DataSource];
+	
+	    val nsJavaMap: java.util.Map[String, String] = myDirectoryModel.getNsPrefixMap()
+	
+	    val msqText = """
 				select ?container ?key ?sheet ?name 
 					{
 						?container  a ccrt:CsvFilesRepo; ccrt:key ?key.
@@ -108,32 +83,36 @@ object CsvFilesSheetRepoLoader extends BasicDebugger {
 	      					ccrt:sourcePath ?name; ccrt:repo ?container.
 					}
 			"""
-
-    val msRset = QueryHelper.execModelQueryWithPrefixHelp(myDirectoryModel, msqText);
-    import scala.collection.JavaConversions._;
-    while (msRset.hasNext()) {
-      val qSoln: QuerySolution = msRset.next();
-
-      val containerRes: Resource = qSoln.getResource("container");
-      val sheetRes: Resource = qSoln.getResource("sheet");
-      val sheetPath_Lit: Literal = qSoln.getLiteral("name")
-      val sheetLocation_Lit: Literal = qSoln.getLiteral("key")
-      getLogger.debug("containerRes=" + containerRes + ", sheetRes=" + sheetRes + ", name=" + sheetPath_Lit + ", key=" + sheetLocation_Lit)
-
-      val sheetPath = sheetPath_Lit.getString();
-      val sheetLocation = sheetLocation_Lit.getString();
-      var sheetModel: Model = null;
-      sheetModel = readModelSheet(sheetLocation, sheetPath, nsJavaMap, fileModelCLs);
-      getLogger.debug("Read sheetModel: {}", sheetModel)
-      val graphURI = sheetRes.getURI();
-      mainDset.replaceNamedModel(graphURI, sheetModel)
+	
+	    val msRset = QueryHelper.execModelQueryWithPrefixHelp(myDirectoryModel, msqText);
+	    import scala.collection.JavaConversions._;
+	    while (msRset.hasNext()) {
+	      val qSoln: QuerySolution = msRset.next();
+	
+	      val containerRes: Resource = qSoln.getResource("container");
+	      val sheetRes: Resource = qSoln.getResource("sheet");
+	      val sheetPath_Lit: Literal = qSoln.getLiteral("name")
+	      val sheetLocation_Lit: Literal = qSoln.getLiteral("key")
+	      getLogger.debug("containerRes=" + containerRes + ", sheetRes=" + sheetRes + ", name=" + sheetPath_Lit + ", key=" + sheetLocation_Lit)
+	
+	      val sheetPath = sheetPath_Lit.getString();
+	      val sheetLocation = sheetLocation_Lit.getString();
+	      var sheetModel: Model = null;
+	      sheetModel = CsvFilesSheetRepo.readModelSheet(sheetLocation, sheetPath, nsJavaMap, clList);
+	      getLogger.debug("Read sheetModel: {}", sheetModel)
+	      val graphURI = sheetRes.getURI();
+	      mainDset.replaceNamedModel(graphURI, sheetModel)
     }
   }
+
+}
+
+object CsvFilesSheetRepo extends BasicDebugger {
 
   def getCsvSheetAt(sheetLocation: String, sheetName: String, fileModelCLs: java.util.List[ClassLoader]): Reader = {
     var ext: java.lang.String = FileStreamUtils.getFileExt(sheetName);
     if (ext != null && (ext.equals("xlsx") || ext.equals("xls"))) {
-      XLSXSheetRepoLoader.getSheetAt(sheetLocation, sheetName, fileModelCLs);
+      XLSXSheetRepo.getSheetAt(sheetLocation, sheetName, fileModelCLs);
     }
     var is = FileStreamUtils.openInputStreamOrNull(sheetName, fileModelCLs);
     if (is == null) is = FileStreamUtils.openInputStreamOrNull(sheetLocation + sheetName, fileModelCLs);
@@ -146,15 +125,15 @@ object CsvFilesSheetRepoLoader extends BasicDebugger {
 
   ///. Modeled on SheetRepo.loadTestSheetRepo
   def loadCsvFilesSheetRepo(sheetLocation: String, nsSheetName: String, dirSheetName: String,
-    fileModelCLs: java.util.List[ClassLoader], repoSpec: RepoSpec): SheetRepo = {
+    fileModelCLs: java.util.List[ClassLoader]): SheetRepo = {
     // Read the namespaces and directory sheets into a single directory model.
     val dirModel: Model = readDirectoryModelFromCsvFiles(sheetLocation, nsSheetName, dirSheetName, fileModelCLs: java.util.List[ClassLoader])
     // Construct a repo around that directory
-    val shRepo = RepoLoader.makeSheetRepo(repoSpec,dirModel, fileModelCLs)
+    val shRepo = new CsvFilesSheetRepo(dirModel, fileModelCLs)
     // Load the rest of the repo's initial *sheet* models, as instructed by the directory.
     shRepo.loadSheetModelsIntoMainDataset()
     // Load the rest of the repo's initial *file/resource* models, as instructed by the directory.
-    shRepo.loadDerivedModelsIntoMainDataset(fileModelCLs)
+    shRepo.loadFileModelsIntoMainDataset(fileModelCLs)
     shRepo
   }
 
@@ -180,12 +159,12 @@ object CsvFilesSheetRepoLoader extends BasicDebugger {
   val nsSheetPath = "Nspc.csv";
   val dirSheetPath = "Dir.csv";
 
-  private def loadTestCsvFilesSheetRepo(): SheetRepo = {
-    val clList : java.util.ArrayList[ClassLoader] = null;
-    val spec = new OfflineXlsSheetRepoSpec(SemSheet.keyForCSVFilesBootSheet22, nsSheetPath, dirSheetPath, clList)
-    val sr = spec.makeRepo
+  private def loadTestCsvFilesSheetRepo(): CsvFilesSheetRepo = {
+    val clList = new java.util.ArrayList[ClassLoader];
+    val dirModel: Model = readDirectoryModelFromCsvFiles(SemSheet.keyForCSVFilesBootSheet22, nsSheetPath, dirSheetPath, clList)
+    val sr = new CsvFilesSheetRepo(dirModel, clList)
     sr.loadSheetModelsIntoMainDataset()
-    sr.loadDerivedModelsIntoMainDataset(clList)
+    sr.loadFileModelsIntoMainDataset(clList)
     sr
   }
   import scala.collection.immutable.StringOps
@@ -202,7 +181,7 @@ object CsvFilesSheetRepoLoader extends BasicDebugger {
 
     // Run the resulting fully bound query, and print the results.
 
-    val sr = loadTestCsvFilesSheetRepo()
+    val sr: CsvFilesSheetRepo = loadTestCsvFilesSheetRepo()
     val qib = sr.makeInitialBinding
 
     qib.bindQName(lightsGraphVarName, lightsGraphQName)
@@ -245,7 +224,7 @@ object CsvFilesSheetRepoLoader extends BasicDebugger {
     // Does not disturb the original result set
     val qqrxml = QueryHelper.buildQueryResultXML(qqrsrw);
 
-import scala.collection.JavaConversions._;
+    import scala.collection.JavaConversions._;
 
     println("Got query-query-test result-XML: \n" + qqrxml);
     qqrsrw.reset();
@@ -262,7 +241,7 @@ import scala.collection.JavaConversions._;
       val qtxtString = qtxtLit.getString();
       val zzRset = QueryHelper.execModelQueryWithPrefixHelp(dirModel, qtxtString);
       val zzRSxml = QueryHelper.buildQueryResultXML(zzRset);
-      println("Query using qTxt got: " + zzRSxml);
+      println("Query using qTxt got: " + zzRSxml)
 
       //		logInfo("Got qsoln" + qSoln + " with s=[" + qSoln.get("s") + "], p=[" + qSoln.get("p") + "], o=[" 
       //						+ qSoln.get("o") +"]");
