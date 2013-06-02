@@ -15,15 +15,13 @@
  */
 package org.appdapter.core.store;
 
-import java.util.List;
-import java.util.Set;
-
-import org.appdapter.core.name.Ident;
-
 import com.hp.hpl.jena.query.Dataset;
-import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.sdb.Store;
+import java.util.List;
+import java.util.Set;
+import org.appdapter.core.name.Ident;
+import com.hp.hpl.jena.query.QuerySolution;
 
 /**
  * @author Stu B. <www.texpedient.com>

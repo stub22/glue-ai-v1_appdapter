@@ -29,14 +29,9 @@ import scala.collection.JavaConversions._
  * @author Stu B. <www.texpedient.com>
  */
 
-class RepoClientImpl(val myRepo : Repo.WithDirectory, val myDefltTgtGraphVarName : String, val myDefltQrySrcGrphName : String ) 
-		extends RepoClientScala with ModelClientCore {
+class RepoClientImpl(private val myRepo : Repo.WithDirectory, private val myDefltTgtGraphVarName : String, private val myDefltQrySrcGrphName : String ) 
+		extends RepoClient with ModelClientCore {
   
-	def queryIndirectForAllSolutionsJ(queryQN: String, targetGraphQN : String) : Object = {
-		val targetGraphIdent = getDirectoryModelClient.makeIdentForQName(targetGraphQN)
-		queryIndirectForAllSolutions(queryQN, targetGraphIdent)
-	}
-	
 	private val mySH = new SolutionHelper()
 	
 	private def ensureRepo {

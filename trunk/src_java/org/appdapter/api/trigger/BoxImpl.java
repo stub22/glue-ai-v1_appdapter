@@ -18,7 +18,7 @@ package org.appdapter.api.trigger;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import org.appdapter.core.component.KnownComponent;
 import org.appdapter.core.component.KnownComponentImpl;
 
 
