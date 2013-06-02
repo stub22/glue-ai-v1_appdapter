@@ -4,7 +4,7 @@ import java.awt.BorderLayout;
 
 import javax.swing.JLabel;
 
-import org.appdapter.gui.pojo.POJOApp;
+import org.appdapter.gui.box.POJOApp;
 import org.appdapter.gui.pojo.ScreenBoxedPOJORefPanel;
 import org.appdapter.gui.pojo.Utility;
 import org.appdapter.gui.swing.impl.JVPanel;

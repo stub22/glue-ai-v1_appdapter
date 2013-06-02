@@ -20,7 +20,9 @@ import java.util.Set;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxImpl;
-import org.appdapter.api.trigger.ScreenBox;
+import org.appdapter.core.component.KnownComponent;
+import org.appdapter.gui.box.POJOApp;
+import org.appdapter.gui.box.ScreenBox;
 import org.appdapter.gui.box.ScreenBoxImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -110,8 +112,13 @@ public class POJOCollectionImpl implements VetoableChangeListener, PropertyChang
 			return false;
 		} else {
 			// Create the object box, with a unique name
-			POJOBox box = new ScreenBoxImpl(generateUniqueName(obj), obj);
+			String named = generateUniqueName(obj);
+			POJOBox box = findOrCreatePOJO(generateUniqueName(obj), obj);
 
+			if (box.registeredWithName != null) {
+				return false;
+			}
+			box.registeredWithName = named;
 			// Add it
 			// objectsToBoxs.put(obj, box);
 			// objectList.add(obj);
@@ -133,6 +140,12 @@ public class POJOCollectionImpl implements VetoableChangeListener, PropertyChang
 
 			return true;
 		}
+	}
+
+	@Override public POJOBox findOrCreatePOJO(String title, Object obj) throws PropertyVetoException {
+		POJOBox box = new ScreenBoxImpl(title, obj);
+		///Utility.context.addPOJO(box);
+		return box;
 	}
 
 	/**
@@ -210,19 +223,19 @@ public class POJOCollectionImpl implements VetoableChangeListener, PropertyChang
 	 */
 	@Override public boolean containsBox(Box box) {
 		synchronized (boxList) {
-			return boxList.contains(box) || containsPOJO(((POJOBox) box).getObject());
+			return boxList.contains(box) || containsPOJO(((POJOBox) box).getValue());
 		}
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override public Object findPOJO(String name) {
+	@Override public Object findObjectByName(String name) {
 		POJOBox box = findBox(name);
 		if (box == null) {
 			return null;
 		} else {
-			return box.getObject();
+			return box.getValue();
 		}
 	}
 
@@ -332,7 +345,7 @@ public class POJOCollectionImpl implements VetoableChangeListener, PropertyChang
 		if (evt.getPropertyName().equals("name")) {
 			// Name has changed - so update the name index
 			POJOBox object = (POJOBox) (evt.getSource());
-			if (containsPOJO(object.getObject())) {
+			if (containsPOJO(object.getValue())) {
 				String newName = (String) evt.getNewValue();
 				String oldName = (String) evt.getOldValue();
 				if (oldName != null) {
@@ -346,7 +359,7 @@ public class POJOCollectionImpl implements VetoableChangeListener, PropertyChang
 			// to update my internal state
 			Boolean newValue = (Boolean) evt.getNewValue();
 			POJOBox box = (POJOBox) evt.getSource();
-			Object object = box.getObject();
+			Object object = box.getValue();
 			if (containsPOJO(object)) {
 				if (newValue.equals(new Boolean(true))) {
 					try {
@@ -393,7 +406,7 @@ public class POJOCollectionImpl implements VetoableChangeListener, PropertyChang
 			// The name of a box has changed. Make sure there are no name
 			// collisions
 			POJOBox box = getEventBox(evt);
-			Object object = box.getObject();
+			Object object = box.getValue();
 			if (containsPOJO(object)) {
 				String name = (String) evt.getNewValue();
 				Box otherBox = findBox(name);
@@ -461,9 +474,6 @@ public class POJOCollectionImpl implements VetoableChangeListener, PropertyChang
 	 * like "Button1", "Button2", etc.
 	 */
 	public String generateUniqueName(Object object) {
-		if (object instanceof Class) {
-			return ((Class) object).getCanonicalName();
-		}
 		return Utility.generateUniqueName(object);
 	}
 
@@ -480,7 +490,7 @@ public class POJOCollectionImpl implements VetoableChangeListener, PropertyChang
 		return this;
 	}
 
-	@Override public NamedObjectCollection getPOJOSession() {
+	@Override public NamedObjectCollection getNamedObjectCollection() {
 		// TODO Auto-generated method stub
 		return this;
 	}

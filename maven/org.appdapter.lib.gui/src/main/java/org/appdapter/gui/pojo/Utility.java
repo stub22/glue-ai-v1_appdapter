@@ -11,6 +11,7 @@ import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
+import java.beans.PropertyVetoException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -30,9 +31,11 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.Action;
 import javax.swing.JFrame;
@@ -40,15 +43,20 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.tools.FileObject;
 
-import org.appdapter.api.trigger.Box;
-import org.appdapter.api.trigger.BoxPanelSwitchableView;
+import org.appdapter.core.component.ComponentCache;
+import org.appdapter.core.component.KnownComponent;
 import org.appdapter.core.log.BasicDebugger;
-import org.appdapter.core.log.Debuggable;
 import org.appdapter.core.log.Loggable;
+import org.appdapter.core.name.Ident;
 import org.appdapter.demo.ObjectNavigatorGUI;
-import org.appdapter.gui.browse.BoxPanelSwitchableViewImpl;
-import org.appdapter.gui.demo.LargeClassChooser;
-import org.appdapter.gui.demo.ObjectNavigator;
+import org.appdapter.gui.box.BoxPanelSwitchableView;
+import org.appdapter.gui.box.Convertable;
+import org.appdapter.gui.box.GetSetObject;
+import org.appdapter.gui.box.POJOApp;
+import org.appdapter.gui.browse.BrowsePanel;
+import org.appdapter.gui.browse.DisplayContext;
+import org.appdapter.gui.demo.CollectionEditorUtil;
+import org.appdapter.gui.demo.NamedItemChooserPanel;
 import org.appdapter.gui.editors.BooleanEditor;
 import org.appdapter.gui.editors.ClassCustomizer;
 import org.appdapter.gui.editors.CollectionCustomizer;
@@ -56,8 +64,10 @@ import org.appdapter.gui.editors.ColorEditor;
 import org.appdapter.gui.editors.DateEditor;
 import org.appdapter.gui.editors.IntEditor;
 import org.appdapter.gui.editors.ThrowableCustomizer;
+import org.appdapter.gui.util.Debuggable;
 import org.appdapter.gui.util.PromiscuousClassUtils;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Utility {
 
@@ -67,14 +77,37 @@ public class Utility {
 	// ==== Instance variables ==========
 	public static JMenuBar appMenuBar = new JMenuBar();
 	public static NamedObjectCollection context = new POJOCollectionImpl();
+	public static BrowsePanel browserPanel;
 	public static POJOApp pojoApp;
+	public static NamedItemChooserPanel namedItemChooserPanel;
+	public static CollectionEditorUtil collectionWatcher;
+	public static DisplayContext defaultDisplayContext;
 	public static ObjectNavigatorGUI mainDisplayContext;
-	public static ObjectNavigator objectNavigator;
-	public static BoxPanelSwitchableView tabbedPanels = new BoxPanelSwitchableViewImpl();
-	public static LargeClassChooser selectionOfCollectionPanel;
+	public static BoxPanelSwitchableView boxPanelTabPane;
+
+	static public Object getCachedComponent(Ident id) {
+		return context.findObjectByName(id.toString());
+	}
+
+	static public void putCachedComponent(Ident id, Object comp) {
+		try {
+			context.findOrCreatePOJO(id.toString(), comp);
+		} catch (PropertyVetoException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			throw reThrowable(e);
+		}
+	}
+
+	static int ADD_ALL = 255;
+	static int ADD_FROM_PASTE_SRC_ONLY = 255;
+	static int ADD_FROM_PASTE_TARG_ONLY = 255;
+	//public static FileMenu fileMenu = new FileMenu();
+	public static JMenu fileMenu;
+	private static JFrame appFrame;
 
 	public static BoxPanelSwitchableView getBoxPanelTabPane() {
-		return tabbedPanels;
+		return boxPanelTabPane;
 	}
 
 	private static GetSetObject getPanelFor(Class expected) {
@@ -82,7 +115,10 @@ public class Utility {
 	}
 
 	public static JFrame getAppFrame() {
-		return (JFrame) mainDisplayContext.getRealPanelTabPane().getTopLevelAncestor();
+		if (appFrame == null) {
+			appFrame = (JFrame) appMenuBar.getTopLevelAncestor();
+		}
+		return (JFrame) appFrame;
 	}
 
 	public static JMenuBar getMenuBar() {
@@ -103,8 +139,8 @@ public class Utility {
 			pojoApp = new BrowsePanelContolApp(mainDisplayContext);
 			return pojoApp;
 		}
-		if (objectNavigator != null) {
-			pojoApp = new BrowsePanelContolApp((ObjectNavigatorGUI) objectNavigator);
+		if (collectionWatcher != null) {
+			pojoApp = new BrowsePanelContolApp((ObjectNavigatorGUI) collectionWatcher);
 			return pojoApp;
 		}
 		return null;
@@ -122,7 +158,7 @@ public class Utility {
 	public static Object asPOJO(Object object) {
 		// TODO Auto-generated method stub
 		if (object instanceof POJOBox) {
-			object = ((org.appdapter.gui.pojo.POJOBox) object).getObject();
+			object = ((org.appdapter.gui.pojo.POJOBox) object).getValue();
 		}
 		return null;
 	}
@@ -199,12 +235,6 @@ public class Utility {
 	private static void registerCustomizer(Class<?> customizer, Class<?>... clz) {
 		FunctionalClassRegistry.addDelegateClass(Customizer.class, customizer, clz);
 	}
-
-	static int ADD_ALL = 255;
-	static int ADD_FROM_PASTE_SRC_ONLY = 255;
-	static int ADD_FROM_PASTE_TARG_ONLY = 255;
-	//public static FileMenu fileMenu = new FileMenu();
-	public static JMenu fileMenu;
 
 	static {
 		registerEditors();
@@ -497,13 +527,21 @@ public class Utility {
 	public static String generateUniqueName(Object object) {
 		if (object == null)
 			return "<null>";
+		if (object instanceof KnownComponent) {
+			String str = ((KnownComponent) object).getShortLabel();
+			if (str != null)
+				return str;
+		}
+		if (object instanceof Class) {
+			return ((Class) object).getCanonicalName();
+		}
 		String className = Utility.getShortClassName(object.getClass());
 		int counter = 1;
 		boolean done = false;
 		String name = "???";
 		while (!done) {
 			name = className + counter;
-			Object otherPOJO = context.findPOJO(name);
+			Object otherPOJO = context.findObjectByName(name);
 			if (otherPOJO == null) {
 				done = true;
 			} else {

@@ -14,12 +14,13 @@ import javax.swing.JMenuItem;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContext;
-import org.appdapter.api.trigger.BoxPanelSwitchableView;
-import org.appdapter.api.trigger.ScreenBoxPanel;
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.api.trigger.TriggerImpl;
 import org.appdapter.core.component.KnownComponent;
 import org.appdapter.core.name.Ident;
+import org.appdapter.gui.box.BoxPanelSwitchableView;
+import org.appdapter.gui.box.POJOApp;
+import org.appdapter.gui.box.ScreenBoxPanel;
 import org.appdapter.gui.util.PromiscuousClassUtils;
 
 public class TriggerForInstance extends TriggerImpl implements UIAware, Comparable<Trigger> {
@@ -358,15 +359,15 @@ public class TriggerForInstance extends TriggerImpl implements UIAware, Comparab
 			BoxContext bc = targetBox.getBoxContext();
 			ScreenBoxPanel pnl = boxed.getPropertiesPanel();
 			switch (dt) {
-			case MODAL: {
+			case FRAME: {
 				BoxPanelSwitchableView jtp = Utility.getBoxPanelTabPane();
-				jtp.add(pnl.getName(), pnl);
+				jtp.addComponent(pnl.getName(), pnl, DisplayType.FRAME);
 				return;
 			}
 			case PANEL:
 			default: {
 				BoxPanelSwitchableView jtp = Utility.mainDisplayContext.getBoxPanelTabPane();
-				jtp.add(pnl.getName(), pnl);
+				jtp.addComponent(pnl.getName(), pnl, DisplayType.PANEL);
 				break;
 			}
 			}

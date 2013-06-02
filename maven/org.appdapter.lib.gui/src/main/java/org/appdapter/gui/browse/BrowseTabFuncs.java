@@ -19,11 +19,12 @@ package org.appdapter.gui.browse;
 import java.util.WeakHashMap;
 
 import org.appdapter.api.trigger.BoxImpl;
-import org.appdapter.api.trigger.BoxPanelSwitchableView;
-import org.appdapter.api.trigger.DisplayContext;
 import org.appdapter.api.trigger.ObjectKey;
-import org.appdapter.api.trigger.ScreenBox;
-import org.appdapter.api.trigger.ScreenBoxPanel;
+import org.appdapter.gui.box.BoxPanelSwitchableView;
+import org.appdapter.gui.box.ScreenBox;
+import org.appdapter.gui.box.ScreenBoxPanel;
+import org.appdapter.gui.box.ScreenBoxTreeNode;
+import org.appdapter.gui.pojo.DisplayType;
 import org.appdapter.gui.pojo.Utility;
 
 /**
@@ -47,7 +48,7 @@ public class BrowseTabFuncs {
 
 	protected static boolean isBoxTabKnown_maybe_not(DisplayContext dc, ScreenBoxPanel bp) {
 		BoxPanelSwitchableView tabbedPane = dc.getBoxPanelTabPane();
-		if (tabbedPane.indexOfTabComponent(bp) >= 0) {
+		if (tabbedPane.containsComponent(bp)) {
 			Utility.theLogger.warn("gettign subcomponent!" + bp);
 			return true;
 		}
@@ -61,7 +62,13 @@ public class BrowseTabFuncs {
 
 	protected static void addBoxTab(DisplayContext dc, ScreenBoxPanel boxP, String label) {
 		BoxPanelSwitchableView tabbedPane = dc.getBoxPanelTabPane();
-		tabbedPane.add(label, boxP);
+		tabbedPane.addComponent(label, boxP, DisplayType.PANEL);
+		if (!tabbedPane.containsComponent(boxP)) {
+			tabbedPane.addComponent(label, boxP, DisplayType.PANEL);
+			if (!tabbedPane.containsComponent(boxP)) {
+				throw new RuntimeException("Cant add " + boxP + " to " + dc);
+			}
+		}
 	}
 
 	/**
@@ -78,6 +85,9 @@ public class BrowseTabFuncs {
 	public static void openBoxPanelAndFocus(DisplayContext dc, ScreenBox boxI, ScreenBoxPanel.Kind kind) {
 
 		ScreenBoxPanel boxP = boxI.findBoxPanel(kind);
+		if (Utility.defaultDisplayContext == null) {
+			Utility.defaultDisplayContext = dc;
+		}
 		String tabLabel = kind.toString() + "-" + boxI.getShortLabel();
 		if (!isBoxTabKnown(dc, tabLabel)) {
 			addBoxTab(dc, boxP, tabLabel);

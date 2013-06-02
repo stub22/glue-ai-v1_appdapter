@@ -15,6 +15,7 @@ import javax.swing.UIManager;
 
 import org.appdapter.gui.pojo.Utility;
 import org.appdapter.gui.util.ClassFinder;
+import org.appdapter.gui.util.Debuggable;
 
 import com.jidesoft.plaf.LookAndFeelFactory;
 
@@ -76,8 +77,7 @@ public class LookAndFeelMenuItems extends JMenu {
 				}
 			}
 		} catch (Exception e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			Debuggable.UnhandledException(e1);
 		}
 
 	}

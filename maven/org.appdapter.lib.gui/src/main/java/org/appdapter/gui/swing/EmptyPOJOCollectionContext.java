@@ -3,8 +3,9 @@ package org.appdapter.gui.swing;
 import java.util.Collection;
 import java.util.Vector;
 
+import org.appdapter.gui.box.POJOApp;
+import org.appdapter.gui.box.ScreenBoxPanel;
 import org.appdapter.gui.pojo.NamedObjectCollection;
-import org.appdapter.gui.pojo.POJOApp;
 import org.appdapter.gui.pojo.POJOCollection;
 import org.appdapter.gui.pojo.POJOCollectionListener;
 import org.appdapter.gui.pojo.Utility;
@@ -30,7 +31,7 @@ public class EmptyPOJOCollectionContext implements POJOApp, POJOCollection {
 		return false;
 	}
 
-	@Override public Collection getPOJOCollectionOfType(Class type) {
+	@Override public <T> Collection<T> getPOJOCollectionOfType(Class<T> type) {
 		return new Vector();
 	}
 
@@ -47,15 +48,15 @@ public class EmptyPOJOCollectionContext implements POJOApp, POJOCollection {
 	@Override public void removeListener(POJOCollectionListener o) {
 	}
 
-	@Override public Collection getActions(Object object) {
+	@Override public Collection getCollectionUtilAppActions(Object object) {
 		return new Vector();
 	}
 
-	@Override public Object findPOJO(String name) {
+	@Override public Object findObjectByName(String name) {
 		return null;
 	}
 
-	@Override public String getPOJOName(Object object) {
+	@Override public String getBoxName(Object object) {
 		return "" + object;
 	}
 
@@ -73,7 +74,7 @@ public class EmptyPOJOCollectionContext implements POJOApp, POJOCollection {
 		return this;
 	}
 
-	@Override public NamedObjectCollection getPOJOSession() {
+	@Override public NamedObjectCollection getNamedObjectCollection() {
 		// TODO Auto-generated method stub
 		return Utility.getCurrentContext2();
 	}
@@ -81,5 +82,10 @@ public class EmptyPOJOCollectionContext implements POJOApp, POJOCollection {
 	@Override public void reload() {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override public ScreenBoxPanel findOrCreateComponent(Object object, boolean b) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

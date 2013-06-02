@@ -1,7 +1,9 @@
 package org.appdapter.gui.pojo;
 
 import org.appdapter.api.trigger.Box;
-import org.appdapter.api.trigger.ScreenBoxPanel;
+import org.appdapter.gui.box.ButtonTabComponent;
+import org.appdapter.gui.box.GetSetObject;
+import org.appdapter.gui.box.ScreenBoxPanel;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -15,6 +17,7 @@ abstract public class AbstractScreenBoxedPOJOPanel<BoxType extends Box> extends 
 	protected abstract void initGUI() throws Throwable;
 
 	@Override public void focusOnBox(Box b) {
+		setObject(b);
 		LoggerFactory.getLogger(getClass().getName()).info("Focusing on box: " + b);
 	}
 
@@ -24,12 +27,19 @@ abstract public class AbstractScreenBoxedPOJOPanel<BoxType extends Box> extends 
 	 * This can be 'this' object
 	 * 
 	 */
-	@Override abstract public Object getObject();
+	@Override abstract public Object getValue();
 
-	public void setObject(Object newpojObject) {
-		Object oldpojObject = getObject();
+	Object m_o;
+
+	final public void setObject(Object newpojObject) {
+		Object oldpojObject = m_o;
 		if (oldpojObject != newpojObject) {
 			objectChanged(oldpojObject, newpojObject);
+			try {
+				initGUI();
+			} catch (Throwable e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -37,8 +47,13 @@ abstract public class AbstractScreenBoxedPOJOPanel<BoxType extends Box> extends 
 	 * Called whenever the pojo is switched. Caused the GUI to update to render
 	 * the new pojObject instead.
 	 */
-	protected void objectChanged(Object oldValue, Object newValue) {
+	final protected void objectChanged(Object oldValue, Object newValue) {
+		objectValueChanged(oldValue, newValue);
+		m_o = newValue;
 		super.firePropertyChange("value", oldValue, newValue);
+
 	}
+
+	public abstract void objectValueChanged(Object oldValue, Object newValue);
 
 }

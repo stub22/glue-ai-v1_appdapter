@@ -16,21 +16,22 @@
 
 package org.appdapter.gui.box;
 
+import java.beans.PropertyEditor;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import org.appdapter.api.trigger.DisplayContext;
-import org.appdapter.api.trigger.DisplayContextProvider;
-import org.appdapter.api.trigger.ScreenBox;
-import org.appdapter.api.trigger.ScreenBoxPanel;
-import org.appdapter.api.trigger.ScreenBoxPanel.Kind;
+import org.appdapter.api.trigger.AnyOper.UIHidden;
 import org.appdapter.api.trigger.Trigger;
+import org.appdapter.gui.box.ScreenBoxPanel.Kind;
+import org.appdapter.gui.browse.DisplayContext;
+import org.appdapter.gui.browse.DisplayContextProvider;
+import org.appdapter.gui.pojo.BasicObjectCustomizer;
+import org.appdapter.gui.pojo.DisplayType;
 import org.appdapter.gui.pojo.POJOBox;
 import org.appdapter.gui.pojo.Utility;
 import org.appdapter.gui.repo.DatabaseManagerPanel;
@@ -48,9 +49,26 @@ import org.slf4j.LoggerFactory;
  * <br/> 
  * @author Stu B. <www.texpedient.com>
  */
+
+@UIHidden
 public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<TrigType>>>
 
-extends POJOBox<TrigType> implements ScreenBox<TrigType> {
+extends POJOBox<TrigType> implements ScreenBox<TrigType>, GetSetObject {
+
+	@UIHidden
+	public class NoObject {
+
+	}
+
+	public java.awt.Component getComponent() {
+		return findBoxPanel(Kind.OBJECT_PROPERTIES);
+	}
+
+	DisplayType myDisplayType = DisplayType.PANEL;
+
+	@Override public DisplayType getDisplayType() {
+		return myDisplayType;
+	}
 
 	static Logger theLogger = LoggerFactory.getLogger(ScreenBoxImpl.class);
 	// Because it's a "provider", we have an extra layer of indirection between
@@ -71,7 +89,7 @@ extends POJOBox<TrigType> implements ScreenBox<TrigType> {
 	}
 
 	public ScreenBoxImpl() {
-		object = this;
+		object = new NoObject();
 	}
 
 	public ScreenBoxImpl(Object object) {
@@ -79,11 +97,11 @@ extends POJOBox<TrigType> implements ScreenBox<TrigType> {
 	}
 
 	public ScreenBoxImpl(String uniqueName, Object obj) throws PropertyVetoException {
-		setName(uniqueName);
+		_uname = uniqueName;
 		setObject(obj);
 	}
 
-	@Override public Object getObject() {
+	@Override public Object getValue() {
 		if (object == null) {
 			theLogger.warn("Default implementation of getObject() for NULL is returning 'this'", getShortLabel());
 			return this;
@@ -98,10 +116,23 @@ extends POJOBox<TrigType> implements ScreenBox<TrigType> {
 		return super.getPOJOClass();
 	}
 
+	// the jtree label uses this .. so supply someting good!
+	@Override public String toString() {
+		String sl = getShortLabel();
+		if (sl != null)
+			return sl;
+		return getUniqueName() + " -> " + getDebugName();
+
+	}
+
 	@Override public List<Class> getTypes() {
 		java.util.HashSet al = new java.util.HashSet<Class>();
-		al.add(getPOJOClass());
-		al.add(getClass());
+		Class pojoClass = getPOJOClass();
+		if (pojoClass != null)
+			al.add(pojoClass);
+		else {
+			al.add(getClass());
+		}
 		return new ArrayList<Class>(al);
 	}
 
@@ -111,9 +142,11 @@ extends POJOBox<TrigType> implements ScreenBox<TrigType> {
 
 	@Override public DisplayContext getDisplayContext() {
 		if (myDCP != null) {
-			return myDCP.findDisplayContext(this);
+			DisplayContext dc = myDCP.findDisplayContext(this);
+			if (dc != null)
+				return dc;
 		}
-		return Utility.mainDisplayContext;
+		return Utility.browserPanel;
 	}
 
 	/**
@@ -168,6 +201,8 @@ extends POJOBox<TrigType> implements ScreenBox<TrigType> {
 			return new RepoManagerPanel();
 		if (kind == Kind.DB_MANAGER)
 			return new DatabaseManagerPanel();
+		if (kind == Kind.OBJECT_PROPERTIES)
+			return new BasicObjectCustomizer(null, getValue());
 		if (kind == Kind.OTHER)
 			return makeOtherPanel();
 		throw new RuntimeException("Found unexpected ScreenBoxPanelKind: " + kind);
@@ -187,7 +222,7 @@ extends POJOBox<TrigType> implements ScreenBox<TrigType> {
 	 */
 	protected ScreenBoxPanel makeOtherPanel() {
 		theLogger.warn("Default implementation of makeOtherPanel() for {} is returning null", getShortLabel());
-		return null;
+		return Utility.pojoApp.findOrCreateComponent(getValue(), false);
 	}
 
 	public void dump() {

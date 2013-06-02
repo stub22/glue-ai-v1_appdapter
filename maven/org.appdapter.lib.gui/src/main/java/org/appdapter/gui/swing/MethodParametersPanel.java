@@ -7,7 +7,7 @@ import java.lang.reflect.Method;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import org.appdapter.gui.pojo.POJOApp;
+import org.appdapter.gui.box.POJOApp;
 import org.appdapter.gui.pojo.Utility;
 import org.appdapter.gui.swing.impl.JVPanel;
 
