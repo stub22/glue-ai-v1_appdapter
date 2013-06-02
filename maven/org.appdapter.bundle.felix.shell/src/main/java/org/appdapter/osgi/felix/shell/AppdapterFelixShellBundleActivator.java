@@ -16,15 +16,16 @@
 
 package org.appdapter.osgi.felix.shell;
 
-import org.appdapter.demo.DemoBrowser;
+
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.appdapter.demo.DemoNavigatorCtrl;
 import javax.swing.JFrame;
 import org.appdapter.osgi.core.BundleActivatorBase;
+import org.appdapter.gui.demo.DemoBrowser;
+import org.appdapter.gui.demo.DemoNavigatorCtrl;
 
 public class AppdapterFelixShellBundleActivator extends BundleActivatorBase {
 	static Logger theLogger = LoggerFactory.getLogger(AppdapterFelixShellBundleActivator.class);
