@@ -28,10 +28,13 @@ import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
 
 import org.apache.poi.ss.formula.eval.NotImplementedException;
-import org.appdapter.api.trigger.BoxPanelSwitchableView;
 import org.appdapter.demo.ObjectNavigatorGUI;
+import org.appdapter.gui.box.BoxPanelSwitchableView;
+import org.appdapter.gui.box.POJOApp;
 import org.appdapter.gui.box.ScreenBoxImpl;
-import org.appdapter.gui.demo.ObjectNavigator.Icons;
+import org.appdapter.gui.box.ScreenBoxPanel;
+import org.appdapter.gui.demo.CollectionEditorUtil.Icons;
+import org.appdapter.gui.demo.ComponentHost;
 import org.appdapter.gui.demo.RenameDialog;
 import org.appdapter.gui.editors.ClassCustomizer;
 import org.appdapter.gui.swing.ErrorDialog;
@@ -45,7 +48,7 @@ import org.slf4j.LoggerFactory;
  * 
  * 
  */
-public class BrowsePanelContolApp implements POJOApp, POJOCollection {
+public class BrowsePanelContolApp implements POJOApp {
 
 	// ==== Static variables =================
 	private static boolean ALLOW_MULTIPLE_WINDOWS = false;
@@ -54,7 +57,7 @@ public class BrowsePanelContolApp implements POJOApp, POJOCollection {
 	ObjectNavigatorGUI gui;
 	PairTable<Object, JComponent> objectFrames = new PairTable();
 	PairTable objectGUIs = new PairTable();
-	JInternalFrame classBrowser = null;
+	Object classBrowser_Unused = null;
 	Adapter listener = new Adapter();
 
 	// ==== Constructors ===================
@@ -74,31 +77,30 @@ public class BrowsePanelContolApp implements POJOApp, POJOCollection {
 		if (gui == null) {
 			throw new NullPointerException("The ObjectNavigator GUI cannot be null for a POJOCollectionContext");
 		}
-		gui.getCollectionWithSwizzler().toString();
 		countOF++;
 	}
 
 	// ==== Property getters and setters ==================
 
-	@Override public POJOCollection getCollection() {
-		return gui.getCollectionWithSwizzler();
-	}
-
-	@Override public NamedObjectCollection getPOJOSession() {
-		return gui.getCollectionWithSwizzler();
-	}
-
-	@Override public int getPOJOCount() {
-		return getCollection().getPOJOCount();
+	@Override public NamedObjectCollection getNamedObjectCollection() {
+		return gui.getNamedObjectCollection();
 	}
 
 	// ==== Implementation of POJOCollectionContext interface ============
 
-	@Override public Collection getPOJOCollectionOfType(Class c) {
+	int getPOJOCount() {
+		return getCollection().getPOJOCount();
+	}
+
+	POJOCollection getCollection() {
+		return gui.getNamedObjectCollection();
+	}
+
+	Collection getPOJOCollectionOfType(Class c) {
 		return getCollection().getPOJOCollectionOfType(c);
 	}
 
-	@Override public boolean containsPOJO(Object o) {
+	boolean containsPOJO(Object o) {
 		return getCollection().containsPOJO(o);
 	}
 
@@ -106,21 +108,8 @@ public class BrowsePanelContolApp implements POJOApp, POJOCollection {
 		getCollection().addListener(l);
 	}
 
-	@Override public void removeListener(org.appdapter.gui.pojo.POJOCollectionListener l) {
+	@Override public void removeListener(POJOCollectionListener l) {
 		getCollection().removeListener(l);
-	}
-
-	@Override public Object findPOJO(String name) {
-		return getCollection().findPOJO(name);
-	}
-
-	@Override public String getPOJOName(Object o) {
-		POJOBox wrapper = getPOJOSession().findOrCreateBox(o);
-		if (wrapper == null) {
-			return "" + o;
-		} else {
-			return wrapper.getName();
-		}
 	}
 
 	/**
@@ -129,7 +118,7 @@ public class BrowsePanelContolApp implements POJOApp, POJOCollection {
 	 * @returns true if the object was added, false if the object was already
 	 *          there
 	 */
-	@Override public boolean addPOJO(Object object) {
+	boolean addPOJO(Object object) {
 		return getCollection().addPOJO(object);
 	}
 
@@ -139,14 +128,27 @@ public class BrowsePanelContolApp implements POJOApp, POJOCollection {
 	 * @returns true if the object was removed, false if that object wasn't in
 	 *          this context
 	 */
-	@Override public boolean removePOJO(Object object) {
+	boolean removePOJO(Object object) {
 		return getCollection().removePOJO(object);
+	}
+
+	@Override public Object findObjectByName(String name) {
+		return getCollection().findObjectByName(name);
+	}
+
+	@Override public String getBoxName(Object o) {
+		POJOBox wrapper = getNamedObjectCollection().findOrCreateBox(o);
+		if (wrapper == null) {
+			return "" + o;
+		} else {
+			return wrapper.getUniqueName();
+		}
 	}
 
 	/**
 	 * Returns all actions that can be carried out on the given object
 	 */
-	@Override public Collection getActions(Object object) {
+	@Override public Collection getCollectionUtilAppActions(Object object) {
 		Collection actions = new LinkedList();
 		if (getCollection().containsPOJO(object)) {
 			actions.add(new RenameAction(object));
@@ -176,6 +178,7 @@ public class BrowsePanelContolApp implements POJOApp, POJOCollection {
 		}
 		if (existing instanceof JPanel) {
 			JPanel frame = (JPanel) existing;
+			Utility.boxPanelTabPane.setSelectedComponent(frame);
 			return;
 		}
 	}
@@ -186,23 +189,29 @@ public class BrowsePanelContolApp implements POJOApp, POJOCollection {
 	 * @param view
 	 * @return 
 	 */
-	private Component asPanel(String name, Class c, Component view) {
+	private ScreenBoxPanel asPanel(String name, Class c, Component view) {
+
+		if (view instanceof ScreenBoxPanel) {
+			return (ScreenBoxPanel) view;
+		}
 
 		if (view instanceof JPanel) {
 			setPanelSize((JPanel) view);
-			BoxPanelSwitchableView bsv = Utility.getBoxPanelTabPane();
-			bsv.add(name, view);
-			return view;
+			return new ComponentHost(view);
+			//BoxPanelSwitchableView bsv = Utility.getBoxPanelTabPane();
+			//bsv.add(name, view);
+			//return view;
 		}
+		return new ComponentHost(view);
 		//Object object = wrapper.getObject();
 		// Create an internal frame to hold the GUI
-		Component frame = getFrame(name, c, view);
+		//ScreenBoxPanel frame = getFrame(name, c, view);
 
 		// Make the size correct
 
 		// Add the frame to the desk and bring it to the front
-		frame.setVisible(true);
-		return frame;
+		//frame.setVisible(true);
+		//return frame;
 	}
 
 	/**
@@ -211,7 +220,7 @@ public class BrowsePanelContolApp implements POJOApp, POJOCollection {
 	 */
 	private void setPanelSize(Component view) {
 		BoxPanelSwitchableView bsv = Utility.getBoxPanelTabPane();
-		Dimension deskSize = bsv.getSize();
+		Dimension deskSize = bsv.getSize(DisplayType.FRAME);
 		Dimension preferred = view.getPreferredSize();
 		Dimension deskMinsize = new Dimension(Math.max(100, deskSize.width), Math.max(100, deskSize.height));
 
@@ -252,7 +261,7 @@ public class BrowsePanelContolApp implements POJOApp, POJOCollection {
 		// Listen to the frame, so we notice if it closes
 		frame.addInternalFrameListener(listener);
 		BoxPanelSwitchableView bsv = Utility.getBoxPanelTabPane();
-		bsv.add(name, frame);
+		bsv.addComponent(name, frame, DisplayType.FRAME);
 		return frame;
 	}
 
@@ -288,21 +297,32 @@ public class BrowsePanelContolApp implements POJOApp, POJOCollection {
 			} catch (IntrospectionException e) {
 			}
 		}
-		Component existing = (Component) objectFrames.findBrother(object);
+		if (object instanceof String) {
+			gui.showMessage("RESULT:" + object);
+			return;
+		}
+		Component existing = findOrCreateComponent(object, true);
+		showPanel(existing);
+	}
+
+	public ScreenBoxPanel findOrCreateComponent(Object object, boolean attachToUIEarly) {
+		if (object instanceof ScreenBoxPanel)
+			return (ScreenBoxPanel) object;
+
+		if (object == null)
+			return (ScreenBoxPanel) null;
+
+		ScreenBoxPanel existing = (ScreenBoxPanel) objectFrames.findBrother(object);
 		String name = null;
 		if (existing == null || ALLOW_MULTIPLE_WINDOWS) {
 
-			if (object instanceof String) {
-				gui.showMessage("RESULT:" + object);
-				return;
-			}
 			// Get a wrapper for the object, or create a temporary wrapper if
 			// necessary
-			POJOBox wrapper = getPOJOSession().findOrCreateBox(object);
+			POJOBox wrapper = getNamedObjectCollection().findOrCreateBox(object);
 			if (wrapper == null) {
 				wrapper = new ScreenBoxImpl(object);
 			}
-			object = wrapper.getObject();
+			object = wrapper.getValue();
 
 			Class objClass = wrapper.getPOJOClass();
 
@@ -333,7 +353,10 @@ public class BrowsePanelContolApp implements POJOApp, POJOCollection {
 				view = new BasicObjectCustomizer(this, object);
 			}
 			if (name == null)
-				name = getPOJOName(object);
+				name = getBoxName(object);
+			existing.setName(name);
+			if (!attachToUIEarly)
+				return existing;
 			existing = asPanel(name, objClass, view);
 			// If necessary, add this to the list of object frames
 			// to allow reuse of this window if the same object is to be viewed
@@ -342,11 +365,13 @@ public class BrowsePanelContolApp implements POJOApp, POJOCollection {
 				objectFrames.add(object, existing);
 			}
 		} else {
+			if (!attachToUIEarly)
+				return existing;
 			if (name == null)
-				name = getPOJOName(object);
+				name = getBoxName(object);
 			existing = asPanel(name, object.getClass(), existing);
 		}
-		showPanel(existing);
+		return existing;
 	}
 
 	/**
@@ -364,7 +389,7 @@ public class BrowsePanelContolApp implements POJOApp, POJOCollection {
 				if (!ALLOW_MULTIPLE_WINDOWS)
 					objectGUIs.add(object, f);
 				f.addInternalFrameListener(listener);
-				Utility.tabbedPanels.add(f.getTitle(), f);
+				Utility.boxPanelTabPane.addComponent(f.getTitle(), f, DisplayType.FRAME);
 				f.toFront();
 				f.show();
 
@@ -376,7 +401,7 @@ public class BrowsePanelContolApp implements POJOApp, POJOCollection {
 					objectGUIs.add(object, f);
 				f.addInternalFrameListener(listener);
 				f.pack();
-				Utility.tabbedPanels.add(f.getTitle(), f);
+				Utility.boxPanelTabPane.addComponent(f.getTitle(), f, DisplayType.FRAME);
 				f.toFront();
 				f.show();
 
@@ -400,7 +425,7 @@ public class BrowsePanelContolApp implements POJOApp, POJOCollection {
 				// f.setSize(f.getPreferredSize());
 				// Utility.centerWindow(f);
 				// f.show();
-				Utility.tabbedPanels.add(f.getTitle(), f);
+				Utility.boxPanelTabPane.addComponent(f.getTitle(), f, DisplayType.FRAME);
 				f.toFront();
 				f.show();
 			}
@@ -560,7 +585,7 @@ public class BrowsePanelContolApp implements POJOApp, POJOCollection {
 	class Adapter extends WindowAdapter implements InternalFrameListener {
 		@Override public void windowClosing(WindowEvent e) {
 			Object source = e.getSource();
-			if (source == classBrowser) {
+			if (source == classBrowser_Unused) {
 				// classBrowser.removeWindowListener(this);
 				// classBrowser = null;
 			} else if (source instanceof Window) {
@@ -580,9 +605,9 @@ public class BrowsePanelContolApp implements POJOApp, POJOCollection {
 
 		@Override public void internalFrameClosing(InternalFrameEvent e) {
 			Object source = e.getSource();
-			if (source == classBrowser) {
-				classBrowser.removeInternalFrameListener(this);
-				classBrowser = null;
+			if (source == classBrowser_Unused) {
+				((JInternalFrame) classBrowser_Unused).removeInternalFrameListener(this);
+				classBrowser_Unused = null;
 			} else if (source instanceof JInternalFrame) {
 				JInternalFrame window = (JInternalFrame) source;
 				window.removeInternalFrameListener(this);

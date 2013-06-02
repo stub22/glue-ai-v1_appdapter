@@ -8,8 +8,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 
-import org.appdapter.gui.pojo.GetSetObject;
-import org.appdapter.gui.pojo.POJOApp;
+import org.appdapter.gui.box.GetSetObject;
+import org.appdapter.gui.box.POJOApp;
 import org.appdapter.gui.pojo.Utility;
 import org.appdapter.gui.swing.impl.JJPanel;
 import org.slf4j.Logger;
@@ -36,7 +36,7 @@ public class PropertiesPanel extends JJPanel implements GetSetObject {
 	}
 
 	@Override
-	public Object getObject() {
+	public Object getValue() {
 		return object;
 	}
 

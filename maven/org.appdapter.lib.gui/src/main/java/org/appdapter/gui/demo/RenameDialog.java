@@ -15,8 +15,8 @@ import javax.swing.WindowConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import org.appdapter.gui.demo.ObjectNavigator.Icons;
-import org.appdapter.gui.pojo.POJOApp;
+import org.appdapter.gui.box.POJOApp;
+import org.appdapter.gui.demo.CollectionEditorUtil.Icons;
 import org.appdapter.gui.pojo.POJOBox;
 import org.appdapter.gui.swing.impl.JBox;
 
@@ -34,9 +34,9 @@ public class RenameDialog extends JFrame {
 		this.object = object;
 
 		JPanel top = new JPanel(new FlowLayout());
-		top.add(new JLabel("Rename " + object.getName() + " to: "));
+		top.add(new JLabel("Rename " + object.getUniqueName() + " to: "));
 		top.add(nameField);
-		nameField.setText(object.getName());
+		nameField.setText(object.getUniqueName());
 		nameField.selectAll();
 
 		JPanel bottom = new JPanel(new FlowLayout());
@@ -91,7 +91,7 @@ public class RenameDialog extends JFrame {
 		String name = nameField.getText();
 		if (isNameValid(name)) {
 			try {
-				object.setName(name);
+				object.setUniqueName(name);
 				context.reload();
 			} catch (Exception err) {
 				context.showError(null, err);
@@ -111,7 +111,7 @@ public class RenameDialog extends JFrame {
 		if (n == null || n.equals("")) {
 			return false;
 		} else {
-			return context.findPOJO(n) == null;
+			return context.findObjectByName(n) == null;
 		}
 	}
 }

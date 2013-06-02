@@ -22,6 +22,7 @@
 package org.appdapter.gui.browse;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -30,6 +31,7 @@ import java.awt.event.MouseAdapter;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JDesktopPane;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -43,14 +45,16 @@ import javax.swing.JTree;
 import javax.swing.KeyStroke;
 import javax.swing.tree.TreeModel;
 
-import org.appdapter.api.trigger.BoxPanelSwitchableView;
-import org.appdapter.api.trigger.DisplayContext;
 import org.appdapter.demo.ObjectNavigatorGUI;
-import org.appdapter.gui.demo.LargeClassChooser;
-import org.appdapter.gui.demo.ObjectNavigator;
+import org.appdapter.gui.box.AppGUI;
+import org.appdapter.gui.box.BoxPanelSwitchableView;
+import org.appdapter.gui.box.BoxPanelSwitchableViewImpl;
+import org.appdapter.gui.demo.CollectionEditorUtil;
 import org.appdapter.gui.pojo.BrowsePanelContolApp;
+import org.appdapter.gui.pojo.DisplayType;
 import org.appdapter.gui.pojo.NamedObjectCollection;
 import org.appdapter.gui.pojo.Utility;
+import org.appdapter.gui.util.Debuggable;
 
 import com.jidesoft.swing.JideScrollPane;
 import com.jidesoft.swing.JideSplitPane;
@@ -60,14 +64,29 @@ import com.jidesoft.tree.StyledTreeCellRenderer;
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public class BrowsePanel extends javax.swing.JPanel implements DisplayContext, ObjectNavigatorGUI {
+public class BrowsePanel extends javax.swing.JPanel implements AppGUI, ObjectNavigatorGUI, DisplayContext {
+
+	public class BrowsePanelSwitchableViewImpl extends BoxPanelSwitchableViewImpl {
+
+		@Override public Component getComponent() {
+			return BrowsePanel.this.getComponent();
+		}
+
+		@Override public AppGUI getAppGUI(DisplayType attachType) {
+			return (AppGUI) BrowsePanel.this.getAppGUI();
+		}
+
+	}
 
 	private TreeModel myTreeModel;
 	final BrowsePanelContolApp app;
 
 	/** Creates new form BrowsePanel */
 	public BrowsePanel(TreeModel tm) {
+		Utility.boxPanelTabPane = myBoxPanelSwitchableViewImpl = new BrowsePanelSwitchableViewImpl();
+		Utility.browserPanel = this;
 		Utility.mainDisplayContext = this;
+		org.appdapter.gui.pojo.Utility.mainDisplayContext = this;
 		myTreeModel = tm;
 		initComponents();
 		myBoxPanelTabPane.setUseDefaultShowCloseButtonOnTab(true);
@@ -77,10 +96,9 @@ public class BrowsePanel extends javax.swing.JPanel implements DisplayContext, O
 		myBoxPanelTabPane.setShowCloseButtonOnMouseOver(false);
 		app = new BrowsePanelContolApp(this);
 		NamedObjectCollection ctx = Utility.context;
-		Utility.selectionOfCollectionPanel = new LargeClassChooser(app);
-		Utility.objectNavigator = new ObjectNavigator(Utility.selectionOfCollectionPanel, app, ctx);
+		Utility.collectionWatcher = new CollectionEditorUtil(app, ctx);
 		//myBoxPanelTabPane.add("Class Browser", Utility.selectionOfCollectionPanel);
-		myBoxPanelTabPane.add("POJO Browser", Utility.objectNavigator.getPOJOCollectionPanel());
+		myBoxPanelTabPane.add("POJO Browser", Utility.collectionWatcher.getNamedItemChooserPanel());
 		hookTree();
 	}
 
@@ -172,8 +190,9 @@ public class BrowsePanel extends javax.swing.JPanel implements DisplayContext, O
 		JCheckBoxMenuItem cbMenuItem;
 		menuBar = myTopFrameMenu = Utility.getMenuBar();
 		myTopFrameMenu.removeAll();
-		menuBar.add(Utility.objectNavigator.getMenu());
+		menuBar.add(Utility.collectionWatcher.getMenu());
 		//Build the first menu.
+
 		menu = new JMenu("A Menu");
 		menu.setMnemonic(KeyEvent.VK_A);
 		menu.getAccessibleContext().setAccessibleDescription("The only menu in this program that has menu items");
@@ -325,14 +344,6 @@ public class BrowsePanel extends javax.swing.JPanel implements DisplayContext, O
 		myTree.addMouseListener(ma);
 	}
 
-	@Override public BoxPanelSwitchableView getBoxPanelTabPane() {
-		return Utility.tabbedPanels;
-	}
-
-	@Override public JTabbedPane getRealPanelTabPane() {
-		return myBoxPanelTabPane;
-	}
-
 	public JTextField getBoxPanelStatus() {
 		return myBoxPanelStatus;
 	}
@@ -340,7 +351,7 @@ public class BrowsePanel extends javax.swing.JPanel implements DisplayContext, O
 	//GEN-BEGIN:variables
 	// Variables declaration - do not modify
 	private javax.swing.JTextField myBoxPanelStatus;
-	private JideTabbedPane myBoxPanelTabPane;
+	public JideTabbedPane myBoxPanelTabPane;
 	private JideSplitPane myBrowserSplitPane;
 	private javax.swing.JTextField myCmdInputTextField;
 	private javax.swing.JPanel myContentPanel;
@@ -351,14 +362,81 @@ public class BrowsePanel extends javax.swing.JPanel implements DisplayContext, O
 	private javax.swing.JMenuBar myTopFrameMenu;
 	private javax.swing.JTree myTree;
 	private JideScrollPane myTreeScrollPane;
+	private BoxPanelSwitchableView myBoxPanelSwitchableViewImpl;
 
 	// End of variables declaration//GEN-END:variables
 
-	@Override public NamedObjectCollection getCollectionWithSwizzler() {
+	@Override public NamedObjectCollection getNamedObjectCollection() {
 		return Utility.getCollectionWithSwizzler();
 	}
 
 	public void showMessage(String message) {
 		myBoxPanelStatus.setText(message);
+	}
+
+	@Override public void showScreenBox(Object any) {
+		try {
+			Utility.pojoApp.showScreenBox(any);
+		} catch (Exception e) {
+			Debuggable.UnhandledException(e);
+		}
+
+	}
+
+	@Override public DisplayContext findOrCreateDisplayContext(String title, Object anyObject, DisplayType attachType) {
+		if (true)
+			return getBoxPanelTabPane().showObject(anyObject, attachType);
+		switch (attachType) {
+		case TOSTRING: {
+			getBoxPanelStatus().setText("" + anyObject);
+			return null;
+		}
+
+		case PANEL: {
+			myBoxPanelTabPane.addTab(title, (Component) anyObject);
+			return null;
+
+		}
+		case FRAME: {
+			myBoxPanelTabPane.addTab(title, (Component) anyObject);
+			return null;
+
+		}
+		case TREE: {
+			myBoxPanelTabPane.addTab(title, (Component) anyObject);
+			return null;
+
+		}
+		}
+		return null;
+	}
+
+	@Override public BoxPanelSwitchableView getBoxPanelTabPane() {
+		return myBoxPanelSwitchableViewImpl;
+	}
+
+	protected AppGUI getAppGUI() {
+		return this;
+	}
+
+	@Override public Component getComponent() {
+		return this;
+	}
+
+	@Override public JTree getTree() {
+		return myTree;
+	}
+
+	@Override public JTabbedPane getTabbedPane() {
+		return myBoxPanelTabPane;
+	}
+
+	@Override public Container getGenericContainer() {
+		return myBoxPanelTabPane;
+	}
+
+	@Override public JDesktopPane getDesktopPane() {
+		// TODO Auto-generated method stub
+		return null;//myDesktopPane;
 	}
 }

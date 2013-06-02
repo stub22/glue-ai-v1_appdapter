@@ -29,26 +29,29 @@ import org.appdapter.demo.DemoResources;
  */
 public class RepoTriggers {
 
-	public static class OpenTrigger<MRB extends MutableRepoBox<TriggerImpl<MRB>>> extends  TriggerImpl<MRB>  {
+	public static class OpenTrigger<MRB extends MutableRepoBox<TriggerImpl<MRB>>> extends TriggerImpl<MRB> {
 		@Override public void fire(MRB targetBox) {
 			String storeConfigResolvedPath = DemoResources.STORE_CONFIG_PATH; // DemoResources.resolveResourcePathToURL_WhichJenaCantUseInCaseOfJarFileRes(DemoResources.STORE_CONFIG_PATH);
 			// Model data = FileManager.get().loadModel(dataPath.toString());
 			targetBox.mount(storeConfigResolvedPath);
 		}
 	}
-	public static class InitTrigger<MRB extends MutableRepoBox<TriggerImpl<MRB>>> extends  TriggerImpl<MRB> {
+
+	public static class InitTrigger<MRB extends MutableRepoBox<TriggerImpl<MRB>>> extends TriggerImpl<MRB> {
 		@Override public void fire(MRB targetBox) {
 			targetBox.formatStoreIfNeeded();
 		}
 	}
-	public static class DumpStatsTrigger<RB extends RepoBox<TriggerImpl<RB>>> extends  TriggerImpl<RB> {
+
+	public static class DumpStatsTrigger<RB extends org.appdapter.core.store.RepoBox<RBT>, RBT extends TriggerImpl<RB>> extends TriggerImpl<RB> {
 		@Override public void fire(RB targetBox) {
 			List<GraphStat> stats = targetBox.getAllGraphStats();
 		}
 	}
-	public static class QueryTrigger<RB extends RepoBox<TriggerImpl<RB>>> extends  TriggerImpl<RB>  {
 
-		@Override public void fire(RB  targetBox) {
+	public static class QueryTrigger<RB extends RepoBox<TriggerImpl<RB>>> extends TriggerImpl<RB> {
+
+		@Override public void fire(RB targetBox) {
 			String resolvedQueryURL = DemoResources.QUERY_PATH;
 			ClassLoader optCL = DemoResources.class.getClassLoader();
 			String resultXML = targetBox.processQueryAtUrlAndProduceXml(resolvedQueryURL, optCL);
@@ -56,19 +59,18 @@ public class RepoTriggers {
 		}
 	}
 
-	public static class UploadTrigger<MRB extends MutableRepoBox<TriggerImpl<MRB>>> extends  TriggerImpl<MRB>  {
+	public static class UploadTrigger<MRB extends MutableRepoBox<TriggerImpl<MRB>>> extends TriggerImpl<MRB> {
 		// ModGraph modGraph = new ModGraph();
 
 		// Want contravariance?
 		@Override public void fire(MRB targetBox) {
 			try {
 				String tgtGraphName = "yowza";
-				
+
 				// TODO - check on DemoResources.OPTIONAL_ABSOLUTE_ROOT_PATH
 				String absolutePathInNeigborClassSpace = "/" + DemoResources.DATA_PATH;
-				String dataSourceURL = 
-				DemoResources.makeURLforClassNeighborResPath_JenaFMCantUseButModelReaderCan(getClass(), absolutePathInNeigborClassSpace);
-					
+				String dataSourceURL = DemoResources.makeURLforClassNeighborResPath_JenaFMCantUseButModelReaderCan(getClass(), absolutePathInNeigborClassSpace);
+
 				targetBox.importGraphFromURL(tgtGraphName, dataSourceURL, true);
 			} catch (Throwable t) {
 				logError("problem in UploadTrigger", t);

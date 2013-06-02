@@ -7,7 +7,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.border.Border;
 
-import org.appdapter.gui.pojo.POJOApp;
+import org.appdapter.gui.box.POJOApp;
 import org.appdapter.gui.pojo.POJOBox;
 import org.appdapter.gui.pojo.POJOCollectionListener;
 import org.appdapter.gui.pojo.ScreenBoxedPOJORefPanel;
@@ -78,12 +78,16 @@ public class LargeObjectChooser extends JJPanel implements POJOCollectionListene
 	public void reloadContents() {
 		panel.removeAll();
 
-		for (POJOBox object : context.getPOJOSession().getScreenBoxes()) {
-			ScreenBoxedPOJORefPanel view = new ScreenBoxedPOJORefPanel(context, object.getObject(), true, true, true);
+		for (POJOBox object : context.getNamedObjectCollection().getScreenBoxes()) {
+			ScreenBoxedPOJORefPanel view = new ScreenBoxedPOJORefPanel(context, object.getValue(), true, true, true);
 			panel.add(view);
 		}
 		invalidate();
 		validate();
 		repaint();
+	}
+
+	public Object getObject() {
+		return context.getNamedObjectCollection();
 	}
 }

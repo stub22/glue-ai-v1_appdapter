@@ -16,30 +16,30 @@
 
 package org.appdapter.scafun
 
-import org.appdapter.api.trigger.{Box, BoxContext, BoxImpl, MutableBox, Trigger, TriggerImpl};
-import org.appdapter.demo.{DemoBrowser, DemoNavigatorCtrl};
-import org.appdapter.gui.demo.{DemoBrowserImpl, DemoNavigatorCtrlImpl};
-
+import org.appdapter.api.trigger.{ Box, BoxContext, BoxImpl, MutableBox, Trigger, TriggerImpl }
+import org.appdapter.gui.demo.{ DemoBrowser, DemoNavigatorCtrl };
+//import org.cogchar.gui.demo.DemoNavigatorCtrl
+//import org.cogchar.gui.demo.DemoBrowser
 
 object GoFish {
-  def main(args: Array[String]) :Unit = {
-	  println(this.getClass.getCanonicalName() + " sez:  yo");
-		println("Mapping stuff to other stuff, blending dynamic approximation and ironic detachment.");
-		val time = java.lang.System.currentTimeMillis();
-		println("The time is: " + time);
-		DemoBrowserImpl.testLoggingSetup();
-		//TestBrowse.main(args);
-		val tnc = makeTNC(args);
-		tnc.launchFrame("GoFish");
+  def main(args: Array[String]): Unit = {
+    println(this.getClass.getCanonicalName() + " sez:  yo");
+    println("Mapping stuff to other stuff, blending dynamic approximation and ironic detachment.");
+    val time = java.lang.System.currentTimeMillis();
+    println("The time is: " + time);
+    DemoBrowser.testLoggingSetup();
+    //TestBrowse.main(args);
+    val tnc = makeTNC(args);
+    tnc.launchFrame("GoFish");
 
-	}
-	def makeTNC(args: Array[String]) : DemoNavigatorCtrl = {
-		val tnc = DemoBrowserImpl.makeDemoNavigatorCtrl(args);
-		val box1 = Boxy.boxItUp();
-		tnc.addBoxToRoot(box1, false);
-		tnc;
-	}
-/*
+  }
+  def makeTNC(args: Array[String]): DemoNavigatorCtrl = {
+    val tnc = DemoBrowser.makeDemoNavigatorCtrl(args);
+    val box1 = Boxy.boxItUp();
+    tnc.addBoxToRoot(box1, false);
+    tnc;
+  }
+  /*
 
   	// public List<TrigType> getTriggers();
 	// public BoxContext getBoxContext();
@@ -47,6 +47,6 @@ object GoFish {
 	// void setContext(BoxContext bc);
 	// void setDisplayContextProvider(DisplayContextProvider dcp);
 	  */
-	 
- // }
+
+  // }
 }

@@ -1,19 +1,21 @@
 package org.appdapter.demo;
 
-import javax.swing.JTabbedPane;
-
-import org.appdapter.api.trigger.BoxPanelSwitchableView;
-import org.appdapter.api.trigger.DisplayContext;
+import org.appdapter.gui.box.BoxPanelSwitchableView;
+import org.appdapter.gui.box.UIProvider;
+import org.appdapter.gui.browse.DisplayContext;
+import org.appdapter.gui.pojo.DisplayType;
 import org.appdapter.gui.pojo.NamedObjectCollection;
 
-public interface ObjectNavigatorGUI extends DisplayContext {
+public interface ObjectNavigatorGUI extends UIProvider {
 
-	NamedObjectCollection getCollectionWithSwizzler();
+	NamedObjectCollection getNamedObjectCollection();
 
 	void showMessage(String string);
 
-	BoxPanelSwitchableView getBoxPanelTabPane();
+	DisplayContext findOrCreateDisplayContext(String title, Object anyObject, DisplayType dispType);
 
-	JTabbedPane getRealPanelTabPane();
+	void showScreenBox(Object any);
+
+	BoxPanelSwitchableView getBoxPanelTabPane();
 
 }

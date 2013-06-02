@@ -7,7 +7,7 @@ public class ThrowableCustomizer extends ScreenBoxedPOJOWithPropertiesPanel {
 	@Override protected void initSubClassGUI() {
 
 		String name;
-		Throwable object = (Throwable) getObject();
+		Throwable object = (Throwable) getValue();
 		if (object instanceof Error) {
 			name = "Error";
 		} else if (object instanceof RuntimeException) {

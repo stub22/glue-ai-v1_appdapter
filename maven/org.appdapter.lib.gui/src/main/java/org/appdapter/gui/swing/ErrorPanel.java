@@ -15,7 +15,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
-import org.appdapter.gui.pojo.POJOApp;
+import org.appdapter.gui.box.POJOApp;
 import org.appdapter.gui.pojo.Utility;
 import org.appdapter.gui.swing.impl.JBox;
 import org.appdapter.gui.swing.impl.JJPanel;

@@ -14,7 +14,7 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import org.appdapter.gui.pojo.POJOApp;
+import org.appdapter.gui.box.POJOApp;
 import org.appdapter.gui.pojo.Utility;
 import org.appdapter.gui.swing.impl.JVPanel;
 import org.slf4j.Logger;

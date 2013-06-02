@@ -16,14 +16,14 @@ public class ClassCustomizer extends ScreenBoxedPOJOWithPropertiesPanel {
 	@Override protected void initSubClassGUI() {
 
 		try {
-			ClassConstructorsPanel constructors = new ClassConstructorsPanel((Class) getObject());
+			ClassConstructorsPanel constructors = new ClassConstructorsPanel((Class) getValue());
 			tabs.insertTab("Constructors", null, constructors, null, 0);
 		} catch (Exception err) {
 			tabs.insertTab("Constructors", null, new ErrorPanel("Could not show constructors", err), null, 0);
 		}
 
 		try {
-			StaticMethodsPanel statics = new StaticMethodsPanel((Class) getObject());
+			StaticMethodsPanel statics = new StaticMethodsPanel((Class) getValue());
 			tabs.insertTab("Static methods", null, statics, null, 1);
 		} catch (Exception err) {
 			tabs.insertTab("Static methods", null, new ErrorPanel("Could not show static methods", err), null, 1);

@@ -33,14 +33,14 @@ import javax.swing.JTable;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.core.store.MutableRepoBox;
 import org.appdapter.gui.browse.TriggerMenuFactory;
-import org.appdapter.gui.pojo.AbstractScreenBoxedPOJOPanel;
+import org.appdapter.gui.pojo.ScreenBoxedPOJOPanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public class RepoManagerPanel extends AbstractScreenBoxedPOJOPanel<MutableRepoBox> {
+public class RepoManagerPanel extends ScreenBoxedPOJOPanel<MutableRepoBox> {
 	static Logger theLogger = LoggerFactory.getLogger(RepoManagerPanel.class);
 
 	@Override protected void initGUI() {
@@ -215,10 +215,14 @@ public class RepoManagerPanel extends AbstractScreenBoxedPOJOPanel<MutableRepoBo
 
 	// End of variables declaration//GEN-END:variables
 
-	@Override public Object getObject() {
+	@Override public Object getValue() {
 		if (myFocusBox != null)
 			return myFocusBox;
 		return this;
 	}
 
+	@Override public void objectValueChanged(Object oldValue, Object newValue) {
+		focusOnBox((Box) newValue);
+
+	}
 }

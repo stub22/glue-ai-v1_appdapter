@@ -19,10 +19,10 @@ package org.appdapter.demo;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContext;
 import org.appdapter.api.trigger.MutableBox;
-import org.appdapter.api.trigger.ScreenBoxPanel;
 import org.appdapter.api.trigger.TriggerImpl;
 import org.appdapter.bind.rdf.jena.assembly.CachingComponentAssembler;
 import org.appdapter.gui.box.ScreenBoxImpl;
+import org.appdapter.gui.box.ScreenBoxPanel;
 import org.appdapter.gui.trigger.PanelTriggers;
 
 /**

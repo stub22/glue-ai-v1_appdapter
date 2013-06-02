@@ -11,7 +11,7 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.border.EtchedBorder;
 
-import org.appdapter.gui.pojo.POJOApp;
+import org.appdapter.gui.box.POJOApp;
 import org.appdapter.gui.pojo.Utility;
 import org.appdapter.gui.swing.impl.JJPanel;
 
@@ -70,7 +70,7 @@ public class ClassConstructorsPanel extends JJPanel implements ActionListener {
 		if (constructor != null) {
 			Object newObject = constructor.newInstance(params);
 			if (context != null) {
-				context.getPOJOSession().addPOJO(newObject);
+				context.getNamedObjectCollection().addPOJO(newObject);
 			}
 		}
 	}

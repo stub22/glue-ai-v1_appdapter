@@ -12,7 +12,7 @@ import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
 
-import org.appdapter.gui.pojo.POJOApp;
+import org.appdapter.gui.box.POJOApp;
 import org.appdapter.gui.pojo.POJOCollectionListener;
 import org.appdapter.gui.swing.impl.JJPanel;
 
@@ -123,7 +123,7 @@ public class ObjectValuesChoicePanel extends JJPanel implements POJOCollectionLi
 			if (context == null)
 				values = new LinkedList();
 			else {
-				Collection col = context.getPOJOSession().getPOJOCollectionOfType(type);
+				Collection col = context.getNamedObjectCollection().getPOJOCollectionOfType(type);
 				values = new LinkedList(col);
 			}
 			values.add("<null>");
@@ -172,7 +172,7 @@ public class ObjectValuesChoicePanel extends JJPanel implements POJOCollectionLi
 			if (values == null)
 				values = new LinkedList();
 			else
-				values = new LinkedList(context.getPOJOSession().getPOJOCollectionOfType(type));
+				values = new LinkedList(context.getNamedObjectCollection().getPOJOCollectionOfType(type));
 			values.add("<null>");
 			setSelectedItem(selected);
 		}

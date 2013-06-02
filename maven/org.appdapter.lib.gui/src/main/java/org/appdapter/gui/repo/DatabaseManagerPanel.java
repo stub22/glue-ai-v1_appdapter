@@ -24,12 +24,13 @@ package org.appdapter.gui.repo;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.gui.pojo.AbstractScreenBoxedPOJOPanel;
+import org.appdapter.gui.pojo.ScreenBoxedPOJOPanel;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
 
-public class DatabaseManagerPanel extends AbstractScreenBoxedPOJOPanel {
+public class DatabaseManagerPanel extends ScreenBoxedPOJOPanel<Box> {
 
 	@Override protected void initGUI() {
 		initComponents();
@@ -55,11 +56,13 @@ public class DatabaseManagerPanel extends AbstractScreenBoxedPOJOPanel {
 	}// </editor-fold>//GEN-END:initComponents
 
 	@Override public void focusOnBox(Box b) {
+		setObject(b);
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 
-	@Override public Object getObject() {
-		return this;
+	@Override public void objectValueChanged(Object oldpojObject, Object newpojObject) {
+		// TODO Auto-generated method stub
+
 	}
 
 	// Variables declaration - do not modify//GEN-BEGIN:variables

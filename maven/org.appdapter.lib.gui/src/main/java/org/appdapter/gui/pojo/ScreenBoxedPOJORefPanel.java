@@ -32,6 +32,7 @@ import javax.swing.JPanel;
 import javax.swing.OverlayLayout;
 
 import org.appdapter.api.trigger.Box;
+import org.appdapter.gui.box.POJOApp;
 import org.appdapter.gui.swing.IconView;
 import org.appdapter.gui.swing.POJOPopupMenu;
 import org.slf4j.Logger;
@@ -60,9 +61,14 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 
 	//Invisible panel in front that captures menu events and drag/drop events
 	JPanel frontGlass;
+	private Object objectValue;
 
 	@Override public void focusOnBox(Box b) {
+		setObject(b);
+	}
 
+	@Override public Object getValue() {
+		return objectValue;
 	}
 
 	JLabel label;
@@ -98,20 +104,6 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 		dragSource.createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_MOVE, this);
 	}
 
-	private Object pojObject;
-
-	@Override public Object getObject() {
-		return pojObject;
-	}
-
-	@Override public void setObject(Object newpojObject) {
-		Object oldpojObject = pojObject;
-		if (oldpojObject != newpojObject) {
-			pojObject = newpojObject;
-			objectChanged(oldpojObject, newpojObject);
-		}
-	}
-
 	public ScreenBoxedPOJORefPanel(POJOApp context, Object object, boolean showLabel, boolean showIcon, boolean showPropButton) {
 		this(context, object, showLabel, showIcon, showPropButton, null);
 	}
@@ -127,9 +119,9 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 	@Override public void propertyChange(PropertyChangeEvent evt) {
 		if (label != null) {
 			if (context == null) {
-				label.setText(getObject().toString());
+				label.setText(getValue().toString());
 			} else {
-				label.setText(context.getPOJOName(getObject()));
+				label.setText(context.getBoxName(getValue()));
 			}
 		}
 		checkColor();
@@ -180,15 +172,15 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 		if (evt.getSource() == propButton) {
 			if (context != null) {
 				try {
-					context.showScreenBox(getObject());
+					context.showScreenBox(getValue());
 				} catch (Throwable err) {
-					context.showError("An error occurred while creating an interface for " + getObject(), err);
+					context.showError("An error occurred while creating an interface for " + getValue(), err);
 				}
 			}
 		} else if (evt.getSource() == removeButton) {
-			parent.remove(getObject());
+			parent.remove(getValue());
 			if (removeListener != null) {
-				removeListener.objectRemoved(getObject(), parent);
+				removeListener.objectRemoved(getValue(), parent);
 			}
 		}
 	}
@@ -214,7 +206,7 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 	}
 
 	@Override public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException {
-		return getObject();
+		return getValue();
 	}
 
 	@Override public void dragEnter(DragSourceDragEvent dsde) {
@@ -234,15 +226,19 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 
 	//=================================================================
 
-	@Override protected void objectChanged(Object oldBean, Object newBean) {
+	@Override public void objectValueChanged(Object oldBean, Object newBean) {
 		removeAll();
+		objectValue = newBean;
 		initGUI();
 	}
 
 	private void showMenu(int x, int y) {
-		Object object = getObject();
+		Object object = getValue();
+		if (object == null) {
+			object = this;
+		}
 		if (!object.getClass().isPrimitive()) {
-			POJOPopupMenu menu = new POJOPopupMenu(context, getObject());
+			POJOPopupMenu menu = new POJOPopupMenu(context, object);
 			frontGlass.add(menu);
 			menu.show(frontGlass, x, y);
 		}
@@ -257,7 +253,7 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 		frontGlass.setOpaque(false);
 
 		panel.setLayout(new FlowLayout(FlowLayout.LEFT));
-		Object object = getObject();
+		Object object = getValue();
 		if (object != null) {
 			if (showIcon) {
 				try {
@@ -276,7 +272,7 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 				if (context == null) {
 					label = new JLabel(object.toString());
 				} else {
-					label = new JLabel(context.getPOJOName(object));
+					label = new JLabel(context.getBoxName(object));
 				}
 				panel.add(label);
 			}

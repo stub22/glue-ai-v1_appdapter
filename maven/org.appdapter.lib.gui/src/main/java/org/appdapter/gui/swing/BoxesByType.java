@@ -11,7 +11,7 @@ import java.util.Map;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 
-import org.appdapter.gui.pojo.POJOApp;
+import org.appdapter.gui.box.POJOApp;
 import org.appdapter.gui.pojo.Utility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
