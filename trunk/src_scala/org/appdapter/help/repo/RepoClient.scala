@@ -21,6 +21,7 @@ import org.appdapter.core.store.{Repo, InitialBinding, ModelClient}
 
 // import org.appdapter.impl.store.{FancyRepo};
 
+// maybe trait RepoClientScala extends RepoClientJava {
 trait RepoClient extends ModelClient {
   
 	/** 

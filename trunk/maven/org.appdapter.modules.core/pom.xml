@@ -14,7 +14,8 @@
 	<modules>
 		<module>../ext.bundle.osgi.common</module>
 		<module>../org.appdapter.lib.core</module>
-		<module>../org.appdapter.lib.registry</module>		
+        <module>../org.appdapter.lib.registry</module>		
+        <module>../org.appdapter.lib.gui</module>		
 		<module>../org.appdapter.bundle.core</module>
 		<module>../ext.bundle.jena.full</module>
 		<module>../ext.bundle.xml.dom4j</module>

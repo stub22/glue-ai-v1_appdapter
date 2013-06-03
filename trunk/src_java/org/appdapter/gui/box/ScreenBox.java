@@ -15,19 +15,20 @@
  */
 package org.appdapter.gui.box;
 
-import org.appdapter.api.trigger.Trigger;
 import org.appdapter.api.trigger.Box;
+import org.appdapter.api.trigger.Trigger;
 import org.appdapter.core.component.KnownComponent;
 import org.appdapter.gui.browse.DisplayContext;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public interface ScreenBox<TT extends Trigger<? extends ScreenBox<TT>>> extends Box<TT>, KnownComponent {
+public interface ScreenBox<TT extends Trigger<? extends ScreenBox<TT>>> extends Box<TT>, KnownComponent, UIProvider {
 
 	public DisplayContext getDisplayContext();
-	
-	void setDisplayContextProvider(DisplayContextProvider dcp);	
+
+	void setDisplayContextProvider(DisplayContextProvider dcp);
 
 	public ScreenBoxPanel findBoxPanel(ScreenBoxPanel.Kind kind);
+	
 }

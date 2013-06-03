@@ -16,21 +16,22 @@
 
 package org.appdapter.gui.assembly;
 
-import org.appdapter.bind.rdf.jena.assembly.DynamicCachingComponentAssembler;
-import org.appdapter.core.component.ComponentAssemblyNames;
-import org.appdapter.core.name.Ident;
-import org.appdapter.core.item.Item;
-import org.appdapter.gui.box.ScreenBoxImpl;
-import org.appdapter.api.trigger.Trigger;
-import org.appdapter.api.trigger.BoxAssemblyNames;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.assembler.Assembler;
-import com.hp.hpl.jena.assembler.Mode;
 import java.util.List;
 import java.util.Set;
+
+import org.appdapter.api.trigger.BoxAssemblyNames;
+import org.appdapter.api.trigger.Trigger;
+import org.appdapter.bind.rdf.jena.assembly.DynamicCachingComponentAssembler;
+import org.appdapter.core.component.ComponentAssemblyNames;
+import org.appdapter.core.item.Item;
 import org.appdapter.core.item.ItemFuncs;
+import org.appdapter.gui.box.ScreenBoxImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.hp.hpl.jena.assembler.Assembler;
+import com.hp.hpl.jena.assembler.Mode;
+import com.hp.hpl.jena.rdf.model.Resource;
 
 /**
  * @author Stu B. <www.texpedient.com>

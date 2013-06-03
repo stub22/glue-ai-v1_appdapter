@@ -16,9 +16,9 @@
 
 package org.appdapter.gui.trigger;
 
-import org.appdapter.gui.box.ScreenBoxPanel;
 import org.appdapter.api.trigger.TriggerImpl;
 import org.appdapter.gui.box.ScreenBox;
+import org.appdapter.gui.box.ScreenBoxPanel;
 import org.appdapter.gui.browse.BrowseTabFuncs;
 import org.appdapter.gui.browse.DisplayContext;
 import org.slf4j.Logger;
@@ -29,12 +29,23 @@ import org.slf4j.LoggerFactory;
  */
 public class PanelTriggers {
 	static Logger theLogger = LoggerFactory.getLogger(PanelTriggers.class);
-	public enum Kind {
-		OPEN,
-		CLOSE
-	}
-	public static class OpenTrigger <VB extends ScreenBox<TriggerImpl<VB>>> extends  TriggerImpl<VB> {
-		private ScreenBoxPanel.Kind	myPanelKind;
+
+	/*
+		public enum Kind {
+			OPEN, CLOSE
+		}
+	*/
+	public static class OpenTrigger<VB extends ScreenBox<TriggerImpl<VB>>> extends TriggerImpl<VB> {
+		private ScreenBoxPanel.Kind myPanelKind;
+
+		public OpenTrigger() {
+			super();
+		}
+
+		public OpenTrigger(ScreenBoxPanel.Kind k) {
+			super();
+			myPanelKind = k;
+		}
 
 		/**
 		 * 
@@ -51,9 +62,10 @@ public class PanelTriggers {
 			BrowseTabFuncs.openBoxPanelAndFocus(dc, targetVB, myPanelKind);
 		}
 	}
-	public static class CloseTrigger  <VB extends ScreenBox<TriggerImpl<VB>>> extends  TriggerImpl<VB> {
+
+	public static class CloseTrigger<VB extends ScreenBox<TriggerImpl<VB>>> extends TriggerImpl<VB> {
 		@Override public void fire(VB targetBox) {
-			theLogger.info(toString() + "-closing viewableBox: " + targetBox);	
+			theLogger.info(toString() + "-closing viewableBox: " + targetBox);
 		}
 	}
 }

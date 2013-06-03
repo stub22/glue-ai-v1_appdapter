@@ -14,6 +14,7 @@
  *  limitations under the License.
  */
 package org.appdapter.core.component;
+
 import org.appdapter.core.name.Ident;
 
 import org.appdapter.core.component.MutableKnownComponent;
@@ -24,6 +25,7 @@ import java.util.Map;
 import java.util.Collection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 /**
  * @author Stu B. <www.texpedient.com>
  */
@@ -33,6 +35,7 @@ public class ComponentCache<MKC extends MutableKnownComponent>  {
 	public MKC getCachedComponent(Ident id) {
 		return myCompCache.get(id);
 	}
+
 	public void putCachedComponent(Ident id, MKC comp) {
 		myCompCache.put(id, comp);
 	}	

@@ -195,6 +195,14 @@ central repo.
 			<!-- Now frozen to use version 1.0.9, so we don't have to build JScience wrapper anymore -->
 			<version>1.0.9</version>
 		</dependency>
+		
+		<!-- This is here until the GUI is really all the way out of appdapter.core and into appdapter.gui  -->
+		<dependency>
+            <groupId>com.jidesoft</groupId>
+            <artifactId>jide-oss</artifactId>
+            <version>3.5.5</version>
+        </dependency>
+        
 		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi-ooxml</artifactId>

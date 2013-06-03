@@ -17,7 +17,6 @@
 package org.appdapter.gui.repo;
 
 import org.appdapter.api.trigger.Trigger;
-import org.appdapter.core.store.Repo;
 
 /**
  * @author Stu B. <www.texpedient.com>

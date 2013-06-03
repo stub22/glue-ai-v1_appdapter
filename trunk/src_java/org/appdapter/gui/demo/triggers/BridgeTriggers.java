@@ -16,12 +16,13 @@
 
 package org.appdapter.gui.demo.triggers;
 
-import org.appdapter.bind.rdf.jena.assembly.AssemblerUtils;
+import java.util.Set;
+
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContext;
 import org.appdapter.api.trigger.MutableBox;
 import org.appdapter.api.trigger.TriggerImpl;
-import java.util.Set;
+import org.appdapter.bind.rdf.jena.assembly.AssemblerUtils;
 import org.appdapter.bind.rdf.jena.model.JenaFileManagerUtils;
 import org.appdapter.demo.DemoResources;
 

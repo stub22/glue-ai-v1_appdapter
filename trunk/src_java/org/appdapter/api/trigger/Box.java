@@ -16,7 +16,10 @@
 
 package org.appdapter.api.trigger;
 
+import java.awt.Component;
 import java.util.List;
+
+import org.appdapter.api.trigger.AnyOper.UIHidden;
 
 /**
  * A Box is some entity displayable (perhaps in pieces) and interactable in GUI.
@@ -25,10 +28,15 @@ import java.util.List;
  *
  * @author Stu B. <www.texpedient.com>
  */
+@UIHidden
 public interface Box<TrigType extends Trigger<? extends Box<TrigType>>> {
 
 	public BoxContext getBoxContext();
 
+	public <T> T[] getObjects(Class<T> type);
+
 	public List<TrigType> getTriggers();
+
+	public Component getComponent();
 
 }

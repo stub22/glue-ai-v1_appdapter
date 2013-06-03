@@ -16,12 +16,18 @@
 
 package org.appdapter.gui.browse;
 
-import javax.swing.JTabbedPane;
+import java.awt.Component;
+
+import org.appdapter.gui.box.BoxPanelSwitchableView;
+import org.appdapter.gui.box.UIProvider;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public interface DisplayContext {
+public interface DisplayContext extends UIProvider {
 	// TODO : replace this with general BoxPanelSwitchableView
-	public JTabbedPane getBoxPanelTabPane();
+	public BoxPanelSwitchableView getBoxPanelTabPane();
+
+	public Component getComponent();
+
 }

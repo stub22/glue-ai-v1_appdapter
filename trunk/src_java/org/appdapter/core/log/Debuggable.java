@@ -7,7 +7,10 @@ import java.lang.reflect.Modifier;
 import java.util.HashSet;
 import java.util.logging.Logger;
 
-public abstract class Debuggable {
+import org.appdapter.gui.util.PromiscuousClassUtils;
+
+
+public abstract class Debuggable extends PromiscuousClassUtils {
 
 	public static int PRINT_DEPTH = 3;
 
@@ -37,6 +40,11 @@ public abstract class Debuggable {
 		RuntimeException rte = new NullPointerException(dstr);
 		rte.printStackTrace();
 		return rte;
+	}
+
+	public static String trace(Object... objects) {
+		String dstr = Debuggable.toInfoStringA(objects, " : ", PRINT_DEPTH);
+		return dstr;
 	}
 
 	public static String toInfoStringA(Object[] params, String sep, int depth) {
@@ -207,9 +215,9 @@ public abstract class Debuggable {
 		return Logger.getLogger(name.getSimpleName());
 	}
 
-	public static void UnhandledException(Throwable e1) {
-		e1.printStackTrace();
-		warn("e=" + e1.getMessage());
+	public static void UnhandledException(Throwable e) {
+		e.printStackTrace();
+		warn("e=" + e.getMessage());
 	}
 
 	public static RuntimeException asRuntimeException(Throwable e) {
@@ -221,5 +229,12 @@ public abstract class Debuggable {
 			throw ((Error) e);
 		}
 		return new RuntimeException(e.getMessage(), e);
+	}
+
+	public static <T> T notImplemented(Object... params) {
+		String msg = "notImplemented: " + toInfoStringA(params, ",", PRINT_DEPTH);
+		if (true)
+			throw new AbstractMethodError(msg);
+		return (T) null;
 	}
 }

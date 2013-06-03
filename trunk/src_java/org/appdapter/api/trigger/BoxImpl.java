@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.appdapter.core.component.KnownComponent;
 import org.appdapter.core.component.KnownComponentImpl;
+import org.appdapter.gui.pojo.POJOBox;
 
 
 /**
@@ -28,6 +29,18 @@ import org.appdapter.core.component.KnownComponentImpl;
 
 public abstract class BoxImpl <TrigType extends Trigger<? extends BoxImpl<TrigType>>> extends KnownComponentImpl 
 			implements MutableBox<TrigType> {
+	
+	public <T> T[] getObjects(Class<T> type) {
+		if (true) throw new AbstractMethodError("TODO DMILES!");
+		return (T[]) new Object[] { this };
+	}
+
+	public Object getValue() {
+		return this;
+	}
+	public Object getObject() {
+		return this;
+	}
 	
 	private	BoxContext						myBoxContext;
 
