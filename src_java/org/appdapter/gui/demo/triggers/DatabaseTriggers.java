@@ -16,10 +16,10 @@
 
 package org.appdapter.gui.demo.triggers;
 
-import org.appdapter.bind.sql.h2.DatabaseConnector;
-import org.appdapter.demo.DemoDatabase;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.TriggerImpl;
+import org.appdapter.bind.sql.h2.DatabaseConnector;
+import org.appdapter.demo.DemoDatabase;
 
 /**
  * @author Stu B. <www.texpedient.com>

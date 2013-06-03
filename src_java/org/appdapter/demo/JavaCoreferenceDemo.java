@@ -52,6 +52,13 @@ public class JavaCoreferenceDemo {
 	public static interface JavaEmptyTao<JEZ extends JavaEmptyZen<? extends JavaEmptyTao<? extends JEZ>>> { }
  	public static interface JavaEmptyZen<JET extends JavaEmptyTao<? extends JavaEmptyZen<? extends JET>>> { }
 
+ 	
+	public static interface HiEmptyTao<JEZ extends JavaEmptyZen<? extends JavaEmptyTao<? extends JEZ>>> extends JavaEmptyTao<JEZ> { }
+ 	public static interface HiEmptyZen<JET extends JavaEmptyTao<? extends JavaEmptyZen<? extends JET>>> extends JavaEmptyZen<JET> {  }
+
+	public static interface LoEmptyTao<JEZ extends JavaEmptyZen<? extends JavaEmptyTao<? extends JEZ>>> extends JavaEmptyTao<JEZ> { }
+ 	public static interface LoEmptyZen<JET extends JavaEmptyTao<? extends JavaEmptyZen<? extends JET>>> extends JavaEmptyZen<JET> {  }
+
 	// OK, now let's make some versions that are similar, but include methods, making them "Fun"!
 	public static interface JavaFunTao<JFZ extends JavaFunZen<? extends JavaFunTao<JFZ>>> {
 		public JFZ consider(JFZ someZen, JavaFunTao<JFZ> otherTao);

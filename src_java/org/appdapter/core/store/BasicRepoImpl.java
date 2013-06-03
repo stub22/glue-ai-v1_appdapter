@@ -16,40 +16,47 @@
 
 package org.appdapter.core.store;
 
-
-
-import org.appdapter.bind.rdf.jena.query.JenaArqQueryFuncs;
-import org.appdapter.bind.rdf.jena.query.JenaArqResultSetProcessor;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 import org.appdapter.bind.rdf.jena.assembly.AssemblerUtils;
+import org.appdapter.bind.rdf.jena.query.JenaArqQueryFuncs;
+import org.appdapter.bind.rdf.jena.query.JenaArqResultSetProcessor;
 import org.appdapter.core.name.Ident;
 
+import com.hp.hpl.jena.query.DataSource;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.rdf.model.Model;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Set;
+
 /**
  * @author Stu B. <www.texpedient.com>
  */
 
 public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements Repo {
-	private	Dataset myMainQueryDataset;
-	
+	private Dataset myMainQueryDataset;
+
+	public void replaceModelByName(Ident modelID, Model jenaModel) {
+		Dataset repoDset = getMainQueryDataset();
+		DataSource repoDsource = (DataSource) repoDset;
+		repoDsource.replaceNamedModel(modelID.getAbsUriString(), jenaModel);
+	}
+
 	protected abstract Dataset makeMainQueryDataset();
-	
+
 	@Override public Dataset getMainQueryDataset() {
 		if (myMainQueryDataset == null) {
 			myMainQueryDataset = makeMainQueryDataset();
 		}
 		return myMainQueryDataset;
 	}
+
 	@Override public List<GraphStat> getGraphStats() {
-		List<GraphStat> stats  = new ArrayList<GraphStat>();
-		Dataset mainDset = getMainQueryDataset(); 
+		List<GraphStat> stats = new ArrayList<GraphStat>();
+		Dataset mainDset = getMainQueryDataset();
 		Iterator<String> nameIt = mainDset.listNames();
 		while (nameIt.hasNext()) {
 			String modelName = nameIt.next();
@@ -62,7 +69,6 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 		return stats;
 	}
 
-
 	@Override public <ResType> ResType processQuery(Query parsedQuery, QuerySolution initBinding, JenaArqResultSetProcessor<ResType> resProc) {
 		ResType result = null;
 		try {
@@ -73,15 +79,18 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 		}
 		return result;
 	}
+
 	@Override public List<QuerySolution> findAllSolutions(Query parsedQuery, QuerySolution initBinding) {
 		Dataset ds = getMainQueryDataset();
 		return JenaArqQueryFuncs.findAllSolutions(ds, parsedQuery, initBinding);
 	}
+
 	@Override public Model getNamedModel(Ident graphNameIdent) {
 		Dataset mqd = getMainQueryDataset();
 		String absURI = graphNameIdent.getAbsUriString();
 		return mqd.getNamedModel(absURI);
-	}	
+	}
+
 	@Override public Set<Object> assembleRootsFromNamedModel(Ident graphNameIdent) {
 		Model loadedModel = getNamedModel(graphNameIdent);
 		if (loadedModel == null) {
