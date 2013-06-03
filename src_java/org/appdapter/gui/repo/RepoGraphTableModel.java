@@ -16,13 +16,13 @@
 
 package org.appdapter.gui.repo;
 
-import org.appdapter.core.store.Repo.GraphStat;
-
-import org.appdapter.api.trigger.Box;
-
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.swing.table.AbstractTableModel;
+
+import org.appdapter.api.trigger.Box;
+import org.appdapter.core.store.Repo.GraphStat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

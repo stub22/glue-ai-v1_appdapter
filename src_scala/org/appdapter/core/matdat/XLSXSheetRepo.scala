@@ -16,46 +16,15 @@
 
 package org.appdapter.core.matdat
 
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.InputStreamReader;
-import java.io.InputStream;
-import java.util.Iterator;
-import java.lang.StringBuffer;
-import java.io.FileInputStream;
-import org.appdapter.bind.csv.datmat.TestSheetReadMain;
-import au.com.bytecode.opencsv.CSVReader;
-
-import org.appdapter.core.log.BasicDebugger;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.xssf.streaming.{ SXSSFWorkbook };
-import org.apache.poi.openxml4j.opc.{ OPCPackage };
-import org.apache.poi.xssf.usermodel.{ XSSFWorkbook };
-import org.apache.poi.ss.usermodel.{ Workbook, Row, Cell, Sheet, Header };
-import org.appdapter.core.store.{ FileStreamUtils };
-
-import com.hp.hpl.jena.rdf.model.{ Model, Statement, Resource, Property, Literal, RDFNode, ModelFactory, InfModel }
-
-import com.hp.hpl.jena.query.{ Query, QueryFactory, QueryExecution, QueryExecutionFactory, QuerySolution, QuerySolutionMap, Syntax };
-import com.hp.hpl.jena.query.{ Dataset, DatasetFactory, DataSource };
-import com.hp.hpl.jena.query.{ ResultSet, ResultSetFormatter, ResultSetRewindable, ResultSetFactory };
-
-import com.hp.hpl.jena.ontology.{ OntProperty, ObjectProperty, DatatypeProperty }
-import com.hp.hpl.jena.datatypes.{ RDFDatatype, TypeMapper }
-import com.hp.hpl.jena.datatypes.xsd.{ XSDDatatype }
-import com.hp.hpl.jena.shared.{ PrefixMapping }
-
-import com.hp.hpl.jena.rdf.listeners.{ ObjectListener };
-
-import org.appdapter.core.log.BasicDebugger;
-
-import org.appdapter.bind.rdf.jena.model.{ ModelStuff, JenaModelUtils, JenaFileManagerUtils };
-// import org.appdapter.bind.rdf.jena.query.{JenaArqQueryFuncs, JenaArqResultSetProcessor};
-
-import org.appdapter.core.store.{ Repo, BasicQueryProcessorImpl, BasicRepoImpl, QueryProcessor };
-
-import org.appdapter.impl.store.{ DirectRepo, QueryHelper, ResourceResolver };
-import org.appdapter.help.repo.InitialBindingImpl;
+import com.hp.hpl.jena.query.{ ResultSetFactory, ResultSet, QuerySolution, DataSource }
+import com.hp.hpl.jena.rdf.model.{ Resource, RDFNode, ModelFactory, Model, Literal }
+import java.io.Reader
+import org.appdapter.core.store.{ RepoSpec, FileStreamUtils }
+import org.appdapter.impl.store.QueryHelper
+import scala.collection.JavaConversions.asScalaBuffer
+import org.appdapter.impl.store.DirectRepo
+import org.appdapter.core.store.Repo
+import org.appdapter.core.log.BasicDebugger
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -66,15 +35,48 @@ import org.appdapter.help.repo.InitialBindingImpl;
  *   Uses Apache POI (@see http://poi.apache.org/)
  */
 
-class XLSXSheetRepo(directoryModel: Model, fmcls: java.util.List[ClassLoader]) extends CsvFilesSheetRepo(directoryModel, fmcls) {
+abstract class XLSXSheetRepo(directoryModel: Model, fmcls: java.util.List[ClassLoader] = null)
 
-  override def loadSheetModelsIntoMainDataset() = {
-    super.loadSheetModelsIntoMainDataset();
-    loadSheetModelsIntoMainDatasetXlsWorkBooks();
+  extends CsvFilesSheetRepo(directoryModel, fmcls) {
+
+  def this(sheetLocation: String, namespaceSheet: String, dirSheet: String, fileModelCLs: java.util.List[ClassLoader]) {
+    this(XLSXSheetRepo.readDirectoryModelFromXLSX(sheetLocation, namespaceSheet, dirSheet, fileModelCLs), fileModelCLs)
   }
 
-  def loadSheetModelsIntoMainDatasetXlsWorkBooks() = {
+  /**
+   *  All the work gets done at SheetRepo
+   */
+  override def loadSheetModelsIntoMainDataset() = {
+    super.loadSheetModelsIntoMainDataset();
+    //loadXlsWorkBookSheetModelsIntoMainDataset();
+  }
+  /*
+  def loadXlsWorkBookSheetModelsIntoMainDataset() = {
     val mainDset: DataSource = getMainQueryDataset().asInstanceOf[DataSource];
+    val dirModel = getDirectoryModel;
+    XLSXSheetRepoLoader.loadSheetModelsIntoTargetDataset(this, mainDset, dirModel, fileModelCLs);
+  }*/
+}
+
+@deprecated
+object XLSXSheetRepo {
+  def readDirectoryModelFromXLSX(sheetLocation: String, namespaceSheet: String, dirSheet: String, fileModelCLs: java.util.List[ClassLoader]): Model = {
+    XLSXSheetRepoLoader.readDirectoryModelFromXLSX(sheetLocation, namespaceSheet, dirSheet, fileModelCLs)
+  }
+}
+
+/// this is a registerable loader
+class XLSXSheetRepoLoader extends InstallableRepoReader {
+  override def getContainerType() = "ccrt:XlsxWorkbookRepo"
+  override def getSheetType() = "ccrt:XlsxSheet"
+  override def loadModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: DataSource, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
+    XLSXSheetRepoLoader.loadSheetModelsIntoTargetDataset(repo, mainDset, dirModel, fileModelCLs)
+  }
+}
+
+object XLSXSheetRepoLoader extends BasicDebugger {
+
+  def loadSheetModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: DataSource, myDirectoryModel: Model, fileModelCLs: java.util.List[ClassLoader]) = {
 
     val nsJavaMap: java.util.Map[String, String] = myDirectoryModel.getNsPrefixMap()
 
@@ -99,36 +101,27 @@ class XLSXSheetRepo(directoryModel: Model, fmcls: java.util.List[ClassLoader]) e
 
       val sheetName = sheetName_Lit.getString();
       val sheetLocation = sheetLocation_Lit.getString();
-      var sheetModel: Model = XLSXSheetRepo.readModelSheet(sheetLocation, sheetName, nsJavaMap, fileModelCLs);
+      var sheetModel: Model = readModelSheet(sheetLocation, sheetName, nsJavaMap, fileModelCLs);
       getLogger.debug("Read sheetModel: {}", sheetModel)
       val graphURI = sheetRes.getURI();
       mainDset.replaceNamedModel(graphURI, sheetModel)
     }
   }
-}
-
-object XLSXSheetRepo extends BasicDebugger {
 
   def getSheetAt(sheetLocation: String, sheetName: String, fileModelCLs: java.util.List[ClassLoader]): Reader = {
     var reader = FileStreamUtils.getSheetReaderAt(sheetLocation, sheetName, fileModelCLs);
     if (reader == null) {
-      reader = CsvFilesSheetRepo.getCsvSheetAt(sheetLocation, sheetName, fileModelCLs);
+      reader = CsvFilesSheetLoader.getCsvSheetAt(sheetLocation, sheetName, fileModelCLs);
     }
     reader;
   }
 
   ///. Modeled on SheetRepo.loadTestSheetRepo
   def loadXLSXSheetRepo(sheetLocation: String, namespaceSheetName: String, dirSheetName: String,
-    fileModelCLs: java.util.List[ClassLoader]): SheetRepo = {
+    fileModelCLs: java.util.List[ClassLoader], repoSpec: RepoSpec): SheetRepo = {
     // Read the namespaces and directory sheets into a single directory model.
     val dirModel: Model = readDirectoryModelFromXLSX(sheetLocation, namespaceSheetName, dirSheetName, fileModelCLs: java.util.List[ClassLoader])
-    // Construct a repo around that directory
-    val shRepo = new XLSXSheetRepo(dirModel, fileModelCLs)
-    // Load the rest of the repo's initial *sheet* models, as instructed by the directory.
-    shRepo.loadSheetModelsIntoMainDataset()
-    // Load the rest of the repo's initial *file/resource* models, as instructed by the directory.
-    shRepo.loadFileModelsIntoMainDataset(fileModelCLs)
-    shRepo
+    SpecialRepoLoader.makeSheetRepo(repoSpec, dirModel);
   }
 
   def readModelSheet(sheetLocation: String, sheetName: String, nsJavaMap: java.util.Map[String, String], fileModelCLs: java.util.List[ClassLoader]): Model = {
@@ -141,22 +134,18 @@ object XLSXSheetRepo extends BasicDebugger {
     tgtModel;
   }
 
-  def readDirectoryModelFromXLSX(sheetLocation: String, namespaceSheetName: String, dirSheetName: String, fileModelCLs: java.util.List[ClassLoader]): Model = {
+  def readDirectoryModelFromXLSX(sheetLocation: String, namespaceSheetName: String, dirSheetName: String, fileModelCLs: java.util.List[ClassLoader] = null): Model = {
     getLogger.debug("readDirectoryModelFromXLSX - start")
     val namespaceSheetReader = getSheetAt(sheetLocation, namespaceSheetName, fileModelCLs);
     val nsJavaMap: java.util.Map[String, String] = MatrixData.readJavaMapFromSheetR(namespaceSheetReader);
     getLogger.debug("Got NS map: " + nsJavaMap)
-    val dirModel: Model = XLSXSheetRepo.readModelSheet(sheetLocation, dirSheetName, nsJavaMap, fileModelCLs);
+    val dirModel: Model = readModelSheet(sheetLocation, dirSheetName, nsJavaMap, fileModelCLs);
     dirModel;
   }
 
-  private def loadTestXLSXSheetRepo(): XLSXSheetRepo = {
+  private def loadTestXLSXSheetRepo(): SheetRepo = {
     val clList = new java.util.ArrayList[ClassLoader];
-    val dirModel: Model = readDirectoryModelFromXLSX(SemSheet.keyForXLSXBootSheet22, nsSheetName22, dirSheetName22, clList)
-    val sr = new XLSXSheetRepo(dirModel, clList)
-    sr.loadSheetModelsIntoMainDataset()
-    sr.loadFileModelsIntoMainDataset(clList)
-    sr
+    loadXLSXSheetRepo(SemSheet.keyForXLSXBootSheet22, nsSheetName22, dirSheetName22, clList, null)
   }
   import scala.collection.immutable.StringOps
 
@@ -172,7 +161,7 @@ object XLSXSheetRepo extends BasicDebugger {
 
     // Run the resulting fully bound query, and print the results.
 
-    val sr: XLSXSheetRepo = loadTestXLSXSheetRepo()
+    val sr: SheetRepo = loadTestXLSXSheetRepo()
     val qib = sr.makeInitialBinding
 
     qib.bindQName(lightsGraphVarName, lightsGraphQName)

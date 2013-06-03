@@ -28,6 +28,6 @@ package org.appdapter.core.store;
  * Convincing?  Hmmm....
  */
 
-class RepoClientJava {
+class HIDDEN_RepoClientJava_TO_SEE_IF_IT_CAN_BE_LEFT_OUT {
 
 }

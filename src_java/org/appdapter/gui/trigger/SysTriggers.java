@@ -31,6 +31,11 @@ public class SysTriggers {
 		DUMP
 	}
 	public static class QuitTrigger<BT extends Box<TriggerImpl<BT>>> extends  TriggerImpl<BT> {
+		
+		public TriggerImpl<BT> makeTrigger(Class<BT> captures) {		
+			return new QuitTrigger<BT>();
+		}
+
 		@Override public void fire(BT targetBox) {
 			logInfo(toString() + "-firing, program exiting");
 			System.exit(0);
