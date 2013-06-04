@@ -105,6 +105,13 @@
                 </exclusion>
             </exclusions>
         </dependency>
+		<!--  for the GUI -->
+        <dependency>
+            <groupId>com.jidesoft</groupId>
+            <artifactId>jide-oss</artifactId>
+            <version>3.5.5</version>
+        </dependency>
+
         <!-- Included servicemix bundle to export apache.commons.codec.  
             Needed by org.apache.poi -->
         <dependency>
