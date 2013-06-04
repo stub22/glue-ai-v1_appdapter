@@ -5,7 +5,6 @@ import javax.swing.tree.TreeNode;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.gui.browse.DisplayContext;
-import org.appdapter.gui.browse.ScreenBoxTreeNodeImpl;
 
 public interface ScreenBoxTreeNode extends TreeNode, BoxPanelSwitchableView {
 

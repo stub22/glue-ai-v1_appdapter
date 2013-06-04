@@ -16,8 +16,13 @@
 
 package org.appdapter.gui.repo;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
+
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.gui.box.ScreenBoxImpl;
+import org.appdapter.gui.box.ScreenBoxPanel;
+import org.appdapter.gui.box.ScreenBoxPanel.Kind;
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -26,5 +31,6 @@ import org.appdapter.gui.box.ScreenBoxImpl;
  */
 
 public class RepoModelBoxImpl<TT extends Trigger<? extends RepoBoxImpl<TT>>> extends ScreenBoxImpl<TT> {
+
 
 }

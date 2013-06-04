@@ -23,7 +23,6 @@ import org.appdapter.api.trigger.ObjectKey;
 import org.appdapter.gui.box.BoxPanelSwitchableView;
 import org.appdapter.gui.box.ScreenBox;
 import org.appdapter.gui.box.ScreenBoxPanel;
-import org.appdapter.gui.box.ScreenBoxTreeNode;
 import org.appdapter.gui.pojo.DisplayType;
 import org.appdapter.gui.pojo.Utility;
 
@@ -84,9 +83,9 @@ public class BrowseTabFuncs {
 	 */
 	public static void openBoxPanelAndFocus(DisplayContext dc, ScreenBox boxI, ScreenBoxPanel.Kind kind) {
 
-		ScreenBoxPanel boxP = boxI.findBoxPanel(kind);
-		if (Utility.defaultDisplayContext == null) {
-			Utility.defaultDisplayContext = dc;
+		ScreenBoxPanel boxP = boxI.findOrCreateBoxPanel(kind);
+		if (Utility.selectedDisplaySontext == null) {
+			Utility.selectedDisplaySontext = dc;
 		}
 		String tabLabel = kind.toString() + "-" + boxI.getShortLabel();
 		if (!isBoxTabKnown(dc, tabLabel)) {

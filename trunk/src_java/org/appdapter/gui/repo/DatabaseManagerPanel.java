@@ -23,13 +23,13 @@
 package org.appdapter.gui.repo;
 
 import org.appdapter.api.trigger.Box;
-import org.appdapter.gui.pojo.ScreenBoxedPOJOPanel;
+import org.appdapter.gui.pojo.SingleTabFrame;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
 
-public class DatabaseManagerPanel extends ScreenBoxedPOJOPanel<Box> {
+public class DatabaseManagerPanel extends SingleTabFrame<Box> {
 
 	@Override protected void initGUI() {
 		initComponents();

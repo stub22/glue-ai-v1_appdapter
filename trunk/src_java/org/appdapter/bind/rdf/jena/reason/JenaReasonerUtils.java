@@ -16,6 +16,11 @@
 
 package org.appdapter.bind.rdf.jena.reason;
 
+import java.io.BufferedReader;
+import java.io.StringReader;
+import java.util.Iterator;
+import java.util.List;
+
 import com.hp.hpl.jena.query.DataSource;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.query.DatasetFactory;
@@ -25,10 +30,6 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.reasoner.Reasoner;
 import com.hp.hpl.jena.reasoner.rulesys.GenericRuleReasoner;
 import com.hp.hpl.jena.reasoner.rulesys.Rule;
-import java.io.BufferedReader;
-import java.io.StringReader;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * @author Stu B. <www.texpedient.com>

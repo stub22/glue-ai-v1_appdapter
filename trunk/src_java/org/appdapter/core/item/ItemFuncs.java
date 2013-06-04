@@ -15,9 +15,10 @@
  */
 package org.appdapter.core.item;
 
+import java.util.Set;
+
 import org.appdapter.core.name.Ident;
 import org.appdapter.core.name.ModelIdent;
-import java.util.Set;
 
 /**
  * @author Stu B. <www.texpedient.com>

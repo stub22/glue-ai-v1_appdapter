@@ -16,8 +16,8 @@
 
 package org.appdapter.core.component;
 
-import org.appdapter.core.name.Ident;
 import org.appdapter.core.log.BasicDebugger;
+import org.appdapter.core.name.Ident;
 
 /**
  * @author Stu B. <www.texpedient.com>

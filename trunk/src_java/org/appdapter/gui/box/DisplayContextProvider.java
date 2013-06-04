@@ -23,5 +23,7 @@ import org.appdapter.gui.browse.DisplayContext;
  * @author Stu B. <www.texpedient.com>
  */
 public interface DisplayContextProvider {
-	public	DisplayContext		 findDisplayContext(Box b);
+	public DisplayContext findDisplayContext(Box b);
+	
+	
 }

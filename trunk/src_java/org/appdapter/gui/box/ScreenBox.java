@@ -18,6 +18,7 @@ package org.appdapter.gui.box;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.core.component.KnownComponent;
+import org.appdapter.gui.box.ScreenBoxPanel.Kind;
 import org.appdapter.gui.browse.DisplayContext;
 
 /**
@@ -29,6 +30,6 @@ public interface ScreenBox<TT extends Trigger<? extends ScreenBox<TT>>> extends 
 
 	void setDisplayContextProvider(DisplayContextProvider dcp);
 
-	public ScreenBoxPanel findBoxPanel(ScreenBoxPanel.Kind kind);
-	
+	public ScreenBoxPanel findOrCreateBoxPanel(Kind kind);
+
 }

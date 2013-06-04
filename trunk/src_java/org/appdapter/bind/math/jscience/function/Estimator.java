@@ -15,9 +15,6 @@
  */
 package org.appdapter.bind.math.jscience.function;
 
-import org.appdapter.core.math.calculus.EstimableScalarFunction;
-import org.appdapter.core.math.calculus.RealInterval;
-
 import org.jscience.mathematics.structure.Ring;
 /**
  * @author Stu B. <www.texpedient.com>

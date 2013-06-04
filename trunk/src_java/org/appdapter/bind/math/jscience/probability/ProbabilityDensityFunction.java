@@ -5,11 +5,13 @@
 
 package org.appdapter.bind.math.jscience.probability;
 
-import org.appdapter.bind.math.jscience.number.FieldNumberFactory;
-import org.appdapter.bind.math.jscience.function.VariableFuncs;
 import java.util.ArrayList;
 import java.util.List;
+
 import javolution.text.Text;
+
+import org.appdapter.bind.math.jscience.function.VariableFuncs;
+import org.appdapter.bind.math.jscience.number.FieldNumberFactory;
 import org.jscience.mathematics.function.Function;
 import org.jscience.mathematics.function.Variable;
 import org.jscience.mathematics.number.FieldNumber;

@@ -16,6 +16,7 @@
 package org.appdapter.bind.math.jscience.calculus;
 
 import java.math.BigDecimal;
+
 import org.appdapter.core.math.number.Numeric;
 
 /**

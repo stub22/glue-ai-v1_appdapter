@@ -15,7 +15,6 @@
  */
 package org.appdapter.bind.math.jscience.calculus;
 import org.jscience.mathematics.structure.Field;
-import org.jscience.mathematics.vector.DenseVector;
 import org.jscience.mathematics.vector.Vector;
 /**
  * @author Stu B. <www.texpedient.com>

@@ -16,22 +16,20 @@
 
 package org.appdapter.bind.rdf.jena.assembly;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import org.appdapter.bind.rdf.jena.model.JenaFileManagerUtils;
+import org.appdapter.core.log.BasicDebugger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.hp.hpl.jena.assembler.Assembler;
 import com.hp.hpl.jena.assembler.AssemblerHelp;
 import com.hp.hpl.jena.assembler.Mode;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.util.FileManager;
-
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-
-import org.appdapter.bind.rdf.jena.model.JenaFileManagerUtils;
-
-import org.appdapter.core.log.BasicDebugger;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Stu B. <www.texpedient.com>

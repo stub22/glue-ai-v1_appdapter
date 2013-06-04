@@ -15,7 +15,6 @@
  */
 package org.appdapter.core.math.set;
 
-import java.util.Set;
 
 /**
  * @author Stu B. <www.texpedient.com>

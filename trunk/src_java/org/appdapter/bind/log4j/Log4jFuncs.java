@@ -17,8 +17,8 @@
 package org.appdapter.bind.log4j;
 
 import java.net.URL;
+
 import org.apache.log4j.PropertyConfigurator;
-import org.slf4j.LoggerFactory;
 
 //</editor-fold>
 /**

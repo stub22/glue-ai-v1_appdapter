@@ -16,13 +16,14 @@
 
 package org.appdapter.bind.rdf.jena.query;
 
+import org.appdapter.bind.rdf.jena.model.JenaModelUtils;
+import org.appdapter.core.log.BasicDebugger;
+
 import com.hp.hpl.jena.query.DataSource;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.query.DatasetFactory;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
-import org.appdapter.bind.rdf.jena.model.JenaModelUtils;
-import org.appdapter.core.log.BasicDebugger;
 
 /**
  * @author Stu B. <www.texpedient.com>

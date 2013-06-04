@@ -16,18 +16,19 @@
 
 package org.appdapter.core.item;
 
-import org.appdapter.core.name.ModelIdent;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.appdapter.core.name.Ident;
-import org.appdapter.core.item.JenaResourceItem;
+import org.appdapter.core.name.ModelIdent;
+
 import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.NodeIterator;
 import com.hp.hpl.jena.rdf.model.Property;
+import com.hp.hpl.jena.rdf.model.RDFList;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.RDFList;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author Stu B. <www.texpedient.com>

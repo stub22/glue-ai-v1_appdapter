@@ -17,7 +17,7 @@
 package org.appdapter.bind.rdf.jena.sdb;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

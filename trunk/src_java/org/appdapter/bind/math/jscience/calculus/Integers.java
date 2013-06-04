@@ -15,12 +15,10 @@
  */
 package org.appdapter.bind.math.jscience.calculus;
 
-import java.math.BigDecimal;
 import org.appdapter.core.math.number.IntegNumeric;
 import org.appdapter.core.math.number.IntegNumeric.Natural;
 import org.appdapter.core.math.number.IntegNumeric.Whole;
 import org.appdapter.core.math.number.IntegNumeric.Zero;
-import org.appdapter.core.math.number.Numeric;
 import org.jscience.mathematics.number.Integer64;
 
 /**

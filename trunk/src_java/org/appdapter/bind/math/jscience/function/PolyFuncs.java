@@ -16,19 +16,16 @@
 
 package org.appdapter.bind.math.jscience.function;
 
+import java.util.List;
+
 import org.appdapter.bind.math.jscience.number.FieldNumberFactory;
 import org.appdapter.bind.math.jscience.number.RingElementFactory;
 import org.jscience.mathematics.function.Polynomial;
 import org.jscience.mathematics.function.Term;
 import org.jscience.mathematics.function.Variable;
 import org.jscience.mathematics.number.FieldNumber;
-import org.jscience.mathematics.structure.Ring;
 import org.jscience.mathematics.number.Number;
-// import org.jscience.mathematics.number.Real;
-import java.util.List;
-// import java.util.logging.Level;
-
-
+import org.jscience.mathematics.structure.Ring;
 import org.slf4j.Logger;
 
 /**

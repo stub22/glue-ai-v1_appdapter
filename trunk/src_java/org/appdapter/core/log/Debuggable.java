@@ -7,10 +7,7 @@ import java.lang.reflect.Modifier;
 import java.util.HashSet;
 import java.util.logging.Logger;
 
-import org.appdapter.gui.util.PromiscuousClassUtils;
-
-
-public abstract class Debuggable extends PromiscuousClassUtils {
+public abstract class Debuggable {
 
 	public static int PRINT_DEPTH = 3;
 
@@ -215,9 +212,9 @@ public abstract class Debuggable extends PromiscuousClassUtils {
 		return Logger.getLogger(name.getSimpleName());
 	}
 
-	public static void UnhandledException(Throwable e) {
+	public static RuntimeException UnhandledException(Throwable e) {
 		e.printStackTrace();
-		warn("e=" + e.getMessage());
+		return warn("e=" + e.getMessage());
 	}
 
 	public static RuntimeException asRuntimeException(Throwable e) {
@@ -236,5 +233,9 @@ public abstract class Debuggable extends PromiscuousClassUtils {
 		if (true)
 			throw new AbstractMethodError(msg);
 		return (T) null;
+	}
+
+	public static RuntimeException reThrowable(Throwable e) {
+		return asRuntimeException(e);
 	}
 }

@@ -17,10 +17,11 @@
 
 package org.appdapter.core.item;
 
-import org.appdapter.core.name.Ident;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+
+import org.appdapter.core.name.Ident;
 
 /**
  * @author Stu B. <www.texpedient.com>
