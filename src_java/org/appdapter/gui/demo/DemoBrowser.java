@@ -21,8 +21,16 @@ package org.appdapter.gui.demo;
  */
 public class DemoBrowser extends DemoBrowser_NewGUI {
 
+	public interface DemoBrowserFactory {
+
+		DemoNavigatorCtrl makeDemoNavigatorCtrl(String[] args, boolean b);
+
+	}
+
+	public static DemoBrowserFactory demoBrowserFactory;
+
 	public static DemoNavigatorCtrl makeDemoNavigatorCtrl(String[] args) {
-		return DemoBrowser_NewGUI.makeDemoNavigatorCtrl(args, false);
+		return demoBrowserFactory.makeDemoNavigatorCtrl(args, false);
 	}
 
 	public static void testLoggingSetup() {
@@ -31,7 +39,7 @@ public class DemoBrowser extends DemoBrowser_NewGUI {
 		} catch (Throwable anything) {
 			// if the logger isnt working we may as well just print this error and not log it :)
 			anything.printStackTrace();
-			
+
 		}
 	}
 }

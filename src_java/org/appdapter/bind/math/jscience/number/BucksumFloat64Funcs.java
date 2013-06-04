@@ -5,8 +5,6 @@
 
 package org.appdapter.bind.math.jscience.number;
 
-import org.appdapter.bind.math.jscience.number.GeneralFactory;
-import org.appdapter.bind.math.jscience.number.FieldNumberFactory;
 import org.jscience.mathematics.number.Float64;
 
 

@@ -6,7 +6,6 @@ import javax.swing.tree.TreeNode;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.MutableBox;
-import org.appdapter.gui.box.AppGUIWithTabsAndTrees;
 import org.appdapter.gui.box.BoxPanelSwitchableView;
 import org.appdapter.gui.box.BoxPanelSwitchableViewImpl;
 import org.appdapter.gui.box.ScreenBoxTreeNode;
@@ -40,14 +39,9 @@ public class ScreenBoxTreeNodeImpl extends BoxPanelSwitchableViewImpl implements
 		return super.getComponent(getAppGUI(DisplayType.TREE));
 	}
 
-	@Override public AppGUIWithTabsAndTrees getAppGUI(DisplayType attachType) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 	@Override public ScreenBoxTreeNode findDescendantNodeForBox(Box b) {
 		// TODO Auto-generated method stub
-		return null;
+		return super.findDescendantNodeForBox(b);
 	}
 
 }

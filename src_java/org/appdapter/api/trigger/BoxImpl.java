@@ -18,51 +18,41 @@ package org.appdapter.api.trigger;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.appdapter.core.component.KnownComponent;
-import org.appdapter.core.component.KnownComponentImpl;
-import org.appdapter.gui.pojo.POJOBox;
 
+import org.appdapter.core.component.KnownComponentImpl;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
 
-public abstract class BoxImpl <TrigType extends Trigger<? extends BoxImpl<TrigType>>> extends KnownComponentImpl 
-			implements MutableBox<TrigType> {
-	
-	public <T> T[] getObjects(Class<T> type) {
-		if (true) throw new AbstractMethodError("TODO DMILES!");
-		return (T[]) new Object[] { this };
-	}
+public abstract class BoxImpl<TrigType extends Trigger<? extends BoxImpl<TrigType>>> extends KnownComponentImpl implements MutableBox<TrigType> {
 
-	public Object getValue() {
-		return this;
-	}
-	public Object getObject() {
-		return this;
-	}
-	
-	private	BoxContext						myBoxContext;
+	private BoxContext myBoxContext;
 
-	private List<TrigType>				myTriggers = new ArrayList<TrigType>();
-	
+	private List<TrigType> myTriggers = new ArrayList<TrigType>();
+
 	@Override public void setContext(BoxContext bc) {
 		myBoxContext = bc;
 	}
+
 	@Override public BoxContext getBoxContext() {
 		return myBoxContext;
 	}
+
 	@Override public void clearTriggers() {
 		myTriggers.clear();
 	}
+
 	@Override public void attachTrigger(TrigType trig) {
 		myTriggers.add(trig);
 	}
+
 	@Override public List<TrigType> getTriggers() {
 		return myTriggers;
 	}
+
 	@Override public String getFieldSummary() {
 		return super.getFieldSummary() + ", triggerCount=" + myTriggers.size();
 	}
-	
+
 }

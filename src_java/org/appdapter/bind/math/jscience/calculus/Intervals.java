@@ -16,12 +16,8 @@
 package org.appdapter.bind.math.jscience.calculus;
 
 import org.appdapter.bind.math.jscience.calculus.Integers.Natural64;
-import org.appdapter.bind.math.jscience.calculus.Reals.NonnegativeReal64;
-import org.appdapter.bind.math.jscience.calculus.Reals.Real64;
 import org.appdapter.core.math.number.RealNumeric;
-import org.appdapter.core.math.set.EuclideanSet;
 import org.appdapter.core.math.set.RealSet;
-import org.appdapter.core.math.set.TopologicalSet;
 import org.jscience.mathematics.number.Float64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

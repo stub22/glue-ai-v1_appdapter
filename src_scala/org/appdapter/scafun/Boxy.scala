@@ -15,11 +15,11 @@
  */
 
 package org.appdapter.scafun
-import  org.appdapter.api.trigger.{Box, BoxContext, MutableBox, Trigger, MutableTrigger, BoxImpl, TriggerImpl};
-import  org.appdapter.gui.box.{ScreenBox, ScreenBoxImpl};
-import  org.appdapter.demo.DemoResources;
-import  org.appdapter.bind.rdf.jena.assembly.AssemblerUtils;
-import org.appdapter.bind.rdf.jena.model.{JenaFileManagerUtils};
+import org.appdapter.api.trigger.{BoxContext, MutableTrigger, BoxImpl, TriggerImpl}
+import org.appdapter.bind.rdf.jena.assembly.AssemblerUtils
+import org.appdapter.bind.rdf.jena.model.JenaFileManagerUtils
+import org.appdapter.demo.DemoResources
+import org.appdapter.gui.box.ScreenBoxImpl
 
 class FullBox[FT <:  FullTrigger[_ <: FullBox[FT]]] extends ScreenBoxImpl[FT] {}
 

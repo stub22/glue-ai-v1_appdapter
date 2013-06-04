@@ -1,13 +1,11 @@
 package org.appdapter.gui.repo;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.appdapter.core.log.Debuggable;
-import org.appdapter.core.store.Repo.Mutable;
 
 public interface LazySlow<T> extends Future<T> {
 

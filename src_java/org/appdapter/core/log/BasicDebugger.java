@@ -16,6 +16,7 @@
 package org.appdapter.core.log;
 
 import java.net.URL;
+
 import org.appdapter.bind.log4j.Log4jFuncs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,9 +26,9 @@ import org.slf4j.helpers.NOPLogger;
  * @author Stu B. <www.texpedient.com>
  */
 public class BasicDebugger implements Loggable {
-	
-	private	Class	myAppClass;
-	
+
+	private Class myAppClass;
+
 	/**
 	 * We use this constructor when we don't want to extend BasicDebugger.
 	 * @param appClass 
@@ -35,20 +36,21 @@ public class BasicDebugger implements Loggable {
 	public BasicDebugger(Class appClass) {
 		myAppClass = appClass;
 	}
+
 	/**
 	 * This default constructor is intended for use by classes extending BasicDebugger.
 	 */
 	public BasicDebugger() {
 		myAppClass = this.getClass();
 	}
+
 	static Logger theFallbackLogger = LoggerFactory.getLogger(BasicDebugger.class);
 
 	private enum MsgKind {
 
-		INFO,
-		WARN,
-		ERROR
+		INFO, WARN, ERROR
 	}
+
 	private Logger myLogger;
 	private int myDebugImportanceThreshold = IMPO_NORM;
 
@@ -156,12 +158,12 @@ public class BasicDebugger implements Loggable {
 			}
 			if (t != null) {
 				switch (mk) {
-					case ERROR:
-						t.printStackTrace(System.out);
-						break;
-					case WARN:
-						System.out.println("Warning Exception: " + t);
-						break;
+				case ERROR:
+					t.printStackTrace(System.out);
+					break;
+				case WARN:
+					System.out.println("Warning Exception: " + t);
+					break;
 				}
 			}
 		}
@@ -186,6 +188,7 @@ public class BasicDebugger implements Loggable {
 	@Override public void logDebug(String msg) {
 		logInfo(IMPO_LO, msg);
 	}
+
 	/**
 	 * This should usually be called only once during a system's runtime lifetime.
 	 * (To be tested:  works OK to update properties at runtime?)
@@ -215,7 +218,7 @@ public class BasicDebugger implements Loggable {
 		System.out.println("local-CL=" + localCL);
 
 		String resPath = "log4j.properties";
-		
+
 		URL threadURL = threadCL.getResource(resPath);
 		URL localURL = localCL.getResource(resPath);
 		System.out.println("[System.out] forceLog4jConfig() threadCL resolved " + resPath + " to threadURL " + threadURL);
@@ -223,5 +226,6 @@ public class BasicDebugger implements Loggable {
 		System.out.println("[System.out] " + getClass().getCanonicalName() + " is forcing Log4J to read config from localURL: " + localURL);
 		Log4jFuncs.forceLog4jConfig(localURL);
 		getLogger().warn("{forceLog4JConfig} - This message was printed at WARN level to SLF4J, after forcing config for Log4J to localURL: " + localURL);
-	}	
+	}
+
 }

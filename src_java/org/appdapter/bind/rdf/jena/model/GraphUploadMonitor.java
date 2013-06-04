@@ -15,14 +15,16 @@
  */
 package org.appdapter.bind.rdf.jena.model;
 
+import java.util.Iterator;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.hp.hpl.jena.graph.Graph;
 import com.hp.hpl.jena.graph.GraphListener;
 import com.hp.hpl.jena.graph.Triple;
 import com.hp.hpl.jena.sparql.util.Timer;
-import java.util.Iterator;
-import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Stu B. <www.texpedient.com>

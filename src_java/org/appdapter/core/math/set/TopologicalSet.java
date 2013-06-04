@@ -15,7 +15,6 @@
  */
 package org.appdapter.core.math.set;
 
-import org.appdapter.core.math.set.GeneralSet;
 
 /**
  * @author Stu B. <www.texpedient.com>

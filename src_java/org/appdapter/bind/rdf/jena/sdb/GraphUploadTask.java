@@ -15,15 +15,17 @@
  */
 package org.appdapter.bind.rdf.jena.sdb;
 
+import org.appdapter.bind.rdf.jena.model.GraphUploadMonitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import arq.cmdline.ModTime;
+
 import com.hp.hpl.jena.graph.Graph;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.sdb.SDBFactory;
 import com.hp.hpl.jena.sdb.Store;
 import com.hp.hpl.jena.util.FileUtils;
-import org.appdapter.bind.rdf.jena.model.GraphUploadMonitor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Stu B. <www.texpedient.com>

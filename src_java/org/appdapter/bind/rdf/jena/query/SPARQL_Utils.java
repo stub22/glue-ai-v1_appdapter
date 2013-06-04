@@ -22,40 +22,29 @@
 
 
 package org.appdapter.bind.rdf.jena.query;
+import java.io.FileInputStream;
 import java.util.Iterator;
 import java.util.List;
 
-import java.io.FileInputStream;
-
-
-import com.hp.hpl.jena.datatypes.xsd.XSDDatatype;
-
-import com.hp.hpl.jena.sparql.util.DatasetUtils;
-
-import com.hp.hpl.jena.vocabulary.RDF;
-
-
-import com.hp.hpl.jena.query.DataSource;
-
-import com.hp.hpl.jena.query.Query;
-import com.hp.hpl.jena.query.QueryFactory;
-import com.hp.hpl.jena.query.QueryExecution;
-import com.hp.hpl.jena.query.QueryExecutionFactory;
-import com.hp.hpl.jena.query.Dataset;
-import com.hp.hpl.jena.query.DatasetFactory;
-import com.hp.hpl.jena.query.Syntax;
-import com.hp.hpl.jena.query.ResultSet;
-import com.hp.hpl.jena.query.ResultSetFormatter;
-import com.hp.hpl.jena.query.ResultSetFactory;
-
-import com.hp.hpl.jena.query.ResultSetRewindable;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.sparql.util.graph.GraphFactory;
-import org.appdapter.bind.rdf.jena.model.JenaModelUtils;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.hp.hpl.jena.datatypes.xsd.XSDDatatype;
+import com.hp.hpl.jena.query.Dataset;
+import com.hp.hpl.jena.query.Query;
+import com.hp.hpl.jena.query.QueryExecution;
+import com.hp.hpl.jena.query.QueryExecutionFactory;
+import com.hp.hpl.jena.query.QueryFactory;
+import com.hp.hpl.jena.query.ResultSet;
+import com.hp.hpl.jena.query.ResultSetFactory;
+import com.hp.hpl.jena.query.ResultSetFormatter;
+import com.hp.hpl.jena.query.ResultSetRewindable;
+import com.hp.hpl.jena.query.Syntax;
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.sparql.util.DatasetUtils;
+import com.hp.hpl.jena.sparql.util.graph.GraphFactory;
+import com.hp.hpl.jena.vocabulary.RDF;
 
 /**
  * Certain static funcs, many pulled  from com/hp/hpl/jena/query/junit/QueryTest.java

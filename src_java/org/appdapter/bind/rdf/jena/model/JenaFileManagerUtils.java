@@ -19,13 +19,12 @@ package org.appdapter.bind.rdf.jena.model;
 import java.util.Iterator;
 import java.util.List;
 
-import java.lang.ClassLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.hp.hpl.jena.util.FileManager;
 import com.hp.hpl.jena.util.Locator;
 import com.hp.hpl.jena.util.LocatorClassLoader;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Stu B. <www.texpedient.com>

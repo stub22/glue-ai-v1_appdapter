@@ -199,7 +199,7 @@ object OmniLoaderRepoTest_1_1_1 {
     print("Resync");
     val tp = repoNav.getBoxPanelTabPane()
     val boxed = new ScreenBoxImpl(repo.toString(), repo);
-    tp.showObject(boxed, boxed.getDisplayType());
+    tp.showScreenBox(boxed, boxed.getDisplayType());
     java.lang.Thread.sleep(60000000);
   }
 

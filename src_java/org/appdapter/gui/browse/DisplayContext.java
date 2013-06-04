@@ -20,6 +20,8 @@ import java.awt.Component;
 
 import org.appdapter.gui.box.BoxPanelSwitchableView;
 import org.appdapter.gui.box.UIProvider;
+import org.appdapter.gui.pojo.NamedObjectCollection;
+import org.appdapter.gui.swing.POJOAppContext;
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -29,5 +31,9 @@ public interface DisplayContext extends UIProvider {
 	public BoxPanelSwitchableView getBoxPanelTabPane();
 
 	public Component getComponent();
+
+	public NamedObjectCollection getNamedObjectCollection();
+
+	///void setSelectedComponent(Object object) throws PropertyVetoException;
 
 }

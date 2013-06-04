@@ -15,35 +15,12 @@
  */
 
 package org.appdapter.core.store;
-import java.io.InputStream;
-
-import java.net.URL;
-
-import java.util.Iterator;
-import java.util.Map;
-
-
-import com.hp.hpl.jena.ontology.DatatypeProperty;
-import com.hp.hpl.jena.ontology.Individual;
-import com.hp.hpl.jena.ontology.ObjectProperty;
-import com.hp.hpl.jena.ontology.OntClass;
-import com.hp.hpl.jena.ontology.OntModel;
-import com.hp.hpl.jena.ontology.OntModelSpec;
-
-// See note below under loadJenaModelUsingJenaFileManager()
-// import com.hp.hpl.jena.sparql.util.RelURI;
-
-import com.hp.hpl.jena.rdf.model.Literal;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.Statement;
-import com.hp.hpl.jena.rdf.model.StmtIterator;
-
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.datatypes.RDFDatatype;
-import org.appdapter.core.name.Ident;
 import org.appdapter.core.item.Item;
+import org.appdapter.core.name.Ident;
+
+import com.hp.hpl.jena.datatypes.RDFDatatype;
+import com.hp.hpl.jena.rdf.model.Literal;
+import com.hp.hpl.jena.rdf.model.Resource;
 /**
  * @author Stu B. <www.texpedient.com>
  */

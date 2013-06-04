@@ -16,13 +16,15 @@
 
 package org.appdapter.core.item;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.appdapter.core.name.Ident;
+
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.QuerySolutionMap;
 import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Resource;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *

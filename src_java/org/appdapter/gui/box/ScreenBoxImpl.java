@@ -16,19 +16,16 @@
 
 package org.appdapter.gui.box;
 
+import java.awt.Component;
+import java.awt.Container;
 import java.beans.PropertyVetoException;
-import java.lang.reflect.Array;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 
 import org.appdapter.api.trigger.AnyOper.UIHidden;
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.gui.box.ScreenBoxPanel.Kind;
 import org.appdapter.gui.browse.DisplayContext;
-import org.appdapter.gui.pojo.BasicObjectCustomizer;
 import org.appdapter.gui.pojo.DisplayType;
 import org.appdapter.gui.pojo.GetSetObject;
 import org.appdapter.gui.pojo.POJOBox;
@@ -50,24 +47,9 @@ import org.slf4j.LoggerFactory;
  */
 
 @UIHidden
-public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<TrigType>>>
+public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<TrigType>>> extends POJOBoxImpl<TrigType>
 
-extends POJOBox<TrigType> implements ScreenBox<TrigType>, GetSetObject {
-
-	@UIHidden
-	public class NoObject {
-
-	}
-
-	public java.awt.Component getComponent() {
-		return findBoxPanel(Kind.OBJECT_PROPERTIES);
-	}
-
-	DisplayType myDisplayType = DisplayType.PANEL;
-
-	@Override public DisplayType getDisplayType() {
-		return myDisplayType;
-	}
+implements ScreenBox<TrigType>, GetSetObject, POJOBox<TrigType>, DisplayContext {
 
 	static Logger theLogger = LoggerFactory.getLogger(ScreenBoxImpl.class);
 	// Because it's a "provider", we have an extra layer of indirection between
@@ -77,66 +59,42 @@ extends POJOBox<TrigType> implements ScreenBox<TrigType>, GetSetObject {
 	// A box may have up to one panel for any kind.
 	private Map<ScreenBoxPanel.Kind, ScreenBoxPanel> myPanelMap = new HashMap<ScreenBoxPanel.Kind, ScreenBoxPanel>();
 
-	private Object object;
-
-	@Override public void setObject(Object obj) {
-		object = obj;
-		String ds = getDescription();
-		if (ds == null) {
-			setDescription("" + obj + " " + obj.getClass());
-		}
-	}
-
 	public ScreenBoxImpl() {
-		object = new NoObject();
+		super();
 	}
 
-	public ScreenBoxImpl(Object object) {
-		setObject(object);
+	public ScreenBoxImpl(String label) {
+		super(label);
 	}
 
-	public ScreenBoxImpl(String uniqueName, Object obj) throws PropertyVetoException {
-		_uname = uniqueName;
-		setObject(obj);
+	public ScreenBoxImpl(String label, Object obj) {
+		super(label, obj);
 	}
 
-	@Override public Object getValue() {
-		if (object == null) {
-			theLogger.warn("Default implementation of getObject() for NULL is returning 'this'", getShortLabel());
-			return this;
+	public ScreenBoxImpl(String title, Object boxOrObj, Component vis, DisplayType displayType, Container parent, BoxPanelSwitchableView bpsv) {
+		super(title, boxOrObj, vis, displayType, parent, bpsv);
+	}
+
+	/**
+	 * The box panel returned might be one that we "made" earlier, 
+	 * or it might be one that someone "put" onto me.
+	 * @param kind
+	 * @return 
+	 */
+	@Override public ScreenBoxPanel findOrCreateBoxPanel(Kind kind) {
+		ScreenBoxPanel bp = findExistingBoxPanel(kind);
+		if (bp == null) {
+			bp = makeBoxPanel(kind);
 		}
-		if (object != this)
-			return object;
-		theLogger.warn("Default implementation of getObject() for {} is returning 'this'", getShortLabel());
-		return this;
+		return bp;
 	}
 
-	@Override public Class<? extends Object> getPOJOClass() {
-		return super.getPOJOClass();
+	public void dump() {
+		theLogger.info("DUMP-DUMP-DE-DUMP");
 	}
 
-	// the jtree label uses this .. so supply someting good!
-	@Override public String toString() {
-		String sl = getShortLabel();
-		if (sl != null)
-			return sl;
-		return getUniqueName() + " -> " + getDebugName();
-
-	}
-
-	@Override public List<Class> getTypes() {
-		java.util.HashSet al = new java.util.HashSet<Class>();
-		Class pojoClass = getPOJOClass();
-		if (pojoClass != null)
-			al.add(pojoClass);
-		else {
-			al.add(getClass());
-		}
-		return new ArrayList<Class>(al);
-	}
-
-	@Override public void setDisplayContextProvider(DisplayContextProvider dcp) {
-		myDCP = dcp;
+	public ScreenBoxPanel findExistingBoxPanel(ScreenBoxPanel.Kind kind) {
+		return myPanelMap.get(kind);
 	}
 
 	@Override public DisplayContext getDisplayContext() {
@@ -146,32 +104,6 @@ extends POJOBox<TrigType> implements ScreenBox<TrigType>, GetSetObject {
 				return dc;
 		}
 		return Utility.browserPanel;
-	}
-
-	/**
-	 * The box panel returned might be one that we "made" earlier, 
-	 * or it might be one that someone "put" onto me.
-	 * @param kind
-	 * @return 
-	 */
-	@Override public ScreenBoxPanel findBoxPanel(ScreenBoxPanel.Kind kind) {
-		ScreenBoxPanel bp = getBoxPanel(kind);
-		if (bp == null) {
-			bp = makeBoxPanel(kind);
-		}
-		return bp;
-	}
-
-	protected void putBoxPanel(ScreenBoxPanel.Kind kind, ScreenBoxPanel bp) {
-		ScreenBoxPanel oldBP = getBoxPanel(kind);
-		if (oldBP != null) {
-			theLogger.warn("Replacing old ScreenBoxPanel link for " + getShortLabel() + " to {} with {} ", oldBP, bp);
-		}
-		myPanelMap.put(kind, bp);
-	}
-
-	protected ScreenBoxPanel getBoxPanel(ScreenBoxPanel.Kind kind) {
-		return myPanelMap.get(kind);
 	}
 
 	/**
@@ -201,7 +133,7 @@ extends POJOBox<TrigType> implements ScreenBox<TrigType>, GetSetObject {
 		if (kind == Kind.DB_MANAGER)
 			return new DatabaseManagerPanel();
 		if (kind == Kind.OBJECT_PROPERTIES)
-			return new BasicObjectCustomizer(null, getValue());
+			return Utility.getPropertiesPanel(this);
 		if (kind == Kind.OTHER)
 			return makeOtherPanel();
 		throw new RuntimeException("Found unexpected ScreenBoxPanelKind: " + kind);
@@ -221,24 +153,19 @@ extends POJOBox<TrigType> implements ScreenBox<TrigType>, GetSetObject {
 	 */
 	protected ScreenBoxPanel makeOtherPanel() {
 		theLogger.warn("Default implementation of makeOtherPanel() for {} is returning null", getShortLabel());
-		return Utility.pojoApp.findOrCreateComponent(getValue(), false);
+		return Utility.getPropertiesPanel(this);
 	}
 
-	public void dump() {
-		theLogger.info("DUMP-DUMP-DE-DUMP");
+	protected void putBoxPanel(ScreenBoxPanel.Kind kind, ScreenBoxPanel bp) {
+		ScreenBoxPanel oldBP = findExistingBoxPanel(kind);
+		if (oldBP != null) {
+			theLogger.warn("Replacing old ScreenBoxPanel link for " + getShortLabel() + " to {} with {} ", oldBP, bp);
+		}
+		myPanelMap.put(kind, bp);
 	}
 
-	@Override public <T> T[] getObjects(Class<T> type) {
-		HashSet<Object> objs = new HashSet<Object>();
-		if (this.canConvert(type)) {
-			T one = convertTo(type);
-			objs.add(one);
-		}
-		for (Object o : getObjects()) {
-			if (type.isInstance(o)) {
-				objs.add(o);
-			}
-		}
-		return objs.toArray((T[]) Array.newInstance(type, objs.size()));
+	public void setDisplayContextProvider(DisplayContextProvider dcp) {
+		myDCP = dcp;
 	}
+
 }

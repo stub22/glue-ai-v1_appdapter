@@ -22,12 +22,11 @@ import java.util.concurrent.ExecutionException;
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.bind.rdf.jena.query.JenaArqQueryFuncs;
 import org.appdapter.bind.rdf.jena.query.JenaArqResultSetProcessor;
+import org.appdapter.core.log.Debuggable;
 import org.appdapter.core.store.BasicStoredMutableRepoImpl;
 import org.appdapter.core.store.Repo;
 import org.appdapter.core.store.Repo.GraphStat;
 import org.appdapter.gui.box.ScreenBoxImpl;
-import org.appdapter.gui.browse.DisplayContext;
-import org.appdapter.gui.pojo.Utility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,14 +36,10 @@ import com.hp.hpl.jena.query.ResultSet;
 /**
  * @author Stu B. <www.texpedient.com>
  */
+@SuppressWarnings("serial")
 public abstract class RepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<TT>>> extends ScreenBoxImpl<TT> implements MutableRepoBox<TT> {
 	static Logger theLogger = LoggerFactory.getLogger(RepoBoxImpl.class);
 	private LazySlow<Repo.Mutable> myRepo;
-
-	@Override public DisplayContext getDisplayContext() {
-		// TODO Auto-generated method stub
-		return super.getDisplayContext();
-	}
 
 	@Override final public Object getValue() {
 		return getRepo();
@@ -69,9 +64,9 @@ public abstract class RepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<TT>>>
 		try {
 			return myRepo.get();
 		} catch (InterruptedException e) {
-			throw Utility.reThrowable(e);
+			throw Debuggable.reThrowable(e);
 		} catch (ExecutionException e) {
-			throw Utility.reThrowable(e);
+			throw Debuggable.reThrowable(e);
 		}
 	}
 
