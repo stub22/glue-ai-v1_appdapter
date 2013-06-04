@@ -16,6 +16,7 @@
 
 package org.appdapter.bind.math.jscience.function;
 import java.util.List;
+
 import org.jscience.mathematics.function.Variable;
 // import org.jscience.mathematics.number.Number;
 /**

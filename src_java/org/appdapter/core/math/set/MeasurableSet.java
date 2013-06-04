@@ -16,7 +16,6 @@
 package org.appdapter.core.math.set;
 
 import org.appdapter.core.math.number.ExtendedRealNumeric;
-import org.appdapter.core.math.set.GeneralSet;
 
 
 /**

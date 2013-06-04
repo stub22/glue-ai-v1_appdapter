@@ -19,6 +19,7 @@ package org.appdapter.bind.xml.dom4j;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
+
 import org.dom4j.Document;
 import org.dom4j.Node;
 import org.dom4j.io.DOMWriter;

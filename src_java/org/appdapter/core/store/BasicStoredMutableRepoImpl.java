@@ -15,50 +15,21 @@
  */
 package org.appdapter.core.store;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import org.appdapter.bind.rdf.jena.sdb.GraphUploadTask;
 import org.appdapter.bind.rdf.jena.sdb.SdbStoreFactory;
-import com.hp.hpl.jena.sdb.SDBFactory;
-import com.hp.hpl.jena.sdb.Store;
-import com.hp.hpl.jena.sdb.util.StoreUtils;
+import org.appdapter.core.name.Ident;
 
-
-import com.hp.hpl.jena.graph.Graph;
-import com.hp.hpl.jena.graph.GraphListener;
 import com.hp.hpl.jena.graph.Node;
-import com.hp.hpl.jena.graph.Triple;
+import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.sdb.SDBFactory;
 import com.hp.hpl.jena.sdb.Store;
-import com.hp.hpl.jena.sdb.shared.Env;
-import com.hp.hpl.jena.sdb.util.StoreUtils;
-import com.hp.hpl.jena.sparql.util.Timer;
-import com.hp.hpl.jena.util.FileManager;
-import com.hp.hpl.jena.util.FileUtils;
-import com.hp.hpl.jena.util.LocatorClassLoader;
-
-
-import com.hp.hpl.jena.query.Dataset;
-import com.hp.hpl.jena.query.DataSource;
-
-import com.hp.hpl.jena.sdb.Store;
 import com.hp.hpl.jena.sdb.store.DatasetStore;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.net.URL;
-
-import com.hp.hpl.jena.sdb.shared.Env;
-import com.hp.hpl.jena.util.FileManager;
-import java.util.ArrayList;
-import java.util.Iterator;
-
-import java.util.List;
-import org.appdapter.bind.rdf.jena.assembly.AssemblerUtils;
-import org.appdapter.bind.rdf.jena.sdb.GraphUploadTask;
-
-import org.appdapter.core.name.Ident;
-
-import org.appdapter.demo.DemoResources;
+import com.hp.hpl.jena.sdb.util.StoreUtils;
 
 /**
  * @author Stu B. <www.texpedient.com>

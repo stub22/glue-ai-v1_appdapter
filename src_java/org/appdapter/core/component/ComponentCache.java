@@ -15,14 +15,10 @@
  */
 package org.appdapter.core.component;
 
-import org.appdapter.core.name.Ident;
-
-import org.appdapter.core.component.MutableKnownComponent;
-
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Collection;
+
+import org.appdapter.core.name.Ident;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

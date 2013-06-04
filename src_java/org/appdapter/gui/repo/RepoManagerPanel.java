@@ -32,14 +32,14 @@ import javax.swing.JTable;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.gui.browse.TriggerMenuFactory;
-import org.appdapter.gui.pojo.ScreenBoxedPOJOPanel;
+import org.appdapter.gui.pojo.SingleTabFrame;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public class RepoManagerPanel extends ScreenBoxedPOJOPanel<MutableRepoBox> {
+public class RepoManagerPanel extends SingleTabFrame<MutableRepoBox> {
 	static Logger theLogger = LoggerFactory.getLogger(RepoManagerPanel.class);
 
 	@Override protected void initGUI() {

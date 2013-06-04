@@ -15,17 +15,9 @@
  */
 package org.appdapter.bind.math.jscience.calculus;
 
-import java.util.List;
-import javolution.util.Index;
-
 import org.appdapter.core.math.number.Numeric;
 import org.appdapter.core.math.number.RealNumeric;
-import org.jscience.mathematics.number.FieldNumber;
 import org.jscience.mathematics.number.Float64;
-import org.jscience.mathematics.structure.Field;
-import org.jscience.mathematics.vector.DenseVector;
-import org.jscience.mathematics.vector.Float64Vector;
-import org.jscience.mathematics.vector.Vector;
 
 /**
  * @author Stu B. <www.texpedient.com>

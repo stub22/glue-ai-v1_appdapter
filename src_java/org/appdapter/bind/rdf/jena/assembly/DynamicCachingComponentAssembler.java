@@ -17,10 +17,10 @@
 package org.appdapter.bind.rdf.jena.assembly;
 
 import org.appdapter.core.component.ComponentAssemblyNames;
-import org.appdapter.core.name.Ident;
-import org.appdapter.core.item.Item;
 import org.appdapter.core.component.MutableKnownComponent;
-import org.appdapter.api.trigger.TriggerImpl;
+import org.appdapter.core.item.Item;
+import org.appdapter.core.name.Ident;
+
 import com.hp.hpl.jena.rdf.model.Resource;
 
 /**

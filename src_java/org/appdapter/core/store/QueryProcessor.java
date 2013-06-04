@@ -15,9 +15,12 @@
  */
 
 package org.appdapter.core.store;
-import com.hp.hpl.jena.query.*;
 import java.util.List;
+
 import org.appdapter.bind.rdf.jena.query.JenaArqResultSetProcessor;
+
+import com.hp.hpl.jena.query.Query;
+import com.hp.hpl.jena.query.QuerySolution;
 /**
  * @author Stu B. <www.texpedient.com>
  * 

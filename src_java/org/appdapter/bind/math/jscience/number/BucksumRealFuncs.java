@@ -5,11 +5,10 @@
 
 package org.appdapter.bind.math.jscience.number;
 
-import org.appdapter.bind.math.jscience.number.FieldNumberFactory;
-import org.appdapter.bind.math.jscience.number.GeneralFactory;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.jscience.mathematics.function.Polynomial;
 import org.jscience.mathematics.function.Term;
 import org.jscience.mathematics.function.Variable;

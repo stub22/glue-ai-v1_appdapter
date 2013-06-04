@@ -16,15 +16,17 @@
 
 package org.appdapter.core.item;
 
-import org.appdapter.core.name.Ident;
-import com.hp.hpl.jena.rdf.model.Literal;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.Collection;
+
+import org.appdapter.core.name.Ident;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.hp.hpl.jena.rdf.model.Literal;
 
 /**
  * @author Stu B. <www.texpedient.com>

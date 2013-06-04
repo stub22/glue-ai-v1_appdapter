@@ -16,23 +16,6 @@
 
 package org.appdapter.core.store;
 
-import org.appdapter.bind.rdf.jena.assembly.AssemblerUtils;
-import com.hp.hpl.jena.query.Syntax;
-import com.hp.hpl.jena.query.Dataset;
-import com.hp.hpl.jena.query.Query;
-import com.hp.hpl.jena.query.QuerySolution;
-import com.hp.hpl.jena.query.QueryExecution;
-import com.hp.hpl.jena.query.QueryExecutionFactory;
-import com.hp.hpl.jena.query.QueryFactory;
-import com.hp.hpl.jena.query.ResultSet;
-import com.hp.hpl.jena.query.ResultSetFormatter;
-import com.hp.hpl.jena.query.ResultSetFactory;
-import com.hp.hpl.jena.query.ResultSetRewindable;
-
-import com.hp.hpl.jena.shared.PrefixMapping;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.appdapter.core.log.BasicDebugger;
 /**
  * @author Stu B. <www.texpedient.com>

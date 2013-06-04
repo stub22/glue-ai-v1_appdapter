@@ -16,6 +16,7 @@
 
 package org.appdapter.bind.math.jscience.number;
 import java.lang.reflect.Array;
+
 import org.jscience.mathematics.number.Number;
 
 /**

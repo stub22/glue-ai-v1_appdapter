@@ -19,7 +19,6 @@ package org.appdapter.bind.math.jscience.function;
 
 import org.appdapter.bind.math.jscience.number.FieldNumberFactory;
 import org.appdapter.bind.math.jscience.number.RingElementFactory;
-
 import org.jscience.mathematics.function.Polynomial;
 import org.jscience.mathematics.function.RationalFunction;
 import org.jscience.mathematics.number.FieldNumber;
