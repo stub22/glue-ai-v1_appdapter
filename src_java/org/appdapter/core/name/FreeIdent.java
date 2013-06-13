@@ -17,6 +17,9 @@ package org.appdapter.core.name;
 
 /**
  * @author Stu B. <www.texpedient.com>
+ * 
+ * TODO:  This should extend BaseIdent, wherein it should share hashCode() + equals() impls 
+ * with all other possible Idents (i.e. JenaResourceItems).  These are only 2 impls extant as of 2013-06-01.
  */
 public class FreeIdent implements Ident {
 	private	String		myAbsUri;
