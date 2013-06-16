@@ -21,7 +21,7 @@ import com.hp.hpl.jena.rdf.model.{ Model, Resource, Literal, RDFNode, ModelFacto
 import com.hp.hpl.jena.shared.PrefixMapping
 import org.appdapter.core.boot.ClassLoaderUtils
 import org.appdapter.core.log.BasicDebugger
-import org.appdapter.core.store.RepoSpec
+//import org.appdapter.core.store.RepoSpec
 import org.appdapter.impl.store.QueryHelper
 import annotation._
 import org.appdapter.impl.store.DirectRepo
@@ -129,7 +129,7 @@ object GoogSheetRepo extends BasicDebugger {
 
   private def loadTestGoogSheetRepo(): SheetRepo = {
 
-    val spec = new GoogSheetRepoSpec_1_1_1(SemSheet.keyForGoogBootSheet22, nsSheetNum22, dirSheetNum22)
+    val spec = new GoogSheetRepoSpec(SemSheet.keyForGoogBootSheet22, nsSheetNum22, dirSheetNum22)
     val sr = spec.makeRepo
     sr.loadSheetModelsIntoMainDataset()
     sr.loadDerivedModelsIntoMainDataset(null)

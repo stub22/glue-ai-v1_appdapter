@@ -41,7 +41,7 @@ import org.appdapter.bind.rdf.jena.model.{ ModelStuff, JenaModelUtils, JenaFileM
 import org.appdapter.core.store.{ Repo, BasicQueryProcessorImpl, BasicRepoImpl, QueryProcessor }
 import org.appdapter.impl.store.{ DirectRepo, QueryHelper, ResourceResolver }
 import org.appdapter.help.repo.InitialBindingImpl;
-import org.appdapter.core.store.RepoSpec
+//import org.appdapter.core.store.RepoSpec
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -166,7 +166,7 @@ object CsvFilesSheetLoader extends BasicDebugger {
 
   private def loadTestCsvFilesSheetRepo(): SheetRepo = {
     val clList: java.util.ArrayList[ClassLoader] = null;
-    val spec = new OfflineXlsSheetRepoSpec_1_1_1(SemSheet.keyForCSVFilesBootSheet22, nsSheetPath, dirSheetPath, clList)
+    val spec = new OfflineXlsSheetRepoSpec(SemSheet.keyForCSVFilesBootSheet22, nsSheetPath, dirSheetPath, clList)
     val sr = spec.makeRepo
     sr.loadSheetModelsIntoMainDataset()
     sr.loadDerivedModelsIntoMainDataset(clList)

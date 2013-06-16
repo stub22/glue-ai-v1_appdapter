@@ -19,7 +19,7 @@ package org.appdapter.core.matdat
 import com.hp.hpl.jena.query.{ ResultSetFactory, ResultSet, QuerySolution, DataSource }
 import com.hp.hpl.jena.rdf.model.{ Resource, RDFNode, ModelFactory, Model, Literal }
 import java.io.Reader
-import org.appdapter.core.store.{ RepoSpec, FileStreamUtils }
+import org.appdapter.core.store.{ FileStreamUtils }
 import org.appdapter.impl.store.QueryHelper
 import scala.collection.JavaConversions.asScalaBuffer
 import org.appdapter.impl.store.DirectRepo
