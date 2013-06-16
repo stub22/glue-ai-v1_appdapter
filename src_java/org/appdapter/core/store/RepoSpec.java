@@ -17,11 +17,11 @@ package org.appdapter.core.store;
 
 /**
  * @author Stu B. <www.texpedient.com>
- */
-public interface RepoSpec {
+ *//*
+public interface RepoSpecJava {
 
 	public Repo.WithDirectory makeRepo();
 
 	public Object makeRepoClient(Repo.WithDirectory with);
 
-}
+}*/

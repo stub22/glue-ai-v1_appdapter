@@ -24,7 +24,7 @@ import org.appdapter.core.log.BasicDebugger
 import org.appdapter.bind.rdf.jena.sdb.SdbStoreFactory
 import com.hp.hpl.jena.sdb.Store
 import java.util.Date
-import org.appdapter.core.store.RepoSpec
+//import org.appdapter.core.store.RepoSpec
 import org.appdapter.core.store.InitialBinding
 import org.appdapter.core.store.Repo
 import org.appdapter.core.log.BasicDebugger
@@ -49,7 +49,7 @@ object SpecialRepoLoader extends BasicDebugger {
     in + "/*" + k + "=" + v + "*/"
   }
 
-  def makeSheetRepo(spec: RepoSpec, dirModel: Model, fileModelCLs: java.util.List[ClassLoader] = null, dirGraphID: Ident = null): OmniLoaderRepo_1_1_1 = {
+  def makeSheetRepo(spec: RepoSpec, dirModel: Model, fileModelCLs: java.util.List[ClassLoader] = null, dirGraphID: Ident = null): OmniLoaderRepo = {
     val specURI = spec.toString();
     var serial = System.identityHashCode(this);
     var myDebugName = SpecialRepoLoader.addInvisbleInfo(specURI, "time", "" + new Date());
@@ -57,7 +57,7 @@ object SpecialRepoLoader extends BasicDebugger {
       myDebugName = SpecialRepoLoader.addInvisbleInfo(myDebugName, "id", "" + dirGraphID);
     }
     // Construct a repo around that directory        
-    val shRepo = new OmniLoaderRepo_1_1_1(spec, specURI, myDebugName, dirModel, fileModelCLs)
+    val shRepo = new OmniLoaderRepo(spec, specURI, myDebugName, dirModel, fileModelCLs)
     // Load the rest of the repo's initial *sheet* models, as instructed by the directory.
     getLogger().debug("Loading Sheet Models")
     shRepo.loadSheetModelsIntoMainDataset()

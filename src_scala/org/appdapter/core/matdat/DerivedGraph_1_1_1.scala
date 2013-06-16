@@ -51,8 +51,8 @@ object DerivedGraphNames_1_1_1 {
   /* opTypeID is one of ccrt:UnionModel, 
 	 * useTypeID is one of ccrt:BehaviorModel, 	 */
 
-  val T_union = new FreeIdent(DefaultRepoSpecDefaultNames_1_1_1.NS_CCRT_RT + "UnionModel");
-  val P_sourceModel = new FreeIdent(DefaultRepoSpecDefaultNames_1_1_1.NS_CCRT_RT + "sourceModel");
+  val T_union = new FreeIdent(RepoSpecDefaultNames.NS_CCRT_RT + "UnionModel");
+  val P_sourceModel = new FreeIdent(RepoSpecDefaultNames.NS_CCRT_RT + "sourceModel");
 }
 
 class DerivedGraphSpec_1_1_1(val myTargetGraphTR: TypedResrc_1_1_1, var myInGraphIDs: Set[Ident])
