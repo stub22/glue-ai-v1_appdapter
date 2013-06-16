@@ -32,7 +32,7 @@ import org.appdapter.impl.store.{ DirectRepo, QueryHelper, ResourceResolver }
 import org.appdapter.help.repo.InitialBindingImpl
 import org.appdapter.core.boot.ClassLoaderUtils
 import org.appdapter.core.store.RepoOper
-import org.appdapter.core.store.RepoSpec
+//import org.appdapter.core.store.RepoSpec
 import org.appdapter.core.name.Ident
 /**
  * @author Stu B. <www.texpedient.com>

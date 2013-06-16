@@ -18,7 +18,7 @@ package org.appdapter.core.matdat
 
 import com.hp.hpl.jena.query.Dataset
 import com.hp.hpl.jena.rdf.model.Model
-import org.appdapter.core.store.{ RepoSpec, RepoOper, Repo }
+import org.appdapter.core.store.{ RepoOper, Repo }
 import org.appdapter.gui.demo.DemoBrowser
 import org.appdapter.gui.repo.RepoBoxImpl
 import org.appdapter.gui.box.ScreenBoxImpl
@@ -34,7 +34,7 @@ import org.appdapter.core.log.BasicDebugger
 ///import org.cogchar.impl.trigger.Whackamole
 //import org.cogchar.name.behavior.{ MasterDemoNames };
 
-class OmniLoaderRepo_1_1_1(myRepoSpecStart: RepoSpec, myDebugNameIn: String, myBasePathIn: String,
+class OmniLoaderRepo(myRepoSpecStart: RepoSpec, myDebugNameIn: String, myBasePathIn: String,
   directoryModel: Model, fmcls: java.util.List[ClassLoader])
   extends XLSXSheetRepo(directoryModel: Model, fmcls)
   with RepoOper.Reloadable {
@@ -122,20 +122,20 @@ object PipelineRepoLoader extends BasicDebugger {
   }
 
   def loadPipeline(pplnGraphQN: String, repo: Repo.WithDirectory, mainDset: DataSource) = {
-
-    val rc = new RepoClientImpl(repo, DefaultRepoSpecDefaultNames_1_1_1.DFLT_TGT_GRAPH_SPARQL_VAR, DefaultRepoSpecDefaultNames_1_1_1.DFLT_QRY_SRC_GRAPH_QN)
-
-    val pqs = new PipelineQuerySpec_1_1_1(DefaultRepoSpecDefaultNames_1_1_1.PIPE_ATTR_QQN, DefaultRepoSpecDefaultNames_1_1_1.PIPE_SOURCE_QQN, pplnGraphQN);
-    val dgSpecSet: Set[DerivedGraphSpec_1_1_1] = DerivedGraphSpecReader_1_1_1.queryDerivedGraphSpecs(rc, pqs);
+    
+    val rc = new RepoClientImpl(repo,  RepoSpecDefaultNames.DFLT_TGT_GRAPH_SPARQL_VAR, RepoSpecDefaultNames.DFLT_QRY_SRC_GRAPH_QN)
+    val pqs = new PipelineQuerySpec(RepoSpecDefaultNames.PIPE_ATTR_QQN, RepoSpecDefaultNames.PIPE_SOURCE_QQN, pplnGraphQN);
+    val dgSpecSet: Set[DerivedGraphSpec] = DerivedGraphSpecReader.queryDerivedGraphSpecs(rc, pqs);
 
     for (dgSpec <- dgSpecSet) {
-      val model = dgSpec.makeDerivedModel(repo)
-      mainDset.replaceNamedModel(pplnGraphQN, model)
-    }
+      val derivedModelProvider = dgSpec.makeDerivedModelProvider(repo);
+      val derivedModel = derivedModelProvider.getModel()
+      mainDset.replaceNamedModel(pplnGraphQN, derivedModel)
+    }    
   }
 }
 
-class SimplistRepoSpec_1_1_1(val wd: Repo.WithDirectory) extends RepoSpec_1_1_1 {
+class SimplistRepoSpec(val wd: Repo.WithDirectory) extends RepoSpec {
   override def makeRepo(): Repo.WithDirectory = {
     wd;
   }
@@ -144,7 +144,7 @@ class SimplistRepoSpec_1_1_1(val wd: Repo.WithDirectory) extends RepoSpec_1_1_1 
   }
 }
 
-object OmniLoaderRepoTest_1_1_1 {
+object OmniLoaderRepoTest {
 
   // These constants are used to test the ChanBinding model found in "GluePuma_BehavMasterDemo"
   //   https://docs.google.com/spreadsheet/ccc?key=0AlpQRNQ-L8QUdFh5YWswSzdYZFJMb1N6aEhJVWwtR3c
@@ -184,18 +184,18 @@ object OmniLoaderRepoTest_1_1_1 {
     print("Start Whackamole");
     val repoNav = DemoBrowser.makeDemoNavigatorCtrl(args);
     print("Create a Goog Sheet Spec");
-    val repoSpec = new GoogSheetRepoSpec_1_1_1(OmniLoaderRepoTest_1_1_1.BMC_SHEET_KEY, OmniLoaderRepoTest_1_1_1.BMC_NAMESPACE_SHEET_NUM, OmniLoaderRepoTest_1_1_1.BMC_DIRECTORY_SHEET_NUM);
+    val repoSpec = new GoogSheetRepoSpec(OmniLoaderRepoTest.BMC_SHEET_KEY, OmniLoaderRepoTest.BMC_NAMESPACE_SHEET_NUM, OmniLoaderRepoTest.BMC_DIRECTORY_SHEET_NUM);
     val repo = repoSpec.makeRepo;
     repo.loadSheetModelsIntoMainDataset();
     repo.loadDerivedModelsIntoMainDataset(null);
     print("Make RepoFabric");
-    val rf = new RepoFabric_1_1_1();
+    val rf = new RepoFabric();
     print("Make FabricBox");
-    val fb = new FabricBox_1_1_1(rf);
+    val fb = new FabricBox(rf);
     fb.setShortLabel("Short Label")
     // Add this as an "entry" in the RepoFabric 
     print("Add to Entry");
-    rf.addEntry(new SimplistRepoSpec_1_1_1(repo))
+    rf.addEntry(new SimplistRepoSpec(repo))
     print("Resync");
     val tp = repoNav.getBoxPanelTabPane()
     val boxed = new ScreenBoxImpl(repo.toString(), repo);

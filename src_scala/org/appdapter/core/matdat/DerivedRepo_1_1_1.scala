@@ -37,7 +37,7 @@ import org.appdapter.impl.store.QueryHelper
 //================ SPEC
 // FIXME:  The srcRepo should really not be given to the RepoSpec, because it
 // is not serializable specData.
-class DerivedRepoSpec_1_1_1(val myDGSpecs: Set[DerivedGraphSpec_1_1_1], val mySrcRepo: Repo.WithDirectory) extends RepoSpec_1_1_1 {
+class DerivedRepoSpec_1_1_1(val myDGSpecs: Set[DerivedGraphSpec_1_1_1], val mySrcRepo: Repo.WithDirectory) extends RepoSpec {
   override def toString(): String = {
     "PipelineRepoSpec[pipeSpecs= " + myDGSpecs + "]";
   }
@@ -121,9 +121,9 @@ object DerivedRepoLoader extends BasicDebugger {
   def loadPipeline(pplnGraphQN: String, repo: Repo.WithDirectory, mainDset: DataSource, myDirectoryModel: Model, fileModelCLs: java.util.List[ClassLoader]) = {
 
     val mainDset: DataSource = repo.getMainQueryDataset().asInstanceOf[DataSource];
-    val rc = new org.appdapter.help.repo.RepoClientImpl(repo, DefaultRepoSpecDefaultNames_1_1_1.DFLT_TGT_GRAPH_SPARQL_VAR, OmniLoaderRepoTest_1_1_1.QUERY_SOURCE_GRAPH_QN)
-    val solList = DerivedGraphSpecReader_1_1_1.queryDerivedGraphSpecs(rc, new PipelineQuerySpec_1_1_1(OmniLoaderRepoTest_1_1_1.PIPELINE_QUERY_QN,
-      OmniLoaderRepoTest_1_1_1.PIPELINE_GRAPH_QN, pplnGraphQN));
+    val rc = new org.appdapter.help.repo.RepoClientImpl(repo, RepoSpecDefaultNames.DFLT_TGT_GRAPH_SPARQL_VAR, OmniLoaderRepoTest.QUERY_SOURCE_GRAPH_QN)
+    val solList = DerivedGraphSpecReader_1_1_1.queryDerivedGraphSpecs(rc, new PipelineQuerySpec_1_1_1(OmniLoaderRepoTest.PIPELINE_QUERY_QN,
+      OmniLoaderRepoTest.PIPELINE_GRAPH_QN, pplnGraphQN));
 
     for (solC <- solList) {
       val pipeSpec = solC
