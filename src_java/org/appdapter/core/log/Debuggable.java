@@ -199,7 +199,6 @@ public abstract class Debuggable {
 	}
 
 	public static boolean mustBeSameStrings(String gs1, String gs2) {
-		// TODO Auto-generated method stub
 		return makeMatchable(gs1).equals(makeMatchable(gs2));
 	}
 

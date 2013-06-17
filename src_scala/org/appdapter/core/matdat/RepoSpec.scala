@@ -35,7 +35,6 @@ package org.appdapter.core.matdat
 import org.appdapter.core.boot.ClassLoaderUtils
 import org.appdapter.core.name.{ Ident, FreeIdent }
 import org.appdapter.core.store.{ Repo }
-import org.appdapter.gui.demo.DemoBrowser
 import org.appdapter.help.repo.RepoClientImpl
 import org.osgi.framework.BundleContext
 
@@ -189,8 +188,9 @@ object RepoSpecDefaultNames {
     val repo: OmniLoaderRepo = repoSpec.makeRepo.asInstanceOf[OmniLoaderRepo];
 
     print("Starting Whackamole");
-    val repoNav = DemoBrowser.makeDemoNavigatorCtrl(args);
-    repoNav.showScreenBox(repo);
+    import org.appdapter.demo.DemoBrowserUI
+    val repoNav = DemoBrowserUI.makeDemoNavigatorCtrl(args);
+    repoNav.attachChildUI(null, repo, true);
     java.lang.Thread.sleep(60000000);
   }
 
