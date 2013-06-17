@@ -20,6 +20,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.appdapter.core.component.KnownComponentImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.helpers.NOPLogger;
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -28,6 +31,37 @@ import org.appdapter.core.component.KnownComponentImpl;
 public abstract class BoxImpl<TrigType extends Trigger<? extends BoxImpl<TrigType>>> extends KnownComponentImpl implements MutableBox<TrigType> {
 
 	private BoxContext myBoxContext;
+
+	static Logger theLogger = LoggerFactory.getLogger(BoxImpl.class);
+
+	/*
+	 *  "public" Removes the requirement for synthetic accessors
+	 *
+	 */
+	public Logger getLogger() {
+		return theLogger;//super.getLogger();
+	}
+	
+	/*
+	 *  "public" Removes the requirement for synthetic accessors
+	 *
+	 */
+	public Logger getALogger() {
+		return theLogger;//super.getLogger();
+	}
+	static public Logger getSLogger() {
+		return theLogger;//super.getLogger();
+	}
+
+	public void useLoggerForClass(Class c) {
+		Logger l = getLoggerForClass(c);
+		setLogger(l);
+	}
+
+	protected boolean isLoggerUsable() {
+		Logger l = getLogger();
+		return ((l != null) && !(l instanceof NOPLogger));
+	}
 
 	private List<TrigType> myTriggers = new ArrayList<TrigType>();
 

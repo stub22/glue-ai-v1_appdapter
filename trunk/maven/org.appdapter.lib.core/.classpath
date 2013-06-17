@@ -2,13 +2,13 @@
 <classpath>
 	<classpathentry including="**/*.java" kind="src" output="target/test-classes" path="src/test/java"/>
 	<classpathentry including="**/*.java" kind="src" path="src/main/java"/>
-	<classpathentry excluding="**/*.java" kind="src" path="src/main/resources"/>
+	<classpathentry kind="src" path="src/main/resources"/>
 	<classpathentry kind="src" path="src/main/scala"/>
-	<classpathentry excluding="**/*.java|org/appdapter/test/samples/scalatest.scala|org/appdapter/test/samples/specs.scala" kind="src" path="src/test/scala"/>
+	<classpathentry excluding="org/appdapter/test/samples/scalatest.scala|org/appdapter/test/samples/specs.scala" kind="src" path="src/test/scala"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ClientRepoSpec"/>
 	<classpathentry kind="con" path="org.scala-ide.sdt.launching.SCALA_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="src" path="/ext.bundle.jena_all_264"/>
-	<classpathentry kind="src" path="/ext.bundle.xml.dom4j_161"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/ClientRepoSpec"/>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ext.bundle.math.symja_jas"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

@@ -41,10 +41,10 @@ import org.appdapter.core.log.BasicDebugger;
 import org.appdapter.core.boot.ClassLoaderUtils;
 import org.osgi.framework.BundleContext;
 
-import org.appdapter.gui.demo.{ DemoNavigatorCtrl };
+//import org.appdapter.gui.demo.{ DemoNavigatorCtrl };
 import org.appdapter.core.store.RepoOper;
 
-import org.appdapter.scafun.{ Boxy, GoFish, FullBox, FullTrigger }
+///import org.appdapter.scafun.{ Boxy, GoFish, FullBox, FullTrigger }
 
 import org.appdapter.core.log.{ BasicDebugger, Loggable };
 
