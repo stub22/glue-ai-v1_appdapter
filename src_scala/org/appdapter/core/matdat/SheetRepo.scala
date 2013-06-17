@@ -32,12 +32,12 @@ import org.appdapter.impl.store.{ DirectRepo, QueryHelper, ResourceResolver }
 import org.appdapter.help.repo.InitialBindingImpl
 import org.appdapter.core.boot.ClassLoaderUtils
 import org.appdapter.core.store.RepoOper
-//import org.appdapter.core.store.RepoSpec
+//import org.appdapter.api.trigger.RepoOper
 import org.appdapter.core.name.Ident
 /**
  * @author Stu B. <www.texpedient.com>
  *
- * We implement a CSV (spreadsheet) backed Appdapter "repo" (read-only, but reloadable from updated source data).
+ * We implement a DirectRepo with some sheet loading
  */
 
 object SheetRepo extends BasicDebugger {
@@ -49,6 +49,12 @@ abstract class SheetRepo(directoryModel: Model, var fileModelCLs: java.util.List
 
   /**  For All Subclasses    */
   // RESUME DIFF
+  def this() =
+    this(null, null)
+
+  def this(directoryModel: Model) =
+    this(directoryModel, null)
+// BEGIN NEXT DIFF
 
   final def loadDerivedModelsIntoMainDataset(clList: java.util.List[ClassLoader]) = {
     val mainDset: DataSource = getMainQueryDataset().asInstanceOf[DataSource];
@@ -250,4 +256,6 @@ object FileModelRepoLoader extends BasicDebugger {
       }
     }
   }
+// END NEXT DIFF
+
 }
