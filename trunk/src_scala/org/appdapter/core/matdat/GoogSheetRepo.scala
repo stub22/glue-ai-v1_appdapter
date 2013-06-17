@@ -25,6 +25,7 @@ import org.appdapter.core.log.BasicDebugger
 import org.appdapter.impl.store.QueryHelper
 import annotation._
 import org.appdapter.impl.store.DirectRepo
+//import org.appdapter.api.trigger.RepoOper
 import org.appdapter.core.store.Repo
 /**
  * @author Stu B. <www.texpedient.com>
@@ -34,6 +35,12 @@ import org.appdapter.core.store.Repo
  */
 @deprecated("Instead of making a Repo Object we will make a GoogSheetRepoSpec - since appdapter 1.1.1")
 class GoogSheetRepo(directoryModel: Model, fmcls: java.util.List[ClassLoader] = null) extends SheetRepo(directoryModel, fmcls) {
+
+  def this() =
+    this(null, null)
+
+  def this(directoryModel: Model) =
+    this(directoryModel, null)
 
   /**   All the work gets done at SheetRepo
   def loadGoogSheetModelsIntoMainDataset() = {
