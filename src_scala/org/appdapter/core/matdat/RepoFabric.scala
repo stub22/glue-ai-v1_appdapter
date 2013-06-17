@@ -19,6 +19,7 @@ import org.appdapter.api.trigger.{BoxContext, MutableBox, BoxImpl, TriggerImpl}
 import org.appdapter.core.store.{Repo}
 import org.appdapter.help.repo.{ RepoClient, RepoClientImpl, InitialBindingImpl } 
 //import org.appdapter.core.matdat. { RepoSpec, RepoSpecDefaultNames }
+import org.appdapter.scafun.{FullBox, FullTrigger, BoxOne}
 import org.appdapter.gui.repo.RepoModelBoxImpl;
 import org.appdapter.gui.trigger.SysTriggers;
 /**
@@ -48,7 +49,6 @@ class RepoFabric {
 		}
 	}
 }
-import org.appdapter.scafun.{FullBox, FullTrigger, BoxOne}
 class GraphBox(val myURI : String) extends org.appdapter.scafun.FullBox[GraphTrigger] {
 	setShortLabel("tweak-" + myURI);
 }
@@ -71,7 +71,7 @@ class ScreenBoxForImmutableRepo(val myRepo : Repo) extends BoxOne {
 		}
 	}
 }
-class FabricBox(val myFabric : RepoFabric) extends org.appdapter.scafun.BoxOne {
+class FabricBox(val myFabric : RepoFabric) extends BoxOne {
 	/*		BT result = CachingComponentAssembler.makeEmptyComponent(boxClass);
 	 result.setShortLabel(label);
 	 result.setDescription("full description for box with label: " + label);
