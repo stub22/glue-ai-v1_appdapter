@@ -89,8 +89,8 @@ public class RepoOper implements AnyOper {
 		final String graphURI;
 		final Reloadable m_repo;
 
-		public ReloadSingleModelTrigger(String graphURI, Reloadable repo) {
-			this.graphURI = graphURI;
+		public ReloadSingleModelTrigger(String graphUri, Reloadable repo) {
+			this.graphURI = graphUri;
 			m_repo = repo;
 		}
 
