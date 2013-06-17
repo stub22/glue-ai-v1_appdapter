@@ -18,6 +18,8 @@ package org.appdapter.api.trigger;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
+import org.appdapter.core.component.KnownComponent;
+
 /**
  * @author Stu B. <www.texpedient.com>
  */
@@ -39,33 +41,60 @@ public interface AnyOper {
 		 * @author Administrator
 		 *
 		 */
+	@Retention(RetentionPolicy.RUNTIME)
 	public @interface UIHidden {
 
 	}
 
 	@Retention(RetentionPolicy.RUNTIME)
 	static public @interface UISalient {
-	}
-
-	@Retention(RetentionPolicy.RUNTIME)
-	static public @interface SalientVoidCall {
 		/**
-		 *  "" = use the splitted of camelcase for methodname
+		 * "" == do nothing to the result 
+		 * "toString" .. call the toString method on Result
+		 * Before return the result call the method name
 		 * @return 
 		 */
-		public String Named() default "";
-	}
+		public String ToValueMethod() default "";
 
-	@Retention(RetentionPolicy.RUNTIME)
-	static public @interface ToStringResult {
-	}
-
-	@Retention(RetentionPolicy.RUNTIME)
-	static public @interface Named {
 		/**
-		 *  "" = use the splitted of camelcase for methodname
+		 *  "" = use the splitted of camelcase for Menu Item Name
 		 * @return 
 		 */
 		public String MenuName() default "";
+
+		/**
+		 *  true if the last argument is the dropped/pasted item
+		 * @return 
+		 */
+		public boolean PasteDropTarget() default false;
+
+		/**
+		 *  "" = use the splitted of camelcase for methodname
+		 * @return 
+		 */
+		public String CastingMethod() default "";
+
+		/**
+		 *  true if the first argument into target method will be the menuSourceItem
+		 * @return 
+		 */
+		public boolean TreatLikeStatic() default false;
+
+		/**
+		 *  "" = use the splitted of camelcase for methodname
+		 * @return 
+		 */
+		public String ApplyToClass() default "";
+	}
+
+	static interface ApplyToClassInterfaces {
+
+	}
+
+	@UISalient(ApplyToClass = "HASIDENT")
+	static public interface HasIdent extends ApplyToClassInterfaces {
+		@UISalient(MenuName = "Show Ident", ToValueMethod = "toString") void getIdent();
+
+		Class HASIDENT = KnownComponent.class;
 	}
 }

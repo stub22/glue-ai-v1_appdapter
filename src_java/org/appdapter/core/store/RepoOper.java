@@ -23,7 +23,6 @@ import org.appdapter.api.trigger.AnyOper;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.TriggerImpl;
 import org.appdapter.demo.DemoResources;
-import org.appdapter.gui.repo.RepoBox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,17 +38,17 @@ public class RepoOper implements AnyOper {
 
 	@UISalient
 	static public interface ISeeToString {
-		@Override @ToStringResult public String toString();
+		@Override @UISalient(MenuName = "Call ToString") public String toString();
 	}
 
 	@UISalient
 	static public interface Reloadable {
 
-		@SalientVoidCall(Named = "Reload Repo") void reloadAllModels();
+		@UISalient(MenuName = "Reload Repo") void reloadAllModels();
 
-		@SalientVoidCall() void reloadSingleModel(String modelName);
+		@UISalient() void reloadSingleModel(String modelName);
 
-		@ToStringResult Dataset getMainQueryDataset();
+		@UISalient(ToValueMethod = "toString") Dataset getMainQueryDataset();
 	}
 
 	// static class ConcBootstrapTF extends

@@ -16,20 +16,16 @@
 
 package org.appdapter.core.matdat
 
-import com.hp.hpl.jena.query.Dataset
-import com.hp.hpl.jena.rdf.model.Model
-import org.appdapter.core.store.{ RepoOper, Repo }
-import org.appdapter.gui.demo.DemoBrowser
-import org.appdapter.gui.repo.RepoBoxImpl
-import org.appdapter.gui.box.ScreenBoxImpl
-import com.hp.hpl.jena.query.QuerySolution
-import org.appdapter.impl.store.QueryHelper
-import org.appdapter.help.repo.RepoClientImpl
-import com.hp.hpl.jena.query.DataSource
-import org.appdapter.core.boot.ClassLoaderUtils
-import org.osgi.framework.BundleContext
-import org.appdapter.impl.store.DirectRepo
 import org.appdapter.core.log.BasicDebugger
+import org.appdapter.core.store.{Repo, RepoOper}
+import org.appdapter.demo.DemoBrowserUI
+import org.appdapter.help.repo.RepoClientImpl
+import org.appdapter.impl.store.{DirectRepo, QueryHelper}
+
+import com.hp.hpl.jena.query.{DataSource, Dataset, QuerySolution}
+import com.hp.hpl.jena.rdf.model.Model
+
+
 
 ///import org.cogchar.impl.trigger.Whackamole
 //import org.cogchar.name.behavior.{ MasterDemoNames };
@@ -182,25 +178,13 @@ object OmniLoaderRepoTest {
 
   def main(args: Array[String]) = {
     print("Start Whackamole");
-    val repoNav = DemoBrowser.makeDemoNavigatorCtrl(args);
+    val repoNav = DemoBrowserUI.makeDemoNavigatorCtrl(args);
     print("Create a Goog Sheet Spec");
     val repoSpec = new GoogSheetRepoSpec(OmniLoaderRepoTest.BMC_SHEET_KEY, OmniLoaderRepoTest.BMC_NAMESPACE_SHEET_NUM, OmniLoaderRepoTest.BMC_DIRECTORY_SHEET_NUM);
     val repo = repoSpec.makeRepo;
     repo.loadSheetModelsIntoMainDataset();
     repo.loadDerivedModelsIntoMainDataset(null);
-    print("Make RepoFabric");
-    val rf = new RepoFabric();
-    print("Make FabricBox");
-    val fb = new FabricBox(rf);
-    fb.setShortLabel("Short Label")
-    // Add this as an "entry" in the RepoFabric 
-    print("Add to Entry");
-    rf.addEntry(new SimplistRepoSpec(repo))
-    print("Resync");
-    val tp = repoNav.getBoxPanelTabPane()
-    val boxed = new ScreenBoxImpl(repo.toString(), repo);
-    tp.showScreenBox(boxed, boxed.getDisplayType());
-    java.lang.Thread.sleep(60000000);
+    repoNav.attachChildUI(repo.toString(), repo, true);
   }
 
 }
