@@ -215,7 +215,7 @@ object XLSXSheetRepoLoader extends BasicDebugger {
     println("Got all-vars java-list: " + allVarNames);
     while (qqrsrw.hasNext()) {
       val qSoln: QuerySolution = qqrsrw.next();
-      for (val n: String <- allVarNames) {
+      for (n: String <- allVarNames) {
         val qvNode: RDFNode = qSoln.get(n);
         println("qvar[" + n + "]=" + qvNode);
       }

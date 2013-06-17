@@ -64,7 +64,8 @@ class OnlineSheetRepoSpec(sheetKey: String, namespaceSheetNum: Int, dirSheetNum:
 }
 
 class GoogSheetRepoSpec(sheetKey: String, namespaceSheetNum: Int, dirSheetNum: Int,
-  fileModelCLs: java.util.List[ClassLoader] = null) extends RepoSpec {
+  fileModelCLs: java.util.List[ClassLoader]) extends RepoSpec {
+  def this(sheetKey: String, namespaceSheetNum: Int, dirSheetNum: Int) = this(sheetKey, namespaceSheetNum, dirSheetNum, null);
   override def makeRepo(): SheetRepo = {
     GoogSheetRepo.makeGoogSheetRepo(sheetKey, namespaceSheetNum, dirSheetNum, fileModelCLs, this)
   }
