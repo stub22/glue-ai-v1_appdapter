@@ -27,9 +27,11 @@ trait FullTrigger[FB <:  FullBox[_ <: FullTrigger[FB]]] extends MutableTrigger[F
 
 
 class BoxOne extends FullBox[TriggerOne] {
+    import collection.JavaConverters._
 	def getOpenKidBoxes(bc : BoxContext) : Seq[BoxOne] = {
 		val kidBoxJL  = bc.getOpenChildBoxesNarrowed(this, classOf[BoxOne], classOf[TriggerOne]);
-		val kidBoxSeq : Seq[BoxOne] = scala.collection.JavaConversions.asBuffer(kidBoxJL) ;
+//		val kidBoxSeq : Seq[BoxOne] = scala.collection.JavaConversions.asBuffer(kidBoxJL) ;
+		val kidBoxSeq : Seq[BoxOne] = kidBoxJL.asScala;
 		kidBoxSeq;
 	}
 }
