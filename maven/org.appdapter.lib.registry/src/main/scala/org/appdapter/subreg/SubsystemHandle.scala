@@ -17,7 +17,7 @@
 package org.appdapter.subreg
 
 import org.appdapter.api.facade.FacadeSpec
-import org.appdapter.subreg.FacadeHandle
+//import org.appdapter.subreg.FacadeHandle
 import org.appdapter.api.facade.FacadeRegistry
 import org.appdapter.api.facade.Maker
 import org.appdapter.api.facade.SubsystemRegistryFuncs
