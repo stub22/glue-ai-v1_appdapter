@@ -61,7 +61,6 @@ import org.appdapter.core.name.Ident;
 import org.appdapter.core.store.Repo;
 import org.appdapter.gui.box.ScreenBoxImpl;
 import org.appdapter.gui.browse.BrowsePanel;
-import org.appdapter.gui.browse.BrowsePanelSwitchableViewFromUI;
 import org.appdapter.gui.browse.CollectionEditorUtil;
 import org.appdapter.gui.browse.NamedItemChooserPanel;
 import org.appdapter.gui.demo.DemoBrowser;
@@ -94,7 +93,7 @@ public class Utility {
 	public static BrowsePanel browserPanel;
 	public static NamedObjectCollection uiObjects = new NamedObjectCollectionImpl("All UI Objects", null);
 	public static BrowserPanelGUI controlApp;
-	public static BrowsePanelSwitchableViewFromUI theBoxPanelDisplayContext;
+	public static BoxPanelSwitchableView theBoxPanelDisplayContext;
 	public static NamedItemChooserPanel namedItemChooserPanel;
 	public static CollectionEditorUtil collectionWatcher;
 	public static DisplayContext selectedDisplaySontext;
@@ -146,7 +145,7 @@ public class Utility {
 		return appMenuBar;
 	}
 
-	public static BrowsePanelSwitchableViewFromUI getBoxPanelTabPane() {
+	public static BoxPanelSwitchableView getBoxPanelTabPane() {
 		if (theBoxPanelDisplayContext == null) {
 			Debuggable.warn("NULL theBoxPanelDisplayContext");
 		}
@@ -172,7 +171,11 @@ public class Utility {
 
 	public static boolean ensureRunning() {
 		if (browserPanel == null) {
-			DemoBrowser.main(new String[0]);
+			try {
+				DemoBrowser.main(new String[0]);
+			} catch (Exception e) {
+				theLogger.error("ensureRunning() caught an exception", e);
+			}
 		}
 		return true;
 	}
@@ -611,14 +614,14 @@ public class Utility {
 	 * The result is null if no suitable editor can be found.
 	 */
 	public static PropertyEditor findEditor(Class targetType) {
+		PropertyEditor ped = PropertyEditorManager.findEditor(targetType);
+		if (ped != null)
+			return ped;
+		Class<? extends PropertyEditor> pe = FunctionalClassRegistry.findImplmentingForMatch(PropertyEditor.class, targetType);
+		if (pe == null || !PropertyEditor.class.isAssignableFrom(pe)) {
+			return null;
+		}
 		try {
-			PropertyEditor ped = PropertyEditorManager.findEditor(targetType);
-			if (ped != null)
-				return ped;
-			Class<? extends PropertyEditor> pe = FunctionalClassRegistry.findImplmentingForMatch(PropertyEditor.class, targetType);
-			if (pe == null) {
-				return null;
-			}
 			ped = pe.newInstance();
 			return ped;
 		} catch (Throwable e) {
@@ -668,8 +671,23 @@ public class Utility {
 		return null;
 	}
 
+	static HashMap gpp = new HashMap();
+
+	public static class TempPanel extends JPanel {
+
+	}
+
 	public static JPanel getPropertiesPanel(Object object) {
-		JPanel view;
+		JPanel view = (JPanel) gpp.get(object);
+		if (view != null)
+			return view;
+		JPanel tp;
+		if (object instanceof JPanel) {
+			tp = (JPanel) object;
+		} else {
+			tp = new TempPanel();
+		}
+		gpp.put(object, tp);
 		Class objClass = object.getClass();
 		Class<? extends Customizer> customizerClass = getCustomizerClassForClass(objClass);
 		Customizer customizer;
@@ -679,12 +697,13 @@ public class Utility {
 			customizer = new LargeObjectView(Utility.getCurrentContext(), object);
 		}
 		customizer.setObject(object);
-		if (customizer instanceof Component)
+		if (customizer instanceof JPanel)
 			view = (JPanel) customizer;
 		else {
 			theLogger.warn("customizer is not a Component " + customizer);
 			view = new LargeObjectView(Utility.getCurrentContext(), object);
 		}
+		gpp.put(object, view);
 		return view;
 	}
 
@@ -752,7 +771,7 @@ public class Utility {
 				pnl.show();
 				return ScreenBoxImpl.asResult(pnl);
 			} else {
-				context.showScreenBox(error); // @temp
+				Utility.browserPanel.showScreenBox(error); // @temp
 				return null;
 			}
 		} catch (Throwable err2) {
@@ -773,7 +792,7 @@ public class Utility {
 			return "a " + Utility.getShortClassName(object.getClass());
 	}
 
-	static public DisplayType getDisplayType(Class expected) {
+	static public org.appdapter.api.trigger.DisplayType getDisplayType(Class expected) {
 		if (expected.isPrimitive()) {
 			return DisplayType.TOSTRING;
 		}

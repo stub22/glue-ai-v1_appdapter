@@ -36,7 +36,7 @@ import org.appdapter.api.trigger.BrowserPanelGUI;
 import org.appdapter.api.trigger.DisplayContext;
 import org.appdapter.api.trigger.DisplayContextProvider;
 import org.appdapter.api.trigger.DisplayType;
-import org.appdapter.api.trigger.ITabUI;
+import org.appdapter.api.trigger.BoxPanelSwitchableView;
 import org.appdapter.api.trigger.MutableBox;
 import org.appdapter.api.trigger.NamedObjectCollection;
 import org.appdapter.api.trigger.POJOCollectionListener;
@@ -144,7 +144,7 @@ abstract public class BaseDemoNavigatorCtrl implements BrowserPanelGUI, org.appd
 	}
 
 	@Override public NamedObjectCollection getLocalBoxedChildren() {
-		return myBP.getNamedObjectCollection();
+		return getNOC();
 	}
 
 	@Override public UserResult showMessage(String message) {
@@ -160,69 +160,61 @@ abstract public class BaseDemoNavigatorCtrl implements BrowserPanelGUI, org.appd
 
 	}
 
-	public void addRepo(String title, Object boxOrRepo) {
-		addObject(title, boxOrRepo, DisplayType.TREE, true);
+	public void addRepo(String title, Object anyObject) {
+		addObject(title, anyObject, DisplayType.TREE, true);
 	}
 
-	@Override public Collection getTriggersFromUI(Object object) {
-		return myBP.getTriggersFromUI(object);
+	@Override public Collection getTriggersFromUI(BT box, Object object) {
+		return myBP.getTriggersFromUI(box, object);
 	}
 
 	@Override public UserResult showError(String msg, Throwable error) {
 		return myBP.showError(msg, error);
 	}
 
-	public void addObject(String title, Object boxOrRepo, boolean showASP) {
-		addObject(title, boxOrRepo, DisplayType.ANY, showASP);
+	public void addObject(String title, Object anyObject, boolean showASP) {
+		addObject(title, anyObject, DisplayType.ANY, showASP);
 	}
 
-	@Override public ITabUI getLocalCollectionUI() {
-		Debuggable.notImplemented();
-		return null;
+	@Override public UserResult attachChildUI(String title, Object anyObject) throws Exception {
+
+		return myBP.addObject(title, anyObject, DisplayType.ANY, true);
 	}
 
-	@Override public UserResult attachChildUI(String title, Object value) throws Exception {
-		Debuggable.notImplemented();
-		return null;
+	private NamedObjectCollection getNOC() {
+		return myBP.getNamedObjectCollection();
 	}
 
-	@Override public String getTitleOf(Object value) {
-		Debuggable.notImplemented();
-		return null;
+	@Override public String getTitleOf(Object anyObject) {
+		return getNOC().getTitleOf(anyObject);
 	}
 
 	@Override public void addListener(POJOCollectionListener objectChoice) {
-		Debuggable.notImplemented();
-
+		getNOC().addListener(objectChoice);
 	}
 
 	@Override public Iterator<Object> getObjects() {
-		Debuggable.notImplemented();
-		return null;
+		return getNOC().getObjects();
 	}
 
-	@Override public Object findObjectByName(String n) {
-		Debuggable.notImplemented();
-		return null;
+	@Override public Object findObjectByName(String title) {
+		return getNOC().findObjectByName(title);
 	}
 
 	@Override public Collection findObjectsByType(Class type) {
-		Debuggable.notImplemented();
-		return null;
+		return getNOC().findObjectsByType(type);
 	}
 
 	@Override public BT findOrCreateBox(Object newObject) {
-		Debuggable.notImplemented();
-		return null;
+		return getNOC().findOrCreateBox(newObject);
 	}
 
 	@Override public void renameObject(String oldName, String newName) throws PropertyVetoException {
-		Debuggable.notImplemented();
-
+		getNOC().renameObject(oldName, newName);
 	}
 
-	@Override public void attachChildUI(String title, Object obj, boolean displayForegroundASAP) {
-		Debuggable.notImplemented();
+	@Override public void attachChildUI(String title, Object anyObject, boolean displayForegroundASAP) {
+		addObject(title, anyObject, displayForegroundASAP);
 	}
 
 	@Override public void initialize(String[] args) {

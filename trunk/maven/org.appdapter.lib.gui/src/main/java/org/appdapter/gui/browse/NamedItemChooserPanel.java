@@ -2,6 +2,8 @@ package org.appdapter.gui.browse;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
+import java.beans.PropertyVetoException;
+import java.lang.reflect.InvocationTargetException;
 
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
@@ -9,11 +11,12 @@ import javax.swing.border.TitledBorder;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.DisplayContext;
 import org.appdapter.core.log.Debuggable;
+import org.appdapter.gui.api.GetSetObject;
 import org.appdapter.gui.api.Utility;
 import org.appdapter.gui.impl.JJPanel;
 import org.appdapter.gui.util.PromiscuousClassUtils;
 
-public class NamedItemChooserPanel extends JJPanel {
+public class NamedItemChooserPanel extends JJPanel implements GetSetObject, HasFocusOnBox<Box> {
 
 	//JLayeredPane desk;
 	//JSplitPane split;
@@ -57,8 +60,17 @@ public class NamedItemChooserPanel extends JJPanel {
 	}
 
 	@Override public Object getValue() {
-		Debuggable.notImplemented();
 		return namedObjectListPanel.getObject();
+	}
+
+	@Override public void setObject(Object object) throws InvocationTargetException {
+		try {
+			namedObjectListPanel.setSelectedObject(object);
+		} catch (PropertyVetoException e) {
+			e.printStackTrace();
+			throw new InvocationTargetException(e);
+		}
+
 	}
 
 }

@@ -2,6 +2,7 @@ package org.appdapter.gui.browse;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.beans.PropertyVetoException;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -109,6 +110,11 @@ public class LargeObjectChooser extends JPanel implements POJOCollectionListener
 
 	public Object getObject() {
 		return context.getSelectedObject();
+	}
+
+	public void setSelectedObject(Object object) throws PropertyVetoException {
+		context.setSelectedObject(object);
+
 	}
 
 }

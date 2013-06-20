@@ -70,7 +70,7 @@ public class UseEditor extends SingleTabFrame implements Customizer {
 		return false;
 	}
 
-	@Override protected void initSubClassGUI() throws Throwable {
+	@Override protected void initSubclassGUI() throws Throwable {
 		if (ec == null && objClass != null) {
 			ec = Utility.findEditor(objClass);
 		}

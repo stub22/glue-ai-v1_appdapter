@@ -9,7 +9,7 @@ import java.util.Vector;
 import org.appdapter.api.trigger.BT;
 import org.appdapter.api.trigger.BoxPanelSwitchableView;
 import org.appdapter.api.trigger.BrowserPanelGUI;
-import org.appdapter.api.trigger.ITabUI;
+import org.appdapter.api.trigger.BoxPanelSwitchableView;
 import org.appdapter.api.trigger.NamedObjectCollection;
 import org.appdapter.api.trigger.POJOCollectionListener;
 import org.appdapter.api.trigger.UserResult;
@@ -48,7 +48,7 @@ public class EmptyDisplayContext extends NamedObjectCollectionImpl implements Br
 	public void removeListener(POJOCollectionListener o) {
 	}
 
-	public Collection getTriggersFromUI(Object value) {
+	public Collection getTriggersFromUI(BT box, Object value) {
 		return new Vector();
 	}
 
@@ -109,7 +109,7 @@ public class EmptyDisplayContext extends NamedObjectCollectionImpl implements Br
 		return getDisplayContext().showMessage(string);
 	}
 
-	public ITabUI getLocalCollectionUI() {
+	public BoxPanelSwitchableView getLocalCollectionUI() {
 		Debuggable.notImplemented();
 		return null;
 	}

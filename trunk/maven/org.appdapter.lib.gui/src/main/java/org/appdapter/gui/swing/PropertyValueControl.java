@@ -18,6 +18,7 @@ import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Set;
 
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -363,6 +364,8 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 	}
 
 	public PropertyValueControl(DisplayContext context, Object source, PropertyDescriptor property) {
+		this.property = property;
+		this.source = source;
 		if (context != null) {
 			this.context = context;
 		}
@@ -517,6 +520,12 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 			// the editor's value changed
 			readEditorValue();
 		}
+	}
+
+	@Override public String toString() {
+		if (property != null)
+			return getClass().getSimpleName() + " " + property;
+		return super.toString();
 	}
 
 	private void readBoundValue() {

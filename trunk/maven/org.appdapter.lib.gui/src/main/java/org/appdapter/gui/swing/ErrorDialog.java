@@ -14,13 +14,13 @@ import org.appdapter.gui.impl.JJPanel;
 public class ErrorDialog extends JPanel {
 
 	public JDialog dlg = new JDialog();
-	public JJPanel errorPanel;
+	public ErrorPanel errorPanel;
 
 	public static void main(String[] args) {
 		(new ErrorDialog("Testing, testing...", new Exception("XYZ!"))).show();
 	}
 
-	public ErrorDialog(JJPanel displayIt, Window insideThis, boolean center, boolean modal) {
+	public ErrorDialog(ErrorPanel displayIt, Window insideThis, boolean center, boolean modal) {
 		super(false);
 		this.dlg = toJDialog(insideThis);
 		this.errorPanel = displayIt;

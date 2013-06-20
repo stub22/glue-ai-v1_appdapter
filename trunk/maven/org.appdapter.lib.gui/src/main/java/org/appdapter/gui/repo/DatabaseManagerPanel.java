@@ -32,13 +32,13 @@ import org.appdapter.gui.swing.SingleTabFrame;
 
 public class DatabaseManagerPanel extends SingleTabFrame<Box> {
 
-	@Override protected void completeSubClassGUI() {
-		initComponents();
-	}
-
 	/** Creates new form DatabaseManagerPanel */
 	public DatabaseManagerPanel() {
 
+	}
+
+	@Override public boolean isObjectBoundGUI() {
+		return false;
 	}
 
 	/** This method is called from within the constructor to
@@ -48,12 +48,18 @@ public class DatabaseManagerPanel extends SingleTabFrame<Box> {
 	 */
 	@SuppressWarnings("unchecked")// <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
 	private void initComponents() {
-
 		javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
 		this.setLayout(layout);
 		layout.setHorizontalGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGap(0, 400, Short.MAX_VALUE));
 		layout.setVerticalGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGap(0, 300, Short.MAX_VALUE));
 	}// </editor-fold>//GEN-END:initComponents
+
+	@Override protected void initSubclassGUI() throws Throwable {
+		initComponents();
+	}
+
+	@Override protected void completeSubClassGUI() {
+	}
 
 	@Override public void focusOnBox(Box b) {
 		setObject(b);
@@ -67,11 +73,6 @@ public class DatabaseManagerPanel extends SingleTabFrame<Box> {
 	@Override protected boolean reloadObjectGUI(Object obj) throws Throwable {
 		Debuggable.notImplemented();
 		return false;
-	}
-
-	@Override protected void initSubClassGUI() throws Throwable {
-		Debuggable.notImplemented();
-		
 	}
 
 	// Variables declaration - do not modify//GEN-BEGIN:variables

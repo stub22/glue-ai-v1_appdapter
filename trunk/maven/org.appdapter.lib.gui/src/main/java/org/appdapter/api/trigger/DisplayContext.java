@@ -21,18 +21,16 @@ import java.util.Collection;
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public interface DisplayContext extends UIProvider, IShowObjectMessageAndErrors {
+public interface DisplayContext extends UIProvider/*, IShowObjectMessageAndErrors*/{
 	// TODO : replace this with general BoxPanelSwitchableView
 	public BoxPanelSwitchableView getBoxPanelTabPane();
 
 	public NamedObjectCollection getLocalBoxedChildren();
 
-	public Collection getTriggersFromUI(Object object);
+	public Collection getTriggersFromUI(BT box, Object object);
 
 	UserResult attachChildUI(String title, Object value) throws Exception;
 
 	public String getTitleOf(Object value);
-
-	ITabUI getLocalCollectionUI();
 
 }

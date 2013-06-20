@@ -17,11 +17,11 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import org.appdapter.api.trigger.BrowserPanelGUI;
-import org.appdapter.api.trigger.ITabUI;
+import org.appdapter.api.trigger.BoxPanelSwitchableView;
 import org.appdapter.gui.api.Utility;
 import org.appdapter.gui.impl.JJPanel;
 
-public class WithDesktopObjectBrowserTab extends JJPanel implements ITabUI, ActionListener, DocumentListener {
+public class WithDesktopObjectBrowserTab extends JJPanel implements ActionListener, DocumentListener {
 	Class currentClass = null;
 
 	JDesktopPane desk;
@@ -38,12 +38,12 @@ public class WithDesktopObjectBrowserTab extends JJPanel implements ITabUI, Acti
 		initGUI();
 	}
 
-	@Override public void addTab(String title, JComponent thing) {
+	public void addTab(String title, JComponent thing) {
 		desk.add(title, thing);
 
 	}
 
-	@Override public Dimension getPreferredChildSize() {
+	public Dimension getPreferredChildSize() {
 		return desk.getSize();
 	}
 

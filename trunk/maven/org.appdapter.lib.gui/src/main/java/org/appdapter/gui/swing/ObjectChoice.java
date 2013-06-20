@@ -12,12 +12,12 @@ import java.util.LinkedList;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
-import javax.swing.JPanel;
 
 import org.appdapter.api.trigger.NamedObjectCollection;
 import org.appdapter.api.trigger.POJOCollectionListener;
 import org.appdapter.gui.api.NamedObjectCollectionImpl;
 import org.appdapter.gui.browse.CollectionEditorUtil;
+import org.appdapter.gui.impl.JJPanel;
 import org.appdapter.gui.rimpl.TriggerPopupMenu;
 
 /**
@@ -25,7 +25,7 @@ import org.appdapter.gui.rimpl.TriggerPopupMenu;
  * of a certain type.
  *
  */
-public class ObjectChoice extends JPanel implements POJOCollectionListener, MouseListener {
+public class ObjectChoice extends JJPanel implements POJOCollectionListener, MouseListener {
 
 	PropertyEditorSupport editorSupport = new PropertyEditorSupport();
 
@@ -55,10 +55,17 @@ public class ObjectChoice extends JPanel implements POJOCollectionListener, Mous
 	}
 
 	@Override public void addPropertyChangeListener(PropertyChangeListener p) {
+		checkTransient();
 		propSupport.addPropertyChangeListener(p);
 	}
 
+	private void checkTransient() {
+		if (propSupport == null)
+			propSupport = new PropertyChangeSupport(this);
+	}
+
 	@Override public void removePropertyChangeListener(PropertyChangeListener p) {
+		checkTransient();
 		propSupport.removePropertyChangeListener(p);
 	}
 

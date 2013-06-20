@@ -106,11 +106,11 @@
             </exclusions>
         </dependency>
 		<!--  for the GUI -->
-        <dependency>
+        <!--dependency>
             <groupId>com.jidesoft</groupId>
             <artifactId>jide-oss</artifactId>
             <version>3.5.5</version>
-        </dependency>
+        </dependency-->
 
         <!-- Included servicemix bundle to export apache.commons.codec.  
             Needed by org.apache.poi -->
@@ -151,7 +151,7 @@
 						
 						<Private-Package>org.xmldb.*,riotcmd.*</Private-Package>
 						-->						
-                        <Private-Package>org.apache.poi.*, org.apache.xmlbeans.*, org.openxmlformats.*, schemaorg_apache_xmlbeans.*, schemasMicrosoftComOfficeExcel.*, schemasMicrosoftComOfficeOffice.*, schemasMicrosoftComVml.*</Private-Package>
+                        <Private-Package>org.apache.poi.*, com.jidesoft.*, org.apache.xmlbeans.*, org.openxmlformats.*, schemaorg_apache_xmlbeans.*, schemasMicrosoftComOfficeExcel.*, schemasMicrosoftComOfficeOffice.*, schemasMicrosoftComVml.*</Private-Package>
 					</instructions>
 				</configuration>
 			</plugin>

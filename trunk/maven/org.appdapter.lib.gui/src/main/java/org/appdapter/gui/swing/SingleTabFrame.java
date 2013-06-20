@@ -4,21 +4,26 @@ import org.appdapter.api.trigger.BT;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.gui.api.GetSetObject;
 import org.appdapter.gui.api.Utility;
+import org.appdapter.gui.browse.HasFocusOnBox;
 
 /**
  * A Tabbed GUI component used to render 
  * 
  */
-abstract public class SingleTabFrame<BoxType extends Box> extends ObjectView<BoxType> implements GetSetObject {
+abstract public class SingleTabFrame<BoxType extends Box> extends ObjectView<BoxType> implements GetSetObject, HasFocusOnBox<BoxType> {
 
 	protected abstract boolean reloadObjectGUI(Object obj) throws Throwable;
 
-	protected abstract void initSubClassGUI() throws Throwable;
+	protected abstract void initSubclassGUI() throws Throwable;
 
 	protected abstract void completeSubClassGUI() throws Throwable;
 
 	public SingleTabFrame() {
 		this(null);
+	}
+
+	public boolean isObjectBoundGUI() {
+		return true;
 	}
 
 	public SingleTabFrame(Object pojObject) {
@@ -57,16 +62,23 @@ abstract public class SingleTabFrame<BoxType extends Box> extends ObjectView<Box
 	}
 
 	boolean initedGuiOnce = false;
+	boolean completedGuiOnce = false;
 
 	public final boolean initGUI() throws Throwable {
 		synchronized (valueLock) {
-			if (initedGuiOnce == true)
-				return false;
-			if (objectValue == null)
-				return false;
-			initedGuiOnce = true;
+			if (!initedGuiOnce) {
+				initedGuiOnce = true;
+				initSubclassGUI();
+			}
+			if (isObjectBoundGUI()) {
+				Object objectValue = getValue();
+				if (objectValue == null)
+					return false;
+			}
 			try {
-				initSubClassGUI();
+				if (completedGuiOnce)
+					return true;
+				completedGuiOnce = true;
 				completeSubClassGUI();
 			} catch (Throwable e) {
 				// TODO Auto-generated catch block

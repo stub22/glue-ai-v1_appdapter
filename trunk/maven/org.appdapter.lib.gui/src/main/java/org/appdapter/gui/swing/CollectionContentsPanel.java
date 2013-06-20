@@ -24,8 +24,8 @@ import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.appdapter.api.trigger.AddTabFrames.ObjectTabs;
 import org.appdapter.api.trigger.DisplayContext;
+import org.appdapter.api.trigger.BoxPanelSwitchableView;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.Chooser;
 import org.appdapter.gui.api.Utility;
@@ -42,11 +42,11 @@ extends SingleTabFrame implements SmallObjectView.RemoveListener, DropTargetList
 
 , ChangeListener {
 
-	ObjectTabs tabs;
+	BoxPanelSwitchableView parentTabs;
 	boolean wasSelected = false;
 
 	@Override public void stateChanged(ChangeEvent evt) {
-		boolean isSelected = tabs.getSelectedIndex() == tabs.indexOfComponent(this);
+		boolean isSelected = parentTabs.getSelectedIndex() == parentTabs.indexOfComponent(this);
 		if (wasSelected != isSelected) {
 			if (isSelected) {
 				this.reloadContents();
@@ -68,17 +68,17 @@ extends SingleTabFrame implements SmallObjectView.RemoveListener, DropTargetList
 	//captures drag/drop operations
 	JPanel dropGlass;
 
-	public CollectionContentsPanel(DisplayContext context, Collection collection, ObjectTabs tabs) {
-		this.tabs = tabs;
+	public CollectionContentsPanel(DisplayContext context, Collection collection, BoxPanelSwitchableView tabs) {
+		this.parentTabs = tabs;
 		this.objectValue = collection;
 		this.context = context;
 	}
 
-	public CollectionContentsPanel(Collection collection, ObjectTabs tabs) throws Exception {
+	public CollectionContentsPanel(Collection collection, BoxPanelSwitchableView tabs) throws Exception {
 		this(Utility.getCurrentContext(), collection, tabs);
 	}
 
-	public void completeSubClassGUI() {
+	@Override protected void initSubclassGUI() throws Throwable {
 		panel = new JPanel();
 		panel.setLayout(new VerticalLayout());
 
@@ -88,7 +88,6 @@ extends SingleTabFrame implements SmallObjectView.RemoveListener, DropTargetList
 
 		scroll = new JScrollPane(panel);
 		defaultScrollBorder = scroll.getBorder();
-
 		JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		reloadButton = new JButton("Update");
 		buttonPanel.add(reloadButton);
@@ -108,7 +107,9 @@ extends SingleTabFrame implements SmallObjectView.RemoveListener, DropTargetList
 		setLayout(new BorderLayout());
 		add("North", buttonPanel);
 		add("Center", stack);
+	}
 
+	public void completeSubClassGUI() {
 		reloadContents();
 	}
 
@@ -181,8 +182,4 @@ extends SingleTabFrame implements SmallObjectView.RemoveListener, DropTargetList
 		return false;
 	}
 
-	@Override protected void initSubClassGUI() throws Throwable {
-		Debuggable.notImplemented();
-
-	}
 }

@@ -2,23 +2,29 @@ package org.appdapter.gui.api;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Dimension;
 
 import javax.swing.Icon;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeListener;
 
-import org.appdapter.api.trigger.AddTabFrames.ObjectTabs;
+import org.appdapter.api.trigger.BoxPanelSwitchableView;
+import org.appdapter.api.trigger.DisplayType;
 import org.appdapter.core.log.Debuggable;
+import org.appdapter.gui.swing.SingleTabFrame;
 
-public class ObjectTabsForTabbedView implements ObjectTabs {
+public class ObjectTabsForTabbedView implements BoxPanelSwitchableView {
 
 	final JTabbedPane tabs;
 
 	public ObjectTabsForTabbedView(JTabbedPane tbs) {
+		if (tbs.toString() == null) {
+
+		}
 		tabs = tbs;
 	}
 
-	@Override public boolean clearTabs() {
+	@Override public boolean clearChildren() {
 		tabs.removeAll();
 		return true;
 	}
@@ -54,6 +60,8 @@ public class ObjectTabsForTabbedView implements ObjectTabs {
 
 	public int indexOf(String title, Component view) {
 		int index = unverifiedIndex(title, view);
+		if (index == -1)
+			return -1;
 		Component comp = tabs.getTabComponentAt(index);
 
 		boolean wrongComponet = false;
@@ -113,9 +121,9 @@ public class ObjectTabsForTabbedView implements ObjectTabs {
 			// already to back;
 			return true;
 		}
-		if (index != -1 && countOfTabs() > 1) {
+		if (index != -1 && childCount() > 1) {
 			if (index == 0) {
-				tabs.setSelectedIndex(countOfTabs() - 1);
+				tabs.setSelectedIndex(childCount() - 1);
 				return true;
 			} else {
 				tabs.setSelectedIndex(index - 1);
@@ -129,7 +137,7 @@ public class ObjectTabsForTabbedView implements ObjectTabs {
 		return tabs;
 	}
 
-	@Override public int countOfTabs() {
+	@Override public int childCount() {
 		return tabs.getComponentCount();
 	}
 
@@ -175,4 +183,24 @@ public class ObjectTabsForTabbedView implements ObjectTabs {
 		return tabs.getSelectedIndex();
 	}
 
+	@Override public Dimension getPreferredChildSize() {
+		return tabs.getPreferredSize();
+	}
+
+	@Override public void addComponent(String title, Component view, DisplayType panel) {
+		addTab(title, view);
+	}
+
+	@Override public boolean containsComponent(Component view) {
+		return tabs.indexOfComponent(view) != -1;
+	}
+
+	@Override public void setSelectedComponent(Component view) {
+		tabs.setSelectedComponent(view);
+
+	}
+
+	@Override public Dimension getSize(DisplayType frame) {
+		return tabs.getPreferredSize();
+	}
 }

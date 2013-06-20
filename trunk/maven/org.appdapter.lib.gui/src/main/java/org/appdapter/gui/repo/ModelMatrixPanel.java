@@ -38,8 +38,15 @@ public class ModelMatrixPanel extends SingleTabFrame {
 	public ModelMatrixPanel() {
 	}
 
-	@Override protected void completeSubClassGUI() {
+	@Override protected void initSubclassGUI() throws Throwable {
 		initComponents();
+	}
+
+	@Override protected void completeSubClassGUI() {
+	}
+
+	@Override public boolean isObjectBoundGUI() {
+		return false;
 	}
 
 	/** This method is called from within the constructor to
@@ -156,11 +163,6 @@ public class ModelMatrixPanel extends SingleTabFrame {
 
 	@Override protected boolean reloadObjectGUI(Object obj) throws Throwable {
 		return false;
-	}
-
-	@Override protected void initSubClassGUI() throws Throwable {
-		Debuggable.notImplemented();
-
 	}
 
 }

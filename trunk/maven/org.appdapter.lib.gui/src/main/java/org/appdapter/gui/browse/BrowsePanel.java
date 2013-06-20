@@ -43,31 +43,29 @@ import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
-import javax.swing.JTree;
+import javax.swing.*;
 import javax.swing.KeyStroke;
 import javax.swing.tree.TreeModel;
 
-import org.appdapter.api.trigger.AppGUIWithTabsAndTrees;
+import org.appdapter.api.trigger.BT;
 import org.appdapter.api.trigger.BoxPanelSwitchableView;
 import org.appdapter.api.trigger.DisplayContext;
 import org.appdapter.api.trigger.DisplayType;
 import org.appdapter.api.trigger.IShowObjectMessageAndErrors;
-import org.appdapter.api.trigger.ITabUI;
 import org.appdapter.api.trigger.NamedObjectCollection;
 import org.appdapter.api.trigger.UserResult;
 import org.appdapter.core.log.Debuggable;
+import org.appdapter.gui.api.ObjectTabsForTabbedView;
 import org.appdapter.gui.api.Utility;
-import org.appdapter.gui.box.ScreenBoxImpl;
+import org.appdapter.gui.browse.CollectionEditorUtil.FileMenu;
 
-import com.jidesoft.swing.JideScrollPane;
-import com.jidesoft.swing.JideSplitPane;
-import com.jidesoft.swing.JideTabbedPane;
-import com.jidesoft.tree.StyledTreeCellRenderer;
+//JIDESOFT import com.jidesoft.swing.*;
+import javax.swing.*;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public class BrowsePanel extends javax.swing.JPanel implements AppGUIWithTabsAndTrees, IShowObjectMessageAndErrors {
+public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessageAndErrors {
 
 	private TreeModel myTreeModel;
 	final DisplayContextUIImpl app;
@@ -76,14 +74,10 @@ public class BrowsePanel extends javax.swing.JPanel implements AppGUIWithTabsAnd
 	public BrowsePanel(TreeModel tm) {
 		Utility.uiObjects.toString();
 		Utility.browserPanel = this;
-		Utility.theBoxPanelDisplayContext = myBoxPanelSwitchableViewImpl = new BrowsePanelSwitchableViewFromUI(Utility.uiObjects, this);
 		myTreeModel = tm;
 		initComponents();
-		myBoxPanelTabPane.setUseDefaultShowCloseButtonOnTab(true);
-		myBoxPanelTabPane.setShowCloseButtonOnTab(true);
-		myBoxPanelTabPane.setTabEditingAllowed(true);
-		myBoxPanelTabPane.setBoldActiveTab(true);
-		myBoxPanelTabPane.setShowCloseButtonOnMouseOver(false);
+		Utility.theBoxPanelDisplayContext = myBoxPanelSwitchableViewImpl = new ObjectTabsForTabbedView(myBoxPanelTabPane);
+		//setTabbedPaneOptions();
 		Utility.controlApp = app = new DisplayContextUIImpl(myBoxPanelSwitchableViewImpl, this, Utility.uiObjects);
 		NamedObjectCollection ctx = Utility.getToplevelBoxCollection();
 		Utility.collectionWatcher = new CollectionEditorUtil(app, ctx);
@@ -92,14 +86,22 @@ public class BrowsePanel extends javax.swing.JPanel implements AppGUIWithTabsAnd
 		hookTree();
 	}
 
+	private void setTabbedPaneOptions() {
+/**JIDESOFT	    myBoxPanelTabPane.setUseDefaultShowCloseButtonOnTab(true);
+	    myBoxPanelTabPane.setShowCloseButtonOnTab(true);
+	    myBoxPanelTabPane.setTabEditingAllowed(true);
+	    myBoxPanelTabPane.setBoldActiveTab(true);
+	    myBoxPanelTabPane.setShowCloseButtonOnMouseOver(false);*/
+	}
+
 	private void hookTree() {
-		myTree.setCellRenderer(new StyledTreeCellRenderer() {
+	      /**JIDESOFT     myTree.setCellRenderer(new StyledTreeCellRenderer() {
 			protected void customizeStyledLabel(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hazFocus) {
 				super.customizeStyledLabel(tree, value, sel, expanded, leaf, row, hazFocus);
 				String text = getText();
 				// here is the code to customize she StyledLabel for each tree node
 			}
-		});
+		});*/
 
 	}
 
@@ -175,18 +177,29 @@ public class BrowsePanel extends javax.swing.JPanel implements AppGUIWithTabsAnd
 
 		JMenuBar menuBar;
 		JMenu menu, submenu;
+		menuBar = myTopFrameMenu = Utility.getMenuBar();
+		myTopFrameMenu.removeAll();
+
+		menuBar.add(Utility.collectionWatcher.getMenu());
+		//Build the first menu.
+		menuBar.add(makeSubMenu1Example());
+
+		createLookAndFeelMenu();
+
+		if (oldJMenuBar != null && oldJMenuBar != menuBar)
+			menuBar.add(oldJMenuBar);
+
+	}
+
+	private JMenu makeSubMenu1Example() {
+		JMenu menu, submenu;
 		JMenuItem menuItem;
 		JRadioButtonMenuItem rbMenuItem;
 		JCheckBoxMenuItem cbMenuItem;
-		menuBar = myTopFrameMenu = Utility.getMenuBar();
-		myTopFrameMenu.removeAll();
-		menuBar.add(Utility.collectionWatcher.getMenu());
-		//Build the first menu.
 
 		menu = new JMenu("A Menu");
 		menu.setMnemonic(KeyEvent.VK_A);
 		menu.getAccessibleContext().setAccessibleDescription("The only menu in this program that has menu items");
-		menuBar.add(menu);
 
 		//a group of JMenuItems
 		menuItem = new JMenuItem("A text-only menu item", KeyEvent.VK_T);
@@ -237,13 +250,10 @@ public class BrowsePanel extends javax.swing.JPanel implements AppGUIWithTabsAnd
 
 		menuItem = new JMenuItem("Another item");
 		submenu.add(menuItem);
+
 		menu.add(submenu);
 
-		createLookAndFeelMenu();
-
-		if (oldJMenuBar != null && oldJMenuBar != menuBar)
-			menuBar.add(oldJMenuBar);
-
+		return menu;
 	}
 
 	//GEN-BEGIN:initComponents
@@ -251,26 +261,30 @@ public class BrowsePanel extends javax.swing.JPanel implements AppGUIWithTabsAnd
 	private void initComponents() {
 
 		myTopFrameMenu = new javax.swing.JMenuBar();
-		myBrowserSplitPane = new JideSplitPane();
-		myTreeScrollPane = new com.jidesoft.swing.JideScrollPane();
+		myBrowserSplitPane = new JSplitPane();
+		myTreeScrollPane = new JScrollPane();
 		myTree = new javax.swing.JTree();
 		myContentPanel = new javax.swing.JPanel();
 		myBoxPanelStatus = new javax.swing.JTextField();
-		myBoxPanelTabPane = new com.jidesoft.swing.JideTabbedPane();
+		myBoxPanelTabPane = new JTabbedPane();
 		myHomeBoxPanel = new javax.swing.JPanel();
 		myLowerPanel = new JPanel();
 		myCmdInputTextField = new javax.swing.JTextField();
-		myLogScrollPane = new com.jidesoft.swing.JideScrollPane();
+		myLogScrollPane = new JScrollPane();
 		myLogTextArea = new javax.swing.JTextArea();
 
 		setLayout(new java.awt.BorderLayout());
 
-		myBrowserSplitPane.setDividerLocation(0, 140);
+		myBrowserSplitPane.setDividerLocation(140);
+				//JIDESOFT myBoxPanelTabPane = new JideTabbedPane();
+		// myTreeScrollPane = new JideScrollPane();
+		// myLogScrollPane = new JideScrollPane();
+		// myBrowserSplitPane.setDividerLocation(0, 140);
 
 		myTree.setModel(myTreeModel);
 		myTreeScrollPane.setViewportView(myTree);
 
-		myBrowserSplitPane.addPane(myTreeScrollPane);
+		myBrowserSplitPane.add(myTreeScrollPane);
 
 		myContentPanel.setBackground(new java.awt.Color(51, 0, 51));
 		myContentPanel.setLayout(new java.awt.BorderLayout());
@@ -285,14 +299,13 @@ public class BrowsePanel extends javax.swing.JPanel implements AppGUIWithTabsAnd
 
 		myBoxPanelTabPane.setBackground(new java.awt.Color(204, 204, 255));
 		myBoxPanelTabPane.setAutoscrolls(true);
-		myBoxPanelTabPane.setBoldActiveTab(true);
 
 		javax.swing.GroupLayout myHomeBoxPanelLayout = new javax.swing.GroupLayout(myHomeBoxPanel);
 		myHomeBoxPanel.setLayout(myHomeBoxPanelLayout);
 		myHomeBoxPanelLayout.setHorizontalGroup(myHomeBoxPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGap(0, 784, Short.MAX_VALUE));
 		myHomeBoxPanelLayout.setVerticalGroup(myHomeBoxPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGap(0, 519, Short.MAX_VALUE));
 
-		myBoxPanelTabPane.addTab("Home", myHomeBoxPanel);
+		myBoxPanelTabPane.add("Home", myHomeBoxPanel);
 
 		myLowerPanel.setLayout(new java.awt.BorderLayout());
 
@@ -313,11 +326,11 @@ public class BrowsePanel extends javax.swing.JPanel implements AppGUIWithTabsAnd
 
 		myLowerPanel.add(myLogScrollPane, java.awt.BorderLayout.CENTER);
 
-		myBoxPanelTabPane.addTab("Command", myLowerPanel);
+		myBoxPanelTabPane.add("Command", myLowerPanel);
 
 		myContentPanel.add(myBoxPanelTabPane, java.awt.BorderLayout.LINE_START);
 
-		myBrowserSplitPane.addPane(myContentPanel);
+		myBrowserSplitPane.add(myContentPanel);
 
 		add(myBrowserSplitPane, java.awt.BorderLayout.CENTER);
 	}// </editor-fold>
@@ -342,8 +355,8 @@ public class BrowsePanel extends javax.swing.JPanel implements AppGUIWithTabsAnd
 	//GEN-BEGIN:variables
 	// Variables declaration - do not modify
 	private javax.swing.JTextField myBoxPanelStatus;
-	public JideTabbedPane myBoxPanelTabPane;
-	private JideSplitPane myBrowserSplitPane;
+	public JTabbedPane myBoxPanelTabPane;
+	private JSplitPane myBrowserSplitPane;
 	private javax.swing.JTextField myCmdInputTextField;
 	private javax.swing.JPanel myContentPanel;
 	private javax.swing.JPanel myHomeBoxPanel;
@@ -352,8 +365,8 @@ public class BrowsePanel extends javax.swing.JPanel implements AppGUIWithTabsAnd
 	private javax.swing.JPanel myLowerPanel;
 	private javax.swing.JMenuBar myTopFrameMenu;
 	private javax.swing.JTree myTree;
-	private JideScrollPane myTreeScrollPane;
-	private BrowsePanelSwitchableViewFromUI myBoxPanelSwitchableViewImpl;
+	private JScrollPane myTreeScrollPane;
+	private BoxPanelSwitchableView myBoxPanelSwitchableViewImpl;
 
 	// End of variables declaration//GEN-END:variables
 
@@ -368,7 +381,7 @@ public class BrowsePanel extends javax.swing.JPanel implements AppGUIWithTabsAnd
 
 	public UserResult showScreenBox(Object anyObject) {
 		try {
-			return ScreenBoxImpl.asResult(addObject(null, anyObject, DisplayType.ANY, true).getPropertiesPanel());
+			return addObject(null, anyObject, DisplayType.ANY, true);
 		} catch (Exception e) {
 			throw Debuggable.UnhandledException(e);
 		}
@@ -376,14 +389,18 @@ public class BrowsePanel extends javax.swing.JPanel implements AppGUIWithTabsAnd
 
 	public UserResult addObject(String title, Object anyObject, DisplayType attachType, boolean showAsap) {
 		try {
-			return getBoxPanelTabPane().attachChild(title, anyObject, attachType, showAsap);
+			BT impl = getNamedObjectCollection().findOrCreateBox(title, anyObject);
+			if (showAsap) {
+				return app.showScreenBox(impl);
+			}
+			return UserResult.SUCCESS;
 		} catch (Exception e) {
 			throw Debuggable.UnhandledException(e);
 		}
 	}
 
 	public UserResult showScreenBox(String title, Object anyObject, DisplayType attachType) {
-		return ScreenBoxImpl.asResult(addObject(title, anyObject, attachType, true).getPropertiesPanel());
+		return addObject(title, anyObject, attachType, true);
 	}
 
 	public BoxPanelSwitchableView getBoxPanelTabPane() {
@@ -391,10 +408,6 @@ public class BrowsePanel extends javax.swing.JPanel implements AppGUIWithTabsAnd
 			myBoxPanelSwitchableViewImpl = Utility.getBoxPanelTabPane();
 		}
 		return myBoxPanelSwitchableViewImpl;
-	}
-
-	protected AppGUIWithTabsAndTrees getAppGUI() {
-		return this;
 	}
 
 	public Component getComponent() {
@@ -418,8 +431,8 @@ public class BrowsePanel extends javax.swing.JPanel implements AppGUIWithTabsAnd
 		return null;//myDesktopPane;
 	}
 
-	public Collection getTriggersFromUI(Object object) {
-		return app.getTriggersFromUI(object);
+	public Collection getTriggersFromUI(BT box, Object object) {
+		return app.getTriggersFromUI(box, object);
 	}
 
 	public UserResult showError(String msg, Throwable error) {
@@ -433,15 +446,5 @@ public class BrowsePanel extends javax.swing.JPanel implements AppGUIWithTabsAnd
 	public void addTab(String title, JComponent thing) {
 		myBoxPanelTabPane.add(title, thing);
 
-	}
-
-	@Override public NamedObjectCollection getLocalBoxedChildren() {
-		Debuggable.notImplemented();
-		return null;
-	}
-
-	@Override public ITabUI getLocalCollectionUI() {
-		Debuggable.notImplemented();
-		return null;
 	}
 }
