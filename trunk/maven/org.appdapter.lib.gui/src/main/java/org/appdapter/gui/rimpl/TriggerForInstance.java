@@ -275,14 +275,13 @@ public class TriggerForInstance extends TriggerImpl implements UIAware, Comparab
 		}
 		org.appdapter.api.trigger.DisplayType dt = Utility.getDisplayType(expected);
 		final DisplayType edt = dt;
-		switch ((DisplayType) (Enum) edt) {
-		case TREE: {
+		if (dt == DisplayType.TREE) {
 			BT boxed = Utility.getToplevelBoxCollection().findOrCreateBox(null, obj);
 			BoxContext bc = targetBox.getBoxContext();
 			bc.contextualizeAndAttachChildBox((Box) targetBox, (MutableBox) boxed);
 			return;
 		}
-		case TOSTRING:
+		if (dt == DisplayType.TOSTRING) {
 			Utility.setLastResult(this, obj, expected);
 			return;
 		}
@@ -292,20 +291,16 @@ public class TriggerForInstance extends TriggerImpl implements UIAware, Comparab
 			BT boxed = Utility.getToplevelBoxCollection().findOrCreateBox(null, obj);
 			BoxContext bc = targetBox.getBoxContext();
 			JPanel pnl = boxed.getPropertiesPanel();
-			switch (edt) {
-			case FRAME: {
+			if (dt == DisplayType.FRAME) {
 				BoxPanelSwitchableView jtp = Utility.getBoxPanelTabPane();
 				jtp.addComponent(pnl.getName(), pnl, DisplayType.FRAME);
 				return;
 			}
-			case PANEL:
-			default: {
-				BoxPanelSwitchableView jtp = Utility.getBoxPanelTabPane();
-				jtp.addComponent(pnl.getName(), pnl, DisplayType.PANEL);
-				break;
-			}
-			}
+			BoxPanelSwitchableView jtp = Utility.getBoxPanelTabPane();
+			jtp.addComponent(pnl.getName(), pnl, DisplayType.PANEL);
+
 		}
+
 	}
 
 	private Class classOrFirstInterfaceR(Class _clazz2) {
