@@ -138,7 +138,7 @@
 				<configuration>
 					<instructions>
 						<!-- org.gjt.*;resolution:='optional', -->
-						<Import-Package>com.sun.*;resolution:='optional', org.apache.*;resolution:='optional', org.h2, apple.laf.*;resolution:='optional', *</Import-Package>
+						<Import-Package>sun.*;resolution:='optional', com.sun.*;resolution:='optional', org.apache.*;resolution:='optional', org.h2, apple.laf.*;resolution:='optional', com.apple.laf.*;resolution:='optional', *</Import-Package>
 						<Bundle-Activator>org.appdapter.osgi.core.AppdapterCoreBundleActivator</Bundle-Activator>
 						<Export-Package>org.appdapter.*, au.com.bytecode.opencsv.*</Export-Package>
 						<!-- Horrid workaround for Class.forName() used in DynamicCachingComponentAssembler, could widen it to "*",
