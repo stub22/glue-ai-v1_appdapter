@@ -217,11 +217,11 @@ central repo.
 		</dependency>
 		
 		<!-- This is commented out until i can get JIDE to exported properly to BMD -->
-		<!--dependencedy>
+		<dependency>
             <groupId>com.jidesoft</groupId>
             <artifactId>jide-oss</artifactId>
             <version>3.5.5</version>
-        </dependency-->
+        </dependency>
         
 		<dependency>
 			<groupId>org.apache.poi</groupId>
