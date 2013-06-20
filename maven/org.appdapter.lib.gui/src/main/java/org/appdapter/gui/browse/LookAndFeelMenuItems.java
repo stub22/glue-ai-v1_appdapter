@@ -34,8 +34,8 @@ public class LookAndFeelMenuItems extends JMenu {
 			}
 		}).start();
 
-		Class laf = null
-		//laf = LookAndFeelFactory.class
+		Class laf = null;
+		//JIDESOFT laf = LookAndFeelFactory.class
 		if (laf != null) for (Field fld : laf.getDeclaredFields()) {
 			if (!Modifier.isStatic(fld.getModifiers()))
 				continue;
