@@ -34,34 +34,37 @@ public class LookAndFeelMenuItems extends JMenu {
 			}
 		}).start();
 
-		Class laf = null;
-		//JIDESOFT laf = LookAndFeelFactory.class
-		if (laf != null) for (Field fld : laf.getDeclaredFields()) {
-			if (!Modifier.isStatic(fld.getModifiers()))
-				continue;
-			if (fld.getName().contains("_LNF") && fld.getType() == String.class) {
-				try {
-					String cn = (String) fld.get(null);
-					if (!cn.contains("."))
-						continue;
-					menu.add(createLnfAction(fld.getName().replace("_LNF", "") + " (" + cn + ")", cn));
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+		Class lafc = null; 
+		//JIDESOFT laf = LookAndFeelFactory.class;
+
+		if (lafc != null) {
+			for (Field fld : lafc.getDeclaredFields()) {
+	
+				if (!Modifier.isStatic(fld.getModifiers()))
+					continue;
+				if (fld.getName().contains("_LNF") && fld.getType() == String.class) {
+					try {
+						String cn = (String) fld.get(null);
+						if (!cn.contains("."))
+							continue;
+						menu.add(createLnfAction(fld.getName().replace("_LNF", "") + " (" + cn + ")", cn));
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					continue;
 				}
-				continue;
-			}
-			if (fld.getName().contains("EXTENSION_STYLE") && fld.getType() == int.class) {
-				try {
-					menu.add(setStyleAction(fld.getName().replace("EXTENSION_STYLE_", ""), fld.getInt(null)));
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				if (fld.getName().contains("EXTENSION_STYLE") && fld.getType() == int.class) {
+					try {
+						menu.add(setStyleAction(fld.getName().replace("EXTENSION_STYLE_", ""), fld.getInt(null)));
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					continue;
 				}
-				continue;
 			}
 		}
-		// TODO Auto-generated constructor stub
 	}
 
 	static void addReflectiveLAndF(JMenu menu) {
@@ -126,4 +129,4 @@ public class LookAndFeelMenuItems extends JMenu {
 	}
 }
 
-*/
+
