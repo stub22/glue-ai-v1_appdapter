@@ -22,6 +22,7 @@
 
 package org.appdapter.gui.repo;
 
+import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -32,6 +33,7 @@ import javax.swing.JTable;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.core.log.Debuggable;
+import org.appdapter.gui.browse.HasFocusOnBox;
 import org.appdapter.gui.rimpl.MutableRepoBox;
 import org.appdapter.gui.rimpl.TriggerMenuFactory;
 import org.appdapter.gui.swing.SingleTabFrame;
@@ -44,8 +46,15 @@ import org.slf4j.LoggerFactory;
 public class RepoManagerPanel extends SingleTabFrame<MutableRepoBox> {
 	static Logger theLogger = LoggerFactory.getLogger(RepoManagerPanel.class);
 
-	@Override protected void completeSubClassGUI() {
+	@Override protected void initSubclassGUI() throws Throwable {
 		initComponents();
+	}
+
+	@Override protected void completeSubClassGUI() {
+	}
+
+	@Override public boolean isObjectBoundGUI() {
+		return false;
 	}
 
 	private MutableRepoBox myFocusBox;
@@ -231,8 +240,4 @@ public class RepoManagerPanel extends SingleTabFrame<MutableRepoBox> {
 		return false;
 	}
 
-	@Override protected void initSubClassGUI() throws Throwable {
-		Debuggable.notImplemented();
-
-	}
 }

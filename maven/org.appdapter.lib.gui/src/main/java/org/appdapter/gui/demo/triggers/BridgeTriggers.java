@@ -26,30 +26,33 @@ import org.appdapter.bind.rdf.jena.assembly.AssemblerUtils;
 import org.appdapter.bind.rdf.jena.model.JenaFileManagerUtils;
 import org.appdapter.demo.DemoResources;
 
-
 /**
  * @author Stu B. <www.texpedient.com>
  */
 public class BridgeTriggers {
 
-	public static class MountSubmenuFromTriplesTrigger<BT extends Box<TriggerImpl<BT>>> extends  TriggerImpl<BT> {
+	public static class MountSubmenuFromTriplesTrigger<BT extends Box<TriggerImpl<BT>>> extends TriggerImpl<BT> {
 		@Override public void fire(BT targetBox) {
 			logInfo(toString() + ".fire()");
 			BoxContext bc = targetBox.getBoxContext();
 
-			String triplesURL = DemoResources.MENU_ASSEMBLY_PATH; 
+			String triplesURL = DemoResources.MENU_ASSEMBLY_PATH;
 			JenaFileManagerUtils.ensureClassLoaderRegisteredWithDefaultJenaFM(DemoResources.class.getClassLoader());
 			logInfo("Loading triples from URL: " + triplesURL);
-			Set<Object> loadedStuff = AssemblerUtils.buildAllObjectsInRdfFile(triplesURL);
-			logInfo("Loaded " + loadedStuff.size() + " objects");
-			for (Object o : loadedStuff) {
-				if (o instanceof MutableBox) {
-					MutableBox  loadedMutableBox = (MutableBox) o;
-					bc.contextualizeAndAttachChildBox(targetBox, loadedMutableBox);
-					logInfo("Loaded mutable box: " + loadedMutableBox);
-				} else {
-					logInfo("Loaded object which is not a mutable box: " + o);
+			try {
+				Set<Object> loadedStuff = AssemblerUtils.buildAllObjectsInRdfFile(triplesURL);
+				logInfo("Loaded " + loadedStuff.size() + " objects");
+				for (Object o : loadedStuff) {
+					if (o instanceof MutableBox) {
+						MutableBox loadedMutableBox = (MutableBox) o;
+						bc.contextualizeAndAttachChildBox(targetBox, loadedMutableBox);
+						logInfo("Loaded mutable box: " + loadedMutableBox);
+					} else {
+						logInfo("Loaded object which is not a mutable box: " + o);
+					}
 				}
+			} catch (Exception e) {
+
 			}
 		}
 	}

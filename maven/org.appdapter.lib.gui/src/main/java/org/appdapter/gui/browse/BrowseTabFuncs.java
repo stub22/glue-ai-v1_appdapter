@@ -35,7 +35,7 @@ import org.appdapter.gui.api.Utility;
  */
 public class BrowseTabFuncs {
 
-	static WeakHashMap<String, BoxImpl> boxKeyToImpl = new WeakHashMap<String, BoxImpl>();
+	static WeakHashMap<String, Box> boxKeyToImpl = new WeakHashMap<String, Box>();
 
 	protected static boolean isBoxTabKnown_maybe(DisplayContext dc, BoxImpl nonPanel) {
 		BoxPanelSwitchableView tabbedPane = dc.getBoxPanelTabPane();
@@ -63,9 +63,11 @@ public class BrowseTabFuncs {
 		tabbedPane.setSelectedComponent(boxP);
 	}
 
-	protected static void addBoxTab(DisplayContext dc, JPanel boxP, String label) {
+	protected static void addBoxTab(DisplayContext dc, Box box, JPanel boxP, String label) {
 		BoxPanelSwitchableView tabbedPane = dc.getBoxPanelTabPane();
 		tabbedPane.addComponent(label, boxP, DisplayType.PANEL);
+		String key = ObjectKey.factory.getKeyName(tabbedPane, label);
+		boxKeyToImpl.put(key, box);
 		if (!tabbedPane.containsComponent(boxP)) {
 			tabbedPane.addComponent(label, boxP, DisplayType.PANEL);
 			if (!tabbedPane.containsComponent(boxP)) {
@@ -87,20 +89,25 @@ public class BrowseTabFuncs {
 	 */
 	public static void openBoxPanelAndFocus(DisplayContext dc, ScreenBox boxI, Kind kind) {
 
-		JPanel boxP = boxI.findOrCreateBoxPanel(kind);
 		if (Utility.selectedDisplaySontext == null) {
 			Utility.selectedDisplaySontext = dc;
 		}
+		JPanel panel = boxI.findOrCreateBoxPanel(kind);
+		panel.invalidate();
 		String tabLabel = kind.toString() + "-" + boxI.getShortLabel();
 		if (!isBoxTabKnown(dc, tabLabel)) {
-			addBoxTab(dc, boxP, tabLabel);
+			addBoxTab(dc, boxI, panel, tabLabel);
 		}
-		setSelectedBoxTab(dc, boxP);
-		focusOnPanelBox(boxP, boxI);
+		if (!isBoxTabKnown(dc, tabLabel)) {
+			// this is here for tracing purposes
+			addBoxTab(dc, boxI, panel, tabLabel);
+		}
+		setSelectedBoxTab(dc, panel);
+		focusOnPanelBox(panel, boxI);
 	}
 
 	public static void focusOnPanelBox(JPanel boxP, Box boxI) {
-		return;
+		boxP.show(true);
 	}
 
 }

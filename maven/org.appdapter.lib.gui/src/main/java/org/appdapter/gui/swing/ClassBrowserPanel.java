@@ -37,7 +37,7 @@ public class ClassBrowserPanel extends JJPanel implements ActionListener {
 	}
 
 	public ClassBrowserPanel() {
-		this(Utility.getCurrentContext());
+		this(Utility.controlApp);
 	}
 
 	private void initGUI() {
@@ -90,8 +90,12 @@ public class ClassBrowserPanel extends JJPanel implements ActionListener {
 	public void setObject(Object object) throws java.lang.reflect.InvocationTargetException {
 		Class clazz = Utility.recast(object, Class.class);
 		text.setText(clazz.getCanonicalName());
+		if (context == null) {
+			Utility.ensureRunning();
+			context = Utility.getCurrentContext();
+		}
 		try {
-			context.showScreenBox(clazz);
+			Utility.browserPanel.showScreenBox(clazz);
 		} catch (Exception e) {
 			Utility.showError(context, null, e);
 		}

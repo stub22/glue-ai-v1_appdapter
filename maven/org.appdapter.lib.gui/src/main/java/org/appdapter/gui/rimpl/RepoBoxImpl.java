@@ -48,7 +48,6 @@ public abstract class RepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<TT>>>
 	}
 
 	@Override public void setObject(Object obj) {
-		Debuggable.notImplemented();
 		setRepo((Repo.Mutable) obj);
 	}
 

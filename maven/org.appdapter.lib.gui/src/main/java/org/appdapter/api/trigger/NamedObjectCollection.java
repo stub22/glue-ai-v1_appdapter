@@ -11,7 +11,6 @@ import java.util.Map;
 
 import org.appdapter.gui.box.ScreenBoxImpl;
 
-
 /**
 * A container of objects and corresponding Boxes, which
 * add the concept of "name" and "selected". <p>
@@ -170,5 +169,9 @@ public interface NamedObjectCollection //
 	 * find out when objects are added or removed.
 	 */
 	public void removeListener(POJOCollectionListener o);
+
+	void setSelectedObject(Object object) throws PropertyVetoException;
+
+	String getName();
 
 }

@@ -113,6 +113,9 @@ public class PropertiesPanel extends SingleTabFrame implements GetSetObject {
 		}
 	}
 
+	@Override protected void initSubclassGUI() throws Throwable {
+	}
+
 	@Override protected void completeSubClassGUI() throws Throwable {
 		removeAll();
 		//setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -147,8 +150,4 @@ public class PropertiesPanel extends SingleTabFrame implements GetSetObject {
 		return false;
 	}
 
-	@Override protected void initSubClassGUI() throws Throwable {
-		Debuggable.notImplemented();
-
-	}
 }

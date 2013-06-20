@@ -265,8 +265,7 @@ public class TriggerForInstance extends TriggerImpl implements UIAware, Comparab
 		if (expected == String.class) {
 			Utility.setLastResult(this, obj, expected);
 			try {
-				BoxPanelSwitchableView app = Utility.getBoxPanelTabPane();
-				getDisplayContext().showMessage("" + obj);
+				Utility.browserPanel.showMessage("" + obj);
 				return;
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
@@ -274,8 +273,9 @@ public class TriggerForInstance extends TriggerImpl implements UIAware, Comparab
 				return;
 			}
 		}
-		DisplayType dt = Utility.getDisplayType(expected);
-		switch (dt) {
+		org.appdapter.api.trigger.DisplayType dt = Utility.getDisplayType(expected);
+		final DisplayType edt = dt;
+		switch ((DisplayType) (Enum) edt) {
 		case TREE: {
 			BT boxed = Utility.getToplevelBoxCollection().findOrCreateBox(null, obj);
 			BoxContext bc = targetBox.getBoxContext();
@@ -292,7 +292,7 @@ public class TriggerForInstance extends TriggerImpl implements UIAware, Comparab
 			BT boxed = Utility.getToplevelBoxCollection().findOrCreateBox(null, obj);
 			BoxContext bc = targetBox.getBoxContext();
 			JPanel pnl = boxed.getPropertiesPanel();
-			switch (dt) {
+			switch (edt) {
 			case FRAME: {
 				BoxPanelSwitchableView jtp = Utility.getBoxPanelTabPane();
 				jtp.addComponent(pnl.getName(), pnl, DisplayType.FRAME);

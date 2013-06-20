@@ -8,16 +8,19 @@ import java.util.Collection;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
+import org.appdapter.api.trigger.BT;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxPanelSwitchableView;
 import org.appdapter.api.trigger.DisplayContext;
-import org.appdapter.api.trigger.ITabUI;
+import org.appdapter.api.trigger.GetObject;
+import org.appdapter.api.trigger.BoxPanelSwitchableView;
 import org.appdapter.api.trigger.NamedObjectCollection;
 import org.appdapter.api.trigger.UserResult;
 import org.appdapter.core.log.Debuggable;
+import org.appdapter.gui.browse.HasFocusOnBox;
 import org.appdapter.gui.impl.JJPanel;
 
-public class ComponentHost extends JJPanel implements DisplayContext {
+public class ComponentHost extends JJPanel implements DisplayContext, GetObject, HasFocusOnBox {
 
 	//JLayeredPane desk;
 	//JSplitPane split;
@@ -75,37 +78,34 @@ public class ComponentHost extends JJPanel implements DisplayContext {
 		return Utility.dref(objectValue, componet);
 	}
 
-	public static JPanel asPanel(Component customizer, Object val) {
-		Debuggable.notImplemented();
-		return null;
-	}
+	public static JPanel asPanel(Component view, Object object) {
 
-	@Override public UserResult showError(String msg, Throwable error) {
-		Debuggable.notImplemented();
-		return null;
-	}
+		if (view instanceof JPanel) {
+			return (JPanel) view;
+		}
 
-	@Override public UserResult showScreenBox(Object value) throws Exception {
-		Debuggable.notImplemented();
-		return null;
-	}
+		if (view instanceof JComponent) {
+			return new ComponentHost(view, object);
+		}
 
-	@Override public UserResult showMessage(String string) {
-		Debuggable.notImplemented();
-		return null;
+		if (object == null) {
+			if (view == null) {
+				return null;
+			}
+			object = ((GetObject) view).getValue();
+		}
+		return Utility.getToplevelBoxCollection().findOrCreateBox(object).getPropertiesPanel();
 	}
 
 	@Override public BoxPanelSwitchableView getBoxPanelTabPane() {
-		Debuggable.notImplemented();
-		return null;
+		return Utility.getBoxPanelTabPane();
 	}
 
 	@Override public NamedObjectCollection getLocalBoxedChildren() {
-		Debuggable.notImplemented();
-		return null;
+		return Utility.getToplevelBoxCollection();
 	}
 
-	@Override public Collection getTriggersFromUI(Object object) {
+	@Override public Collection getTriggersFromUI(BT box, Object object) {
 		Debuggable.notImplemented();
 		return null;
 	}
@@ -116,13 +116,7 @@ public class ComponentHost extends JJPanel implements DisplayContext {
 	}
 
 	@Override public String getTitleOf(Object value) {
-		Debuggable.notImplemented();
-		return null;
-	}
-
-	@Override public ITabUI getLocalCollectionUI() {
-		Debuggable.notImplemented();
-		return null;
+		return getLocalBoxedChildren().getTitleOf(value);
 	}
 
 }

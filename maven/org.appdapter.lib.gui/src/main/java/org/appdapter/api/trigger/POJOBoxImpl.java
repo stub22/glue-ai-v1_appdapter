@@ -146,13 +146,7 @@ public abstract class POJOBoxImpl<TrigType extends Trigger<? extends POJOBoxImpl
 		return icon;
 	}
 
-	//	public Component m_view;
-
-	public String _uname;
-
 	//public String registeredWithName;
-
-	Class<TrigType> clz;
 
 	/*
 		public POJOBoxImpl(NamedObjectCollection noc, String title, Object boxOrObj) {
@@ -173,18 +167,14 @@ public abstract class POJOBoxImpl<TrigType extends Trigger<? extends POJOBoxImpl
 		}
 	*/
 	Map<NamedObjectCollection, String> col2Name = new HashMap<NamedObjectCollection, String>();
-
+	public Class<TrigType> clz;
 	public DisplayContext m_displayContext;
-
-	public DisplayType m_displayType;
-
+	public DisplayType m_displayType = DisplayType.PANEL;
+	public String name = null;
 	//	public boolean m_is_added;
-	public Object m_obj = null;//this;//;//new NoObject();
+	public JPanel m_largeview;
+	public JPanel m_smallview;
 	//	public Container m_parent_component;
-
-	public JPanel m_view;
-
-	String name = null;
 
 	// ==== Transient instance variables =============
 	transient PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
@@ -192,7 +182,7 @@ public abstract class POJOBoxImpl<TrigType extends Trigger<? extends POJOBoxImpl
 	boolean selected = false;
 
 	//==== Serializable instance variables ===============
-	Object value;
+	public Object value = null;//this;//;//new NoObject();
 
 	protected transient VetoableChangeSupport vetoSupport = new VetoableChangeSupport(this);
 
@@ -201,12 +191,14 @@ public abstract class POJOBoxImpl<TrigType extends Trigger<? extends POJOBoxImpl
 	 * Creates a new Plain Old Java Object Box for the given object and assigns it a default
 	 * name.
 	 */
+
 	public POJOBoxImpl() {
 	}
 
-	public POJOBoxImpl(NamedObjectCollection noc, String label) {
+	/*
+		public POJOBoxImpl(NamedObjectCollection noc, String label) {
 		this(noc, label, null);
-	}
+		}*/
 
 	public POJOBoxImpl(NamedObjectCollection noc, String title, Object boxOrObj) {
 		setShortLabel(title);
@@ -352,7 +344,10 @@ public abstract class POJOBoxImpl<TrigType extends Trigger<? extends POJOBoxImpl
 
 	public String getDebugName() {
 		try {
-			return getValue().toString();
+			Object o = getValue();
+			if (o == null)
+				return getUniqueName();
+			return o.toString();
 		} catch (Exception e) {
 			return super.toString();
 		}
@@ -373,8 +368,8 @@ public abstract class POJOBoxImpl<TrigType extends Trigger<? extends POJOBoxImpl
 	/**
 	 * Returns the object that this value wrapper represents
 	 */
-	public TrigType getObject() {
-		return (TrigType) value;
+	public Object getObject() {
+		return value;
 	}
 
 	// ========= Utility methods =================
@@ -410,22 +405,22 @@ public abstract class POJOBoxImpl<TrigType extends Trigger<? extends POJOBoxImpl
 		Object obj = getValue();
 		if (obj != null)
 			return obj.getClass();
-		return getClass();
+		return Object.class;
 	}
 
 	final public JPanel getPropertiesPanel() {
-		if (m_view instanceof JPanel)
-			return (JPanel) m_view;
+		if (m_largeview instanceof JPanel)
+			return (JPanel) m_largeview;
 		JPanel pnl = getPropertiesPanel0();
-		if (m_view == null) {
-			m_view = pnl;
+		if (m_largeview == null) {
+			m_largeview = pnl;
 		}
 		return pnl;
 	}
 
 	private JPanel getPropertiesPanel0() {
-		if (m_view instanceof JPanel)
-			return (JPanel) m_view;
+		if (m_largeview instanceof JPanel)
+			return (JPanel) m_largeview;
 		Object obj = getValue();
 		if (obj instanceof JPanel) {
 			return (JPanel) obj;
@@ -434,6 +429,9 @@ public abstract class POJOBoxImpl<TrigType extends Trigger<? extends POJOBoxImpl
 			JPanel pnl = Utility.getPropertiesPanel(obj);
 			pnl.setName(getShortLabel());
 			return pnl;
+		}
+		if (obj == null) {
+			obj = this;
 		}
 		JPanel pnl = Utility.getPropertiesPanel(obj);
 		pnl.setName(getShortLabel());
@@ -495,20 +493,20 @@ public abstract class POJOBoxImpl<TrigType extends Trigger<? extends POJOBoxImpl
 	 */
 	final public String getUniqueName(Map checkAgainst) {
 		//String _uname = null;
-		if (_uname == null) {
+		if (name == null) {
 			Ident ident = getIdent();
 			if (ident != null) {
-				_uname = ident.getAbsUriString();
+				name = ident.getAbsUriString();
 			} else {
 				Object object = getValue();
 				if (object != null) {
-					_uname = Utility.generateUniqueName(object, checkAgainst);
+					name = Utility.generateUniqueName(object, checkAgainst);
 				} else {
-					_uname = Utility.generateUniqueName(this, checkAgainst);
+					name = Utility.generateUniqueName(this, checkAgainst);
 				}
 			}
 		}
-		return _uname.toString();
+		return name.toString();
 	}
 
 	@Override public Object getValue() {
@@ -521,19 +519,19 @@ public abstract class POJOBoxImpl<TrigType extends Trigger<? extends POJOBoxImpl
 	public Object getValueOrThis() {
 		if (value != null)
 			return value;
-		if (m_obj == null) {
+		if (value == null) {
 			//getLogger().warn("Default implementation of getObject() for NULL is returning 'this'", getShortLabel());
 			return this;
 		}
-		if (m_obj != this)
-			return m_obj;
+		if (value != this)
+			return value;
 
 		//	getLogger().warn("Default implementation of getObject() for {} is returning 'this'", getShortLabel());
 		return this;
 	}
 
 	public boolean isNamed(String test) {
-		if (Utility.stringsEqual(test, _uname))
+		if (Utility.stringsEqual(test, name))
 			return true;
 		if (Utility.stringsEqual(test, getShortLabel()))
 			return true;
@@ -657,11 +655,15 @@ public abstract class POJOBoxImpl<TrigType extends Trigger<? extends POJOBoxImpl
 
 	public boolean representsObject(Object test) {
 		Object myObj = getValue();
-		if (this == test)
+		if (myObj == test)
 			return true;
 		if (this == test)
 			return true;
-		return getValue().equals(test);
+		for (Object p : myPanelMap.values()) {
+			if (p == test)
+				return true;
+		}
+		return name == test;
 	}
 
 	public void setNameValue(String uniqueName, Object obj) {
@@ -672,7 +674,7 @@ public abstract class POJOBoxImpl<TrigType extends Trigger<? extends POJOBoxImpl
 				uniqueName = "snul-" + System.identityHashCode(this) + "-" + System.currentTimeMillis();
 			}
 		}
-		_uname = uniqueName;
+		name = uniqueName;
 		if (obj == null)
 			obj = new NullPointerException(uniqueName).fillInStackTrace();
 		setShortLabel(uniqueName);
@@ -680,7 +682,7 @@ public abstract class POJOBoxImpl<TrigType extends Trigger<? extends POJOBoxImpl
 	}
 
 	@Override public void setObject(Object obj) {
-		m_obj = obj;
+		value = obj;
 		String ds = getDescription();
 		if (ds == null) {
 			setDescription("" + obj + " " + obj.getClass());
@@ -744,7 +746,7 @@ public abstract class POJOBoxImpl<TrigType extends Trigger<? extends POJOBoxImpl
 			checkTransient();
 			String oldName = name;
 			vetoSupport.fireVetoableChange("name", oldName, newName);
-			this._uname = newName;
+			this.name = newName;
 			propSupport.firePropertyChange("name", oldName, newName);
 		}
 		String os = getShortLabel();
