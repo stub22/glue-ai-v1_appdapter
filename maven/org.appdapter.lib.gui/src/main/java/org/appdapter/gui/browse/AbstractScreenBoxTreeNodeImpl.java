@@ -138,27 +138,28 @@ abstract public class AbstractScreenBoxTreeNodeImpl extends DefaultMutableTreeNo
 		return displayContext.getLocalBoxedChildren();
 	}
 
-	@Override public Collection getTriggersFromUI(Object object) {
+	@Override public Collection getTriggersFromUI(BT box, Object object) {
 		DisplayContext displayContext = getDisplayContextNoLoop();
-		return displayContext.getTriggersFromUI(object);
+		return displayContext.getTriggersFromUI(box, object);
 	}
 
-	@Override public UserResult showScreenBox(Object child) throws Exception {
-		DisplayContext displayContext = getDisplayContextNoLoop();
-		return displayContext.showScreenBox(child);
-	}
+	/*
+		@Override public UserResult showScreenBox(Object child) throws Exception {
+			DisplayContext displayContext = getDisplayContextNoLoop();
+			return displayContext.showScreenBox(child);
+		}
 
-	@Override public UserResult showError(String msg, Throwable error) {
-		DisplayContext displayContext = getDisplayContextNoLoop();
-		return displayContext.showError(msg, error);
-	}
+		@Override public UserResult showError(String msg, Throwable error) {
+			DisplayContext displayContext = getDisplayContextNoLoop();
+			return displayContext.showError(msg, error);
+		}
 
-	@Override public UserResult showMessage(String msg) {
-		DisplayContext displayContext = getDisplayContextNoLoop();
-		return displayContext.showMessage(msg);
+		@Override public UserResult showMessage(String msg) {
+			DisplayContext displayContext = getDisplayContextNoLoop();
+			return displayContext.showMessage(msg);
 
-	}
-
+		}
+	*/
 	@Override public UserResult attachChildUI(String title, Object value) throws Exception {
 		// TODO Auto-generated method stub
 		return null;

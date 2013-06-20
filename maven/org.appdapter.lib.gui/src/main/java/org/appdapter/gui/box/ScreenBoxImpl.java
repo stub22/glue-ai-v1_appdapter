@@ -30,12 +30,13 @@ import org.appdapter.api.trigger.BrowserPanelGUI;
 import org.appdapter.api.trigger.DisplayContext;
 import org.appdapter.api.trigger.DisplayContextProvider;
 import org.appdapter.api.trigger.DisplayType;
+import org.appdapter.api.trigger.MutableBox;
 import org.appdapter.api.trigger.NamedObjectCollection;
 import org.appdapter.api.trigger.POJOBoxImpl;
 import org.appdapter.api.trigger.ScreenBox;
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.api.trigger.UserResult;
-import org.appdapter.core.log.Debuggable;
+import org.appdapter.core.component.MutableKnownComponent;
 import org.appdapter.gui.api.GetSetObject;
 import org.appdapter.gui.api.Utility;
 import org.appdapter.gui.repo.DatabaseManagerPanel;
@@ -60,32 +61,24 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 implements ScreenBox<TrigType>, GetSetObject, UserResult {
 
 	public static List<ScreenBox> boxctxGetOpenChildBoxesNarrowed(BoxContext oh, Object parent, Class boxClass, Class trigClass) {
-		return null;
+		return oh.getOpenChildBoxesNarrowed((Box) parent, boxClass, trigClass);
 	}
-	public static List<ScreenBox> doAttachTrigger(Object oh, Object parent) {
-		return null;
+
+	public static void doAttachTrigger(Object box, Object bt) {
+		((MutableBox) box).attachTrigger((Trigger) bt);
 	}
-	public static List<ScreenBox> doSetShortLabel(Object oh, Object parent) {
-		return null;
+
+	public static void doSetShortLabel(Object box, Object nym) {
+		((MutableKnownComponent) box).setShortLabel((String) nym);
 	}
 
 	static Logger theLogger = LoggerFactory.getLogger(ScreenBoxImpl.class);
 	// Because it's a "provider", we have an extra layer of indirection between
 	// box and display, enabling independence.
 	private DisplayContextProvider myDCP;
-	public String m_title;
-	public DisplayType m_displayType;
-	public boolean m_is_added;
-	public Container m_parent_component;
-	public BrowserPanelGUI m_toplvl;
-	public Box m_box = this;
 
 	public ScreenBoxImpl() {
 		super();
-	}
-
-	public ScreenBoxImpl(NamedObjectCollection noc, String label) {
-		super(noc, label);
 	}
 
 	public ScreenBoxImpl(NamedObjectCollection noc, String label, Object obj) {
@@ -93,7 +86,7 @@ implements ScreenBox<TrigType>, GetSetObject, UserResult {
 	}
 
 	public ScreenBoxImpl(String label, Object obj) {
-		super(Utility.getToplevelBoxCollection(), label, obj);
+		this(Utility.getToplevelBoxCollection(), label, obj);
 	}
 
 	/*
@@ -204,14 +197,14 @@ implements ScreenBox<TrigType>, GetSetObject, UserResult {
 	 * @return
 	 */
 	protected JPanel makeOtherPanel() {
-		theLogger.warn("Default implementation of makeOtherPanel() for {} is returning null", getShortLabel());
+		//theLogger.warn("Default implementation of makeOtherPanel() for {} is returning null", getShortLabel());
 		return super.getPropertiesPanel();// Utility.getPropertiesPanel(this);
 	}
 
 	protected void putBoxPanel(Object kind, JPanel bp) {
 		JPanel oldBP = findExistingBoxPanel(kind);
 		if (oldBP != null) {
-			theLogger.warn("Replacing old ScreenBoxPanel link for " + getShortLabel() + " to {} with {} ", oldBP, bp);
+			//theLogger.warn("Replacing old ScreenBoxPanel link for " + getShortLabel() + " to {} with {} ", oldBP, bp);
 		}
 		myPanelMap.put(toKey(kind), bp);
 	}
@@ -221,8 +214,7 @@ implements ScreenBox<TrigType>, GetSetObject, UserResult {
 	}
 
 	public DisplayType getDisplayType() {
-		Debuggable.notImplemented();
-		return null;
+		return m_displayType;
 	}
 
 	public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {

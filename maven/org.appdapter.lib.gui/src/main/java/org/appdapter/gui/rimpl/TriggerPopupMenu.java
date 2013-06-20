@@ -4,13 +4,13 @@ import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.DisplayContext;
 import org.appdapter.gui.api.Utility;
 
-import com.jidesoft.swing.JidePopupMenu;
+import javax.swing.*;
 
 /**
  * A Popup menu for a object. The valid actions are
  * fetched using the objects context.
  */
-public class TriggerPopupMenu extends JidePopupMenu {
+public class TriggerPopupMenu extends JPopupMenu {
 	final TriggerMenuController controller;
 
 	public TriggerPopupMenu(Box box, Object object) {

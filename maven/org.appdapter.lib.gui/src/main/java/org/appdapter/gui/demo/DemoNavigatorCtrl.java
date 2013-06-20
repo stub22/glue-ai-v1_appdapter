@@ -7,13 +7,13 @@ import org.appdapter.api.trigger.BoxContext;
 import org.appdapter.api.trigger.BrowserPanelGUI;
 import org.appdapter.api.trigger.DisplayContext;
 import org.appdapter.api.trigger.DisplayContextProvider;
-import org.appdapter.api.trigger.ITabUI;
+import org.appdapter.api.trigger.BoxPanelSwitchableView;
 import org.appdapter.api.trigger.MutableBox;
 import org.appdapter.api.trigger.ScreenBoxTreeNode;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.demo.DemoBrowserCtrl;
 
-abstract public class DemoNavigatorCtrl extends BaseDemoNavigatorCtrl implements DisplayContext, org.appdapter.demo.DemoBrowserCtrl {
+public class DemoNavigatorCtrl extends BaseDemoNavigatorCtrl implements DisplayContext, org.appdapter.demo.DemoBrowserCtrl {
 
 	public DemoNavigatorCtrl() {
 		super();
@@ -45,5 +45,10 @@ abstract public class DemoNavigatorCtrl extends BaseDemoNavigatorCtrl implements
 
 	public JFrame getFrame() {
 		return super.getFrame();
+	}
+
+	@Override public void show() {
+		// TODO Auto-generated method stub
+
 	}
 }

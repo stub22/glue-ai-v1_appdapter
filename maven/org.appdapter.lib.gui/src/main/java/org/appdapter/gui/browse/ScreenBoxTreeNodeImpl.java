@@ -11,7 +11,7 @@ import org.appdapter.api.trigger.BT;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxPanelSwitchableView;
 import org.appdapter.api.trigger.DisplayContext;
-import org.appdapter.api.trigger.ITabUI;
+import org.appdapter.api.trigger.BoxPanelSwitchableView;
 import org.appdapter.api.trigger.MutableBox;
 import org.appdapter.api.trigger.ScreenBoxTreeNode;
 import org.appdapter.core.log.Debuggable;
@@ -100,10 +100,5 @@ public class ScreenBoxTreeNodeImpl extends AbstractScreenBoxTreeNodeImpl impleme
 
 	@Override public Object getTreeRepresentedObject() {
 		return this;
-	}
-
-	@Override public ITabUI getLocalCollectionUI() {
-		Debuggable.notImplemented();
-		return null;
 	}
 }

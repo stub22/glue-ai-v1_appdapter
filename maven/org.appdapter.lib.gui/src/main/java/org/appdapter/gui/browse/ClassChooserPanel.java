@@ -7,7 +7,8 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyEditor;
 import java.util.HashSet;
 
-import javax.swing.JLabel;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.DocumentEvent;
@@ -19,19 +20,17 @@ import org.appdapter.gui.api.GetSetObject;
 import org.appdapter.gui.api.Utility;
 import org.appdapter.gui.util.PromiscuousClassUtils;
 
-import com.jidesoft.swing.AutoCompletion;
-import com.jidesoft.swing.JideButton;
-import com.jidesoft.swing.JideComboBox;
+// JIDESOFT import com.jidesoft.swing.*;
+import javax.swing.*;
 
 public class ClassChooserPanel extends JPanel implements ActionListener, DocumentListener {
 	Class selectedClass = null;
 
 	//JLayeredPane desk;
 	//JSplitPane split;
-	JideButton classBrowserButton;
-	JideComboBox classField;
-	DisplayContext context;
-	AutoCompletion autoCompletion;
+	JButton classBrowserButton;
+	JComboBox classField;
+	DisplayContext context;     
 	HashSet<String> classesSaved = new HashSet<String>();
 	Thread classGroveler;
 
@@ -42,7 +41,7 @@ public class ClassChooserPanel extends JPanel implements ActionListener, Documen
 		Utility.setBeanInfoSearchPath();
 
 		initGUI();
-		startClassGroveler();
+		//startClassGroveler();
 	}
 
 	private void startClassGroveler() {
@@ -67,6 +66,8 @@ public class ClassChooserPanel extends JPanel implements ActionListener, Documen
 	}
 
 	private void resetAutoComplete() {
+	    /*  JIDESOFT
+	       AutoCompletion autoCompletion;
 		autoCompletion = new AutoCompletion(classField);
 		autoCompletion.setStrict(false);
 		autoCompletion.setStrictCompletion(false);
@@ -74,7 +75,7 @@ public class ClassChooserPanel extends JPanel implements ActionListener, Documen
 			String n = c.getName();
 			if (!classesSaved.contains(n))
 				classField.addItem(n);
-		}
+		}*/
 	}
 
 	@Override public void actionPerformed(ActionEvent evt) {
@@ -86,7 +87,7 @@ public class ClassChooserPanel extends JPanel implements ActionListener, Documen
 	private synchronized void openClassBrowser() {
 		if (selectedClass != null) {
 			try {
-				context.showScreenBox(selectedClass);
+				Utility.browserPanel.showScreenBox(selectedClass);
 			} catch (Throwable err) {
 				Utility.showError(context, null, err);
 			}
@@ -98,13 +99,13 @@ public class ClassChooserPanel extends JPanel implements ActionListener, Documen
 
 		adjustSize();
 
-		classBrowserButton = new JideButton("Examine...");
+		classBrowserButton = new JButton("Examine...");
 		classBrowserButton.setToolTipText("Opens a new window that lets you examine classes and create new object instances");
 		classBrowserButton.addActionListener(this);
 		classBrowserButton.setEnabled(false);
 		//classBrowserButton.setActionCommand(COMMAND_CREATE_BEAN);
 
-		classField = new JideComboBox();
+		classField = new JComboBox();
 		classField.setSize(400, (int) classField.getSize().getHeight());
 		classField.addActionListener(this);
 		classField.setEnabled(true);

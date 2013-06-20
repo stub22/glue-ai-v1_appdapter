@@ -5,6 +5,8 @@ import javax.swing.Icon;
 
 abstract public class AbstractTriggerAction extends AbstractAction {
 
+	public BT boxed;
+
 	public AbstractTriggerAction(String name, Icon icon) {
 		super(name, icon);
 	}

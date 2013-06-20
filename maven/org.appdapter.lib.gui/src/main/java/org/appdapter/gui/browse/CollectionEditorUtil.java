@@ -112,6 +112,7 @@ public class CollectionEditorUtil implements PropertyChangeListener {
 	}
 
 	final NamedItemChooserPanel nameItemChooserPanel;
+
 	public static int newCollectionSerial;
 
 	/**
@@ -195,10 +196,10 @@ public class CollectionEditorUtil implements PropertyChangeListener {
 				Settings.addRecentFile(file);
 				fileMenu.refreshRecentFileList();
 			} catch (Exception err) {
-				context.showError("Opening failed", err);
+				Utility.browserPanel.showError("Opening failed", err);
 			}
 		} else {
-			context.showError("File does not exist: " + file.getPath(), null);
+			Utility.browserPanel.showError("File does not exist: " + file.getPath(), null);
 		}
 	}
 
@@ -371,7 +372,7 @@ public class CollectionEditorUtil implements PropertyChangeListener {
 
 	// ==== GUI component inner classes ===========
 
-	class FileMenu extends JMenu {
+	public class FileMenu extends JMenu {
 		Vector recentFiles = new Vector();
 
 		FileMenu() {

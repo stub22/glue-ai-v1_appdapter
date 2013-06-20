@@ -170,7 +170,7 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 		if (evt.getSource() == propButton) {
 			if (context != null) {
 				try {
-					context.showScreenBox(getValue());
+					Utility.browserPanel.showScreenBox(getValue());
 				} catch (Throwable err) {
 					Utility.showError(context, "An error occurred while creating an interface for " + getValue(), err);
 				}
@@ -195,9 +195,9 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 	public void actionShowProperties() {
 		if (context != null) {
 			try {
-				context.showScreenBox(getValue());
+				Utility.browserPanel.showScreenBox(getValue());
 			} catch (Throwable err) {
-				context.showError("An error occurred while creating an interface for " + getValue(), err);
+				Utility.browserPanel.showError("An error occurred while creating an interface for " + getValue(), err);
 			}
 		}
 	}

@@ -29,13 +29,13 @@ class TriggerMenuController implements POJOCollectionListener {
 	DisplayContext appcontext;
 
 	Object object;
-	BT boxed;
+	Box boxed;
 
 	JPopupMenu popup = null;
 	JMenu menu = null;
 
 	public TriggerMenuController(DisplayContext context0, Object object, Box box, JPopupMenu popup0) {
-		this.boxed = (BT) box;
+		this.boxed = box;
 		if (object == null && this.boxed != null)
 			object = boxed.getValue();
 		appcontext = context0;
@@ -53,12 +53,18 @@ class TriggerMenuController implements POJOCollectionListener {
 			} else {
 				popup.setLabel(context.getTitleOf(object));
 			}
-			initMenu();
+		} else {
+			if (context == null) {
+				popup.setLabel("" + boxed);
+			} else {
+				popup.setLabel(context.getTitleOf(boxed));
+			}
 		}
+		initMenu();
 	}
 
 	public TriggerMenuController(DisplayContext context0, Object object, Box box, JMenu menu0) {
-		this.boxed = (BT) box;
+		this.boxed = box;
 		this.context = context0.getLocalBoxedChildren();
 		if (context != null) {
 			context.addListener(this);
@@ -86,20 +92,27 @@ class TriggerMenuController implements POJOCollectionListener {
 
 	private void initMenu() {
 		if (context != null) {
-			Collection actions = appcontext.getTriggersFromUI(object);
+			if (boxed == null)
+				boxed = context.findOrCreateBox(object);
+			if (object == null) {
+				object = boxed;
+			}
+		}
+		if (appcontext != null) {
+			Collection actions = appcontext.getTriggersFromUI((BT) boxed, object);
 			Iterator it = actions.iterator();
 			while (it.hasNext()) {
 				Action action = (Action) it.next();
 				addAction(action);
 			}
-			if (boxed == null)
-				boxed = context.findOrCreateBox(object);
-			TriggerMenuFactory factor = TriggerMenuFactory.getInstance(object);
-			if (popup != null)
-				factor.addTriggersToPopup(boxed, popup);
-			if (menu != null)
-				factor.addTriggersToPopup(boxed, menu);
+			return;
 		}
+		TriggerMenuFactory factor = TriggerMenuFactory.getInstance(object);
+		if (popup != null)
+			factor.addTriggersToPopup(boxed, popup);
+		if (menu != null)
+			factor.addTriggersToPopup(boxed, menu);
+
 	}
 
 	void addAction(Action a) {

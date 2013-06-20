@@ -25,6 +25,7 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.swing.AbstractButton;
@@ -32,7 +33,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
 import javax.swing.JTree;
 import javax.swing.MenuElement;
 import javax.swing.text.JTextComponent;
@@ -45,7 +45,8 @@ import org.appdapter.core.component.KnownComponent;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.UIAware;
 
-import com.jidesoft.swing.JidePopupMenu;
+import javax.swing.*;
+// JIDESOFT import com.jidesoft.swing.*;
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -71,12 +72,16 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 	public class TriggerSorter implements Comparator<TT> {
 
 		@Override public int compare(TT o1, TT o2) {
-			return getTriggerSortName(o1).compareTo(getTriggerSortName(o2));
+			int r = getTriggerSortName(o1).toLowerCase().compareTo(getTriggerSortName(o2).toLowerCase());
+			if (r == 0) {
+				return getTriggerName(o1).toLowerCase().compareTo(getTriggerName(o2).toLowerCase());
+			}
+			return r;
 		}
 	}
 
 	private String getTriggerSortName(TT t) {
-		String[] tn = getTriggerName(t).split(" ");
+		String[] tn = getTriggerName(t).split("|");
 		return tn[tn.length - 1];
 	}
 
@@ -119,7 +124,7 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 	}
 
 	public JPopupMenu buildPopupMenu(Box<TT> box) {
-		JidePopupMenu popup = new TriggerPopupMenu(box, null);
+		JPopupMenu popup = new TriggerPopupMenu(box, box);
 		addTriggersToPopup(box, popup);
 		return popup;
 	}
@@ -128,11 +133,24 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 		if (box instanceof UIAware) {
 			((UIAware) box).visitComponent(popup);
 		}
-		List<TT> trigs = new ArrayList<TT>();
+		if (popup instanceof TriggerPopupMenu) {
+			// Allready added the items?
+			//return;
+		}
+		List<TT> trigs = new ArrayList<TT>();		
 		trigs.addAll(box.getTriggers());
-
+		int c1 = trigs.size();
 		Collections.sort(trigs, new TriggerSorter());
-
+		int c2 = trigs.size();
+		if (c1 == c2) {
+			HashMap<String, TT> map = new HashMap<String, TT>();
+			for (TT t : trigs) {
+				map.put(t.getShortLabel().toLowerCase(), t);
+			}
+			trigs = new ArrayList<TT>(map.values());
+			c2 = trigs.size();
+			Collections.sort(trigs, new TriggerSorter());
+		}
 		for (TT trig : trigs) {
 			addTriggerToPoppup(popup, box, trig);
 		}

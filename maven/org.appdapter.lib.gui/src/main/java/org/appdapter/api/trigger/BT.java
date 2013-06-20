@@ -185,4 +185,6 @@ public interface BT<TrigType extends Trigger<? extends BT<TrigType>>> extends Bo
 
 	public abstract Object getValue();
 
+	public abstract Object getValueOrThis();
+
 }

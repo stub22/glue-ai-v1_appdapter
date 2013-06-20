@@ -216,12 +216,12 @@ central repo.
 			<version>1.0.9</version>
 		</dependency>
 		
-		<!-- This is here until the GUI is really all the way out of appdapter.core and into appdapter.gui  -->
-		<dependency>
+		<!-- This is commented out until i can get JIDE to exported properly to BMD -->
+		<!--dependencedy>
             <groupId>com.jidesoft</groupId>
             <artifactId>jide-oss</artifactId>
             <version>3.5.5</version>
-        </dependency>
+        </dependency-->
         
 		<dependency>
 			<groupId>org.apache.poi</groupId>

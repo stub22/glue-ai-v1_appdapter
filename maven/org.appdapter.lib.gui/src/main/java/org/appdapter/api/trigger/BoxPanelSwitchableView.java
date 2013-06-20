@@ -1,90 +1,47 @@
 package org.appdapter.api.trigger;
 
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 
-import org.appdapter.gui.box.ScreenBoxImpl;
+import javax.swing.Icon;
+import javax.swing.JPanel;
+import javax.swing.event.ChangeListener;
 
-public interface BoxPanelSwitchableView extends UIProvider, DisplayContextProvider, ITabUI {
+public interface BoxPanelSwitchableView {
 
-	/**
-	 * Returns an iterator over all the object screen boxes. NOTE - this could be a
-	 * bit slow! Avoid whenever possible. The code can be optimized for this,
-	 * but it isn't right now.
-	 */
-	Iterable<ScreenBoxImpl> getScreenBoxes();
+	public boolean clearChildren();
 
-	//Object getSelectedComponent();
+	public Dimension getPreferredChildSize();
 
-	/**
-	 * Checks if this collection contains the given object box
-	 */
-	boolean containsComponent(Component view);
+	public int childCount();
 
-	// DisplayType findComponent(Component view);
+	public boolean addTab(String title, Component view);
 
-	//	Component findComponentByObject(Object child, DisplayType attachType);
+	public boolean removeTab(String title, Component view);
 
-	//	Set<POJOBox> findComponentsByPredicate(Comparator<POJOBox> cursor, DisplayType attachTyp);
+	public int indexOf(String title, Component view);
 
-	DisplayContext findDisplayContext(Box child);
+	public boolean bringToFront(String title, Component view);
 
-	//	Object findObjectByComponent(Component view);
+	public boolean sendToBack(String title, Component view);
 
-	BT addComponent(String title, Component view, DisplayType attachType);
+	public Container getContainer();
 
-	BT getSelectedObject(DisplayType attachType);
+	public void insertTab(String title, Icon icon, Component component, String tip, int index);
 
-	Dimension getSize(DisplayType attachType);
+	public void addChangeListener(ChangeListener cc);
 
-	Iterable<DisplayType> getSupportedAttachTypes();
+	public int indexOfComponent(Component view);
 
-	String getTitleOf(Object view);
+	public int getSelectedIndex();
 
-	String getTitleOf(Object child, DisplayType attachType);
+	public void addComponent(String name, Component f, DisplayType panel);
 
-	/**
-	 * Returns UI type actions that can be carried out on the given object:
-	 *    
-	 *    Such as hide, maximize, cut, paste to another tree
-	 * 
-	 */
-	//Collection getTriggersFromUI(Object object);
+	public boolean containsComponent(Component bp);
 
-	/**
-	 * Listeners will be notifed when the currently object selection is changed.
-	 */
-	//void removePropertyChangeListener(PropertyChangeListener p);
+	public void setSelectedComponent(Component boxP);
 
-	//void registerPair(POJOBox displayContextNearBox, boolean insertChild);
-
-	void removeComponent(Component view);
-
-	//void removeObject(Object child, DisplayType attachType);
-
-	void setSelectedComponent(Component view);
-
-	/**
-	 * Makes the given object the currently selected one. The previously
-	 * selected object (if any) will be deselected, and a property change event
-	 * will be fired.
-	 * 
-	 * @throws PropertyVetoException
-	 *             if someone refused to let the selected object change
-	 */
-	//void setSelectedObject(Object object) throws PropertyVetoException;
-
-	/**
-	 * Displays the given message somehow
-	 * @return 
-	 */
-	UserResult showMessage(String string);
-
-	/**
-	 * Displays the given error message somehow
-	 */
-	UserResult showError(String msg, Throwable err);
-
-	UserResult attachChild(String title, Object anyObject, DisplayType attachType, boolean showAsap);
+	public Dimension getSize(DisplayType frame);
 
 }

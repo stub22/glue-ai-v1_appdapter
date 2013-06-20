@@ -15,14 +15,13 @@ import javax.swing.UIManager;
 
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.Utility;
-
-import com.jidesoft.plaf.LookAndFeelFactory;
+//JIDESOFT import com.jidesoft.plaf.LookAndFeelFactory;
 
 public class LookAndFeelMenuItems extends JMenu {
 
 	public LookAndFeelMenuItems(String title) {
 		super(title);
-		LookAndFeelFactory.installDefaultLookAndFeelAndExtension();
+	       //JIDESOFT  LookAndFeelFactory.installDefaultLookAndFeelAndExtension();
 		final LookAndFeelMenuItems menu = this;
 		menu.add(createLnfAction("NimbusLookAndFeel", "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel"));
 		menu.add(createLnfAction("Metal", "javax.swing.plaf.metal.MetalLookAndFeel"));
@@ -35,7 +34,9 @@ public class LookAndFeelMenuItems extends JMenu {
 			}
 		}).start();
 
-		for (Field fld : LookAndFeelFactory.class.getDeclaredFields()) {
+		Class laf = null
+		//laf = LookAndFeelFactory.class
+		if (laf != null) for (Field fld : laf.getDeclaredFields()) {
 			if (!Modifier.isStatic(fld.getModifiers()))
 				continue;
 			if (fld.getName().contains("_LNF") && fld.getType() == String.class) {
@@ -113,8 +114,8 @@ public class LookAndFeelMenuItems extends JMenu {
 		return new AbstractAction(title) {
 			@Override public void actionPerformed(ActionEvent e) {
 				try {
-					LookAndFeelFactory.installJideExtension();
-					LookAndFeelFactory.installJideExtension(style);
+				     //JIDESOFT    LookAndFeelFactory.installJideExtension();
+					//JIDESOFT  LookAndFeelFactory.installJideExtension(style);
 				} catch (Exception e1) {
 				}
 				JFrame frame = Utility.getAppFrame();
@@ -124,3 +125,5 @@ public class LookAndFeelMenuItems extends JMenu {
 		};
 	}
 }
+
+*/

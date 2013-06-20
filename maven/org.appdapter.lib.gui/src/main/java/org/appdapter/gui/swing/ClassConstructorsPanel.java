@@ -110,8 +110,7 @@ public class ClassConstructorsPanel extends SingleTabFrame implements ActionList
 		return false;
 	}
 
-	@Override protected void initSubClassGUI() throws Throwable {
-		Debuggable.notImplemented();
+	@Override protected void initSubclassGUI() throws Throwable {
 
 	}
 

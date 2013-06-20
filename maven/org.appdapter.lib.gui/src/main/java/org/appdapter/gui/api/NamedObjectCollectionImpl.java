@@ -124,11 +124,15 @@ public class NamedObjectCollectionImpl implements NamedObjectCollection, Vetoabl
 			// Add it
 			// objectsToBoxs.put(obj, box);
 			boxList.add(box);
+			objectList.add(box.getValueOrThis());
 
 			if (objectsToWrappers != null) {
 				synchronized (objectsToWrappers) {
 					objectsToWrappers.put(box.getValue(), box);
 				}
+			}
+			if (title == null) {
+				title = getTitleOf(box);
 			}
 			if (nameIndex != null) {
 				synchronized (nameIndex) {
@@ -207,6 +211,10 @@ public class NamedObjectCollectionImpl implements NamedObjectCollection, Vetoabl
 		return containsObject(findOrCreateBox(object));// containsKey(object);
 	}
 
+	@Override public String getName() {
+		return toStringText;
+	}
+
 	// ==== Event listener registration ======================
 
 	/**
@@ -239,6 +247,8 @@ public class NamedObjectCollectionImpl implements NamedObjectCollection, Vetoabl
 	 * {@inheritDoc}
 	 */
 	@Override public ScreenBoxImpl findBoxByName(String name) {
+		if (name == null)
+			return null;
 		if (nameIndex != null) {
 			synchronized (nameIndex) {
 				BT boxl = nameIndex.get(name);
@@ -263,15 +273,16 @@ public class NamedObjectCollectionImpl implements NamedObjectCollection, Vetoabl
 	public BT findBoxByObject(Object object) {
 		if (object == null)
 			return null;
-
+		if (object instanceof BT) {
+			return (BT) object;
+		}
 		int i = objectList.indexOf(object);
-		if (i == -1) {
-			return null;
+		if (i != -1) {
+			BT wrapper = (BT) boxList.get(i);
+			if (wrapper != null)
+				return wrapper;
 		}
 
-		BT wrapper = (BT) boxList.get(i);
-		if (wrapper != null)
-			return wrapper;
 		for (BT box : getScreenBoxes()) {
 			if (box.representsObject(object))
 				return box;
@@ -334,6 +345,9 @@ public class NamedObjectCollectionImpl implements NamedObjectCollection, Vetoabl
 				if (title != null) {
 					wrapper.setUniqueName(title);
 				}
+				if (!boxList.contains(wrapper)) {
+					addBoxed(title, wrapper);
+				}
 				return wrapper;
 			}
 		} else {
@@ -341,7 +355,7 @@ public class NamedObjectCollectionImpl implements NamedObjectCollection, Vetoabl
 				title = generateUniqueName(obj);
 			}
 			//Create the value wrapper, with a unique name
-			wrapper = (BT) new ScreenBoxImpl(title, obj);
+			wrapper = (BT) new ScreenBoxImpl(this, title, obj);
 
 			//Add it
 			//objectsToWrappers.put(obj, wrapper);
@@ -423,7 +437,6 @@ public class NamedObjectCollectionImpl implements NamedObjectCollection, Vetoabl
 	}
 
 	@Override public Map<String, BT> getNameToBoxIndex() {
-		Debuggable.notImplemented();
 		return nameIndex;
 	}
 
@@ -700,7 +713,7 @@ public class NamedObjectCollectionImpl implements NamedObjectCollection, Vetoabl
 	 *
 	 * @throws PropertyVetoException if someone refused to let the selected value change
 	 */
-	private synchronized void setSelectedObject(Object object) throws PropertyVetoException {
+	public synchronized void setSelectedObject(Object object) throws PropertyVetoException {
 		if (selected != object && containsObject(object)) {
 
 			//Deselect the old wrapper (if any)
