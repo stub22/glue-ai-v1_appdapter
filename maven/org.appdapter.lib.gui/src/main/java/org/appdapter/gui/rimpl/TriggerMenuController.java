@@ -37,7 +37,7 @@ class TriggerMenuController implements POJOCollectionListener {
 	public TriggerMenuController(DisplayContext context0, Object object, Box box, JPopupMenu popup0) {
 		this.boxed = box;
 		if (object == null && this.boxed != null)
-			object = boxed.getValue();
+			object = null;//boxed.getValue();
 		appcontext = context0;
 		this.context = context0.getLocalBoxedChildren();
 		if (context != null) {
