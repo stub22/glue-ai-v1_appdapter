@@ -112,11 +112,11 @@ public class NamedObjectCollectionImpl implements NamedObjectCollection, Vetoabl
 		this.displayContext = displayedAt;
 	}
 
-	public BT addBoxed(String title, BT box) {
+	public boolean addBoxed(String title, BT box) {
 		synchronized (boxList) {
 			BT prev = findBoxByName(title);
 			if (prev == box)
-				return box;
+				return true;
 			if (prev != null) {
 				Debuggable.notImplemented("Already existing name: " + title);
 			}
@@ -153,7 +153,7 @@ public class NamedObjectCollectionImpl implements NamedObjectCollection, Vetoabl
 				// @temp
 				((POJOCollectionListener) it.next()).pojoAdded(box.getValue());
 			}
-			return box;
+			return true;
 		}
 
 	}

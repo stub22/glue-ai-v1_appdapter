@@ -122,7 +122,7 @@ public class Utility {
 	static public void putCachedComponent(Ident id, Object comp) {
 		BoxPanelSwitchableView boxPanelDisplayContext = getBoxPanelTabPane();
 		try {
-			uiObjects.findOrCreateBox(id.toString(), comp);
+			recordCreated(uiObjects.findOrCreateBox(id.toString(), comp));
 		} catch (PropertyVetoException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -531,23 +531,31 @@ public class Utility {
 	public static String generateUniqueName(Object object, Map<String, BT> checkAgainst) {
 		if (object == null)
 			return "<null>";
-		if (object instanceof KnownComponent) {
-			String str = ((KnownComponent) object).getShortLabel();
-			if (str != null) {
-				BT other = checkAgainst.get(str);
-				if (other == null)
-					return str;
-				if (other.representsObject(object))
-					return str;
-				if (str != null)
-					return str;
-				// conflict!
-			}
-		}
 		if (object instanceof Class) {
 			return ((Class) object).getCanonicalName();
 		}
+		if (object instanceof KnownComponent) {
+			String str = ((KnownComponent) object).getShortLabel();
+			if (str != null) {
+
+				if (checkAgainst != null) {
+					BT other = null;
+					other = checkAgainst.get(str);
+					if (other == null)
+						return str;
+					if (other.representsObject(object))
+						return str;
+					if (str != null)
+						return str;
+				}
+				// conflict!
+			}
+		}
+
 		String className = Utility.getShortClassName(object.getClass());
+		if (checkAgainst == null) {
+			return getDefaultName(object);
+		}
 		int counter = 1;
 		boolean done = false;
 		String name = "???";
@@ -737,6 +745,15 @@ public class Utility {
 		return objects;
 	}
 
+	static HashMap allBoxes = new HashMap();
+
+	public static synchronized boolean recordCreated(BT box) {
+		if (allBoxes.containsKey(box))
+			return false;
+		allBoxes.put(box, box);
+		return true;
+	}
+
 	private static BT boxObject(Object pojo) {
 		if (pojo instanceof BT)
 			return (BT) pojo;
@@ -789,7 +806,7 @@ public class Utility {
 		if (type == Class.class)
 			return ((Class) object).getName();
 		else
-			return "a " + Utility.getShortClassName(object.getClass());
+			return object.getClass().getCanonicalName() + "@" + identityHashCode(object);
 	}
 
 	static public org.appdapter.api.trigger.DisplayType getDisplayType(Class expected) {
