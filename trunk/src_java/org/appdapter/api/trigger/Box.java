@@ -39,4 +39,6 @@ public interface Box<TrigType extends Trigger<? extends Box<TrigType>>> {
 
 	public Component getComponent();
 
+	public Object getValue();
+
 }

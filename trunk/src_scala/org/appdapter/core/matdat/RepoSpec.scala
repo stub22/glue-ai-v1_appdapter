@@ -57,7 +57,14 @@ abstract class RepoSpec {
 class OnlineSheetRepoSpec(sheetKey: String, namespaceSheetNum: Int, dirSheetNum: Int,
   fileModelCLs: java.util.List[ClassLoader] = null) extends RepoSpec {
   override def makeRepo(): SheetRepo = {
-    GoogSheetRepo.makeGoogSheetRepo(sheetKey, namespaceSheetNum, dirSheetNum, fileModelCLs, this)
+    try {
+      GoogSheetRepo.makeGoogSheetRepo(sheetKey, namespaceSheetNum, dirSheetNum, fileModelCLs, this)
+    } catch {      
+    	case e => {
+    	  e.printStackTrace();
+    	  throw e
+    	}
+    }
   }
   override def toString: String = "goog:/" + sheetKey + "/" + namespaceSheetNum + "/" + dirSheetNum
 }
@@ -185,7 +192,7 @@ object RepoSpecDefaultNames {
     val fileResModelCLs: java.util.List[ClassLoader] =
       ClassLoaderUtils.getFileResourceClassLoaders(null, ClassLoaderUtils.ALL_RESOURCE_CLASSLOADER_TYPES);
     val repoSpec = new OnlineSheetRepoSpec(RepoSpecDefaultNames.BMC_SHEET_KEY, RepoSpecDefaultNames.BMC_NAMESPACE_SHEET_NUM, RepoSpecDefaultNames.BMC_DIRECTORY_SHEET_NUM, fileResModelCLs);
-    val repo: OmniLoaderRepo = repoSpec.makeRepo.asInstanceOf[OmniLoaderRepo];
+    val repo = repoSpec.makeRepo //.asInstanceOf[OmniLoaderRepo];
 
     print("Starting Whackamole");
     import org.appdapter.demo.DemoBrowserUI
