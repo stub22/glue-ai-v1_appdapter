@@ -50,7 +50,7 @@ public interface NamedObjectCollection //
 	 */
 	//POJOBox findOrCreateBox(Object object);
 
-	BT addBoxed(String named, BT object);
+	boolean addBoxed(String named, BT object);
 
 	/**
 	 * Checks if this collection contains the given object

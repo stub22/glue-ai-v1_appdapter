@@ -111,14 +111,14 @@ public abstract class POJOBoxImpl<TrigType extends Trigger<? extends POJOBoxImpl
 	//	public Box m_box = this;
 
 	//	DisplayType m_displayType = DisplayType.PANEL;
-
-	public static String getDefaultName(Object object) {
-		Class type = object.getClass();
-		if (type == Class.class)
-			return ((Class) object).getName();
-		else
-			return "a " + Utility.getShortClassName(object.getClass());
-	}
+	/*
+		public static String getDefaultName(Object object) {
+			Class type = object.getClass();
+			if (type == Class.class)
+				return ((Class) object).getName();
+			else
+				return "a " + Utility.getShortClassName(object.getClass());
+		}*/
 
 	//	public String m_title;
 
@@ -185,6 +185,7 @@ public abstract class POJOBoxImpl<TrigType extends Trigger<? extends POJOBoxImpl
 	public Object value = null;//this;//;//new NoObject();
 
 	protected transient VetoableChangeSupport vetoSupport = new VetoableChangeSupport(this);
+	private boolean madeElsewhere;
 
 	// ==== Constructors ==================================
 	/**
@@ -193,6 +194,8 @@ public abstract class POJOBoxImpl<TrigType extends Trigger<? extends POJOBoxImpl
 	 */
 
 	public POJOBoxImpl() {
+		this.madeElsewhere = true;
+		Utility.recordCreated(this);
 	}
 
 	/*
@@ -200,26 +203,35 @@ public abstract class POJOBoxImpl<TrigType extends Trigger<? extends POJOBoxImpl
 		this(noc, label, null);
 		}*/
 
-	public POJOBoxImpl(NamedObjectCollection noc, String title, Object boxOrObj) {
+	public POJOBoxImpl(NamedObjectCollection noc, String title, Object val) {
+		this.value = val;
+		if (val != null) {
+			this.clz = (Class<TrigType>) val.getClass();
+			//this.name = Utility.getDefaultName(val);
+			setObject(val);
+		}
 		setShortLabel(title);
-		setObject(boxOrObj);
 		addToNoc(noc, title);
+	}
+
+	@Override public void setShortLabel(String shortLabel) {
+		super.setShortLabel(shortLabel);
 	}
 
 	/**
 	 * Creates a new ScreenBox for the given object
 	 * and assigns it a default name.
 	 */
-	public POJOBoxImpl(Object val) {
+	private POJOBoxImpl(Object val) {
 		this.value = val;
 		this.clz = (Class<TrigType>) val.getClass();
-		this.name = getDefaultName(val);
+		//this.name = Utility.getDefaultName(val);
 	}
 
 	/**
 	 * Creates a new ScreenBox for the given object, with the given name.
 	 */
-	public POJOBoxImpl(String title, Object val) {
+	private POJOBoxImpl(String title, Object val) {
 		this.value = val;
 		this.clz = (Class<TrigType>) value.getClass();
 		this.name = title;
@@ -785,6 +797,8 @@ public abstract class POJOBoxImpl<TrigType extends Trigger<? extends POJOBoxImpl
 		String sl = getShortLabel();
 		if (sl != null)
 			return sl;
+		if (name != null)
+			return name;
 		return getUniqueName(null) + " -> " + getDebugName();
 
 	}
