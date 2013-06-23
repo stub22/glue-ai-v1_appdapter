@@ -54,8 +54,7 @@ import org.appdapter.gui.rimpl.SysTriggers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.appdapter.core.matdat.OfflineXlsSheetRepoSpec;
-import org.appdapter.core.matdat.OnlineSheetRepoSpec;
+import org.appdapter.core.matdat.*;
 import org.appdapter.core.matdat.RepoSpec;
 import org.appdapter.demo.DemoBrowserUI;
 import org.appdapter.demo.DemoBrowserCtrl;
