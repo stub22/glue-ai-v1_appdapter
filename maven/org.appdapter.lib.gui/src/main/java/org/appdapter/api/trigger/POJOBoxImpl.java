@@ -195,7 +195,7 @@ public abstract class POJOBoxImpl<TrigType extends Trigger<? extends POJOBoxImpl
 
 	public POJOBoxImpl() {
 		this.madeElsewhere = true;
-		Utility.recordCreated(this);
+	///	Utility.recordCreated(this);
 	}
 
 	/*

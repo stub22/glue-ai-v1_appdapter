@@ -8,7 +8,7 @@ import java.awt.Window;
 import java.beans.BeanInfo;
 import java.beans.Customizer;
 import java.beans.IntrospectionException;
-import java.beans.Introspector;
+import java.beans.Introspector;  
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
 import java.beans.PropertyVetoException;
@@ -62,6 +62,7 @@ import org.appdapter.core.store.Repo;
 import org.appdapter.gui.box.ScreenBoxImpl;
 import org.appdapter.gui.browse.BrowsePanel;
 import org.appdapter.gui.browse.CollectionEditorUtil;
+import org.appdapter.gui.browse.CollectionEditorUtil.FileMenu;
 import org.appdapter.gui.browse.NamedItemChooserPanel;
 import org.appdapter.gui.demo.DemoBrowser;
 import org.appdapter.gui.editors.AbstractCollectionBeanInfo;
@@ -89,7 +90,6 @@ public class Utility {
 	private static final Class[] CLASS0 = new Class[0];
 
 	// ==== Instance variables ==========
-	public static JMenuBar appMenuBar = new JMenuBar();
 	public static BrowsePanel browserPanel;
 	public static NamedObjectCollection uiObjects = new NamedObjectCollectionImpl("All UI Objects", null);
 	public static BrowserPanelGUI controlApp;
@@ -131,18 +131,21 @@ public class Utility {
 	}
 
 	//public static FileMenu fileMenu = new FileMenu();
-	public static JMenu fileMenu;
+	public static JMenuBar appMenuBar0;
+	public static FileMenu fileMenu;
 	private static JFrame appFrame;
 
 	public static JFrame getAppFrame() {
 		if (appFrame == null) {
-			appFrame = (JFrame) appMenuBar.getTopLevelAncestor();
+			appFrame = (JFrame) getMenuBar().getTopLevelAncestor();
 		}
 		return (JFrame) appFrame;
 	}
 
 	public static JMenuBar getMenuBar() {
-		return appMenuBar;
+		if (appMenuBar0 != null)
+			appMenuBar0 = new JMenuBar();
+		return appMenuBar0;
 	}
 
 	public static BoxPanelSwitchableView getBoxPanelTabPane() {
@@ -191,14 +194,13 @@ public class Utility {
 	}
 
 	public static BrowserPanelGUI getDisplayContext() {
-		Debuggable.notImplemented();
-		return null;
+		return controlApp;
 	}
 
-	public static void setDisplayContext(BrowserPanelGUI browserPanelGUI) {
+	/*public static void setDisplayContext(BrowserPanelGUI browserPanelGUI) {
 		Debuggable.notImplemented();
 
-	}
+	}*/
 
 	/**
 	 * Sets the global objects context
