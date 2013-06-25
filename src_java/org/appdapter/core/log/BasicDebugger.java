@@ -44,7 +44,7 @@ public class BasicDebugger implements Loggable {
 		myAppClass = this.getClass();
 	}
 
-	static Logger theFallbackLogger = LoggerFactory.getLogger(BasicDebugger.class);
+	static Logger theFallbackLogger = null;
 
 	private enum MsgKind {
 
@@ -68,11 +68,18 @@ public class BasicDebugger implements Loggable {
 	}
 
 	public static Logger getLoggerForClass(Class c) {
-		Logger result = LoggerFactory.getLogger(c);
-		if (result == null) {
-			result = theFallbackLogger;
+		try {
+			Logger result = LoggerFactory.getLogger(c);
+			if (result == null) {
+				if (theFallbackLogger == null)
+					theFallbackLogger = LoggerFactory.getLogger(BasicDebugger.class);
+				result = theFallbackLogger;
+			}
+			return result;
+		} catch (Throwable t) {
+			t.printStackTrace();
 		}
-		return result;
+		return null;
 	}
 
 	public void useLoggerForClass(Class c) {
@@ -157,13 +164,10 @@ public class BasicDebugger implements Loggable {
 				System.out.println(mk.name() + ": " + msg);
 			}
 			if (t != null) {
-				switch (mk) {
-				case ERROR:
+				if (mk == MsgKind.ERROR) {
 					t.printStackTrace(System.out);
-					break;
-				case WARN:
+				} else if (mk == MsgKind.WARN) {
 					System.out.println("Warning Exception: " + t);
-					break;
 				}
 			}
 		}

@@ -44,6 +44,10 @@ public abstract class Debuggable {
 		return dstr;
 	}
 
+	public static String toInfoStringCompound(String str, Object... params) {
+		return str + "(" + toInfoStringA(params, ",", PRINT_DEPTH) + ")";
+	}
+
 	public static String toInfoStringA(Object[] params, String sep, int depth) {
 		if (params == null)
 			return "<Null[]>";

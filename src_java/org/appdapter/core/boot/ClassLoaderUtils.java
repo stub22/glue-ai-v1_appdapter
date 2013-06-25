@@ -23,33 +23,31 @@ import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
 
+import org.appdapter.core.log.Debuggable;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 /**
  * @author Stu B. <www.texpedient.com>
  */
 
 public class ClassLoaderUtils {
-	private final static Logger theLogger = LoggerFactory.getLogger(ClassLoaderUtils.class.getName());
-
-	public final static String RESOURCE_CLASSLOADER_TYPE = "ResourceClassLoaderType";
 	public final static String ALL_RESOURCE_CLASSLOADER_TYPES = "*";
 
-	public static URL findResourceURL(String path, List<ClassLoader> cLoaders) {
-		for (ClassLoader cl : cLoaders) {
-			// This method will first search the parent class loader for the resource; if the parent is null the path of
-			// the class loader built-in to the virtual machine is searched. That failing, this method will invoke 
-			// findResource(String) to find the resource.
-			URL res = cl.getResource(path);
-			if (res != null) {
-				return res;
-			}
-		}
-		return null;
+	public final static String RESOURCE_CLASSLOADER_TYPE = "ResourceClassLoaderType";
+	private final static Logger theLogger = LoggerFactory.getLogger(ClassLoaderUtils.class.getName());
+
+	private static <T> boolean addIfNew(Collection<T> col, T e) {
+		if (e == null)
+			return false;
+		if (col.contains(e))
+			return false;
+		col.add(e);
+		return true;
 	}
 
 	public static ClassLoader findResourceClassLoader(String path, List<ClassLoader> cLoaders) {
@@ -65,33 +63,17 @@ public class ClassLoaderUtils {
 		return null;
 	}
 
-	public static List<ClassLoader> getFileResourceClassLoaders(String resourceClassLoaderType) {
-		List<ClassLoader> resourceLoaders = new ArrayList<ClassLoader>();
-		addIfNew(resourceLoaders, Thread.currentThread().getContextClassLoader());
-		addIfNew(resourceLoaders, ClassLoaderUtils.class.getClassLoader());
-		addIfNew(resourceLoaders, ClassLoader.class.getClassLoader());
-		return resourceLoaders;
-	}
-
-	private static <T> boolean addIfNew(Collection<T> col, T e) {
-		if (e == null)
-			return false;
-		if (col.contains(e))
-			return false;
-		col.add(e);
-		return true;
-	}
-
-	public static void registerClassLoader(BundleContext context, ClassLoader loader, String resourceClassLoaderType) {
-		if (context == null || loader == null) {
-			return;
+	public static URL findResourceURL(String path, List<ClassLoader> cLoaders) {
+		for (ClassLoader cl : cLoaders) {
+			// This method will first search the parent class loader for the resource; if the parent is null the path of
+			// the class loader built-in to the virtual machine is searched. That failing, this method will invoke 
+			// findResource(String) to find the resource.
+			URL res = cl.getResource(path);
+			if (res != null) {
+				return res;
+			}
 		}
-		if (resourceClassLoaderType == null) {
-			resourceClassLoaderType = "UNKNOWN";
-		}
-		Dictionary<String, String> props = new Hashtable<String, String>();
-		props.put(RESOURCE_CLASSLOADER_TYPE, resourceClassLoaderType);
-		context.registerService(ClassLoader.class.getName(), loader, props);
+		return null;
 	}
 
 	public static List<ClassLoader> getFileResourceClassLoaders(BundleContext context, String resourceClassLoaderType) {
@@ -121,6 +103,14 @@ public class ClassLoaderUtils {
 		return resourceLoaders;
 	}
 
+	public static List<ClassLoader> getFileResourceClassLoaders(String resourceClassLoaderType) {
+		List<ClassLoader> resourceLoaders = new ArrayList<ClassLoader>();
+		addIfNew(resourceLoaders, Thread.currentThread().getContextClassLoader());
+		addIfNew(resourceLoaders, ClassLoaderUtils.class.getClassLoader());
+		addIfNew(resourceLoaders, ClassLoader.class.getClassLoader());
+		return resourceLoaders;
+	}
+
 	private static ClassLoader getLoader(BundleContext context, ServiceReference ref) {
 		if (context == null || ref == null) {
 			return null;
@@ -130,5 +120,19 @@ public class ClassLoaderUtils {
 			return null;
 		}
 		return (ClassLoader) obj;
+	}
+
+	public static void registerClassLoader(BundleContext context, ClassLoader loader, String resourceClassLoaderType) {
+		if (context == null || loader == null) {
+			theLogger.warn(Debuggable.toInfoStringCompound("registerClassLoader", context, loader, resourceClassLoaderType));
+			return;
+		}
+		if (resourceClassLoaderType == null) {
+			resourceClassLoaderType = "UNKNOWN";
+			theLogger.warn(Debuggable.toInfoStringCompound("UNKNOWN TYPE: registerClassLoader", context, loader, resourceClassLoaderType));
+		}
+		Dictionary<String, String> props = new Hashtable<String, String>();
+		props.put(RESOURCE_CLASSLOADER_TYPE, resourceClassLoaderType);
+		context.registerService(ClassLoader.class.getName(), loader, props);
 	}
 }
