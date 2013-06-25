@@ -15,6 +15,7 @@
  */
 package org.appdapter.bind.csv.datmat;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -33,8 +34,7 @@ import au.com.bytecode.opencsv.CSVReader;
 public class TestSheetReadMain {
 
 	static BasicDebugger theDbg = new BasicDebugger();
-	static String gdocPubUrlWithKey = 
-			"https://docs.google.com/spreadsheet/pub?key=0ArBjkBoH40tndDdsVEVHZXhVRHFETTB5MGhGcWFmeGc";
+	static String gdocPubUrlWithKey = "https://docs.google.com/spreadsheet/pub?key=0ArBjkBoH40tndDdsVEVHZXhVRHFETTB5MGhGcWFmeGc";
 	static String tmpExtender = "&single=true&gid=7&range=A2%3AK999&output=csv";
 
 	public static void main(String args[]) {
@@ -51,10 +51,9 @@ public class TestSheetReadMain {
 		}
 	}
 
-
 	public static Reader makeSheetDataReader(String fullUrlTxt) {
 		Reader sheetReader = null;
-		
+
 		try {
 			URL url = new URL(fullUrlTxt);
 			URLConnection urlc = url.openConnection();
@@ -68,15 +67,25 @@ public class TestSheetReadMain {
 		}
 		return sheetReader;
 	}
-	
+
 	static List<String[]> theFailedRowList = new ArrayList<String[]>();
+
 	public static List<String[]> readAllRows(Reader matDataReader) {
 		List<String[]> resultRows = theFailedRowList;
+		CSVReader csvr = null;
 		try {
-			CSVReader csvr = new CSVReader(matDataReader);
+			csvr = new CSVReader(matDataReader);
 			resultRows = csvr.readAll();
 		} catch (Throwable t) {
 			theDbg.logError("Failed during CSV parse", t);
+		} finally {
+			if (csvr != null) {
+				try {
+					csvr.close();
+				} catch (IOException e) {
+				}
+				csvr = null;
+			}
 		}
 		return resultRows;
 	}
