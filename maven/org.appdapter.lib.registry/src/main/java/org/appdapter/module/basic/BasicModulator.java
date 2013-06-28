@@ -37,29 +37,20 @@ public class BasicModulator<Ctx> extends BasicDebugger implements Modulator<Ctx>
 		myAutoDetachOnFinishFlag = autoDetachOnFinish;
 	}
 	
-	protected static boolean isModuleInActionState(Module.State modState) { 
+	protected static boolean isModuleInActionState(Module.State modState) {
 		if (modState == null) {
 			return false;
 		}
-		switch (modState) {
-			case PRE_INIT:
-			case WAIT_TO_START:
-			case WAIT_TO_RUN_OR_STOP:
-			case POST_STOP:
-			case FAILED_STARTUP:
-				return false;
-			
-			case IN_INIT:
-			case IN_START:
-			case IN_RUN:
-			case IN_STOP:
-				return true;
-			
-			default:
-				throw new RuntimeException("Module in unknown state: " + modState);
-		}
-		
+
+		if (modState == Module.State.PRE_INIT || modState == Module.State.WAIT_TO_START || modState == Module.State.WAIT_TO_RUN_OR_STOP || modState == Module.State.POST_STOP
+				|| modState == Module.State.FAILED_STARTUP)
+			return false;
+		if (modState == Module.State.IN_INIT || modState == Module.State.IN_START || modState == Module.State.IN_RUN || modState == Module.State.IN_STOP)
+			return true;
+		throw new RuntimeException("Module in unknown state: " + modState);
+
 	}
+	
 	protected void setDefaultContext(Ctx ctx) {
 		myDefaultCtx = ctx;
 	}

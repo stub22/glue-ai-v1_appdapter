@@ -20,7 +20,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Dictionary;
-import java.util.Hashtable;
+import java.util.*;
 import java.util.List;
 
 import org.appdapter.core.log.Debuggable;
@@ -29,7 +29,6 @@ import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -50,8 +49,21 @@ public class ClassLoaderUtils {
 		return true;
 	}
 
+	private static <T> boolean addAllIfNew(Collection<T> col, Iterable<T> ite) {
+		if (ite == null)
+			return false;
+		boolean added = false;
+		for (T e : ite)
+			if (!col.contains(e)) {
+				added = true;
+				col.add(e);
+			}
+		return added;
+	}
+
 	public static ClassLoader findResourceClassLoader(String path, List<ClassLoader> cLoaders) {
 		for (ClassLoader cl : cLoaders) {
+			registeredLoaders.add(cl);
 			// This method will first search the parent class loader for the resource; if the parent is null the path of
 			// the class loader built-in to the virtual machine is searched. That failing, this method will invoke 
 			// findResource(String) to find the resource.
@@ -65,6 +77,7 @@ public class ClassLoaderUtils {
 
 	public static URL findResourceURL(String path, List<ClassLoader> cLoaders) {
 		for (ClassLoader cl : cLoaders) {
+			registeredLoaders.add(cl);
 			// This method will first search the parent class loader for the resource; if the parent is null the path of
 			// the class loader built-in to the virtual machine is searched. That failing, this method will invoke 
 			// findResource(String) to find the resource.
@@ -98,29 +111,42 @@ public class ClassLoaderUtils {
 			ClassLoader l = getLoader(context, ref);
 			if (l != null) {
 				resourceLoaders.add(l);
+				registeredLoaders.add(l);
 			}
 		}
 		return resourceLoaders;
 	}
 
-	public static List<ClassLoader> getFileResourceClassLoaders(String resourceClassLoaderType) {
+	public static List<ClassLoader> getFileResourceClassLoaders(String resourceClassLoaderType, List<ClassLoader>... arrayOfcLoaders) {
 		List<ClassLoader> resourceLoaders = new ArrayList<ClassLoader>();
+		for (List<ClassLoader> cLoaders : arrayOfcLoaders) {
+			if (cLoaders != null) {
+				addAllIfNew(resourceLoaders, cLoaders);
+			}
+		}
 		addIfNew(resourceLoaders, Thread.currentThread().getContextClassLoader());
 		addIfNew(resourceLoaders, ClassLoaderUtils.class.getClassLoader());
-		addIfNew(resourceLoaders, ClassLoader.class.getClassLoader());
+		addIfNew(resourceLoaders, ClassLoader.getSystemClassLoader());
+		addAllIfNew(resourceLoaders, registeredLoaders);
+		addAllIfNew(registeredLoaders, resourceLoaders);
+		theLogger.info(Debuggable.toInfoStringCompound("getFileResourceClassLoaders-Count", resourceLoaders.size(), resourceLoaders));
 		return resourceLoaders;
 	}
 
 	private static ClassLoader getLoader(BundleContext context, ServiceReference ref) {
 		if (context == null || ref == null) {
+			theLogger.warn(Debuggable.toInfoStringCompound("returning null from getLoader", context, ref));
 			return null;
 		}
 		Object obj = context.getService(ref);
 		if (obj == null || !ClassLoader.class.isAssignableFrom(obj.getClass())) {
+			theLogger.warn(Debuggable.toInfoStringCompound("returning null from getLoader+obj", context, ref, obj));
 			return null;
 		}
 		return (ClassLoader) obj;
 	}
+
+	static HashSet<ClassLoader> registeredLoaders = new HashSet<ClassLoader>();
 
 	public static void registerClassLoader(BundleContext context, ClassLoader loader, String resourceClassLoaderType) {
 		if (context == null || loader == null) {
@@ -133,6 +159,7 @@ public class ClassLoaderUtils {
 		}
 		Dictionary<String, String> props = new Hashtable<String, String>();
 		props.put(RESOURCE_CLASSLOADER_TYPE, resourceClassLoaderType);
+		registeredLoaders.add(loader);
 		context.registerService(ClassLoader.class.getName(), loader, props);
 	}
 }

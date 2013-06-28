@@ -1,14 +1,21 @@
 package org.appdapter.gui.util;
 
+import static org.appdapter.gui.util.CollectionSetUtils.addAllNew;
+import static org.appdapter.gui.util.CollectionSetUtils.addIfNew;
 import static org.appdapter.gui.util.PromiscuousClassUtils.isSomething;
 import static org.appdapter.gui.util.PromiscuousClassUtils.rememberClass;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Vector;
+
+import org.appdapter.core.log.Debuggable;
+
 
 /**
  * A class loader to allow for loading of other jars that are added as a URL.
@@ -36,7 +43,7 @@ public final class FromManyClassLoader extends IsolatingClassLoaderBase implemen
 	}
 
 	public void addClassLoader(final ClassLoader url) {
-		if (getClassLoadersToSearch().contains(url)) {
+		if (classLoadersToSearch.contains(url)) {
 			return;
 		}
 		synchronized (classLoadersToSearch) {
@@ -44,45 +51,116 @@ public final class FromManyClassLoader extends IsolatingClassLoaderBase implemen
 		}
 	}
 
-	@Override public Class<?> findClass(String name) throws ClassNotFoundException {
-		Throwable cnf;
-		for (ClassLoader cl : getClassLoadersToSearch()) {
-			try {
-				if (cl == getParent()) {
-					continue;
-				}
-				Class<?> result = PromiscuousClassUtils.callProtectedMethodNullOnUncheck(cl, "findClass", name);
-				if (isSomething(result))
-					return rememberClass(name, result);
-			} catch (Throwable e) {
-				e.printStackTrace();
-				continue;
-			}
-		}
-		return rememberClass(name, super.findClass(name));
-	}
-
 	static Class[] CLASS_STRING_1 = new Class[] { String.class };
 
 	@Override public URL findResource(String name) {
-		for (ClassLoader cl : getClassLoadersToSearch()) {
-			if (cl == getParent()) {
-				continue;
-			}
-			try {
-				URL result = PromiscuousClassUtils.callProtectedMethodNullOnUncheck(cl, "findResource", name);
-				if (isSomething(result))
-					return result;
-			} catch (Throwable e) {
-				e.printStackTrace();
-				continue;
-			}
-		}
-		return super.findResource(name);
+		return findPromiscuousResource(name, new ArrayList<URL>());
 	}
 
-	private Class<?> findLoadedClassFromOne(String name) {
-		for (ClassLoader cl : getClassLoadersToSearch()) {
+	public URL findPromiscuousResource(String name, Collection<URL> exceptFor) {
+		if (PromiscuousClassUtils.contains("findResource", name)) {
+			return null;
+		}
+		PromiscuousClassUtils.push("findResource", name);
+		try {
+			Collection<ClassLoader> cls = getClassLoadersToSearch(true);
+			URL url = null;
+			for (ClassLoader cl : cls) {
+				try {
+					url = PromiscuousClassUtils.callProtectedMethodNullOnUncheck(cl, "findResource", name);
+					if (isSomething(url)) {
+						if (exceptFor.contains(url))
+							continue;
+						return url;
+					}
+				} catch (Throwable e) {
+					e.printStackTrace();
+					continue;
+				}
+			}
+			try {
+				Enumeration<URL> enumU = getResources(name);
+				while (enumU.hasMoreElements()) {
+					url = enumU.nextElement();
+					if (url == null)
+						continue;
+					if (exceptFor != null && exceptFor.contains(url))
+						continue;
+					return url;
+				}
+				return null;
+			} catch (Throwable t) {
+				Debuggable.printStackTrace(t);
+				return super.findResource(name);
+			}
+
+		} finally {
+			PromiscuousClassUtils.pop("findResource", name);
+		}
+	}
+
+	@Override public URL getResource(String name) {
+		if (PromiscuousClassUtils.contains("getResource", name)) {
+			return null;
+		}
+		PromiscuousClassUtils.push("getResource", name);
+		try {
+			Collection<ClassLoader> cls = getClassLoadersToSearch(true);
+			Vector vect = new Vector();
+			for (ClassLoader cl : cls) {
+				URL result = PromiscuousClassUtils.callProtectedMethodNullOnUncheck(cl, "getResource", name);
+				if (result != null)
+					addIfNew(vect, result);
+			}
+			if (vect.size() < 1)
+				return null;
+			return (URL) vect.elements().nextElement();
+		} finally {
+			PromiscuousClassUtils.pop("getResource", name);
+		}
+	}
+
+	@Override public Enumeration getResources(String name) throws IOException {
+		Vector vect = new Vector();
+		for (ClassLoader cl : getClassLoadersToSearch(true)) {
+			Enumeration result = PromiscuousClassUtils.callProtectedMethodNullOnUncheck(cl, "getResources", name);
+			if (result != null)
+				addAllNew(vect, result);
+		}
+		return vect.elements();
+	}
+
+	@Override public Enumeration<URL> findResources(String name) throws IOException {
+		Vector<URL> vect = new Vector<URL>();
+		for (ClassLoader cl : getClassLoadersToSearch(true)) {
+			Enumeration<URL> result = PromiscuousClassUtils.callProtectedMethodNullOnUncheck(cl, "findResources", name);
+			if (result != null)
+				addAllNew(vect, result);
+		}
+		return vect.elements();
+	}
+
+	public InputStream getResourceAsStream(String name) {
+		for (ClassLoader cl : getClassLoadersToSearch(false)) {
+			try {
+				InputStream result = cl.getResourceAsStream(name);
+				if (result != null) {
+					if (result.available() > 0) {
+						return result;
+					}
+				}
+			} catch (IOException e) {
+			}
+
+		}
+		return getParent().getResourceAsStream(name);
+	}
+
+	public Class<?> findLoadedClassLocalMethodology(String name) {
+		Class pl = PromiscuousClassUtils.findLoadedClassByName(name);
+		if (pl != null)
+			return pl;
+		for (ClassLoader cl : getClassLoadersToSearch(true)) {
 			Class<?> result = PromiscuousClassUtils.callProtectedMethodNullOnUncheck(cl, "findLoadedClass", name);
 			if (isSomething(result))
 				return rememberClass(name, result);
@@ -90,63 +168,37 @@ public final class FromManyClassLoader extends IsolatingClassLoaderBase implemen
 		return rememberClass(name, super.findLoadedClass(name));
 	}
 
-	@Override public Enumeration<URL> findResources(String name) throws IOException {
-		for (ClassLoader cl : getClassLoadersToSearch()) {
-			Enumeration<URL> result = PromiscuousClassUtils.callProtectedMethodNullOnUncheck(cl, "findResources", name);
-			if (isSomething(result))
-				return result;
-		}
-		return super.findResources(name);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public Class<?> loadClass(final String name) throws ClassNotFoundException {
-		ClassNotFoundException orig = null;
-		try {
-			return rememberClass(name, loadClassUseSystem(name, true));
-		} catch (ClassNotFoundException e) {
-			orig = e;
-		}
-		try {
-			return rememberClass(name, loadClassUseSystem(name, false));
-		} catch (ClassNotFoundException e) {
-			throw orig;
-		}
-	}
-
-	public Class<?> loadClassUseSystem(final String name, boolean useSystem) throws ClassNotFoundException {
-		Class<?> loadedClass = findLoadedClassFromOne(name);
-		if (loadedClass == null) {
+	@Override public Class findClassLocalMethodologyActuallyDefines(String name) throws ClassNotFoundException {
+		boolean useSystem = (name.startsWith("java.") /*|| name.startsWith("scala.")|| name.startsWith("sun.")*/);
+		if (useSystem) {
 			try {
-				if (useSystem || name.startsWith("java.")) {
-					loadedClass = Class.forName(name);
-				} else {
-					loadedClass = findClass(name);
-				}
-			} catch (ClassNotFoundException e) {
-				// Swallow exception
-				// does not exist locally
-			}
-			if (loadedClass == null) {
-				if (useSystem || name.startsWith("java.")) {
-					final ClassLoader systemLoader = ClassLoader.getSystemClassLoader();
-					loadedClass = systemLoader.loadClass(name);
-				} else {
-					loadedClass = super.loadClass(name);
-				}
+				final ClassLoader systemLoader = ClassLoader.getSystemClassLoader();
+				Class loadedClass = systemLoader.loadClass(name);
+				return loadedClass;
+			} catch (Throwable t) {
+				Debuggable.printStackTrace(t);
 			}
 		}
-		return loadedClass;
+		Throwable cnf;
+		for (ClassLoader cl : getClassLoadersToSearch(true)) {
+			try {
+				Class<?> result = PromiscuousClassUtils.callProtectedMethodNullOnUncheck(cl, "findClass", name);
+				if (isSomething(result))
+					return rememberClass(name, result);
+			} catch (Throwable e) {
+				Debuggable.printStackTrace(e);
+				continue;
+			}
+		}
+		return rememberClass(name, findClassSuperThruURLS(name));
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override public boolean addPaths(List<Object> strings, boolean includeParent) {
+	@Override public boolean addPathStringsForDebug(List<Object> strings, boolean includeParent) {
 		boolean changed = false;
-		for (ClassLoader url : getClassLoadersToSearch()) {
+		for (ClassLoader url : getClassLoadersToSearch(false)) {
 			if (pathsOf(strings, url, includeParent))
 				changed = true;
 		}
@@ -160,9 +212,20 @@ public final class FromManyClassLoader extends IsolatingClassLoaderBase implemen
 	/**
 	 * @return the classLoadersToSearch
 	 */
-	private Collection<ClassLoader> getClassLoadersToSearch() {
+	private Collection<ClassLoader> getClassLoadersToSearch(boolean parentOK) {
+		Collection<ClassLoader> al;
 		synchronized (classLoadersToSearch) {
-			return new ArrayList<ClassLoader>(classLoadersToSearch);
+			al = new ArrayList<ClassLoader>(classLoadersToSearch);
 		}
+		al.remove(this);
+		ClassLoader cl = getParent();
+		if (cl != null) {
+			al.remove(cl);
+			if (parentOK) {
+				al.add(cl);
+			}
+		}
+		return al;
 	}
+
 }

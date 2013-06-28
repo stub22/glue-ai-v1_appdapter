@@ -114,7 +114,7 @@ public class EmptyDisplayContext extends NamedObjectCollectionImpl implements Br
 		return null;
 	}
 
-	@Override public UserResult attachChildUI(String title, Object value) throws Exception {
+	@Override public UserResult attachChildUI(String title, Object value, boolean showASAP) throws Exception {
 		Debuggable.notImplemented();
 		return null;
 	}

@@ -10,6 +10,7 @@ import org.appdapter.api.trigger.DisplayContextProvider;
 import org.appdapter.api.trigger.BoxPanelSwitchableView;
 import org.appdapter.api.trigger.MutableBox;
 import org.appdapter.api.trigger.ScreenBoxTreeNode;
+import org.appdapter.api.trigger.UserResult;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.demo.DemoBrowserCtrl;
 
@@ -17,6 +18,10 @@ public class DemoNavigatorCtrl extends BaseDemoNavigatorCtrl implements DisplayC
 
 	public DemoNavigatorCtrl() {
 		super();
+	}
+
+	@Override public void addObject(String title, Object obj, boolean displayForegroundASAP) {
+		attachChildUI(title, obj, displayForegroundASAP);
 	}
 
 	public DemoNavigatorCtrl(BoxContext bc, TreeModel tm, ScreenBoxTreeNode rootBTN, DisplayContextProvider dcp) {
@@ -35,12 +40,12 @@ public class DemoNavigatorCtrl extends BaseDemoNavigatorCtrl implements DisplayC
 		super.addRepo(title, boxOrRepo);
 	}
 
-	@Override public void addObject(String title, Object boxOrRepo, boolean showASP) {
-		super.addObject(title, boxOrRepo, showASP);
+	@Override public UserResult attachChildUI(String title, Object boxOrRepo, boolean showASAP) {
+		return super.attachChildUI(title, boxOrRepo, showASAP);
 	}
 
 	public void addObject(String title, Object boxOrRepo) {
-		super.addObject(title, boxOrRepo, false);
+		attachChildUI(title, boxOrRepo, false);
 	}
 
 	public JFrame getFrame() {

@@ -16,14 +16,14 @@
 
 package org.appdapter.core.matdat
 
-import com.hp.hpl.jena.rdf.model.{Model, Statement, Resource, Property, Literal, RDFNode, ModelFactory, InfModel}
-import com.hp.hpl.jena.query.{ResultSet, ResultSetFormatter, ResultSetRewindable, ResultSetFactory, QuerySolution};
+import scala.collection.JavaConversions.{asScalaBuffer, asScalaIterator}
 
-import com.hp.hpl.jena.rdf.listeners.{ObjectListener};
+import org.appdapter.bind.rdf.jena.model.ModelStuff
+import org.appdapter.impl.store.QueryHelper
 
-import org.appdapter.bind.rdf.jena.model.{ModelStuff, JenaModelUtils};
-
-import org.appdapter.impl.store.{DirectRepo, QueryHelper, ResourceResolver};
+import com.hp.hpl.jena.query.{QuerySolution, ResultSet, ResultSetFactory}
+import com.hp.hpl.jena.rdf.listeners.ObjectListener
+import com.hp.hpl.jena.rdf.model.{InfModel, Literal, Model, ModelFactory, RDFNode, Statement}
 /**
  * @author Stu B. <www.texpedient.com>
  * 
@@ -117,10 +117,10 @@ event management, and transaction handling.
 		println("Got query-query-test result-XML: \n" + qqrxml);
 		qqrsrw.reset();
 		val allVarNames : java.util.List[String] = qqrsrw.getResultVars();
-		println ("Got all-vars java-list: " + allVarNames);
+		println ("Got all-vars java-list: " + allVarNames.toArray(new Array[String](0)));
 		while (qqrsrw.hasNext()) {
 			val qSoln : QuerySolution = qqrsrw.next();
-			for ( n : String <- allVarNames ) {
+			for ( n : String <- allVarNames.toArray(new Array[String](0)) ) {
 				val qvNode : RDFNode = qSoln.get(n);
 				println ("qvar[" +  n + "]=" + qvNode);
 			}

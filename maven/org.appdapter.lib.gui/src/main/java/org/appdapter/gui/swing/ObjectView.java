@@ -3,7 +3,8 @@ package org.appdapter.gui.swing;
 import javax.swing.JPanel;
 
 import org.appdapter.api.trigger.Box;
-import org.appdapter.gui.api.GetSetObject;
+import org.appdapter.gui.api.*;
+import org.appdapter.gui.impl.JJPanel;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -14,7 +15,9 @@ import org.slf4j.LoggerFactory;
  */
 abstract public class ObjectView<BoxType extends Box>
 
-extends ScreenBoxPanel<BoxType> implements GetSetObject {
+extends JJPanel implements GetSetObject {
+
+	abstract public void focusOnBox(Box b);
 
 	public Object valueLock = new Object();
 
@@ -23,13 +26,6 @@ extends ScreenBoxPanel<BoxType> implements GetSetObject {
 	}
 
 	protected abstract boolean initGUI() throws Throwable;
-
-	@Override public void focusOnBox(Box b) {
-		synchronized (valueLock) {
-			setObject(b);
-		}
-		LoggerFactory.getLogger(getClass().getName()).info("Focusing on box: " + b);
-	}
 
 	/**
 	 * Return the live object in which we think we are updating

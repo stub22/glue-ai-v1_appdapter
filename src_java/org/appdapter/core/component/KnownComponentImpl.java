@@ -23,9 +23,8 @@ import org.appdapter.core.name.Ident;
  * @author Stu B. <www.texpedient.com>
  */
 public class KnownComponentImpl extends BasicDebugger implements MutableKnownComponent {
-	private	Ident	myIdent;
-	private String	myShortLabel, myDescription;
-
+	private Ident myIdent;
+	private String myShortLabel, myDescription;
 
 	@Override public void setIdent(Ident id) {
 		myIdent = id;
@@ -50,6 +49,7 @@ public class KnownComponentImpl extends BasicDebugger implements MutableKnownCom
 	@Override public void setShortLabel(String shortLabel) {
 		this.myShortLabel = shortLabel;
 	}
+
 	public String getFieldSummary() {
 		return "desc=" + myDescription;
 	}

@@ -124,7 +124,7 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 	}
 
 	public JPopupMenu buildPopupMenu(Box<TT> box) {
-		JPopupMenu popup = new TriggerPopupMenu(box, box);
+		JPopupMenu popup = new TriggerPopupMenu(null, box);
 		addTriggersToPopup(box, popup);
 		return popup;
 	}

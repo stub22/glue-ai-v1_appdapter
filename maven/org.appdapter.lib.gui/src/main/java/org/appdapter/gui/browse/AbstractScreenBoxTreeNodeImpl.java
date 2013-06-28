@@ -15,8 +15,12 @@
  */
 package org.appdapter.gui.browse;
 
+import java.beans.PropertyVetoException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 
+import javax.print.attribute.standard.Fidelity;
+import javax.swing.JPanel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 
@@ -134,8 +138,7 @@ abstract public class AbstractScreenBoxTreeNodeImpl extends DefaultMutableTreeNo
 		}*/
 
 	@Override public NamedObjectCollection getLocalBoxedChildren() {
-		DisplayContext displayContext = getDisplayContextNoLoop();
-		return displayContext.getLocalBoxedChildren();
+		return Utility.getTreeBoxCollection();
 	}
 
 	@Override public Collection getTriggersFromUI(BT box, Object object) {
@@ -160,14 +163,54 @@ abstract public class AbstractScreenBoxTreeNodeImpl extends DefaultMutableTreeNo
 
 		}
 	*/
-	@Override public UserResult attachChildUI(String title, Object value) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
+	@Override public UserResult attachChildUI(String title, Object value, boolean showASAP) throws Exception {
+		return Utility.asUserResult(attachChildObect(title, value));
+	}
+
+	public AbstractScreenBoxTreeNodeImpl detachChildObect(String title, Object value) {
+		AbstractScreenBoxTreeNodeImpl before = findChildObject(title, value);
+		if (before != null) {
+			remove(before);
+		}
+		return before;
+	}
+
+	public AbstractScreenBoxTreeNodeImpl attachChildObect(String title, Object value) {
+		AbstractScreenBoxTreeNodeImpl before = findChildObject(title, value);
+		if (before != null)
+			return before;
+		NamedObjectCollection col = getLocalBoxedChildren();
+		BT b;
+		try {
+			b = col.findOrCreateBox(title, value);
+			ScreenBoxTreeNodeImpl newNode = new ScreenBoxTreeNodeImpl(bsv, b.asBox(), true);
+			add(newNode);
+			return newNode;
+		} catch (PropertyVetoException e) {
+			throw Debuggable.reThrowable(e);
+		}
+	}
+
+	public AbstractScreenBoxTreeNodeImpl findChildObject(String title, Object value) {
+		NamedObjectCollection col = getLocalBoxedChildren();
+		BT b1 = null, b2 = null;
+		if (title != null) {
+			b1 = col.findBoxByName(title);
+		}
+		if (value != null) {
+			b2 = col.findBoxByObject(value);
+		}
+		if (b1 == null && b2 == null)
+			return null;
+		if (b2 == null) {
+			b2 = b1;
+		}
+		AbstractScreenBoxTreeNodeImpl before = findTreeNodeDisplayContext(b2.asBox());
+		return before;
 	}
 
 	@Override public String getTitleOf(Object value) {
-		// TODO Auto-generated method stub
-		return null;
+		return getLocalBoxedChildren().getTitleOf(value);
 	}
 
 }

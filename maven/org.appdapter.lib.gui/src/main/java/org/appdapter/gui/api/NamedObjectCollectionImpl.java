@@ -21,17 +21,12 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
-import org.appdapter.api.trigger.BT;
-import org.appdapter.api.trigger.Box;
-import org.appdapter.api.trigger.BoxImpl;
-import org.appdapter.api.trigger.BrowserPanelGUI;
-import org.appdapter.api.trigger.DisplayContext;
-import org.appdapter.api.trigger.DisplayType;
-import org.appdapter.api.trigger.NamedObjectCollection;
-import org.appdapter.api.trigger.POJOBoxImpl;
-import org.appdapter.api.trigger.POJOCollectionListener;
+import javax.swing.JPanel;
+
+import org.appdapter.api.trigger.*;
+import org.appdapter.api.trigger.*;
 import org.appdapter.core.log.Debuggable;
-import org.appdapter.gui.box.ScreenBoxImpl;
+import org.appdapter.gui.box.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -151,7 +146,7 @@ public class NamedObjectCollectionImpl implements NamedObjectCollection, Vetoabl
 			Iterator it = colListeners.iterator();
 			while (it.hasNext()) {
 				// @temp
-				((POJOCollectionListener) it.next()).pojoAdded(box.getValue());
+				((POJOCollectionListener) it.next()).pojoAdded(box.getValueOrThis());
 			}
 			return true;
 		}
@@ -184,8 +179,76 @@ public class NamedObjectCollectionImpl implements NamedObjectCollection, Vetoabl
 			title = generateUniqueName(obj);
 		}
 		if (box == null)
-			box = (POJOBoxImpl) new ScreenBoxImpl(this, title, obj);
+			box = new ObjectWrapper(title, obj);
 		return box;
+
+	}
+
+	class ObjectWrapper extends POJOBoxImpl implements BT, IGetBox {
+		@Override public BT getBT() {
+			return this;
+		}
+
+		public Object value;
+
+		public void setNameValue(String uniqueName, Object obj) {
+			if (uniqueName == null) {
+				if (obj != null) {
+					uniqueName = "sihc-" + System.identityHashCode(obj) + "-" + System.currentTimeMillis();
+				} else {
+					uniqueName = "snul-" + System.identityHashCode(this) + "-" + System.currentTimeMillis();
+				}
+			}
+			name = uniqueName;
+			if (obj == null) {
+				obj = new NullPointerException(uniqueName).fillInStackTrace();
+			}
+			setShortLabel(uniqueName);
+			setObject(obj);
+		}
+
+		/*
+		public POJOBoxImpl(NamedObjectCollection noc, String label) {
+		this(noc, label, null);
+		}*/
+
+		public ObjectWrapper(NamedObjectCollection noc, String title, Object val) {
+			this.value = val;
+			if (val != null) {
+				this.clz = (Class) val.getClass();
+				//this.name = Utility.getDefaultName(val);
+				setObject(val);
+			}
+			setShortLabel(title);
+			addToNoc(noc, title);
+		}
+
+		/**
+		 * Creates a new ScreenBox for the given object
+		 * and assigns it a default name.
+		 */
+		private ObjectWrapper(Object val) {
+			this.value = val;
+			this.clz = (Class) val.getClass();
+			//this.name = Utility.getDefaultName(val);
+		}
+
+		/**
+		 * Creates a new ScreenBox for the given object, with the given name.
+		 */
+		private ObjectWrapper(String title, Object val) {
+			this.value = val;
+			this.clz = value.getClass();
+			this.name = title;
+		}
+
+		@Override public Object getObject() {
+			return value;
+		}
+
+		@Override public void reallySetValue(Object newObject) {
+			value = newObject;
+		}
 
 	}
 
@@ -201,6 +264,9 @@ public class NamedObjectCollectionImpl implements NamedObjectCollection, Vetoabl
 	 * Checks if this namedObjects contains the given value
 	 */
 	@Override public boolean containsObject(Object object) {
+
+		object = Utility.dref(object);
+
 		if (objectsToWrappers != null) {
 			synchronized (objectsToWrappers) {
 				return objectsToWrappers.containsKey(object);
@@ -208,7 +274,8 @@ public class NamedObjectCollectionImpl implements NamedObjectCollection, Vetoabl
 		}
 		if (objectList != null)
 			return objectList.contains(object);
-		return containsObject(findOrCreateBox(object));// containsKey(object);
+
+		return findBoxByObject(object) != null;
 	}
 
 	@Override public String getName() {
@@ -246,18 +313,18 @@ public class NamedObjectCollectionImpl implements NamedObjectCollection, Vetoabl
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override public ScreenBoxImpl findBoxByName(String name) {
+	@Override public BT findBoxByName(String name) {
 		if (name == null)
 			return null;
 		if (nameIndex != null) {
 			synchronized (nameIndex) {
 				BT boxl = nameIndex.get(name);
-				if (boxl instanceof ScreenBoxImpl)
-					return (ScreenBoxImpl) boxl;
+				if (boxl instanceof BT)
+					return (BT) boxl;
 			}
 			return null;
 		}
-		for (ScreenBoxImpl box : getScreenBoxes()) {
+		for (BT box : getScreenBoxes()) {
 			if (box.isNamed(name)) {
 				return box;
 			}
@@ -273,9 +340,9 @@ public class NamedObjectCollectionImpl implements NamedObjectCollection, Vetoabl
 	public BT findBoxByObject(Object object) {
 		if (object == null)
 			return null;
-		if (object instanceof BT) {
-			return (BT) object;
-		}
+
+		object = Utility.dref(object, object);
+
 		int i = objectList.indexOf(object);
 		if (i != -1) {
 			BT wrapper = (BT) boxList.get(i);
@@ -355,7 +422,7 @@ public class NamedObjectCollectionImpl implements NamedObjectCollection, Vetoabl
 				title = generateUniqueName(obj);
 			}
 			//Create the value wrapper, with a unique name
-			wrapper = (BT) new ScreenBoxImpl(this, title, obj);
+			wrapper = (BT) new ObjectWrapper(title, obj);
 
 			//Add it
 			//objectsToWrappers.put(obj, wrapper);
@@ -463,7 +530,7 @@ public class NamedObjectCollectionImpl implements NamedObjectCollection, Vetoabl
 		return objectList.iterator();
 	}
 
-	public Iterable<ScreenBoxImpl> getScreenBoxes() {
+	public Iterable<BT> getScreenBoxes() {
 		//LinkedList boxList = getBoxListFrom(DisplayType.TOSTRING);
 		LinkedList list = new LinkedList();
 		synchronized (boxList) {
@@ -475,7 +542,7 @@ public class NamedObjectCollectionImpl implements NamedObjectCollection, Vetoabl
 		return list;
 	}
 
-	public Iterable<ScreenBoxImpl> getScreenBoxes(DisplayType attachType) {
+	public Iterable<BT> getScreenBoxes(DisplayType attachType) {
 		//	LinkedList boxList = getBoxListFrom(attachType);
 		LinkedList list = new LinkedList();
 		synchronized (boxList) {
@@ -503,7 +570,7 @@ public class NamedObjectCollectionImpl implements NamedObjectCollection, Vetoabl
 		String lbl = ((BoxImpl) box).getShortLabel();
 		if (lbl != null)
 			return lbl;
-		return Utility.generateUniqueName(box.getObjects(null)[0], this.nameIndex);
+		return Utility.generateUniqueName(box.getValue(), this.nameIndex);
 	}
 
 	public String getTitleOf(Object box) {
@@ -550,8 +617,7 @@ public class NamedObjectCollectionImpl implements NamedObjectCollection, Vetoabl
 	}
 
 	private BT makeWrapper(Object object) throws PropertyVetoException {
-		Class gc = object.getClass();
-		BT box = new ScreenBoxImpl(this, generateUniqueName(object), object);
+		BT box = new ObjectWrapper(generateUniqueName(object), object);
 		return box;
 	}
 
@@ -627,38 +693,45 @@ public class NamedObjectCollectionImpl implements NamedObjectCollection, Vetoabl
 	 *
 	 */
 	public synchronized boolean removeObject(Object obj) {
-		if (containsObject(obj)) {
-			//Find the wrapper
-			BT wrapper = findBoxByObject(obj);
-			//Remove it
-			//objectsToWrappers.remove(obj);
-			objectList.remove(obj);
-			boxList.remove(wrapper);
-			objectsToWrappers.remove(obj);
-
-			//Update the name index
-			nameIndex.remove(wrapper.getUniqueName());
-
-			//Deselect it if necessary
-			if (selected == obj) {
-				try {
-					//The value will fire a PropertyChangeEvent which I will
-					//catch, so I don't need to do setSelectedObject(null)
-					wrapper.setUISelected(false);
-				} catch (PropertyVetoException err) {
-					theLogger.warn("In NamedObjectCollection.removeObject(...) I was unable to deselect the removed value. I'll ignore the problem, i.e. leave it selected and remove it anyway.", err);
-				}
-			}
-
-			//notify namedObjectsListeners
-			Iterator it = colListeners.iterator();
-			while (it.hasNext()) {
-				((POJOCollectionListener) it.next()).pojoRemoved(obj);
-			}
-			return true;
-		} else {
+		//Find the wrapper
+		BT wrapper = findBoxByObject(obj);
+		if (wrapper == null)
 			return false;
+		Object realObj = wrapper.getValue();
+		if (realObj != null && realObj != obj) {
+			theLogger.warn("This box is for a differnt object " + wrapper + " not " + obj);
+			obj = realObj;
 		}
+
+		String title = wrapper.getUniqueName();
+
+		//Remove it
+		//objectsToWrappers.remove(obj);
+		objectList.remove(obj);
+		boxList.remove(wrapper);
+		objectsToWrappers.remove(obj);
+
+		//Update the name index			
+		nameIndex.remove(title);
+
+		//Deselect it if necessary
+		if (selected == obj) {
+			try {
+				//The value will fire a PropertyChangeEvent which I will
+				//catch, so I don't need to do setSelectedObject(null)
+				wrapper.setUISelected(false);
+			} catch (PropertyVetoException err) {
+				theLogger.warn("In NamedObjectCollection.removeObject(...) I was unable to deselect the removed value. I'll ignore the problem, i.e. leave it selected and remove it anyway.", err);
+			}
+		}
+
+		//notify namedObjectsListeners
+		Iterator it = colListeners.iterator();
+		while (it.hasNext()) {
+			((POJOCollectionListener) it.next()).pojoRemoved(obj);
+		}
+		return true;
+
 	}
 
 	/**

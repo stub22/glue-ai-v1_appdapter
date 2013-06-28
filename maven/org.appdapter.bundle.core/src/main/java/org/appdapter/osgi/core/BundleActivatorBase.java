@@ -48,6 +48,17 @@ import org.osgi.framework.*;
  */
 
 public abstract class BundleActivatorBase extends BasicDebugger implements BundleActivator  {
+ 
+	private final class GotFrameworkEvent implements FrameworkListener {
+		public void frameworkEvent(FrameworkEvent fe) {
+			int eventType = fe.getType();
+			getLogger().info("************************ Got frameworkEvent with eventType=" + eventType + ", bundle=" + fe.getBundle());
+			if (eventType == FrameworkEvent.STARTED) {
+				getLogger().info("********  OSGi Framework has STARTED, calling dispatchFrameworkStartedEvent()");
+				dispatchFrameworkStartedEvent(fe.getBundle(), fe.getThrowable());
+			}
+		}
+	}
 
 	/**
 	 * There are two things you might do in your overriding start() method, which
@@ -87,16 +98,7 @@ public abstract class BundleActivatorBase extends BasicDebugger implements Bundl
 	 * @param bundleCtx - used to schedule the callback, and then forgotten.
 	 */
 	protected void scheduleFrameworkStartEventHandler(BundleContext bundleCtx) {
-			bundleCtx.addFrameworkListener(new FrameworkListener() {
-			public void frameworkEvent(FrameworkEvent fe) {
-				int eventType = fe.getType();
-				getLogger().info("************************ Got frameworkEvent with eventType=" + eventType + ", bundle=" + fe.getBundle());
-				if (eventType == FrameworkEvent.STARTED) {
-					getLogger().info("********  OSGi Framework has STARTED, calling dispatchFrameworkStartedEvent()");
-					dispatchFrameworkStartedEvent(fe.getBundle(), fe.getThrowable());
-				}
-			}
-		});
+			bundleCtx.addFrameworkListener(new GotFrameworkEvent());
 	}
 	private void dispatchFrameworkStartedEvent(Bundle eventBundle, Throwable eventThrowable) {
 		String thrownMsg = (eventThrowable == null) ? "OK" : eventThrowable.getClass().getName();

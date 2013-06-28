@@ -16,32 +16,51 @@ package org.appdapter.gui.box;
  *  limitations under the License.
  */
 
-import java.awt.Container;
+import java.awt.Component;
+import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyEditor;
 import java.beans.PropertyVetoException;
+import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.JPanel;
 
 import org.appdapter.api.trigger.AnyOper.UIHidden;
+import org.appdapter.api.trigger.BT;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContext;
-import org.appdapter.api.trigger.BrowserPanelGUI;
+import org.appdapter.api.trigger.BoxImpl;
+import org.appdapter.api.trigger.Convertable;
 import org.appdapter.api.trigger.DisplayContext;
 import org.appdapter.api.trigger.DisplayContextProvider;
 import org.appdapter.api.trigger.DisplayType;
+import org.appdapter.api.trigger.GetDisplayContext;
 import org.appdapter.api.trigger.MutableBox;
-import org.appdapter.api.trigger.NamedObjectCollection;
 import org.appdapter.api.trigger.POJOBoxImpl;
 import org.appdapter.api.trigger.ScreenBox;
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.api.trigger.UserResult;
 import org.appdapter.core.component.MutableKnownComponent;
+import org.appdapter.core.log.Debuggable;
+import org.appdapter.gui.api.ComponentHost;
 import org.appdapter.gui.api.GetSetObject;
+import org.appdapter.gui.api.IGetBox;
+import org.appdapter.gui.api.UseEditor;
 import org.appdapter.gui.api.Utility;
 import org.appdapter.gui.repo.DatabaseManagerPanel;
 import org.appdapter.gui.repo.ModelMatrixPanel;
 import org.appdapter.gui.repo.RepoManagerPanel;
+import org.appdapter.gui.rimpl.TriggerForInstance;
+import org.appdapter.gui.util.CollectionSetUtils;
+import org.appdapter.gui.util.PromiscuousClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,9 +75,36 @@ import org.slf4j.LoggerFactory;
  */
 
 @UIHidden
-public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<TrigType>>> extends POJOBoxImpl<TrigType>
+public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<TrigType>>> extends BoxImpl<TrigType>
 
-implements ScreenBox<TrigType>, GetSetObject, UserResult {
+implements ScreenBox<TrigType>, GetSetObject, UserResult, Convertable, DisplayContextProvider {
+
+	protected Object toKey(Object kind) {
+		if (kind == null) {
+			return null;
+		}
+		if (kind instanceof Enum) {
+			return kind;
+		}
+		if (kind instanceof Class) {
+			Class cind = (Class) kind;
+			if (cind.isArray()) {
+				kind = Iterable.class;
+			} else if (Iterable.class.isAssignableFrom(cind)) {
+				kind = Iterable.class;
+			}
+			return kind;
+		}
+		return toKey(kind.getClass());
+	}
+
+	protected boolean madeElsewhere;
+	// A box may have up to one panel for any kind.
+	protected Map<Object, JPanel> myPanelMap = new HashMap<Object, JPanel>();
+
+	public Box asBox() {
+		return this;
+	}
 
 	public static List<ScreenBox> boxctxGetOpenChildBoxesNarrowed(BoxContext oh, Object parent, Class boxClass, Class trigClass) {
 		return oh.getOpenChildBoxesNarrowed((Box) parent, boxClass, trigClass);
@@ -78,17 +124,24 @@ implements ScreenBox<TrigType>, GetSetObject, UserResult {
 	private DisplayContextProvider myDCP;
 
 	public ScreenBoxImpl() {
-		super();
+		Utility.recordCreated(this);
+		madeElsewhere = true;
 	}
 
-	public ScreenBoxImpl(NamedObjectCollection noc, String label, Object obj) {
-		super(noc, label, obj);
+	public ScreenBoxImpl(boolean isSelfTheValue) {
+		Utility.recordCreated(this);
+		this.madeElsewhere = isSelfTheValue;
 	}
 
-	public ScreenBoxImpl(String label, Object obj) {
-		this(Utility.getToplevelBoxCollection(), label, obj);
-	}
+	/*
+		public ScreenBoxImpl(NamedObjectCollection noc, String label, Object obj) {
+			super(noc, label, obj);
+		}
 
+		public ScreenBoxImpl(String label, Object obj) {
+			this(Utility.getTreeBoxCollection(), label, obj);
+		}
+	*/
 	/*
 		public ScreenBoxImpl(NamedObjectCollection noc, String title, Object boxOrObj, Component vis, DisplayType displayType, Container parent, BoxPanelSwitchableView bpsv) {
 			super(noc, title, boxOrObj, vis, displayType, parent, bpsv);
@@ -129,6 +182,142 @@ implements ScreenBox<TrigType>, GetSetObject, UserResult {
 		return Utility.browserPanel.getDisplayContext();
 	}
 
+	@Override public <T> boolean canConvert(Class<T> c) {
+		for (Object o : getObjects()) {
+			if (o == null) {
+				continue;
+			}
+			if (!c.isInstance(o)) {
+				continue;
+			}
+			try {
+				final T madeIT = (T) o;
+				if (madeIT != null) {
+					return true;
+				}
+			} catch (Exception e) {
+				getLogger().error("JVM Issue (canConvert)", e);
+			}
+			return true;
+		}
+		return false;
+	}
+
+	
+	@Override public <T> T convertTo(Class<T> c) throws ClassCastException {
+		for (Object o : getObjects()) {
+			if (o == null) {
+				continue;
+			}
+			if (!c.isInstance(o)) {
+				continue;
+			}
+			try {
+				return c.cast(o);
+			} catch (Exception e) {
+				getLogger().error("JVM Issue (canConvert)", e);
+				return (T) o;
+			}
+		}
+		throw new ClassCastException("Cannot convert " + this + " to " + c);
+	}
+
+	public WrapperValue getWrapperValue() {
+		Object value = getValue();
+		if (value instanceof WrapperValue)
+			return (WrapperValue) value;
+		if (this instanceof WrapperValue) {
+			return (WrapperValue) this;
+		}
+		return new WrapperValue() {
+
+			@Override public void reallySetValue(Object newObject) throws UnsupportedOperationException {
+				if (newObject == ScreenBoxImpl.this)
+					return;
+				if (newObject == getValue())
+					return;
+				throw new UnsupportedOperationException("value");
+			}
+
+			public Class getObjectClass() {
+				return getValue().getClass();
+			}
+
+			@Override public Object getValue() {
+				return getValueOrThis();
+			}
+
+		};
+
+	}
+
+	/** 
+	 * This returns the decomposed Mixins
+	 * @return
+	 */
+	public Iterable<Object> getObjects() {
+		Object o = getValue();
+		if (o != null && o != this) {
+			return CollectionSetUtils.iterableOf(o, this, getShortLabel(), getIdent());
+		}
+		return CollectionSetUtils.iterableOf(this, getShortLabel(), getIdent());
+	}
+
+	@Override public <T, E extends T> Iterable<E> getObjects(Class<T> type) {
+		HashSet<E> objs = new HashSet<E>();
+		if (this.canConvert(type)) {
+			T one = convertTo(type);
+			objs.add((E) one);
+		}
+		for (Object o : getObjects()) {
+			if (type.isInstance(o)) {
+				objs.add((E) o);
+			}
+		}
+		return objs;
+	}
+
+	/**
+	 * Returns the Class[]s that this object wrapper represents
+	 */
+	public Iterable<Class> getTypes() {
+		java.util.HashSet al = new java.util.HashSet<Class>();
+		Class pojoClass = getObjectClass();
+		if (pojoClass != null) {
+			al.add(pojoClass);
+		} else {
+			al.add(getClass());
+		}
+		return al;
+	}
+
+	public Object getValueOrThis() {
+		return Utility.first(getValue(), ScreenBoxImpl.this);
+	}
+
+	public Class getObjectClass() {
+		return getValueOrThis().getClass();
+	}
+
+	@Override public void setObject(Object newObject) throws InvocationTargetException {
+		getWrapperValue().reallySetValue(newObject);
+	}
+
+	@Override public Object getValue() {
+		WrapperValue wv = getWrapperValue();
+		if (wv != null && wv != this)
+			return wv.getValue();
+		return this;
+	}
+
+	@Override public DisplayContext findDisplayContext(Box b) {
+		if (b instanceof GetDisplayContext) {
+			return ((GetDisplayContext) b).getDisplayContext();
+		}
+		Debuggable.notImplemented();
+		return null;
+	}
+
 	/**
 	 * This whole "kind" thing is a ruse allowing us to make some hardwired basic panel types
 	 * without the conceptual bloat of yet another registry of named things.  The real generality
@@ -167,7 +356,57 @@ implements ScreenBox<TrigType>, GetSetObject, UserResult {
 			if (sbp != null)
 				return sbp;
 		}
-		return super.makeBoxPanelForCustomizer(customizer);
+		return makeBoxPanelForCustomizer2(customizer);
+	}
+
+	public JPanel makeBoxPanelForCustomizer2(Object customizer) {
+		JPanel pnl = myPanelMap.get(toKey(customizer));
+		if (pnl != null) {
+			return pnl;
+		}
+
+		Object val = getValueOrThis();
+
+		if (customizer instanceof Customizer) {
+			Customizer cust = (Customizer) customizer;
+			cust.setObject(val);
+			if (this instanceof PropertyChangeListener) {
+				cust.addPropertyChangeListener((PropertyChangeListener) this);
+			}
+		}
+
+		Class objClass = getWrapperValue().getObjectClass();
+
+		if (customizer instanceof Class) {
+			Class cust = (Class) customizer;
+			if (Customizer.class == customizer) {
+				cust = Utility.findCustomizerClass(objClass);
+			}
+			if (PromiscuousClassUtils.isCreateable(cust)) {
+				try {
+					return ComponentHost.asPanel(findOrCreateBoxPanel(Utility.newInstance(cust)), val);
+				} catch (InstantiationException e) {
+				} catch (IllegalAccessException e) {
+				}
+			}
+
+		}
+		Class clazz = Utility.getCustomizerClassForClass(objClass);
+		if (PropertyEditor.class == customizer) {
+			customizer = Utility.findEditor(objClass);
+		}
+		if (customizer instanceof PropertyEditor) {
+			PropertyEditor editor = (PropertyEditor) customizer;
+			customizer = new UseEditor(editor, objClass, this);
+		}
+
+		if (customizer instanceof Component) {
+			customizer = pnl = ComponentHost.asPanel((Component) customizer, val);
+			((ComponentHost) pnl).focusOnBox(this);
+			return pnl;
+
+		}
+		return null;
 	}
 
 	protected JPanel makeBoxPanelForKind(Kind kind) {
@@ -198,7 +437,49 @@ implements ScreenBox<TrigType>, GetSetObject, UserResult {
 	 */
 	protected JPanel makeOtherPanel() {
 		//theLogger.warn("Default implementation of makeOtherPanel() for {} is returning null", getShortLabel());
-		return super.getPropertiesPanel();// Utility.getPropertiesPanel(this);
+		return getPropertiesPanel();// Utility.getPropertiesPanel(this);
+	}
+
+	@Override final public JPanel getPropertiesPanel() {
+		Object m_largeview = myPanelMap.get(Kind.OBJECT_PROPERTIES);
+		if (m_largeview instanceof JPanel) {
+			return (JPanel) m_largeview;
+		}
+		JPanel pnl = makePropertiesPanel();
+		if (m_largeview == null) {
+			m_largeview = pnl;
+		}
+		return pnl;
+	}
+
+	protected JPanel makePropertiesPanel() {
+		Object m_largeview = myPanelMap.get(Kind.OBJECT_PROPERTIES);
+		if (m_largeview instanceof JPanel) {
+			return (JPanel) m_largeview;
+		}
+		Object obj = getValue();
+		if (obj instanceof JPanel) {
+			return (JPanel) obj;
+		}
+		if (obj == this) {
+			JPanel pnl = Utility.getPropertiesPanel(obj);
+			pnl.setName(getShortLabel());
+			return pnl;
+		}
+		if (obj == null) {
+			obj = this;
+		}
+		JPanel pnl = Utility.getPropertiesPanel(obj);
+		pnl.setName(getShortLabel());
+		return pnl;
+	}
+
+	@Override public List<TrigType> getTriggers() {
+		List<TrigType> tgs = super.getTriggers();
+		for (Class cls : getTypes()) {
+			TriggerForInstance.addClassLevelTriggers(getDisplayContext(), cls, tgs, this.getWrapperValue());
+		}
+		return tgs;
 	}
 
 	protected void putBoxPanel(Object kind, JPanel bp) {
@@ -211,18 +492,5 @@ implements ScreenBox<TrigType>, GetSetObject, UserResult {
 
 	public void setDisplayContextProvider(DisplayContextProvider dcp) {
 		myDCP = dcp;
-	}
-
-	public DisplayType getDisplayType() {
-		return m_displayType;
-	}
-
-	public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
-		vetoSupport.fireVetoableChange(evt);
-
-	}
-
-	public static UserResult asResult(JPanel pnl) {
-		return UserResult.SUCCESS;
 	}
 }

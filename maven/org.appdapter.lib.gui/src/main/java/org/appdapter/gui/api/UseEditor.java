@@ -6,9 +6,9 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
 import java.lang.reflect.InvocationTargetException;
 
-import org.appdapter.gui.swing.SingleTabFrame;
+import org.appdapter.gui.swing.ScreenBoxPanel;
 
-public class UseEditor extends SingleTabFrame implements Customizer {
+public class UseEditor extends ScreenBoxPanel implements Customizer {
 
 	private PropertyEditor ec;
 	private Component custEditor;
