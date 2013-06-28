@@ -99,9 +99,9 @@ abstract public class BaseDemoNavigatorCtrl implements BrowserPanelGUI, org.appd
 	}
 
 	public void launchFrame(String title) {
-		myJFrame = Utility.getAppFrame();
+		myJFrame = Utility.appFrame;
 		if (myJFrame == null) {
-			myJFrame = new JFrame();
+			Utility.appFrame = myJFrame = new JFrame();
 			myJFrame.setTitle(title);
 			myJFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 			myJFrame.getContentPane().add(myBP, BorderLayout.CENTER);
@@ -172,17 +172,13 @@ abstract public class BaseDemoNavigatorCtrl implements BrowserPanelGUI, org.appd
 		return myBP.showError(msg, error);
 	}
 
-	public void addObject(String title, Object anyObject, boolean showASP) {
-		addObject(title, anyObject, DisplayType.ANY, showASP);
-	}
+	@Override public UserResult attachChildUI(String title, Object anyObject, boolean showASAP) {
 
-	@Override public UserResult attachChildUI(String title, Object anyObject) throws Exception {
-
-		return myBP.addObject(title, anyObject, DisplayType.ANY, true);
+		return myBP.addObject(title, anyObject, DisplayType.ANY, showASAP);
 	}
 
 	private NamedObjectCollection getNOC() {
-		return myBP.getNamedObjectCollection();
+		return myBP.getTreeBoxCollection();
 	}
 
 	@Override public String getTitleOf(Object anyObject) {
@@ -211,10 +207,6 @@ abstract public class BaseDemoNavigatorCtrl implements BrowserPanelGUI, org.appd
 
 	@Override public void renameObject(String oldName, String newName) throws PropertyVetoException {
 		getNOC().renameObject(oldName, newName);
-	}
-
-	@Override public void attachChildUI(String title, Object anyObject, boolean displayForegroundASAP) {
-		addObject(title, anyObject, displayForegroundASAP);
 	}
 
 	@Override public void initialize(String[] args) {

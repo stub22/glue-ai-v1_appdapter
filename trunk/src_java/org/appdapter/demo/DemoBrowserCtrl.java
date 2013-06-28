@@ -27,6 +27,8 @@ package org.appdapter.demo;
  */
 import javax.swing.JFrame;
 
+import org.appdapter.api.trigger.UserResult;
+
 public interface DemoBrowserCtrl {
 
 	void launchFrame(String string);
@@ -35,7 +37,7 @@ public interface DemoBrowserCtrl {
 
 	void initialize(String[] args);
 
-	void attachChildUI(String title, Object obj, boolean displayForegroundASAP);
+	void addObject(String title, Object obj, boolean displayForegroundASAP);
 
 	void show();
 }

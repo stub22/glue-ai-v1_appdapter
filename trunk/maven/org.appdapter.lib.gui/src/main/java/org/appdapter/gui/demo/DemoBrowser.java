@@ -17,12 +17,15 @@
 package org.appdapter.gui.demo;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
+import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BoxLayout;
 import javax.swing.JApplet;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.tree.TreeModel;
 
@@ -30,6 +33,7 @@ import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContext;
 import org.appdapter.api.trigger.DisplayContextProvider;
 import org.appdapter.api.trigger.MutableBox;
+import org.appdapter.api.trigger.POJOBoxImpl;
 import org.appdapter.api.trigger.ScreenBox.Kind;
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.api.trigger.TriggerImpl;
@@ -54,8 +58,8 @@ import org.appdapter.gui.rimpl.SysTriggers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.appdapter.core.log.BasicDebugger;
 import org.appdapter.core.matdat.*;
-import org.appdapter.core.matdat.RepoSpec;
 import org.appdapter.demo.DemoBrowserUI;
 import org.appdapter.demo.DemoBrowserCtrl;
 import org.appdapter.demo.DemoNavigatorCtrlFactory;
@@ -72,14 +76,15 @@ final public class DemoBrowser {
 	public static DemoNavigatorCtrl makeDemoNavigatorCtrl(String[] args) {
 		DemoNavigatorCtrl repoNav = (DemoNavigatorCtrl) DemoBrowserUI.makeDemoNavigatorCtrl(args);
 		if (repoNav == null) {
-			return DemoBrowser.makeDemoNavigatorCtrlReal(args, false);
+			repoNav = DemoBrowser.makeDemoNavigatorCtrlReal(args, false);
 		}
+		addSampleElements(repoNav);
 		return repoNav;
 	}
 
 	private static void addSampleElements(DemoBrowserCtrl browser) {
-		browser.attachChildUI("OnlineRepoSpec", makeOnlineRepoSpec(), false);
-		browser.attachChildUI("OfflineRepoSpec", makeOfflineRepoSpec(), false);
+		browser.addObject("OnlineRepoSpec", makeOnlineRepoSpec(), false);
+		browser.addObject("OfflineRepoSpec", makeOfflineRepoSpec(), false);
 	}
 
 	public static RepoSpec makeOnlineRepoSpec() {
@@ -142,6 +147,7 @@ final public class DemoBrowser {
 			//frame.setSize(800, 600);
 			//org.appdapter.gui.pojo.Utility.centerWindow(frame);
 			dnc = DemoBrowserUI.makeDemoNavigatorCtrl(args);
+			addSampleElements(dnc);
 			dnc.launchFrame("This is ObjectNavigator");
 			//frame.show();
 			//frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -232,13 +238,13 @@ final public class DemoBrowser {
 		return (TBT) new SysTriggers.QuitTrigger().makeTrigger(boxClass);
 	}
 
-	static class ScreenModelBox extends ScreenBoxImpl {
+	static class ScreenModelBox extends POJOBoxImpl {
 
 		final String myURI;
 		private Model myModel;
 
 		public ScreenModelBox(String uri, Model model) {
-			super(uri, model);
+			//super(uri, model);
 			myURI = uri;
 			myModel = model;
 		}
@@ -251,6 +257,15 @@ final public class DemoBrowser {
 		public void setModel(Model m) {
 			this.myModel = m;
 		}
+
+		@Override public Object getObject() {
+			return myModel;
+		}
+
+		@Override public void reallySetValue(Object newObject) throws UnsupportedOperationException {
+			myModel = (Model) newObject;
+		}
+
 	}
 
 	static class ScreenGraphTrigger extends TriggerImpl /*
@@ -284,9 +299,13 @@ final public class DemoBrowser {
 			return myRSBF.findGraphBox(this, graphURI);
 		}
 
-		final Repo.WithDirectory myRepoWD;
-		final String myDebugName;
+		Repo.WithDirectory myRepoWD;
+		String myDebugName;
 		public List<MutableRepoBox> childBoxes = new ArrayList<MutableRepoBox>();
+
+		public DemoRepoBoxImpl() {
+
+		}
 
 		public DemoRepoBoxImpl(String myDebugNym, Repo.WithDirectory repo) {
 			myDebugName = myDebugNym;
@@ -395,6 +414,7 @@ final public class DemoBrowser {
 		@Override public String getUploadHomePath() {
 			return super.getUploadHomePath();
 		}
+
 	}
 
 	// static class ConcBootstrapTF extends BootstrapTriggerFactory<TriggerImpl<BoxImpl<TriggerImpl>>> {
@@ -410,9 +430,11 @@ final public class DemoBrowser {
 	 * @param repoTrigProto - defines the RBT trigger parameter type for repo boxes.  The repoTrigProto instance data is unused.
 	 * @return 
 	 */
-	public static <TBT extends TriggerImpl<BT>, BT extends ScreenBoxImpl<TBT>, TRBT extends TriggerImpl<RBT>, RBT extends RepoBoxImpl<TRBT>> ScreenBoxContextImpl makeBoxContextImpl(
-			Class<BT> regBoxClass, Class<RBT> repoBoxClass, TriggerImpl<BT> regTrigProto, TriggerImpl<RBT> repoTrigProto, boolean isExampleCode) {
+	public static <TBT extends TriggerImpl<BT>, BT extends ScreenBoxImpl<TBT>, TRBT extends TriggerImpl<RBT>, RBT extends RepoBoxImpl<TRBT>>
+
+	ScreenBoxContextImpl makeBoxContextImpl(Class<BT> regBoxClass, Class<RBT> repoBoxClass, TriggerImpl<BT> regTrigProto, TriggerImpl<RBT> repoTrigProto, boolean isExampleCode) {
 		try {
+
 			ScreenBoxContextImpl bctx = new ScreenBoxContextImpl();
 
 			BT rootBox = (BT) DemoServiceWrapFuncs.makeTestBoxImpl((Class) regBoxClass, (TriggerImpl) regTrigProto, "All Objects");
@@ -422,12 +444,12 @@ final public class DemoBrowser {
 			btf.attachTrigger(rootBox, new SysTriggers.QuitTrigger(), "quit");
 
 			TriggerImpl regTrigProtoE = regTrigProto;
- 
-			BT repoBox = (BT) DemoServiceWrapFuncs.makeTestChildBoxImpl(rootBox, (Class) regBoxClass, regTrigProtoE, "repo");
-			BT appBox = (BT) DemoServiceWrapFuncs.makeTestChildBoxImpl(rootBox, (Class) regBoxClass, regTrigProtoE, "app");
-			BT sysBox = (BT) DemoServiceWrapFuncs.makeTestChildBoxImpl(rootBox, (Class) regBoxClass, regTrigProtoE, "sys");
 
-			//if (!isExampleCode) 				return bctx;
+			BT repoBox = (BT) DemoServiceWrapFuncs.makeTestChildBoxImplWithObj(rootBox, (Class) regBoxClass, Repo.class, "repo");
+			BT appBox = (BT) DemoServiceWrapFuncs.makeTestChildBoxImplWithObj(rootBox, (Class) regBoxClass, BasicDebugger.class, "app");
+			BT sysBox = (BT) DemoServiceWrapFuncs.makeTestChildBoxImplWithObj(rootBox, (Class) regBoxClass, ScreenBoxImpl.class, "sys");
+
+			//			if (!isExampleCode) 				return bctx;
 
 			RBT r1Box = (RBT) DemoServiceWrapFuncs.makeTestChildBoxImpl(repoBox, (Class) repoBoxClass, regTrigProtoE, "h2.td_001");
 

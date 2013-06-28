@@ -12,11 +12,12 @@ import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.DisplayContext;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.GetSetObject;
+import org.appdapter.gui.api.FocusOnBox;
 import org.appdapter.gui.api.Utility;
 import org.appdapter.gui.impl.JJPanel;
 import org.appdapter.gui.util.PromiscuousClassUtils;
 
-public class NamedItemChooserPanel extends JJPanel implements GetSetObject, HasFocusOnBox<Box> {
+public class NamedItemChooserPanel extends JJPanel implements GetSetObject, FocusOnBox<Box> {
 
 	//JLayeredPane desk;
 	//JSplitPane split;

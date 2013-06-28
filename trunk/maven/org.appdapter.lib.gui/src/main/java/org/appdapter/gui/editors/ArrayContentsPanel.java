@@ -24,6 +24,7 @@ import javax.swing.OverlayLayout;
 import javax.swing.border.Border;
 
 import org.appdapter.api.trigger.BrowserPanelGUI;
+import org.appdapter.gui.api.ObjectCollectionRemoveListener;
 import org.appdapter.gui.api.Utility;
 import org.appdapter.gui.impl.JJPanel;
 import org.appdapter.gui.swing.ErrorDialog;
@@ -36,7 +37,7 @@ import org.appdapter.gui.swing.VerticalLayout;
  *
  * 
  */
-public class ArrayContentsPanel extends JJPanel implements SmallObjectView.RemoveListener, DropTargetListener, Customizer {
+public class ArrayContentsPanel extends JJPanel implements ObjectCollectionRemoveListener, DropTargetListener, Customizer {
 
 	Object array;
 	BrowserPanelGUI context;
@@ -116,7 +117,7 @@ public class ArrayContentsPanel extends JJPanel implements SmallObjectView.Remov
 						super.valueChanged(oldValue, newValue);
 					}
 				};
-				view.setRemoveListener(new SmallObjectView.RemoveListener() {
+				view.setRemoveListener(new ObjectCollectionRemoveListener() {
 
 					@Override public void objectRemoved(Object value, Collection parent) {
 						System.arraycopy(array, index, array, index + 1, len - index - 1);

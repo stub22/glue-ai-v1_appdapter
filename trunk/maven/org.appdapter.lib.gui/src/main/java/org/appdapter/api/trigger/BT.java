@@ -24,18 +24,21 @@ import org.appdapter.api.trigger.AnyOper.UIHidden;
  * 
  */
 @UIHidden
-public interface BT<TrigType extends Trigger<? extends BT<TrigType>>> extends Box<TrigType>
-//extends ScreenBox, java.io.Serializable, GetSetObject, Convertable, MutableBox {
+public interface BT extends org.appdapter.gui.api.IGetBox, GetObject, Convertable//, Box<? extends Trigger<? extends Box<BT>>>
+//extends ScreenBox, java.io.Serializable, GetSetObject, MutableBox {
 {
+
+	public Box asBox();
+
 	public abstract Object getDisplayTarget(DisplayType attachType);
 
 	public abstract org.appdapter.api.trigger.DisplayType getDisplayType();
 
 	//	public <T> T[] getObjects(Class<T> type);
 
-	public <T> boolean canConvert(Class<T> c);
+//	public <T> boolean canConvert(Class<T> c);
 
-	public <T> T convertTo(Class<T> c);
+//	public <T> T convertTo(Class<T> c);
 
 	public String getDebugName();
 
@@ -62,7 +65,7 @@ public interface BT<TrigType extends Trigger<? extends BT<TrigType>>> extends Bo
 	 * This returns the decomposed Mixins
 	 * @return
 	 */
-	public Object[] getObjects();
+	public Iterable<Object> getObjects();
 
 	//@Override public List<TrigType> getTriggers();
 
@@ -102,7 +105,7 @@ public interface BT<TrigType extends Trigger<? extends BT<TrigType>>> extends Bo
 	/**
 	 * Returns the Class[]s that this object wrapper represents
 	 */
-	abstract public List<Class> getTypes();
+	abstract public Iterable<Class> getTypes();
 
 	/**
 	 * Returns the name of this object
@@ -183,7 +186,7 @@ public interface BT<TrigType extends Trigger<? extends BT<TrigType>>> extends Bo
 
 	public void setValue(Object newValue);
 
-	public abstract Object getValue();
+//	public abstract Object getValue();
 
 	public abstract Object getValueOrThis();
 

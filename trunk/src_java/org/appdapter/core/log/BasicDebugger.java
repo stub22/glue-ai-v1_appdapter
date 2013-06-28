@@ -228,8 +228,21 @@ public class BasicDebugger implements Loggable {
 		System.out.println("[System.out] forceLog4jConfig() threadCL resolved " + resPath + " to threadURL " + threadURL);
 		System.out.println("[System.out] forceLog4jConfig() localCL resolved  " + resPath + " to  localURL " + localURL);
 		System.out.println("[System.out] " + getClass().getCanonicalName() + " is forcing Log4J to read config from localURL: " + localURL);
-		Log4jFuncs.forceLog4jConfig(localURL);
-		getLogger().warn("{forceLog4JConfig} - This message was printed at WARN level to SLF4J, after forcing config for Log4J to localURL: " + localURL);
+		try {
+			Log4jFuncs.forceLog4jConfig(localURL);
+		} catch (Throwable t) {
+			Debuggable.printStackTrace(t);
+		}
+		try {
+			Logger logger = getLogger();
+			try {
+				logger.warn("{forceLog4JConfig} - This message was printed at WARN level to SLF4J, after forcing config for Log4J to localURL: " + localURL);
+			} catch (Throwable t2) {
+				Debuggable.printStackTrace(t2);
+			}
+		} catch (Throwable t) {
+			Debuggable.printStackTrace(t);
+		}
 	}
 
 }

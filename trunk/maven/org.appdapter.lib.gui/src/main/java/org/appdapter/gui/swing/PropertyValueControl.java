@@ -541,6 +541,7 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 				if (readMethod == null) {
 					throw new Exception("readMethod = null for object " + obj + " and property '" + property.getName() + "'!!!");
 				}
+				readMethod.setAccessible(true);
 				Object boundValue = readMethod.invoke(obj, new Object[0]);
 				setObject(boundValue);
 				return;

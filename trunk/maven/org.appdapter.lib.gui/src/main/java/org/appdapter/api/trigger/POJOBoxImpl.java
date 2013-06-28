@@ -36,6 +36,8 @@ import org.appdapter.gui.api.ComponentHost;
 import org.appdapter.gui.api.GetSetObject;
 import org.appdapter.gui.api.UseEditor;
 import org.appdapter.gui.api.Utility;
+import org.appdapter.gui.box.ScreenBoxImpl;
+import org.appdapter.gui.box.WrapperValue;
 import org.appdapter.gui.rimpl.TriggerForInstance;
 import org.appdapter.gui.util.CollectionSetUtils;
 import org.appdapter.gui.util.PromiscuousClassUtils;
@@ -54,12 +56,15 @@ import org.appdapter.gui.util.PromiscuousClassUtils;
  */
 @UIHidden
 public abstract class POJOBoxImpl<TrigType extends Trigger<? extends POJOBoxImpl<TrigType>>> //
-		extends BoxImpl<TrigType> //
+		extends ScreenBoxImpl<TrigType> //
 
-		implements java.io.Serializable, GetSetObject, Convertable, BT<TrigType>, GetDisplayContext, DisplayContextProvider, UIProvider {
+		implements java.io.Serializable, GetSetObject, Convertable, GetDisplayContext, DisplayContextProvider, UIProvider, BT, WrapperValue {
 
-	// A box may have up to one panel for any kind.
-	protected Map<Object, JPanel> myPanelMap = new HashMap<Object, JPanel>();
+	@Override public BT getBT() {
+		return this;
+	}
+
+	abstract public void reallySetValue(Object newObject);
 
 	//===== Inner classes ==========================
 	/**
@@ -67,15 +72,15 @@ public abstract class POJOBoxImpl<TrigType extends Trigger<? extends POJOBoxImpl
 	 * where there is no known icon for the value.
 	 */
 	static class UnknownIcon implements Icon, java.io.Serializable {
-		public int getIconHeight() {
+		@Override public int getIconHeight() {
 			return 16;
 		}
 
-		public int getIconWidth() {
+		@Override public int getIconWidth() {
 			return 16;
 		}
 
-		public void paintIcon(Component c, Graphics g, int x, int y) {
+		@Override public void paintIcon(Component c, Graphics g, int x, int y) {
 			g.setColor(Color.blue);
 			g.setFont(new Font("serif", Font.BOLD, 12));
 			g.drawString("@", x, y + 12);
@@ -84,6 +89,30 @@ public abstract class POJOBoxImpl<TrigType extends Trigger<? extends POJOBoxImpl
 
 	public static BeanInfo getBeanInfo(Class beanClass) throws IntrospectionException {
 		return Introspector.getBeanInfo(beanClass, Introspector.USE_ALL_BEANINFO);
+	}
+
+	/**
+	 * Returns an Icon for this value, determined using BeanInfo.
+	 * If no icon was found a default icon will be returned.
+	 */
+	static public Icon getIcon(BeanInfo info) {
+		Icon icon;
+		try {
+			Image image;
+			image = info.getIcon(BeanInfo.ICON_COLOR_16x16);
+			if (image == null) {
+				image = info.getIcon(BeanInfo.ICON_MONO_16x16);
+			}
+
+			if (image == null) {
+				icon = new UnknownIcon();
+			} else {
+				icon = new ImageIcon(image);
+			}
+		} catch (Exception err) {
+			icon = new UnknownIcon();
+		}
+		return icon;
 	}
 
 	/*@UIHidden
@@ -124,28 +153,6 @@ public abstract class POJOBoxImpl<TrigType extends Trigger<? extends POJOBoxImpl
 
 	//	public BoxPanelSwitchableView m_toplvl;
 
-	/**
-	 * Returns an Icon for this value, determined using BeanInfo.
-	 * If no icon was found a default icon will be returned.
-	 */
-	static public Icon getIcon(BeanInfo info) {
-		Icon icon;
-		try {
-			Image image;
-			image = info.getIcon(BeanInfo.ICON_COLOR_16x16);
-			if (image == null)
-				image = info.getIcon(BeanInfo.ICON_MONO_16x16);
-
-			if (image == null)
-				icon = new UnknownIcon();
-			else
-				icon = new ImageIcon(image);
-		} catch (Exception err) {
-			icon = new UnknownIcon();
-		}
-		return icon;
-	}
-
 	//public String registeredWithName;
 
 	/*
@@ -167,14 +174,13 @@ public abstract class POJOBoxImpl<TrigType extends Trigger<? extends POJOBoxImpl
 		}
 	*/
 	Map<NamedObjectCollection, String> col2Name = new HashMap<NamedObjectCollection, String>();
-	public Class<TrigType> clz;
 	public DisplayContext m_displayContext;
 	public DisplayType m_displayType = DisplayType.PANEL;
-	public String name = null;
 	//	public boolean m_is_added;
-	public JPanel m_largeview;
-	public JPanel m_smallview;
 	//	public Container m_parent_component;
+
+	public Class<TrigType> clz;
+	public String name = null;
 
 	// ==== Transient instance variables =============
 	transient PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
@@ -182,10 +188,8 @@ public abstract class POJOBoxImpl<TrigType extends Trigger<? extends POJOBoxImpl
 	boolean selected = false;
 
 	//==== Serializable instance variables ===============
-	public Object value = null;//this;//;//new NoObject();
-
+	//public Object value = null;//this;//;//new NoObject();
 	protected transient VetoableChangeSupport vetoSupport = new VetoableChangeSupport(this);
-	private boolean madeElsewhere;
 
 	// ==== Constructors ==================================
 	/**
@@ -194,47 +198,16 @@ public abstract class POJOBoxImpl<TrigType extends Trigger<? extends POJOBoxImpl
 	 */
 
 	public POJOBoxImpl() {
-		this.madeElsewhere = true;
-	///	Utility.recordCreated(this);
-	}
-
-	/*
-		public POJOBoxImpl(NamedObjectCollection noc, String label) {
-		this(noc, label, null);
-		}*/
-
-	public POJOBoxImpl(NamedObjectCollection noc, String title, Object val) {
-		this.value = val;
-		if (val != null) {
-			this.clz = (Class<TrigType>) val.getClass();
-			//this.name = Utility.getDefaultName(val);
-			setObject(val);
-		}
-		setShortLabel(title);
-		addToNoc(noc, title);
-	}
-
-	@Override public void setShortLabel(String shortLabel) {
-		super.setShortLabel(shortLabel);
+		super(false);
 	}
 
 	/**
-	 * Creates a new ScreenBox for the given object
-	 * and assigns it a default name.
+	 * PropertyChangeListeners will find out when the name or selection state
+	 * changes.
 	 */
-	private POJOBoxImpl(Object val) {
-		this.value = val;
-		this.clz = (Class<TrigType>) val.getClass();
-		//this.name = Utility.getDefaultName(val);
-	}
-
-	/**
-	 * Creates a new ScreenBox for the given object, with the given name.
-	 */
-	private POJOBoxImpl(String title, Object val) {
-		this.value = val;
-		this.clz = (Class<TrigType>) value.getClass();
-		this.name = title;
+	@Override public void addPropertyChangeListener(PropertyChangeListener p) {
+		checkTransient();
+		propSupport.addPropertyChangeListener(p);
 	}
 
 	/*public BoxPanelSwitchableView getBoxPanelTabPane() {
@@ -243,50 +216,74 @@ public abstract class POJOBoxImpl<TrigType extends Trigger<? extends POJOBoxImpl
 
 	// ==== Event listener registration =============
 
-	/**
-	 * PropertyChangeListeners will find out when the name or selection state
-	 * changes.
-	 */
-	public void addPropertyChangeListener(PropertyChangeListener p) {
-		checkTransient();
-		propSupport.addPropertyChangeListener(p);
-	}
-
-	private void addToNoc(NamedObjectCollection noc, String title) {
-		if (this instanceof POJOCollectionListener)
+	protected void addToNoc(NamedObjectCollection noc, String title) {
+		if (this instanceof POJOCollectionListener) {
 			noc.addListener((POJOCollectionListener) this);
+		}
 		col2Name.put(noc, title);
 		noc.addBoxed(title.toString(), this);
+	}
+
+	@Override public Object getValue() {
+		return getObject();
+	}
+
+	/**
+	 * Returns the object that this object wrapper represents
+	 */
+	@Override public Object getValueOrThis() {
+		Object value = getValue();
+		if (value != null) {
+			return value;
+		}
+		if (value == null) {
+			//getLogger().warn("Default implementation of getObject() for NULL is returning 'this'", getShortLabel());
+			return this;
+		}
+		if (value != this) {
+			return value;
+		}
+
+		//	getLogger().warn("Default implementation of getObject() for {} is returning 'this'", getShortLabel());
+		return this;
+	}
+
+	@Override public void setObject(Object obj) {
+		String ds = getDescription();
+		if (ds == null) {
+			setDescription("" + obj + " " + obj.getClass());
+		}
+		Object value = getValue();
+		if (value == obj) {
+			return;
+		}
+		try {
+			valueChanged(value, obj);
+		} catch (PropertyVetoException e) {
+			throw Debuggable.reThrowable(e);
+		}
+	}
+
+	public void valueChanged(Object oldObject, Object newObject) throws PropertyVetoException {
+		checkTransient();
+		String oldName = name;
+		vetoSupport.fireVetoableChange("value", oldObject, newObject);
+		this.reallySetValue(newObject);
+		propSupport.firePropertyChange("value", oldObject, newObject);
+	}
+
+	@Override public Box asBox() {
+		return this;
 	}
 
 	/**
 	 * VetoableChangeListeners will find out when the name or selection state is
 	 * about to change, and can prevent such changes if desired.
 	 */
-	public void addVetoableChangeListener(VetoableChangeListener v) {
+	@Override public void addVetoableChangeListener(VetoableChangeListener v) {
 		checkTransient();
 		vetoSupport.addVetoableChangeListener(v);
 	}
-
-	@Override public <T> boolean canConvert(Class<T> c) {
-		for (Object o : getObjects()) {
-			if (o == null)
-				continue;
-			if (!c.isInstance(o))
-				continue;
-			try {
-				final T madeIT = (T) o;
-				if (madeIT != null)
-					return true;
-			} catch (Exception e) {
-				getLogger().error("JVM Issue (canConvert)", e);
-			}
-			return true;
-		}
-		return false;
-	}
-
-	// ===== Property getters and setters ========================
 
 	/**
 	 * Updates transient instance variables if necessary
@@ -298,36 +295,12 @@ public abstract class POJOBoxImpl<TrigType extends Trigger<? extends POJOBoxImpl
 		}
 	}
 
-	@Override public <T> T convertTo(Class<T> c) {
-		for (Object o : getObjects()) {
-			if (o == null)
-				continue;
-			if (!c.isInstance(o))
-				continue;
-			try {
-				return c.cast(o);
-			} catch (Exception e) {
-				getLogger().error("JVM Issue (canConvert)", e);
-				return (T) o;
-			}
-		}
-		throw new ClassCastException("Cannot convert " + getDebugName() + " to " + c);
-	}
-
-	@Override public DisplayContext findDisplayContext(Box b) {
-		if (b instanceof GetDisplayContext) {
-			return ((GetDisplayContext) b).getDisplayContext();
-		}
-		Debuggable.notImplemented();
-		return null;
-	}
-
-	public abstract JPanel findOrCreateBoxPanel(Object panelKind);
+	// ===== Property getters and setters ========================
 
 	/**
 	 * Gets a BeanInfo object for this object, using the Introspector class
 	 */
-	public BeanInfo getBeanInfo() throws IntrospectionException {
+	@Override public BeanInfo getBeanInfo() throws IntrospectionException {
 		try {
 			return Utility.getPOJOInfo(getObjectClass(), Introspector.USE_ALL_BEANINFO);
 		} catch (IntrospectionException e) {
@@ -341,11 +314,12 @@ public abstract class POJOBoxImpl<TrigType extends Trigger<? extends POJOBoxImpl
 		}
 	}
 
-	@Override public Component getComponent() {
+	public Component getComponent() {
 		//if (m_view != null) 			return m_view;		
 		for (Object o : getObjects()) {
-			if (Component.class.isInstance(o))
+			if (Component.class.isInstance(o)) {
 				return (Component) o;
+			}
 		}
 		return findOrCreateBoxPanel(Kind.OBJECT_PROPERTIES);
 	}
@@ -354,11 +328,12 @@ public abstract class POJOBoxImpl<TrigType extends Trigger<? extends POJOBoxImpl
 		return getDisplayTarget(getDisplayType());
 	}
 
-	public String getDebugName() {
+	@Override public String getDebugName() {
 		try {
 			Object o = getValue();
-			if (o == null)
+			if (o == null) {
 				return getUniqueName();
+			}
 			return o.toString();
 		} catch (Exception e) {
 			return super.toString();
@@ -377,86 +352,18 @@ public abstract class POJOBoxImpl<TrigType extends Trigger<? extends POJOBoxImpl
 		return m_displayType;
 	}
 
-	/**
-	 * Returns the object that this value wrapper represents
-	 */
-	public Object getObject() {
-		return value;
-	}
-
-	// ========= Utility methods =================
-
-	/** 
-	 * This returns the decomposed Mixins
-	 * @return
-	 */
-	public Object[] getObjects() {
-		Object o = getValue();
-		if (o != null && o != this)
-			return CollectionSetUtils.arrayOf(o, this, getShortLabel(), getIdent());
-		return CollectionSetUtils.arrayOf(this, getShortLabel(), getIdent());
-	}
-
-	@Override public <T> T[] getObjects(Class<T> type) {
-		HashSet<Object> objs = new HashSet<Object>();
-		if (this.canConvert(type)) {
-			T one = convertTo(type);
-			objs.add(one);
-		}
-		for (Object o : getObjects()) {
-			if (type.isInstance(o)) {
-				objs.add(o);
-			}
-		}
-		return objs.toArray((T[]) Array.newInstance(type, objs.size()));
-	}
-
-	public Class<? extends Object> getObjectClass() {
-		if (clz != null)
+	@Override public Class<? extends Object> getObjectClass() {
+		if (clz != null) {
 			return this.clz;
+		}
 		Object obj = getValue();
-		if (obj != null)
+		if (obj != null) {
 			return obj.getClass();
+		}
 		return Object.class;
 	}
 
-	final public JPanel getPropertiesPanel() {
-		if (m_largeview instanceof JPanel)
-			return (JPanel) m_largeview;
-		JPanel pnl = getPropertiesPanel0();
-		if (m_largeview == null) {
-			m_largeview = pnl;
-		}
-		return pnl;
-	}
-
-	private JPanel getPropertiesPanel0() {
-		if (m_largeview instanceof JPanel)
-			return (JPanel) m_largeview;
-		Object obj = getValue();
-		if (obj instanceof JPanel) {
-			return (JPanel) obj;
-		}
-		if (obj == this) {
-			JPanel pnl = Utility.getPropertiesPanel(obj);
-			pnl.setName(getShortLabel());
-			return pnl;
-		}
-		if (obj == null) {
-			obj = this;
-		}
-		JPanel pnl = Utility.getPropertiesPanel(obj);
-		pnl.setName(getShortLabel());
-		return pnl;
-	}
-
-	@Override public List<TrigType> getTriggers() {
-		List<TrigType> tgs = super.getTriggers();
-		for (Class cls : getTypes()) {
-			TriggerForInstance.addClassLevelTriggers(m_displayContext, cls, tgs, this);
-		}
-		return tgs;
-	}
+	// ========= Utility methods =================
 
 	/*
 		public NamedObjectCollection getNamedObjectCollection() {
@@ -473,37 +380,23 @@ public abstract class POJOBoxImpl<TrigType extends Trigger<? extends POJOBoxImpl
 	*/
 
 	/**
-	 * Returns the Class[]s that this object wrapper represents
-	 */
-	@Override public List<Class> getTypes() {
-		java.util.HashSet al = new java.util.HashSet<Class>();
-		Class pojoClass = getObjectClass();
-		if (pojoClass != null)
-			al.add(pojoClass);
-		else {
-			al.add(getClass());
-		}
-		return new ArrayList<Class>(al);
-	}
-
-	/**
 	 * True if this value is selected
 	 */
-	public boolean getUISelected() {
+	@Override public boolean getUISelected() {
 		return selected;
 	}
 
 	/**
 	 * Returns the name of this value
 	 */
-	public String getUniqueName() {
+	@Override public String getUniqueName() {
 		return name;
 	}
 
 	/**
 	 * Returns the name of this object
 	 */
-	final public String getUniqueName(Map checkAgainst) {
+	@Override final public String getUniqueName(Map checkAgainst) {
 		//String _uname = null;
 		if (name == null) {
 			Ident ident = getIdent();
@@ -521,44 +414,26 @@ public abstract class POJOBoxImpl<TrigType extends Trigger<? extends POJOBoxImpl
 		return name.toString();
 	}
 
-	@Override public Object getValue() {
-		return value;
-	}
-
-	/**
-	 * Returns the object that this object wrapper represents
-	 */
-	public Object getValueOrThis() {
-		if (value != null)
-			return value;
-		if (value == null) {
-			//getLogger().warn("Default implementation of getObject() for NULL is returning 'this'", getShortLabel());
-			return this;
+	@Override public boolean isNamed(String test) {
+		if (Utility.stringsEqual(test, name)) {
+			return true;
 		}
-		if (value != this)
-			return value;
-
-		//	getLogger().warn("Default implementation of getObject() for {} is returning 'this'", getShortLabel());
-		return this;
-	}
-
-	public boolean isNamed(String test) {
-		if (Utility.stringsEqual(test, name))
+		if (Utility.stringsEqual(test, getShortLabel())) {
 			return true;
-		if (Utility.stringsEqual(test, getShortLabel()))
-			return true;
+		}
 		return false;
 	}
 
-	//==== Constructors ==================================
-
-	public boolean isTypeOf(Class type) {
+	@Override public boolean isTypeOf(Class type) {
 		for (Class c : getTypes()) {
-			if (type.isAssignableFrom(c))
+			if (type.isAssignableFrom(c)) {
 				return true;
+			}
 		}
 		return type.isInstance(getValue());
 	}
+
+	//==== Constructors ==================================
 
 	/*
 
@@ -591,67 +466,18 @@ public abstract class POJOBoxImpl<TrigType extends Trigger<? extends POJOBoxImpl
 		return m_toplevel.showMessage(msg);
 	}
 	*/
-	public JPanel makeBoxPanelForCustomizer(Object customizer) {
-		JPanel pnl = myPanelMap.get(toKey(customizer));
-		if (pnl != null)
-			return pnl;
 
-		Object val = getValueOrThis();
-
-		if (customizer instanceof Customizer) {
-			Customizer cust = ((Customizer) customizer);
-			cust.setObject(val);
-			if (this instanceof PropertyChangeListener) {
-				cust.addPropertyChangeListener(((PropertyChangeListener) this));
-			}
-		}
-
-		Class objClass = getObjectClass();
-
-		if (customizer instanceof Class) {
-			Class cust = (Class) customizer;
-			if (Customizer.class == customizer) {
-				cust = Utility.findCustomizerClass(objClass);
-			}
-			if (PromiscuousClassUtils.isCreateable(cust)) {
-				try {
-					return ComponentHost.asPanel(findOrCreateBoxPanel(Utility.newInstance(cust)), val);
-				} catch (InstantiationException e) {
-				} catch (IllegalAccessException e) {
-				}
-			}
-
-		}
-		Class clazz = Utility.getCustomizerClassForClass(objClass);
-		if (PropertyEditor.class == customizer) {
-			customizer = Utility.findEditor(objClass);
-		}
-		if (customizer instanceof PropertyEditor) {
-			PropertyEditor editor = (PropertyEditor) customizer;
-			customizer = new UseEditor(editor, objClass, (GetSetObject) this);
-		}
-
-		if (customizer instanceof Component) {
-			customizer = pnl = ComponentHost.asPanel((Component) customizer, val);
-			((ComponentHost) pnl).focusOnBox(this);
-			return pnl;
-
-		}
-		return null;
+	@Override public void propertyChange(PropertyChangeEvent evt) {
+		propSupport.firePropertyChange(evt);
 	}
 
 	//===== Property getters and setters ========================
-
-	@Override public void propertyChange(PropertyChangeEvent evt) {
-		Debuggable.notImplemented();
-
-	}
 
 	/**
 	 * PropertyChangeListeners will find out when the name or selection state
 	 * changes.
 	 */
-	public void removePropertyChangeListener(PropertyChangeListener p) {
+	@Override public void removePropertyChangeListener(PropertyChangeListener p) {
 		checkTransient();
 		propSupport.removePropertyChangeListener(p);
 	}
@@ -660,58 +486,39 @@ public abstract class POJOBoxImpl<TrigType extends Trigger<? extends POJOBoxImpl
 	 * VetoableChangeListeners will find out when the name or selection state is
 	 * about to change, and can prevent such changes if desired.
 	 */
-	public void removeVetoableChangeListener(VetoableChangeListener v) {
+	@Override public void removeVetoableChangeListener(VetoableChangeListener v) {
 		checkTransient();
 		vetoSupport.removeVetoableChangeListener(v);
 	}
 
-	public boolean representsObject(Object test) {
+	@Override public boolean representsObject(Object test) {
+		if (test == null) {
+			return false;
+		}
 		Object myObj = getValue();
-		if (myObj == test)
+		if (myObj == test) {
 			return true;
-		if (this == test)
+		}
+		if (this == test) {
 			return true;
+		}
+		if (test == m_displayContext) {
+			return true;
+		}
 		for (Object p : myPanelMap.values()) {
-			if (p == test)
+			if (p == test) {
 				return true;
+			}
 		}
 		return name == test;
 	}
 
-	public void setNameValue(String uniqueName, Object obj) {
-		if (uniqueName == null) {
-			if (obj != null) {
-				uniqueName = "sihc-" + System.identityHashCode(obj) + "-" + System.currentTimeMillis();
-			} else {
-				uniqueName = "snul-" + System.identityHashCode(this) + "-" + System.currentTimeMillis();
-			}
-		}
-		name = uniqueName;
-		if (obj == null)
-			obj = new NullPointerException(uniqueName).fillInStackTrace();
-		setShortLabel(uniqueName);
-		setObject(obj);
-	}
-
-	@Override public void setObject(Object obj) {
-		value = obj;
-		String ds = getDescription();
-		if (ds == null) {
-			setDescription("" + obj + " " + obj.getClass());
-		}
-		if (this.value == obj)
-			return;
-		try {
-			valueChanged(this.value, obj);
-		} catch (PropertyVetoException e) {
-			throw Debuggable.reThrowable(e);
-		}
-	}
-
 	public void setSelectedComponent(Object object) throws PropertyVetoException {
-		Debuggable.notImplemented();
-		Debuggable.notImplemented();
 
+	}
+
+	@Override public void setShortLabel(String shortLabel) {
+		super.setShortLabel(shortLabel);
 	}
 
 	/**
@@ -719,7 +526,7 @@ public abstract class POJOBoxImpl<TrigType extends Trigger<? extends POJOBoxImpl
 	 *
 	 * @throws PropertyVetoException if someone refused to allow selection state change
 	 */
-	public void setUISelected(boolean newSelected) throws PropertyVetoException {
+	@Override public void setUISelected(boolean newSelected) throws PropertyVetoException {
 		if (newSelected != selected) {
 			checkTransient();
 			boolean oldSelected = selected;
@@ -736,8 +543,8 @@ public abstract class POJOBoxImpl<TrigType extends Trigger<? extends POJOBoxImpl
 	 *
 	 * @throws PropertyVetoException if someone refused to allow the name to change
 	 */
-	public void setUniqueName(String newName) throws PropertyVetoException {
-		if (!(newName.equals(name))) {
+	@Override public void setUniqueName(String newName) throws PropertyVetoException {
+		if (!newName.equals(name)) {
 			checkTransient();
 			String oldName = name;
 			vetoSupport.fireVetoableChange("name", oldName, newName);
@@ -752,9 +559,9 @@ public abstract class POJOBoxImpl<TrigType extends Trigger<? extends POJOBoxImpl
 	 * @throws PropertyVetoException
 	 *             if someone refused to allow the name to change
 	 */
-	public void setUniqueName(String newName, Map checkAgainst) throws PropertyVetoException {
+	@Override public void setUniqueName(String newName, Map checkAgainst) throws PropertyVetoException {
 		String name = getUniqueName(checkAgainst);
-		if (!(newName.equals(name))) {
+		if (!newName.equals(name)) {
 			checkTransient();
 			String oldName = name;
 			vetoSupport.fireVetoableChange("name", oldName, newName);
@@ -767,7 +574,7 @@ public abstract class POJOBoxImpl<TrigType extends Trigger<? extends POJOBoxImpl
 		}
 	}
 
-	public void setValue(Object obj) {
+	@Override public void setValue(Object obj) {
 		try {
 			setObject(obj);
 		} catch (Throwable e) {
@@ -775,39 +582,21 @@ public abstract class POJOBoxImpl<TrigType extends Trigger<? extends POJOBoxImpl
 		}
 	}
 
-	protected Object toKey(Object kind) {
-		if (kind == null)
-			return null;
-		if (kind instanceof Enum)
-			return kind;
-		if (kind instanceof Class) {
-			Class cind = (Class) kind;
-			if (cind.isArray()) {
-				kind = Iterable.class;
-			} else if (Iterable.class.isAssignableFrom(cind)) {
-				kind = Iterable.class;
-			}
-			return kind;
-		}
-		return toKey(kind.getClass());
-	}
-
 	// the jtree label uses this .. so supply someting good!
 	@Override public String toString() {
 		String sl = getShortLabel();
-		if (sl != null)
+		if (sl != null) {
 			return sl;
-		if (name != null)
+		}
+		if (name != null) {
 			return name;
+		}
 		return getUniqueName(null) + " -> " + getDebugName();
 
 	}
 
-	public void valueChanged(Object oldObject, Object newObject) throws PropertyVetoException {
-		checkTransient();
-		String oldName = name;
-		vetoSupport.fireVetoableChange("value", oldObject, newObject);
-		this.value = newObject;
-		propSupport.firePropertyChange("value", oldObject, newObject);
+	public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
+		vetoSupport.fireVetoableChange(evt);
+
 	}
 }

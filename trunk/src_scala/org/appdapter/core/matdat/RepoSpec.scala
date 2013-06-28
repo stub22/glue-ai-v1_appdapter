@@ -60,7 +60,8 @@ class OnlineSheetRepoSpec(sheetKey: String, namespaceSheetNum: Int, dirSheetNum:
     try {
       GoogSheetRepo.makeGoogSheetRepo(sheetKey, namespaceSheetNum, dirSheetNum, fileModelCLs, this)
     } catch {      
-    	case e => {
+       // trying to catch Errors (not just Exceptions)
+    	case e: Throwable => {
     	  e.printStackTrace();
     	  throw e
     	}
@@ -115,15 +116,15 @@ class FromURLishRepoSpec(var myDebugName: String, var dirModelURI: String)
     val fileModelCLs: java.util.List[ClassLoader] = null;
 
     if (proto.equals("xlsx")) {
-      null
-      //(new OfflineXlsSheetRepoSpec(v3[0],v3[1],v3[2])).makeRepo;
+      //null
+      (new OfflineXlsSheetRepoSpec(v3(0),v3(1),v3(2))).makeRepo;
       //SpecialRepoLoader.loadXLSXSheetRepo(v3[0], v3[1], v3[2], fileModelCLs)
     } else if (proto.equals("goog")) {
       //SpecialRepoLoader.loadXLSXSheetRepo(v3[0],v3[1].toInt,Integer.parseInt(v3[2]), fileCls)     
-      //(new OnlineXlsSheetRepoSpec(v3[0],v3[1].toInt,v3[2].toInt)).makeRepo;
-      null
+      (new GoogSheetRepoSpec(v3(0),v3(1).toInt,v3(2).toInt)).makeRepo;
+      //null
     } else {
-      null
+      throw new UnsupportedOperationException("unkown protocol " + path);
     }
   }
 }
@@ -197,7 +198,7 @@ object RepoSpecDefaultNames {
     print("Starting Whackamole");
     import org.appdapter.demo.DemoBrowserUI
     val repoNav = DemoBrowserUI.makeDemoNavigatorCtrl(args);
-    repoNav.attachChildUI(null, repo, true);
+    repoNav.addObject(null, repo, true);
     java.lang.Thread.sleep(60000000);
   }
 

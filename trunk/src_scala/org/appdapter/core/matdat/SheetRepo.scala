@@ -85,9 +85,8 @@ abstract class SheetRepo(directoryModel: Model, var fileModelCLs: java.util.List
     //reloadMainDataset();
   }
 
-  def getClassLoaderList(clList: java.util.List[ClassLoader]): java.util.List[ClassLoader] = {
-    if (clList != null) clList else if (fileModelCLs != null) fileModelCLs else
-      ClassLoaderUtils.getFileResourceClassLoaders(ClassLoaderUtils.ALL_RESOURCE_CLASSLOADER_TYPES);
+  def getClassLoaderList(clList: java.util.List[ClassLoader] = null): java.util.List[ClassLoader] = {
+      ClassLoaderUtils.getFileResourceClassLoaders(ClassLoaderUtils.ALL_RESOURCE_CLASSLOADER_TYPES, fileModelCLs, clList);
   }
   override def toString(): String = {
     val dm = getDirectoryModel();

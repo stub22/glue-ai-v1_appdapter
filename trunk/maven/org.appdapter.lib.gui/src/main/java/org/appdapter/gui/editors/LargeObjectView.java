@@ -31,6 +31,8 @@ import org.appdapter.gui.swing.PropertiesPanel;
 import org.appdapter.gui.swing.StaticMethodsPanel;
 import org.slf4j.LoggerFactory;
 
+import com.jidesoft.swing.JideTabbedPane;
+
 /**
  * A panel containing a complete GUI for a object, including properties,
  * methods, etc.
@@ -55,7 +57,7 @@ extends ObjectView<BoxType> implements Customizer, GetSetObject {
 	}
 
 	protected DisplayContext context;
-	protected JTabbedPane tabs;
+	protected JideTabbedPane tabs;
 	//protected Object objectValue;
 	BoxPanelSwitchableView objTabs;
 
@@ -137,7 +139,7 @@ extends ObjectView<BoxType> implements Customizer, GetSetObject {
 	public void initGUISetupNewObject() {
 		removeAll();
 		setLayout(new BorderLayout());
-		tabs = new JTabbedPane();
+		tabs = new JideTabbedPane();
 		add("Center", tabs);
 		objTabs = new ObjectTabsForTabbedView(tabs);
 	}

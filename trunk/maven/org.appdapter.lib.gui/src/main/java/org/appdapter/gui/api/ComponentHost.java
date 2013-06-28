@@ -17,10 +17,9 @@ import org.appdapter.api.trigger.BoxPanelSwitchableView;
 import org.appdapter.api.trigger.NamedObjectCollection;
 import org.appdapter.api.trigger.UserResult;
 import org.appdapter.core.log.Debuggable;
-import org.appdapter.gui.browse.HasFocusOnBox;
 import org.appdapter.gui.impl.JJPanel;
 
-public class ComponentHost extends JJPanel implements DisplayContext, GetObject, HasFocusOnBox {
+public class ComponentHost extends JJPanel implements DisplayContext, GetObject, FocusOnBox {
 
 	//JLayeredPane desk;
 	//JSplitPane split;
@@ -94,7 +93,7 @@ public class ComponentHost extends JJPanel implements DisplayContext, GetObject,
 			}
 			object = ((GetObject) view).getValue();
 		}
-		return Utility.getToplevelBoxCollection().findOrCreateBox(object).getPropertiesPanel();
+		return Utility.getTreeBoxCollection().findOrCreateBox(object).getPropertiesPanel();
 	}
 
 	@Override public BoxPanelSwitchableView getBoxPanelTabPane() {
@@ -102,7 +101,7 @@ public class ComponentHost extends JJPanel implements DisplayContext, GetObject,
 	}
 
 	@Override public NamedObjectCollection getLocalBoxedChildren() {
-		return Utility.getToplevelBoxCollection();
+		return Utility.getTreeBoxCollection();
 	}
 
 	@Override public Collection getTriggersFromUI(BT box, Object object) {
@@ -110,7 +109,7 @@ public class ComponentHost extends JJPanel implements DisplayContext, GetObject,
 		return null;
 	}
 
-	@Override public UserResult attachChildUI(String title, Object value) throws Exception {
+	@Override public UserResult attachChildUI(String title, Object value, boolean showASAP) throws Exception {
 		Debuggable.notImplemented();
 		return null;
 	}

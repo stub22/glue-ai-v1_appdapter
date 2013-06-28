@@ -24,8 +24,9 @@ public class ScreenBoxTreeNodeImpl extends AbstractScreenBoxTreeNodeImpl impleme
 	 */
 	private static final long serialVersionUID = 1L;
 
-	public ScreenBoxTreeNodeImpl(BoxPanelSwitchableView bsv, Box rootBox, boolean allowsChildren) {
-		super((MutableBox) rootBox, allowsChildren);
+	public ScreenBoxTreeNodeImpl(BoxPanelSwitchableView bsv, Box rootBox, boolean allowsChildrn) {
+		super((MutableBox) rootBox, allowsChildrn);
+		this.bsv = bsv;
 	}
 
 	@Override public String toString() {
@@ -60,7 +61,7 @@ public class ScreenBoxTreeNodeImpl extends AbstractScreenBoxTreeNodeImpl impleme
 	}
 
 	@Override public Object getValue() {
-		return getBox().getObjects(null)[0];
+		return getBox().getValue();
 	}
 
 	@Override public void setObject(Object obj) throws InvocationTargetException {

@@ -8,7 +8,7 @@ import java.awt.Window;
 import java.beans.BeanInfo;
 import java.beans.Customizer;
 import java.beans.IntrospectionException;
-import java.beans.Introspector;  
+import java.beans.Introspector;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
 import java.beans.PropertyVetoException;
@@ -33,13 +33,13 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import javax.swing.Action;
 import javax.swing.JFrame;
-import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JPanel;
 import javax.swing.JSpinner.DateEditor;
@@ -112,7 +112,7 @@ public class Utility {
 	}
 
 	static public Object getCachedComponent(Ident id) {
-		NamedObjectCollection namedObjectCollection = getToplevelBoxCollection();
+		NamedObjectCollection namedObjectCollection = getTreeBoxCollection();
 		if (namedObjectCollection == null) {
 			Debuggable.warn("NULL namedObjectCollection");
 		}
@@ -133,18 +133,25 @@ public class Utility {
 	//public static FileMenu fileMenu = new FileMenu();
 	public static JMenuBar appMenuBar0;
 	public static FileMenu fileMenu;
-	private static JFrame appFrame;
+	public static JFrame appFrame;
 
 	public static JFrame getAppFrame() {
 		if (appFrame == null) {
-			appFrame = (JFrame) getMenuBar().getTopLevelAncestor();
+			if (appMenuBar0 != null) {
+				appFrame = (JFrame) appMenuBar0.getTopLevelAncestor();
+			}
 		}
 		return (JFrame) appFrame;
 	}
 
 	public static JMenuBar getMenuBar() {
-		if (appMenuBar0 != null)
-			appMenuBar0 = new JMenuBar();
+		if (appMenuBar0 == null) {
+			if (appFrame != null) {
+				appMenuBar0 = appFrame.getJMenuBar();
+			} else {
+				appMenuBar0 = new JMenuBar();
+			}
+		}
 		return appMenuBar0;
 	}
 
@@ -158,7 +165,7 @@ public class Utility {
 	/**
 	 * The current ObjectNavigator being displayed
 	 */
-	static public NamedObjectCollection getToplevelBoxCollection() {
+	static public NamedObjectCollection getTreeBoxCollection() {
 		if (uiObjects == null) {
 			Debuggable.warn("NULL uiObjects");
 		}
@@ -591,8 +598,10 @@ public class Utility {
 
 	}
 
+	static Hashtable<Class, GetSetObject> panelsFor = new Hashtable<Class, GetSetObject>();
+
 	private static GetSetObject getPanelFor(Class expected) {
-		return null;
+		return panelsFor.get(expected);
 	}
 
 	public static Class<? extends Customizer> findCustomizerClass(Class objClass) {
@@ -681,23 +690,14 @@ public class Utility {
 		return null;
 	}
 
-	static HashMap gpp = new HashMap();
-
-	public static class TempPanel extends JPanel {
-
-	}
+	static HashMap<Object, JPanel> gpp = new HashMap();
 
 	public static JPanel getPropertiesPanel(Object object) {
+		object = dref(object, object);
 		JPanel view = (JPanel) gpp.get(object);
 		if (view != null)
 			return view;
-		JPanel tp;
-		if (object instanceof JPanel) {
-			tp = (JPanel) object;
-		} else {
-			tp = new TempPanel();
-		}
-		gpp.put(object, tp);
+
 		Class objClass = object.getClass();
 		Class<? extends Customizer> customizerClass = getCustomizerClassForClass(objClass);
 		Customizer customizer;
@@ -749,18 +749,28 @@ public class Utility {
 
 	static HashMap allBoxes = new HashMap();
 
-	public static synchronized boolean recordCreated(BT box) {
+	public static synchronized boolean recordCreated(Object box) {
+		if (box instanceof BT) {
+			return recordBCreated((BT) box);
+		}
+		if (allBoxes.containsKey(box))
+			return false;
+		allBoxes.put(box, null);
+		return true;
+	}
+
+	public static synchronized boolean recordBCreated(BT box) {
 		if (allBoxes.containsKey(box))
 			return false;
 		allBoxes.put(box, box);
 		return true;
 	}
 
-	private static BT boxObject(Object pojo) {
+	public static BT boxObject(Object pojo) {
 		if (pojo instanceof BT)
 			return (BT) pojo;
-		if (pojo instanceof HasPOJOBox)
-			return ((HasPOJOBox) pojo).getPOJOBox();
+		if (pojo instanceof IGetBox)
+			return ((IGetBox) pojo).getBT();
 		return uiObjects.findOrCreateBox(pojo);
 	}
 
@@ -788,7 +798,7 @@ public class Utility {
 			if (context == null) {
 				JPanel pnl = new org.appdapter.gui.swing.ErrorDialog(msg, error);
 				pnl.show();
-				return ScreenBoxImpl.asResult(pnl);
+				return Utility.asUserResult(pnl);
 			} else {
 				Utility.browserPanel.showScreenBox(error); // @temp
 				return null;
@@ -796,7 +806,7 @@ public class Utility {
 		} catch (Throwable err2) {
 			ErrorDialog pnl = new ErrorDialog("A new error occurred while trying to display the original error '" + error + "'!", err2);
 			pnl.show();
-			return ScreenBoxImpl.asResult(pnl);
+			return Utility.asUserResult(pnl);
 		}
 
 	}
@@ -834,6 +844,10 @@ public class Utility {
 		return dref(value, onNull, 4);
 	}
 
+	public static Object dref(Object value) {
+		return dref(value, value);
+	}
+
 	public static Object dref(Object value, Object onNull, int depth) {
 		if (value == null)
 			return onNull;
@@ -841,20 +855,41 @@ public class Utility {
 		if (depth < 0) {
 			return value;
 		}
-		if (value instanceof GetObject) {
-			value = ((GetObject) value).getValue();
-		} else if (value instanceof PropertyEditor) {
+		Object derefd = null;
 
-			value = ((PropertyEditor) value).getValue();
+		try {
+			if (value instanceof GetObject) {
+				derefd = ((GetObject) value).getValue();
+			} else if (value instanceof PropertyEditor) {
+				derefd = ((PropertyEditor) value).getValue();
+			}
+			if (value instanceof BT) {
+				derefd = ((BT) value).getValue();
+			}
+			if (value instanceof IGetBox) {
+				derefd = ((IGetBox) value).getBT();
+			}
+		} catch (Throwable t) {
+
 		}
-		value = dref(value, onNull, --depth);
-		if (value == onNull)
+		if (derefd != null && derefd != value) {
+			value = dref(derefd, value, --depth);
+		}
+		if (value == null)
 			return onNull;
 		return value;
 	}
 
 	public static <T> T[] ChoiceOf(T... o) {
 		return o;
+	}
+
+	public static <T> T first(T... o) {
+		for (T t : o) {
+			if (t != null)
+				return null;
+		}
+		return null;
 	}
 
 	public static java.net.URL getResource(String filename) {
@@ -873,6 +908,12 @@ public class Utility {
 					return url;
 			}
 		return null;
+	}
+
+	public static UserResult asUserResult(Object obj) {
+		if (obj instanceof UserResult)
+			return (UserResult) obj;
+		return UserResult.SUCCESS;
 	}
 
 }

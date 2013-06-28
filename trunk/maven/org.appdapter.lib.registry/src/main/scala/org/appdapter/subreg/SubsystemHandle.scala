@@ -25,7 +25,7 @@ import org.appdapter.api.registry.VerySimpleRegistry
 import org.appdapter.core.log.BasicDebugger
 import org.appdapter.osgi.registry.RegistryServiceFuncs
 
-/**
+/** 
  * @author Stu B. <www.texpedient.com>
  */
 class FacadeHandle[FT](val opt : Option[FT]) {

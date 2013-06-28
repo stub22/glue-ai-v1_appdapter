@@ -6,9 +6,11 @@ import static org.appdapter.gui.util.PromiscuousClassUtils.rememberClass;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
+
 /**
  * A class loader to allow for loading of other jars that are added as a URL.
  * 
@@ -16,6 +18,17 @@ import java.util.List;
 public final class IsolatedClassLoader extends IsolatingClassLoaderBase implements HRKRefinement {
 	/** Dynamically added URLs. */
 	private final Collection<URL> urls;
+
+	@Override public String toString() {
+		ArrayList<Object> strings = new ArrayList<Object>();
+		this.addPathStringsForDebug(strings, true);
+		final StringBuilder str = new StringBuilder();
+		str.append(getClass().getSimpleName());
+		str.append('[');
+		appendURLS(str, ";", strings);
+		str.append(']');
+		return str.toString();
+	}
 
 	/**
 	 * Constructs a new object.
@@ -54,10 +67,6 @@ public final class IsolatedClassLoader extends IsolatingClassLoaderBase implemen
 		}
 	}
 
-	@Override protected Class<?> findClass(String name) throws ClassNotFoundException {
-		return rememberClass(name, super.findClass(name));
-	}
-
 	@Override public URL findResource(String name) {
 		return super.findResource(name);
 	}
@@ -66,30 +75,40 @@ public final class IsolatedClassLoader extends IsolatingClassLoaderBase implemen
 		return super.findResources(name);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public Class<?> loadClass(final String name) throws ClassNotFoundException {
+	@Override public Class<?> findClassLocalMethodologyActuallyDefines(String name) throws ClassNotFoundException {
+		return null;
+	}
+
+	@Override public Class<?> findLoadedClassLocalMethodology(final String name) throws ClassNotFoundException {
 		ClassNotFoundException orig = null;
+		Class c = null;
 		try {
-			return rememberClass(name, loadClassUseSystem(name, false));
+			c = rememberClass(name, loadClassUseSystem(name, false));
 		} catch (ClassNotFoundException e) {
 			orig = e;
 		}
 		try {
-			return rememberClass(name, loadClassUseSystem(name, true));
+			c = rememberClass(name, loadClassUseSystem(name, true));
 		} catch (ClassNotFoundException e) {
 			throw orig;
 		}
+		if (c != null) {
+			resolveClass(c);
+		}
+		return c;
 	}
 
-	public Class<?> loadClassUseSystem(final String name, boolean useSystem) throws ClassNotFoundException {
+	private Class<?> loadClassUseSystem(final String name, boolean useSystem) throws ClassNotFoundException {
 		Class<?> loadedClass = findLoadedClass(name);
 		if (loadedClass != null)
 			return loadedClass;
+		if (!useSystem) {
+			if (name.startsWith("java.") || name.startsWith("scala."))
+				useSystem = true;
+		}
 
 		try {
-			if (useSystem || name.startsWith("java.")) {
+			if (useSystem) {
 				loadedClass = PromiscuousClassUtils.forName(name, false, null);
 			} else {
 				loadedClass = findClass(name);
@@ -98,14 +117,15 @@ public final class IsolatedClassLoader extends IsolatingClassLoaderBase implemen
 			// Swallow exception
 			// does not exist locally
 		}
-		if (loadedClass == null) {
-			if (useSystem || name.startsWith("java.")) {
+		try {
+			if (useSystem) {
 				final ClassLoader systemLoader = ClassLoader.getSystemClassLoader();
 				loadedClass = systemLoader.loadClass(name);
 			} else {
-				loadedClass = loadClass(name, false); // same as
-													  // super.loadClass(name);
+				loadedClass = loadClassParentNoResolve(name);
 			}
+		} catch (ClassNotFoundException e) {
+			throw e;
 		}
 
 		return loadedClass;
@@ -129,7 +149,7 @@ public final class IsolatedClassLoader extends IsolatingClassLoaderBase implemen
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override public boolean addPaths(List<Object> strings, boolean includeParent) {
+	@Override public boolean addPathStringsForDebug(List<Object> strings, boolean includeParent) {
 		boolean changed = addCollection(strings, this, getURLs());
 		if (includeParent) {
 			if (pathsOf(strings, getParent(), includeParent))
@@ -144,4 +164,5 @@ public final class IsolatedClassLoader extends IsolatingClassLoaderBase implemen
 			changed = true;
 		return changed;
 	}
+
 }

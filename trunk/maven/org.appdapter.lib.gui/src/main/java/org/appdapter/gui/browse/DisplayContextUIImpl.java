@@ -441,7 +441,7 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 	//==== Other public methods =========================
 
 	@Override public NamedObjectCollection getLocalBoxedChildren() {
-		return Utility.getToplevelBoxCollection();
+		return Utility.getTreeBoxCollection();
 	}
 
 	@Override public Iterator getObjects() {
@@ -544,7 +544,6 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 				window.toFront();
 				return;
 			}
-			Debuggable.notImplemented();
 		}
 
 		if (value instanceof JPanel) {
@@ -557,6 +556,7 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 			ui.addTab(label, f);
 			ui.setSelectedComponent(f);
 			f.show();
+			return;
 		}
 
 		if (value instanceof JInternalFrame) {
@@ -568,6 +568,7 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 			ui.addTab(f.getTitle(), f);
 			f.toFront();
 			f.show();
+			return;
 
 		} else if (value instanceof JComponent) {
 			JInternalFrame f = new JInternalFrame(value.getName(), true, true, true, true);
@@ -584,6 +585,7 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 			ui.addTab(f.getTitle(), f);
 			f.toFront();
 			f.show();
+			return;
 
 		} else if (value instanceof Window) {
 			Window window = (Window) value;
@@ -610,6 +612,7 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 			ui.addTab(f.getTitle(), f);
 			f.toFront();
 			f.show();
+			return;
 		}
 	}
 
@@ -659,21 +662,21 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return ScreenBoxImpl.asResult(pnl);
+		return Utility.asUserResult(pnl);
 	}
 
 	/**
 	 * Opens up a GUI to show the details of the given value
 	 */
 	@Override public UserResult showScreenBox(Object value) throws Exception {
-		return showScreenBox(value, value.getClass());
+		return showScreenBox(value, null);
 	}
 
 	public UserResult showScreenBox(Object value, Class trigType) throws Exception {
 		return attachChildUI(null, value, trigType);
 	}
 
-	public UserResult attachChildUI(String label, Object value) throws Exception {
+	public UserResult attachChildUI(String label, Object value, boolean showASAP) throws Exception {
 		return attachChildUI(label, value, null);
 	}
 
@@ -682,11 +685,11 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 		Object value = valueIn;
 		final NamedObjectCollection collection = getLocalBoxedChildren();
 		BT wrapper = collection.findOrCreateBox(value);
-		value = wrapper.getValue();
+		value = wrapper.getValueOrThis();
 		if (trigType == null) {
 			trigType = wrapper.getObjectClass();
 		}
-
+		if (label==null) label = wrapper.getUniqueName();
 		JPanel view = wrapper.getPropertiesPanel();
 		showObjectGUI(label, view, trigType);
 		return UserResult.SUCCESS;

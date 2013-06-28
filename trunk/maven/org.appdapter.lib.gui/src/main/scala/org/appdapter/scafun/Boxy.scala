@@ -22,7 +22,7 @@ import org.appdapter.demo.DemoResources
 import org.appdapter.gui.box.ScreenBoxImpl
 
 class FullBox[FT <: FullTrigger[_ <: FullBox[FT]]] extends org.appdapter.gui.box.ScreenBoxImpl[FT] {}
-
+ 
 trait FullTrigger[FB <: FullBox[_ <: FullTrigger[FB]]] extends MutableTrigger[FB] {}
 
 class BoxOne extends FullBox[TriggerOne] {
@@ -30,9 +30,9 @@ class BoxOne extends FullBox[TriggerOne] {
   def getOpenKidBoxes(bc: BoxContext): Seq[BoxOne] = {
     val kidBoxJL = ScreenBoxImpl.boxctxGetOpenChildBoxesNarrowed(bc, this, classOf[BoxOne], classOf[TriggerOne]).asInstanceOf[java.util.List[BoxOne]];
     // Scala 2.8
-  	val kidBoxSeq : Seq[BoxOne] = scala.collection.JavaConversions.asBuffer(kidBoxJL) ;
+//  	val kidBoxSeq : Seq[BoxOne] = scala.collection.JavaConversions.asBuffer(kidBoxJL) ;
   	// Scala 2.10
-  //  val kidBoxSeq: Seq[BoxOne] = kidBoxJL.asScala;
+   val kidBoxSeq: Seq[BoxOne] = kidBoxJL.asScala;
     kidBoxSeq;
   }
 }

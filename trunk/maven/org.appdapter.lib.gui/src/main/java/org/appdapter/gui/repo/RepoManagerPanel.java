@@ -33,17 +33,17 @@ import javax.swing.JTable;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.core.log.Debuggable;
-import org.appdapter.gui.browse.HasFocusOnBox;
+import org.appdapter.gui.api.FocusOnBox;
 import org.appdapter.gui.rimpl.MutableRepoBox;
 import org.appdapter.gui.rimpl.TriggerMenuFactory;
-import org.appdapter.gui.swing.SingleTabFrame;
+import org.appdapter.gui.swing.ScreenBoxPanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public class RepoManagerPanel extends SingleTabFrame<MutableRepoBox> {
+public class RepoManagerPanel extends ScreenBoxPanel<MutableRepoBox> {
 	static Logger theLogger = LoggerFactory.getLogger(RepoManagerPanel.class);
 
 	@Override protected void initSubclassGUI() throws Throwable {
