@@ -18,7 +18,7 @@ import org.appdapter.gui.api.Utility;
 /**
  * A GUI component that shows all the constructors provided by a given class
  */
-public class ClassConstructorsPanel extends SingleTabFrame implements ActionListener {
+public class ClassConstructorsPanel extends ScreenBoxPanel implements ActionListener {
 	//==== Instance variables ==========================
 
 	//Class cls;

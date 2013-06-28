@@ -16,7 +16,7 @@ import org.appdapter.gui.api.Utility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PropertiesPanel extends SingleTabFrame implements GetSetObject {
+public class PropertiesPanel extends ScreenBoxPanel implements GetSetObject {
 	static Logger theLogger = LoggerFactory.getLogger(PropertiesPanel.class);
 
 	//DisplayContext context = new EmptyPOJOCollectionContext();

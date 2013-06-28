@@ -37,6 +37,7 @@ import org.appdapter.core.log.Loggable;
 import org.appdapter.core.name.Ident;
 import org.appdapter.gui.api.UIAware;
 import org.appdapter.gui.api.Utility;
+import org.appdapter.gui.box.WrapperValue;
 import org.appdapter.gui.util.CollectionSetUtils;
 import org.appdapter.gui.util.PromiscuousClassUtils;
 
@@ -61,7 +62,7 @@ public class TriggerForInstance extends TriggerImpl implements UIAware, Comparab
 		addClasses(ctx, cls.getSuperclass(), classesVisited);
 	}
 
-	public static <TrigType> void addClassLevelTriggers(DisplayContext ctx, Class cls, List<TrigType> tgs, BT poj) {
+	public static <TrigType> void addClassLevelTriggers(DisplayContext ctx, Class cls, List<TrigType> tgs, WrapperValue poj) {
 		HashSet<Class> skippedTriggersClasses = getSkippedTriggerClasses();
 		HashSet<Class> flat = new HashSet<Class>();
 		addClasses(ctx, cls, flat);
@@ -72,7 +73,7 @@ public class TriggerForInstance extends TriggerImpl implements UIAware, Comparab
 		}
 	}
 
-	@SuppressWarnings("unchecked") public static <TrigType> void addClassLevelTriggersPerClass(DisplayContext ctx, Class cls, List<TrigType> tgs, BT poj, int rulesOfAdd) {
+	@SuppressWarnings("unchecked") public static <TrigType> void addClassLevelTriggersPerClass(DisplayContext ctx, Class cls, List<TrigType> tgs, WrapperValue poj, int rulesOfAdd) {
 		try {
 			boolean onlyThisClass = true;
 			BeanInfo bi = Utility.getBeanInfo(cls, onlyThisClass);
@@ -87,7 +88,7 @@ public class TriggerForInstance extends TriggerImpl implements UIAware, Comparab
 		}
 	}
 
-	@SuppressWarnings("unchecked") public static <TrigType> void addFeatureTriggers(DisplayContext ctx, Class cls, FeatureDescriptor[] fd, List<TrigType> tgs, BT poj, int rulesOfAdd) {
+	@SuppressWarnings("unchecked") public static <TrigType> void addFeatureTriggers(DisplayContext ctx, Class cls, FeatureDescriptor[] fd, List<TrigType> tgs, WrapperValue poj, int rulesOfAdd) {
 		boolean clsHidden = hasAnotation(cls, UIHidden.class);
 		boolean clsSalient = hasAnotation(cls, UISalient.class);
 		UISalient isSalientCls = (UISalient) cls.getAnnotation(UISalient.class);
@@ -276,7 +277,7 @@ public class TriggerForInstance extends TriggerImpl implements UIAware, Comparab
 		org.appdapter.api.trigger.DisplayType dt = Utility.getDisplayType(expected);
 		final DisplayType edt = dt;
 		if (dt == DisplayType.TREE) {
-			BT boxed = Utility.getToplevelBoxCollection().findOrCreateBox(null, obj);
+			BT boxed = Utility.getTreeBoxCollection().findOrCreateBox(null, obj);
 			BoxContext bc = targetBox.getBoxContext();
 			bc.contextualizeAndAttachChildBox((Box) targetBox, (MutableBox) boxed);
 			return;
@@ -288,7 +289,7 @@ public class TriggerForInstance extends TriggerImpl implements UIAware, Comparab
 		try {
 			Utility.getCurrentContext().showScreenBox(obj);
 		} catch (Exception e) {
-			BT boxed = Utility.getToplevelBoxCollection().findOrCreateBox(null, obj);
+			BT boxed = Utility.getTreeBoxCollection().findOrCreateBox(null, obj);
 			BoxContext bc = targetBox.getBoxContext();
 			JPanel pnl = boxed.getPropertiesPanel();
 			if (dt == DisplayType.FRAME) {

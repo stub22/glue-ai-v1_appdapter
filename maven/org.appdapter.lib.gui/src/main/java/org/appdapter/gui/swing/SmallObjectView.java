@@ -39,6 +39,7 @@ import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.DisplayContext;
 import org.appdapter.api.trigger.NamedObjectCollection;
 import org.appdapter.core.log.Debuggable;
+import org.appdapter.gui.api.ObjectCollectionRemoveListener;
 import org.appdapter.gui.api.Utility;
 import org.appdapter.gui.rimpl.TriggerPopupMenu;
 import org.slf4j.Logger;
@@ -99,10 +100,6 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 		}
 	}
 
-	static public interface RemoveListener {
-		public void objectRemoved(Object object, Collection parent);
-	}
-
 	private final static Color normalColor = Color.black;
 	private final static Color selectedColor = Color.blue;
 	private static Logger theLogger = LoggerFactory.getLogger(SmallObjectView.class);
@@ -123,7 +120,7 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 	JButton propButton;
 	JButton removeButton;
 
-	RemoveListener removeListener;
+	ObjectCollectionRemoveListener objectCollectionRemoveListener;
 	boolean showIcon;
 
 	boolean showLabel;
@@ -177,16 +174,16 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 			}
 		} else if (evt.getSource() == removeButton) {
 			parent.remove(getValue());
-			if (removeListener != null) {
-				removeListener.objectRemoved(getValue(), parent);
+			if (objectCollectionRemoveListener != null) {
+				objectCollectionRemoveListener.objectRemoved(getValue(), parent);
 			}
 		}
 	}
 
 	public void actionRemove() {
 		parent.remove(getValue());
-		if (removeListener != null) {
-			removeListener.objectRemoved(getValue(), parent);
+		if (objectCollectionRemoveListener != null) {
+			objectCollectionRemoveListener.objectRemoved(getValue(), parent);
 		}
 	}
 
@@ -401,8 +398,8 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 
 	}
 
-	public void setRemoveListener(RemoveListener l) {
-		this.removeListener = l;
+	public void setRemoveListener(ObjectCollectionRemoveListener l) {
+		this.objectCollectionRemoveListener = l;
 	}
 
 	private void showMenu(int x, int y) {

@@ -1,7 +1,10 @@
 package org.appdapter.core.log;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.HashSet;
@@ -19,6 +22,10 @@ public abstract class Debuggable {
 
 	public static String toInfoStringArgV(Object... params) {
 		return toInfoStringA(params, ",", PRINT_DEPTH);
+	}
+
+	public static String toInfoStringCompound(String str, Object... params) {
+		return str + "(" + toInfoStringA(params, ",", PRINT_DEPTH) + ")";
 	}
 
 	public static <T extends Object> T NoSuchClassImpl(Object... objects) {
@@ -42,10 +49,6 @@ public abstract class Debuggable {
 	public static String trace(Object... objects) {
 		String dstr = Debuggable.toInfoStringA(objects, " : ", PRINT_DEPTH);
 		return dstr;
-	}
-
-	public static String toInfoStringCompound(String str, Object... params) {
-		return str + "(" + toInfoStringA(params, ",", PRINT_DEPTH) + ")";
 	}
 
 	public static String toInfoStringA(Object[] params, String sep, int depth) {
@@ -221,12 +224,19 @@ public abstract class Debuggable {
 	}
 
 	public static RuntimeException asRuntimeException(Throwable e) {
-		if (e instanceof InvocationTargetException)
-			e = e.getCause();
-		if (e instanceof RuntimeException)
-			return (RuntimeException) e;
-		if (e instanceof Error) {
-			throw ((Error) e);
+		Throwable useE = e;
+		while (e != null) {
+			if (e instanceof InvocationTargetException)
+				useE = e = e.getCause();
+			if (e instanceof RuntimeException)
+				return (RuntimeException) e;
+			if (e instanceof Error) {
+				throw ((Error) e);
+			}
+			Throwable ne = e.getCause();
+			if (ne == null || ne == e)
+				break;
+			e = ne;
 		}
 		return new RuntimeException(e.getMessage(), e);
 	}
@@ -239,6 +249,62 @@ public abstract class Debuggable {
 	}
 
 	public static RuntimeException reThrowable(Throwable e) {
+		printStackTrace(e);
 		return asRuntimeException(e);
+	}
+
+	public static void printStackTrace(final Throwable ex) {
+		printStackTrace(ex, System.err, -1);
+		return;
+	}
+
+	public static void printStackTrace(final Throwable ex, PrintStream ps, int maxLines) {
+		Throwable e = ex;
+		while (e != null) {
+			printStackTraceLocal(e, ps, 100);
+			ps.println("\n Caused by... ");
+			Throwable c = e.getCause();
+			if (c == null || c == e) {
+				return;
+			}
+			e = c;
+		}
+	}
+
+	private static int printStackTraceLocal(Throwable ex, PrintStream ps, int maxDepth) {
+		int depthShown = 0;
+		if (ex == null) {
+			ps.println("NULL TRHOWABLE");
+			return depthShown;
+		}
+		ps.println(ex.getClass() + ": " + ex.getMessage());
+		StackTraceElement[] elems = ex.getStackTrace();
+		if (elems == null) {
+			ps.println("NULL TRHOWABLE ELS");
+			return depthShown;
+		}
+		int td = elems.length - 1;
+		int es = 0;
+		while (maxDepth > 0) {
+			maxDepth--;
+			depthShown++;
+			StackTraceElement el = elems[es];
+			ps.println(" at " + el);
+			es++;
+			if (es >= td)
+				break;
+		}
+		return depthShown;
+	}
+
+	public static String details(Throwable ex) {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		PrintStream ps = new PrintStream(baos);
+		printStackTrace(ex, ps, -1);
+		try {
+			return baos.toString("ISO-8859-1");
+		} catch (UnsupportedEncodingException e) {
+			return baos.toString();
+		}
 	}
 }

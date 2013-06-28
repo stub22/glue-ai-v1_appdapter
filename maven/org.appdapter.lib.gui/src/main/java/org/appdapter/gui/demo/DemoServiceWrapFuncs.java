@@ -16,12 +16,15 @@
 
 package org.appdapter.gui.demo;
 
+import java.lang.reflect.InvocationTargetException;
+
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContext;
 import org.appdapter.api.trigger.MutableBox;
 import org.appdapter.api.trigger.ScreenBox.Kind;
 import org.appdapter.api.trigger.TriggerImpl;
 import org.appdapter.bind.rdf.jena.assembly.CachingComponentAssembler;
+import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.box.ScreenBoxImpl;
 import org.appdapter.gui.rimpl.PanelTriggers;
 
@@ -33,6 +36,18 @@ public class DemoServiceWrapFuncs {
 		BT result = CachingComponentAssembler.makeEmptyComponent(boxClass);
 		result.setShortLabel(label);
 		result.setDescription("full description for box with label: " + label);
+		return result;
+	}
+
+	private static <BT extends ScreenBoxImpl<TT>, TT extends TriggerImpl<BT>> BT makeTestBoxImplWithValue(Class<BT> boxClass, Object value, String label) {
+		BT result = CachingComponentAssembler.makeEmptyComponent(boxClass);
+		result.setShortLabel(label);
+		result.setDescription("full description for box with label: " + label);
+		try {
+			result.setObject(value);
+		} catch (InvocationTargetException ite) {
+			throw Debuggable.reThrowable(ite);
+		}
 		return result;
 	}
 
@@ -69,6 +84,14 @@ public class DemoServiceWrapFuncs {
 		BT result = null;
 		BoxContext ctx = parentBox.getBoxContext();
 		result = makeTestBoxImpl(childBoxClass, trigProto, label);
+		ctx.contextualizeAndAttachChildBox(parentBox, result);
+		return result;
+	}
+
+	public static <BT extends ScreenBoxImpl<TT>, TT extends TriggerImpl<BT>> BT makeTestChildBoxImplWithObj(Box parentBox, Class<BT> childBoxClass, Object value, String label) {
+		BT result = null;
+		BoxContext ctx = parentBox.getBoxContext();
+		result = makeTestBoxImplWithValue(childBoxClass, value, label);
 		ctx.contextualizeAndAttachChildBox(parentBox, result);
 		return result;
 	}

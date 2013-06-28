@@ -132,7 +132,7 @@ public interface NamedObjectCollection //
 	 */
 	void removePropertyChangeListener(PropertyChangeListener p);
 
-	Iterable<ScreenBoxImpl> getScreenBoxes();
+	Iterable<BT> getScreenBoxes();
 
 	DisplayContext getDisplayContext();
 

@@ -1,6 +1,10 @@
 package org.appdapter.gui.util;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 
 public abstract class CollectionSetUtils {
@@ -39,7 +43,25 @@ public abstract class CollectionSetUtils {
 
 	public static <T, ET> boolean addAllNew(List<T> list, ET[] elements) {
 		boolean changed = false;
-		for (Object t0 : elements) {
+		for (ET t0 : elements) {
+			T t;
+			try {
+				t = (T) t0;
+			} catch (ClassCastException cce) {
+				cce.printStackTrace();
+				continue;
+			}
+			if (addIfNew(list, t))
+				changed = true;
+		}
+		return changed;
+	}
+
+	public static <T, ET> boolean addAllNew(List<T> list, Enumeration<ET> elements) {
+		boolean changed = false;
+
+		while (elements.hasMoreElements()) {
+			ET t0 = elements.nextElement();
 			T t;
 			try {
 				t = (T) t0;
@@ -87,4 +109,24 @@ public abstract class CollectionSetUtils {
 	public static <T> T[] arrayOf(T... args) {
 		return args;
 	}
+
+	public static <T> Iterable<T> iterableOf(T... args) {
+		return Arrays.asList((T[]) args);
+	}
+
+	public static <T> T first(Object... args) {
+		for (Object o : args) {
+			if (o == null)
+				continue;
+			try {
+				T t = (T) o;
+				return t;
+			} catch (ClassCastException cce) {
+
+			}
+
+		}
+		return null;
+	}
+
 }

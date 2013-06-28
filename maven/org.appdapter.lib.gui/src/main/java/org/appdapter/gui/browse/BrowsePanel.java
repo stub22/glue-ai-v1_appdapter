@@ -29,22 +29,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.util.Collection;
 
-import javax.swing.ButtonGroup;
-import javax.swing.ImageIcon;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JComponent;
-import javax.swing.JDesktopPane;
-import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JRadioButtonMenuItem;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTextField;
 import javax.swing.*;
-import javax.swing.KeyStroke;
 import javax.swing.tree.TreeModel;
 
 import org.appdapter.api.trigger.BT;
@@ -58,6 +43,9 @@ import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.ObjectTabsForTabbedView;
 import org.appdapter.gui.api.Utility;
 import org.appdapter.gui.browse.CollectionEditorUtil.FileMenu;
+
+import com.jidesoft.swing.*;
+import com.jidesoft.tree.StyledTreeCellRenderer;
 
 //JIDESOFT import com.jidesoft.swing.*;
 import javax.swing.*;
@@ -79,7 +67,8 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 		Utility.theBoxPanelDisplayContext = myBoxPanelSwitchableViewImpl = new ObjectTabsForTabbedView(myBoxPanelTabPane);
 		//setTabbedPaneOptions();
 		Utility.controlApp = app = new DisplayContextUIImpl(myBoxPanelSwitchableViewImpl, this, Utility.uiObjects);
-		NamedObjectCollection ctx = Utility.getToplevelBoxCollection();
+		NamedObjectCollection ctx = Utility.getTreeBoxCollection();
+		new AddToTreeListener(myTree, ctx);
 		Utility.collectionWatcher = new CollectionEditorUtil(app, ctx);
 		//myBoxPanelTabPane.add("Class Browser", Utility.selectionOfCollectionPanel);
 		myBoxPanelTabPane.add("POJO Browser", Utility.collectionWatcher.getNamedItemChooserPanel());
@@ -87,21 +76,23 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 	}
 
 	private void setTabbedPaneOptions() {
-/**JIDESOFT	    myBoxPanelTabPane.setUseDefaultShowCloseButtonOnTab(true);
-	    myBoxPanelTabPane.setShowCloseButtonOnTab(true);
-	    myBoxPanelTabPane.setTabEditingAllowed(true);
-	    myBoxPanelTabPane.setBoldActiveTab(true);
-	    myBoxPanelTabPane.setShowCloseButtonOnMouseOver(false);*/
+		/**JIDESOFT	 */
+		myBoxPanelTabPane.setUseDefaultShowCloseButtonOnTab(true);
+		myBoxPanelTabPane.setShowCloseButtonOnTab(true);
+		myBoxPanelTabPane.setTabEditingAllowed(true);
+		myBoxPanelTabPane.setBoldActiveTab(true);
+		myBoxPanelTabPane.setShowCloseButtonOnMouseOver(false);
 	}
 
 	private void hookTree() {
-	      /**JIDESOFT     myTree.setCellRenderer(new StyledTreeCellRenderer() {
+		/**JIDESOFT */
+		myTree.setCellRenderer(new StyledTreeCellRenderer() {
 			protected void customizeStyledLabel(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hazFocus) {
 				super.customizeStyledLabel(tree, value, sel, expanded, leaf, row, hazFocus);
 				String text = getText();
 				// here is the code to customize she StyledLabel for each tree node
 			}
-		});*/
+		});
 
 	}
 
@@ -261,25 +252,24 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 	private void initComponents() {
 
 		myTopFrameMenu = new javax.swing.JMenuBar();
-		myBrowserSplitPane = new JSplitPane();
-		myTreeScrollPane = new JScrollPane();
+		myBrowserSplitPane = new JideSplitPane();
+		myTreeScrollPane = new JideScrollPane();
 		myTree = new javax.swing.JTree();
 		myContentPanel = new javax.swing.JPanel();
 		myBoxPanelStatus = new javax.swing.JTextField();
-		myBoxPanelTabPane = new JTabbedPane();
+		myBoxPanelTabPane = new JideTabbedPane();
 		myHomeBoxPanel = new javax.swing.JPanel();
 		myLowerPanel = new JPanel();
 		myCmdInputTextField = new javax.swing.JTextField();
-		myLogScrollPane = new JScrollPane();
+		myLogScrollPane = new JideScrollPane();
 		myLogTextArea = new javax.swing.JTextArea();
 
 		setLayout(new java.awt.BorderLayout());
 
-		myBrowserSplitPane.setDividerLocation(140);
-				//JIDESOFT myBoxPanelTabPane = new JideTabbedPane();
-		// myTreeScrollPane = new JideScrollPane();
-		// myLogScrollPane = new JideScrollPane();
-		// myBrowserSplitPane.setDividerLocation(0, 140);
+		myBoxPanelTabPane = new JideTabbedPane();
+		myTreeScrollPane = new JideScrollPane();
+		myLogScrollPane = new JideScrollPane();
+		myBrowserSplitPane.setDividerLocation(0, 140);
 
 		myTree.setModel(myTreeModel);
 		myTreeScrollPane.setViewportView(myTree);
@@ -355,23 +345,23 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 	//GEN-BEGIN:variables
 	// Variables declaration - do not modify
 	private javax.swing.JTextField myBoxPanelStatus;
-	public JTabbedPane myBoxPanelTabPane;
-	private JSplitPane myBrowserSplitPane;
+	public JideTabbedPane myBoxPanelTabPane;
+	private JideSplitPane myBrowserSplitPane;
 	private javax.swing.JTextField myCmdInputTextField;
 	private javax.swing.JPanel myContentPanel;
 	private javax.swing.JPanel myHomeBoxPanel;
-	private JScrollPane myLogScrollPane;
+	private JideScrollPane myLogScrollPane;
 	private javax.swing.JTextArea myLogTextArea;
 	private javax.swing.JPanel myLowerPanel;
 	private javax.swing.JMenuBar myTopFrameMenu;
-	private javax.swing.JTree myTree;
-	private JScrollPane myTreeScrollPane;
+	private JTree myTree;
+	private JideScrollPane myTreeScrollPane;
 	private BoxPanelSwitchableView myBoxPanelSwitchableViewImpl;
 
 	// End of variables declaration//GEN-END:variables
 
-	public NamedObjectCollection getNamedObjectCollection() {
-		return Utility.getToplevelBoxCollection();
+	public NamedObjectCollection getTreeBoxCollection() {
+		return Utility.getTreeBoxCollection();
 	}
 
 	public UserResult showMessage(String message) {
@@ -389,7 +379,7 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 
 	public UserResult addObject(String title, Object anyObject, DisplayType attachType, boolean showAsap) {
 		try {
-			BT impl = getNamedObjectCollection().findOrCreateBox(title, anyObject);
+			BT impl = getTreeBoxCollection().findOrCreateBox(title, anyObject);
 			if (showAsap) {
 				return app.showScreenBox(impl);
 			}

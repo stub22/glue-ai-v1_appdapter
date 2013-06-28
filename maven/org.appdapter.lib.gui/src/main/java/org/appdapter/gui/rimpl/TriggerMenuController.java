@@ -10,6 +10,7 @@ import javax.swing.JPopupMenu;
 import org.appdapter.api.trigger.BT;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.DisplayContext;
+import org.appdapter.api.trigger.GetObject;
 import org.appdapter.api.trigger.NamedObjectCollection;
 import org.appdapter.api.trigger.POJOCollectionListener;
 
@@ -29,12 +30,12 @@ class TriggerMenuController implements POJOCollectionListener {
 	DisplayContext appcontext;
 
 	Object object;
-	Box boxed;
+	BT boxed;
 
 	JPopupMenu popup = null;
 	JMenu menu = null;
 
-	public TriggerMenuController(DisplayContext context0, Object object, Box box, JPopupMenu popup0) {
+	public TriggerMenuController(DisplayContext context0, Object object, BT box, JPopupMenu popup0) {
 		this.boxed = box;
 		if (object == null && this.boxed != null)
 			object = null;//boxed.getValue();
@@ -63,7 +64,7 @@ class TriggerMenuController implements POJOCollectionListener {
 		initMenu();
 	}
 
-	public TriggerMenuController(DisplayContext context0, Object object, Box box, JMenu menu0) {
+	public TriggerMenuController(DisplayContext context0, Object object, BT box, JMenu menu0) {
 		this.boxed = box;
 		this.context = context0.getLocalBoxedChildren();
 		if (context != null) {
@@ -109,9 +110,9 @@ class TriggerMenuController implements POJOCollectionListener {
 		}
 		TriggerMenuFactory factor = TriggerMenuFactory.getInstance(object);
 		if (popup != null)
-			factor.addTriggersToPopup(boxed, popup);
+			factor.addTriggersToPopup(boxed.asBox(), popup);
 		if (menu != null)
-			factor.addTriggersToPopup(boxed, menu);
+			factor.addTriggersToPopup(boxed.asBox(), menu);
 
 	}
 

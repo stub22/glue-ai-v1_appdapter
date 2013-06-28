@@ -97,7 +97,7 @@ class SheetProc (val myHeaderRowCount : Int) extends BasicDebugger {
  * Used to read a simple two column sheet into a (key,value) pair map.
  */
 class MapSheetProc (headerRowCount : Int, val keyColIdx : Int, val vColIdx : Int) extends SheetProc(headerRowCount) {
-	val myResultMap = scala.collection.mutable.Map.empty[String, String]
+	val myResultMap = new java.util.HashMap[String, String]()
 	
 	override def absorbDataRow(cellRow : MatrixRow) {
 		val key : Option[String] = cellRow.getPossibleColumnValueString(keyColIdx);
@@ -112,7 +112,7 @@ class MapSheetProc (headerRowCount : Int, val keyColIdx : Int, val vColIdx : Int
 			}
 		}
 	}
-	import collection.JavaConversions._	
+	//import collection.JavaConversions._	
 	def getJavaMap : java.util.Map[String, String] = myResultMap;
 }
 

@@ -24,13 +24,13 @@ package org.appdapter.gui.repo;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.core.log.Debuggable;
-import org.appdapter.gui.swing.SingleTabFrame;
+import org.appdapter.gui.swing.ScreenBoxPanel;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
 
-public class DatabaseManagerPanel extends SingleTabFrame<Box> {
+public class DatabaseManagerPanel extends ScreenBoxPanel<Box> {
 
 	/** Creates new form DatabaseManagerPanel */
 	public DatabaseManagerPanel() {

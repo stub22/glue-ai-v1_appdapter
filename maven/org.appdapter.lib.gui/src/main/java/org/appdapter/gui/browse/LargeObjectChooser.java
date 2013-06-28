@@ -12,6 +12,7 @@ import javax.swing.border.Border;
 
 import org.appdapter.api.trigger.NamedObjectCollection;
 import org.appdapter.api.trigger.POJOCollectionListener;
+import org.appdapter.gui.api.ObjectCollectionRemoveListener;
 import org.appdapter.gui.swing.SmallObjectView;
 import org.appdapter.gui.swing.VerticalLayout;
 
@@ -92,7 +93,7 @@ public class LargeObjectChooser extends JPanel implements POJOCollectionListener
 					super.valueChanged(oldValue, newValue);
 				}
 			};
-			view.setRemoveListener(new SmallObjectView.RemoveListener() {
+			view.setRemoveListener(new ObjectCollectionRemoveListener() {
 				@Override public void objectRemoved(Object oldValue, Collection parent) {
 					replaceInContext(context, oldValue, null);
 				}

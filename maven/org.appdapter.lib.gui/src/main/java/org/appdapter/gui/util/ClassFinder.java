@@ -10,10 +10,6 @@ import java.util.StringTokenizer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import org.appdapter.gui.api.Utility;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * This is a stateless utility class that contains code for looking up
  * classes in the CLASSPATH and EXTDIRS in the current JVM. <br>
@@ -31,7 +27,6 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class ClassFinder {
-	private static Logger theLogger = LoggerFactory.getLogger(ClassFinder.class);
 
 	/**
 	 * Class with these modifiers are skipped while searching the JVM classes.
@@ -43,12 +38,12 @@ public class ClassFinder {
 	 * the given class, directly or indirectly.
 	 */
 	public static Set<Class> getClasses(Class ancestor) throws IOException {
-		theLogger.trace("Scaning for subclasses of " + ancestor);
+		///.trace("Scaning for subclasses of " + ancestor);
 		if (class_Cache != null && class_Cache.size() > 10) {
 			return (Set<Class>) PromiscuousClassUtils.getImplementingClasses(ancestor);
 		}
 		Set<Class> set = getClasses("", ancestor);
-		theLogger.trace("returning " + set.size() + "  subclasses of " + ancestor);
+		//theLogger.trace("returning " + set.size() + "  subclasses of " + ancestor);
 		return set;
 	}
 
@@ -134,7 +129,7 @@ public class ClassFinder {
 						continue;
 					}
 					if (err instanceof VirtualMachineError) {
-						throw (VirtualMachineError)err;
+						throw (VirtualMachineError) err;
 					}
 					logError("Class '" + className + "' could not be loaded - I will ignore it", err);
 				}
@@ -351,13 +346,20 @@ public class ClassFinder {
 		String temp;
 
 		//Get rid of .class at the end
-		temp = Utility.replace(fileName, ".class", "");
+		if (fileName.endsWith(".class")) {
+			fileName = fileName.substring(0, fileName.length() - 6);
+		}
 
 		//Change slashes to dots
-		temp = Utility.replace(temp, "\\", ".");
-		temp = Utility.replace(temp, "/", ".");
+		temp = replace(fileName, "\\", ".");
+		temp = replace(temp, "/", ".");
+		//		temp = replace(temp, "$", ".");
 
 		return temp;
+	}
+
+	public static String replace(String s, String b, String a) {
+		return s.replace(b, a);
 	}
 
 	private static void logError(String msg, Throwable err) {

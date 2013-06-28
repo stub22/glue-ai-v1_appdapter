@@ -28,6 +28,7 @@ import org.appdapter.api.trigger.DisplayContext;
 import org.appdapter.api.trigger.BoxPanelSwitchableView;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.Chooser;
+import org.appdapter.gui.api.ObjectCollectionRemoveListener;
 import org.appdapter.gui.api.Utility;
 
 /**
@@ -38,7 +39,7 @@ import org.appdapter.gui.api.Utility;
  */
 public class CollectionContentsPanel
 
-extends SingleTabFrame implements SmallObjectView.RemoveListener, DropTargetListener, Chooser<Object>
+extends ScreenBoxPanel implements ObjectCollectionRemoveListener, DropTargetListener, Chooser<Object>
 
 , ChangeListener {
 

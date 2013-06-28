@@ -29,15 +29,15 @@ import org.appdapter.api.trigger.AnyOper.UIHidden;
  * @author Stu B. <www.texpedient.com>
  */
 @UIHidden
-public interface Box<TrigType extends Trigger<? extends Box<TrigType>>> {
+public interface Box<TrigType extends Trigger<? extends Box<TrigType>>> extends GetObject {
 
 	public BoxContext getBoxContext();
 
-	public <T> T[] getObjects(Class<T> type);
+	public <T, E extends T> Iterable<E> getObjects(Class<T> type);
 
 	public List<TrigType> getTriggers();
 
-	public Component getComponent();
+	//public Component getComponent();
 
 	public Object getValue();
 

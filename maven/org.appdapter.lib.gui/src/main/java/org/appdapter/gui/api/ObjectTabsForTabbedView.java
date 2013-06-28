@@ -11,17 +11,19 @@ import javax.swing.event.ChangeListener;
 import org.appdapter.api.trigger.BoxPanelSwitchableView;
 import org.appdapter.api.trigger.DisplayType;
 import org.appdapter.core.log.Debuggable;
-import org.appdapter.gui.swing.SingleTabFrame;
+import org.appdapter.gui.swing.ScreenBoxPanel;
+
+import com.jidesoft.swing.JideTabbedPane;
 
 public class ObjectTabsForTabbedView implements BoxPanelSwitchableView {
 
-	final JTabbedPane tabs;
+	final JideTabbedPane tabs;
 
-	public ObjectTabsForTabbedView(JTabbedPane tbs) {
+	public ObjectTabsForTabbedView(JideTabbedPane tbs) {
 		if (tbs.toString() == null) {
 
 		}
-		tabs = tbs;
+		tabs = (JideTabbedPane) tbs;
 	}
 
 	@Override public boolean clearChildren() {
@@ -143,11 +145,21 @@ public class ObjectTabsForTabbedView implements BoxPanelSwitchableView {
 
 	@Override public boolean addTab(String title, Component view) {
 		int index = indexOf(title, view);
+		title = titleCheck(title, view);
 		if (index == -1) {
 			tabs.addTab(title, view);
 			return true;
+		} else {
+
 		}
 		Component comp = tabs.getTabComponentAt(index);
+		if (comp == view)
+			return true;
+		if (comp == null) {
+			tabs.remove(index);
+			tabs.addTab(title, view);
+			return true;
+		}
 		boolean wrongComponet = false;
 		if (view != null && comp != null && comp != view) {
 			wrongComponet = true;
@@ -163,6 +175,18 @@ public class ObjectTabsForTabbedView implements BoxPanelSwitchableView {
 		}
 		return false;
 
+	}
+
+	private String titleCheck(String title, Component view) {
+		if (title != null && title.length() > 2) {
+			return title;
+		}
+		title = view.getName();
+		if (title != null && title.length() > 2) {
+			return title;
+		}
+		title = view.toString();
+		return title;
 	}
 
 	@Override public void insertTab(String title, Icon icon, Component component, String tip, int index) {
@@ -196,7 +220,11 @@ public class ObjectTabsForTabbedView implements BoxPanelSwitchableView {
 	}
 
 	@Override public void setSelectedComponent(Component view) {
-		tabs.setSelectedComponent(view);
+		try {
+			tabs.setSelectedComponent(view);
+		} catch (Exception e) {
+			Debuggable.printStackTrace(e);
+		}
 
 	}
 

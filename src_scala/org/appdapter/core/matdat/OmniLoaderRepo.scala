@@ -184,7 +184,7 @@ object OmniLoaderRepoTest {
     val repo = repoSpec.makeRepo;
     repo.loadSheetModelsIntoMainDataset();
     repo.loadDerivedModelsIntoMainDataset(null);
-    repoNav.attachChildUI(repo.toString(), repo, true);
+    repoNav.addObject(repo.toString(), repo, true);
   }
 
 }

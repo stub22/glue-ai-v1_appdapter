@@ -34,7 +34,7 @@ object GoFish {
   def makeTNC(args: Array[String]): DemoBrowserCtrl = {
     val tnc = DemoBrowserUI.makeDemoNavigatorCtrl(args);
     val box1 = Boxy.boxItUp();
-    tnc.attachChildUI(null, box1, false);
+    tnc.addObject(null, box1, false);
     tnc;
   }
   /*
