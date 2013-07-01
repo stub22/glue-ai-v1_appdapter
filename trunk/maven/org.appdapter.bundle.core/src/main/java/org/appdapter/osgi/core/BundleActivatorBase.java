@@ -18,17 +18,13 @@ package org.appdapter.osgi.core;
 /**
  * @author Stu B. <www.texpedient.com>
  */
+import org.appdapter.core.boot.ClassLoaderUtils;
+import org.appdapter.core.log.BasicDebugger;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.slf4j.Logger; 
-
-import org.appdapter.core.log.BasicDebugger;
-
-import java.net.URL;
-import org.appdapter.bind.log4j.Log4jFuncs;
-import org.osgi.framework.*;
-
+import org.osgi.framework.FrameworkEvent;
+import org.osgi.framework.FrameworkListener;
 
 /**
  * Note:  Appdapter client bundles are *not* required to use this class, or to use
@@ -47,9 +43,9 @@ import org.osgi.framework.*;
  * @author Stu B. <www.texpedient.com>
  */
 
-public abstract class BundleActivatorBase extends BasicDebugger implements BundleActivator  {
- 
-	private final class GotFrameworkEvent implements FrameworkListener {
+public abstract class BundleActivatorBase extends BasicDebugger implements BundleActivator {
+
+	final class GotFrameworkStartEvent implements FrameworkListener {
 		public void frameworkEvent(FrameworkEvent fe) {
 			int eventType = fe.getType();
 			getLogger().info("************************ Got frameworkEvent with eventType=" + eventType + ", bundle=" + fe.getBundle());
@@ -58,6 +54,10 @@ public abstract class BundleActivatorBase extends BasicDebugger implements Bundl
 				dispatchFrameworkStartedEvent(fe.getBundle(), fe.getThrowable());
 			}
 		}
+	}
+
+	public BundleActivatorBase() {
+		ClassLoaderUtils.registerClassLoader(this, null);
 	}
 
 	/**
@@ -75,12 +75,14 @@ public abstract class BundleActivatorBase extends BasicDebugger implements Bundl
 	 * @param bundleCtx
 	 * @throws Exception 
 	 */
-    @Override public void start(BundleContext bundleCtx) throws Exception {
+	@Override public void start(BundleContext bundleCtx) throws Exception {
+		ClassLoaderUtils.registerClassLoader(this, bundleCtx);
 		getLogger().info(describe("start<BundleActivatorBase>", bundleCtx));
-    }
+	}
 
-    @Override public void stop(BundleContext bundleCtx) throws Exception {
-		getLogger().info(describe("stop<BundleActivatorBase>", bundleCtx));	
+	@Override public void stop(BundleContext bundleCtx) throws Exception {
+		ClassLoaderUtils.unregisterClassLoader(this, bundleCtx);
+		getLogger().info(describe("stop<BundleActivatorBase>", bundleCtx));
 	}
 
 	/** Override this method if you need notification after all bundles in your container have been started.
@@ -92,14 +94,16 @@ public abstract class BundleActivatorBase extends BasicDebugger implements Bundl
 	protected void handleFrameworkStartedEvent(BundleContext bundleCtx) {
 		getLogger().info("Default implementation of handleFrameworkStartedEvent() called on " + getClass() + ", you should override this!  BundleContext=" + bundleCtx);
 	}
+
 	/**
 	 * Call this method from any bundle's start() to schedule a callback to its handleFrameworkStartedEvent() method.
 	 * 
 	 * @param bundleCtx - used to schedule the callback, and then forgotten.
 	 */
 	protected void scheduleFrameworkStartEventHandler(BundleContext bundleCtx) {
-			bundleCtx.addFrameworkListener(new GotFrameworkEvent());
+		bundleCtx.addFrameworkListener(new GotFrameworkStartEvent());
 	}
+
 	private void dispatchFrameworkStartedEvent(Bundle eventBundle, Throwable eventThrowable) {
 		String thrownMsg = (eventThrowable == null) ? "OK" : eventThrowable.getClass().getName();
 		getLogger().info("dispatchFrameworkStartedEvent<BundleActivatorBase> ( bundle={}, msg={}", eventBundle, thrownMsg);
@@ -113,10 +117,10 @@ public abstract class BundleActivatorBase extends BasicDebugger implements Bundl
 			getLogger().warn("No callback to application startup, due to throwable ", eventThrowable);
 		}
 	}
-	
-	protected String describe(String action, BundleContext bundleCtx) { 
+
+	protected String describe(String action, BundleContext bundleCtx) {
 		Bundle b = bundleCtx.getBundle();
 		String msg = getClass().getCanonicalName() + "." + action + "(ctx=[" + bundleCtx + "], bundle=[" + b + "])";
 		return msg;
-	}	
+	}
 }

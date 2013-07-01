@@ -20,8 +20,11 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Dictionary;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 
 import org.appdapter.core.log.Debuggable;
 import org.osgi.framework.BundleContext;
@@ -39,6 +42,10 @@ public class ClassLoaderUtils {
 
 	public final static String RESOURCE_CLASSLOADER_TYPE = "ResourceClassLoaderType";
 	private final static Logger theLogger = LoggerFactory.getLogger(ClassLoaderUtils.class.getName());
+
+	static {
+
+	}
 
 	private static <T> boolean addIfNew(Collection<T> col, T e) {
 		if (e == null)
@@ -63,12 +70,13 @@ public class ClassLoaderUtils {
 
 	public static ClassLoader findResourceClassLoader(String path, List<ClassLoader> cLoaders) {
 		for (ClassLoader cl : cLoaders) {
-			registeredLoaders.add(cl);
+			allSeenEverLoaders.add(cl);
 			// This method will first search the parent class loader for the resource; if the parent is null the path of
 			// the class loader built-in to the virtual machine is searched. That failing, this method will invoke 
 			// findResource(String) to find the resource.
 			URL res = cl.getResource(path);
 			if (res != null) {
+
 				return cl;
 			}
 		}
@@ -77,7 +85,7 @@ public class ClassLoaderUtils {
 
 	public static URL findResourceURL(String path, List<ClassLoader> cLoaders) {
 		for (ClassLoader cl : cLoaders) {
-			registeredLoaders.add(cl);
+			allSeenEverLoaders.add(cl);
 			// This method will first search the parent class loader for the resource; if the parent is null the path of
 			// the class loader built-in to the virtual machine is searched. That failing, this method will invoke 
 			// findResource(String) to find the resource.
@@ -90,13 +98,13 @@ public class ClassLoaderUtils {
 	}
 
 	public static List<ClassLoader> getFileResourceClassLoaders(BundleContext context, String resourceClassLoaderType) {
-		List<ClassLoader> resourceLoaders = new ArrayList<ClassLoader>();
-		if (context == null) {
-			return resourceLoaders;
-		}
 		if (resourceClassLoaderType == null || resourceClassLoaderType.isEmpty()) {
 			resourceClassLoaderType = ALL_RESOURCE_CLASSLOADER_TYPES;
 		}
+		if (context == null) {
+			return getFileResourceClassLoaders(resourceClassLoaderType);
+		}
+		List<ClassLoader> resourceLoaders = new ArrayList<ClassLoader>();
 		ServiceReference[] loaders = null;
 		String filter = "(" + RESOURCE_CLASSLOADER_TYPE + "=" + resourceClassLoaderType + ")";
 		try {
@@ -111,7 +119,7 @@ public class ClassLoaderUtils {
 			ClassLoader l = getLoader(context, ref);
 			if (l != null) {
 				resourceLoaders.add(l);
-				registeredLoaders.add(l);
+				allSeenEverLoaders.add(l);
 			}
 		}
 		return resourceLoaders;
@@ -124,11 +132,38 @@ public class ClassLoaderUtils {
 				addAllIfNew(resourceLoaders, cLoaders);
 			}
 		}
-		addIfNew(resourceLoaders, Thread.currentThread().getContextClassLoader());
-		addIfNew(resourceLoaders, ClassLoaderUtils.class.getClassLoader());
-		addIfNew(resourceLoaders, ClassLoader.getSystemClassLoader());
-		addAllIfNew(resourceLoaders, registeredLoaders);
-		addAllIfNew(registeredLoaders, resourceLoaders);
+		boolean isAll = false;
+		boolean useDefaults = true;
+		boolean useAllSeenLoaders = false;
+
+		if (resourceClassLoaderType == null || resourceClassLoaderType.isEmpty() || resourceClassLoaderType.equals(ALL_RESOURCE_CLASSLOADER_TYPES)) {
+			resourceClassLoaderType = ALL_RESOURCE_CLASSLOADER_TYPES;
+			isAll = true;
+			useAllSeenLoaders = true;
+		}
+		synchronized (namedLoaders) {
+
+			if (isAll) {
+				addAllIfNew(resourceLoaders, namedLoaders.values());
+			} else {
+				ClassLoader cl = namedLoaders.get(resourceClassLoaderType);
+				if (cl == null) {
+					theLogger.error("MISSING CLASSLOADER TYPE: ", resourceClassLoaderType);
+					useAllSeenLoaders = true;
+				} else {
+					addIfNew(resourceLoaders, cl);
+				}
+			}
+		}
+
+		if (useDefaults) {
+			addIfNew(resourceLoaders, Thread.currentThread().getContextClassLoader());
+			addIfNew(resourceLoaders, ClassLoader.getSystemClassLoader());
+		}
+		if (useAllSeenLoaders)
+			synchronized (allSeenEverLoaders) {
+				addAllIfNew(resourceLoaders, allSeenEverLoaders);
+			}
 		theLogger.info(Debuggable.toInfoStringCompound("getFileResourceClassLoaders-Count", resourceLoaders.size(), resourceLoaders));
 		return resourceLoaders;
 	}
@@ -146,20 +181,63 @@ public class ClassLoaderUtils {
 		return (ClassLoader) obj;
 	}
 
-	static HashSet<ClassLoader> registeredLoaders = new HashSet<ClassLoader>();
+	static HashSet<ClassLoader> allSeenEverLoaders = new HashSet<ClassLoader>();
+	static Map<String, ClassLoader> namedLoaders = new HashMap<String, ClassLoader>();
 
 	public static void registerClassLoader(BundleContext context, ClassLoader loader, String resourceClassLoaderType) {
-		if (context == null || loader == null) {
-			theLogger.warn(Debuggable.toInfoStringCompound("registerClassLoader", context, loader, resourceClassLoaderType));
+		registerClassLoader(context, loader, resourceClassLoaderType, false, false);
+	}
+
+	private static void registerClassLoader(BundleContext context, ClassLoader loader, String resourceClassLoaderType, boolean contextOptional, boolean isRemoval) {
+		if (loader == null && !isRemoval) {
+			theLogger.error(Debuggable.toInfoStringCompound("NULLS in registerClassLoader", context, loader, resourceClassLoaderType, "contextOptional=", contextOptional, "isRemoval=", isRemoval));
 			return;
 		}
+		boolean isNamed = true;
 		if (resourceClassLoaderType == null) {
 			resourceClassLoaderType = "UNKNOWN";
-			theLogger.warn(Debuggable.toInfoStringCompound("UNKNOWN TYPE: registerClassLoader", context, loader, resourceClassLoaderType));
+			theLogger
+					.warn(Debuggable.toInfoStringCompound("UNKNOWN TYPE: registerClassLoader", context, loader, resourceClassLoaderType, "contextOptional=", contextOptional, "isRemoval=", isRemoval));
+			isNamed = false;
+		} else if (resourceClassLoaderType.isEmpty() || resourceClassLoaderType.equals(ALL_RESOURCE_CLASSLOADER_TYPES)) {
+			resourceClassLoaderType = ALL_RESOURCE_CLASSLOADER_TYPES;
+			isNamed = false;
+		}
+		synchronized (namedLoaders) {
+			if (isRemoval) {
+				allSeenEverLoaders.remove(loader);
+				if (isNamed) {
+					namedLoaders.remove(resourceClassLoaderType);
+				}
+
+			} else {
+				allSeenEverLoaders.add(loader);
+				if (isNamed) {
+					namedLoaders.put(resourceClassLoaderType, loader);
+				}
+			}
+
+		}
+		if (context == null) {
+			if (!contextOptional)
+				theLogger
+						.error(Debuggable.toInfoStringCompound("NULLS in registerClassLoader", context, loader, resourceClassLoaderType, "contextOptional=", contextOptional, "isRemoval=", isRemoval));
+			return;
 		}
 		Dictionary<String, String> props = new Hashtable<String, String>();
 		props.put(RESOURCE_CLASSLOADER_TYPE, resourceClassLoaderType);
-		registeredLoaders.add(loader);
 		context.registerService(ClassLoader.class.getName(), loader, props);
+	}
+
+	public static void registerClassLoader(Object something, BundleContext ctx) {
+		Class thisClass = something.getClass();
+		ClassLoaderUtils.registerClassLoader(ctx, thisClass.getClassLoader(), thisClass.getPackage().getName(), true, false);
+
+	}
+
+	public static void unregisterClassLoader(Object something, BundleContext ctx) {
+		Class thisClass = something.getClass();
+		ClassLoaderUtils.registerClassLoader(ctx, thisClass.getClassLoader(), thisClass.getPackage().getName(), false, true);
+
 	}
 }
