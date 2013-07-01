@@ -21,64 +21,74 @@ import com.hp.hpl.jena.rdf.model.{ Model, Resource, Literal, RDFNode, ModelFacto
 import com.hp.hpl.jena.shared.PrefixMapping
 import org.appdapter.core.boot.ClassLoaderUtils
 import org.appdapter.core.log.BasicDebugger
-//import org.appdapter.core.store.RepoSpec
 import org.appdapter.impl.store.QueryHelper
 import annotation._
 import org.appdapter.impl.store.DirectRepo
-//import org.appdapter.api.trigger.RepoOper
 import org.appdapter.core.store.Repo
+import org.appdapter.core.store.RepoOper
 /**
  * @author Stu B. <www.texpedient.com>
  * @author Douglas R. Miles <www.logicmoo.org>
  *
- * This is a DirModel Loader it contains static method for loading FileRepos
+ * This is a DirModel Loader it contains static methods for loading Google Docs Speedsheets
  */
-@deprecated("Instead of making a Repo Object we will make a GoogSheetRepoSpec - since appdapter 1.1.1")
-class GoogSheetRepo(directoryModel: Model, fmcls: java.util.List[ClassLoader] = null) extends SheetRepo(directoryModel, fmcls) {
-
-  def this() =
-    this(null, null)
-
-  def this(directoryModel: Model) =
-    this(directoryModel, null)
-
-  /**   All the work gets done at SheetRepo
-  def loadGoogSheetModelsIntoMainDataset() = {
-    val mainDset: DataSource = getMainQueryDataset().asInstanceOf[DataSource];
-    val dirModel = getDirectoryModel;
-    val fileResModelCLs: java.util.List[ClassLoader] =
-      ClassLoaderUtils.getFileResourceClassLoaders(ClassLoaderUtils.ALL_RESOURCE_CLASSLOADER_TYPES);
-    GoogSheetRepo.loadSheetModelsIntoTargetDataset(this, mainDset, dirModel, fileResModelCLs);
-  } */
+class GoogSheetRepo(directoryModel: Model, fmcls: java.util.List[ClassLoader] = null)
+  extends OmniLoaderRepo(directoryModel, fmcls) {
 }
-
-/// this is a registerable loader
-class GoogSheetRepoLoader extends InstallableRepoReader {
-  override def getContainerType() = "ccrt:GoogSheetRepo" 
-  override def getSheetType() = "ccrt:GoogSheet"
-  override def loadModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: DataSource, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
-    GoogSheetRepo.loadSheetModelsIntoTargetDataset(repo, mainDset, dirModel, fileModelCLs)
+object GoogSheetRepo {
+  /////////////////////////////////////////
+  /// Read dir models
+  /////////////////////////////////////////
+  def readDirectoryModelFromGoog(sheetLocation: String, namespaceSheet: Int, dirSheet: Int): Model = {
+    // Read the single directory sheets into a single directory model.
+    GoogSheetRepoLoader.readDirectoryModelFromGoog(sheetLocation, namespaceSheet, dirSheet)
   }
 }
 
-object GoogSheetRepo extends BasicDebugger {
+/////////////////////////////////////////
+/// this is a registerable loader
+/////////////////////////////////////////
+class GoogSheetRepoLoader extends InstallableRepoReader {
+  override def getContainerType() = "ccrt:GoogSheetRepo"
+  override def getSheetType() = "ccrt:GoogSheet"
+  override def loadModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: DataSource, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
+    GoogSheetRepoLoader.loadSheetModelsIntoTargetDataset(repo, mainDset, dirModel, fileModelCLs)
+  }
+}
 
-  @deprecated
+object GoogSheetRepoLoader extends BasicDebugger {
+
+  /////////////////////////////////////////
+  /// Make a Repo.WithDirectory from a Spec
+  /////////////////////////////////////////
+  def makeGoogSheetRepo(sheetLocation: String, namespaceSheetName: Int, dirSheetName: Int,
+    fileModelCLs: java.util.List[ClassLoader], repoSpec: RepoSpec): SheetRepo = {
+    // Read the namespaces and directory sheets into a single directory model.
+    val dirModel: Model = readModelFromGoog(sheetLocation, namespaceSheetName, dirSheetName)
+    SpecialRepoLoader.makeSheetRepo(repoSpec, dirModel);
+  }
+
+  /////////////////////////////////////////
+  /// Read dir models
+  /////////////////////////////////////////
   def readDirectoryModelFromGoog(sheetLocation: String, namespaceSheet: Int, dirSheet: Int): Model = {
     // Read the single directory sheets into a single directory model.
     readModelFromGoog(sheetLocation, namespaceSheet, dirSheet)
   }
-
+  /////////////////////////////////////////
+  /// Read sheet models
+  /////////////////////////////////////////
   def loadSheetModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: DataSource, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) = {
 
     val nsJavaMap: java.util.Map[String, String] = dirModel.getNsPrefixMap()
     // getLogger().debug("Dir Model NS Prefix Map {} ", nsJavaMap)
     // getLogger().debug("Dir Model {}", dirModel)
     val msqText = """
-			select ?container ?key ?sheet ?num 
+			select ?container ?key ?sheet ?num ?unionOrReplace
 				{
 					?container  a ccrt:GoogSheetRepo; ccrt:key ?key.
 					?sheet a ccrt:GoogSheet; ccrt:sheetNumber ?num; ccrt:repo ?container.
+         			OPTIONAL { ?sheet a ?unionOrReplace. FILTER (?unionOrReplace = ccrt:UnionModel) }
 				}
 		"""
 
@@ -93,6 +103,7 @@ object GoogSheetRepo extends BasicDebugger {
       val sheetRes: Resource = qSoln.getResource("sheet");
       val sheetNum_Lit: Literal = qSoln.getLiteral("num")
       val sheetKey_Lit: Literal = qSoln.getLiteral("key")
+      val unionOrReplaceRes: Resource = qSoln.getResource("unionOrReplace");
       getLogger.debug("containerRes=" + containerRes + ", sheetRes=" + sheetRes + ", num=" + sheetNum_Lit + ", key=" + sheetKey_Lit)
 
       val sheetNum = sheetNum_Lit.getInt();
@@ -100,7 +111,7 @@ object GoogSheetRepo extends BasicDebugger {
       val sheetModel: Model = readModelSheet(sheetKey, sheetNum, nsJavaMap);
       getLogger.debug("Read sheetModel: {}", sheetModel)
       val graphURI = sheetRes.getURI();
-      mainDset.replaceNamedModel(graphURI, sheetModel)
+      PipelineRepoLoader.replaceOrUnion(mainDset, unionOrReplaceRes, graphURI, sheetModel);
     }
   }
 
@@ -127,16 +138,22 @@ object GoogSheetRepo extends BasicDebugger {
     dirModel;
   }
 
-  def makeGoogSheetRepo(sheetLocation: String, namespaceSheetName: Int, dirSheetName: Int,
-    fileModelCLs: java.util.List[ClassLoader], repoSpec: RepoSpec): SheetRepo = {
-    // Read the namespaces and directory sheets into a single directory model.
-    val dirModel: Model = readModelFromGoog(sheetLocation, namespaceSheetName, dirSheetName)
-    SpecialRepoLoader.makeSheetRepo(repoSpec, dirModel);
-  }
+}
+
+/////////////////////////////////////////
+/// These are tests below  
+/////////////////////////////////////////
+
+object GoogSheetRepoLoaderTest {
+
+  val keyForGoogBootSheet22 = "0ArBjkBoH40tndDdsVEVHZXhVRHFETTB5MGhGcWFmeGc";
+
+  val nsSheetNum22 = 9;
+  val dirSheetNum22 = 8;
 
   private def loadTestGoogSheetRepo(): SheetRepo = {
 
-    val spec = new GoogSheetRepoSpec(SemSheet.keyForGoogBootSheet22, nsSheetNum22, dirSheetNum22)
+    val spec = new GoogSheetRepoSpec(keyForGoogBootSheet22, nsSheetNum22, dirSheetNum22)
     val sr = spec.makeRepo
     sr.loadSheetModelsIntoMainDataset()
     sr.loadDerivedModelsIntoMainDataset(null)
@@ -169,12 +186,8 @@ object GoogSheetRepo extends BasicDebugger {
     println("Found solutions: " + solnJavaList)
   }
 
-  val nsSheetNum22 = 9;
-  val dirSheetNum22 = 8;
-
   def testSemSheet(args: Array[String]): Unit = {
     println("SemSheet test ");
-    val keyForGoogBootSheet22 = SemSheet.keyForGoogBootSheet22;
     val namespaceSheetNum = nsSheetNum22;
     val namespaceSheetURL = WebSheet.makeGdocSheetQueryURL(keyForGoogBootSheet22, namespaceSheetNum, None);
     println("Made Namespace Sheet URL: " + namespaceSheetURL);
@@ -186,10 +199,10 @@ object GoogSheetRepo extends BasicDebugger {
     println("Got NS map: " + nsJavaMap)
 
     val dirSheetNum = 8;
-    val dirModel: Model = readModelSheet(keyForGoogBootSheet22, dirSheetNum, nsJavaMap);
+    val dirModel: Model = GoogSheetRepoLoader.readModelSheet(keyForGoogBootSheet22, dirSheetNum, nsJavaMap);
 
     val queriesSheetNum = 12;
-    val queriesModel: Model = readModelSheet(keyForGoogBootSheet22, queriesSheetNum, nsJavaMap);
+    val queriesModel: Model = GoogSheetRepoLoader.readModelSheet(keyForGoogBootSheet22, queriesSheetNum, nsJavaMap);
 
     val tqText = "select ?sheet { ?sheet a ccrt:GoogSheet }";
 

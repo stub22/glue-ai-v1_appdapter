@@ -15,21 +15,16 @@
  */
 
 package org.appdapter.core.matdat
-import org.appdapter.core.name.{ Ident, FreeIdent }
-import org.appdapter.help.repo.{ RepoClientImpl, InitialBindingImpl }
-import org.appdapter.impl.store.{ FancyRepo, DatabaseRepo, FancyRepoFactory }
-import com.hp.hpl.jena.query.{ QuerySolution }
-import com.hp.hpl.jena.rdf.model.{ Model }
-import org.appdapter.core.log.BasicDebugger
-import org.appdapter.bind.rdf.jena.sdb.SdbStoreFactory
-import com.hp.hpl.jena.sdb.Store
+
 import java.util.Date
-//import org.appdapter.core.store.RepoSpec
-import org.appdapter.core.store.InitialBinding
-import org.appdapter.core.store.Repo
+
 import org.appdapter.core.log.BasicDebugger
-import com.hp.hpl.jena.query.DataSource
-import org.appdapter.impl.store.DirectRepo
+import org.appdapter.core.name.Ident
+import org.appdapter.core.store.{ InitialBinding, Repo }
+import org.appdapter.impl.store.{ DatabaseRepo, FancyRepoFactory }
+
+import com.hp.hpl.jena.query.{ DataSource, QuerySolution }
+import com.hp.hpl.jena.rdf.model.Model
 /**
  * @author Stu B. <www.texpedient.com>
  */
@@ -37,6 +32,7 @@ import org.appdapter.impl.store.DirectRepo
 abstract class InstallableRepoReader extends SpecialRepoLoader {
   def getContainerType(): String
   def getSheetType(): String
+  def isDerivedLoader(): Boolean = false
   def loadModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: DataSource, dirModel: Model, fileModelCLs: java.util.List[ClassLoader])
 }
 

@@ -17,37 +17,46 @@
 package org.appdapter.core.matdat
 
 import org.appdapter.core.log.BasicDebugger
-import org.appdapter.core.store.{Repo, RepoOper}
+import org.appdapter.core.store.{ Repo, RepoOper }
 import org.appdapter.demo.DemoBrowserUI
 import org.appdapter.help.repo.RepoClientImpl
-import org.appdapter.impl.store.{DirectRepo, QueryHelper}
+import org.appdapter.impl.store.QueryHelper
 
-import com.hp.hpl.jena.query.{DataSource, Dataset, QuerySolution}
+import com.hp.hpl.jena.query.{ DataSource, Dataset, QuerySolution }
 import com.hp.hpl.jena.rdf.model.Model
 
-
-
-///import org.cogchar.impl.trigger.Whackamole
-//import org.cogchar.name.behavior.{ MasterDemoNames };
+import com.hp.hpl.jena.query.{ ResultSetFactory, ResultSet, QuerySolution, DataSource }
+import com.hp.hpl.jena.rdf.model.{ Resource, RDFNode, ModelFactory, Model, Literal }
+import java.io.Reader
+import org.appdapter.core.store.{ FileStreamUtils }
+import org.appdapter.impl.store.QueryHelper
+import scala.collection.JavaConversions.asScalaBuffer
+import org.appdapter.impl.store.DirectRepo
+import org.appdapter.core.store.Repo
+import org.appdapter.core.log.BasicDebugger
 
 class OmniLoaderRepo(myRepoSpecStart: RepoSpec, myDebugNameIn: String, myBasePathIn: String,
-  directoryModel: Model, fmcls: java.util.List[ClassLoader])
-  extends XLSXSheetRepo(directoryModel: Model, fmcls)
+  directoryModel: Model, fmcls: java.util.List[ClassLoader] = null)
+  extends SheetRepo(directoryModel, fmcls)
   with RepoOper.Reloadable {
+
+  myRepoSpecForRef = myRepoSpecStart
+  myDebugNameToStr = myDebugNameIn
+  myBasePath = myBasePathIn
+
+  def this(directoryModel: Model) =
+    this(null, null, null, directoryModel, null)
+
+  def this(directoryModel: Model, fmcls: java.util.List[ClassLoader]) =
+    this(null, null, null, directoryModel, fmcls)
 
   def this(myRepoSpecStart: RepoSpec, myDebugNameIn: String, directoryModel: Model, fmcls: java.util.List[ClassLoader]) = {
     this(myRepoSpecStart, myDebugNameIn, myDebugNameIn, directoryModel, fmcls)
   }
 
-  myRepoSpecForRef = myRepoSpecStart
-  myDebugNameToStr = myDebugNameIn
-  myBasePath = myBasePathIn;
-
-  /* 
- override def loadSheetModelsIntoMainDataset() {
+  override def loadSheetModelsIntoMainDataset() {
     super.loadSheetModelsIntoMainDataset();
   }
-  */
 
   override def getDirectoryModel(): Model = {
     super.getDirectoryModel
@@ -62,25 +71,18 @@ class OmniLoaderRepo(myRepoSpecStart: RepoSpec, myDebugNameIn: String, myBasePat
     super.getMainQueryDataset();
   }
 
-  /*
-    def loadDerivedModelsIntoMainDataset() = {
-    val mainDset: DataSource = getMainQueryDataset().asInstanceOf[DataSource];
-    val nsJavaMap: java.util.Map[String, String] = myDirectoryModel.getNsPrefixMap()
-    val dirModel = getDirectoryModel;
-    XLSXSheetRepoLoader.loadSheetModelsIntoTargetDataset(this, mainDset, dirModel, fileModelCLs);
-    }
-  */
-
   def loadPipeline(pplnGraphQN: String) = {
     val mainDset: DataSource = getMainQueryDataset().asInstanceOf[DataSource];
     PipelineRepoLoader.loadPipeline(pplnGraphQN, this, mainDset);
   }
+
 }
 
 /// this is a registerable loader
 class PipelineRepoLoader extends InstallableRepoReader {
   override def getContainerType() = "cc:PipelineModel"
   override def getSheetType() = "ccrt:UnionModel"
+  override def isDerivedLoader() = true
   override def loadModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: DataSource, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
     PipelineRepoLoader.loadSheetModelsIntoTargetDataset(repo, mainDset, dirModel, fileModelCLs)
   }
@@ -118,8 +120,8 @@ object PipelineRepoLoader extends BasicDebugger {
   }
 
   def loadPipeline(pplnGraphQN: String, repo: Repo.WithDirectory, mainDset: DataSource) = {
-    
-    val rc = new RepoClientImpl(repo,  RepoSpecDefaultNames.DFLT_TGT_GRAPH_SPARQL_VAR, RepoSpecDefaultNames.DFLT_QRY_SRC_GRAPH_QN)
+
+    val rc = new RepoClientImpl(repo, RepoSpecDefaultNames.DFLT_TGT_GRAPH_SPARQL_VAR, RepoSpecDefaultNames.DFLT_QRY_SRC_GRAPH_QN)
     val pqs = new PipelineQuerySpec(RepoSpecDefaultNames.PIPE_ATTR_QQN, RepoSpecDefaultNames.PIPE_SOURCE_QQN, pplnGraphQN);
     val dgSpecSet: Set[DerivedGraphSpec] = DerivedGraphSpecReader.queryDerivedGraphSpecs(rc, pqs);
 
@@ -127,7 +129,11 @@ object PipelineRepoLoader extends BasicDebugger {
       val derivedModelProvider = dgSpec.makeDerivedModelProvider(repo);
       val derivedModel = derivedModelProvider.getModel()
       mainDset.replaceNamedModel(pplnGraphQN, derivedModel)
-    }    
+    }
+  }
+
+  def replaceOrUnion(mainDset: DataSource, unionOrReplaceRes: Resource, graphURI: String, sheetModel: Model) {
+    mainDset.replaceNamedModel(graphURI, sheetModel)
   }
 }
 

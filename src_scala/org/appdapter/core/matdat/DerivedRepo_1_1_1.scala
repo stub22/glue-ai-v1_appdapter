@@ -49,7 +49,7 @@ class DerivedRepoSpec_1_1_1(val myDGSpecs: Set[DerivedGraphSpec_1_1_1], val mySr
     for (dgSpec <- myDGSpecs) {
       val derivedModel = dgSpec.makeDerivedModel(mySrcRepo)
       // derivedRepo.replaceNamedModel(dgSpec.myTargetID, derivedModel)
-      derivedRepo.replaceModelByName(dgSpec.myTargetGraphTR, derivedModel)
+      derivedRepo.replaceNamedModel(dgSpec.myTargetGraphTR, derivedModel)
     }
     derivedRepo
   }
@@ -80,6 +80,7 @@ class DerivedRepo_1_1_1(emptyDirModel: Model, val myRepoSpec: DerivedRepoSpec_1_
 class DerivedRepoLoader extends InstallableRepoReader {
   override def getContainerType() = "cc:PipelineModel"
   override def getSheetType() = "ccrt:UnionModel"
+  override def isDerivedLoader() = true
   override def loadModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: DataSource, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
     DerivedRepoLoader.loadSheetModelsIntoTargetDataset(repo, mainDset, dirModel, fileModelCLs)
   }
