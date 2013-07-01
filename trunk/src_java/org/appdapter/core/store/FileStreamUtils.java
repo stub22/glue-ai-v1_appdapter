@@ -41,17 +41,31 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.appdapter.bind.rdf.jena.model.JenaFileManagerUtils;
+import org.appdapter.core.log.Debuggable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.util.FileManager;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
 
 public class FileStreamUtils {
-	
+
+	public static Reader makeSheetURLDataReader(String fullUrlTxt) throws IOException {
+		try {
+			return new InputStreamReader((new URL(fullUrlTxt)).openStream());
+		} catch (Throwable t) {
+			theLogger.error("Cannot read[" + fullUrlTxt + "]", t);
+			throw Debuggable.reThrowable(t, IOException.class);
+		}
+	}
+
 	static Logger theLogger = LoggerFactory.getLogger(FileStreamUtils.class);
-	
+
 	public static Workbook getWorkbook(InputStream is, String extHint) throws IOException, InvalidFormatException {
 		if (is == null)
 			throw new IOException("Not input stream for hint: " + extHint);
@@ -75,49 +89,107 @@ public class FileStreamUtils {
 			}
 		}
 	}
-	
+
 	public static Workbook getWorkbook(String sheetLocation, java.util.List<ClassLoader> fileModelCLs) throws InvalidFormatException, IOException {
 		InputStream stream = openInputStreamOrNull(sheetLocation, fileModelCLs);
 		if (stream == null)
 			throw new IOException("Location not found: " + sheetLocation);
 		return getWorkbook(stream, getFileExt(sheetLocation));
 	}
-	
+
 	public static Reader getSheetReaderAt(String sheetLocation, String sheetName, java.util.List<ClassLoader> fileModelCLs) {
 		try {
-			theLogger.info("getSheetReaderAt: " + sheetLocation + " @ " + sheetName);
-			return getSheetReaderAtCanThrow(sheetLocation, sheetName, fileModelCLs);
+			theLogger.info("getSheetReaderAt: " + sheetLocation + "!" + sheetName);
+			return getWorkbookSheetCsvReaderAt(sheetLocation, sheetName, fileModelCLs);
 		} catch (InvalidFormatException e) {
-			theLogger.error("getSheetReaderAtCanThrow ", e);
+			theLogger.error("getWorkbookSheetCsvReaderAt ", e);
 		} catch (IOException e) {
-			theLogger.error("getSheetReaderAtCanThrow ", e);
+			theLogger.error("getWorkbookSheetCsvReaderAt ", e);
 		}
 		return null;
 	}
-	
+
 	public static boolean doBreak(Object... s) {
-		
+
 		PrintStream v = System.out;
 		new Exception("" + s[0]).fillInStackTrace().printStackTrace(v);
 		for (int i = 0; i < s.length; i++) {
 			getLogger().error("" + s[i]);
 		}
-		if (true) return false;
+		if (true)
+			return false;
 		getLogger().info("Press enter to continue");
 		System.console().readLine();
 		return true;
 	}
-	
-	@SuppressWarnings("unused")
-	public static Reader getSheetReaderAtCanThrow(String sheetLocation, String sheetName, java.util.List<ClassLoader> fileModelCLs) throws InvalidFormatException, IOException {
+
+	public static Model getModelIfAvailable(String sheetLocation, String sheetName, java.util.Map nsMap, java.util.List<ClassLoader> fileModelCLs) {
+		FileManager fm = JenaFileManagerUtils.getDefaultJenaFM();
+
+		for (ClassLoader cl : fileModelCLs)
+			fm.addLocatorClassLoader(cl);
+
+		Model m = getModelIfAvailable(sheetLocation + sheetName, fm);
+		if (m != null)
+			return m;
+		m = getModelIfAvailable(sheetName, fm);
+		if (m != null)
+			return m;
+		try {
+			return fm.loadModel(sheetName, sheetLocation);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	public static Model getModelIfAvailable(String sheetLocation, FileManager fm) {
+		try {
+			return fm.loadModel(sheetLocation);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	public static boolean isNullOrEmptyString(CharSequence str) {
+		return str == null || str.length() == 0;
+	}
+
+	public static String[] splitOfSubPath(String str) {
+		String[] splt = str.split("#");
+		if (splt.length == 2)
+			return splt;
+		return str.split("!");
+	}
+
+	public static String combineLocationAndSheet(String sheetLocation, String sheetName) {
+		boolean missingSheetLocation = isNullOrEmptyString(sheetLocation);
+		boolean missingSheetName = isNullOrEmptyString(sheetName);
+		if (missingSheetLocation && missingSheetName) {
+			return null;
+		}
+		if (missingSheetName)
+			return sheetLocation;
+		if (missingSheetLocation)
+			return sheetName;
+		String combined = sheetLocation + "!" + sheetName;
+		return combined;
+	}
+
+	public static Reader getWorkbookSheetCsvReaderAt(String sheetLocation, String sheetName, java.util.List<ClassLoader> fileModelCLs) throws InvalidFormatException, IOException {
+		boolean missingSheetLocation = isNullOrEmptyString(sheetLocation);
+		boolean missingSheetName = isNullOrEmptyString(sheetName);
+		if (missingSheetLocation && missingSheetName) {
+			return NotFound("NULL SheetReader Location");
+		}
+		String combined = combineLocationAndSheet(sheetLocation, sheetName);
 		Workbook workbook = getWorkbook(sheetLocation, fileModelCLs);
 		if (workbook == null) {
 			InputStream is = openInputStreamOrNull(sheetName, fileModelCLs);
 			if (is == null)
-				is = openInputStreamOrNull(sheetLocation + sheetName, fileModelCLs);
+				is = openInputStreamOrNull(combined, fileModelCLs);
 			if (is == null)
-				return NotFound(sheetLocation + sheetName);
-			
+				return NotFound(combined);
+
 			String ext = getFileExt(sheetName);
 			if (ext != null && ext.endsWith("csv")) {
 				return new InputStreamReader(is);
@@ -154,24 +226,24 @@ public class FileStreamUtils {
 			return sheetToReader(sheet2);
 		return NotFound(sheetLocation + sheetName);
 	}
-	
+
 	public static String matchableName(String sheetName) {
 		if (sheetName == null)
 			return "";
 		return (sheetName + " ").replace(".csv ", "").replace(".xlsx ", "").replaceAll("-", "").replaceAll(" ", "").toLowerCase();
 	}
-	
+
 	private static Reader NotFound(String string) throws IOException {
 		throw new FileNotFoundException(string);
 	}
-	
+
 	public static String getFileExt(String srcPath) {
 		int at = srcPath.lastIndexOf('.');
 		if (at < 0)
 			return null;
 		return srcPath.substring(at + 1).toLowerCase();
 	}
-	
+
 	public static Reader sheetToReader(Sheet sheet) {
 		String str = sheetToString(sheet);
 		String sn = sheet.getSheetName();
@@ -179,7 +251,7 @@ public class FileStreamUtils {
 		saveFileString(sn, str);
 		return new StringReader(str);
 	}
-	
+
 	public static void saveFileString(String sn) {
 		URL url;
 		try {
@@ -193,17 +265,17 @@ public class FileStreamUtils {
 				buf.write(b);
 				result = bis.read();
 			}
-			
-			saveFileString(sn.replaceAll(":", "-").replaceAll("/", "-").replaceAll(".", "-").replaceAll("?", "-").replaceAll("=", "-").replaceAll("--", "-"), buf.toString());			
+
+			saveFileString(sn.replaceAll(":", "-").replaceAll("/", "-").replaceAll(".", "-").replaceAll("?", "-").replaceAll("=", "-").replaceAll("--", "-"), buf.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 	}
-	
-	@SuppressWarnings("unused")
-	private static void saveFileString(String sn, String str) {
-		if (true) return;
+
+	@SuppressWarnings("unused") private static void saveFileString(String sn, String str) {
+		if (true)
+			return;
 		try {
 			FileWriter fw = new FileWriter(new File(matchableName(sn) + ".csv"));
 			fw.write(str);
@@ -213,11 +285,11 @@ public class FileStreamUtils {
 			e.printStackTrace();
 		}
 	}
-	
+
 	private static Logger getLogger() {
 		return theLogger;
 	}
-	
+
 	public static String sheetToString(Sheet sheet) {
 		StringBuffer sheetBuff = new StringBuffer();
 		if (sheet.getPhysicalNumberOfRows() == 0) {
@@ -241,15 +313,15 @@ public class FileStreamUtils {
 		}
 		return sheetBuff.toString();
 	}
-	
+
 	private static String getRowString(Row row, int width) {
 		return getRowString(row, width, false);
 	}
-	
+
 	private static String getRowDebugString(Row row, int width) {
 		return getRowString(row, width, true);
 	}
-	
+
 	private static String getRowString(Row row, int width, boolean debugString) {
 		int rwInclusve = row.getLastCellNum();
 		if (rwInclusve > width)
@@ -258,51 +330,51 @@ public class FileStreamUtils {
 		if (debugString) {
 			strBuff.append("##;; " + row.getSheet().getSheetName() + " rownum= " + row.getRowNum() + "\n\n");
 		}
-		
+
 		for (int j = 0; j <= rwInclusve; j++) {
 			Cell cell = row.getCell(j);
 			if (j > 0)
 				strBuff.append(",");
-			
+
 			if (cell == null)
 				continue;
 			String t, c;
 			String s = null;
-			
+
 			switch (cell.getCellType()) {
-				case Cell.CELL_TYPE_BLANK:
-					continue;
-				case Cell.CELL_TYPE_STRING: {
-					c = cell.getStringCellValue();
-					strBuff.append(escapeCSV(c));
-					continue;
-				}
-				
-				case Cell.CELL_TYPE_NUMERIC: {
-					t = "CELL_TYPE_NUMERIC";
-					c = ("" + cell.getNumericCellValue() + " ").replace(".0 ", "").trim();
-					break;
-				}
-				case Cell.CELL_TYPE_FORMULA: {
-					t = "CELL_TYPE_FORMULA";
-					c = cell.getCellFormula();
-					break;
-				}
-				case Cell.CELL_TYPE_BOOLEAN: {
-					t = "CELL_TYPE_BOOLEAN";
-					c = "" + cell.getBooleanCellValue();
-					break;
-				}
-				case Cell.CELL_TYPE_ERROR: {
-					t = "CELL_TYPE_ERROR";
-					c = "" + cell.getErrorCellValue();
-					break;
-				}
-				default: {
-					t = "CELL_TYPE_" + cell.getCellType();
-					c = cell.getStringCellValue();
-					break;
-				}
+			case Cell.CELL_TYPE_BLANK:
+				continue;
+			case Cell.CELL_TYPE_STRING: {
+				c = cell.getStringCellValue();
+				strBuff.append(escapeCSV(c));
+				continue;
+			}
+
+			case Cell.CELL_TYPE_NUMERIC: {
+				t = "CELL_TYPE_NUMERIC";
+				c = ("" + cell.getNumericCellValue() + " ").replace(".0 ", "").trim();
+				break;
+			}
+			case Cell.CELL_TYPE_FORMULA: {
+				t = "CELL_TYPE_FORMULA";
+				c = cell.getCellFormula();
+				break;
+			}
+			case Cell.CELL_TYPE_BOOLEAN: {
+				t = "CELL_TYPE_BOOLEAN";
+				c = "" + cell.getBooleanCellValue();
+				break;
+			}
+			case Cell.CELL_TYPE_ERROR: {
+				t = "CELL_TYPE_ERROR";
+				c = "" + cell.getErrorCellValue();
+				break;
+			}
+			default: {
+				t = "CELL_TYPE_" + cell.getCellType();
+				c = cell.getStringCellValue();
+				break;
+			}
 			}
 			cell.setCellType(Cell.CELL_TYPE_STRING);
 			s = cell.getStringCellValue();
@@ -310,10 +382,11 @@ public class FileStreamUtils {
 				strBuff.append(escapeCSV(s));
 				continue;
 			}
-			
+
 			if (s == null || s.length() < 1) {
 				if (!debugString) {
-					doBreak(t + " really? " + c, "cell=" + cell, "cellAsString=" + s, "row.getClass= " + row.getClass(), "sheet=" + cell.getSheet().getSheetName(), "row=" + cell.getRow(), "rowstr = " + getRowDebugString(row, width));
+					doBreak(t + " really? " + c, "cell=" + cell, "cellAsString=" + s, "row.getClass= " + row.getClass(), "sheet=" + cell.getSheet().getSheetName(), "row=" + cell.getRow(), "rowstr = "
+							+ getRowDebugString(row, width));
 				}
 			}
 			c = s;
@@ -322,7 +395,7 @@ public class FileStreamUtils {
 		}
 		return strBuff.toString();
 	}
-	
+
 	private static int getSheetWidth(Sheet sheet) {
 		// if (true) return 0;
 		Row row = sheet.getRow(sheet.getFirstRowNum());
@@ -336,24 +409,24 @@ public class FileStreamUtils {
 		}
 		return hadStuff;
 	}
-	
+
 	private static Object escapeCSV(Object cellValue) {
 		if (cellValue == null)
 			return "";
 		String cellValueStr = cellValue.toString();
 		return escapeEmbeddedCharacters(cellValueStr);
 	}
-	
+
 	private static String escapeEmbeddedCharacters(String field) {
 		if (field == null)
 			return "";
 		field = field.replace("\r\n", "\n").replace("\r", "\n").replace("\n", " ").trim();
 		if (field.length() == 0)
 			return field;
-		
+
 		// If the fields contents should be formatted to confrom with Excel's
 		// convention....
-		
+
 		// Firstly, check if there are any speech marks (") in the field;
 		// each occurrence must be escaped with another set of spech marks
 		// and then the entire field should be enclosed within another
@@ -364,42 +437,75 @@ public class FileStreamUtils {
 		}
 		return field;
 	}
-	
-	@SuppressWarnings("rawtypes")
+
 	public static InputStream openInputStreamOrNull(String srcPath, java.util.List<ClassLoader> cls) {
-		
+		try {
+			return openInputStream(srcPath, cls);
+		} catch (Throwable e) {
+			getLogger().error("Bad srcPath={}", srcPath, e);
+			return null;
+		}
+	}
+
+	public static InputStream openInputStream(String srcPath, java.util.List<ClassLoader> cls) throws IOException {
+
+		if (srcPath == null)
+			throw new MalformedURLException("URL = NULL");
+		IOException ioe = null;
 		File file = new File(srcPath);
 		if (file.exists()) {
 			try {
 				return new FileInputStream(file);
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
+			} catch (IOException io) {
+				// It existed so this might be legit
+				ioe = io;
+			}
+		}
+		if (srcPath.contains(":")) {
+			try {
+				return new URL(srcPath).openStream();
+			} catch (MalformedURLException maf) {
+				if (ioe == null)
+					ioe = maf;
+			} catch (IOException e) {
+				ioe = e;
 			}
 		}
 		for (Iterator iterator = cls.iterator(); iterator.hasNext();) {
 			ClassLoader classLoader = (ClassLoader) iterator.next();
+			InputStream is = null;
 			URL url = classLoader.getResource(srcPath);
-			if (url != null)
+			if (url != null) {
 				try {
-					InputStream is = url.openStream();
-					if (is != null)
-						return is;
+					is = url.openStream();
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					ioe = e;
 				}
+			} else {
+				is = classLoader.getResourceAsStream(srcPath);
+			}
+			if (is != null)
+				return is;
 		}
-		if (!srcPath.contains(":"))
+
+		if (!srcPath.contains(":")) {
+			InputStream is = ClassLoader.getSystemResourceAsStream(srcPath);
+			if (is != null)
+				return is;
 			srcPath = "file:" + srcPath;
-		try {
-			return new URL(srcPath).openStream();
-		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			try {
+				return new URL(srcPath).openStream();
+			} catch (MalformedURLException maf) {
+				if (ioe == null)
+					ioe = maf;
+			} catch (IOException e) {
+				ioe = e;
+			}
+			if (ioe != null) {
+				throw ioe;
+			}
 		}
+
 		return null;
 	}
 }

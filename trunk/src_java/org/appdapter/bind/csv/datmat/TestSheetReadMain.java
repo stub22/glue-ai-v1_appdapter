@@ -16,15 +16,12 @@
 package org.appdapter.bind.csv.datmat;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Reader;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.appdapter.core.log.BasicDebugger;
+import org.appdapter.core.store.FileStreamUtils;
 
 import au.com.bytecode.opencsv.CSVReader;
 
@@ -39,7 +36,13 @@ public class TestSheetReadMain {
 
 	public static void main(String args[]) {
 		String fullUrlTxt = gdocPubUrlWithKey + tmpExtender;
-		Reader shdr = makeSheetDataReader(fullUrlTxt);
+		Reader shdr;
+		try {
+			shdr = FileStreamUtils.makeSheetURLDataReader(fullUrlTxt);
+		} catch (Throwable t) {
+			theDbg.logError("Cannot read[" + fullUrlTxt + "]", t);
+			return;
+		}
 		theDbg.logInfo("Got sheet reader: " + shdr);
 		List<String[]> resultRows = readAllRows(shdr);
 		// theDbg.logInfo("Got result rows: " + resultRows);
@@ -49,23 +52,6 @@ public class TestSheetReadMain {
 				theDbg.logInfo("Got cell: " + c);
 			}
 		}
-	}
-
-	public static Reader makeSheetDataReader(String fullUrlTxt) {
-		Reader sheetReader = null;
-
-		try {
-			URL url = new URL(fullUrlTxt);
-			URLConnection urlc = url.openConnection();
-
-			InputStream istream = urlc.getInputStream();
-			sheetReader = new InputStreamReader(istream);
-
-		} catch (Throwable t) {
-			theDbg.logError("Cannot read[" + fullUrlTxt + "]", t);
-
-		}
-		return sheetReader;
 	}
 
 	static List<String[]> theFailedRowList = new ArrayList<String[]>();

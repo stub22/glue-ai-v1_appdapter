@@ -16,22 +16,13 @@
 
 package org.appdapter.core.matdat
 
-import java.io.Reader;
-import java.util.Iterator;
+import scala.Array.canBuildFrom
 
-import org.appdapter.bind.csv.datmat.TestSheetReadMain;
-import au.com.bytecode.opencsv.CSVReader;
+import org.appdapter.core.log.BasicDebugger
+import org.appdapter.impl.store.ResourceResolver
 
-import org.appdapter.core.log.BasicDebugger;
-
-import com.hp.hpl.jena.rdf.model.{ Model, Statement, Resource, Property, Literal, RDFNode, ModelFactory }
-import com.hp.hpl.jena.query.{ ResultSet, ResultSetFormatter, ResultSetRewindable, ResultSetFactory, QuerySolution };
-import com.hp.hpl.jena.ontology.{ OntProperty, ObjectProperty, DatatypeProperty }
 import com.hp.hpl.jena.datatypes.{ RDFDatatype, TypeMapper }
-import com.hp.hpl.jena.datatypes.xsd.{ XSDDatatype }
-import com.hp.hpl.jena.shared.{ PrefixMapping }
-
-import org.appdapter.impl.store.{ DirectRepo, QueryHelper, ResourceResolver };
+import com.hp.hpl.jena.rdf.model.{ Model, ModelFactory, Property, RDFNode, Resource, Statement }
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -186,7 +177,7 @@ object SemSheet {
     }
   }
 
-  def readModelCSVFilesSheet0(sheetKey: String, sheetNum: String, nsJavaMap: java.util.Map[String, String]): Model = {
+  def readModelCSVFilesSheet00(sheetKey: String, sheetNum: String, nsJavaMap: java.util.Map[String, String]): Model = {
     val tgtModel: Model = ModelFactory.createDefaultModel();
 
     tgtModel.setNsPrefixes(nsJavaMap)
@@ -199,13 +190,9 @@ object SemSheet {
     tgtModel;
   }
 
-  val keyForGoogBootSheet22 = "0ArBjkBoH40tndDdsVEVHZXhVRHFETTB5MGhGcWFmeGc";
-  val keyForXLSXBootSheet22 = "file:GluePuma_HRKR50_TestFull.xlsx";
-  val keyForCSVFilesBootSheet22 = "file:GluePuma_HRKR50_TestFull - ";
-
   def main(args: Array[String]): Unit = {
-    GoogSheetRepo.testSemSheet(args);
-    CsvFilesSheetLoader.testSemSheet(args);
+    GoogSheetRepoLoaderTest.testSemSheet(args);
+    CsvFileSheetLoader.testSemSheet(args);
     XLSXSheetRepoLoader.testSemSheet(args);
   }
 

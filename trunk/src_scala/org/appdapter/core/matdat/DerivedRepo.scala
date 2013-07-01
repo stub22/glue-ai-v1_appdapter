@@ -71,11 +71,5 @@ class DerivedRepo(emptyDirModel: Model, val myRepoSpec: DerivedRepoSpec) extends
     getLogger.info("START: Trying to do reloading of model named.. " + modelName)
   }
 
-  // TODO:  Move this method up to Appdapter.DirectRepo
-  def replaceNamedModel(modelID: Ident, jenaModel: Model) {
-    val repoDset: Dataset = getMainQueryDataset
-    val repoDsource: DataSource = repoDset.asInstanceOf[DataSource];
-    repoDsource.replaceNamedModel(modelID.getAbsUriString, jenaModel);
-  }
 
 }

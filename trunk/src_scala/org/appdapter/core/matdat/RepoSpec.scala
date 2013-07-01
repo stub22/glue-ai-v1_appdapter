@@ -37,6 +37,7 @@ import org.appdapter.core.name.{ Ident, FreeIdent }
 import org.appdapter.core.store.{ Repo }
 import org.appdapter.help.repo.RepoClientImpl
 import org.osgi.framework.BundleContext
+import com.hp.hpl.jena.rdf.model.Model
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -58,13 +59,13 @@ class OnlineSheetRepoSpec(sheetKey: String, namespaceSheetNum: Int, dirSheetNum:
   fileModelCLs: java.util.List[ClassLoader] = null) extends RepoSpec {
   override def makeRepo(): SheetRepo = {
     try {
-      GoogSheetRepo.makeGoogSheetRepo(sheetKey, namespaceSheetNum, dirSheetNum, fileModelCLs, this)
-    } catch {      
-       // trying to catch Errors (not just Exceptions)
-    	case e: Throwable => {
-    	  e.printStackTrace();
-    	  throw e
-    	}
+      GoogSheetRepoLoader.makeGoogSheetRepo(sheetKey, namespaceSheetNum, dirSheetNum, fileModelCLs, this)
+    } catch {
+      // trying to catch Errors (not just Exceptions)
+      case e: Throwable => {
+        e.printStackTrace();
+        throw e
+      }
     }
   }
   override def toString: String = "goog:/" + sheetKey + "/" + namespaceSheetNum + "/" + dirSheetNum
@@ -74,7 +75,7 @@ class GoogSheetRepoSpec(sheetKey: String, namespaceSheetNum: Int, dirSheetNum: I
   fileModelCLs: java.util.List[ClassLoader]) extends RepoSpec {
   def this(sheetKey: String, namespaceSheetNum: Int, dirSheetNum: Int) = this(sheetKey, namespaceSheetNum, dirSheetNum, null);
   override def makeRepo(): SheetRepo = {
-    GoogSheetRepo.makeGoogSheetRepo(sheetKey, namespaceSheetNum, dirSheetNum, fileModelCLs, this)
+    GoogSheetRepoLoader.makeGoogSheetRepo(sheetKey, namespaceSheetNum, dirSheetNum, fileModelCLs, this)
   }
   override def toString: String = "goog:/" + sheetKey + "/" + namespaceSheetNum + "/" + dirSheetNum
 }
@@ -87,12 +88,12 @@ class OfflineXlsSheetRepoSpec(sheetLocation: String, namespaceSheet: String, dir
   override def toString: String = "xlsx:/" + sheetLocation + "/" + namespaceSheet + "/" + dirSheet
 }
 
-class CSVFileRepoSpec(sheetLocation: String, namespaceSheet: String, dirSheet: String,
+class CSVFileRepoSpec(dirSheet: String, namespaceSheet: String = null,
   fileModelCLs: java.util.List[ClassLoader] = null) extends RepoSpec {
   override def makeRepo(): SheetRepo = {
-    XLSXSheetRepoLoader.loadXLSXSheetRepo(sheetLocation, namespaceSheet, dirSheet, fileModelCLs, this)
+    CsvFileSheetLoader.loadCsvFileSheetRepo(dirSheet, namespaceSheet, fileModelCLs, this)
   }
-  override def toString: String = "xlsx:/" + sheetLocation + "/" + namespaceSheet + "/" + dirSheet
+  override def toString: String = dirSheet
 }
 
 class DatabaseRepoSpec(configPath: String, optConfResCL: ClassLoader, dirGraphID: Ident) extends RepoSpec {
@@ -105,29 +106,33 @@ class DatabaseRepoSpec(configPath: String, optConfResCL: ClassLoader, dirGraphID
 /**
  * Takes a directory model and uses Goog, Xlsx, Pipeline,CSV,.ttl,rdf sources and loads them
  */
-class FromURLishRepoSpec(var myDebugName: String, var dirModelURI: String)
+class URLRepoSpec(var dirModelURL: String, var fileModelCLs: java.util.List[ClassLoader] = null)
   extends RepoSpec {
-
-  override def makeRepo(): SheetRepo = {
-    val colon = dirModelURI.indexOf(":/");
-    val proto = dirModelURI.substring(0, colon);
-    val path = dirModelURI.substring(colon + 1);
+  def detectedRepoSpec: RepoSpec = {
+    val colon = dirModelURL.indexOf(":/");
+    val proto = dirModelURL.substring(0, colon + 1);
+    val path = dirModelURL.substring(colon + 1);
     val v3: Array[String] = path.split('/')
-    val fileModelCLs: java.util.List[ClassLoader] = null;
-
-    if (proto.equals("xlsx")) {
-      //null
-      (new OfflineXlsSheetRepoSpec(v3(0),v3(1),v3(2))).makeRepo;
-      //SpecialRepoLoader.loadXLSXSheetRepo(v3[0], v3[1], v3[2], fileModelCLs)
-    } else if (proto.equals("goog")) {
-      //SpecialRepoLoader.loadXLSXSheetRepo(v3[0],v3[1].toInt,Integer.parseInt(v3[2]), fileCls)     
-      (new GoogSheetRepoSpec(v3(0),v3(1).toInt,v3(2).toInt)).makeRepo;
-      //null
+    if (proto.equals("goog:")) {
+      (new GoogSheetRepoSpec(v3(1), v3(2).toInt, v3(3).toInt, fileModelCLs))
+    } else if (proto.equals("xlsx:")) {
+      (new OfflineXlsSheetRepoSpec(v3(1), v3(2), v3(3), fileModelCLs))
     } else {
-      throw new UnsupportedOperationException("unkown protocol " + path);
+      (new URLDirModelRepoSpec(dirModelURL, fileModelCLs))
     }
   }
+  override def makeRepo(): Repo.WithDirectory = detectedRepoSpec.makeRepo;
+  override def toString = dirModelURL
+
 }
+
+class URLDirModelRepoSpec(dirModelURL: String, fileModelCLs: java.util.List[ClassLoader]) extends RepoSpec {
+  override def makeRepo(): SheetRepo = {
+    FileModelRepoLoader.loadDetectedFileSheetRepo(dirModelURL, null, fileModelCLs, this)
+  }
+  override def toString = dirModelURL
+}
+
 object RepoSpecDefaultNames {
 
   // These 2 string constants establish repo-client wrapper defaults, giving a default 

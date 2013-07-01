@@ -73,7 +73,7 @@ class SolutionList {
 // A very simple class so the SolutionMap can be handed to external classes without Scala-Java conversion concerns
 class SolutionMap[T] {
   val map = new scala.collection.mutable.HashMap[T, Solution]
-  
+
   def getJavaIterator: java.util.Iterator[T] = map.keysIterator
 }
 

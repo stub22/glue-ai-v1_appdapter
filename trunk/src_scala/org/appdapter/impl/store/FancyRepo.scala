@@ -163,7 +163,7 @@ trait FancyRepo extends Repo.WithDirectory with ModelClientCore with Loggable {
 
 // class DirectRepo(val myDirectoryModel : Model) extends FancyRepo {
 
-class DirectRepo(val myDirectoryModel: Model) extends BasicRepoImpl with FancyRepo {
+class DirectRepo(val myDirectoryModel: Model) extends BasicRepoImpl with FancyRepo with Repo.Updatable {
 
   override def getDirectoryModel: Model = myDirectoryModel;
 
@@ -172,7 +172,6 @@ class DirectRepo(val myDirectoryModel: Model) extends BasicRepoImpl with FancyRe
     ds;
   }
   
-
 }
 import com.hp.hpl.jena.sdb.Store;
 

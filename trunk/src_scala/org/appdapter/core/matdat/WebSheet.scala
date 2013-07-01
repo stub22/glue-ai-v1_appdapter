@@ -19,39 +19,42 @@ package org.appdapter.core.matdat
 /**
  * @author Stu B. <www.texpedient.com>
  */
+/////////////////////////////////////////
+/// Goog Doc Sheet Reading
+/////////////////////////////////////////
 
 object WebSheet {
-	val gdocSheetBaseURL = "https://docs.google.com/spreadsheet/pub";
-	//  Building a param string like ?key=0ArBjkBo&single=true&gid=7&range=A2%3AK999&output=csv
-	val gdocParamDocKey = "key";
-	val gdocParamSingleSheet = "single";
-	val gdocParamSheetNum = "gid";
-	val gdocParamCellRange = "range";
-	val gdocParamOutputFormat = "output";
-	val gdocFormatCSV = "csv";
-	val gdocFlagTrue = "true";
-	val queryIndicator = "?";
-	val paramSeperator = "&";
-	val paramAssign = "=";
-	
-	def makeParamBinding (name : String, v : String) = name + paramAssign + v;
+  val gdocSheetBaseURL = "https://docs.google.com/spreadsheet/pub";
+  //  Building a param string like ?key=0ArBjkBo&single=true&gid=7&range=A2%3AK999&output=csv
+  val gdocParamDocKey = "key";
+  val gdocParamSingleSheet = "single";
+  val gdocParamSheetNum = "gid";
+  val gdocParamCellRange = "range";
+  val gdocParamOutputFormat = "output";
+  val gdocFormatCSV = "csv";
+  val gdocFlagTrue = "true";
+  val queryIndicator = "?";
+  val paramSeperator = "&";
+  val paramAssign = "=";
 
-	def makeGdocSheetQueryURL(docKey : String, sheetNum : Int, optRange : Option[String]) : String = {
-		val builder = new StringBuilder(gdocSheetBaseURL)
-		builder.append(queryIndicator);
-		builder.append(makeParamBinding(gdocParamDocKey, docKey));
-		builder.append(paramSeperator);
-		builder.append(makeParamBinding(gdocParamSheetNum, sheetNum.toString));
-		if (optRange.isDefined) {
-			builder.append(paramSeperator);
-			builder.append(makeParamBinding(gdocParamCellRange, optRange.get));
-		}
-		builder.append(paramSeperator);
-		builder.append(makeParamBinding(gdocParamOutputFormat, gdocFormatCSV));
-		builder.append(paramSeperator);
-		builder.append(makeParamBinding(gdocParamSingleSheet, gdocFlagTrue));
-		
-		builder.toString();
-	}
-		
+  def makeParamBinding(name: String, v: String) = name + paramAssign + v;
+
+  def makeGdocSheetQueryURL(docKey: String, sheetNum: Int, optRange: Option[String]): String = {
+    val builder = new StringBuilder(gdocSheetBaseURL)
+    builder.append(queryIndicator);
+    builder.append(makeParamBinding(gdocParamDocKey, docKey));
+    builder.append(paramSeperator);
+    builder.append(makeParamBinding(gdocParamSheetNum, sheetNum.toString));
+    if (optRange.isDefined) {
+      builder.append(paramSeperator);
+      builder.append(makeParamBinding(gdocParamCellRange, optRange.get));
+    }
+    builder.append(paramSeperator);
+    builder.append(makeParamBinding(gdocParamOutputFormat, gdocFormatCSV));
+    builder.append(paramSeperator);
+    builder.append(makeParamBinding(gdocParamSingleSheet, gdocFlagTrue));
+
+    builder.toString();
+  }
+
 }
