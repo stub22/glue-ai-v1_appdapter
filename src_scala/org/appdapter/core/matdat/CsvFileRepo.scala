@@ -16,123 +16,84 @@
 
 package org.appdapter.core.matdat
 
-import java.io.Reader
-import java.io.StringReader
-import java.io.InputStreamReader
-import java.io.InputStream
-import java.util.Iterator
-import java.lang.StringBuffer
-import java.io.FileInputStream
-import org.appdapter.bind.csv.datmat.TestSheetReadMain
-import au.com.bytecode.opencsv.CSVReader
+import java.io.{ InputStreamReader, Reader }
+
 import org.appdapter.core.log.BasicDebugger
-import org.appdapter.core.store.{ FileStreamUtils }
-import com.hp.hpl.jena.rdf.model.{ Model, Statement, Resource, Property, Literal, RDFNode, ModelFactory, InfModel }
-import com.hp.hpl.jena.query.{ Query, QueryFactory, QueryExecution, QueryExecutionFactory, QuerySolution, QuerySolutionMap, Syntax }
-import com.hp.hpl.jena.query.{ Dataset, DatasetFactory, DataSource }
-import com.hp.hpl.jena.query.{ ResultSet, ResultSetFormatter, ResultSetRewindable, ResultSetFactory }
-import com.hp.hpl.jena.ontology.{ OntProperty, ObjectProperty, DatatypeProperty }
-import com.hp.hpl.jena.datatypes.{ RDFDatatype, TypeMapper }
-import com.hp.hpl.jena.datatypes.xsd.{ XSDDatatype }
-import com.hp.hpl.jena.shared.{ PrefixMapping }
-import com.hp.hpl.jena.rdf.listeners.{ ObjectListener }
-import org.appdapter.core.log.BasicDebugger
-import org.appdapter.bind.rdf.jena.model.{ ModelStuff, JenaModelUtils, JenaFileManagerUtils }
-import org.appdapter.core.store.{ Repo, BasicQueryProcessorImpl, BasicRepoImpl, QueryProcessor }
-import org.appdapter.impl.store.{ DirectRepo, QueryHelper, ResourceResolver }
-import org.appdapter.help.repo.InitialBindingImpl;
-//import org.appdapter.core.store.RepoSpec
+import org.appdapter.core.store.{ FileStreamUtils, Repo }
+import org.appdapter.impl.store.QueryHelper
+
+import com.hp.hpl.jena.query.{ DataSource, QuerySolution, ResultSet, ResultSetFactory }
+import com.hp.hpl.jena.rdf.model.{ Literal, Model, ModelFactory, RDFNode, Resource }
 
 /**
  * @author Stu B. <www.texpedient.com>
  * @author LogicMoo B. <www.logicmoo.com>
  *
  * We implement a Excel Spreedsheet reader  backed Appdapter "repo" (read-only, but reloadable from updated source data).
- *   (easier to Save a Google Doc to a Single CsvFiles Spreadsheet than several .csv files!)
+ *   (easier to Save a Google Doc to a Single CsvFile Spreadsheet than several .Csv files!)
  *   Uses Apache POI (@see http://poi.apache.org/)
  */
 
-class CsvFilesSheetRepo(directoryModel: Model, fmcls: java.util.List[ClassLoader] = null) extends GoogSheetRepo(directoryModel, fmcls) {
-
-  //val fileModelCLs: java.util.List[ClassLoader] = fmcls;
-
-  // All the work gets done at SheetRepo
-  override def loadSheetModelsIntoMainDataset() = {
-    //  loadSheetModelsIntoMainDatasetCsvFiles(fileModelCLs);
-    super.loadSheetModelsIntoMainDataset();
-  }
-
-  override def loadSheetModelsIntoMainDatasetCsvFiles(fileModelCLs: java.util.List[ClassLoader]) = {
-    val mainDset: DataSource = getMainQueryDataset().asInstanceOf[DataSource];
-    val dirModel = getDirectoryModel;
-    CsvFilesSheetLoader.loadSheetModelsIntoTargetDataset(this, mainDset, dirModel, fileModelCLs);
-  }
-}
-
 /// this is a registerable loader
-class CsvFilesSheetLoader extends InstallableRepoReader {
-  override def getContainerType() = "ccrt:CsvFilesRepo"
+class CsvFileSheetLoader extends InstallableRepoReader {
+  override def getContainerType() = "ccrt:CsvFileRepo"
   override def getSheetType() = "ccrt:CsvFileSheet"
   override def loadModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: DataSource, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
-    CsvFilesSheetLoader.loadSheetModelsIntoTargetDataset(repo, mainDset, dirModel, fileModelCLs)
+    CsvFileSheetLoader.loadSheetModelsIntoTargetDataset(repo, mainDset, dirModel, fileModelCLs)
   }
 }
 
-object CsvFilesSheetLoader extends BasicDebugger {
+object CsvFileSheetLoader extends BasicDebugger {
 
-  def loadSheetModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: DataSource, myDirectoryModel: Model, fileModelCLs: java.util.List[ClassLoader]) = {
+  def loadSheetModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: DataSource,
+    myDirectoryModel: Model, clList: java.util.List[ClassLoader]) = {
 
     val nsJavaMap: java.util.Map[String, String] = myDirectoryModel.getNsPrefixMap()
 
     val msqText = """
-				select ?container ?key ?sheet ?name 
-					{
-						?container  a ccrt:CsvFilesRepo; ccrt:key ?key.
-						?sheet a ccrt:CsvFileSheet;
-	      					ccrt:sourcePath ?name; ccrt:repo ?container.
-					}
-			"""
+			select ?repo ?repoPath ?model ?modelPath ?unionOrReplace
+				{
+					?repo  a ccrt:CsvFileRepo; ccrt:sourcePath ?repoPath.
+					?model a ccrt:CsvFileSheet; ccrt:sourcePath ?modelPath; ccrt:repo ?repo.
+      				OPTIONAL { ?model a ?unionOrReplace. FILTER (?unionOrReplace = ccrt:UnionModel) }
+				}
+		"""
 
     val msRset = QueryHelper.execModelQueryWithPrefixHelp(myDirectoryModel, msqText);
     import scala.collection.JavaConversions._;
     while (msRset.hasNext()) {
       val qSoln: QuerySolution = msRset.next();
 
-      val containerRes: Resource = qSoln.getResource("container");
-      val sheetRes: Resource = qSoln.getResource("sheet");
-      val sheetPath_Lit: Literal = qSoln.getLiteral("name")
-      val sheetLocation_Lit: Literal = qSoln.getLiteral("key")
-      getLogger().debug("containerRes=" + containerRes + ", sheetRes=" + sheetRes + ", name=" + sheetPath_Lit + ", key=" + sheetLocation_Lit)
+      val repoRes: Resource = qSoln.getResource("repo");
+      val modelRes: Resource = qSoln.getResource("model");
+      val unionOrReplaceRes: Resource = qSoln.getResource("unionOrReplace");
+      val repoPath_Lit: Literal = qSoln.getLiteral("repoPath")
+      val modelPath_Lit: Literal = qSoln.getLiteral("modelPath")
+      val dbgArray = Array[Object](repoRes, repoPath_Lit, modelRes, modelPath_Lit);
 
-      val sheetPath = sheetPath_Lit.getString();
-      val sheetLocation = sheetLocation_Lit.getString();
-      var sheetModel: Model = null;
-      sheetModel = readModelSheet(sheetLocation, sheetPath, nsJavaMap, fileModelCLs);
-      getLogger.debug("Read sheetModel: {}", sheetModel)
-      val graphURI = sheetRes.getURI();
-      mainDset.replaceNamedModel(graphURI, sheetModel)
+      getLogger.warn("repo={}, repoPath={}, model={}, modelPath={}", dbgArray);
+
+      val rPath = repoPath_Lit.getString();
+      val mPath = modelPath_Lit.getString();
+
+      getLogger().warn("Ready to read from [{}] / [{}]", rPath, mPath);
+      val rdfURL = rPath + mPath;
+
+      try {
+        val graphURI = modelRes.getURI();
+        val fileModel = FileModelRepoLoader.readModelSheetFromURL(rdfURL, nsJavaMap, clList);
+        getLogger.warn("Read fileModel: {}", fileModel)
+        PipelineRepoLoader.replaceOrUnion(mainDset, unionOrReplaceRes, graphURI, fileModel);
+      } catch {
+        case except: Throwable => getLogger().error("Caught error loading file {}", rdfURL, except)
+      }
     }
   }
 
-  def getCsvSheetAt(sheetLocation: String, sheetName: String, fileModelCLs: java.util.List[ClassLoader]): Reader = {
-    var ext: java.lang.String = FileStreamUtils.getFileExt(sheetName);
-    if (ext != null && (ext.equals("xlsx") || ext.equals("xls"))) {
-      XLSXSheetRepoLoader.getSheetAt(sheetLocation, sheetName, fileModelCLs);
-    }
-    var is = FileStreamUtils.openInputStreamOrNull(sheetName, fileModelCLs);
-    if (is == null) is = FileStreamUtils.openInputStreamOrNull(sheetLocation + sheetName, fileModelCLs);
-    if (is == null) {
-      getLogger.error("Cant get getCsvSheetAt =" + sheetLocation + " " + sheetName)
-      return null;
-    }
-    return new InputStreamReader(is);
-  }
-
-  ///. Modeled on SheetRepo.loadTestSheetRepo
-  def loadCsvFilesSheetRepo(sheetLocation: String, nsSheetName: String, dirSheetName: String,
-    fileModelCLs: java.util.List[ClassLoader], repoSpec: RepoSpec): SheetRepo = {
+  /// Loads a CSV File into a dir model (this is weird since you might need to have a Namespace Map .. to understand your CSV )
+  def loadCsvFileSheetRepo(dirSheet: String, nsSheetLocation: String, fileModelCLs: java.util.List[ClassLoader], repoSpec: RepoSpec): SheetRepo = {
     // Read the namespaces and directory sheets into a single directory model.
-    val dirModel: Model = readDirectoryModelFromCsvFiles(sheetLocation, nsSheetName, dirSheetName, fileModelCLs: java.util.List[ClassLoader])
+    val dirModel: Model = readDirectoryModelFromCsvFile(dirSheet, fileModelCLs, nsSheetLocation)
     // Construct a repo around that directory
     val shRepo = SpecialRepoLoader.makeSheetRepo(repoSpec, dirModel, fileModelCLs)
     // Load the rest of the repo's initial *sheet* models, as instructed by the directory.
@@ -142,31 +103,47 @@ object CsvFilesSheetLoader extends BasicDebugger {
     shRepo
   }
 
-  def readModelSheet(sheetLocation: String, sheetName: String, nsJavaMap: java.util.Map[String, String], fileModelCLs: java.util.List[ClassLoader]): Model = {
+  def getCsvReaderAt(dirSheet: String, fileModelCLs: java.util.List[ClassLoader]): Reader = {
+    val is = FileStreamUtils.openInputStreamOrNull(dirSheet, fileModelCLs);
+    if (is == null) {
+      getLogger.error("Cant get getCsvReaderAt =" + dirSheet)
+      return null;
+    } else new InputStreamReader(is);
+  }
+
+  def readModelSheet(dirSheet: String, nsJavaMap: java.util.Map[String, String], fileModelCLs: java.util.List[ClassLoader]): Model = {
     val tgtModel: Model = ModelFactory.createDefaultModel();
     tgtModel.setNsPrefixes(nsJavaMap)
     val modelInsertProc = new SemSheet.ModelInsertSheetProc(tgtModel);
-    val reader: Reader = getCsvSheetAt(sheetLocation, sheetName, fileModelCLs);
+    val reader: Reader = getCsvReaderAt(dirSheet, fileModelCLs);
     MatrixData.processSheetR(reader, modelInsertProc.processRow);
     getLogger.debug("tgtModel=" + tgtModel)
     tgtModel;
   }
 
-  def readDirectoryModelFromCsvFiles(sheetLocation: String, nsSheetName: String, dirSheetName: String, fileModelCLs: java.util.List[ClassLoader]): Model = {
-    getLogger.debug("readDirectoryModelFromCsvFiles - start")
-    val nsSheetReader = getCsvSheetAt(sheetLocation, nsSheetName, fileModelCLs);
-    val nsJavaMap: java.util.Map[String, String] = MatrixData.readJavaMapFromSheetR(nsSheetReader);
-    getLogger.debug("Got NS map: " + nsJavaMap)
-    val dirModel: Model = readModelSheet(sheetLocation, dirSheetName, nsJavaMap, fileModelCLs);
+  def readDirectoryModelFromCsvFile(dirSheet: String, fileModelCLs: java.util.List[ClassLoader], nsSheetLocation: String = null): Model = {
+    getLogger.debug("readDirectoryModelFromCsvFile - start")
+    val nsJavaMap: java.util.Map[String, String] = new java.util.HashMap[String, String]();
+    if (nsSheetLocation != null) {
+      val nsSheetReader = getCsvReaderAt(nsSheetLocation, fileModelCLs)
+      nsJavaMap.putAll(MatrixData.readJavaMapFromSheetR(nsSheetReader))
+      getLogger.debug("Got NS map: " + nsJavaMap)
+    }
+    val dirModel: Model = readModelSheet(dirSheet, nsJavaMap, fileModelCLs);
     dirModel;
   }
 
-  val nsSheetPath = "Nspc.csv";
-  val dirSheetPath = "Dir.csv";
+  /////////////////////////////////////////
+  /// These are tests below  
+  /////////////////////////////////////////
 
-  private def loadTestCsvFilesSheetRepo(): SheetRepo = {
+  val nsSheetPath = "Nspc.Csv";
+  val dirSheetPath = "Dir.Csv";
+  val queriesSheetPath = "Qry.Csv"
+
+  private def loadTestCsvFileSheetRepo(): SheetRepo = {
     val clList: java.util.ArrayList[ClassLoader] = null;
-    val spec = new OfflineXlsSheetRepoSpec(SemSheet.keyForCSVFilesBootSheet22, nsSheetPath, dirSheetPath, clList)
+    val spec = new CSVFileRepoSpec(dirSheetPath, nsSheetPath, clList)
     val sr = spec.makeRepo
     sr.loadSheetModelsIntoMainDataset()
     sr.loadDerivedModelsIntoMainDataset(clList)
@@ -186,7 +163,7 @@ object CsvFilesSheetLoader extends BasicDebugger {
 
     // Run the resulting fully bound query, and print the results.
 
-    val sr = loadTestCsvFilesSheetRepo()
+    val sr = loadTestCsvFileSheetRepo()
     val qib = sr.makeInitialBinding
 
     qib.bindQName(lightsGraphVarName, lightsGraphQName)
@@ -198,8 +175,7 @@ object CsvFilesSheetLoader extends BasicDebugger {
 
   def testSemSheet(args: Array[String]): Unit = {
     println("SemSheet test ");
-    val keyForCsvFilesBootSheet22 = SemSheet.keyForCSVFilesBootSheet22;
-    val nsSheetURL = keyForCsvFilesBootSheet22 + nsSheetPath;
+    val nsSheetURL = nsSheetPath;
     println("Made Namespace Sheet URL: " + nsSheetURL);
     // val namespaceMapProc = new MapSheetProc(1);
     // MatrixData.processSheet (nsSheetURL, namespaceMapProc.processRow);
@@ -210,12 +186,12 @@ object CsvFilesSheetLoader extends BasicDebugger {
 
     val fileModelCLs = new java.util.ArrayList[ClassLoader];
 
-    val dirModel: Model = readModelSheet(keyForCsvFilesBootSheet22, dirSheetPath, nsJavaMap, fileModelCLs);
+    val dirModel: Model = readModelSheet(dirSheetPath, nsJavaMap, fileModelCLs);
 
     val queriesSheetPath = "Qry"
-    val queriesModel: Model = readModelSheet(keyForCsvFilesBootSheet22, queriesSheetPath, nsJavaMap, fileModelCLs);
+    val queriesModel: Model = readModelSheet(queriesSheetPath, nsJavaMap, fileModelCLs);
 
-    val tqText = "select ?sheet { ?sheet a ccrt:CsvFilesSheet }";
+    val tqText = "select ?sheet { ?sheet a ccrt:CsvFileSheet }";
 
     val trset = QueryHelper.execModelQueryWithPrefixHelp(dirModel, tqText);
     val trxml = QueryHelper.buildQueryResultXML(trset);

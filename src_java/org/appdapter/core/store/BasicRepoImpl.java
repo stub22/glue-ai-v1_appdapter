@@ -31,6 +31,7 @@ import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.shared.Lock;
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -39,10 +40,36 @@ import com.hp.hpl.jena.rdf.model.Model;
 public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements Repo {
 	private Dataset myMainQueryDataset;
 
-	public void replaceModelByName(Ident modelID, Model jenaModel) {
+	public void replaceNamedModel(Ident modelID, Model jenaModel) {
 		Dataset repoDset = getMainQueryDataset();
 		DataSource repoDsource = (DataSource) repoDset;
-		repoDsource.replaceNamedModel(modelID.getAbsUriString(), jenaModel);
+		Lock lock = repoDsource.getLock();
+		try {
+			lock.enterCriticalSection(false);
+			repoDsource.replaceNamedModel(modelID.getAbsUriString(), jenaModel);
+		} finally {
+			lock.leaveCriticalSection();
+		}
+	}
+
+	// A bit like database's addNamedModel (but this is not implmentation of Mutable.. unless a subclass claims it is)
+	public void addNamedModel(Ident modelID, Model jenaModel) {
+		Dataset repoDset = getMainQueryDataset();
+		DataSource repoDsource = (DataSource) repoDset;
+		Lock lock = repoDsource.getLock();
+		try {
+			lock.enterCriticalSection(false);
+			String name = modelID.getAbsUriString();
+			if (!repoDsource.containsNamedModel(name)) {
+				repoDsource.addNamedModel(name, jenaModel);
+			} else {
+				Model before = repoDsource.getNamedModel(name);
+				jenaModel.add(before);
+				repoDsource.replaceNamedModel(name, jenaModel);
+			}
+		} finally {
+			lock.leaveCriticalSection();
+		}
 	}
 
 	protected abstract Dataset makeMainQueryDataset();

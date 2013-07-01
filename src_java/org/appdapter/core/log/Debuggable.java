@@ -5,9 +5,12 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.HashSet;
+import java.util.Observer;
 import java.util.logging.Logger;
 
 public abstract class Debuggable {
@@ -223,24 +226,6 @@ public abstract class Debuggable {
 		return warn("e=" + e.getMessage());
 	}
 
-	public static RuntimeException asRuntimeException(Throwable e) {
-		Throwable useE = e;
-		while (e != null) {
-			if (e instanceof InvocationTargetException)
-				useE = e = e.getCause();
-			if (e instanceof RuntimeException)
-				return (RuntimeException) e;
-			if (e instanceof Error) {
-				throw ((Error) e);
-			}
-			Throwable ne = e.getCause();
-			if (ne == null || ne == e)
-				break;
-			e = ne;
-		}
-		return new RuntimeException(e.getMessage(), e);
-	}
-
 	public static <T> T notImplemented(Object... params) {
 		String msg = "notImplemented: " + toInfoStringA(params, ",", PRINT_DEPTH);
 		if (true)
@@ -249,9 +234,159 @@ public abstract class Debuggable {
 	}
 
 	public static RuntimeException reThrowable(Throwable e) {
-		printStackTrace(e);
-		return asRuntimeException(e);
+		if (e instanceof InvocationTargetException) {
+			e = e.getCause();
+		}
+		if (e instanceof Error) {
+			throw ((Error) e);
+		}
+		if (e instanceof RuntimeException)
+			throw (RuntimeException) e;
+		return reThrowable(e, RuntimeException.class, true, true);
 	}
+
+	public static <T extends Throwable> T reThrowable(Throwable e, Class<T> classOf) {
+		if (classOf == null)
+			throw reThrowable(e);
+		return reThrowable(e, classOf, false, false);
+	}
+
+	public static <T extends Throwable> T reThrowable(Throwable e, Class<T> classOf, boolean throwFirstErrorCause, boolean throwFirstRTECause) {
+		Throwable e1 = e;
+		e.fillInStackTrace();
+		Error err = null;
+		RuntimeException rte = null;
+		boolean needOther = true;
+		while (true) {
+			if (classOf.isInstance(e1))
+				return (T) e1;
+			if (throwFirstErrorCause && e1 instanceof Error) {
+				err = (Error) e1;
+				throwFirstErrorCause = throwFirstRTECause = false;
+			}
+			if (throwFirstRTECause && e1 instanceof RuntimeException) {
+				rte = (RuntimeException) e1;
+				throwFirstErrorCause = throwFirstRTECause = false;
+			}
+			Throwable e2 = e1.getCause();
+			if (e2 == e1 || e2 == null) {
+				break;
+			}
+			if (e1 instanceof InvocationTargetException) {
+				e = e2;
+			}
+			e1 = e2;
+		}
+		if (err != null)
+			throw err;
+		if (rte != null)
+			throw rte;
+		return wrapException(e, classOf, RuntimeException.class);
+	}
+
+	public static <T extends Throwable, O extends Throwable> T wrapException(Throwable e, Class<T> classOf, Class<O> otherwise) throws O {
+		T wrapped = wrapException(e, classOf);
+		if (wrapped != null)
+			return wrapped;
+		O otherw = wrapException(e, otherwise);
+		if (otherw != null)
+			throw otherw;
+		throw new RuntimeException("DEBUGGABLE^^^^^^^^^^&&&&&&&&&&&&&&&&&&&&&&&&& RETHROWWWABLE: " + e.getMessage(), e);
+	}
+
+	public static <T extends Throwable> T wrapException(Throwable cause, Class<T> newClass) {
+		if (newClass == null) {
+			throw reThrowable(cause, RuntimeException.class);
+		}
+		Throwable newVer;
+		try {
+			newVer = newInstance(newClass, C_ST, cause.getMessage(), cause);
+		} catch (Throwable nsm) {
+			try {
+				newVer = newInstance(newClass, C_T, cause);
+			} catch (Throwable nsm1) {
+				try {
+					newVer = newInstance(newClass, C_S, cause.getMessage());
+					newVer.initCause(cause);
+				} catch (Throwable nsm2) {
+					try {
+						newVer = newInstance(newClass, C_0);
+						newVer.initCause(cause);
+					} catch (Throwable nsm3) {
+						return null;
+						// newVer = rte = new RuntimeException(e.getMessage(), e);
+					}
+				}
+			}
+		}
+		setCause(newVer, cause);
+		return (T) newVer;
+	}
+
+	private static <T extends Throwable> void setCause(Throwable ex, Throwable cause) {
+		try {
+			ex.initCause(cause);
+		} catch (Throwable unseen) {
+		}
+		try {
+			StackTraceElement[] st = cause.getStackTrace();
+			if (st != null)
+				ex.setStackTrace(st);
+			Throwable ec = ex.getCause();
+			if (ec != cause) {
+				try {
+					Debuggable.setField(ex, ex.getClass(), Throwable.class, "cause", cause);
+				} catch (Throwable e2) {
+					// cannot set the cause?!
+				}
+			}
+		} catch (Throwable unseen) {
+		}
+	}
+
+	public static <T> T newInstance(Class<T> classOf, Class[] types, Object... args) throws Throwable {
+		Constructor<T> c = classOf.getDeclaredConstructor((Class[]) types);
+		c.setAccessible(true);
+		return c.newInstance(args);
+	}
+
+	static void setField(Object obj, Class classOf, Class otherwise, String fieldname, Object value) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, Throwable {
+		{
+			Throwable why = null;
+			Field causeF;
+			try {
+				causeF = classOf.getField(fieldname);
+				try {
+					causeF.set(obj, value);
+					return;
+				} catch (IllegalArgumentException e) {
+					why = e;
+				} catch (IllegalAccessException e) {
+					why = e;
+				}
+			} catch (SecurityException e) {
+				why = e;
+			} catch (NoSuchFieldException e) {
+				why = e;
+			}
+			try {
+				causeF = otherwise.getDeclaredField(fieldname);
+				causeF.setAccessible(true);
+				causeF.set(obj, value);
+			} catch (SecurityException e) {
+				throw e;
+			} catch (NoSuchFieldException e) {
+				if (why != null)
+					throw why;
+				throw e;
+			}
+		}
+	}
+
+	final static Class[] C_ST = new Class[] { String.class, Throwable.class };
+	final static Class[] C_S = new Class[] { String.class };
+	final static Class[] C_T = new Class[] { Throwable.class };
+	final static Class[] C_0 = new Class[] {};
 
 	public static void printStackTrace(final Throwable ex) {
 		printStackTrace(ex, System.err, -1);

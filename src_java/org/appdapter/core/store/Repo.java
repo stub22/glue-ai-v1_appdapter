@@ -76,9 +76,17 @@ public interface Repo extends QueryProcessor {
 		// public void mountStoreUsingFileConfig(String storeConfigPath);
 		
 	}
-	public static interface Mutable extends Repo {
-		public void addNamedModel(Ident modelID, Model model) ;
-		public void replaceNamedModel(Ident modelID, Model model) ;
+	
+	// for loading operations does not claim persistence
+	public static interface Updatable extends Repo {
+		
+		// this merges the new model into
+		public void addNamedModel(Ident modelID, Model model);
+		// this is like Add but clears the old first
+		public void replaceNamedModel(Ident modelID, Model model);
+
+	}
+	public static interface Mutable extends Repo, Updatable {
 		
 		public void importGraphFromURL(String tgtGraphName, String sourceURL, boolean replaceTgtFlag);
 
