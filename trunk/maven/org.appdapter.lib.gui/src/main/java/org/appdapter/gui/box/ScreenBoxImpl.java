@@ -223,12 +223,14 @@ implements ScreenBox<TrigType>, GetSetObject, UserResult, Convertable, DisplayCo
 	}
 
 	public WrapperValue getWrapperValue() {
-		Object value = getValue();
-		if (value instanceof WrapperValue)
-			return (WrapperValue) value;
+		// 2013-07-01 : This is throwing stack-overflow because it calls getValue(), which calls getWrapperValue()...
 		if (this instanceof WrapperValue) {
 			return (WrapperValue) this;
 		}
+//		Object value = getValue();
+//		if (value instanceof WrapperValue) {
+//			return (WrapperValue) value;
+//		}
 		return new WrapperValue() {
 
 			@Override public void reallySetValue(Object newObject) throws UnsupportedOperationException {
@@ -305,8 +307,9 @@ implements ScreenBox<TrigType>, GetSetObject, UserResult, Convertable, DisplayCo
 
 	@Override public Object getValue() {
 		WrapperValue wv = getWrapperValue();
-		if (wv != null && wv != this)
+		if (wv != null && wv != this) {
 			return wv.getValue();
+		}
 		return this;
 	}
 
