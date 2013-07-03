@@ -28,6 +28,7 @@ import org.appdapter.core.store.BasicStoredMutableRepoImpl;
 import org.appdapter.core.store.Repo;
 import org.appdapter.core.store.Repo.GraphStat;
 import org.appdapter.gui.box.ScreenBoxImpl;
+import org.appdapter.gui.box.WrapperValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +40,7 @@ import com.hp.hpl.jena.query.ResultSet;
  */
 @SuppressWarnings("serial")
 public abstract class RepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<TT>>> extends ScreenBoxImpl<TT> //
-		implements MutableRepoBox<TT> {
+		implements MutableRepoBox<TT> , WrapperValue {
 	static Logger theLogger = LoggerFactory.getLogger(RepoBoxImpl.class);
 	private LazySlow<Repo.Mutable> myRepo;
 

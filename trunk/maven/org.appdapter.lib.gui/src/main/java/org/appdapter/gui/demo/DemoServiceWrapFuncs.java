@@ -16,6 +16,7 @@
 
 package org.appdapter.gui.demo;
 
+import java.beans.PropertyVetoException;
 import java.lang.reflect.InvocationTargetException;
 
 import org.appdapter.api.trigger.Box;
@@ -25,7 +26,9 @@ import org.appdapter.api.trigger.ScreenBox.Kind;
 import org.appdapter.api.trigger.TriggerImpl;
 import org.appdapter.bind.rdf.jena.assembly.CachingComponentAssembler;
 import org.appdapter.core.log.Debuggable;
+import org.appdapter.gui.api.Utility;
 import org.appdapter.gui.box.ScreenBoxImpl;
+import org.appdapter.gui.box.WrapperValue;
 import org.appdapter.gui.rimpl.PanelTriggers;
 
 /**
@@ -41,6 +44,15 @@ public class DemoServiceWrapFuncs {
 
 	private static <BT extends ScreenBoxImpl<TT>, TT extends TriggerImpl<BT>> BT makeTestBoxImplWithValue(Class<BT> boxClass, Object value, String label) {
 		BT result = CachingComponentAssembler.makeEmptyComponent(boxClass);
+		if (!WrapperValue.class.isAssignableFrom(boxClass)) {
+			try {
+				result = (BT) Utility.uiObjects.findOrCreateBox(label, value);
+			} catch (PropertyVetoException e) {
+				throw Debuggable.reThrowable(e);
+			}
+		} else {
+			result = CachingComponentAssembler.makeEmptyComponent(boxClass);
+		}
 		result.setShortLabel(label);
 		result.setDescription("full description for box with label: " + label);
 		try {

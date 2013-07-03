@@ -689,10 +689,11 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 		if (trigType == null) {
 			trigType = wrapper.getObjectClass();
 		}
-		if (label==null) label = wrapper.getUniqueName();
+		if (label == null)
+			label = wrapper.getUniqueName();
 		JPanel view = wrapper.getPropertiesPanel();
 		showObjectGUI(label, view, trigType);
-		return UserResult.SUCCESS;
+		return Utility.asUserResult(view);
 	}
 
 	public BoxPanelSwitchableView getTabUI() {

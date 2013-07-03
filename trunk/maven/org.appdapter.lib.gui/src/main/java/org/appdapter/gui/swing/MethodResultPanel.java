@@ -25,6 +25,7 @@ class MethodResultPanel extends JJPanel {
 
 	JLabel label;
 	SmallObjectView value = null;
+	Class expectedType = null;
 	DisplayContext context;
 	boolean isVoid = false;
 
@@ -45,6 +46,7 @@ class MethodResultPanel extends JJPanel {
 	 * Designates the type of return value
 	 */
 	public void setResultType(Class type) {
+		expectedType = type;
 		if (type == Void.TYPE) {
 			label.setText("(no return value)");
 			isVoid = true;
@@ -72,6 +74,7 @@ class MethodResultPanel extends JJPanel {
 				add("Center", value);
 				invalidate();
 				validate();
+				Utility.setLastResult(this, object, expectedType);
 			}
 		} catch (Exception err) {
 			theLogger.error("An error occurred", err);

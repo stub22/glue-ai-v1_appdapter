@@ -17,15 +17,12 @@
 package org.appdapter.gui.demo;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
-import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BoxLayout;
 import javax.swing.JApplet;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.tree.TreeModel;
 
@@ -33,10 +30,13 @@ import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContext;
 import org.appdapter.api.trigger.DisplayContextProvider;
 import org.appdapter.api.trigger.MutableBox;
-import org.appdapter.api.trigger.POJOBoxImpl;
 import org.appdapter.api.trigger.ScreenBox.Kind;
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.api.trigger.TriggerImpl;
+import org.appdapter.core.log.BasicDebugger;
+import org.appdapter.core.matdat.OfflineXlsSheetRepoSpec;
+import org.appdapter.core.matdat.OnlineSheetRepoSpec;
+import org.appdapter.core.matdat.RepoSpec;
 import org.appdapter.core.name.FreeIdent;
 import org.appdapter.core.store.Repo;
 import org.appdapter.core.store.Repo.WithDirectory;
@@ -46,6 +46,7 @@ import org.appdapter.demo.DemoBrowserUI;
 import org.appdapter.demo.DemoNavigatorCtrlFactory;
 import org.appdapter.gui.box.ScreenBoxContextImpl;
 import org.appdapter.gui.box.ScreenBoxImpl;
+import org.appdapter.gui.box.WrapperValue;
 import org.appdapter.gui.browse.ScreenBoxTreeNodeImpl;
 import org.appdapter.gui.demo.triggers.BridgeTriggers;
 import org.appdapter.gui.demo.triggers.DatabaseTriggers;
@@ -57,12 +58,6 @@ import org.appdapter.gui.rimpl.RepoModelBoxImpl;
 import org.appdapter.gui.rimpl.SysTriggers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import org.appdapter.core.log.BasicDebugger;
-import org.appdapter.core.matdat.*;
-import org.appdapter.demo.DemoBrowserUI;
-import org.appdapter.demo.DemoBrowserCtrl;
-import org.appdapter.demo.DemoNavigatorCtrlFactory;
 
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -83,8 +78,8 @@ final public class DemoBrowser {
 	}
 
 	private static void addSampleElements(DemoBrowserCtrl browser) {
-		browser.addObject("OnlineRepoSpec", makeOnlineRepoSpec(), false);
 		browser.addObject("OfflineRepoSpec", makeOfflineRepoSpec(), false);
+		browser.addObject("OnlineRepoSpec", makeOnlineRepoSpec(), true);
 	}
 
 	public static RepoSpec makeOnlineRepoSpec() {
@@ -121,17 +116,43 @@ final public class DemoBrowser {
 	}
 
 	public static void testLoggingSetup() {
-		System.out.println("[System.out] - DemoBrowser.pretendToBeAwesome()");
+		//System.out.println("[System.out] - DemoBrowser.pretendToBeAwesome()");
 		theLogger.info("[SLF4J] - DemoBrowser.pretendToBeAwesome()");
 	}
 
 	static public boolean defaultExampleCode = false;
 
+	static public DemoBrowserCtrl mainControl = null;
+
+	/**
+	 *  Ensure the main instance is started
+	 * 
+	 * @param bringToFront
+	 * 
+	 * @throws Exception
+	 */
+	public static synchronized void ensureRunning(boolean bringToFront) throws Exception {
+		if (mainControl == null) {
+			main(new String[0]);
+		}
+		try {
+			System.out.flush();
+			System.err.flush();
+		} catch (Throwable t) {
+
+		}
+		try {
+			if (bringToFront) {
+				mainControl.show();
+			}
+		} catch (Throwable t) {
+		}
+	}
+
 	// ==== Main method ==========================
 	public static void main(String[] args) throws InterruptedException {
 		testLoggingSetup();
 		theLogger.info("DemoBrowser.main()-START");
-		DemoBrowserCtrl dnc;
 		try {
 			//ObjectNavigator frame = new ObjectNavigator();
 			//Utility.setInstancesOfObjects(frame.getChildCollectionWithContext());
@@ -146,9 +167,9 @@ final public class DemoBrowser {
 			DemoBrowserUI.registerDemo(crtlMaker);
 			//frame.setSize(800, 600);
 			//org.appdapter.gui.pojo.Utility.centerWindow(frame);
-			dnc = DemoBrowserUI.makeDemoNavigatorCtrl(args);
-			addSampleElements(dnc);
-			dnc.launchFrame("This is ObjectNavigator");
+			mainControl = DemoBrowserUI.makeDemoNavigatorCtrl(args);
+			addSampleElements(mainControl);
+			mainControl.launchFrame("This is ObjectNavigator");
 			//frame.show();
 			//frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			theLogger.info("ObjectNavigator is now running!");
@@ -238,7 +259,7 @@ final public class DemoBrowser {
 		return (TBT) new SysTriggers.QuitTrigger().makeTrigger(boxClass);
 	}
 
-	static class ScreenModelBox extends POJOBoxImpl {
+	static class ScreenModelBox extends ScreenBoxImpl {
 
 		final String myURI;
 		private Model myModel;
@@ -258,11 +279,11 @@ final public class DemoBrowser {
 			this.myModel = m;
 		}
 
-		@Override public Object getObject() {
+		@Override public Object getValue() {
 			return myModel;
 		}
 
-		@Override public void reallySetValue(Object newObject) throws UnsupportedOperationException {
+		public void reallySetValue(Object newObject) throws UnsupportedOperationException {
 			myModel = (Model) newObject;
 		}
 
@@ -288,7 +309,7 @@ final public class DemoBrowser {
 		}
 	}
 
-	public static class DemoRepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<TT>>> extends RepoBoxImpl<TT> implements MutableRepoBox<TT> {
+	public static class DemoRepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<TT>>> extends RepoBoxImpl<TT> implements MutableRepoBox<TT>, WrapperValue {
 
 		RepoSubBoxFinder myRSBF;
 
@@ -415,6 +436,18 @@ final public class DemoBrowser {
 			return super.getUploadHomePath();
 		}
 
+		@Override public Object reallyGetValue() {
+			return myRepoWD;
+		}
+
+		@Override public void reallySetValue(Object newObject) throws UnsupportedOperationException {
+			if (newObject instanceof String) {
+				mount(newObject.toString());
+				return;
+			}
+			myRepoWD = (WithDirectory) newObject;
+		}
+
 	}
 
 	// static class ConcBootstrapTF extends BootstrapTriggerFactory<TriggerImpl<BoxImpl<TriggerImpl>>> {
@@ -487,6 +520,7 @@ final public class DemoBrowser {
 						*/
 			return bctx;
 		} catch (Throwable t) {
+			t.printStackTrace();
 			theLogger.error("problem in tree init", t);
 			return null;
 		}

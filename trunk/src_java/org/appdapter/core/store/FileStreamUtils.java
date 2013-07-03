@@ -42,6 +42,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.appdapter.bind.rdf.jena.model.JenaFileManagerUtils;
+import org.appdapter.core.boot.ClassLoaderUtils;
 import org.appdapter.core.log.Debuggable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -449,6 +450,9 @@ public class FileStreamUtils {
 
 	public static InputStream openInputStream(String srcPath, java.util.List<ClassLoader> cls) throws IOException {
 
+		if (cls == null) {
+			cls = ClassLoaderUtils.getCurrentClassLoaderList();
+		}
 		if (srcPath == null)
 			throw new MalformedURLException("URL = NULL");
 		IOException ioe = null;

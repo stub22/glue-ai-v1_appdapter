@@ -18,14 +18,10 @@ package org.appdapter.gui.box;
 
 import java.awt.Component;
 import java.beans.Customizer;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
-import java.beans.PropertyVetoException;
-import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -34,17 +30,14 @@ import java.util.Map;
 import javax.swing.JPanel;
 
 import org.appdapter.api.trigger.AnyOper.UIHidden;
-import org.appdapter.api.trigger.BT;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContext;
 import org.appdapter.api.trigger.BoxImpl;
 import org.appdapter.api.trigger.Convertable;
 import org.appdapter.api.trigger.DisplayContext;
 import org.appdapter.api.trigger.DisplayContextProvider;
-import org.appdapter.api.trigger.DisplayType;
 import org.appdapter.api.trigger.GetDisplayContext;
 import org.appdapter.api.trigger.MutableBox;
-import org.appdapter.api.trigger.POJOBoxImpl;
 import org.appdapter.api.trigger.ScreenBox;
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.api.trigger.UserResult;
@@ -52,7 +45,6 @@ import org.appdapter.core.component.MutableKnownComponent;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.ComponentHost;
 import org.appdapter.gui.api.GetSetObject;
-import org.appdapter.gui.api.IGetBox;
 import org.appdapter.gui.api.UseEditor;
 import org.appdapter.gui.api.Utility;
 import org.appdapter.gui.repo.DatabaseManagerPanel;
@@ -78,6 +70,8 @@ import org.slf4j.LoggerFactory;
 public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<TrigType>>> extends BoxImpl<TrigType>
 
 implements ScreenBox<TrigType>, GetSetObject, UserResult, Convertable, DisplayContextProvider {
+
+	protected Object valueSetAs = null;
 
 	protected Object toKey(Object kind) {
 		if (kind == null) {
@@ -124,13 +118,13 @@ implements ScreenBox<TrigType>, GetSetObject, UserResult, Convertable, DisplayCo
 	private DisplayContextProvider myDCP;
 
 	public ScreenBoxImpl() {
-		Utility.recordCreated(this);
 		madeElsewhere = true;
+		Utility.recordCreated(this);
 	}
 
 	public ScreenBoxImpl(boolean isSelfTheValue) {
-		Utility.recordCreated(this);
 		this.madeElsewhere = isSelfTheValue;
+		Utility.recordCreated(this);
 	}
 
 	/*
@@ -183,27 +177,31 @@ implements ScreenBox<TrigType>, GetSetObject, UserResult, Convertable, DisplayCo
 	}
 
 	@Override public <T> boolean canConvert(Class<T> c) {
-		for (Object o : getObjects()) {
-			if (o == null) {
-				continue;
-			}
-			if (!c.isInstance(o)) {
-				continue;
-			}
-			try {
-				final T madeIT = (T) o;
-				if (madeIT != null) {
-					return true;
+		try {
+			for (Object o : getObjects()) {
+				if (o == null) {
+					continue;
 				}
-			} catch (Exception e) {
-				getLogger().error("JVM Issue (canConvert)", e);
+				if (!c.isInstance(o)) {
+					continue;
+				}
+				try {
+					final T madeIT = (T) o;
+					if (madeIT != null) {
+						return true;
+					}
+				} catch (Exception e) {
+					getLogger().error("JVM Issue (canConvert)", e);
+				}
+				return true;
 			}
-			return true;
+		} catch (Throwable t) {
+			getLogger().error("JVM Issue (canConvert)", t);
+			return false;
 		}
 		return false;
 	}
 
-	
 	@Override public <T> T convertTo(Class<T> c) throws ClassCastException {
 		for (Object o : getObjects()) {
 			if (o == null) {
@@ -223,30 +221,25 @@ implements ScreenBox<TrigType>, GetSetObject, UserResult, Convertable, DisplayCo
 	}
 
 	public WrapperValue getWrapperValue() {
-		// 2013-07-01 : This is throwing stack-overflow because it calls getValue(), which calls getWrapperValue()...
 		if (this instanceof WrapperValue) {
 			return (WrapperValue) this;
 		}
-//		Object value = getValue();
-//		if (value instanceof WrapperValue) {
-//			return (WrapperValue) value;
-//		}
 		return new WrapperValue() {
+
+			@Override public Class getObjectClass() {
+				return ScreenBoxImpl.this.getObjectClass();
+			}
 
 			@Override public void reallySetValue(Object newObject) throws UnsupportedOperationException {
 				if (newObject == ScreenBoxImpl.this)
 					return;
-				if (newObject == getValue())
+				if (newObject == ScreenBoxImpl.this.getValueOrThis())
 					return;
 				throw new UnsupportedOperationException("value");
 			}
 
-			public Class getObjectClass() {
-				return getValue().getClass();
-			}
-
-			@Override public Object getValue() {
-				return getValueOrThis();
+			@Override public Object reallyGetValue() {
+				return ScreenBoxImpl.this.getValueOrThis();
 			}
 
 		};
@@ -260,9 +253,9 @@ implements ScreenBox<TrigType>, GetSetObject, UserResult, Convertable, DisplayCo
 	public Iterable<Object> getObjects() {
 		Object o = getValue();
 		if (o != null && o != this) {
-			return CollectionSetUtils.iterableOf(o, this, getShortLabel(), getIdent());
+			return Arrays.asList(new Object[] { o, this, getIdent(), getShortLabel() });
 		}
-		return CollectionSetUtils.iterableOf(this, getShortLabel(), getIdent());
+		return Arrays.asList(new Object[] { this, getIdent(), getShortLabel(), });
 	}
 
 	@Override public <T, E extends T> Iterable<E> getObjects(Class<T> type) {
@@ -302,14 +295,22 @@ implements ScreenBox<TrigType>, GetSetObject, UserResult, Convertable, DisplayCo
 	}
 
 	@Override public void setObject(Object newObject) throws InvocationTargetException {
+		if (getClass() == ScreenBoxImpl.class) {
+			valueSetAs = newObject;
+			return;
+		}
 		getWrapperValue().reallySetValue(newObject);
 	}
 
 	@Override public Object getValue() {
-		WrapperValue wv = getWrapperValue();
-		if (wv != null && wv != this) {
-			return wv.getValue();
+		if (getClass() == ScreenBoxImpl.class) {
+			if (valueSetAs != null)
+				return valueSetAs;
+			return valueSetAs;
 		}
+		WrapperValue wv = getWrapperValue();
+		if (wv != null && wv != this)
+			return wv.reallyGetValue();
 		return this;
 	}
 
@@ -378,7 +379,7 @@ implements ScreenBox<TrigType>, GetSetObject, UserResult, Convertable, DisplayCo
 			}
 		}
 
-		Class objClass = getWrapperValue().getObjectClass();
+		Class objClass = val.getClass();
 
 		if (customizer instanceof Class) {
 			Class cust = (Class) customizer;

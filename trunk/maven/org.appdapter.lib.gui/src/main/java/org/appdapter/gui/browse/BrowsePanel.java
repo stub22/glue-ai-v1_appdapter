@@ -33,6 +33,7 @@ import javax.swing.*;
 import javax.swing.tree.TreeModel;
 
 import org.appdapter.api.trigger.BT;
+import org.appdapter.api.trigger.BoxContext;
 import org.appdapter.api.trigger.BoxPanelSwitchableView;
 import org.appdapter.api.trigger.DisplayContext;
 import org.appdapter.api.trigger.DisplayType;
@@ -59,7 +60,7 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 	final DisplayContextUIImpl app;
 
 	/** Creates new form BrowsePanel */
-	public BrowsePanel(TreeModel tm) {
+	public BrowsePanel(TreeModel tm, BoxContext bctx) {
 		Utility.uiObjects.toString();
 		Utility.browserPanel = this;
 		myTreeModel = tm;
@@ -68,11 +69,12 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 		//setTabbedPaneOptions();
 		Utility.controlApp = app = new DisplayContextUIImpl(myBoxPanelSwitchableViewImpl, this, Utility.uiObjects);
 		NamedObjectCollection ctx = Utility.getTreeBoxCollection();
-		new AddToTreeListener(myTree, ctx);
 		Utility.collectionWatcher = new CollectionEditorUtil(app, ctx);
 		//myBoxPanelTabPane.add("Class Browser", Utility.selectionOfCollectionPanel);
 		myBoxPanelTabPane.add("POJO Browser", Utility.collectionWatcher.getNamedItemChooserPanel());
 		hookTree();
+		new AddToTreeListener(myTree, ctx, bctx);
+		invalidate();
 	}
 
 	private void setTabbedPaneOptions() {
@@ -97,8 +99,8 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 	}
 
 	public void setVisible(boolean aFlag) {
-		super.setVisible(aFlag);
 		checkParent();
+		super.setVisible(aFlag);
 	}
 
 	public void addNotify() {
@@ -107,15 +109,15 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 	}
 
 	public void show() {
-		super.show();
 		checkParent();
+		super.show();
 	}
 
 	Container hookedParent = null;
 	private JMenuBar oldJMenuBar;
 	boolean checkingParent = false;
 
-	public void checkParent() {
+	public synchronized void checkParent() {
 		if (checkingParent)
 			return;
 		Container p = getTopLevelAncestor();
@@ -149,7 +151,7 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 			if (nowMenuBar != oldJMenuBar) {
 				oldJMenuBar = nowMenuBar;
 			}
-			if (myTopFrameMenu == null || true) {
+			if (myTopFrameMenu == null) {
 				resetMenu();
 			}
 			jf.setJMenuBar(myTopFrameMenu);
@@ -160,8 +162,12 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 	}
 
 	private static void createLookAndFeelMenu() {
-		JMenuBar menuBar = Utility.getMenuBar();
-		menuBar.add(new LookAndFeelMenuItems("Look and Feel"));
+		try {
+			JMenuBar menuBar = Utility.getMenuBar();
+			menuBar.add(new LookAndFeelMenuItems("Look and Feel"));
+		} catch (Throwable t) {
+			t.printStackTrace();
+		}
 	}
 
 	private void resetMenu() {
@@ -369,9 +375,15 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 		return null;
 	}
 
+	public String getMessage() {
+		return myBoxPanelStatus.getText();
+	}
+
 	public UserResult showScreenBox(Object anyObject) {
 		try {
-			return addObject(null, anyObject, DisplayType.ANY, true);
+			if (anyObject == null)
+				return Utility.asUserResult(null);
+			return addObject(null, anyObject, Utility.getDisplayType(anyObject.getClass()), true);
 		} catch (Exception e) {
 			throw Debuggable.UnhandledException(e);
 		}

@@ -179,30 +179,32 @@ public class NamedObjectCollectionImpl implements NamedObjectCollection, Vetoabl
 			title = generateUniqueName(obj);
 		}
 		if (box == null)
-			box = new ObjectWrapper(title, obj);
+			box = new ObjectWrapper(this, title, obj);
 		return box;
 
 	}
 
-	class ObjectWrapper extends POJOBoxImpl implements BT, IGetBox {
+	static class ObjectWrapper extends POJOBoxImpl implements BT, IGetBox {
 		@Override public BT getBT() {
 			return this;
 		}
 
 		public Object value;
+		private NamedObjectCollection noc;
 
 		public void setNameValue(String uniqueName, Object obj) {
+			valueSetAs = obj;
 			if (uniqueName == null) {
-				if (obj != null) {
-					uniqueName = "sihc-" + System.identityHashCode(obj) + "-" + System.currentTimeMillis();
-				} else {
-					uniqueName = "snul-" + System.identityHashCode(this) + "-" + System.currentTimeMillis();
-				}
+				uniqueName = Utility.generateUniqueName(obj, uniqueName, noc.getNameToBoxIndex());
 			}
 			name = uniqueName;
 			if (obj == null) {
+
 				obj = new NullPointerException(uniqueName).fillInStackTrace();
 			}
+			if (clz == null)
+				clz = obj.getClass();
+
 			setShortLabel(uniqueName);
 			setObject(obj);
 		}
@@ -212,37 +214,16 @@ public class NamedObjectCollectionImpl implements NamedObjectCollection, Vetoabl
 		this(noc, label, null);
 		}*/
 
-		public ObjectWrapper(NamedObjectCollection noc, String title, Object val) {
-			this.value = val;
-			if (val != null) {
-				this.clz = (Class) val.getClass();
-				//this.name = Utility.getDefaultName(val);
-				setObject(val);
-			}
-			setShortLabel(title);
-			addToNoc(noc, title);
-		}
-
 		/**
 		 * Creates a new ScreenBox for the given object
 		 * and assigns it a default name.
 		 */
-		private ObjectWrapper(Object val) {
-			this.value = val;
-			this.clz = (Class) val.getClass();
-			//this.name = Utility.getDefaultName(val);
+		public ObjectWrapper(NamedObjectCollection noc, String title, Object val) {
+			this.noc = noc;
+			setNameValue(title, val);
 		}
 
-		/**
-		 * Creates a new ScreenBox for the given object, with the given name.
-		 */
-		private ObjectWrapper(String title, Object val) {
-			this.value = val;
-			this.clz = value.getClass();
-			this.name = title;
-		}
-
-		@Override public Object getObject() {
+		@Override public Object reallyGetValue() {
 			return value;
 		}
 
@@ -250,6 +231,17 @@ public class NamedObjectCollectionImpl implements NamedObjectCollection, Vetoabl
 			value = newObject;
 		}
 
+		@Override public Object getValue() {
+			if (value != null)
+				return value;
+			return this;
+		}
+
+		@Override public Object getValueOrThis() {
+			if (value != null)
+				return value;
+			return this;
+		}
 	}
 
 	/**
@@ -367,7 +359,7 @@ public class NamedObjectCollectionImpl implements NamedObjectCollection, Vetoabl
 		if (wrapper == null) {
 			return null;
 		} else {
-			return wrapper.getObject();
+			return wrapper.getValue();
 		}
 	}
 
@@ -422,7 +414,7 @@ public class NamedObjectCollectionImpl implements NamedObjectCollection, Vetoabl
 				title = generateUniqueName(obj);
 			}
 			//Create the value wrapper, with a unique name
-			wrapper = (BT) new ObjectWrapper(title, obj);
+			wrapper = (BT) new ObjectWrapper(this, title, obj);
 
 			//Add it
 			//objectsToWrappers.put(obj, wrapper);
@@ -617,7 +609,7 @@ public class NamedObjectCollectionImpl implements NamedObjectCollection, Vetoabl
 	}
 
 	private BT makeWrapper(Object object) throws PropertyVetoException {
-		BT box = new ObjectWrapper(generateUniqueName(object), object);
+		BT box = new ObjectWrapper(this, generateUniqueName(object), object);
 		return box;
 	}
 
@@ -632,7 +624,7 @@ public class NamedObjectCollectionImpl implements NamedObjectCollection, Vetoabl
 		if (evt.getPropertyName().equals("name")) {
 			//Name has changed - so update the name index
 			BT value = (BT) (evt.getSource());
-			if (containsObject(value.getObject())) {
+			if (containsObject(value.getValue())) {
 				String newName = (String) evt.getNewValue();
 				String oldName = (String) evt.getOldValue();
 				if (oldName != null) {
@@ -646,7 +638,7 @@ public class NamedObjectCollectionImpl implements NamedObjectCollection, Vetoabl
 			//to update my internal state
 			Boolean newValue = (Boolean) evt.getNewValue();
 			BT wrapper = (BT) evt.getSource();
-			Object object = wrapper.getObject();
+			Object object = wrapper.getValue();
 			if (containsObject(object)) {
 				if (newValue.equals(new Boolean(true))) {
 					try {
@@ -824,7 +816,7 @@ public class NamedObjectCollectionImpl implements NamedObjectCollection, Vetoabl
 		if (evt.getPropertyName().equals("name")) {
 			//The name of a wrapper has changed. Make sure there are no name collisions
 			BT wrapper = (BT) (evt.getSource());
-			Object object = wrapper.getObject();
+			Object object = wrapper.getValue();
 			if (containsObject(object)) {
 				String name = (String) evt.getNewValue();
 				BT otherWrapper = findBoxByName(name);

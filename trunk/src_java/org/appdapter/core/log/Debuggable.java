@@ -233,6 +233,11 @@ public abstract class Debuggable {
 		return (T) null;
 	}
 
+	public static void eclImplemented(Object... params) {
+		String msg = "eclImplemented: " + toInfoStringA(params, ",", PRINT_DEPTH);
+		warn(msg);
+	}
+
 	public static RuntimeException reThrowable(Throwable e) {
 		if (e instanceof InvocationTargetException) {
 			e = e.getCause();
@@ -442,4 +447,5 @@ public abstract class Debuggable {
 			return baos.toString();
 		}
 	}
+
 }

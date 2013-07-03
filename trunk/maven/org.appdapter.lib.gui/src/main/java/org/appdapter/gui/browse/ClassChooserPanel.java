@@ -67,6 +67,9 @@ public class ClassChooserPanel extends JPanel implements ActionListener, Documen
 
 	private void resetAutoComplete() {
 	    /*  JIDESOFT
+	     
+	     leaving it off as it requires large PermGen to hold all the class
+	     
 	       AutoCompletion autoCompletion;
 		autoCompletion = new AutoCompletion(classField);
 		autoCompletion.setStrict(false);
