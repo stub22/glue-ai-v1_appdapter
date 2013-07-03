@@ -4,18 +4,15 @@ import java.beans.PropertyVetoException;
 
 public interface WrapperValue {
 
-	/*abstract public Iterable<Class> getTypes();
-
-	abstract public Iterable<Object> getObjects();
-	*/
-	abstract public Class getObjectClass();
-
 	/**
 	 * Returns the object that this value wrapper represents
 	 */
-	abstract public Object getValue();
+	abstract public Object reallyGetValue();
 
-	//abstract public Object getValueOrThis();
+	/**
+	 * Returns the Type that this value wrapper represents
+	 */
+	abstract public Class getObjectClass();
 
-	abstract public void reallySetValue(Object newObject) throws UnsupportedOperationException;
+	abstract public void reallySetValue(Object newObject) throws UnsupportedOperationException, ClassCastException;
 }

@@ -154,7 +154,7 @@ public interface BT extends org.appdapter.gui.api.IGetBox, GetObject, Convertabl
 	/**
 	 * Returns the object that this value wrapper represents
 	 */
-	public Object getObject();
+	public Object getValue();
 
 	/**
 	 * Returns the name of this value

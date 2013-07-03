@@ -47,6 +47,7 @@ import javax.tools.FileObject;
 
 import org.appdapter.api.trigger.AddTabFrames;
 import org.appdapter.api.trigger.BT;
+import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxPanelSwitchableView;
 import org.appdapter.api.trigger.BrowserPanelGUI;
 import org.appdapter.api.trigger.Convertable;
@@ -55,11 +56,13 @@ import org.appdapter.api.trigger.DisplayType;
 import org.appdapter.api.trigger.GetObject;
 import org.appdapter.api.trigger.NamedObjectCollection;
 import org.appdapter.api.trigger.UserResult;
+import org.appdapter.core.boot.ClassLoaderUtils;
 import org.appdapter.core.component.KnownComponent;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.core.name.Ident;
 import org.appdapter.core.store.Repo;
 import org.appdapter.gui.box.ScreenBoxImpl;
+import org.appdapter.gui.box.WrapperValue;
 import org.appdapter.gui.browse.BrowsePanel;
 import org.appdapter.gui.browse.CollectionEditorUtil;
 import org.appdapter.gui.browse.CollectionEditorUtil.FileMenu;
@@ -538,6 +541,18 @@ public class Utility {
 	 * @param nameIndex 
 	 */
 	public static String generateUniqueName(Object object, Map<String, BT> checkAgainst) {
+		return generateUniqueName_sug(object, null, checkAgainst);
+	}
+
+	public static String generateUniqueName(Object object, String suggestedName, Map<String, BT> checkAgainst) {
+		String newName = generateUniqueName_sug(object, suggestedName, checkAgainst);
+		if (suggestedName != null && !suggestedName.equals(newName)) {
+			Debuggable.warn("did not get suggested name : " + suggestedName + " isntead got " + newName + " for " + object);
+		}
+		return newName;
+	}
+
+	public static String generateUniqueName_sug(Object object, String suggestedName, Map<String, BT> checkAgainst) {
 		if (object == null)
 			return "<null>";
 		if (object instanceof Class) {
@@ -561,20 +576,31 @@ public class Utility {
 			}
 		}
 
-		String className = Utility.getShortClassName(object.getClass());
 		if (checkAgainst == null) {
-			return getDefaultName(object);
+			if (suggestedName == null)
+				return getDefaultName(object);
+			return suggestedName + getDefaultName(object);
 		}
+
+		String className = suggestedName;
+		String name;
 		int counter = 1;
-		boolean done = false;
-		String name = "???";
-		while (!done) {
+		if (className == null) {
+			className = Utility.getShortClassName(object.getClass());
 			name = className + counter;
+		} else {
+			name = suggestedName;
+		}
+
+		boolean done = false;
+
+		while (!done) {
 			Object otherPOJO = checkAgainst.get(name);
 			if (otherPOJO == null) {
 				done = true;
 			} else {
 				++counter;
+				name = className + counter;
 			}
 		}
 		return name;
@@ -594,6 +620,10 @@ public class Utility {
 			}
 		} else {
 			theLogger.info("result from " + whereFrom + " was " + obj);
+			if (obj != null) {
+				DisplayType attachType = getDisplayType(expected);
+				getCurrentPOJOApp().showScreenBox(obj);
+			}
 		}
 
 	}
@@ -601,7 +631,22 @@ public class Utility {
 	static Hashtable<Class, GetSetObject> panelsFor = new Hashtable<Class, GetSetObject>();
 
 	private static GetSetObject getPanelFor(Class expected) {
-		return panelsFor.get(expected);
+		GetSetObject gso = panelsFor.get(expected);
+		if (gso != null)
+			return gso;
+		if (getDisplayType(expected) == DisplayType.TOSTRING) {
+			return new GetSetObject() {
+
+				@Override public void setObject(Object object) throws InvocationTargetException {
+					getCurrentPOJOApp().showMessage("" + object);
+				}
+
+				@Override public Object getValue() {
+					return getCurrentPOJOApp().getMessage();
+				}
+			};
+		}
+		return null;
 	}
 
 	public static Class<? extends Customizer> findCustomizerClass(Class objClass) {
@@ -625,6 +670,8 @@ public class Utility {
 		return null;
 	}
 
+	public static boolean usePropertyEditorManager = false;
+
 	/**
 	 * Locate a value editor for a given target type.
 	 *
@@ -633,9 +680,17 @@ public class Utility {
 	 * The result is null if no suitable editor can be found.
 	 */
 	public static PropertyEditor findEditor(Class targetType) {
-		PropertyEditor ped = PropertyEditorManager.findEditor(targetType);
-		if (ped != null)
-			return ped;
+
+		PropertyEditor ped = null;
+		try {
+			if (usePropertyEditorManager) {
+				ped = PropertyEditorManager.findEditor(targetType);
+				if (ped != null)
+					return ped;
+			}
+		} catch (Throwable e) {
+			// PropertyEditorManager is a wild and untamed thing
+		}
 		Class<? extends PropertyEditor> pe = FunctionalClassRegistry.findImplmentingForMatch(PropertyEditor.class, targetType);
 		if (pe == null || !PropertyEditor.class.isAssignableFrom(pe)) {
 			return null;
@@ -692,12 +747,21 @@ public class Utility {
 
 	static HashMap<Object, JPanel> gpp = new HashMap();
 
+	public static class AlreadyLooking extends JPanel {
+
+	}
+
+	public static AlreadyLooking alreadyLooking = new AlreadyLooking();
+
 	public static JPanel getPropertiesPanel(Object object) {
 		object = dref(object, object);
 		JPanel view = (JPanel) gpp.get(object);
+		if (view instanceof AlreadyLooking) {
+			return null;
+		}
 		if (view != null)
 			return view;
-
+		gpp.put(object, alreadyLooking);
 		Class objClass = object.getClass();
 		Class<? extends Customizer> customizerClass = getCustomizerClassForClass(objClass);
 		Customizer customizer;
@@ -831,6 +895,9 @@ public class Utility {
 		if (expected == String.class || CharSequence.class.isAssignableFrom(expected)) {
 			return DisplayType.TOSTRING;
 		}
+		if (expected == Boolean.class) {
+			return DisplayType.TOSTRING;
+		}
 		return DisplayType.PANEL;
 	}
 
@@ -866,6 +933,9 @@ public class Utility {
 			if (value instanceof BT) {
 				derefd = ((BT) value).getValue();
 			}
+			if (value instanceof WrapperValue) {
+				derefd = ((WrapperValue) value).reallyGetValue();
+			}
 			if (value instanceof IGetBox) {
 				derefd = ((IGetBox) value).getBT();
 			}
@@ -887,7 +957,7 @@ public class Utility {
 	public static <T> T first(T... o) {
 		for (T t : o) {
 			if (t != null)
-				return null;
+				return t;
 		}
 		return null;
 	}
@@ -900,10 +970,12 @@ public class Utility {
 		java.net.URL url = null;
 		for (String pfx : prefix)
 			for (String sfx : suffix) {
-				url = org.appdapter.gui.swing.IconView.class.getResource(pfx + filename + sfx);
+				String tryFileName = pfx + filename + sfx;
+				url = org.appdapter.gui.swing.IconView.class.getResource(tryFileName);
 				if (url != null)
 					return url;
-				url = Utility.class.getResource(pfx + filename + sfx);
+
+				url = ClassLoaderUtils.getFileResource(ClassLoaderUtils.ALL_RESOURCE_CLASSLOADER_TYPES, tryFileName);
 				if (url != null)
 					return url;
 			}
@@ -914,6 +986,12 @@ public class Utility {
 		if (obj instanceof UserResult)
 			return (UserResult) obj;
 		return UserResult.SUCCESS;
+	}
+
+	public static boolean boxesRepresentSame(Box b, Object userObject) {
+		if (b == null)
+			return dref(userObject) == null;
+		return dref(userObject) == dref(b);
 	}
 
 }

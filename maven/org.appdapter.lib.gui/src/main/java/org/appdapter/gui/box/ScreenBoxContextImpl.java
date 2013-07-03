@@ -32,6 +32,7 @@ import org.appdapter.api.trigger.DisplayContextProvider;
 import org.appdapter.api.trigger.MutableBox;
 import org.appdapter.api.trigger.ScreenBox;
 import org.appdapter.api.trigger.ScreenBoxTreeNode;
+import org.appdapter.gui.api.Utility;
 import org.appdapter.gui.browse.ScreenBoxTreeNodeImpl;
 
 /**
@@ -96,18 +97,21 @@ public class ScreenBoxContextImpl extends BoxContextImpl implements DisplayConte
 
 	public void contextualizeAndAttachRootBox(MutableBox rootBox) {
 
-		ScreenBoxTreeNodeImpl rootNode = new ScreenBoxTreeNodeImpl(null, rootBox, true);
+		ScreenBoxTreeNodeImpl rootNode = new ScreenBoxTreeNodeImpl(null, rootBox, true, Utility.uiObjects);
 		setRootNode(rootNode);
 		rootBox.setContext(this);
 		((ScreenBox) rootBox).setDisplayContextProvider(this);
 	}
 
-	private ScreenBoxTreeNode attachChildBoxNode(ScreenBoxTreeNodeImpl parentNode, Box childBox) {
+	protected ScreenBoxTreeNode attachChildBoxNode(ScreenBoxTreeNodeImpl parentNode, Box childBox) {
 		//  childBox should already have context(==this) and displayContext.
 		if (childBox.getBoxContext() != this) {
 			throw new RuntimeException("Refusing to attach a childBox[" + childBox + "] which is not in this context [" + this + "]");
 		}
-		ScreenBoxTreeNodeImpl childNode = new ScreenBoxTreeNodeImpl(parentNode.bsv, childBox, true);
+		ScreenBoxTreeNodeImpl prev = findNodeForBox(childBox);
+		if (prev != null)
+			return prev;
+		ScreenBoxTreeNodeImpl childNode = new ScreenBoxTreeNodeImpl(parentNode.bsv, childBox, true, null);
 		String childName = childBox.toString();
 		parentNode.add(childNode);
 		if (myTreeModel != null) {

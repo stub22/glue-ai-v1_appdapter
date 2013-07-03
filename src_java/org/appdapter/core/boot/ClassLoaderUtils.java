@@ -19,6 +19,7 @@ package org.appdapter.core.boot;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -239,5 +240,20 @@ public class ClassLoaderUtils {
 		Class thisClass = something.getClass();
 		ClassLoaderUtils.registerClassLoader(ctx, thisClass.getClassLoader(), thisClass.getPackage().getName(), false, true);
 
+	}
+
+	public static URL getFileResource(String resourceClassLoaderType, String resourceName) {
+		for (ClassLoader cl : getFileResourceClassLoaders(resourceClassLoaderType)) {
+			URL url = cl.getResource(resourceName);
+			if (url != null)
+				return url;
+		}
+		return null;
+	}
+
+	public static List<ClassLoader> getCurrentClassLoaderList() {
+		//addIfNew(resourceLoaders, Thread.currentThread().getContextClassLoader());
+		//addIfNew(resourceLoaders, ClassLoader.getSystemClassLoader());
+		return (List<ClassLoader>) Collections.singletonList(Thread.currentThread().getContextClassLoader());
 	}
 }

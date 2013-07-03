@@ -13,7 +13,9 @@ import org.appdapter.api.trigger.BoxPanelSwitchableView;
 import org.appdapter.api.trigger.DisplayContext;
 import org.appdapter.api.trigger.BoxPanelSwitchableView;
 import org.appdapter.api.trigger.MutableBox;
+import org.appdapter.api.trigger.NamedObjectCollection;
 import org.appdapter.api.trigger.ScreenBoxTreeNode;
+import org.appdapter.core.component.KnownComponent;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.Utility;
 
@@ -24,13 +26,22 @@ public class ScreenBoxTreeNodeImpl extends AbstractScreenBoxTreeNodeImpl impleme
 	 */
 	private static final long serialVersionUID = 1L;
 
-	public ScreenBoxTreeNodeImpl(BoxPanelSwitchableView bsv, Box rootBox, boolean allowsChildrn) {
-		super((MutableBox) rootBox, allowsChildrn);
+	public ScreenBoxTreeNodeImpl(BoxPanelSwitchableView bsv, Box rootBox, boolean allowsChildrn, NamedObjectCollection noc) {
+		super(noc, (MutableBox) rootBox, allowsChildrn);
 		this.bsv = bsv;
 	}
 
 	@Override public String toString() {
-		String toStr = super.toString();
+		String toStr = null;
+		userObject = getUserObject();
+		if (userObject instanceof KnownComponent) {
+			KnownComponent kc = (KnownComponent) userObject;
+			toStr = kc.getShortLabel();
+			if (toStr != null)
+				return toStr;
+		}
+
+		toStr = super.toString();
 		if (toStr == null) {
 			return "<ScreenBoxTreeNodeImpl null>";
 		}
