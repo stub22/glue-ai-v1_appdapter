@@ -91,7 +91,7 @@ abstract public class BaseDemoNavigatorCtrl implements BrowserPanelGUI, org.appd
 	}
 
 	private void setupBrowsePanel() {
-		myBP = new BrowsePanel(myTM);
+		myBP = new BrowsePanel(myTM, myBoxCtx);
 		myRootBTN.setDisplayContext(myBP.getDisplayContext());
 		TriggerMenuFactory tmf = TriggerMenuFactory.getInstance(myBoxCtx); // TODO: Needs type params
 		MouseAdapter menuMA = tmf.makePopupMouseAdapter();

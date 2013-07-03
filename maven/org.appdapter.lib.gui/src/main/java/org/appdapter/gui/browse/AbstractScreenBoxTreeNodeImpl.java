@@ -36,6 +36,7 @@ import org.appdapter.api.trigger.UIProvider;
 import org.appdapter.api.trigger.UserResult;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.GetSetObject;
+import org.appdapter.gui.api.NamedObjectCollectionImpl;
 import org.appdapter.gui.api.Utility;
 
 /**
@@ -44,14 +45,19 @@ import org.appdapter.gui.api.Utility;
 abstract public class AbstractScreenBoxTreeNodeImpl extends DefaultMutableTreeNode implements GetSetObject, UIProvider, DisplayContextProvider, DisplayContext {
 	protected DisplayContext myDisplayContext;
 	public BoxPanelSwitchableView bsv;
+	private NamedObjectCollection thisNamedObjectCollection;
 
 	public BrowserPanelGUI getLocalTreeAPI() {
 		Debuggable.notImplemented();
 		return null;
 	}
 
-	public AbstractScreenBoxTreeNodeImpl(Box box, boolean allowsChildren0) {
+	public AbstractScreenBoxTreeNodeImpl(NamedObjectCollection noc, Box box, boolean allowsChildren0) {
 		super(box, allowsChildren0);
+		if (allowsChildren0 && noc == null) {
+			noc = new NamedObjectCollectionImpl("Object chilren for " + box, this);
+		}
+		thisNamedObjectCollection = noc;
 	}
 
 	final public DisplayContext getDisplayContext() {
@@ -87,7 +93,8 @@ abstract public class AbstractScreenBoxTreeNodeImpl extends DefaultMutableTreeNo
 	 */
 	final public AbstractScreenBoxTreeNodeImpl findTreeNodeDisplayContext(Box b) {
 
-		if (b == getUserObject()) {
+		userObject = getUserObject();
+		if (Utility.boxesRepresentSame(b, userObject)) {
 			return this;
 		} else {
 			int childCount = getChildCount();
@@ -106,6 +113,11 @@ abstract public class AbstractScreenBoxTreeNodeImpl extends DefaultMutableTreeNo
 	}
 
 	final @Override public void add(MutableTreeNode childNode) {
+		super.add((MutableTreeNode) childNode);
+
+	}
+
+	final public void add(Object childNode) throws Exception {
 		super.add((MutableTreeNode) childNode);
 
 	}
@@ -138,6 +150,11 @@ abstract public class AbstractScreenBoxTreeNodeImpl extends DefaultMutableTreeNo
 		}*/
 
 	@Override public NamedObjectCollection getLocalBoxedChildren() {
+		if (thisNamedObjectCollection != null)
+			return thisNamedObjectCollection;
+		DisplayContext dc = getDisplayContext();
+		if (dc != this && dc != null)
+			return dc.getLocalBoxedChildren();
 		return Utility.getTreeBoxCollection();
 	}
 
@@ -183,10 +200,12 @@ abstract public class AbstractScreenBoxTreeNodeImpl extends DefaultMutableTreeNo
 		BT b;
 		try {
 			b = col.findOrCreateBox(title, value);
-			ScreenBoxTreeNodeImpl newNode = new ScreenBoxTreeNodeImpl(bsv, b.asBox(), true);
+			NamedObjectCollectionImpl impl = null; // we use null so the next constructer sets itself as display context
+			ScreenBoxTreeNodeImpl newNode = new ScreenBoxTreeNodeImpl(bsv, b.asBox(), true, impl);
+			newNode.toString();
 			add(newNode);
 			return newNode;
-		} catch (PropertyVetoException e) {
+		} catch (Exception e) {
 			throw Debuggable.reThrowable(e);
 		}
 	}
@@ -205,7 +224,8 @@ abstract public class AbstractScreenBoxTreeNodeImpl extends DefaultMutableTreeNo
 		if (b2 == null) {
 			b2 = b1;
 		}
-		AbstractScreenBoxTreeNodeImpl before = findTreeNodeDisplayContext(b2.asBox());
+		Box box = b2.asBox();
+		AbstractScreenBoxTreeNodeImpl before = findTreeNodeDisplayContext(box);
 		return before;
 	}
 

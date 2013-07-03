@@ -58,11 +58,7 @@ import org.appdapter.gui.util.PromiscuousClassUtils;
 public abstract class POJOBoxImpl<TrigType extends Trigger<? extends POJOBoxImpl<TrigType>>> //
 		extends ScreenBoxImpl<TrigType> //
 
-		implements java.io.Serializable, GetSetObject, Convertable, GetDisplayContext, DisplayContextProvider, UIProvider, BT, WrapperValue {
-
-	@Override public BT getBT() {
-		return this;
-	}
+		implements java.io.Serializable, GetSetObject, Convertable, GetDisplayContext, DisplayContextProvider, UIProvider, WrapperValue, BT {
 
 	abstract public void reallySetValue(Object newObject);
 
@@ -222,10 +218,6 @@ public abstract class POJOBoxImpl<TrigType extends Trigger<? extends POJOBoxImpl
 		}
 		col2Name.put(noc, title);
 		noc.addBoxed(title.toString(), this);
-	}
-
-	@Override public Object getValue() {
-		return getObject();
 	}
 
 	/**

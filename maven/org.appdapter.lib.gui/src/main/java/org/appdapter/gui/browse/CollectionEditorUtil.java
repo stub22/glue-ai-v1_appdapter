@@ -37,6 +37,8 @@ import org.appdapter.gui.rimpl.TriggerMenu;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.jidesoft.swing.JideMenu;
+
 /**
  * The top-level Test for the POJOCollection code. It also contains the
  * main(...) method.
@@ -194,7 +196,7 @@ public class CollectionEditorUtil implements PropertyChangeListener {
 			try {
 				setNamedObjectCollection(NamedObjectCollectionImpl.load(file));
 				Settings.addRecentFile(file);
-				fileMenu.refreshRecentFileList();
+				getMenu().refreshRecentFileList();
 			} catch (Exception err) {
 				Utility.browserPanel.showError("Opening failed", err);
 			}
@@ -275,12 +277,16 @@ public class CollectionEditorUtil implements PropertyChangeListener {
 	 * Creates and initialized the GUI components within the ObjectNavigator.
 	 * Should only be called once.
 	 */
-	public JMenu getMenu() {
+	public synchronized FileMenu getMenu() {
 
 		//panel.setLayout(new BorderLayout());
 		//Utility.selectionOfCollectionPanel = new LargeClassChooser(context);
 		if (fileMenu == null) {
-			Utility.fileMenu = fileMenu = new FileMenu();
+			if (Utility.fileMenu != null) {
+				fileMenu = Utility.fileMenu;
+			} else {
+				Utility.fileMenu = fileMenu = new FileMenu();
+			}
 		}
 		checkControls();
 		//menuBar.add(fileMenu);
@@ -372,12 +378,16 @@ public class CollectionEditorUtil implements PropertyChangeListener {
 
 	// ==== GUI component inner classes ===========
 
-	public class FileMenu extends JMenu {
+	public class FileMenu extends JideMenu {
 		Vector recentFiles = new Vector();
 
 		FileMenu() {
 			super("File");
-			addItems();
+			try {
+				addItems();
+			} catch (Throwable t) {
+				t.printStackTrace();
+			}
 		}
 
 		private void addItems() {
