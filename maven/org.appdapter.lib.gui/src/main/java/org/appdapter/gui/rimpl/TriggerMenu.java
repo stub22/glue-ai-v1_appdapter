@@ -3,9 +3,8 @@ package org.appdapter.gui.rimpl;
 import javax.swing.JMenu;
 
 import org.appdapter.api.trigger.BT;
-import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.DisplayContext;
-import org.appdapter.gui.api.Utility;
+import org.appdapter.api.trigger.NamedObjectCollection;
 
 /**
  * A menu showing the available triggers for a boxed Pojo.
@@ -16,12 +15,8 @@ import org.appdapter.gui.api.Utility;
 public class TriggerMenu extends JMenu {
 	TriggerMenuController controller;
 
-	public TriggerMenu(String title, BT box, Object object) {
-		this(title, Utility.getCurrentContext(), box, object);
-	}
-
-	public TriggerMenu(String title, DisplayContext context, BT box, Object object) {
+	public TriggerMenu(String title, DisplayContext context, NamedObjectCollection noc, BT box, Object object) {
 		super(title);
-		controller = new TriggerMenuController(context, object, box, this);
+		controller = new TriggerMenuController(context, noc, object, box, this);
 	}
 }

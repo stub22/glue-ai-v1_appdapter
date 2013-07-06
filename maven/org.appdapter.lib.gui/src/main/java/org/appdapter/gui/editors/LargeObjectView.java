@@ -22,6 +22,8 @@ import org.appdapter.gui.api.GetSetObject;
 import org.appdapter.gui.api.ObjectTabsForTabbedView;
 import org.appdapter.gui.api.SetObject;
 import org.appdapter.gui.api.Utility;
+import org.appdapter.gui.box.WrapperValue;
+import org.appdapter.gui.browse.LargeObjectChooser;
 import org.appdapter.gui.swing.ClassConstructorsPanel;
 import org.appdapter.gui.swing.CollectionContentsPanel;
 import org.appdapter.gui.swing.ErrorPanel;
@@ -79,17 +81,46 @@ extends ObjectView<BoxType> implements Customizer, GetSetObject {
 		initGUI();
 	}
 
-	final protected void objectClassChanged() {
-		Object object = getValue();
-		Class objClass = Utility.getClassNullOk(object);
-		if (object != null) {
+	@Override public String getName() {
+		return Utility.getUniqueName(getValue());
+	}
+
+	final protected void objectValueChanged() {
+		tabs.removeAll();
+		Object bean = getValue();
+		Class objClass = Utility.getClassNullOk(bean);
+		if (bean != null) {
 			for (AddTabFrames atf : getTabFrameAdders()) {
-				atf.setTabs(objTabs, context, object, objClass, SetTabTo.ADD);
+				atf.setTabs(objTabs, context, bean, objClass, SetTabTo.ADD);
 			}
 		} else {
-			add(new JLabel("ERROR object is null!? " + getValue()));
+			add(new JLabel("ERROR object is null!? " + bean));
 		}
 
+		for (Component c : tabs.getComponents()) {
+			try {
+				if (c instanceof SetObject) {
+					SetObject gso = (SetObject) c;
+					gso.setObject(bean);
+					continue;
+				}
+				if (c instanceof PropertyEditor) {
+					PropertyEditor gso = (PropertyEditor) c;
+					gso.setValue(bean);
+					continue;
+				}
+				if (c instanceof Customizer) {
+					Customizer gso = (Customizer) c;
+					gso.setObject(bean);
+					continue;
+				}
+
+			} catch (Exception e) {
+				e.printStackTrace();
+				continue;
+			}
+
+		}
 	}
 
 	private Collection<AddTabFrames> getTabFrameAdders() {
@@ -110,8 +141,8 @@ extends ObjectView<BoxType> implements Customizer, GetSetObject {
 	 */
 	@Override public Object getValue() {
 		Object o = objectValue;
-		if (o == this) {
-			throw new AbstractMethodError();
+		if (o == this || o == null) {
+			Debuggable.notImplemented("LargeObjectView " + getValue());
 		}
 		return o;
 	}
@@ -126,7 +157,7 @@ extends ObjectView<BoxType> implements Customizer, GetSetObject {
 				return false;
 			initedGuiOnce = true;
 			try {
-				objectClassChanged();
+				objectValueChanged();
 			} catch (Throwable e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -165,7 +196,6 @@ extends ObjectView<BoxType> implements Customizer, GetSetObject {
 	 * the Customizer interface. */
 	public void setBean(Object obj) {
 		setObject(obj);
-		initGUI();
 	}
 
 	/**
@@ -187,8 +217,9 @@ extends ObjectView<BoxType> implements Customizer, GetSetObject {
 	 * the new pojObject instead.
 	 */
 	@Override public void objectValueChanged(Object oldValue, Object newValue) {
+		newValue = Utility.dref(newValue);
 		super.firePropertyChange("value", oldValue, newValue);
-		reallySetBean(newValue);
+		reallySetValue(newValue);
 	}
 
 	@Override public void focusOnBox(Box b) {
@@ -199,13 +230,7 @@ extends ObjectView<BoxType> implements Customizer, GetSetObject {
 	static public class BasicObjectCustomizer extends TabPanelMaker {
 
 		@Override public void setTabs(BoxPanelSwitchableView tabs, DisplayContext context, Object object, Class objClass, SetTabTo cmd) {
-
-			if (object instanceof Class) {
-				setTabs0(tabs, context, object, (Class) object, cmd);
-				setTabs0(tabs, context, object, Class.class, cmd);
-			} else {
-				setTabs0(tabs, context, object, objClass, cmd);
-			}
+			setTabs0(tabs, context, object, objClass, cmd);
 		}
 
 		public void setTabs0(BoxPanelSwitchableView tabs, DisplayContext context, Object object, Class objClass, SetTabTo cmd) {
@@ -214,7 +239,7 @@ extends ObjectView<BoxType> implements Customizer, GetSetObject {
 				prefix = "Class ";
 			}
 			if (cmd == SetTabTo.ADD) {
-				PropertiesPanel props = new PropertiesPanel(context, object, objClass);
+				PropertiesPanel props = new PropertiesPanel(context, object, objClass, false);
 				tabs.addTab(prefix + "Properties", props);
 			}
 			if (cmd == SetTabTo.REMOVE) {
@@ -245,22 +270,34 @@ extends ObjectView<BoxType> implements Customizer, GetSetObject {
 			if (!(object instanceof Class)) {
 				return;
 			}
+			Class clazz = (Class) object;
 			if (cmds != SetTabTo.ADD)
 				return;
 			try {
-				ClassConstructorsPanel constructors = new ClassConstructorsPanel((Class) object);
+				ClassConstructorsPanel constructors = new ClassConstructorsPanel(clazz);
 				tabs.insertTab("Constructors", null, constructors, null, 0);
 			} catch (Exception err) {
 				tabs.insertTab("Constructors", null, new ErrorPanel("Could not show constructors", err), null, 0);
 			}
 
 			try {
-				StaticMethodsPanel statics = new StaticMethodsPanel((Class) object);
+				StaticMethodsPanel statics = new StaticMethodsPanel(clazz);
 				tabs.insertTab("Static methods", null, statics, null, 1);
 			} catch (Exception err) {
 				tabs.insertTab("Static methods", null, new ErrorPanel("Could not show static methods", err), null, 1);
 			}
-
+			try {
+				PropertiesPanel statics = new PropertiesPanel(context, null, clazz, true);
+				tabs.insertTab("Static Properties", null, statics, null, 1);
+			} catch (Exception err) {
+				tabs.insertTab("Static Properties", null, new ErrorPanel("Could not show static Properties", err), null, 1);
+			}
+			try {
+				LargeObjectChooser instances = new LargeObjectChooser(clazz, context.getLocalBoxedChildren());
+				tabs.insertTab("InstancesOf", null, instances, null, 0);
+			} catch (Exception err) {
+				tabs.insertTab("InstancesOf", null, new ErrorPanel("Could not show Instances", err), null, 0);
+			}
 		}
 	}
 
@@ -312,42 +349,18 @@ extends ObjectView<BoxType> implements Customizer, GetSetObject {
 		}
 	}
 
-	@Override protected void reallySetBean(Object bean) {
+	@Override protected void reallySetValue(Object bean) {
+		bean = Utility.dref(bean);
 		if (objectValue == bean)
 			return;
 		objectValue = bean;
-		initGUI();
-		for (Component c : tabs.getComponents()) {
-			try {
-				if (c instanceof SetObject) {
-					SetObject gso = (SetObject) c;
-					gso.setObject(bean);
-					continue;
-				}
-				if (c instanceof PropertyEditor) {
-					PropertyEditor gso = (PropertyEditor) c;
-					gso.setValue(bean);
-					continue;
-				}
-				if (c instanceof Customizer) {
-					Customizer gso = (Customizer) c;
-					gso.setObject(bean);
-					continue;
-				}
-
-			} catch (InvocationTargetException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-		}
-
+		objectValueChanged();
 	}
 
 	@Override public void setObject(Object bean) {
+		bean = Utility.dref(bean);
 		if (objectValue != bean) {
 			objectValueChanged(objectValue, bean);
 		}
 	}
-
 }

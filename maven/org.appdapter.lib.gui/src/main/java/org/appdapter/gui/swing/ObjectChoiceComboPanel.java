@@ -13,10 +13,10 @@ import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
 
+import org.appdapter.api.trigger.BT;
 import org.appdapter.api.trigger.NamedObjectCollection;
 import org.appdapter.api.trigger.POJOCollectionListener;
-import org.appdapter.gui.api.NamedObjectCollectionImpl;
-import org.appdapter.gui.browse.CollectionEditorUtil;
+import org.appdapter.gui.api.Utility;
 import org.appdapter.gui.impl.JJPanel;
 import org.appdapter.gui.rimpl.TriggerPopupMenu;
 
@@ -25,7 +25,7 @@ import org.appdapter.gui.rimpl.TriggerPopupMenu;
  * of a certain type.
  *
  */
-public class ObjectChoice extends JJPanel implements POJOCollectionListener, MouseListener {
+public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionListener, MouseListener {
 
 	PropertyEditorSupport editorSupport = new PropertyEditorSupport();
 
@@ -36,15 +36,15 @@ public class ObjectChoice extends JJPanel implements POJOCollectionListener, Mou
 	JComboBox combo;
 	Model model;
 
-	public ObjectChoice(Class type, Object value) {
+	public ObjectChoiceComboPanel(Class type, Object value) {
 		this(null, type, value);
 	}
 
-	public ObjectChoice(NamedObjectCollection context0, Class type0, Object value) {
+	public ObjectChoiceComboPanel(NamedObjectCollection context0, Class type0, Object value) {
 		super(false);
 		this.type = type0;
 		if (context0 == null)
-			context0 = new NamedObjectCollectionImpl("Empty Collection " + (++CollectionEditorUtil.newCollectionSerial) + " of " + type + " for " + value, null);
+			context0 = Utility.getTreeBoxCollection();
 		this.context = context0;
 		if (type == null)
 			type = Object.class;
@@ -73,12 +73,14 @@ public class ObjectChoice extends JJPanel implements POJOCollectionListener, Mou
 		model.setSelectedItem(object);
 	}
 
-	@Override public void pojoAdded(Object obj) {
-		model.reload();
+	@Override public void pojoAdded(Object obj, BT box) {
+		if (type.isInstance(obj))
+			model.reload();
 	}
 
-	@Override public void pojoRemoved(Object obj) {
-		model.reload();
+	@Override public void pojoRemoved(Object obj, BT box) {
+		if (type.isInstance(obj))
+			model.reload();
 	}
 
 	private void initGUI() {
@@ -124,43 +126,61 @@ public class ObjectChoice extends JJPanel implements POJOCollectionListener, Mou
 	private void showMenu(int x, int y) {
 		Object object = model.getSelectedBean();
 		if (object != null) {
-			TriggerPopupMenu menu = new TriggerPopupMenu(null, object);
+			TriggerPopupMenu menu = new TriggerPopupMenu(null, null, null, object);
 			add(menu);
 			menu.show(this, x, y);
 		}
 	}
 
+	public String objectToString(Object object) {
+		return Utility.getUniqueName(object, null, context);
+	}
+
+	public Object stringToObject(String title) {
+		if (title == null || title.equals("<null>"))
+			return null;
+		if (type == String.class)
+			return title;
+		Object obj = context.findObjectByName(title);
+		if (obj != null)
+			return obj;
+		if (Utility.isToStringType(type)) {
+			return Utility.fromString(title, type);
+		}
+		return null;
+	}
+
 	class Model extends AbstractListModel implements ComboBoxModel {
 		//Vector listeners = new Vector();
-		java.util.List values;
-		Object selected = null;
+		java.util.List<String> values;
+		String selected = null;
 
 		@SuppressWarnings("unchecked") public Model() {
-			if (context == null)
-				values = new LinkedList();
-			else {
-				Collection col = context.findObjectsByType(type);
-				values = new LinkedList(col);
-			}
-			values.add("<null>");
+			reload();
 		}
 
 		@Override public synchronized void setSelectedItem(Object anItem) {
-			Object old = selected;
+			setSelectedName(objectToString(anItem));
+		}
+
+		public synchronized void setSelectedName(String anItem) {
+			String old = selected;
 			selected = anItem;
 
 			//if (old != selected)
 			//  notifyListeners();
 
-			if (selected != null && !values.contains(selected))
+			if (selected != null && !values.contains(selected)) {
 				values.add(selected);
+			}
 			fireContentsChanged(this, -1, -1);
-			if (selected != old) {
-				propSupport.firePropertyChange("selection", old, selected);
+			Object o = stringToObject(old), n = stringToObject(selected);
+			if (o != n) {
+				propSupport.firePropertyChange("selection", o, n);
 			}
 		}
 
-		@Override public Object getSelectedItem() {
+		@Override public String getSelectedItem() {
 			if (selected == null)
 				return "<null>";
 			else
@@ -168,14 +188,14 @@ public class ObjectChoice extends JJPanel implements POJOCollectionListener, Mou
 		}
 
 		public Object getSelectedBean() {
-			return selected;
+			return stringToObject(selected);
 		}
 
 		@Override public int getSize() {
 			return values.size();
 		}
 
-		@Override public Object getElementAt(int index) {
+		@Override public String getElementAt(int index) {
 			try {
 				return values.get(index);
 			} catch (Exception err) {
@@ -185,10 +205,16 @@ public class ObjectChoice extends JJPanel implements POJOCollectionListener, Mou
 
 		public synchronized void reload() {
 			Object selected = getSelectedBean();
-			if (values == null)
+			if (context == null)
 				values = new LinkedList();
-			else
-				values = new LinkedList(context.findObjectsByType(type));
+			else {
+				Collection col = context.findObjectsByType(type);
+				values = new LinkedList();
+				for (Object o : col) {
+
+					values.add(context.getTitleOf(o));
+				}
+			}
 			values.add("<null>");
 			setSelectedItem(selected);
 		}

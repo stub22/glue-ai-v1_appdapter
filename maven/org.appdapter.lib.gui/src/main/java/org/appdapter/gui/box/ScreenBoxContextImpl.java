@@ -32,6 +32,7 @@ import org.appdapter.api.trigger.DisplayContextProvider;
 import org.appdapter.api.trigger.MutableBox;
 import org.appdapter.api.trigger.ScreenBox;
 import org.appdapter.api.trigger.ScreenBoxTreeNode;
+import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.Utility;
 import org.appdapter.gui.browse.ScreenBoxTreeNodeImpl;
 
@@ -108,17 +109,34 @@ public class ScreenBoxContextImpl extends BoxContextImpl implements DisplayConte
 		if (childBox.getBoxContext() != this) {
 			throw new RuntimeException("Refusing to attach a childBox[" + childBox + "] which is not in this context [" + this + "]");
 		}
-		ScreenBoxTreeNodeImpl prev = findNodeForBox(childBox);
+		ScreenBoxTreeNodeImpl prev = (ScreenBoxTreeNodeImpl) parentNode.findTreeNodeDisplayContext/*findNodeForBox*/(childBox);
 		if (prev != null)
 			return prev;
 		ScreenBoxTreeNodeImpl childNode = new ScreenBoxTreeNodeImpl(parentNode.bsv, childBox, true, null);
-		String childName = childBox.toString();
+		//String childName = childBox.toString();
 		parentNode.add(childNode);
 		if (myTreeModel != null) {
 			if (parentNode instanceof TreeNode)
 				myTreeModel.reload((TreeNode) parentNode);
 		}
 		return childNode;
+	}
+
+	protected ScreenBoxTreeNode detatchChildBoxNode(ScreenBoxTreeNodeImpl parentNode, Box childBox) {
+		//  childBox should already have context(==this) and displayContext.
+		if (childBox.getBoxContext() != this) {
+			Debuggable.warn("deattach a childBox[" + childBox + "] which is not in this context [" + this + "]");
+		}
+		ScreenBoxTreeNodeImpl prev = (ScreenBoxTreeNodeImpl) parentNode.findTreeNodeDisplayContext(childBox);
+		if (prev != null) {
+			parentNode.remove(prev);
+			if (myTreeModel != null) {
+				if (parentNode instanceof TreeNode)
+					myTreeModel.reload((TreeNode) parentNode);
+			}
+			return prev;
+		}
+		return null;
 	}
 
 	public void contextualizeAndAttachChildBox(Box parentBox, MutableBox childBox) {
@@ -130,6 +148,17 @@ public class ScreenBoxContextImpl extends BoxContextImpl implements DisplayConte
 
 		ScreenBoxTreeNode childNode = attachChildBoxNode(parentNode, childBox);
 		((ScreenBox) childBox).setDisplayContextProvider(this);
+	}
+
+	public void contextualizeAndDetachChildBox(Box parentBox, MutableBox childBox) {
+		ScreenBoxTreeNodeImpl parentNode = findNodeForBox(parentBox);
+		if (parentNode == null) {
+			throw new RuntimeException("Can't find node for parentBox: " + parentBox);
+		}
+		childBox.setContext(null);
+
+		ScreenBoxTreeNode childNode = detatchChildBoxNode(parentNode, childBox);
+		((ScreenBox) childBox).setDisplayContextProvider(null);
 	}
 
 	public TreeModel getTreeModel() {

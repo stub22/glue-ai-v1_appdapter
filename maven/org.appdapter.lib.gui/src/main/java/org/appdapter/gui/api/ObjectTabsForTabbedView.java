@@ -11,6 +11,7 @@ import javax.swing.event.ChangeListener;
 import org.appdapter.api.trigger.BoxPanelSwitchableView;
 import org.appdapter.api.trigger.DisplayType;
 import org.appdapter.core.log.Debuggable;
+import org.appdapter.gui.rimpl.TriggerMenuFactory;
 import org.appdapter.gui.swing.ScreenBoxPanel;
 
 import com.jidesoft.swing.JideTabbedPane;
@@ -20,10 +21,13 @@ public class ObjectTabsForTabbedView implements BoxPanelSwitchableView {
 	final JideTabbedPane tabs;
 
 	public ObjectTabsForTabbedView(JideTabbedPane tbs) {
-		if (tbs.toString() == null) {
-
-		}
 		tabs = (JideTabbedPane) tbs;
+		tabs.setCloseTabOnMouseMiddleButton(true);
+		tabs.setScrollSelectedTabOnWheel(true);
+		tabs.setShowCloseButton(true);
+		tabs.setUseDefaultShowCloseButtonOnTab(true);
+		tabs.setShowCloseButtonOnTab(true);
+
 	}
 
 	@Override public boolean clearChildren() {
@@ -185,8 +189,17 @@ public class ObjectTabsForTabbedView implements BoxPanelSwitchableView {
 		if (title != null && title.length() > 2) {
 			return title;
 		}
+		title = TriggerMenuFactory.getLabel(view, 0);
+		if (title != null && title.length() > 2) {
+			return title;
+		}
 		title = view.toString();
-		return title;
+		if (title == null) {
+			return "???";
+		}
+		if (title.length() <= 0)
+			return "???0";
+		return Utility.getShortClassName(view.getClass());
 	}
 
 	@Override public void insertTab(String title, Icon icon, Component component, String tip, int index) {

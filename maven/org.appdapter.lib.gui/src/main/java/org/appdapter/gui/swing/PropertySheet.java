@@ -1,9 +1,13 @@
-
-
+/**
+ * 
+ * A Two collumn table is all 
+ * 
+ */
 package org.appdapter.gui.swing;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -19,81 +23,78 @@ import javax.swing.JTextField;
 import org.appdapter.gui.impl.JJPanel;
 
 public class PropertySheet extends JJPanel {
-  private GridBagLayout gb = new GridBagLayout();
-  private GridBagConstraints c = new GridBagConstraints();
-  private int y = 0;
 
-  private JPanel internal = new JPanel();
-  private JPanel main = new JPanel();
 
-  public PropertySheet() {
-    c.anchor = GridBagConstraints.WEST;
-    c.fill = GridBagConstraints.HORIZONTAL;
-    c.insets = new Insets(5, 5, 5, 5);
-    c.weighty = 0;
+	private GridBagLayout gb = new GridBagLayout();
+	private GridBagConstraints c = new GridBagConstraints();
+	private int y = 0;
 
-    internal.setLayout(gb);
+	private JPanel internal = new JPanel();
+	private JPanel main = new JPanel();
 
-    main.setLayout(new BorderLayout());
-    main.add("North", internal);
+	public PropertySheet() {
+		c.anchor = GridBagConstraints.WEST;
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.insets = new Insets(5, 5, 5, 5);
+		c.weighty = 0;
 
-    setLayout(new BorderLayout());
-    super.add("Center",
-      new JScrollPane(
-        main//,
-        //JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-        //JScrollPane.HORIZONTAL_SCROLLBAR_NEVER
-      )
-    );
-  }
+		internal.setLayout(gb);
 
-  @Override
-public Component add(String label, Component comp) {
-    JLabel labelComponent = new JLabel(label);
+		main.setLayout(new BorderLayout());
+		main.add("North", internal);
 
-    c.gridwidth = 1;
-    c.gridx = 0;
-    c.gridy = y;
-    c.weightx = 0;
+		setLayout(new BorderLayout());
+		super.add("Center", new JScrollPane(main//,
+				//JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+				//JScrollPane.HORIZONTAL_SCROLLBAR_NEVER
+				));
+	}
 
-    gb.setConstraints(labelComponent, c);
-    internal.add(labelComponent);
+	@Override public Component add(String label, Component comp) {
+		JLabel labelComponent = new JLabel(label);
 
-    c.gridx = 1;
-    c.weightx = 1;
+		c.gridwidth = 1;
+		c.gridx = 0;
+		c.gridy = y;
+		c.weightx = 0;
 
-    gb.setConstraints(comp, c);
-    internal.add(comp);
+		gb.setConstraints(labelComponent, c);
+		internal.add(labelComponent);
 
-    ++y;
-    return null;
-  }
+		c.gridx = 1;
+		c.weightx = 1;
 
-  @Override
-public Component add(Component comp) {
-    c.gridwidth = 2;
-    c.gridx = 0;
-    c.gridy = y;
-    c.weightx = 1;
+		gb.setConstraints(comp, c);
+		internal.add(comp);
 
-    gb.setConstraints(comp, c);
-    internal.add(comp);
+		++y;
+		return null;
+	}
 
-    ++y;
-    return comp;
-  }
+	@Override public Component add(Component comp) {
+		c.gridwidth = 2;
+		c.gridx = 0;
+		c.gridy = y;
+		c.weightx = 1;
 
-  public static void main(String[] args) {
-    JFrame f = new JFrame("Test");
-    PropertySheet s = new PropertySheet();
-    s.add("First", new JButton("bla bla bla"));
-    s.add("second one", new JTextField(3));
-    s.add("t", new JTextArea("Yeah!", 5, 10));
+		gb.setConstraints(comp, c);
+		internal.add(comp);
 
-    //f.getContentPane().setLayout(new FlowLayout());
-    f.getContentPane().add(s);
-    //f.pack();
-    f.setSize(300, 300);
-    f.setVisible(true);
-  }
+		++y;
+		return comp;
+	}
+
+	public static void main(String[] args) {
+		JFrame f = new JFrame("Test");
+		PropertySheet s = new PropertySheet();
+		s.add("First", new JButton("bla bla bla"));
+		s.add("second one", new JTextField(3));
+		s.add("t", new JTextArea("Yeah!", 5, 10));
+
+		//f.getContentPane().setLayout(new FlowLayout());
+		f.getContentPane().add(s);
+		//f.pack();
+		f.setSize(300, 300);
+		f.setVisible(true);
+	}
 }

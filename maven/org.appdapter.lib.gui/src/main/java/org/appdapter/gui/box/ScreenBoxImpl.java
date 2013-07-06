@@ -71,7 +71,7 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 
 implements ScreenBox<TrigType>, GetSetObject, UserResult, Convertable, DisplayContextProvider {
 
-	protected Object valueSetAs = null;
+	public Object valueSetAs = null;
 
 	protected Object toKey(Object kind) {
 		if (kind == null) {
@@ -465,15 +465,14 @@ implements ScreenBox<TrigType>, GetSetObject, UserResult, Convertable, DisplayCo
 		if (obj instanceof JPanel) {
 			return (JPanel) obj;
 		}
-		if (obj == this) {
-			JPanel pnl = Utility.getPropertiesPanel(obj);
-			pnl.setName(getShortLabel());
-			return pnl;
-		}
 		if (obj == null) {
 			obj = this;
 		}
 		JPanel pnl = Utility.getPropertiesPanel(obj);
+		if (pnl == null) {
+			Utility.gpp.remove(obj);
+			pnl = Utility.getPropertiesPanel(obj);
+		}
 		pnl.setName(getShortLabel());
 		return pnl;
 	}

@@ -13,6 +13,7 @@ import org.appdapter.api.trigger.DisplayContext;
 import org.appdapter.api.trigger.GetObject;
 import org.appdapter.api.trigger.NamedObjectCollection;
 import org.appdapter.api.trigger.POJOCollectionListener;
+import org.appdapter.gui.api.Utility;
 
 /**
  * The controller class for a object menu (JMenu or JPopupMenu), showing the list
@@ -25,9 +26,10 @@ import org.appdapter.api.trigger.POJOCollectionListener;
  *
  * 
  */
-class TriggerMenuController implements POJOCollectionListener {
-	NamedObjectCollection context;
-	DisplayContext appcontext;
+public class TriggerMenuController implements POJOCollectionListener {
+	NamedObjectCollection localCollection;
+	final DisplayContext context;
+	final TriggerMenuFactory triggerFactory;
 
 	Object object;
 	BT boxed;
@@ -35,52 +37,36 @@ class TriggerMenuController implements POJOCollectionListener {
 	JPopupMenu popup = null;
 	JMenu menu = null;
 
-	public TriggerMenuController(DisplayContext context0, Object object, BT box, JPopupMenu popup0) {
+	private TriggerMenuController(DisplayContext context0, NamedObjectCollection noc, Object object0, BT box) {
 		this.boxed = box;
+		this.object = object0;
+		if (context0 == null)
+			context0 = Utility.getCurrentContext();
+		this.context = context0;
+		if (noc == null)
+			noc = context0.getLocalBoxedChildren();
+		this.localCollection = noc;
+
 		if (object == null && this.boxed != null)
-			object = null;//boxed.getValue();
-		appcontext = context0;
-		this.context = context0.getLocalBoxedChildren();
-		if (context != null) {
-			context.addListener(this);
-		}
-		this.object = object;
+			object = boxed.getValueOrThis();
 
+		triggerFactory = TriggerMenuFactory.getInstance(context);
+		syncBoxedObject();
+		if (localCollection != null) {
+			localCollection.addListener(this);
+		}
+	}
+
+	public TriggerMenuController(DisplayContext context0, NamedObjectCollection noc, Object object0, BT box, JPopupMenu popup0) {
+		this(context0, noc, object0, box);
 		this.popup = popup0;
-
-		if (object != null) {
-			if (context == null) {
-				popup.setLabel("" + object);
-			} else {
-				popup.setLabel(context.getTitleOf(object));
-			}
-		} else {
-			if (context == null) {
-				popup.setLabel("" + boxed);
-			} else {
-				popup.setLabel(context.getTitleOf(boxed));
-			}
-		}
 		initMenu();
 	}
 
-	public TriggerMenuController(DisplayContext context0, Object object, BT box, JMenu menu0) {
-		this.boxed = box;
-		this.context = context0.getLocalBoxedChildren();
-		if (context != null) {
-			context.addListener(this);
-		}
-		this.object = object;
+	public TriggerMenuController(DisplayContext context0, NamedObjectCollection noc, Object object0, BT box, JMenu menu0) {
+		this(context0, noc, object0, box);
 		this.menu = menu0;
-
-		if (object != null) {
-			if (context == null) {
-				menu.setText("" + object);
-			} else {
-				menu.setText(context.getTitleOf(object));
-			}
-			initMenu();
-		}
+		initMenu();
 	}
 
 	void updateMenu() {
@@ -92,35 +78,51 @@ class TriggerMenuController implements POJOCollectionListener {
 	}
 
 	private void initMenu() {
+		initLabelText();
 		if (context != null) {
-			if (boxed == null)
-				boxed = context.findOrCreateBox(object);
-			if (object == null) {
-				object = boxed;
-			}
-		}
-		if (appcontext != null) {
-			Collection actions = appcontext.getTriggersFromUI((BT) boxed, object);
+			Collection actions = context.getTriggersFromUI((BT) boxed, object);
 			Iterator it = actions.iterator();
 			while (it.hasNext()) {
 				Action action = (Action) it.next();
 				addAction(action);
 			}
-			return;
 		}
-		TriggerMenuFactory factor = TriggerMenuFactory.getInstance(object);
 		if (popup != null)
-			factor.addTriggersToPopup(boxed.asBox(), popup);
+			triggerFactory.addTriggersToPopup(asBox(), popup);
 		if (menu != null)
-			factor.addTriggersToPopup(boxed.asBox(), menu);
+			triggerFactory.addTriggersToPopup(asBox(), menu);
 
+	}
+
+	private void syncBoxedObject() {
+		if (localCollection != null) {
+			if (boxed == null) {
+				boxed = localCollection.findOrCreateBox(object);
+			}
+		}
+		if (object == null) {
+			object = boxed;
+		}
+	}
+
+	private void initLabelText() {
+		final String label = Utility.getUniqueName(object, asBox(), localCollection);
+		if (menu != null) {
+			menu.setText(label);
+		} else {
+			popup.setLabel(label);
+		}
+	}
+
+	Box asBox() {
+		return boxed.asBox();
 	}
 
 	void addAction(Action a) {
 		if (popup != null) {
-			popup.add(a);
+			triggerFactory.addMenuItem(a, asBox(), popup);
 		} else {
-			menu.add(a);
+			triggerFactory.addMenuItem(a, asBox(), menu);
 		}
 	}
 
@@ -133,13 +135,13 @@ class TriggerMenuController implements POJOCollectionListener {
 	  }
 	*/
 
-	@Override public void pojoAdded(Object obj) {
+	@Override public void pojoAdded(Object obj, BT box) {
 		if (obj == object) {
 			updateMenu();
 		}
 	}
 
-	@Override public void pojoRemoved(Object obj) {
+	@Override public void pojoRemoved(Object obj, BT box) {
 		if (obj == object) {
 			updateMenu();
 		}

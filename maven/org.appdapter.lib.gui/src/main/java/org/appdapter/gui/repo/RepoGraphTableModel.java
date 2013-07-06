@@ -32,42 +32,52 @@ import org.slf4j.LoggerFactory;
  */
 public class RepoGraphTableModel extends AbstractTableModel {
 	static Logger theLogger = LoggerFactory.getLogger(RepoGraphTableModel.class);
-	static String theColNames[] = {"name", "size", "age-update", "strength/status", "content summary"};
-	static Class theColClasses[] = {String.class, Long.class, Double.class, String.class, String.class};
+	static String theColNames[] = { "name", "size", "age-update", "strength/status", "content summary" };
+	static Class theColClasses[] = { String.class, Long.class, Double.class, String.class, String.class };
 
-	private	List<GraphStat>	myCachedStats = new ArrayList<GraphStat>();
+	private List<GraphStat> myCachedStats = new ArrayList<GraphStat>();
 
-	private	RepoBox		myFocusRB;
-	
+	private RepoBox myFocusRB;
+
 	protected void refreshStats(RepoBox repoBox) {
 		myCachedStats = repoBox.getAllGraphStats();
 		fireTableDataChanged();
 	}
+
 	protected void focusOnRepo(RepoBox repoBox) {
 		theLogger.info("Focusing on repo-box: " + repoBox);
 		myFocusRB = repoBox;
 		refreshStats(repoBox);
 	}
+
 	@Override public String getColumnName(int cidx) {
 		return theColNames[cidx];
 	}
+
 	@Override public Class getColumnClass(int colIndex) {
 		return theColClasses[colIndex];
 	}
+
 	@Override public int getRowCount() {
 		return myCachedStats.size();
 	}
+
 	@Override public int getColumnCount() {
 		return 5;
 	}
+
 	@Override public Object getValueAt(int rowIndex, int columnIndex) {
 		GraphStat stat = myCachedStats.get(rowIndex);
-		switch(columnIndex) {
-			case 0: return stat.graphURI;
-			case 1: return new Long(stat.statementCount);
-			default: return new Double(-1.0);
+		switch (columnIndex) {
+		case 0:
+			return stat.graphURI;
+		case 1:
+			return new Long(stat.statementCount);
+		default:
+			return new Double(-1.0);
 		}
 	}
+
 	// This sub box can be a source of triggers (for popup-menu), which might lead to another panel opening/refreshing.
 	// Currently it is only the row that matters (column is ignored).
 	public Box findSubBox(int rowIndex, int columnIndex) {

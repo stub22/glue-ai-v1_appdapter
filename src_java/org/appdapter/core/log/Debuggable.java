@@ -58,7 +58,7 @@ public abstract class Debuggable {
 		if (params == null)
 			return "<Null[]>";
 		if (params.length == 0)
-			return "<[0]>";
+			return "/*0*/";
 		if (params.length == 1)
 			return toInfoStringV(params[0], depth);
 		depth--;
@@ -104,6 +104,8 @@ public abstract class Debuggable {
 			return "<Null>";
 		if (o instanceof Number)
 			return "" + o;
+		if (o instanceof Enum)
+			return o.getClass().getCanonicalName() + "." + o;
 		if (o instanceof byte[])
 			return toInfoStringQ(new String((byte[]) o), quoted);
 		if (o instanceof char[])
@@ -355,7 +357,7 @@ public abstract class Debuggable {
 		return c.newInstance(args);
 	}
 
-	static void setField(Object obj, Class classOf, Class otherwise, String fieldname, Object value) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, Throwable {
+	public static void setField(Object obj, Class classOf, Class otherwise, String fieldname, Object value) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, Throwable {
 		{
 			Throwable why = null;
 			Field causeF;
@@ -381,6 +383,49 @@ public abstract class Debuggable {
 			} catch (SecurityException e) {
 				throw e;
 			} catch (NoSuchFieldException e) {
+				if (why != null)
+					throw why;
+				throw e;
+			}
+		}
+	}
+
+	public static Object getField(Object obj, Class classOf, Class otherwise, String fieldname) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, Throwable {
+		{
+			Throwable why = null;
+			Field causeF;
+			if (classOf != null) {
+				try {
+					causeF = classOf.getField(fieldname);
+					try {
+						causeF.setAccessible(true);
+						return causeF.get(obj);
+					} catch (IllegalArgumentException e) {
+						why = e;
+					} catch (IllegalAccessException e) {
+						why = e;
+					}
+				} catch (SecurityException e) {
+					why = e;
+				} catch (NoSuchFieldException e) {
+					why = e;
+				}
+			}
+			try {
+				causeF = otherwise.getDeclaredField(fieldname);
+				causeF.setAccessible(true);
+				return causeF.get(obj);
+			} catch (SecurityException e) {
+				throw e;
+			} catch (NoSuchFieldException e) {
+				classOf = otherwise.getSuperclass();
+				if (classOf != null) {
+					try {
+						return getField(obj, null, classOf, fieldname);
+					} catch (NoSuchFieldException nsfe) {
+
+					}
+				}
 				if (why != null)
 					throw why;
 				throw e;

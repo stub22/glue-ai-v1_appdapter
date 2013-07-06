@@ -27,6 +27,7 @@ import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.Collection;
 
 import javax.swing.*;
@@ -87,13 +88,29 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 	}
 
 	private void hookTree() {
+		ToolTipManager.sharedInstance().registerComponent(myTree);
 		/**JIDESOFT */
 		myTree.setCellRenderer(new StyledTreeCellRenderer() {
 			protected void customizeStyledLabel(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hazFocus) {
 				super.customizeStyledLabel(tree, value, sel, expanded, leaf, row, hazFocus);
 				String text = getText();
-				// here is the code to customize she StyledLabel for each tree node
+				if (false && hazFocus && sel) {
+					Object deref = Utility.dref(value);
+					showScreenBox(deref);
+				}
+				// here is the code to customize the StyledLabel for each tree node
 			}
+
+			public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hazFocus) {
+
+				Component c = super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hazFocus);
+				setToolTipText(Utility.makeTooltipText(value));
+				if (c != this) {
+					return c;
+				}
+				return this;
+			}
+
 		});
 
 	}
@@ -155,6 +172,8 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 				resetMenu();
 			}
 			jf.setJMenuBar(myTopFrameMenu);
+			myTopFrameMenu.setVisible(true);
+
 			jf.setLayout(new BorderLayout());
 			jf.add(this);
 			return;

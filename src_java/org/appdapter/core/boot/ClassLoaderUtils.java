@@ -42,7 +42,7 @@ public class ClassLoaderUtils {
 	public final static String ALL_RESOURCE_CLASSLOADER_TYPES = "*";
 
 	public final static String RESOURCE_CLASSLOADER_TYPE = "ResourceClassLoaderType";
-	private final static Logger theLogger = LoggerFactory.getLogger(ClassLoaderUtils.class.getName());
+	private final static Logger theLogger = LoggerFactory.getLogger(ClassLoaderUtils.class);
 
 	static {
 
@@ -204,6 +204,8 @@ public class ClassLoaderUtils {
 			resourceClassLoaderType = ALL_RESOURCE_CLASSLOADER_TYPES;
 			isNamed = false;
 		}
+		theLogger.info(Debuggable.toInfoStringCompound("registerClassLoader", context, loader, resourceClassLoaderType, "contextOptional=", contextOptional, "isRemoval=", isRemoval,
+				"isNamed=", isNamed));
 		synchronized (namedLoaders) {
 			if (isRemoval) {
 				allSeenEverLoaders.remove(loader);
