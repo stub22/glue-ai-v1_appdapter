@@ -13,6 +13,7 @@ import java.util.Map;
 import javax.swing.JPanel;
 
 import org.appdapter.api.trigger.AnyOper.UIHidden;
+import org.appdapter.gui.box.WrapperValue;
 
 /**
  * A wrapper for objects used in the ScreenBox system. It holds an object,
@@ -24,7 +25,7 @@ import org.appdapter.api.trigger.AnyOper.UIHidden;
  * 
  */
 @UIHidden
-public interface BT extends org.appdapter.gui.api.IGetBox, GetObject, Convertable//, Box<? extends Trigger<? extends Box<BT>>>
+public interface BT extends org.appdapter.gui.api.IGetBox, GetObject, Convertable, WrapperValue//, Box<? extends Trigger<? extends Box<BT>>>
 //extends ScreenBox, java.io.Serializable, GetSetObject, MutableBox {
 {
 
@@ -36,9 +37,9 @@ public interface BT extends org.appdapter.gui.api.IGetBox, GetObject, Convertabl
 
 	//	public <T> T[] getObjects(Class<T> type);
 
-//	public <T> boolean canConvert(Class<T> c);
+	//	public <T> boolean canConvert(Class<T> c);
 
-//	public <T> T convertTo(Class<T> c);
+	//	public <T> T convertTo(Class<T> c);
 
 	public String getDebugName();
 
@@ -186,7 +187,7 @@ public interface BT extends org.appdapter.gui.api.IGetBox, GetObject, Convertabl
 
 	public void setValue(Object newValue);
 
-//	public abstract Object getValue();
+	//	public abstract Object getValue();
 
 	public abstract Object getValueOrThis();
 

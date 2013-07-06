@@ -26,23 +26,19 @@ public class PropertiesPanel extends ScreenBoxPanel implements GetSetObject {
 	private PropertyComparator propertyComparator = new PropertyComparator();
 
 	private DisplayContext context;
+	boolean staticOnly = false;
 
 	// private LessString lessString = new LessString();
 
-	public PropertiesPanel(DisplayContext context, Object val, Class objClass) {
-		if (context != null)
-			this.context = context;
+	public PropertiesPanel(DisplayContext context, Object val, Class objClass, boolean staticOnly) {
+		this.context = context;
 		this.objClass = objClass;
+		this.staticOnly = staticOnly;
 		setObject(val);
-	}
-
-	public PropertiesPanel(Object val) {
-		this(null, val, Utility.getClassNullOk(val));
 	}
 
 	@Override public Object getValue() {
 		return objectValue;
-
 	}
 
 	public void setObject(Object val) {
@@ -53,31 +49,10 @@ public class PropertiesPanel extends ScreenBoxPanel implements GetSetObject {
 		if (objClass == null) {
 			objClass = val.getClass();
 		}
-
-		removeAll();
-		//setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-		//setLayout(new VerticalLayout(VerticalLayout.LEFT, true));
-		setLayout(new BorderLayout());
-
-		if (val != null) {
-			try {
-				PropertySheet sheet = new PropertySheet();
-
-				BeanInfo info = Introspector.getBeanInfo(val.getClass());
-
-				java.util.List props = Arrays.asList(info.getPropertyDescriptors());
-				Collections.sort(props, propertyComparator);
-
-				Iterator it = props.iterator();
-
-				while (it.hasNext()) {
-					PropertyDescriptor p = (PropertyDescriptor) it.next();
-					sheet.add(p.getDisplayName() + ":", new PropertyValueControl(context, val, p));
-				}
-				add("Center", sheet);
-			} catch (Exception err) {
-				theLogger.error("An error occurred", err);
-			}
+		if (objClass == objectValue) {
+			reloadObjectGUI(null);
+		} else {
+			reloadObjectGUI(val);
 		}
 	}
 
@@ -113,20 +88,26 @@ public class PropertiesPanel extends ScreenBoxPanel implements GetSetObject {
 		}
 	}
 
-	@Override protected void initSubclassGUI() throws Throwable {
-	}
-
-	@Override protected void completeSubClassGUI() throws Throwable {
+	@Override protected void initSubclassGUI() {
 		removeAll();
 		//setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		//setLayout(new VerticalLayout(VerticalLayout.LEFT, true));
 		setLayout(new BorderLayout());
-		Object val = getValue();
-		if (val != null) {
+	}
+
+	@Override protected void completeSubClassGUI() {
+		removeAll();
+		setLayout(new BorderLayout());
+
+		Object source = getValue();
+		if (source != null) {
 			try {
 				PropertySheet sheet = new PropertySheet();
 
-				BeanInfo info = Utility.getBeanInfo(objClass);
+				if (objClass == null) {
+					objClass = source.getClass();
+				}
+				BeanInfo info = Introspector.getBeanInfo(objClass);
 
 				java.util.List props = Arrays.asList(info.getPropertyDescriptors());
 				Collections.sort(props, propertyComparator);
@@ -135,7 +116,9 @@ public class PropertiesPanel extends ScreenBoxPanel implements GetSetObject {
 
 				while (it.hasNext()) {
 					PropertyDescriptor p = (PropertyDescriptor) it.next();
-					sheet.add(p.getDisplayName() + ":", new PropertyValueControl(context, val, p));
+					String attributeName = p.getDisplayName();
+					PropertyValueControl pvc = new PropertyValueControl(context, attributeName, source, p);
+					sheet.add(attributeName + ":", pvc);
 				}
 				add("Center", sheet);
 			} catch (Exception err) {
@@ -145,9 +128,14 @@ public class PropertiesPanel extends ScreenBoxPanel implements GetSetObject {
 
 	}
 
-	@Override protected boolean reloadObjectGUI(Object obj) throws Throwable {
-		Debuggable.notImplemented();
-		return false;
+	@Override protected boolean reloadObjectGUI(Object val) {
+		objectValue = val;
+		if (val != null) {
+			completeSubClassGUI();
+		} else {
+			initSubclassGUI();
+		}
+		return true;
 	}
 
 }

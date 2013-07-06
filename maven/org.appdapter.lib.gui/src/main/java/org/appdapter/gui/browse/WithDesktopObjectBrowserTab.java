@@ -70,7 +70,7 @@ public class WithDesktopObjectBrowserTab extends JJPanel implements ActionListen
 
 	private void initGUI() {
 		desk = new JDesktopPane();
-		LargeObjectChooser list = new LargeObjectChooser(context.getLocalBoxedChildren());
+		LargeObjectChooser list = new LargeObjectChooser(null, context.getLocalBoxedChildren());
 		//this.list = list;
 		classBrowserButton = new JButton("Examine...");
 		classBrowserButton.setToolTipText("Opens a new window that lets you examine classes and create new object instances");

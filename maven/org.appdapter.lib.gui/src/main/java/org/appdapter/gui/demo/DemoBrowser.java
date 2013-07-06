@@ -17,8 +17,6 @@
 package org.appdapter.gui.demo;
 
 import java.awt.BorderLayout;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.BoxLayout;
 import javax.swing.JApplet;
@@ -27,46 +25,39 @@ import javax.swing.JTextArea;
 import javax.swing.tree.TreeModel;
 
 import org.appdapter.api.trigger.Box;
-import org.appdapter.api.trigger.BoxContext;
 import org.appdapter.api.trigger.DisplayContextProvider;
 import org.appdapter.api.trigger.MutableBox;
 import org.appdapter.api.trigger.ScreenBox.Kind;
-import org.appdapter.api.trigger.Trigger;
 import org.appdapter.api.trigger.TriggerImpl;
 import org.appdapter.core.log.BasicDebugger;
 import org.appdapter.core.matdat.OfflineXlsSheetRepoSpec;
 import org.appdapter.core.matdat.OnlineSheetRepoSpec;
 import org.appdapter.core.matdat.RepoSpec;
-import org.appdapter.core.name.FreeIdent;
 import org.appdapter.core.store.Repo;
-import org.appdapter.core.store.Repo.WithDirectory;
 import org.appdapter.core.store.RepoBox;
 import org.appdapter.demo.DemoBrowserCtrl;
 import org.appdapter.demo.DemoBrowserUI;
 import org.appdapter.demo.DemoNavigatorCtrlFactory;
 import org.appdapter.gui.box.ScreenBoxContextImpl;
 import org.appdapter.gui.box.ScreenBoxImpl;
-import org.appdapter.gui.box.WrapperValue;
 import org.appdapter.gui.browse.ScreenBoxTreeNodeImpl;
 import org.appdapter.gui.demo.triggers.BridgeTriggers;
 import org.appdapter.gui.demo.triggers.DatabaseTriggers;
 import org.appdapter.gui.demo.triggers.RepoTriggers;
+import org.appdapter.gui.repo.DefaultMutableRepoBoxImpl;
 import org.appdapter.gui.rimpl.BootstrapTriggerFactory;
-import org.appdapter.gui.rimpl.MutableRepoBox;
 import org.appdapter.gui.rimpl.RepoBoxImpl;
 import org.appdapter.gui.rimpl.RepoModelBoxImpl;
 import org.appdapter.gui.rimpl.SysTriggers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.hp.hpl.jena.query.QuerySolution;
-import com.hp.hpl.jena.rdf.model.Model;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
 final public class DemoBrowser {
-	static Logger theLogger = getLogger();
+	public static Logger theLogger = getLogger();
 
 	public static DemoNavigatorCtrl makeDemoNavigatorCtrl(String[] args) {
 		DemoNavigatorCtrl repoNav = (DemoNavigatorCtrl) DemoBrowserUI.makeDemoNavigatorCtrl(args);
@@ -226,7 +217,7 @@ final public class DemoBrowser {
 	public static BaseDemoNavigatorCtrl makeDemoNavigatorCtrl(String[] args, RepoSubBoxFinder rsbf, boolean isExampleCode) {
 		theRSBF = rsbf;
 		// From this BoxImpl.class, is makeBCI is able to infer the full BT=BoxImpl<... tree?
-		return makeDemoNavigatorCtrl(args, ScreenBoxImpl.class, DemoRepoBoxImpl.class, isExampleCode);
+		return makeDemoNavigatorCtrl(args, ScreenBoxImpl.class, DefaultMutableRepoBoxImpl.class, isExampleCode);
 	}
 
 	public static BaseDemoNavigatorCtrl makeDemoNavigatorCtrl(String[] args, Class<? extends ScreenBoxImpl> boxClass, Class<? extends RepoBoxImpl> repoBoxClass, boolean isExampleCode) {
@@ -259,196 +250,7 @@ final public class DemoBrowser {
 		return (TBT) new SysTriggers.QuitTrigger().makeTrigger(boxClass);
 	}
 
-	static class ScreenModelBox extends ScreenBoxImpl {
-
-		final String myURI;
-		private Model myModel;
-
-		public ScreenModelBox(String uri, Model model) {
-			//super(uri, model);
-			myURI = uri;
-			myModel = model;
-		}
-
-		@Override public String toString() {
-			return getClass().getName() + "[uri=" + myURI + "model=" + myModel + "]";
-		}
-
-		// setShortLabel("tweak-" + myURI);
-		public void setModel(Model m) {
-			this.myModel = m;
-		}
-
-		@Override public Object getValue() {
-			return myModel;
-		}
-
-		public void reallySetValue(Object newObject) throws UnsupportedOperationException {
-			myModel = (Model) newObject;
-		}
-
-	}
-
-	static class ScreenGraphTrigger extends TriggerImpl /*
-														* with FullTrigger<GraphBox>
-														*/{
-
-		final String myDebugName;
-
-		public ScreenGraphTrigger(String myDebugNym) {
-			myDebugName = myDebugNym;
-		}
-
-		@Override public String toString() {
-			return getClass().getName() + "[name=" + myDebugName + "]";
-		}
-
-		@Override public void fire(Box targetBox) {
-			getLogger().debug(this.toString() + " firing on " + targetBox.toString());
-
-		}
-	}
-
-	public static class DemoRepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<TT>>> extends RepoBoxImpl<TT> implements MutableRepoBox<TT>, WrapperValue {
-
-		RepoSubBoxFinder myRSBF;
-
-		public Box superfindGraphBox(String graphURI) {
-			if (myRSBF == null) {
-				myRSBF = theRSBF;
-			}
-			return myRSBF.findGraphBox(this, graphURI);
-		}
-
-		Repo.WithDirectory myRepoWD;
-		String myDebugName;
-		public List<MutableRepoBox> childBoxes = new ArrayList<MutableRepoBox>();
-
-		public DemoRepoBoxImpl() {
-
-		}
-
-		public DemoRepoBoxImpl(String myDebugNym, Repo.WithDirectory repo) {
-			myDebugName = myDebugNym;
-			myRepoWD = (WithDirectory) repo;
-			// resyncChildrenToTree();
-		}
-
-		void resyncChildrenToTree() {
-			BoxContext ctx = getBoxContext();
-			List<Repo.GraphStat> graphStats = getAllGraphStats();
-			Repo.WithDirectory repo = getRepoWD();
-
-			// OmniLoaderRepo fr = (OmniLoaderRepo) repo;//
-			// repo.getDirectoryModelClient();
-			QuerySolution qInitBinding = null;
-			String qText = "";
-			/*ResultSet rset = QueryHelper.execModelQueryWithPrefixHelp(repo.getDirectoryModel(), "select distinct ?s ?o {?s a ?o}");
-
-			// cp to list (since will be doing this differntly later)
-			List<QuerySolution> solnList = new ArrayList<QuerySolution>();
-			while (rset.hasNext()) {
-				QuerySolution qsoln = rset.next();
-				solnList.add(qsoln);
-			}
-
-			for (QuerySolution gs : solnList) {
-				String constituentRepoName = gs.getResource("s").asNode().getURI();
-				ScreenModelBox graphBox = new ScreenModelBox(constituentRepoName);
-				ScreenGraphTrigger gt = new ScreenGraphTrigger(constituentRepoName);
-				gt.setShortLabel("have-some-fun with Repo " + constituentRepoName + " type " + gs.get("o"));
-				graphBox.attachTrigger(gt);
-				ctx.contextualizeAndAttachChildBox(this, graphBox);
-			}
-
-			for (Repo.GraphStat gs : graphStats) {
-				ScreenModelBox graphBox = new ScreenModelBox(gs.graphURI);
-				ScreenGraphTrigger gt = new ScreenGraphTrigger("graph=" + gs.graphURI);
-				gt.setShortLabel("have-some-fun with uri=" + gs);
-				graphBox.attachTrigger(gt);
-				ctx.contextualizeAndAttachChildBox(this, graphBox);
-			}*/
-		}
-
-		@Override public Repo getRepo() {
-			return myRepoWD;
-		}
-
-		public Repo.WithDirectory getRepoWD() {
-			return myRepoWD;
-		}
-
-		@Override public List getAllGraphStats() {
-			Repo myRepo = getRepo();
-			return myRepo.getGraphStats();
-		}
-
-		@Override public Box findGraphBox(String graphURI) {
-			Logger logger = theLogger;
-
-			Box fnd = superfindGraphBox(graphURI);
-			boolean madeAlready = false;
-			if (fnd != null) {
-				logger.trace("Found graphURI=" + graphURI + " on super.findGraphBox" + fnd);
-				madeAlready = true;
-			}
-
-			BoxContext ctx = getBoxContext();
-			List<Repo.GraphStat> graphStats = getAllGraphStats();
-			Model m = myRepoWD.getNamedModel(new FreeIdent(graphURI));
-
-			for (Repo.GraphStat gs : graphStats) {
-				if (gs.graphURI.equals(graphURI)) {
-					ScreenModelBox graphBox = new ScreenModelBox(gs.graphURI, m);
-					ScreenGraphTrigger gt = new ScreenGraphTrigger(gs.graphURI);
-					graphBox.attachTrigger(gt);
-					if (!madeAlready) {
-						ctx.contextualizeAndAttachChildBox(this, graphBox);
-					}
-					return (Box) graphBox;
-				}
-			}
-
-			fnd = superfindGraphBox(graphURI);
-
-			if (fnd != null) {
-				logger.trace("Wierdly!?! Found graphURI=" + graphURI + " on super.findGraphBox " + fnd);
-				return fnd;
-			}
-
-			logger.trace("NOT FOUND graphURI=" + graphURI + " on findGraphBox");
-			return null;
-		}
-
-		@Override public void mount(String configPath) {
-			super.mount(configPath);
-		}
-
-		@Override public void formatStoreIfNeeded() {
-			super.formatStoreIfNeeded();
-		}
-
-		@Override public void importGraphFromURL(String tgtGraphName, String sourceURL, boolean replaceTgtFlag) {
-			super.importGraphFromURL(tgtGraphName, sourceURL, replaceTgtFlag);
-		}
-
-		@Override public String getUploadHomePath() {
-			return super.getUploadHomePath();
-		}
-
-		@Override public Object reallyGetValue() {
-			return myRepoWD;
-		}
-
-		@Override public void reallySetValue(Object newObject) throws UnsupportedOperationException {
-			if (newObject instanceof String) {
-				mount(newObject.toString());
-				return;
-			}
-			myRepoWD = (WithDirectory) newObject;
-		}
-
-	}
+	
 
 	// static class ConcBootstrapTF extends BootstrapTriggerFactory<TriggerImpl<BoxImpl<TriggerImpl>>> {
 	// }  //   TT extends TriggerImpl<BT>

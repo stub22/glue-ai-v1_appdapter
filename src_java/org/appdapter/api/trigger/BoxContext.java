@@ -30,4 +30,6 @@ public interface BoxContext {
 
 
 	public void contextualizeAndAttachChildBox(Box<?> parentBox, MutableBox<?> childBox);
+	
+	public void contextualizeAndDetachChildBox(Box<?> parentBox, MutableBox<?> childBox);
 }

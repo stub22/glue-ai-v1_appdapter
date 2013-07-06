@@ -17,31 +17,44 @@ public abstract class CollectionSetUtils {
 
 	}
 
-	public static <T> boolean addIfNew(List<T> list, T element) {
-		if (list.contains(element))
-			return false;
+	public static <T> boolean addToList(Collection<T> list, T element) {
 		if (element instanceof HRKRefinement.DontAdd) {
 			return false;
 		}
 		if (element instanceof HRKRefinement) {
-			list.add(0, element);
-			return true;
+			if ((list instanceof List)) {
+				((List<T>) list).add(0, element);
+				return true;
+			}
 		}
-		list.add(element);
-		return true;
+		return list.add(element);
 	}
 
 	public static <T> boolean addIfNew(Collection<T> list, T element) {
-		if (list.contains(element))
-			return false;
-		if (element instanceof HRKRefinement.DontAdd) {
-			return false;
-		}
-		list.add(element);
-		return true;
+		return addIfNew(list, element, true);
 	}
 
-	public static <T, ET> boolean addAllNew(List<T> list, ET[] elements) {
+	public static <T> boolean addIfNewSkipNull(Collection<T> list, T element) {
+		return addIfNew(list, element, false);
+	}
+
+	public static <T> boolean addIfNew(Collection<T> list, T element, boolean nullOK) {
+		if (!nullOK && element == null)
+			return false;
+		if (element instanceof HRKRefinement.AskIfEqual) {
+			HRKRefinement.AskIfEqual aie = (HRKRefinement.AskIfEqual) element;
+			for (Object e : list) {
+				if (aie.same(e))
+					return false;
+			}
+		} else {
+			if (list.contains(element))
+				return false;
+		}
+		return addToList(list, element);
+	}
+
+	public static <T, ET> boolean addAllNew(Collection<T> list, ET[] elements) {
 		boolean changed = false;
 		for (ET t0 : elements) {
 			T t;
@@ -57,7 +70,7 @@ public abstract class CollectionSetUtils {
 		return changed;
 	}
 
-	public static <T, ET> boolean addAllNew(List<T> list, Enumeration<ET> elements) {
+	public static <T, ET> boolean addAllNew(Collection<T> list, Enumeration<ET> elements) {
 		boolean changed = false;
 
 		while (elements.hasMoreElements()) {
@@ -75,7 +88,7 @@ public abstract class CollectionSetUtils {
 		return changed;
 	}
 
-	public static <T, ET> boolean addAllNew(List<T> list, Iterable<ET> elements) {
+	public static <T, ET> boolean addAllNew(Collection<T> list, Iterable<ET> elements) {
 		boolean changed = false;
 		for (ET t0 : elements) {
 			T t;
@@ -108,6 +121,28 @@ public abstract class CollectionSetUtils {
 
 	public static <T> T[] arrayOf(T... args) {
 		return args;
+	}
+
+	public static String join(String sep, String... args) {
+		return join(sep, 0, -1, args);
+	}
+
+	public static String join(String sep, int start, int len, String... args) {
+		StringBuilder sb = new StringBuilder();
+		boolean first = true;
+		int argslength = args.length;
+		for (int i = start; i < argslength; i++) {
+			if (len == 0)
+				break;
+			len--;
+			String item = args[i];
+			if (first)
+				first = false;
+			else
+				sb.append(sep);
+			sb.append(item);
+		}
+		return sb.toString();
 	}
 
 	public static <T> Iterable<T> iterableOf(T... args) {

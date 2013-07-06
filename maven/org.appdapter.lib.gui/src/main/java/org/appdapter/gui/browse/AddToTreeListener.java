@@ -2,6 +2,8 @@ package org.appdapter.gui.browse;
 
 import java.beans.PropertyVetoException;
 import java.util.Iterator;
+import java.util.List;
+import java.util.RandomAccess;
 
 import javax.swing.JTree;
 import javax.swing.tree.TreeModel;
@@ -33,7 +35,7 @@ public class AddToTreeListener implements POJOCollectionListener {
 		Iterator it = ctx.getBoxes();
 		while (it.hasNext()) {
 			BT b = (BT) it.next();
-			pojoAdded0(b.getValue());
+			pojoAdded0(b.getValue(), b);
 		}
 		invalidate();
 	}
@@ -42,48 +44,75 @@ public class AddToTreeListener implements POJOCollectionListener {
 		jtree.invalidate();
 	}
 
-	@Override public void pojoAdded(Object obj) {
-		pojoAdded0(obj);
+	@Override public void pojoAdded(Object obj, BT box) {
+		pojoAdded0(obj, box);
 		invalidate();
 	}
 
-	void pojoAdded0(Object obj) {
+	void pojoAdded0(Object obj, BT box) {
 		try {
-			pojoAdded00(obj);
+			pojoUpdate(obj, box, false);
 		} catch (PropertyVetoException e) {
 			e.printStackTrace();
 			throw Debuggable.reThrowable(e);
 		}
 	}
 
-	void pojoAdded00(Object obj) throws PropertyVetoException {
-		BT box = col.findBoxByObject(obj);
-		Class oc = box.getObjectClass();
-		String cn = Utility.getShortClassName(oc);
-		TreeModel tm = jtree.getModel();
-		ScreenBoxTreeNodeImpl rootBTN = (ScreenBoxTreeNodeImpl) tm.getRoot();
-		MutableBox ccb = (MutableBox) col.findOrCreateBox(cn, oc).asBox();
-		mybctx.contextualizeAndAttachChildBox(getClassesBox(), ccb);
-		mybctx.contextualizeAndAttachChildBox((Box) ccb, (MutableBox) col.findOrCreateBox(null, obj).asBox());
+	void pojoUpdate(Object obj, BT box, boolean isRemoval) throws PropertyVetoException {
+		Object d = Utility.dref(obj);
+		if (d != null && d != obj) {
+			//	obj = d;
+		}
+		Class oc = obj.getClass();
+		if (oc.isArray())
+			return;
+		if (Utility.isToStringType(oc))
+			return;
+		if (obj instanceof RandomAccess)
+			return;
+
+		MutableBox objectBox = (MutableBox) box;
+
+		MutableBox rootBox = getFirstBox(null);
+		saveInClassTree(rootBox, oc, objectBox, isRemoval);
+		if (obj instanceof Class)
+			return;
+		for (Class ifc : oc.getInterfaces()) {
+			MutableBox faceBox = getFirstBox(Class.class);
+			saveInClassTree(faceBox, ifc, objectBox, isRemoval);
+		}
 	}
 
-	@Override public void pojoRemoved(Object obj) {
-		pojoRemoved0(obj);
+	public MutableBox getFirstBox(Object obj) throws PropertyVetoException {
+		if (obj == null)
+			return (MutableBox) mybctx.getRootBox();
+		return (MutableBox) col.findOrCreateBox(null, obj).asBox();
+	}
+
+	private void saveInClassTree(Box belowBox, Class oc, MutableBox objectBox, boolean isRemoval) throws PropertyVetoException {
+		String cn = Utility.getShortClassName(oc);
+		MutableBox objectClassBox = (MutableBox) col.findOrCreateBox(cn, oc).asBox();
+		if (!isRemoval) {
+			mybctx.contextualizeAndAttachChildBox(belowBox, objectClassBox);
+			mybctx.contextualizeAndAttachChildBox((Box) objectClassBox, objectBox);
+		} else {
+			mybctx.contextualizeAndAttachChildBox(belowBox, objectClassBox);
+			mybctx.contextualizeAndDetachChildBox((Box) objectClassBox, objectBox);
+		}
+	}
+
+	@Override public void pojoRemoved(Object obj, BT box) {
+		pojoRemoved0(obj, box);
 		invalidate();
 	}
 
-	void pojoRemoved0(Object obj) {
-		BT box = col.findBoxByObject(obj);
-		Class oc = box.getObjectClass();
-		String cn = Utility.getShortClassName(oc);
-		TreeModel tm = jtree.getModel();
-		ScreenBoxTreeNodeImpl rootBTN = (ScreenBoxTreeNodeImpl) tm.getRoot();
-		AbstractScreenBoxTreeNodeImpl chn = rootBTN.attachChildObect(cn, oc);
-		chn.detachChildObect(null, obj);
-
+	void pojoRemoved0(Object obj, BT box) {
+		try {
+			pojoUpdate(obj, box, true);
+		} catch (PropertyVetoException e) {
+			e.printStackTrace();
+			throw Debuggable.reThrowable(e);
+		}
 	}
 
-	public MutableBox getClassesBox() {
-		return (MutableBox) mybctx.getRootBox();
-	}
 }

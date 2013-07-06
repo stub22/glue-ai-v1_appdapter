@@ -22,9 +22,9 @@
 
 package org.appdapter.gui.repo;
 
-import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.Customizer;
 import java.io.File;
 
 import javax.swing.JFileChooser;
@@ -32,9 +32,10 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 
 import org.appdapter.api.trigger.Box;
-import org.appdapter.core.log.Debuggable;
-import org.appdapter.gui.api.FocusOnBox;
+import org.appdapter.core.store.Repo;
+import org.appdapter.gui.api.Utility;
 import org.appdapter.gui.rimpl.MutableRepoBox;
+import org.appdapter.gui.rimpl.RepoBoxImpl;
 import org.appdapter.gui.rimpl.TriggerMenuFactory;
 import org.appdapter.gui.swing.ScreenBoxPanel;
 import org.slf4j.Logger;
@@ -43,7 +44,7 @@ import org.slf4j.LoggerFactory;
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public class RepoManagerPanel extends ScreenBoxPanel<MutableRepoBox> {
+public class RepoManagerPanel extends ScreenBoxPanel<MutableRepoBox> implements Customizer {
 	static Logger theLogger = LoggerFactory.getLogger(RepoManagerPanel.class);
 
 	@Override protected void initSubclassGUI() throws Throwable {
@@ -209,6 +210,8 @@ public class RepoManagerPanel extends ScreenBoxPanel<MutableRepoBox> {
 	}//GEN-LAST:event_myBut_chooseFileActionPerformed
 
 	@Override public void focusOnBox(MutableRepoBox b) {
+		if (b == myFocusBox)
+			return;
 		myFocusBox = b;
 		myRGTM.focusOnRepo(b);
 	}
@@ -232,12 +235,19 @@ public class RepoManagerPanel extends ScreenBoxPanel<MutableRepoBox> {
 	}
 
 	@Override public void objectValueChanged(Object oldValue, Object newValue) {
-		focusOnBox((Box) newValue);
+		if (newValue == null)
+			return;
+		reloadObjectGUI(newValue);
 	}
 
-	@Override protected boolean reloadObjectGUI(Object obj) throws Throwable {
-		Debuggable.notImplemented();
-		return false;
+	@Override protected boolean reloadObjectGUI(Object newValue) throws ClassCastException {
+		MutableRepoBox mrb = null;
+		if (newValue instanceof MutableRepoBox) {
+			mrb = (MutableRepoBox) newValue;
+		} else {
+			mrb = new DefaultMutableRepoBoxImpl(Utility.getUniqueName(newValue), (Repo.WithDirectory) newValue);
+		}
+		focusOnBox((MutableRepoBox) mrb);
+		return true;
 	}
-
 }

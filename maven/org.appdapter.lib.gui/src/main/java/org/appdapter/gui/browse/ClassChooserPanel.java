@@ -15,7 +15,9 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 
+import org.appdapter.api.trigger.BT;
 import org.appdapter.api.trigger.DisplayContext;
+import org.appdapter.api.trigger.POJOCollectionListener;
 import org.appdapter.gui.api.GetSetObject;
 import org.appdapter.gui.api.Utility;
 import org.appdapter.gui.util.PromiscuousClassUtils;
@@ -23,14 +25,14 @@ import org.appdapter.gui.util.PromiscuousClassUtils;
 // JIDESOFT import com.jidesoft.swing.*;
 import javax.swing.*;
 
-public class ClassChooserPanel extends JPanel implements ActionListener, DocumentListener {
+public class ClassChooserPanel extends JPanel implements ActionListener, DocumentListener, POJOCollectionListener {
 	Class selectedClass = null;
 
 	//JLayeredPane desk;
 	//JSplitPane split;
 	JButton classBrowserButton;
 	JComboBox classField;
-	DisplayContext context;     
+	DisplayContext context;
 	HashSet<String> classesSaved = new HashSet<String>();
 	Thread classGroveler;
 
@@ -66,11 +68,11 @@ public class ClassChooserPanel extends JPanel implements ActionListener, Documen
 	}
 
 	private void resetAutoComplete() {
-	    /*  JIDESOFT
-	     
-	     leaving it off as it requires large PermGen to hold all the class
-	     
-	       AutoCompletion autoCompletion;
+		/*  JIDESOFT
+		 
+		 leaving it off as it requires large PermGen to hold all the class
+		 
+		   AutoCompletion autoCompletion;
 		autoCompletion = new AutoCompletion(classField);
 		autoCompletion.setStrict(false);
 		autoCompletion.setStrictCompletion(false);
@@ -153,6 +155,23 @@ public class ClassChooserPanel extends JPanel implements ActionListener, Documen
 
 	public Object getValue() {
 		return selectedClass;
+	}
+
+	@Override public void pojoAdded(Object obj, BT box) {
+		if (obj instanceof Class) {
+			Class clz = (Class) obj;
+			if (!classesSaved.add(clz.getCanonicalName()))
+				return;
+			for (Class c : clz.getInterfaces()) {
+				pojoAdded(c, null);
+			}
+			pojoAdded(clz.getSuperclass(), null);
+		}
+	}
+
+	@Override public void pojoRemoved(Object obj, BT box) {
+		// TODO Auto-generated method stub
+
 	}
 
 }

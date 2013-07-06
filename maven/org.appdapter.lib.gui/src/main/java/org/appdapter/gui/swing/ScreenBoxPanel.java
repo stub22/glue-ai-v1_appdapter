@@ -40,7 +40,7 @@ abstract public class ScreenBoxPanel<BoxType extends Box> extends ObjectView<Box
 		}
 	}
 
-	final protected void reallySetBean(Object bean) {
+	final protected void reallySetValue(Object bean) {
 		if (objClass == null)
 			objClass = bean.getClass();
 		if (bean != null) {
@@ -100,7 +100,7 @@ abstract public class ScreenBoxPanel<BoxType extends Box> extends ObjectView<Box
 		synchronized (valueLock) {
 			super.setObject(bean);
 			if (objectValue == null && bean != null) {
-				reallySetBean(bean);
+				reallySetValue(bean);
 			}
 		}
 	}
@@ -146,7 +146,7 @@ abstract public class ScreenBoxPanel<BoxType extends Box> extends ObjectView<Box
 					objClass = oval.getClass();
 			}
 			if (objectValue != bean)
-				reallySetBean(bean);
+				reallySetValue(bean);
 		}
 
 	}

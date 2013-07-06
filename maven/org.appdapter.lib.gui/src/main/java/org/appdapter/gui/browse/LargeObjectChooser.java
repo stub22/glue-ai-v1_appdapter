@@ -9,10 +9,14 @@ import java.util.Iterator;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.border.Border;
+import javax.swing.border.TitledBorder;
 
+import org.appdapter.api.trigger.BT;
 import org.appdapter.api.trigger.NamedObjectCollection;
+import org.appdapter.api.trigger.POJOCollection;
 import org.appdapter.api.trigger.POJOCollectionListener;
 import org.appdapter.gui.api.ObjectCollectionRemoveListener;
+import org.appdapter.gui.api.Utility;
 import org.appdapter.gui.swing.SmallObjectView;
 import org.appdapter.gui.swing.VerticalLayout;
 
@@ -25,16 +29,26 @@ public class LargeObjectChooser extends JPanel implements POJOCollectionListener
 		return getObject();
 	}
 
-	NamedObjectCollection context;
+	NamedObjectCollection localCollection;
+	Class filter;
 	JPanel panel;
 	JScrollPane scroll;
 	Border defaultScrollBorder;
 
-	public LargeObjectChooser(NamedObjectCollection context0) {
+	@Override public String getName() {
+		String named = localCollection.toString();
+		if (filter != null) {
+			named = Utility.getShortClassName(filter) + " of " + named;
+		}
+		return named;
+	}
+
+	public LargeObjectChooser(Class filterc, NamedObjectCollection context0) {
 		super(false);
-		this.context = context0;
+		filter = filterc;
+		this.localCollection = context0;
 		initGUI();
-		context.addListener(this);
+		localCollection.addListener(this);
 	}
 
 	@Override public Dimension getPreferredSize() {
@@ -47,30 +61,33 @@ public class LargeObjectChooser extends JPanel implements POJOCollectionListener
 		return getPreferredSize();
 	}
 
-	@Override public void pojoAdded(Object obj) {
+	@Override public void pojoAdded(Object obj, BT box) {
 		// @optimize
+		if (filter != null) {
+			if (!filter.isInstance(obj))
+				return;
+		}
 		reloadContents();
-		invalidate();
-		validate();
-		repaint();
 	}
 
-	@Override public void pojoRemoved(Object obj) {
+	@Override public void pojoRemoved(Object obj, BT box) {
 		// @optimize
+		if (filter != null) {
+			if (!filter.isInstance(obj))
+				return;
+		}
 		reloadContents();
-		invalidate();
-		validate();
-		repaint();
 	}
 
 	public void setTitle(String title) {
-		// scroll.setBorder(new TitledBorder(defaultScrollBorder, title));
+		//defaultScrollBorder = new Defa
+		//	scroll.setBorder(new TitledBorder(defaultScrollBorder, title));
 	}
 
 	private void initGUI() {
 		panel = new JPanel();
 		panel.setLayout(new VerticalLayout());
-
+		setTitle(getName());
 		scroll = new JScrollPane(panel);
 		defaultScrollBorder = scroll.getBorder();
 
@@ -84,18 +101,22 @@ public class LargeObjectChooser extends JPanel implements POJOCollectionListener
 	public void reloadContents() {
 		panel.removeAll();
 
-		Iterator it = context.getObjects();
+		Iterator it = localCollection.getObjects();
 		while (it.hasNext()) {
 			Object value = it.next();
-			SmallObjectView view = new SmallObjectView(context, value, true, true, true) {
+			if (filter != null) {
+				if (!filter.isInstance(value))
+					continue;
+			}
+			SmallObjectView view = new SmallObjectView(null, localCollection, value, null) {
 				@Override public void valueChanged(Object oldValue, Object newValue) {
-					replaceInContext(context, oldValue, newValue);
+					replaceInContext(localCollection, oldValue, newValue);
 					super.valueChanged(oldValue, newValue);
 				}
 			};
 			view.setRemoveListener(new ObjectCollectionRemoveListener() {
 				@Override public void objectRemoved(Object oldValue, Collection parent) {
-					replaceInContext(context, oldValue, null);
+					replaceInContext(localCollection, oldValue, null);
 				}
 			});
 			panel.add(view);
@@ -110,11 +131,11 @@ public class LargeObjectChooser extends JPanel implements POJOCollectionListener
 	}
 
 	public Object getObject() {
-		return context.getSelectedObject();
+		return localCollection.getSelectedObject();
 	}
 
 	public void setSelectedObject(Object object) throws PropertyVetoException {
-		context.setSelectedObject(object);
+		localCollection.setSelectedObject(object);
 
 	}
 

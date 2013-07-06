@@ -4,6 +4,7 @@ import javax.swing.JPanel;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.gui.api.*;
+import org.appdapter.gui.box.WrapperValue;
 import org.appdapter.gui.impl.JJPanel;
 import org.slf4j.LoggerFactory;
 
@@ -67,5 +68,5 @@ extends JJPanel implements GetSetObject {
 
 	public abstract void objectValueChanged(Object oldValue, Object newValue);
 
-	abstract protected void reallySetBean(Object bean);
+	abstract protected void reallySetValue(Object bean);
 }
