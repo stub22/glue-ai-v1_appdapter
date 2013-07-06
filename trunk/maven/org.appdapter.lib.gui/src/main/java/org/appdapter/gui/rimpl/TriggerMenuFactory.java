@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import javax.swing.AbstractButton;
+import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -46,6 +47,7 @@ import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.UIAware;
 
 import javax.swing.*;
+
 // JIDESOFT import com.jidesoft.swing.*;
 
 /**
@@ -124,7 +126,7 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 	}
 
 	public JPopupMenu buildPopupMenu(Box<TT> box) {
-		JPopupMenu popup = new TriggerPopupMenu(null, box);
+		JPopupMenu popup = new TriggerPopupMenu(null, null, null, box);
 		addTriggersToPopup(box, popup);
 		return popup;
 	}
@@ -137,7 +139,7 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 			// Allready added the items?
 			//return;
 		}
-		List<TT> trigs = new ArrayList<TT>();		
+		List<TT> trigs = new ArrayList<TT>();
 		trigs.addAll(box.getTriggers());
 		int c1 = trigs.size();
 		Collections.sort(trigs, new TriggerSorter());
@@ -237,12 +239,19 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 	}
 
 	private void addTriggerToPoppup(Container popup, Box<TT> box, String[] path, int idx, TT trig) {
-		final String lbl = path[idx].trim();
-		if (path.length - idx == 1) {
-			popup.add(makeMenuItem(box, lbl, trig));
+		boolean isLast = path.length - idx == 1;
+		if (idx >= path.length) {
+			// trying to get something longer than array
 			return;
 		}
+		final String lbl = path[idx].trim();
 		Component child = findChildNamed(popup, true, lbl.toLowerCase());
+		if (isLast) {
+			if (child == null) {
+				popup.add(makeMenuItem(box, lbl, trig));
+			}
+			return;
+		}
 		if (child == null) {
 			JMenuWithPath item = new JMenuWithPath(lbl);
 			popup.add(item, 0);
@@ -328,10 +337,14 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 			return null;
 
 		if (c instanceof Container) {
+			int mustBeWithin = 2;
 			for (Component c2 : ((Container) c).getComponents()) {
 				String text = getLabel(c2, maxDepth - 1);
 				if (text != null)
 					return text;
+				mustBeWithin--;
+				if (mustBeWithin <= 0)
+					break;
 			}
 		}
 		return null;
@@ -361,5 +374,13 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 
 	private String[] getTriggerPath(TT trig) {
 		return trig.getShortLabel().split("\\|");
+	}
+
+	public void addMenuItem(Action a, Box box, JMenu menu) {
+		addTriggerToPoppup(menu, box, (TT) a);
+	}
+
+	public void addMenuItem(Action a, Box box, JPopupMenu menu) {
+		addTriggerToPoppup(menu, box, (TT) a);
 	}
 }

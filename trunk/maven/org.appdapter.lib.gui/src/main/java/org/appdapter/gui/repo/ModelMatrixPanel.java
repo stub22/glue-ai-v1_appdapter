@@ -159,6 +159,7 @@ public class ModelMatrixPanel extends ScreenBoxPanel {
 	}
 
 	@Override public void objectValueChanged(Object oldValue, Object newValue) {
+		
 	}
 
 	@Override protected boolean reloadObjectGUI(Object obj) throws Throwable {

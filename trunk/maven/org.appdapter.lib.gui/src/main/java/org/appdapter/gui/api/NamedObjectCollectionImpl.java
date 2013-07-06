@@ -146,7 +146,7 @@ public class NamedObjectCollectionImpl implements NamedObjectCollection, Vetoabl
 			Iterator it = colListeners.iterator();
 			while (it.hasNext()) {
 				// @temp
-				((POJOCollectionListener) it.next()).pojoAdded(box.getValueOrThis());
+				((POJOCollectionListener) it.next()).pojoAdded(box.getValueOrThis(), (BT) box);
 			}
 			return true;
 		}
@@ -189,11 +189,12 @@ public class NamedObjectCollectionImpl implements NamedObjectCollection, Vetoabl
 			return this;
 		}
 
-		public Object value;
+		//public Object value;
 		private NamedObjectCollection noc;
 
 		public void setNameValue(String uniqueName, Object obj) {
 			valueSetAs = obj;
+
 			if (uniqueName == null) {
 				uniqueName = Utility.generateUniqueName(obj, uniqueName, noc.getNameToBoxIndex());
 			}
@@ -224,22 +225,22 @@ public class NamedObjectCollectionImpl implements NamedObjectCollection, Vetoabl
 		}
 
 		@Override public Object reallyGetValue() {
-			return value;
+			return valueSetAs;
 		}
 
 		@Override public void reallySetValue(Object newObject) {
-			value = newObject;
+			valueSetAs = newObject;
 		}
 
 		@Override public Object getValue() {
-			if (value != null)
-				return value;
+			if (valueSetAs != null)
+				return valueSetAs;
 			return this;
 		}
 
 		@Override public Object getValueOrThis() {
-			if (value != null)
-				return value;
+			if (valueSetAs != null)
+				return valueSetAs;
 			return this;
 		}
 	}
@@ -330,11 +331,15 @@ public class NamedObjectCollectionImpl implements NamedObjectCollection, Vetoabl
 	 * Returns null if the POJOCollection does not contain the given object.
 	 */
 	public BT findBoxByObject(Object object) {
+
 		if (object == null)
 			return null;
 
 		object = Utility.dref(object, object);
 
+		if (object instanceof String) {
+			return findBoxByName((String) object);
+		}
 		int i = objectList.indexOf(object);
 		if (i != -1) {
 			BT wrapper = (BT) boxList.get(i);
@@ -433,7 +438,7 @@ public class NamedObjectCollectionImpl implements NamedObjectCollection, Vetoabl
 			Iterator it = colListeners.iterator();
 			while (it.hasNext()) {
 				//@temp
-				((POJOCollectionListener) it.next()).pojoAdded(obj);
+				((POJOCollectionListener) it.next()).pojoAdded(obj, wrapper);
 			}
 
 			return wrapper;
@@ -720,7 +725,7 @@ public class NamedObjectCollectionImpl implements NamedObjectCollection, Vetoabl
 		//notify namedObjectsListeners
 		Iterator it = colListeners.iterator();
 		while (it.hasNext()) {
-			((POJOCollectionListener) it.next()).pojoRemoved(obj);
+			((POJOCollectionListener) it.next()).pojoRemoved(obj, wrapper);
 		}
 		return true;
 
@@ -828,7 +833,6 @@ public class NamedObjectCollectionImpl implements NamedObjectCollection, Vetoabl
 	}
 
 	public BrowserPanelGUI getLocalTreeAPI() {
-		Debuggable.notImplemented();
-		return null;
+		return Utility.getCurrentContext();
 	}
 }

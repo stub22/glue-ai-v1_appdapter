@@ -18,15 +18,17 @@ import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Set;
+import java.lang.reflect.Modifier;
 
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import org.appdapter.api.trigger.BT;
 import org.appdapter.api.trigger.DisplayContext;
 import org.appdapter.api.trigger.NamedObjectCollection;
+import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.GetSetObject;
 import org.appdapter.gui.api.IValidate;
 import org.appdapter.gui.api.UserInputComponent;
@@ -36,20 +38,21 @@ import org.appdapter.gui.impl.JVPanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.hp.hpl.jena.query.DataSource;
+import com.hp.hpl.jena.query.Dataset;
+import com.hp.hpl.jena.rdf.model.Model;
+
 @SuppressWarnings({ "serial" })
 public class PropertyValueControl extends JVPanel implements PropertyChangeListener, IValidate, GetSetObject, ValueEditor {
 
 	/**
 	 * Displays a list of fixed values to choose from.
 	 */
-	static class ComboBoxInputComponent extends JComboBox implements PropertyChangeListener, ActionListener, UserInputComponent {
+	class ComboBoxInputComponent extends JComboBox implements PropertyChangeListener, ActionListener, UserInputComponent {
 		PropertyEditor editor;
 		final PropertyDescriptor property;
 
-		//		final PropertyValueControlUI propvalctrl;
-
 		public ComboBoxInputComponent(PropertyEditor editor, PropertyDescriptor pvc) {
-			//		this.propvalctrl = pvc;
 			property = pvc;
 			this.editor = editor;
 			populate();
@@ -64,6 +67,8 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 
 		private void populate() {
 			String[] tags = editor.getTags();
+			if (tags == null)
+				tags = getPVTags();
 			int len = tags.length;
 			for (int i = 0; i < len; ++i) {
 				addItem(tags[i]);
@@ -96,28 +101,40 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 
 	static public class ObjectReferenceEditor extends PropertyEditorSupport implements PropertyChangeListener {
 
-		ObjectChoice choice = null;
+		ObjectChoiceComboPanel choice = null;
 		boolean editable;
-		public NamedObjectCollection fromCollection;
 		JLabel label = null;
 		JPanel objectPanel = null;
-
-		final GetSetObject provalctrl;
+		//NamedObjectCollection fromCollection = null;
+		final PropertyValueControl provalctrl;
 		Class type = null;
 		final Container validator;
 		SmallObjectView view = null;
 
-		public ObjectReferenceEditor(Class type, boolean editable, GetSetObject pvc, Container validater) {
+		public ObjectReferenceEditor(Class type, boolean editable, PropertyValueControl pvc, Container validater) {
 			provalctrl = pvc;
 			this.type = type;
 			this.editable = editable;
 			validator = validater;
 		}
 
+		public String[] getTags() {
+			String[] tags = super.getTags();
+			/*if (editor != null) {
+				tags = editor.getTags();
+			}*/
+			if (tags == null) {
+				return provalctrl.getPVTags();
+			}
+			return tags;
+		}
+
 		@Override public Component getCustomEditor() {
 			if (editable) {
 				if (choice == null) {
-					choice = new ObjectChoice(fromCollection, type, getObject());
+					NamedObjectCollection fromCollection = provalctrl.getNamedObjectCollection();
+					Object initialValue = getBoundValue();
+					choice = new ObjectChoiceComboPanel(fromCollection, type, initialValue);
 					choice.addPropertyChangeListener(this);
 				}
 				return choice;
@@ -126,13 +143,14 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 					objectPanel = new JPanel();
 					objectPanel.setLayout(new BorderLayout());
 				}
-				updateScreenBoxPanel();
+				Object initialValue = getBoundValue();
+				updateReadonlyPanel(initialValue);
 				return objectPanel;
 			}
 		}
 
 		public Object getObject() {
-			return getValue();
+			return getBoundValue();
 		}
 
 		@Override public void propertyChange(PropertyChangeEvent evt) {
@@ -150,17 +168,22 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 		}
 
 		@Override public void setValue(Object newValue) {
-			Object oldValue = super.getValue();
+			Object oldValue = getShownValue();
 			if (!Utility.isEqual(oldValue, newValue)) {
-				super.setValue(newValue);
 				if (editable) {
 					if (choice != null) {
-						choice.setSelection(getObject());
+						choice.setSelection(newValue);
+						updateShownValue(newValue);
+					} else {
+						Debuggable.warn(" choice == null ");
 					}
 				} else {
-					if (objectPanel != null) {
-						updateScreenBoxPanel();
+					if (objectPanel == null) {
+						objectPanel = new JPanel();
+						objectPanel.setLayout(new BorderLayout());
 					}
+					updateReadonlyPanel(newValue);
+					updateShownValue(newValue);
 				}
 			}
 		}
@@ -169,29 +192,78 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 			return true;
 		}
 
-		private void updateScreenBoxPanel() {
+		@Override public Object getValue() {
+			return getShownValue();
+		}
+
+		private void updateReadonlyPanel(Object newValue) {
 			if (objectPanel != null) {
-				Object object = getValue();
-				if (object != null && label != null) {
-					return;
+				Object object = newValue;
+				if (editable) {
+					Debuggable.warn(" aboutToLabelAnEditable(); ");
 				}
 				objectPanel.removeAll();
-				if (object != null) {
-					//if (label == null) {
-					label = new JLabel("<null>");
+				if (object == null) {
+					Class type2 = getPropertyValueControl().getReturnType();
+					if (label == null)
+						label = new JLabel("<null> " + type2);
 					view = null;
 					objectPanel.add(label);
-					//	}
 				} else {
 					// obj is null
 					label = null;
-					view = new SmallObjectView(fromCollection, object, true, true, true);
+					view = new SmallObjectView(null, provalctrl.getNamedObjectCollection(), object, null);
 					objectPanel.add(view);
 				}
 				validator.validate();
 			}
 		}
 
+		public Object getBoundValue() {
+			Object val = getValueSomeType();
+			if (val == null)
+				return null;
+			if (Utility.nonPrimitiveTypeFor(type).isInstance(val))
+				return val;
+			NamedObjectCollection fromCollection = provalctrl.getNamedObjectCollection();
+			BT bval = fromCollection.findBoxByObject(val);
+			val = bval.convertTo(type);
+			return val;
+		}
+
+		public Object getValueSomeType() {
+			Object val1 = null;
+			try {
+				val1 = this.getPropertyValueControl().getBoundValue();
+			} catch (Throwable e) {
+				e.printStackTrace();
+			}
+			if (val1 != null)
+				return val1;
+			Object val2 = getShownValue();
+			if (val1 == null && val2 == null)
+				return null;
+			if (val2 == null) {
+				return val1;
+			}
+			return val2;
+		}
+
+		public Object getShownValue() {
+			return super.getValue();
+		}
+
+		public void updateShownValue(Object value) {
+			super.setValue(value);
+		}
+
+		PropertyValueControl getPropertyValueControl() {
+			return provalctrl;
+		}
+
+		@Override public String toString() {
+			return "Editor: " + provalctrl.toString();
+		}
 	}
 
 	static class TextBasedInputComponent extends JTextField implements PropertyChangeListener, ActionListener, FocusListener, UserInputComponent {
@@ -310,6 +382,24 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 		}
 	}
 
+	public Class getReturnType() {
+		Class pt = type;
+		if (property != null) {
+			pt = property.getPropertyType();
+			if (pt != null)
+				return pt;
+			Method rm = property.getReadMethod();
+			if (rm != null) {
+				pt = rm.getReturnType();
+				if (pt != void.class)
+					return pt;
+			}
+		} else {
+
+		}
+		return pt;
+	}
+
 	private static PropertyDescriptor getPropertyDescriptor(Object object, String propName) throws IntrospectionException {
 		BeanInfo info = Utility.getBeanInfo(object.getClass());
 		PropertyDescriptor[] array = info.getPropertyDescriptors();
@@ -338,16 +428,18 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 
 	Object value = null;
 
+	private Object title;
+
 	public PropertyValueControl() {
-		this((Object) null, true);
+		this((String) null, (Object) null, true);
 	}
 
-	public PropertyValueControl(boolean editable) {
-		this((Object) null, editable);
+	public PropertyValueControl(String title, boolean editable) {
+		this(title, (Object) null, editable);
 	}
 
-	public PropertyValueControl(Class type, boolean editable) {
-		this(Utility.getCurrentContext(), type, editable);
+	public PropertyValueControl(String title, Class type, boolean editable) {
+		this(Utility.getCurrentContext(), title, type, editable);
 	}
 
 	/**
@@ -355,15 +447,19 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 	 * initialized to a default value, for non-primitive this is null and for
 	 * primitives it is 0, false, or whatever.
 	 */
-	public PropertyValueControl(DisplayContext context, Class type, boolean editable) {
-		this.context = context;
+	public PropertyValueControl(DisplayContext context, String title, Class type, boolean editable) {
+		this.title = title;
+		if (context != null) {
+			this.context = context;
+		}
 		this.type = type;
 		this.editable = editable;
 		value = getDefaultValue(type);
 		recreateGUI();
 	}
 
-	public PropertyValueControl(DisplayContext context, Object source, PropertyDescriptor property) {
+	public PropertyValueControl(DisplayContext context, String title, Object source, PropertyDescriptor property) {
+		this.title = title;
 		this.property = property;
 		this.source = source;
 		if (context != null) {
@@ -372,11 +468,12 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 		bind(source, property);
 	}
 
-	public PropertyValueControl(DisplayContext context, Object source, String propertyName) throws IntrospectionException {
-		this(context, source, getPropertyDescriptor(source, propertyName));
+	public PropertyValueControl(DisplayContext context, String title, Object source, String propertyName) throws IntrospectionException {
+		this(context, title, source, getPropertyDescriptor(source, propertyName));
 	}
 
-	public PropertyValueControl(Object value, boolean editable) {
+	public PropertyValueControl(String title, Object value, boolean editable) {
+		this.title = title;
 		if (value != null) {
 			type = value.getClass();
 		}
@@ -385,12 +482,12 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 		recreateGUI();
 	}
 
-	public PropertyValueControl(Object source, PropertyDescriptor property) {
-		this(null, source, property);
+	public PropertyValueControl(String title, Object source, PropertyDescriptor property) {
+		this((DisplayContext) null, title, source, property);
 	}
 
-	public PropertyValueControl(Object source, String propertyName) throws IntrospectionException {
-		this(source, getPropertyDescriptor(source, propertyName));
+	public PropertyValueControl(String title, Object source, String propertyName) throws IntrospectionException {
+		this(title, source, getPropertyDescriptor(source, propertyName));
 	}
 
 	public void bind(Object source, PropertyDescriptor property) {
@@ -410,7 +507,11 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 	public Class getCurrentType() {
 		if (type == null) {
 			if (value == null) {
-				return null;
+				if (property == null) {
+					return null;
+				} else {
+					return property.getPropertyType();
+				}
 			} else {
 				return value.getClass();
 			}
@@ -488,6 +589,8 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 	 */
 	private boolean isTypeMutable() {
 		Class type = getCurrentType();
+		if (type == null)
+			return true;
 		return !(String.class.isAssignableFrom(type) || Number.class.isAssignableFrom(type) || Boolean.class.isAssignableFrom(type) || Color.class.isAssignableFrom(type) || type.isPrimitive());
 	}
 
@@ -524,8 +627,83 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 
 	@Override public String toString() {
 		if (property != null)
-			return getClass().getSimpleName() + " " + property;
+			return getClass().getSimpleName() + " " + Debuggable.toInfoStringF(property);
+		if (this.title != null)
+			return "" + title;
 		return super.toString();
+	}
+
+	@Override public String getName() {
+		if (title != null)
+			return title.toString();
+		return super.getName();
+	}
+
+	public Object getBoundValue() throws Throwable {
+		if (property == null)
+			return value;
+		Method readMethod = property.getReadMethod();
+		return getBoundValue(source, readMethod);
+	}
+
+	public Object getBoundValue(Object obj, Method readMethod) throws Throwable {
+		Object obj0 = obj;
+		Throwable realCause;
+		try {
+			if (readMethod == null) {
+				if (property != null) {
+					String pn = property.getName();
+					if (pn == null)
+						pn = property.getDisplayName();
+					if (pn != null) {
+						try {
+							return Debuggable.getField(obj, obj.getClass(), obj.getClass(), pn);
+						} catch (NoSuchFieldException nsfe) {
+							try {
+								return Debuggable.getField(obj, obj.getClass(), obj.getClass(), "_" + pn);
+							} catch (NoSuchFieldException nsfe1) {
+								try {
+									return Debuggable.getField(obj, obj.getClass(), obj.getClass(), "m_" + pn);
+								} catch (NoSuchFieldException nsfe2) {
+
+								}
+							}
+						}
+					}
+				}
+				return value;
+			}
+			if (readMethod == null) {
+				throw new Exception("readMethod = null for object " + obj + " and property '" + property.getName() + "'!!!");
+			}
+			readMethod.setAccessible(true);
+			boolean isStatic = Modifier.isStatic(readMethod.getModifiers());
+			Class requiredClass = Object.class;
+			if (!isStatic) {
+				requiredClass = readMethod.getDeclaringClass();
+				obj = Utility.recast(obj, requiredClass);
+				if (!requiredClass.isInstance(obj)) {
+					readMethod = obj.getClass().getDeclaredMethod(readMethod.getName());
+				}
+			} else {
+				obj = null;
+			}
+			Object boundValue = readMethod.invoke(obj);
+			if (type == Model.class && boundValue == null) {
+				boundValue = readMethod.invoke(obj);
+			}
+			return boundValue;
+		} catch (InvocationTargetException err) {
+			realCause = err.getCause();
+		} catch (Exception err) {
+			realCause = err;
+			Throwable rc = realCause.getCause();
+			while (rc != null && rc != realCause) {
+				realCause = rc;
+				rc = realCause.getCause();
+			}
+		}
+		throw realCause;
 	}
 
 	private void readBoundValue() {
@@ -533,28 +711,11 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 			Throwable realCause;
 			Object obj = source;
 			try {
-				Method readMethod = property.getReadMethod();
-				if (readMethod == null) {
-					String pn = property.getDisplayName();
-					return;
-				}
-				if (readMethod == null) {
-					throw new Exception("readMethod = null for object " + obj + " and property '" + property.getName() + "'!!!");
-				}
-				readMethod.setAccessible(true);
-				Object boundValue = readMethod.invoke(obj, new Object[0]);
+				Object boundValue = getBoundValue();
 				setObject(boundValue);
 				return;
-
-			} catch (InvocationTargetException err) {
-				realCause = err.getCause();
-			} catch (Exception err) {
+			} catch (Throwable err) {
 				realCause = err;
-				Throwable rc = realCause.getCause();
-				while (rc != null && rc != realCause) {
-					realCause = rc;
-					rc = realCause.getCause();
-				}
 			}
 			try {
 				setObject(null);
@@ -774,5 +935,35 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 				currentEditor.setValue(value);
 			}
 		}
+	}
+
+	NamedObjectCollection fromCollection;
+
+	public PropertyValueControl getPropertyValueControl() {
+		return this;
+	}
+
+	public String[] getPVTags() {
+		java.util.HashSet<String> choices = new java.util.HashSet<String>();
+		fromCollection = getNamedObjectCollection();
+		if (currentEditor != null && !(currentEditor instanceof ObjectReferenceEditor)) {
+			String[] tags = currentEditor.getTags();
+			if (tags != null) {
+				for (String t : tags) {
+					choices.add(t);
+				}
+			}
+		}
+		Iterable objectList = fromCollection.findObjectsByType(type);
+		for (Object o : objectList) {
+			choices.add(fromCollection.getTitleOf(o));
+		}
+		return choices.toArray(new String[choices.size()]);
+	}
+
+	public NamedObjectCollection getNamedObjectCollection() {
+		if (fromCollection != null)
+			return fromCollection;
+		return Utility.getTreeBoxCollection();
 	}
 }

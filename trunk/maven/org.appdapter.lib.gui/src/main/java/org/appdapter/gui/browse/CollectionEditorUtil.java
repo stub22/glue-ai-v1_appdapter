@@ -22,10 +22,10 @@ import java.util.Vector;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JFrame;
-import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JToolBar;
 
+import org.appdapter.api.trigger.BT;
 import org.appdapter.api.trigger.BoxPanelSwitchableView;
 import org.appdapter.api.trigger.DisplayContext;
 import org.appdapter.api.trigger.NamedObjectCollection;
@@ -253,15 +253,15 @@ public class CollectionEditorUtil implements PropertyChangeListener {
 	// ==== Private methods ===================
 
 	private void updateSelectedMenu() {
-		JMenuBar menuBar = Utility.getMenuBar();
-		if (selectedMenu != null) {
+		JMenuBar menuBar = Utility.appMenuBar0;
+		if (menuBar != null && selectedMenu != null) {
 			menuBar.remove(selectedMenu);
 			selectedMenu = null;
 		}
 
 		Object selected = collection.getSelectedObject();
 		if (selected != null) {
-			selectedMenu = new TriggerMenu("With Selected", null, selected);
+			selectedMenu = new TriggerMenu("With Selected", null, collection, (BT) null, selected);
 			menuBar.add(selectedMenu);
 		}
 		nameItemChooserPanel.invalidate();

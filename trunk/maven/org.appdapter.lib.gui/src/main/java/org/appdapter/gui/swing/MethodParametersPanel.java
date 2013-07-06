@@ -1,6 +1,7 @@
 package org.appdapter.gui.swing;
 
 import java.awt.BorderLayout;
+import java.awt.Event;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
@@ -44,9 +45,13 @@ public class MethodParametersPanel extends JJPanel {
 	}
 
 	public MethodParametersPanel(DisplayContext context, Constructor c) {
-		this.context = context;
-		setLayout(new BorderLayout());
-		currentConstructor = (c);
+		this(context);
+		setConstructor(c);
+	}
+
+	public MethodParametersPanel(DisplayContext context, Method m) {
+		this(context);
+		setMethod(m);
 	}
 
 	/**
@@ -70,9 +75,10 @@ public class MethodParametersPanel extends JJPanel {
 			JPanel row = new JPanel();
 			row.setLayout(new BorderLayout());
 			Class type = params[i];
-			String shortName = Utility.getShortClassName(type);
+			int paramNum1 = i + 1;
+			String shortName = Utility.getShortClassName(type) + paramNum1;
 			row.add("West", new JLabel(shortName + ":  "));
-			PropertyValueControl field = new PropertyValueControl(context, type, true);
+			PropertyValueControl field = new PropertyValueControl(context, shortName, type, true);
 			paramViews[i] = field;
 			row.add("Center", field);
 			childPanel.add(row);
@@ -86,6 +92,7 @@ public class MethodParametersPanel extends JJPanel {
 			}
 			childPanel = new JPanel();
 			childPanel.setLayout(new VerticalLayout(VerticalLayout.LEFT, true));
+			currentMethod = method;
 			if (method != null) {
 				Class[] params = method.getParameterTypes();
 				setParameters(params);
@@ -96,7 +103,6 @@ public class MethodParametersPanel extends JJPanel {
 			validate();
 			repaint();
 		}
-		currentMethod = method;
 
 	}
 
@@ -106,6 +112,7 @@ public class MethodParametersPanel extends JJPanel {
 				childPanel.removeAll();
 			childPanel = new JPanel();
 			childPanel.setLayout(new VerticalLayout(VerticalLayout.LEFT, true));
+			currentConstructor = constructor;
 			if (constructor != null) {
 				setParameters(constructor.getParameterTypes());
 			}
@@ -115,8 +122,6 @@ public class MethodParametersPanel extends JJPanel {
 			validate();
 			repaint();
 		}
-		currentConstructor = constructor;
-
 	}
 
 }

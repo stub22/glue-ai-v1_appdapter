@@ -124,7 +124,7 @@ extends ScreenBoxPanel implements ObjectCollectionRemoveListener, DropTargetList
 		Iterator it = collection.iterator();
 		while (it.hasNext()) {
 			final Object value = it.next();
-			SmallObjectView view = new SmallObjectView(context, null, value, true, true, true, collection) {
+			SmallObjectView view = new SmallObjectView(context, null, value, collection) {
 				@Override public void valueChanged(Object oldValue, Object newValue) {
 					replace(collection, oldValue, newValue);
 					super.valueChanged(oldValue, newValue);

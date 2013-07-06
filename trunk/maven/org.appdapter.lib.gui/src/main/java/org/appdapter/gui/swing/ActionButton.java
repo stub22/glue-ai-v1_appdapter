@@ -17,62 +17,62 @@ import javax.swing.JButton;
  * 
  */
 public class ActionButton extends JButton {
-  Action action;
-  PropertyAdapter propertyAdapter = new PropertyAdapter();
-  ActionAdapter actionAdapter = new ActionAdapter();
+	Action action;
+	PropertyAdapter propertyAdapter = new PropertyAdapter();
+	ActionAdapter actionAdapter = new ActionAdapter();
 
-  public ActionButton() {
-    this(null);
-  }
+	public ActionButton() {
+		this(null);
+	}
 
-  public ActionButton(Action action) {
-    addActionListener(actionAdapter);
-    setAction(action);
-  }
+	public ActionButton(Action action) {
+		addActionListener(actionAdapter);
+		setAction(action);
+	}
 
-  public void setAction(Action newAction) {
-    Action oldAction = action;
-    if (newAction != oldAction) {
-      if (oldAction != null) {
-        oldAction.removePropertyChangeListener(propertyAdapter);
-      }
-      if (newAction != null) {
-        newAction.addPropertyChangeListener(propertyAdapter);
-      }
-      action = newAction;
-      updateView();
-    }
-  }
+	public void setAction(Action newAction) {
+		Action oldAction = action;
+		if (newAction != oldAction) {
+			if (oldAction != null) {
+				oldAction.removePropertyChangeListener(propertyAdapter);
+			}
+			if (newAction != null) {
+				newAction.addPropertyChangeListener(propertyAdapter);
+			}
+			action = newAction;
+			updateView();
+		}
+	}
 
-  public Action getAction() {
-    return action;
-  }
+	public Action getAction() {
+		return action;
+	}
 
-  void updateView() {
-    if (action == null) {
-      setIcon(null);
-      setText("");
-      setEnabled(false);
-      setToolTipText("");
-    } else {
-      setIcon((Icon) action.getValue(Action.SMALL_ICON));
-      setText((String) action.getValue(Action.NAME));
-      setEnabled(action.isEnabled());
-      setToolTipText((String) action.getValue(Action.SHORT_DESCRIPTION));
-    }
-  }
+	void updateView() {
+		if (action == null) {
+			setIcon(null);
+			setText("");
+			setEnabled(false);
+			setToolTipText("");
+		} else {
+			setIcon((Icon) action.getValue(Action.SMALL_ICON));
+			setText((String) action.getValue(Action.NAME));
+			setEnabled(action.isEnabled());
+			setToolTipText((String) action.getValue(Action.SHORT_DESCRIPTION));
+		}
+	}
 
-  class PropertyAdapter implements PropertyChangeListener {
-    public void propertyChange(PropertyChangeEvent evt) {
-      if (action != null)
-        updateView();
-    }
-  }
+	class PropertyAdapter implements PropertyChangeListener {
+		public void propertyChange(PropertyChangeEvent evt) {
+			if (action != null)
+				updateView();
+		}
+	}
 
-  class ActionAdapter implements ActionListener {
-    public void actionPerformed(ActionEvent evt) {
-      if (action != null)
-        action.actionPerformed(evt);
-    }
-  }
+	class ActionAdapter implements ActionListener {
+		public void actionPerformed(ActionEvent evt) {
+			if (action != null)
+				action.actionPerformed(evt);
+		}
+	}
 }

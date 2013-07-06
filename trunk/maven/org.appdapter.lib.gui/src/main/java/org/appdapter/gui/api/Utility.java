@@ -39,10 +39,12 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.Action;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
 import javax.swing.JPanel;
 import javax.swing.JSpinner.DateEditor;
+import javax.swing.ToolTipManager;
 import javax.tools.FileObject;
 
 import org.appdapter.api.trigger.AddTabFrames;
@@ -61,7 +63,6 @@ import org.appdapter.core.component.KnownComponent;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.core.name.Ident;
 import org.appdapter.core.store.Repo;
-import org.appdapter.gui.box.ScreenBoxImpl;
 import org.appdapter.gui.box.WrapperValue;
 import org.appdapter.gui.browse.BrowsePanel;
 import org.appdapter.gui.browse.CollectionEditorUtil;
@@ -69,6 +70,8 @@ import org.appdapter.gui.browse.CollectionEditorUtil.FileMenu;
 import org.appdapter.gui.browse.NamedItemChooserPanel;
 import org.appdapter.gui.demo.DemoBrowser;
 import org.appdapter.gui.editors.AbstractCollectionBeanInfo;
+import org.appdapter.gui.editors.ArrayContentsPanel;
+import org.appdapter.gui.editors.ArrayContentsPanel.ArrayContentsPanelTabFramer;
 import org.appdapter.gui.editors.BooleanEditor;
 import org.appdapter.gui.editors.ColorEditor;
 import org.appdapter.gui.editors.IntEditor;
@@ -77,12 +80,15 @@ import org.appdapter.gui.editors.LargeObjectView.BasicObjectCustomizer;
 import org.appdapter.gui.editors.LargeObjectView.ClassCustomizer;
 import org.appdapter.gui.editors.LargeObjectView.CollectionCustomizer;
 import org.appdapter.gui.editors.LargeObjectView.ThrowableCustomizer;
+import org.appdapter.gui.repo.ModelMatrixPanel;
 import org.appdapter.gui.repo.RepoManagerPanel;
 import org.appdapter.gui.swing.ErrorDialog;
-import org.appdapter.gui.swing.ObjectChoice;
+import org.appdapter.gui.swing.ObjectChoiceComboPanel;
 import org.appdapter.gui.util.CollectionSetUtils;
 import org.appdapter.gui.util.PromiscuousClassUtils;
 import org.slf4j.Logger;
+
+import com.hp.hpl.jena.rdf.model.Model;
 
 //import sun.beans.editors.ColorEditor;
 //import sun.beans.editors.IntEditor;
@@ -151,9 +157,13 @@ public class Utility {
 		if (appMenuBar0 == null) {
 			if (appFrame != null) {
 				appMenuBar0 = appFrame.getJMenuBar();
-			} else {
+			}
+			if (appMenuBar0 == null) {
 				appMenuBar0 = new JMenuBar();
 			}
+		}
+		if (appFrame != null && appFrame.getJMenuBar() != appMenuBar0) {
+			appFrame.setJMenuBar(appMenuBar0);
 		}
 		return appMenuBar0;
 	}
@@ -279,11 +289,14 @@ public class Utility {
 		registerTabs(CollectionCustomizer.class, Collection.class);
 		registerTabs(ThrowableCustomizer.class, Throwable.class);
 		registerTabs(BasicObjectCustomizer.class, Throwable.class);
+		registerTabs(ArrayContentsPanelTabFramer.class, Object[].class);
 
 		registerPanels(RepoManagerPanel.class, Repo.class);
-		registerPanels(ObjectChoice.class, Class.class);
+		registerPanels(ArrayContentsPanel.class, Object[].class);
+		registerPanels(ObjectChoiceComboPanel.class, Class.class);
+		registerPanels(ModelMatrixPanel.class, Model.class);
 
-		//registerCustomizer(IndexedCustomizer.class, Object[].class);
+		registerCustomizer(ArrayContentsPanel.class, Object[].class);
 		//registerCustomizer(IndexedCustomizer.class, List.class);
 	}
 
@@ -319,16 +332,78 @@ public class Utility {
 		return invoke(obj0, method);
 	}
 
+	public static Method getDeclaredMethod(Class search, String name, Class... parameterTypes) throws SecurityException {
+		Method m = getDeclaredMethod(search, name, false, parameterTypes);
+		if (m != null)
+			return m;
+		m = getDeclaredMethod(search, name, true, parameterTypes);
+		if (m == null)
+			return null;
+		return m;
+	}
+
+	public static Method getDeclaredMethod(Class search, String name, boolean laxPTs, Class... parameterTypes) throws SecurityException {
+		try {
+			return search.getDeclaredMethod(name, parameterTypes);
+		} catch (NoSuchMethodException e) {
+			if (laxPTs) {
+				int ptlen = parameterTypes.length;
+				for (Method m : search.getDeclaredMethods()) {
+					if (!m.getName().equalsIgnoreCase(name))
+						continue;
+					Class[] mp = m.getParameterTypes();
+					if (mp.length != ptlen)
+						continue;
+					boolean cant = false;
+					for (int i = 0; i < ptlen; i++) {
+						if (Utility.isDisjoint(mp[i], parameterTypes[i])) {
+							cant = true;
+							break;
+						}
+					}
+					if (cant)
+						continue;
+					return m;
+				}
+			}
+			Class nis = search.getSuperclass();
+			if (nis != null)
+				return getDeclaredMethod(nis, name, laxPTs, parameterTypes);
+			return null;
+		}
+	}
+
+	public static boolean isDisjoint(Class to, Class from) {
+		to = nonPrimitiveTypeFor(to);
+		from = nonPrimitiveTypeFor(from);
+		if (to.isAssignableFrom(from))
+			return false;
+		if (from.isAssignableFrom(to))
+			return false;
+		return true;
+	}
+
 	public static Object invoke(Object obj0, Method method, Object... params) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
 		Object obj = obj0;
 		boolean isStatic = Modifier.isStatic(method.getModifiers());
 		Class[] ts = method.getParameterTypes();
 		Class objNeedsToBe = method.getDeclaringClass();
 		int ml = ts.length;
-		if (isStatic)
+		if (isStatic) {
 			obj = null;
-		else {
-			obj = recast(obj, objNeedsToBe);
+		} else {
+			Object obj2 = recast(obj, objNeedsToBe);
+			if (!objNeedsToBe.isInstance(obj2)) {
+				Class searchMethods = obj.getClass();
+				Method method2 = getDeclaredMethod(searchMethods, method.getName(), ts);
+				if (method2 != null) {
+					return invoke(obj, method, params);
+				}
+				throw new IllegalArgumentException("no such method on " + obj0 + " of type " + method);
+
+			} else {
+				obj = obj2;
+			}
 		}
 		int pl = params.length;
 
@@ -349,6 +424,7 @@ public class Utility {
 				method.invoke(obj, (Object[]) p0);
 			}
 		}
+
 		return method.invoke(obj, params);
 	}
 
@@ -356,7 +432,8 @@ public class Utility {
 		return recast(obj, objNeedsToBe, null);
 	}
 
-	public static <T> T recast(Object obj, Class<T> objNeedsToBe, LinkedList<Object> except) {
+	public static <T> T recast(final Object val, Class<T> objNeedsToBe, LinkedList<Object> except) {
+		Object obj = val;
 		if (obj == null)
 			return null;
 		if (obj instanceof Convertable) {
@@ -372,13 +449,62 @@ public class Utility {
 				throw reThrowable(e);
 			}
 		}
-		T result;
-		try {
-			result = (T) obj;
-		} catch (Exception e) {
-			throw reThrowable(e);
+		obj = dref(val);
+		if (obj != val) {
+			Object res = recast(obj, objNeedsToBe, except);
+			if (objNeedsToBe.isInstance(res))
+				return (T) res;
+			res = drefO(obj);
+			if (objNeedsToBe.isInstance(res))
+				return (T) res;
+			obj = res;
 		}
-		return result;
+		if (obj instanceof String) {
+			return (T) fromString((String) obj, objNeedsToBe);
+		}
+		return (T) obj;
+	}
+
+	public static Class nonPrimitiveTypeFor(Class type) {
+		return PromiscuousClassUtils.nonPrimitiveTypeFor(type);
+	}
+
+	static public boolean isToStringType(Class type) {
+		return DisplayType.TOSTRING == getDisplayType(type);
+	}
+
+	public static Object fromString(String title, Class type) throws ClassCastException {
+		if (!isToStringType(type)) {
+			BT box = getTreeBoxCollection().findBoxByName(title);
+			if (box == null) {
+				throw new ClassCastException(type + " findBoxByName " + title);
+			}
+			return box.convertTo(type);
+		}
+		if (type == String.class)
+			return title;
+		type = nonPrimitiveTypeFor(type);
+		ClassCastException cce = null;
+		Class searchType = type;
+		while (searchType != null) {
+			for (Method m : searchType.getDeclaredMethods()) {
+				if (m.getReturnType() == type) {
+					Class[] pt = m.getParameterTypes();
+					if (pt != null && pt.length == 1 && pt[0] == String.class && Modifier.isStatic(m.getModifiers())) {
+						try {
+							m.setAccessible(true);
+							return m.invoke(null, title);
+						} catch (Throwable e) {
+							cce = new ClassCastException(type + " " + m.getName() + " " + title);
+						}
+					}
+				}
+			}
+			searchType = searchType.getSuperclass();
+		}
+		if (cce != null)
+			throw cce;
+		throw new ClassCastException(type + " fromString " + title);
 	}
 
 	public static RuntimeException reThrowable(Throwable e) {
@@ -447,10 +573,11 @@ public class Utility {
 	}
 
 	public static boolean isEqual(Object o1, Object o2) {
-		if (o1 == null)
-			return (o2 == null);
-		else
-			return (o1.equals(o2));
+		if (o1 == o2)
+			return true;
+		if (o1 == null || o2 == null)
+			return false;
+		return (o1.equals(o2));
 	}
 
 	/**
@@ -487,6 +614,9 @@ public class Utility {
 	}
 
 	public static String getShortClassName(Class c) {
+		if (c.isArray()) {
+			return getShortClassName(c.getComponentType()) + "Array";
+		}
 		String name = c.getName();
 		int i = name.lastIndexOf(".");
 		if (i == -1)
@@ -634,7 +764,7 @@ public class Utility {
 		GetSetObject gso = panelsFor.get(expected);
 		if (gso != null)
 			return gso;
-		if (getDisplayType(expected) == DisplayType.TOSTRING) {
+		if (isToStringType(expected)) {
 			return new GetSetObject() {
 
 				@Override public void setObject(Object object) throws InvocationTargetException {
@@ -664,13 +794,12 @@ public class Utility {
 	private static Class makeCustomizerFromEditor(Class objClass) {
 		PropertyEditor pe = findEditor(objClass);
 		if (pe != null) {
-			if (false)
-				return UseEditor.class;
+			return UseEditor.class;
 		}
 		return null;
 	}
 
-	public static boolean usePropertyEditorManager = false;
+	public static boolean usePropertyEditorManager = true;
 
 	/**
 	 * Locate a value editor for a given target type.
@@ -702,6 +831,45 @@ public class Utility {
 			Debuggable.UnhandledException(e);
 			return null;
 		}
+	}
+
+	public static Class findEditorClass(Class targetType) {
+
+		PropertyEditor ped = null;
+		try {
+			if (usePropertyEditorManager) {
+				ped = PropertyEditorManager.findEditor(targetType);
+			}
+		} catch (Throwable e) {
+			// PropertyEditorManager is a wild and untamed thing
+		}
+		Class<? extends PropertyEditor> pe = FunctionalClassRegistry.findImplmentingForMatch(PropertyEditor.class, targetType);
+		if (pe == null || !PropertyEditor.class.isAssignableFrom(pe)) {
+			if (ped != null)
+				return ped.getClass();
+		}
+		return pe;
+	}
+
+	public static Collection<Class> findPanelClasses(Class targetType) {
+		HashSet<Class> panelClass = new HashSet<Class>();
+		PropertyEditor ped = null;
+		try {
+			if (usePropertyEditorManager) {
+				ped = PropertyEditorManager.findEditor(targetType);
+				if (ped != null) {
+					panelClass.add(ped.getClass());
+				}
+			}
+		} catch (Throwable e) {
+			// PropertyEditorManager is a wild and untamed thing
+		}
+		CollectionSetUtils.addIfNew(panelClass, FunctionalClassRegistry.findImplmentingForMatch(PropertyEditor.class, targetType), false);
+		CollectionSetUtils.addIfNew(panelClass, FunctionalClassRegistry.findImplmentingForMatch(Customizer.class, targetType), false);
+		CollectionSetUtils.addIfNew(panelClass, FunctionalClassRegistry.findImplmentingForMatch(Component.class, targetType), false);
+		CollectionSetUtils.addIfNew(panelClass, findCustomizerClass(targetType), false);
+		CollectionSetUtils.addIfNew(panelClass, makeCustomizerFromEditor(targetType), false);
+		return panelClass;
 	}
 
 	public static List getSearchableClassList() {
@@ -745,7 +913,7 @@ public class Utility {
 		return null;
 	}
 
-	static HashMap<Object, JPanel> gpp = new HashMap();
+	public static HashMap<Object, JPanel> gpp = new HashMap();
 
 	public static class AlreadyLooking extends JPanel {
 
@@ -876,13 +1044,77 @@ public class Utility {
 	}
 
 	public static String getDefaultName(Object object) {
+		String title = hasDefaultName(object);
+		if (title == null) {
+			return object.getClass().getCanonicalName() + "@" + identityHashCode(object);
+		}
+		return title;
+	}
+
+	public static String getUniqueName(Object object) {
+		String title = hasDefaultName(object);
+		if (title == null) {
+			BT newBox = Utility.getTreeBoxCollection().findOrCreateBox(object);
+			title = newBox.getUniqueName();
+		}
+		return title;
+	}
+
+	public static boolean isTitled(String title) {
+		return title != null && title != NamedObjectCollection.MISSING_COMPONENT && !title.equals("<null>") && title.length() > 0;
+	}
+
+	public static String getUniqueName(Object object0, Box boxed, NamedObjectCollection noc) {
+
+		Object object = object0;
+
+		if (object == null) {
+			object = dref(boxed, false);
+		}
+
+		object = dref(object, false);
+		String title = hasDefaultName(object);
+		if (title == null) {
+			BT newBox = null;
+			if (boxed instanceof BT) {
+				newBox = (BT) boxed;
+			} else if (object0 instanceof BT) {
+				newBox = (BT) object0;
+			}
+			if (newBox != null) {
+				title = newBox.getUniqueName();
+			} else {
+				if (noc != null) {
+					title = noc.getTitleOf(object);
+				}
+			}
+			if (!isTitled(title)) {
+				title = getUniqueName(object);
+			}
+		}
+		return title;
+	}
+
+	public static String hasDefaultName(Object object) {
 		if (object == null)
 			return "<null>";
 		Class type = object.getClass();
 		if (type == Class.class)
 			return ((Class) object).getName();
-		else
-			return object.getClass().getCanonicalName() + "@" + identityHashCode(object);
+		if (type == String.class)
+			return ((String) object);
+		if (isToStringType(type))
+			return "" + object;
+		if (object instanceof BT) {
+			return ((BT) object).getUniqueName();
+		}
+		if (uiObjects.containsObject(object)) {
+			String title = uiObjects.getTitleOf(object);
+			if (isTitled(title)) {
+				return title;
+			}
+		}
+		return null;
 	}
 
 	static public org.appdapter.api.trigger.DisplayType getDisplayType(Class expected) {
@@ -890,6 +1122,9 @@ public class Utility {
 			return DisplayType.TOSTRING;
 		}
 		if (Number.class.isAssignableFrom(expected)) {
+			return DisplayType.TOSTRING;
+		}
+		if (Enum.class.isAssignableFrom(expected)) {
 			return DisplayType.TOSTRING;
 		}
 		if (expected == String.class || CharSequence.class.isAssignableFrom(expected)) {
@@ -904,46 +1139,55 @@ public class Utility {
 	public static Class getClassNullOk(Object object) {
 		if (object == null)
 			return null;
+		object = dref(object);
 		return object.getClass();
 	}
 
 	public static Object dref(Object value, Object onNull) {
-		return dref(value, onNull, 4);
+		return dref(value, onNull, 4, true);
 	}
 
 	public static Object dref(Object value) {
-		return dref(value, value);
+		return dref(value, true);
 	}
 
-	public static Object dref(Object value, Object onNull, int depth) {
+	public static Object drefO(Object value) {
+		return dref(value, false);
+	}
+
+	public static Object dref(Object value, boolean onlyBTAndPanels) {
+		return dref(value, value, 4, onlyBTAndPanels);
+	}
+
+	public static Object dref(Object value, Object onNull, int depth, boolean onlyBTAndPanels) {
 		if (value == null)
 			return onNull;
-		onNull = value;
 		if (depth < 0) {
 			return value;
 		}
 		Object derefd = null;
 
 		try {
-			if (value instanceof GetObject) {
+			if (value instanceof GetObject && value instanceof JComponent) {
 				derefd = ((GetObject) value).getValue();
 			} else if (value instanceof PropertyEditor) {
 				derefd = ((PropertyEditor) value).getValue();
-			}
-			if (value instanceof BT) {
+			} else if (value instanceof BT) {
 				derefd = ((BT) value).getValue();
-			}
-			if (value instanceof WrapperValue) {
-				derefd = ((WrapperValue) value).reallyGetValue();
-			}
-			if (value instanceof IGetBox) {
+			} else if (value instanceof IGetBox) {
 				derefd = ((IGetBox) value).getBT();
+			} else if (!onlyBTAndPanels) {
+				if (value instanceof GetObject) {
+					derefd = ((GetObject) value).getValue();
+				} else if (value instanceof WrapperValue) {
+					derefd = ((WrapperValue) value).reallyGetValue();
+				}
 			}
 		} catch (Throwable t) {
 
 		}
 		if (derefd != null && derefd != value) {
-			value = dref(derefd, value, --depth);
+			value = dref(derefd, derefd, --depth, onlyBTAndPanels);
 		}
 		if (value == null)
 			return onNull;
@@ -992,6 +1236,48 @@ public class Utility {
 		if (b == null)
 			return dref(userObject) == null;
 		return dref(userObject) == dref(b);
+	}
+
+	public static String spaceCase(String shortClassName) {
+		boolean wasUpper = true;
+		StringBuffer newName = new StringBuffer();
+		for (char c : shortClassName.toCharArray()) {
+			if (Character.isUpperCase(c)) {
+				if (!wasUpper) {
+					newName.append(" ");
+				}
+				wasUpper = true;
+			} else {
+				wasUpper = false;
+			}
+			newName.append(c);
+		}
+		return newName.toString();
+	}
+
+	public static String makeTooltipText(Object gv) {
+		gv = dref(gv);
+		if (gv == null) {
+			gv = "<NULL>";
+		} else {
+			ToolTipManager man = ToolTipManager.sharedInstance();
+			man.setInitialDelay(100);
+			// man.setLightWeightPopupEnabled(!man.isLightWeightPopupEnabled());
+			final String oc;
+			if (gv instanceof Class) {
+				oc = ((Class) gv).getCanonicalName();
+			} else {
+				oc = Debuggable.toInfoStringO(gv);
+			}
+			gv = Utility.getShortClassName(gv.getClass()) + ".this.toString: " + oc;
+		}
+		return "" + gv;
+	}
+
+	static NamedObjectCollection clipboardCollection = new NamedObjectCollectionImpl("Clipboard", null);
+
+	public static NamedObjectCollection getClipboard() {
+		return clipboardCollection;
 	}
 
 }

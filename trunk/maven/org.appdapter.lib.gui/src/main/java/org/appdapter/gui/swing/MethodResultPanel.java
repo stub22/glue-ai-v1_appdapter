@@ -69,7 +69,7 @@ class MethodResultPanel extends JJPanel {
 				if (value != null) {
 					remove(value);
 				}
-				value = new SmallObjectView(context, null, object, true, true, true);
+				value = new SmallObjectView(context, null, object, null);
 
 				add("Center", value);
 				invalidate();

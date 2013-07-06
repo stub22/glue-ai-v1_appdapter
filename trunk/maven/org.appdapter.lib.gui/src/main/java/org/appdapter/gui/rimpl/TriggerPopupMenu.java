@@ -4,8 +4,7 @@ import javax.swing.JPopupMenu;
 
 import org.appdapter.api.trigger.BT;
 import org.appdapter.api.trigger.DisplayContext;
-import org.appdapter.api.trigger.GetObject;
-import org.appdapter.gui.api.Utility;
+import org.appdapter.api.trigger.NamedObjectCollection;
 
 /**
  * A Popup menu for a object. The valid actions are
@@ -14,12 +13,8 @@ import org.appdapter.gui.api.Utility;
 public class TriggerPopupMenu extends JPopupMenu {
 	final TriggerMenuController controller;
 
-	public TriggerPopupMenu(BT box, Object object) {
-		this(Utility.getCurrentContext(), box, object);
-	}
-
-	public TriggerPopupMenu(DisplayContext context, BT box, Object object) {
-		controller = new TriggerMenuController(context, object, box, this);
+	public TriggerPopupMenu(DisplayContext context, NamedObjectCollection noc, BT box, Object object) {
+		controller = new TriggerMenuController(context, noc, object, box, this);
 	}
 
 }

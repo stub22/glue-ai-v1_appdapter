@@ -1,6 +1,7 @@
 package org.appdapter.gui.swing;
 
 import java.awt.BorderLayout;
+import java.awt.Container;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
@@ -19,6 +20,18 @@ public class ClassSelectionField extends JJPanel {
 	JTextField text = new JTextField(20);
 	Class selectedClass = null;
 	PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
+
+	@Override public String getName() {
+		Container p = getParent();
+		if (p != null) {
+			return p.getName();
+		}
+		return super.getName();
+	}
+
+	@Override public Object getValue() throws Throwable {
+		return selectedClass;
+	}
 
 	public ClassSelectionField() {
 		setLayout(new BorderLayout());

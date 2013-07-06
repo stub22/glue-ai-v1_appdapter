@@ -1,10 +1,12 @@
 package org.appdapter.gui.browse;
 
+import java.awt.event.MouseEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
+import javax.swing.ToolTipManager;
 import javax.swing.tree.TreeNode;
 
 import org.appdapter.api.trigger.BT;

@@ -34,7 +34,7 @@ public class ClassConstructorsPanel extends ScreenBoxPanel implements ActionList
 
 	public ClassConstructorsPanel(DisplayContext context, Class cls) {
 		this.context = context;
-		this.objectValue = cls;
+		reloadObjectGUI(cls);
 	}
 
 	public ClassConstructorsPanel(Class cls) throws Exception {
@@ -73,11 +73,11 @@ public class ClassConstructorsPanel extends ScreenBoxPanel implements ActionList
 	/**
 	 * Creates the GUI
 	 */
-	protected void completeSubClassGUI() throws Exception {
+	protected void completeSubClassGUI() {
 		setLayout(new VerticalLayout(VerticalLayout.LEFT, true));
 
 		Class cls = (Class) this.objectValue;
-		Constructor[] array = cls.getConstructors();
+		Constructor[] array = cls.getDeclaredConstructors();
 		for (int i = 0; i < array.length; ++i) {
 			Constructor c = array[i];
 
@@ -107,7 +107,8 @@ public class ClassConstructorsPanel extends ScreenBoxPanel implements ActionList
 
 	@Override protected boolean reloadObjectGUI(Object obj) {
 		this.objectValue = (Class) obj;
-		return false;
+		completeSubClassGUI();
+		return true;
 	}
 
 	@Override protected void initSubclassGUI() throws Throwable {

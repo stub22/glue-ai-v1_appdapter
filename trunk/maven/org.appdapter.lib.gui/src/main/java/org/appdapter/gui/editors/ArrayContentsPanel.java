@@ -23,13 +23,21 @@ import javax.swing.JScrollPane;
 import javax.swing.OverlayLayout;
 import javax.swing.border.Border;
 
+import org.appdapter.api.trigger.BoxPanelSwitchableView;
 import org.appdapter.api.trigger.BrowserPanelGUI;
+import org.appdapter.api.trigger.DisplayContext;
+import org.appdapter.api.trigger.AddTabFrames.SetTabTo;
 import org.appdapter.gui.api.ObjectCollectionRemoveListener;
 import org.appdapter.gui.api.Utility;
+import org.appdapter.gui.editors.LargeObjectView.TabPanelMaker;
 import org.appdapter.gui.impl.JJPanel;
+import org.appdapter.gui.swing.ClassConstructorsPanel;
 import org.appdapter.gui.swing.ErrorDialog;
+import org.appdapter.gui.swing.ErrorPanel;
 import org.appdapter.gui.swing.SmallObjectView;
+import org.appdapter.gui.swing.StaticMethodsPanel;
 import org.appdapter.gui.swing.VerticalLayout;
+import org.h2.table.TableFilter.TableFilterVisitor;
 
 /**
  * A GUI component that shows what an array contains,
@@ -38,6 +46,25 @@ import org.appdapter.gui.swing.VerticalLayout;
  * 
  */
 public class ArrayContentsPanel extends JJPanel implements ObjectCollectionRemoveListener, DropTargetListener, Customizer {
+
+	public static class ArrayContentsPanelTabFramer extends TabPanelMaker {
+		@Override public void setTabs(BoxPanelSwitchableView tabs, DisplayContext context, Object object, Class objClass, SetTabTo cmds) {
+			if (objClass == null)
+				objClass = object.getClass();
+			if (!(objClass.isArray())) {
+				return;
+			}
+			if (cmds != SetTabTo.ADD)
+				return;
+			try {
+				ArrayContentsPanel constructors = new ArrayContentsPanel(object);
+				tabs.insertTab("Array Contents", null, constructors, null, 0);
+			} catch (Exception err) {
+				tabs.insertTab("Array Contents", null, new ErrorPanel("Could not show ArrayContentsPanel", err), null, 0);
+			}
+
+		}
+	}
 
 	Object array;
 	BrowserPanelGUI context;
@@ -58,6 +85,8 @@ public class ArrayContentsPanel extends JJPanel implements ObjectCollectionRemov
 
 	public ArrayContentsPanel(BrowserPanelGUI context, Object array) {
 		this.array = array;
+		if (context == null)
+			context = Utility.getCurrentContext();
 		this.context = context;
 		initGUI();
 	}
@@ -111,7 +140,7 @@ public class ArrayContentsPanel extends JJPanel implements ObjectCollectionRemov
 			for (int i = 0; i < len; i++) {
 				final int index = i;
 				final Object value = Array.get(array, index);
-				SmallObjectView view = new SmallObjectView(context, null, value, true, true, true) {
+				SmallObjectView view = new SmallObjectView(context, null, value, null) {
 					@Override public void valueChanged(Object oldValue, Object newValue) {
 						Array.set(array, index, newValue);
 						super.valueChanged(oldValue, newValue);

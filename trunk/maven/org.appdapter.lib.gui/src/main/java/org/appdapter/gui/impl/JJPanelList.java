@@ -1,5 +1,5 @@
 package org.appdapter.gui.impl;
 
-public class JJPanelList extends JJPanel {
+abstract public class JJPanelList extends JJPanel {
 
 }

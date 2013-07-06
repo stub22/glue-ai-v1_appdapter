@@ -1,6 +1,7 @@
 package org.appdapter.gui.swing;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Image;
@@ -34,7 +35,9 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.OverlayLayout;
+import javax.swing.ToolTipManager;
 
+import org.appdapter.api.trigger.BT;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.DisplayContext;
 import org.appdapter.api.trigger.NamedObjectCollection;
@@ -122,22 +125,18 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 
 	ObjectCollectionRemoveListener objectCollectionRemoveListener;
 	boolean showIcon;
-
 	boolean showLabel;
-
 	boolean showPropButton;
-
-	public SmallObjectView(DisplayContext context, NamedObjectCollection col, Object object, boolean showLabel, boolean showIcon, boolean showPropButton) {
-		this(context, col, object, showLabel, showIcon, showPropButton, null);
-	}
+	boolean showToString;
 
 	/**
 	 * @param parent if a parent is provided, a "remove" button will be added allowing you to remove this object from the given collection
 	 */
-	public SmallObjectView(DisplayContext context, NamedObjectCollection col, Object object, boolean showLabel, boolean showIcon, boolean showPropButton, Collection parent) {
+	public SmallObjectView(DisplayContext context, NamedObjectCollection col, Object object, boolean showLabel, boolean showIcon, boolean showPropButton, boolean showToString, Collection parent) {
 		super(false);
 		objectValue = object;
-
+		if (context == null)
+			context = Utility.getCurrentContext();
 		if (col == null) {
 			col = context.getLocalBoxedChildren();
 		}
@@ -146,6 +145,7 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 		this.showLabel = showLabel;
 		this.showIcon = showIcon;
 		this.showPropButton = showPropButton;
+		this.showToString = showToString;
 		this.parent = parent;
 		initGUI();
 		this.addMouseListener(this);
@@ -155,33 +155,25 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 		dragSource.createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_MOVE, this);
 	}
 
-	public SmallObjectView(NamedObjectCollection col, Object object) {
-		this(col, object, true, true, true);
-	}
-
-	public SmallObjectView(NamedObjectCollection col, Object object, boolean showLabel, boolean showIcon, boolean showPropButton) {
-		this(Utility.getCurrentContext(), col, object, showLabel, showIcon, showPropButton);
+	public SmallObjectView(DisplayContext context, NamedObjectCollection col, Object object, Collection parent) {
+		this(context, col, object, true, true, true, true, parent);
 	}
 
 	@Override public void actionPerformed(ActionEvent evt) {
 		if (evt.getSource() == propButton) {
-			if (context != null) {
-				try {
-					Utility.browserPanel.showScreenBox(getValue());
-				} catch (Throwable err) {
-					Utility.showError(context, "An error occurred while creating an interface for " + getValue(), err);
-				}
-			}
+			actionShowProperties();
 		} else if (evt.getSource() == removeButton) {
-			parent.remove(getValue());
-			if (objectCollectionRemoveListener != null) {
-				objectCollectionRemoveListener.objectRemoved(getValue(), parent);
-			}
+			actionRemove();
+		} else {
+
 		}
+
 	}
 
 	public void actionRemove() {
-		parent.remove(getValue());
+		if (parent != null) {
+			parent.remove(getValue());
+		}
 		if (objectCollectionRemoveListener != null) {
 			objectCollectionRemoveListener.objectRemoved(getValue(), parent);
 		}
@@ -308,11 +300,11 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 				//add(iconView);
 			}
 			if (showLabel) {
-				if (context == null) {
-					label = new JLabel(object.toString());
-				} else {
-					label = new JLabel(maybeCoupled.getTitleOf(object));
+				String title = Utility.getUniqueName(object, null, maybeCoupled);
+				if ((title == null || title.equals("<null>")) && object != null && !(object instanceof String)) {
+					Debuggable.notImplemented("title for", object);
 				}
+				label = new JLabel(title);
 				panel.add(label);
 			}
 			if (showPropButton && !object.getClass().isPrimitive()) {
@@ -324,6 +316,9 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 				removeButton = new RemoveButton();
 				panel.add(removeButton);
 				removeButton.addActionListener(this);
+			}
+			if (showToString) {
+				panel.add(new JLabel(Utility.makeTooltipText(object)));
 			}
 		} else {
 			panel.add(new JLabel("null"));
@@ -350,11 +345,14 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 	}
 
 	@Override public void mouseEntered(MouseEvent e) {
-		//label.setForeground(Color.blue);
+		Object gv = getValue();
+		gv = Utility.makeTooltipText(gv);
+		setToolTipText("" + gv);
+		label.setForeground(selectedColor);
 	}
 
 	@Override public void mouseExited(MouseEvent e) {
-		//label.setForeground(Color.black);
+		label.setForeground(normalColor);
 	}
 
 	@Override public void mousePressed(MouseEvent e) {
@@ -369,33 +367,28 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 			showMenu(e.getX() + 5, e.getY() + 5);
 		}
 		//setFont(new Font("Serif", Font.PLAIN, 8));
-		setToolTipText("Removes this object from its parent collection");
+		//setToolTipText("Removes this object from its parent collection");
 	}
 
 	//=================================================================
 
 	@Override public void objectValueChanged(Object oldBean, Object newBean) {
-		removeAll();
-		objectValue = newBean;
-		initGUI();
+		reallySetValue(newBean);
 	}
 
 	@Override public void propertyChange(PropertyChangeEvent evt) {
 		if (label != null) {
-			if (context == null) {
-				label.setText(getValue().toString());
-			} else {
-				label.setText(maybeCoupled.getTitleOf(getValue()));
-			}
+			label.setText(Utility.getUniqueName(getValue(), null, maybeCoupled));
 		}
 		checkColor();
 	}
 
-	@Override protected void reallySetBean(Object bean) {
+	@Override protected void reallySetValue(Object bean) {
+		if (objectValue == bean)
+			return;
+		removeAll();
 		objectValue = bean;
-
-		Debuggable.notImplemented();
-
+		initGUI();
 	}
 
 	public void setRemoveListener(ObjectCollectionRemoveListener l) {
@@ -407,15 +400,14 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 		if (object == null) {
 			object = this;
 		}
-		if (!object.getClass().isPrimitive()) {
-			TriggerPopupMenu menu = new TriggerPopupMenu(context, null, object);
+		if (true || !object.getClass().isPrimitive()) {
+			TriggerPopupMenu menu = new TriggerPopupMenu(context, maybeCoupled, null, object);
 			frontGlass.add(menu);
 			menu.show(frontGlass, x, y);
 		}
 	}
 
 	public void valueChanged(Object oldObject, Object newObject) {
-		removeAll();
-		initGUI();
+		reallySetValue(newObject);
 	}
 }

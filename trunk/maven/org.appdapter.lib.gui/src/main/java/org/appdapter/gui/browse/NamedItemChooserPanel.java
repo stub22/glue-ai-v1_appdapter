@@ -10,6 +10,7 @@ import javax.swing.border.TitledBorder;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.DisplayContext;
+import org.appdapter.api.trigger.NamedObjectCollection;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.GetSetObject;
 import org.appdapter.gui.api.FocusOnBox;
@@ -21,14 +22,16 @@ public class NamedItemChooserPanel extends JJPanel implements GetSetObject, Focu
 
 	//JLayeredPane desk;
 	//JSplitPane split;
-	LargeObjectChooser namedObjectListPanel;
 	ClassChooserPanel classChooserPanel;
+	LargeObjectChooser namedObjectListPanel;
+	NamedObjectCollection namedObjects;
 	DisplayContext context;
 
 	public NamedItemChooserPanel(DisplayContext context0) {
 		super(true);
 		Utility.namedItemChooserPanel = this;
 		this.context = context0;
+		namedObjects = context0.getLocalBoxedChildren();
 		PromiscuousClassUtils.ensureInstalled();
 		Utility.registerEditors();
 		Utility.setBeanInfoSearchPath();
@@ -39,8 +42,10 @@ public class NamedItemChooserPanel extends JJPanel implements GetSetObject, Focu
 		removeAll();
 
 		adjustSize();
-		namedObjectListPanel = new LargeObjectChooser(context.getLocalBoxedChildren());
+		namedObjects = context.getLocalBoxedChildren();
+		namedObjectListPanel = new LargeObjectChooser(null, namedObjects);
 		classChooserPanel = new ClassChooserPanel(context);
+		namedObjects.addListener(classChooserPanel);
 		setLayout(new BorderLayout());
 		namedObjectListPanel.setBorder(new TitledBorder("Object browser"));
 		add("North", classChooserPanel);
@@ -55,8 +60,6 @@ public class NamedItemChooserPanel extends JJPanel implements GetSetObject, Focu
 	}
 
 	@Override public void focusOnBox(Box b) {
-		Debuggable.notImplemented();
-		Debuggable.notImplemented();
 
 	}
 
