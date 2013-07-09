@@ -11,14 +11,14 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.border.EtchedBorder;
 
-import org.appdapter.api.trigger.DisplayContext;
-import org.appdapter.core.log.Debuggable;
-import org.appdapter.gui.api.Utility;
+import org.appdapter.api.trigger.Box;
+import org.appdapter.gui.api.DisplayContext;
+import org.appdapter.gui.browse.Utility;
 
 /**
  * A GUI component that shows all the constructors provided by a given class
  */
-public class ClassConstructorsPanel extends ScreenBoxPanel implements ActionListener {
+public class ClassConstructorsPanel<BoxType extends Box> extends ScreenBoxPanel<BoxType> implements ActionListener {
 	//==== Instance variables ==========================
 
 	//Class cls;

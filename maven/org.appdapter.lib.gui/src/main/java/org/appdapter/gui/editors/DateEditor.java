@@ -9,7 +9,7 @@ import java.util.Date;
 
 import javax.swing.JLabel;
 
-import org.appdapter.gui.api.Utility;
+import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.swing.DateField;
 
 public class DateEditor extends PropertyEditorSupport implements PropertyChangeListener {

@@ -1,12 +1,10 @@
 package org.appdapter.gui.swing;
 
-import org.appdapter.api.trigger.BT;
 import org.appdapter.api.trigger.Box;
-import org.appdapter.api.trigger.GetObject;
-import org.appdapter.gui.api.GetSetObject;
+import org.appdapter.gui.api.BT;
 import org.appdapter.gui.api.FocusOnBox;
-import org.appdapter.gui.api.Utility;
-import org.slf4j.LoggerFactory;
+import org.appdapter.gui.api.GetSetObject;
+import org.appdapter.gui.browse.Utility;
 
 /**
  * A Tabbed GUI component used to render 
@@ -108,7 +106,8 @@ abstract public class ScreenBoxPanel<BoxType extends Box> extends ObjectView<Box
 	protected Class objClass;
 	protected GetSetObject box;
 
-	@Override public void focusOnBox(Box b) {
+	@Override
+	public void focusOnBox(Box b) {
 		synchronized (valueLock) {
 			if (b instanceof GetSetObject)
 				box = (GetSetObject) b;
@@ -118,7 +117,8 @@ abstract public class ScreenBoxPanel<BoxType extends Box> extends ObjectView<Box
 		}
 	}
 
-	@Override public Object getValue() {
+	@Override
+	public Object getValue() {
 		synchronized (valueLock) {
 			Object val = null;
 			if (box != null) {
@@ -139,7 +139,8 @@ abstract public class ScreenBoxPanel<BoxType extends Box> extends ObjectView<Box
 	 * the new pojObject instead.
 	 */
 
-	@Override public void objectValueChanged(Object oval, Object bean) {
+	@Override
+	public void objectValueChanged(Object oval, Object bean) {
 		synchronized (valueLock) {
 			if (oval != null) {
 				if (objClass == null)

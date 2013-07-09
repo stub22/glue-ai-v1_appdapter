@@ -9,7 +9,6 @@ import java.util.List;
 
 import javax.swing.AbstractListModel;
 
-import org.appdapter.gui.impl.JJList;
 
 /**
  * A GUI component that shows all the static methods for a given class,

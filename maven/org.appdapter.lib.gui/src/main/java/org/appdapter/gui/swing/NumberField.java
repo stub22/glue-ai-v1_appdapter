@@ -14,8 +14,7 @@ import java.beans.VetoableChangeSupport;
 
 import javax.swing.JTextField;
 
-import org.appdapter.gui.api.Utility;
-import org.appdapter.gui.impl.JVPanel;
+import org.appdapter.gui.browse.Utility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

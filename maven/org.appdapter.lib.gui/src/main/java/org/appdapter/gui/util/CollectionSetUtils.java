@@ -1,11 +1,13 @@
 package org.appdapter.gui.util;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+
+import org.appdapter.gui.api.Ontologized.AskIfEqual;
+import org.appdapter.gui.api.Ontologized.DontAdd;
+import org.appdapter.gui.api.Ontologized.HRKRefinement;
 
 public abstract class CollectionSetUtils {
 
@@ -18,7 +20,7 @@ public abstract class CollectionSetUtils {
 	}
 
 	public static <T> boolean addToList(Collection<T> list, T element) {
-		if (element instanceof HRKRefinement.DontAdd) {
+		if (element instanceof DontAdd) {
 			return false;
 		}
 		if (element instanceof HRKRefinement) {
@@ -41,8 +43,8 @@ public abstract class CollectionSetUtils {
 	public static <T> boolean addIfNew(Collection<T> list, T element, boolean nullOK) {
 		if (!nullOK && element == null)
 			return false;
-		if (element instanceof HRKRefinement.AskIfEqual) {
-			HRKRefinement.AskIfEqual aie = (HRKRefinement.AskIfEqual) element;
+		if (element instanceof AskIfEqual) {
+			AskIfEqual aie = (AskIfEqual) element;
 			for (Object e : list) {
 				if (aie.same(e))
 					return false;

@@ -21,7 +21,6 @@
  */
 
 package org.appdapter.gui.repo;
-
 import org.appdapter.api.trigger.Box;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.swing.ScreenBoxPanel;

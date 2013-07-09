@@ -26,15 +26,14 @@ import javax.swing.tree.TreeNode;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContextImpl;
-import org.appdapter.api.trigger.BoxPanelSwitchableView;
-import org.appdapter.api.trigger.DisplayContext;
-import org.appdapter.api.trigger.DisplayContextProvider;
 import org.appdapter.api.trigger.MutableBox;
-import org.appdapter.api.trigger.ScreenBox;
-import org.appdapter.api.trigger.ScreenBoxTreeNode;
 import org.appdapter.core.log.Debuggable;
-import org.appdapter.gui.api.Utility;
-import org.appdapter.gui.browse.ScreenBoxTreeNodeImpl;
+import org.appdapter.gui.api.BoxPanelSwitchableView;
+import org.appdapter.gui.api.DisplayContext;
+import org.appdapter.gui.api.DisplayContextProvider;
+import org.appdapter.gui.api.ScreenBox;
+import org.appdapter.gui.api.ScreenBoxTreeNode;
+import org.appdapter.gui.browse.Utility;
 
 /**
  * @author Stu B. <www.texpedient.com>

@@ -13,12 +13,11 @@ import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
 
-import org.appdapter.api.trigger.BT;
-import org.appdapter.api.trigger.NamedObjectCollection;
-import org.appdapter.api.trigger.POJOCollectionListener;
-import org.appdapter.gui.api.Utility;
-import org.appdapter.gui.impl.JJPanel;
-import org.appdapter.gui.rimpl.TriggerPopupMenu;
+import org.appdapter.gui.api.BT;
+import org.appdapter.gui.api.NamedObjectCollection;
+import org.appdapter.gui.api.POJOCollectionListener;
+import org.appdapter.gui.browse.Utility;
+import org.appdapter.gui.trigger.TriggerPopupMenu;
 
 /**
  * A GUI widget that lets you choose among a set of objects

@@ -11,11 +11,13 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 
+import org.appdapter.gui.api.Ontologized.HRKRefinement;
+
 /**
  * A class loader to allow for loading of other jars that are added as a URL.
  * 
  */
-public final class IsolatedClassLoader extends IsolatingClassLoaderBase implements HRKRefinement {
+public final class IsolatedClassLoader extends FromManyClassLoader implements HRKRefinement {
 	/** Dynamically added URLs. */
 	private final Collection<URL> urls;
 
@@ -36,8 +38,8 @@ public final class IsolatedClassLoader extends IsolatingClassLoaderBase implemen
 	 * @param parent
 	 *            the parent class loader.
 	 */
-	public IsolatedClassLoader(final ClassLoader parent) {
-		super(new URL[0], parent);
+	public IsolatedClassLoader(final ClassLoader parent, boolean spyOnly, boolean sharedFirst, boolean fallBackPromiscuous, List<ClassLoader> fileCls) {
+		super(fileCls, parent);
 		urls = new java.util.ArrayList<URL>();
 		addClassloader(parent);
 		addClassloader(this);
@@ -83,14 +85,27 @@ public final class IsolatedClassLoader extends IsolatingClassLoaderBase implemen
 		ClassNotFoundException orig = null;
 		Class c = null;
 		try {
+			c = super.findLoadedClassLocalMethodology(name);
+		} catch (ClassNotFoundException e) {
+			orig = e;
+		} catch (Throwable e) {
+		}
+		if (c == null) {
+		try {
 			c = rememberClass(name, loadClassUseSystem(name, false));
 		} catch (ClassNotFoundException e) {
 			orig = e;
+			} catch (Throwable e) {
 		}
+		}
+		if (c == null) {
 		try {
 			c = rememberClass(name, loadClassUseSystem(name, true));
 		} catch (ClassNotFoundException e) {
+				if (orig != null)
 			throw orig;
+			} catch (Throwable e) {
+			}
 		}
 		if (c != null) {
 			resolveClass(c);
@@ -103,7 +118,7 @@ public final class IsolatedClassLoader extends IsolatingClassLoaderBase implemen
 		if (loadedClass != null)
 			return loadedClass;
 		if (!useSystem) {
-			if (name.startsWith("java.") || name.startsWith("scala."))
+			if (name.startsWith("java.")/* || name.startsWith("scala.")*/)
 				useSystem = true;
 		}
 
@@ -117,6 +132,8 @@ public final class IsolatedClassLoader extends IsolatingClassLoaderBase implemen
 			// Swallow exception
 			// does not exist locally
 		}
+		if (loadedClass != null)
+			return loadedClass;
 		try {
 			if (useSystem) {
 				final ClassLoader systemLoader = ClassLoader.getSystemClassLoader();

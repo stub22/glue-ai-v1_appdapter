@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.appdapter.core.log.Debuggable;
+import org.appdapter.gui.api.Ontologized;
+import org.appdapter.gui.api.Ontologized.HRKRefinement;
 
 abstract public class IsolatingClassLoaderBase extends URLClassLoader implements HRKRefinement, Ontologized.HRKAdded {
 
@@ -83,7 +85,8 @@ abstract public class IsolatingClassLoaderBase extends URLClassLoader implements
 	 * }
 	 * </code>
 	 */
-	@Override public abstract void addURL(URL url);
+	@Override
+	public abstract void addURL(URL url);
 
 	public final void addURL_super(URL url) {
 		super.addURL(url);
@@ -124,11 +127,13 @@ abstract public class IsolatingClassLoaderBase extends URLClassLoader implements
 	/**
 	 * {@inheritDoc}
 	 */
-	final @Override public Class<?> loadClass(final String name) throws ClassNotFoundException {
+	final @Override
+	public Class<?> loadClass(final String name) throws ClassNotFoundException {
 		return loadClass(name, false);
 	}
 
-	final @Override public Class loadClass(String name, boolean resolve) throws ClassNotFoundException {
+	final @Override
+	public Class loadClass(String name, boolean resolve) throws ClassNotFoundException {
 		// First, check if the class has already been loaded
 		Class c = findLoadedClass(name);
 		ClassLoader parent = getParent();
@@ -136,18 +141,20 @@ abstract public class IsolatingClassLoaderBase extends URLClassLoader implements
 			try {
 				c = findLoadedClassLocalMethodology(name);
 			} catch (Throwable e) {
-				Debuggable.printStackTrace(e);
+				//Debuggable.printStackTrace(e);
 			}
 		}
 		if (c == null) {
 			try {
 				if (parent != null) {
 					c = PromiscuousClassUtils.callProtectedMethodNullOnUncheck(parent, "loadClass", name, false);
+					if (c != null) {
+					}
 				} else {
 					c = findBootstrapClassOrNull(name);
 				}
 			} catch (Throwable e) {
-				Debuggable.printStackTrace(e);
+				//Debuggable.printStackTrace(e);
 				// ClassNotFoundException thrown if class not found
 				// from the non-null parent class loader
 			}
@@ -155,9 +162,9 @@ abstract public class IsolatingClassLoaderBase extends URLClassLoader implements
 		}
 		if (c == null) {
 			//try {
-				c = findClass(name);
+			c = findClass(name);
 			//} catch (Throwable e) {
-				//Debuggable.printStackTrace(e);
+			//Debuggable.printStackTrace(e);
 			//}
 		}
 		if (resolve) {
@@ -183,7 +190,8 @@ abstract public class IsolatingClassLoaderBase extends URLClassLoader implements
 		}
 	}
 
-	@Override public String toString() {
+	@Override
+	public String toString() {
 		ArrayList<Object> strings = new ArrayList<Object>();
 		this.addPathStringsForDebug(strings, true);
 		final StringBuilder str = new StringBuilder();

@@ -23,21 +23,17 @@ import javax.swing.JScrollPane;
 import javax.swing.OverlayLayout;
 import javax.swing.border.Border;
 
-import org.appdapter.api.trigger.BoxPanelSwitchableView;
-import org.appdapter.api.trigger.BrowserPanelGUI;
-import org.appdapter.api.trigger.DisplayContext;
-import org.appdapter.api.trigger.AddTabFrames.SetTabTo;
+import org.appdapter.gui.api.BoxPanelSwitchableView;
+import org.appdapter.gui.api.BrowserPanelGUI;
+import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.ObjectCollectionRemoveListener;
-import org.appdapter.gui.api.Utility;
+import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.editors.LargeObjectView.TabPanelMaker;
-import org.appdapter.gui.impl.JJPanel;
-import org.appdapter.gui.swing.ClassConstructorsPanel;
 import org.appdapter.gui.swing.ErrorDialog;
 import org.appdapter.gui.swing.ErrorPanel;
+import org.appdapter.gui.swing.JJPanel;
 import org.appdapter.gui.swing.SmallObjectView;
-import org.appdapter.gui.swing.StaticMethodsPanel;
 import org.appdapter.gui.swing.VerticalLayout;
-import org.h2.table.TableFilter.TableFilterVisitor;
 
 /**
  * A GUI component that shows what an array contains,

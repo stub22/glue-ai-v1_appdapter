@@ -14,9 +14,8 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import org.appdapter.api.trigger.DisplayContext;
-import org.appdapter.gui.api.Utility;
-import org.appdapter.gui.impl.JJPanel;
+import org.appdapter.gui.api.DisplayContext;
+import org.appdapter.gui.browse.Utility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
