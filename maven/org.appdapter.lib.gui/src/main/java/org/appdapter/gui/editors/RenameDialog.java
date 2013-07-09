@@ -17,10 +17,10 @@ import javax.swing.WindowConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import org.appdapter.api.trigger.BT;
-import org.appdapter.api.trigger.BrowserPanelGUI;
-import org.appdapter.gui.api.Utility;
-import org.appdapter.gui.impl.Icons;
+import org.appdapter.gui.api.BT;
+import org.appdapter.gui.api.BrowserPanelGUI;
+import org.appdapter.gui.browse.Utility;
+import org.appdapter.gui.repo.Icons;
 
 public class RenameDialog extends JFrame {
 	public JTextField nameField = new JTextField(10);

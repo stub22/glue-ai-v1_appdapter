@@ -4,15 +4,11 @@ import javax.swing.JFrame;
 import javax.swing.tree.TreeModel;
 
 import org.appdapter.api.trigger.BoxContext;
-import org.appdapter.api.trigger.BrowserPanelGUI;
-import org.appdapter.api.trigger.DisplayContext;
-import org.appdapter.api.trigger.DisplayContextProvider;
-import org.appdapter.api.trigger.BoxPanelSwitchableView;
 import org.appdapter.api.trigger.MutableBox;
-import org.appdapter.api.trigger.ScreenBoxTreeNode;
 import org.appdapter.api.trigger.UserResult;
-import org.appdapter.core.log.Debuggable;
-import org.appdapter.demo.DemoBrowserCtrl;
+import org.appdapter.gui.api.DisplayContext;
+import org.appdapter.gui.api.DisplayContextProvider;
+import org.appdapter.gui.api.ScreenBoxTreeNode;
 
 public class DemoNavigatorCtrl extends BaseDemoNavigatorCtrl implements DisplayContext, org.appdapter.demo.DemoBrowserCtrl {
 

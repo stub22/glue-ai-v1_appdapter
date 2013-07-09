@@ -24,12 +24,13 @@ import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.appdapter.api.trigger.DisplayContext;
-import org.appdapter.api.trigger.BoxPanelSwitchableView;
+import org.appdapter.api.trigger.Box;
 import org.appdapter.core.log.Debuggable;
+import org.appdapter.gui.api.BoxPanelSwitchableView;
 import org.appdapter.gui.api.Chooser;
+import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.ObjectCollectionRemoveListener;
-import org.appdapter.gui.api.Utility;
+import org.appdapter.gui.browse.Utility;
 
 /**
  * A GUI component that shows what a Collection contains,
@@ -37,16 +38,17 @@ import org.appdapter.gui.api.Utility;
  *
  * 
  */
-public class CollectionContentsPanel
+public class CollectionContentsPanel<BoxType extends Box>
 
-extends ScreenBoxPanel implements ObjectCollectionRemoveListener, DropTargetListener, Chooser<Object>
+extends ScreenBoxPanel<BoxType> implements ObjectCollectionRemoveListener, DropTargetListener, Chooser<Object>
 
 , ChangeListener {
 
 	BoxPanelSwitchableView parentTabs;
 	boolean wasSelected = false;
 
-	@Override public void stateChanged(ChangeEvent evt) {
+	@Override
+	public void stateChanged(ChangeEvent evt) {
 		boolean isSelected = parentTabs.getSelectedIndex() == parentTabs.indexOfComponent(this);
 		if (wasSelected != isSelected) {
 			if (isSelected) {
@@ -79,7 +81,8 @@ extends ScreenBoxPanel implements ObjectCollectionRemoveListener, DropTargetList
 		this(Utility.getCurrentContext(), collection, tabs);
 	}
 
-	@Override protected void initSubclassGUI() throws Throwable {
+	@Override
+	protected void initSubclassGUI() throws Throwable {
 		panel = new JPanel();
 		panel.setLayout(new VerticalLayout());
 
@@ -94,7 +97,8 @@ extends ScreenBoxPanel implements ObjectCollectionRemoveListener, DropTargetList
 		buttonPanel.add(reloadButton);
 		buttonPanel.add(new JLabel("To add objects just drag them into the panel below."));
 		reloadButton.addActionListener(new ActionListener() {
-			@Override public void actionPerformed(ActionEvent event) {
+			@Override
+			public void actionPerformed(ActionEvent event) {
 				reloadContents();
 			}
 		});
@@ -114,7 +118,8 @@ extends ScreenBoxPanel implements ObjectCollectionRemoveListener, DropTargetList
 		reloadContents();
 	}
 
-	@Override public void objectRemoved(Object object, Collection parent) {
+	@Override
+	public void objectRemoved(Object object, Collection parent) {
 		reloadContents();
 	}
 
@@ -125,7 +130,8 @@ extends ScreenBoxPanel implements ObjectCollectionRemoveListener, DropTargetList
 		while (it.hasNext()) {
 			final Object value = it.next();
 			SmallObjectView view = new SmallObjectView(context, null, value, collection) {
-				@Override public void valueChanged(Object oldValue, Object newValue) {
+				@Override
+				public void valueChanged(Object oldValue, Object newValue) {
 					replace(collection, oldValue, newValue);
 					super.valueChanged(oldValue, newValue);
 				}
@@ -153,17 +159,21 @@ extends ScreenBoxPanel implements ObjectCollectionRemoveListener, DropTargetList
 
 	//======= Drag/Drop methods ====================================0
 
-	@Override public void dragEnter(DropTargetDragEvent event) {
+	@Override
+	public void dragEnter(DropTargetDragEvent event) {
 		event.acceptDrag(DnDConstants.ACTION_MOVE);
 	}
 
-	@Override public void dragExit(DropTargetEvent dtde) {
+	@Override
+	public void dragExit(DropTargetEvent dtde) {
 	}
 
-	@Override public void dragOver(DropTargetDragEvent dtde) {
+	@Override
+	public void dragOver(DropTargetDragEvent dtde) {
 	}
 
-	@Override public void drop(DropTargetDropEvent event) {
+	@Override
+	public void drop(DropTargetDropEvent event) {
 		Transferable t = event.getTransferable();
 		try {
 			Object o = t.getTransferData(new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType));
@@ -175,10 +185,12 @@ extends ScreenBoxPanel implements ObjectCollectionRemoveListener, DropTargetList
 		}
 	}
 
-	@Override public void dropActionChanged(DropTargetDragEvent dtde) {
+	@Override
+	public void dropActionChanged(DropTargetDragEvent dtde) {
 	}
 
-	@Override protected boolean reloadObjectGUI(Object obj) throws Throwable {
+	@Override
+	protected boolean reloadObjectGUI(Object obj) throws Throwable {
 		Debuggable.notImplemented();
 		return false;
 	}

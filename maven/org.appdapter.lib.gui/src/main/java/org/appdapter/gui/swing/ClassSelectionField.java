@@ -9,8 +9,7 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import org.appdapter.gui.api.Utility;
-import org.appdapter.gui.impl.JJPanel;
+import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.util.PromiscuousClassUtils;
 
 /**

@@ -8,8 +8,7 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 
-import org.appdapter.gui.api.Utility;
-import org.appdapter.gui.impl.JJPanel;
+import org.appdapter.gui.browse.Utility;
 
 public class ErrorDialog extends JPanel {
 

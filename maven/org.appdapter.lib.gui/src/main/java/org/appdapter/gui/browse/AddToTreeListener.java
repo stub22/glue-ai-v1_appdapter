@@ -2,20 +2,17 @@ package org.appdapter.gui.browse;
 
 import java.beans.PropertyVetoException;
 import java.util.Iterator;
-import java.util.List;
 import java.util.RandomAccess;
 
 import javax.swing.JTree;
-import javax.swing.tree.TreeModel;
 
-import org.appdapter.api.trigger.BT;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContext;
 import org.appdapter.api.trigger.MutableBox;
-import org.appdapter.api.trigger.NamedObjectCollection;
-import org.appdapter.api.trigger.POJOCollectionListener;
 import org.appdapter.core.log.Debuggable;
-import org.appdapter.gui.api.Utility;
+import org.appdapter.gui.api.BT;
+import org.appdapter.gui.api.NamedObjectCollection;
+import org.appdapter.gui.api.POJOCollectionListener;
 
 public class AddToTreeListener implements POJOCollectionListener {
 

@@ -1,16 +1,14 @@
 package org.appdapter.gui.swing;
 
 import java.awt.BorderLayout;
-import java.awt.Event;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import org.appdapter.api.trigger.DisplayContext;
-import org.appdapter.gui.api.Utility;
-import org.appdapter.gui.impl.JJPanel;
+import org.appdapter.gui.api.DisplayContext;
+import org.appdapter.gui.browse.Utility;
 
 /**
  * A GUI component showing the parameters of a method.

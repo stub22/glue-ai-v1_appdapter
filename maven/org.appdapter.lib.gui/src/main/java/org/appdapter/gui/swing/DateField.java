@@ -22,8 +22,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JTextField;
 
-import org.appdapter.gui.api.Utility;
-import org.appdapter.gui.impl.JVPanel;
+import org.appdapter.gui.browse.Utility;
 
 /**
 * A textfield for handling dates.  Displays date in short format according to

@@ -33,25 +33,25 @@ import org.appdapter.api.trigger.AnyOper.UIHidden;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContext;
 import org.appdapter.api.trigger.BoxImpl;
-import org.appdapter.api.trigger.Convertable;
-import org.appdapter.api.trigger.DisplayContext;
-import org.appdapter.api.trigger.DisplayContextProvider;
-import org.appdapter.api.trigger.GetDisplayContext;
 import org.appdapter.api.trigger.MutableBox;
-import org.appdapter.api.trigger.ScreenBox;
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.api.trigger.UserResult;
 import org.appdapter.core.component.MutableKnownComponent;
 import org.appdapter.core.log.Debuggable;
-import org.appdapter.gui.api.ComponentHost;
+import org.appdapter.gui.api.Convertable;
+import org.appdapter.gui.api.DisplayContext;
+import org.appdapter.gui.api.DisplayContextProvider;
+import org.appdapter.gui.api.GetDisplayContext;
 import org.appdapter.gui.api.GetSetObject;
-import org.appdapter.gui.api.UseEditor;
-import org.appdapter.gui.api.Utility;
+import org.appdapter.gui.api.ScreenBox;
+import org.appdapter.gui.api.WrapperValue;
+import org.appdapter.gui.browse.Utility;
+import org.appdapter.gui.editors.UseEditor;
 import org.appdapter.gui.repo.DatabaseManagerPanel;
 import org.appdapter.gui.repo.ModelMatrixPanel;
 import org.appdapter.gui.repo.RepoManagerPanel;
-import org.appdapter.gui.rimpl.TriggerForInstance;
-import org.appdapter.gui.util.CollectionSetUtils;
+import org.appdapter.gui.swing.ComponentHost;
+import org.appdapter.gui.trigger.TriggerForInstance;
 import org.appdapter.gui.util.PromiscuousClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -147,7 +147,8 @@ implements ScreenBox<TrigType>, GetSetObject, UserResult, Convertable, DisplayCo
 	 * @param kind
 	 * @return 
 	 */
-	@Override public JPanel findOrCreateBoxPanel(Object kind) {
+	@Override
+	public JPanel findOrCreateBoxPanel(Object kind) {
 		JPanel bp = findExistingBoxPanel(kind);
 		if (bp == null) {
 			bp = makeBoxPanelCustomized(kind);
@@ -167,7 +168,8 @@ implements ScreenBox<TrigType>, GetSetObject, UserResult, Convertable, DisplayCo
 		return myPanelMap.get(toKey(kind));
 	}
 
-	@Override public DisplayContext getDisplayContext() {
+	@Override
+	public DisplayContext getDisplayContext() {
 		if (myDCP != null) {
 			DisplayContext dc = myDCP.findDisplayContext(this);
 			if (dc != null)
@@ -176,7 +178,8 @@ implements ScreenBox<TrigType>, GetSetObject, UserResult, Convertable, DisplayCo
 		return Utility.browserPanel.getDisplayContext();
 	}
 
-	@Override public <T> boolean canConvert(Class<T> c) {
+	@Override
+	public <T> boolean canConvert(Class<T> c) {
 		try {
 			for (Object o : getObjects()) {
 				if (o == null) {
@@ -202,7 +205,8 @@ implements ScreenBox<TrigType>, GetSetObject, UserResult, Convertable, DisplayCo
 		return false;
 	}
 
-	@Override public <T> T convertTo(Class<T> c) throws ClassCastException {
+	@Override
+	public <T> T convertTo(Class<T> c) throws ClassCastException {
 		for (Object o : getObjects()) {
 			if (o == null) {
 				continue;
@@ -226,11 +230,13 @@ implements ScreenBox<TrigType>, GetSetObject, UserResult, Convertable, DisplayCo
 		}
 		return new WrapperValue() {
 
-			@Override public Class getObjectClass() {
+			@Override
+			public Class getObjectClass() {
 				return ScreenBoxImpl.this.getObjectClass();
 			}
 
-			@Override public void reallySetValue(Object newObject) throws UnsupportedOperationException {
+			@Override
+			public void reallySetValue(Object newObject) throws UnsupportedOperationException {
 				if (newObject == ScreenBoxImpl.this)
 					return;
 				if (newObject == ScreenBoxImpl.this.getValueOrThis())
@@ -238,7 +244,8 @@ implements ScreenBox<TrigType>, GetSetObject, UserResult, Convertable, DisplayCo
 				throw new UnsupportedOperationException("value");
 			}
 
-			@Override public Object reallyGetValue() {
+			@Override
+			public Object reallyGetValue() {
 				return ScreenBoxImpl.this.getValueOrThis();
 			}
 
@@ -258,7 +265,8 @@ implements ScreenBox<TrigType>, GetSetObject, UserResult, Convertable, DisplayCo
 		return Arrays.asList(new Object[] { this, getIdent(), getShortLabel(), });
 	}
 
-	@Override public <T, E extends T> Iterable<E> getObjects(Class<T> type) {
+	@Override
+	public <T, E extends T> Iterable<E> getObjects(Class<T> type) {
 		HashSet<E> objs = new HashSet<E>();
 		if (this.canConvert(type)) {
 			T one = convertTo(type);
@@ -294,7 +302,8 @@ implements ScreenBox<TrigType>, GetSetObject, UserResult, Convertable, DisplayCo
 		return getValueOrThis().getClass();
 	}
 
-	@Override public void setObject(Object newObject) throws InvocationTargetException {
+	@Override
+	public void setObject(Object newObject) throws InvocationTargetException {
 		if (getClass() == ScreenBoxImpl.class) {
 			valueSetAs = newObject;
 			return;
@@ -302,7 +311,8 @@ implements ScreenBox<TrigType>, GetSetObject, UserResult, Convertable, DisplayCo
 		getWrapperValue().reallySetValue(newObject);
 	}
 
-	@Override public Object getValue() {
+	@Override
+	public Object getValue() {
 		if (getClass() == ScreenBoxImpl.class) {
 			if (valueSetAs != null)
 				return valueSetAs;
@@ -314,7 +324,8 @@ implements ScreenBox<TrigType>, GetSetObject, UserResult, Convertable, DisplayCo
 		return this;
 	}
 
-	@Override public DisplayContext findDisplayContext(Box b) {
+	@Override
+	public DisplayContext findDisplayContext(Box b) {
 		if (b instanceof GetDisplayContext) {
 			return ((GetDisplayContext) b).getDisplayContext();
 		}
@@ -444,7 +455,8 @@ implements ScreenBox<TrigType>, GetSetObject, UserResult, Convertable, DisplayCo
 		return getPropertiesPanel();// Utility.getPropertiesPanel(this);
 	}
 
-	@Override final public JPanel getPropertiesPanel() {
+	@Override
+	final public JPanel getPropertiesPanel() {
 		Object m_largeview = myPanelMap.get(Kind.OBJECT_PROPERTIES);
 		if (m_largeview instanceof JPanel) {
 			return (JPanel) m_largeview;
@@ -477,7 +489,8 @@ implements ScreenBox<TrigType>, GetSetObject, UserResult, Convertable, DisplayCo
 		return pnl;
 	}
 
-	@Override public List<TrigType> getTriggers() {
+	@Override
+	public List<TrigType> getTriggers() {
 		List<TrigType> tgs = super.getTriggers();
 		for (Class cls : getTypes()) {
 			TriggerForInstance.addClassLevelTriggers(getDisplayContext(), cls, tgs, this.getWrapperValue());

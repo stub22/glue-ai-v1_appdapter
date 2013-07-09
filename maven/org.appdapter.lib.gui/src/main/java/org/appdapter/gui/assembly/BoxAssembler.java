@@ -42,17 +42,19 @@ public class BoxAssembler extends DynamicCachingComponentAssembler<ScreenBoxImpl
 	public BoxAssembler(Resource builderConfRes) {
 		super(builderConfRes);
 	}
-	@Override protected void initExtendedFieldsAndLinks(ScreenBoxImpl box, Item configItem, Assembler asmblr, Mode mode) {
+
+	@Override
+	protected void initExtendedFieldsAndLinks(ScreenBoxImpl box, Item configItem, Assembler asmblr, Mode mode) {
 		theLogger.info("bonus box init here");
 		List<Object> linkedTriggers = getReader().findOrMakeLinkedObjects(configItem, BoxAssemblyNames.P_trigger, asmblr, mode, null);
 		for (Object lt : linkedTriggers) {
 			Trigger t = (Trigger) lt;
 			box.attachTrigger(t);
 		}
-		
-		Set<Item>	extraItems = ItemFuncs.getLinkedItemSet(configItem, ComponentAssemblyNames.P_extraThing);
+
+		Set<Item> extraItems = ItemFuncs.getLinkedItemSet(configItem, ComponentAssemblyNames.P_extraThing);
 		// System.out.println("Found extraItems: " + extraItems);
-		
+
 	}
 
 }

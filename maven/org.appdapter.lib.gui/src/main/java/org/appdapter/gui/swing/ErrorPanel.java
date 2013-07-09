@@ -14,11 +14,9 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
-import org.appdapter.api.trigger.BoxPanelSwitchableView;
-import org.appdapter.api.trigger.DisplayContext;
-import org.appdapter.gui.api.Utility;
-import org.appdapter.gui.impl.JBox;
-import org.appdapter.gui.impl.JJPanel;
+import org.appdapter.gui.api.BoxPanelSwitchableView;
+import org.appdapter.gui.api.DisplayContext;
+import org.appdapter.gui.browse.Utility;
 
 public class ErrorPanel extends JJPanel {
 

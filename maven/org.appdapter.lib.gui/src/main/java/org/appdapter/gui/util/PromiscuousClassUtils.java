@@ -36,6 +36,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import org.appdapter.core.log.Debuggable;
+import org.appdapter.gui.api.Ontologized;
+import org.appdapter.gui.api.Ontologized.HRKRefinement;
 
 import sun.reflect.Reflection;
 
@@ -454,31 +456,55 @@ abstract public class PromiscuousClassUtils {
 	}
 
 	public static void ensureInstalled() {
+		ensureInstalled(true, false, false);
+	}
+
+	public static void ensureInstalled(boolean spyOnly, boolean sharedFirst, boolean fallBackPromiscuous) {
 		ClassLoader cl1 = ClassLoader.getSystemClassLoader();
-		addClassloader(cl1);
-		ClassLoader cl2 = Thread.currentThread().getContextClassLoader();
-		if (cl2 instanceof HRKRefinement) {
-			return;
+		if (!(cl1 instanceof HRKRefinement)) {
+			coerceClassloader(cl1, spyOnly, sharedFirst, fallBackPromiscuous);
 		}
-		if (true)
-			return;
-		IsolatingClassLoaderBase cl3 = coerceClassloader(cl2);
-		Thread.currentThread().setContextClassLoader(cl3);
+		ClassLoader cl2 = Thread.currentThread().getContextClassLoader();
+
+		ClassLoader cl3 = coerceClassloader(cl2, spyOnly, sharedFirst, fallBackPromiscuous);
+		if (cl3 != cl2) {
+			Thread.currentThread().setContextClassLoader(cl3);
+		}
 		//namingResolver.toString();
 	}
 
 	private static Map<ClassLoader, ClassLoader> switchedOutClassLoader = new HashMap<ClassLoader, ClassLoader>();
 
-	public static IsolatingClassLoaderBase coerceClassloader(ClassLoader cl2) {
+	public static ClassLoader coerceClassloader(ClassLoader cl2, boolean spyOnly, boolean sharedFirst, boolean fallBackPromiscuous) {
 		if (cl2 instanceof IsolatingClassLoaderBase)
 			return (IsolatingClassLoaderBase) cl2;
-		IsolatedClassLoader icl = (IsolatedClassLoader) switchedOutClassLoader.get(cl2);
-		if (icl == null) {
-			addClassloader(cl2);
-			icl = new IsolatedClassLoader(cl2);
-			switchedOutClassLoader.put(cl2, icl);
+		if (!sharedFirst && !spyOnly)
+			return cl2;
+		if (cl2 instanceof HRKRefinement) {
+			return cl2;
 		}
-		return icl;
+		synchronized (switchedOutClassLoader) {
+			IsolatedClassLoader icl = (IsolatedClassLoader) switchedOutClassLoader.get(cl2);
+			if (icl == null) {
+				addClassloader(cl2);
+				ClassLoader parentWillBe = null;
+				List<ClassLoader> clList = new ArrayList<ClassLoader>();
+				if (sharedFirst) {
+					clList.add(getPromiscuousClassLoader());
+				}
+				if (spyOnly) {
+					parentWillBe = cl2;
+				} else {
+					clList.add(cl2);
+				}
+				if (fallBackPromiscuous && !sharedFirst) {
+					clList.add(getPromiscuousClassLoader());
+				}
+				icl = new IsolatedClassLoader(parentWillBe, spyOnly, sharedFirst, fallBackPromiscuous, clList);
+				switchedOutClassLoader.put(cl2, icl);
+			}
+			return icl;
+		}
 	}
 
 	public static <T> Class<T> forName(String className, boolean initialize, ClassLoader loader) throws ClassNotFoundException, NoClassDefFoundError {
@@ -605,7 +631,8 @@ abstract public class PromiscuousClassUtils {
 		return true;
 	}
 
-	@SuppressWarnings("unchecked") static public <T> T callProtectedMethodNullOnUncheck(Object from, String methodName, Object... args) {
+	@SuppressWarnings("unchecked")
+	static public <T> T callProtectedMethodNullOnUncheck(Object from, String methodName, Object... args) {
 		Throwable whyBroken = null;
 		try {
 			return callProtectedMethod(true, from, methodName, args);
@@ -630,6 +657,9 @@ abstract public class PromiscuousClassUtils {
 					return null;
 				}
 				if (whyBroken instanceof IOException) {
+					return null;
+				}
+				if (whyBroken instanceof NullPointerException) {
 					return null;
 				}
 				Throwable twb = wb.getCause();
@@ -673,7 +703,8 @@ abstract public class PromiscuousClassUtils {
 		throw new ClassCastException("cant make non primitive from :" + wrapper);
 	}
 
-	@SuppressWarnings("unchecked") static public <T> T callProtectedMethod(boolean skipNSM, Object from, String methodName, Object... args) throws InvocationTargetException, NoSuchMethodException {
+	@SuppressWarnings("unchecked")
+	static public <T> T callProtectedMethod(boolean skipNSM, Object from, String methodName, Object... args) throws InvocationTargetException, NoSuchMethodException {
 		Throwable whyBroken = null;
 		Method foundm = null;
 		Class c = from.getClass();
@@ -1058,7 +1089,8 @@ abstract public class PromiscuousClassUtils {
 		}
 		final int[] collect = new int[1];
 		substAll(path, true, -1, new ArchiveSearcher() {
-			@Override public String replace(String target, boolean maySplit, int depth) {
+			@Override
+			public String replace(String target, boolean maySplit, int depth) {
 				int fnd = scanLoadable(target, recurse, maySplit, loader, doWithBytes, pd);
 				collect[0] += fnd;
 				return target;
@@ -1266,7 +1298,7 @@ abstract public class PromiscuousClassUtils {
 		return loader.getClass().getProtectionDomain();
 	}
 
-	public static void pingLoadable(Class<? extends Runnable> class1) {
+	public static void pingLoadable(Class anyClass) {
 		//PromiscuousClassUtils.scanLoadable("D:/MyEclipse2013/configuration/org.eclipse.osgi/bundles/1277/1/.cp/lib/scala-library.jar", true, false, true);
 		PromiscuousClassUtils.scanLoadable("C:\\Users\\Administrator\\.m2\\repository\\org\\scala-lang\\scala-library\\2.8.1\\scala-library-2.8.1.jar", true, false, true);
 		//		PromiscuousClassUtils.scanLoadable("file:/c:/Users/Administrator/.m2/repository/org/slf4j/slf4j-log4j12/1.6.1/slf4j-log4j12-1.6.1.jar", true, false, true);
@@ -1388,6 +1420,10 @@ abstract public class PromiscuousClassUtils {
 		if (closeStream)
 			fis.close();
 		return defineClass(loader, className, bytes, pd);
+	}
+
+	public static void addLocationToSystemClassPath(String location) {
+		PromiscuousClassUtils.scanLoadable(location, true, false, null, true, null);
 	}
 
 }

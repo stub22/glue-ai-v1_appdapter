@@ -25,21 +25,18 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import org.appdapter.api.trigger.BT;
-import org.appdapter.api.trigger.DisplayContext;
-import org.appdapter.api.trigger.NamedObjectCollection;
 import org.appdapter.core.log.Debuggable;
+import org.appdapter.gui.api.BT;
+import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.GetSetObject;
 import org.appdapter.gui.api.IValidate;
-import org.appdapter.gui.api.UserInputComponent;
-import org.appdapter.gui.api.Utility;
+import org.appdapter.gui.api.NamedObjectCollection;
+import org.appdapter.gui.api.Ontologized.UserInputComponent;
+import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.editors.ValueEditor;
-import org.appdapter.gui.impl.JVPanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.hp.hpl.jena.query.DataSource;
-import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Model;
 
 @SuppressWarnings({ "serial" })

@@ -7,7 +7,7 @@ import java.beans.PropertyEditorSupport;
 
 import javax.swing.JLabel;
 
-import org.appdapter.gui.api.Utility;
+import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.swing.NumberField;
 
 public class IntEditor extends PropertyEditorSupport implements PropertyChangeListener {

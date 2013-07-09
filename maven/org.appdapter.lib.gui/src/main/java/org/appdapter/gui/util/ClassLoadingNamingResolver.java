@@ -3,6 +3,7 @@ package org.appdapter.gui.util;
 import java.util.Collection;
 import java.util.ServiceLoader;
 
+import org.appdapter.gui.api.Ontologized;
 import org.appdapter.gui.util.ObjectFinder.Found;
 import org.appdapter.gui.util.ObjectFinder.FoundObject;
 
