@@ -16,11 +16,13 @@ import java.util.Vector;
 
 import org.appdapter.core.log.Debuggable;
 
+//import org.appdapter.core.log.Debuggable;
+
 
 /**
  * A class loader to allow for loading of other jars that are added as a URL.
  */
-public final class FromManyClassLoader extends IsolatingClassLoaderBase implements HRKRefinement.DontAdd {
+public class FromManyClassLoader extends IsolatingClassLoaderBase {
 	/** Dynamically added ClassLoaders. */
 	private final Collection<ClassLoader> classLoadersToSearch;
 
@@ -156,7 +158,7 @@ public final class FromManyClassLoader extends IsolatingClassLoaderBase implemen
 		return getParent().getResourceAsStream(name);
 	}
 
-	public Class<?> findLoadedClassLocalMethodology(String name) {
+	public Class<?> findLoadedClassLocalMethodology(String name) throws ClassNotFoundException {
 		Class pl = PromiscuousClassUtils.findLoadedClassByName(name);
 		if (pl != null)
 			return pl;

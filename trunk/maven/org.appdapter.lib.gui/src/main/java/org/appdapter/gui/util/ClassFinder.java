@@ -92,7 +92,7 @@ public class ClassFinder {
 			//use the default class loader for this class
 			classLoader = ClassFinder.class.getClassLoader();
 
-		classLoader = PromiscuousClassUtils.coerceClassloader(classLoader);
+		classLoader = PromiscuousClassUtils.coerceClassloader(classLoader,true,false,false);
 
 		//Get all class names
 		Set allClassNames = getAllClassNames(dirsString);

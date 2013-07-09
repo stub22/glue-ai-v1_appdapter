@@ -9,14 +9,13 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 
-import org.appdapter.api.trigger.DisplayContext;
-import org.appdapter.core.log.Debuggable;
+import org.appdapter.api.trigger.Box;
+import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.GetSetObject;
-import org.appdapter.gui.api.Utility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PropertiesPanel extends ScreenBoxPanel implements GetSetObject {
+public class PropertiesPanel<BoxType extends Box> extends ScreenBoxPanel<BoxType> implements GetSetObject {
 	static Logger theLogger = LoggerFactory.getLogger(PropertiesPanel.class);
 
 	//DisplayContext context = new EmptyPOJOCollectionContext();
@@ -37,7 +36,8 @@ public class PropertiesPanel extends ScreenBoxPanel implements GetSetObject {
 		setObject(val);
 	}
 
-	@Override public Object getValue() {
+	@Override
+	public Object getValue() {
 		return objectValue;
 	}
 
@@ -75,7 +75,8 @@ public class PropertiesPanel extends ScreenBoxPanel implements GetSetObject {
 	 }*/
 
 	class PropertyComparator implements Comparator {
-		@Override public int compare(Object first, Object second) {
+		@Override
+		public int compare(Object first, Object second) {
 			PropertyDescriptor a = (PropertyDescriptor) first;
 			PropertyDescriptor b = (PropertyDescriptor) second;
 			String nameA = a.getName();
@@ -83,19 +84,22 @@ public class PropertiesPanel extends ScreenBoxPanel implements GetSetObject {
 			return nameA.compareTo(nameB);
 		}
 
-		@Override public boolean equals(Object o) {
-			return (o instanceof PropertyComparator);
+		@Override
+		public boolean equals(Object o) {
+			return (o instanceof PropertiesPanel.PropertyComparator);
 		}
 	}
 
-	@Override protected void initSubclassGUI() {
+	@Override
+	protected void initSubclassGUI() {
 		removeAll();
 		//setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		//setLayout(new VerticalLayout(VerticalLayout.LEFT, true));
 		setLayout(new BorderLayout());
 	}
 
-	@Override protected void completeSubClassGUI() {
+	@Override
+	protected void completeSubClassGUI() {
 		removeAll();
 		setLayout(new BorderLayout());
 
@@ -128,7 +132,8 @@ public class PropertiesPanel extends ScreenBoxPanel implements GetSetObject {
 
 	}
 
-	@Override protected boolean reloadObjectGUI(Object val) {
+	@Override
+	protected boolean reloadObjectGUI(Object val) {
 		objectValue = val;
 		if (val != null) {
 			completeSubClassGUI();

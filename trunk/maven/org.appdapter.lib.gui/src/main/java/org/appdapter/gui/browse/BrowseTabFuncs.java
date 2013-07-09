@@ -22,13 +22,12 @@ import javax.swing.JPanel;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxImpl;
-import org.appdapter.api.trigger.BoxPanelSwitchableView;
-import org.appdapter.api.trigger.DisplayContext;
-import org.appdapter.api.trigger.DisplayType;
 import org.appdapter.api.trigger.ObjectKey;
-import org.appdapter.api.trigger.ScreenBox;
-import org.appdapter.api.trigger.ScreenBox.Kind;
-import org.appdapter.gui.api.Utility;
+import org.appdapter.gui.api.BoxPanelSwitchableView;
+import org.appdapter.gui.api.DisplayContext;
+import org.appdapter.gui.api.DisplayType;
+import org.appdapter.gui.api.ScreenBox;
+import org.appdapter.gui.api.ScreenBox.Kind;
 
 /**
  * @author Stu B. <www.texpedient.com>

@@ -40,7 +40,7 @@ public class ImageDisplayField extends JWindow {
   public void setIcon(Icon icon) {
     iconView.setIcon(icon);
     pack();
-    org.appdapter.gui.api.Utility.centerWindow(this);
+    org.appdapter.gui.browse.Utility.centerWindow(this);
   }
 
   public Icon getIcon() {

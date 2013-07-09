@@ -6,72 +6,72 @@ import java.security.Permission;
 import java.security.PrivilegedAction;
 import java.util.logging.Logger;
 
+import org.appdapter.gui.api.Ontologized.HRKRefinement;
 
-public class PromiscuousSecurityManager extends RMISecurityManager
-        implements HRKRefinement {
-    @Override
-    public void checkPermission(Permission perm) {
-        // java.security.AccessController.checkPermission(perm);
-    }
+public class PromiscuousSecurityManager extends RMISecurityManager implements HRKRefinement {
+	@Override
+	public void checkPermission(Permission perm) {
+		// java.security.AccessController.checkPermission(perm);
+	}
 
-    static SecurityManager ourOneSecurityManager;
+	static SecurityManager ourOneSecurityManager;
 
-    private PromiscuousSecurityManager() {
-        ourOneSecurityManager = this;
-    }
-    static void ensureInstalled0() {
-        SecurityManager securityManager = System.getSecurityManager();
-       
-        if (securityManager != null) {
-            if (securityManager instanceof PromiscuousSecurityManager)
-                return;
-        }
+	private PromiscuousSecurityManager() {
+		ourOneSecurityManager = this;
+	}
 
-        try {
-            System.setSecurityManager(getOurOneSecurityManager());
-        } catch (Exception e) {
-            e.printStackTrace();
-            AccessController.doPrivileged(new PrivilegedAction<Object>() {
-                @Override
+	static void ensureInstalled0() {
+		SecurityManager securityManager = System.getSecurityManager();
+
+		if (securityManager != null) {
+			if (securityManager instanceof PromiscuousSecurityManager)
+				return;
+		}
+
+		try {
+			System.setSecurityManager(getOurOneSecurityManager());
+		} catch (Exception e) {
+			e.printStackTrace();
+			AccessController.doPrivileged(new PrivilegedAction<Object>() {
+				@Override
 				public Object run() {
-                    // privileged code goes here, for example:
-                    synchronized (SecurityManager.class) {
-                        System.setSecurityManager(getOurOneSecurityManager());
-                    }
-                    return null; // nothing to return
-                }
-            });
-        }
+					// privileged code goes here, for example:
+					synchronized (SecurityManager.class) {
+						System.setSecurityManager(getOurOneSecurityManager());
+					}
+					return null; // nothing to return
+				}
+			});
+		}
 
-        ourOneSecurityManager = getOurOneSecurityManager();
-        AccessController.doPrivileged(new PrivilegedAction<Object>() {
-            @Override
+		ourOneSecurityManager = getOurOneSecurityManager();
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+			@Override
 			public Object run() {
-                // privileged code goes here, for example:
-                synchronized (SecurityManager.class) {
+				// privileged code goes here, for example:
+				synchronized (SecurityManager.class) {
 
-                    Logger.getLogger("JVoiceRMISecurityManager").info(
-                            "security manager set to " + ourOneSecurityManager);
-                    java.lang.System.setSecurityManager(ourOneSecurityManager);
-                }
-                return null; // nothing to return
-            }
-        });
-    }
+					Logger.getLogger("JVoiceRMISecurityManager").info("security manager set to " + ourOneSecurityManager);
+					java.lang.System.setSecurityManager(ourOneSecurityManager);
+				}
+				return null; // nothing to return
+			}
+		});
+	}
 
-    synchronized protected static SecurityManager getOurOneSecurityManager() {
-        if (ourOneSecurityManager != null)
-            return ourOneSecurityManager;
-        AccessController.doPrivileged(new PrivilegedAction<Object>() {
-            @Override
+	synchronized protected static SecurityManager getOurOneSecurityManager() {
+		if (ourOneSecurityManager != null)
+			return ourOneSecurityManager;
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+			@Override
 			public Object run() {
-                // privileged code goes here, for example:
-                synchronized (SecurityManager.class) {
-                    ourOneSecurityManager = new PromiscuousSecurityManager();
-                }
-                return null; // nothing to return
-            }
-        });
-        return ourOneSecurityManager;
-    }
+				// privileged code goes here, for example:
+				synchronized (SecurityManager.class) {
+					ourOneSecurityManager = new PromiscuousSecurityManager();
+				}
+				return null; // nothing to return
+			}
+		});
+		return ourOneSecurityManager;
+	}
 }

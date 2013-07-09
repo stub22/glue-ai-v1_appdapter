@@ -1,12 +1,7 @@
 package org.appdapter.gui.swing;
 
-import javax.swing.JPanel;
-
 import org.appdapter.api.trigger.Box;
-import org.appdapter.gui.api.*;
-import org.appdapter.gui.box.WrapperValue;
-import org.appdapter.gui.impl.JJPanel;
-import org.slf4j.LoggerFactory;
+import org.appdapter.gui.api.GetSetObject;
 
 /**
  * A GUI component used to render a Box in a user interface. The standard

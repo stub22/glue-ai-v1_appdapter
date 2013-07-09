@@ -27,30 +27,44 @@ import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.Collection;
 
-import javax.swing.*;
+import javax.swing.ButtonGroup;
+import javax.swing.ImageIcon;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JComponent;
+import javax.swing.JDesktopPane;
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
+import javax.swing.JTree;
+import javax.swing.KeyStroke;
+import javax.swing.ToolTipManager;
 import javax.swing.tree.TreeModel;
 
-import org.appdapter.api.trigger.BT;
 import org.appdapter.api.trigger.BoxContext;
-import org.appdapter.api.trigger.BoxPanelSwitchableView;
-import org.appdapter.api.trigger.DisplayContext;
-import org.appdapter.api.trigger.DisplayType;
-import org.appdapter.api.trigger.IShowObjectMessageAndErrors;
-import org.appdapter.api.trigger.NamedObjectCollection;
 import org.appdapter.api.trigger.UserResult;
 import org.appdapter.core.log.Debuggable;
-import org.appdapter.gui.api.ObjectTabsForTabbedView;
-import org.appdapter.gui.api.Utility;
-import org.appdapter.gui.browse.CollectionEditorUtil.FileMenu;
+import org.appdapter.gui.api.BT;
+import org.appdapter.gui.api.BoxPanelSwitchableView;
+import org.appdapter.gui.api.DisplayContext;
+import org.appdapter.gui.api.DisplayType;
+import org.appdapter.gui.api.IShowObjectMessageAndErrors;
+import org.appdapter.gui.api.NamedObjectCollection;
+import org.appdapter.gui.swing.CollectionEditorUtil;
+import org.appdapter.gui.swing.DisplayContextUIImpl;
+import org.appdapter.gui.swing.LookAndFeelMenuItems;
+import org.appdapter.gui.swing.ObjectTabsForTabbedView;
 
-import com.jidesoft.swing.*;
+import com.jidesoft.swing.JideScrollPane;
+import com.jidesoft.swing.JideSplitPane;
+import com.jidesoft.swing.JideTabbedPane;
 import com.jidesoft.tree.StyledTreeCellRenderer;
-
-//JIDESOFT import com.jidesoft.swing.*;
-import javax.swing.*;
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -169,8 +183,9 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 				oldJMenuBar = nowMenuBar;
 			}
 			if (myTopFrameMenu == null) {
-				resetMenu();
+
 			}
+			resetMenu();
 			jf.setJMenuBar(myTopFrameMenu);
 			myTopFrameMenu.setVisible(true);
 

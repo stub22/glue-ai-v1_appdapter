@@ -10,8 +10,7 @@ import java.util.List;
 
 import javax.swing.AbstractListModel;
 
-import org.appdapter.gui.api.Utility;
-import org.appdapter.gui.impl.JJList;
+import org.appdapter.gui.browse.Utility;
 
 /**
  * A GUI component that shows all the methods for a given object, and provides

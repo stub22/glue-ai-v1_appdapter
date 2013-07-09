@@ -14,7 +14,6 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JTextField;
 
-import org.appdapter.gui.impl.JJPanel;
 
 public class ScrollButtonPanel extends JJPanel implements ActionListener {
 

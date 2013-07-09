@@ -34,8 +34,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.appdapter.gui.api.Chooser;
-import org.appdapter.gui.api.Utility;
-import org.appdapter.gui.impl.JJPanelList;
+import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.util.ClassFinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -15,7 +15,6 @@
  */
 
 package org.appdapter.gui.demo;
-
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.MouseAdapter;
@@ -28,27 +27,25 @@ import javax.swing.WindowConstants;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 
-import org.appdapter.api.trigger.BT;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContext;
-import org.appdapter.api.trigger.BoxPanelSwitchableView;
-import org.appdapter.api.trigger.BrowserPanelGUI;
-import org.appdapter.api.trigger.DisplayContext;
-import org.appdapter.api.trigger.DisplayContextProvider;
-import org.appdapter.api.trigger.DisplayType;
-import org.appdapter.api.trigger.BoxPanelSwitchableView;
 import org.appdapter.api.trigger.MutableBox;
-import org.appdapter.api.trigger.NamedObjectCollection;
-import org.appdapter.api.trigger.POJOCollectionListener;
-import org.appdapter.api.trigger.ScreenBoxTreeNode;
 import org.appdapter.api.trigger.UserResult;
 import org.appdapter.core.log.Debuggable;
-import org.appdapter.demo.DemoBrowserCtrl;
-import org.appdapter.gui.api.Utility;
+import org.appdapter.gui.api.BT;
+import org.appdapter.gui.api.BoxPanelSwitchableView;
+import org.appdapter.gui.api.BrowserPanelGUI;
+import org.appdapter.gui.api.DisplayContext;
+import org.appdapter.gui.api.DisplayContextProvider;
+import org.appdapter.gui.api.DisplayType;
+import org.appdapter.gui.api.NamedObjectCollection;
+import org.appdapter.gui.api.POJOCollectionListener;
+import org.appdapter.gui.api.ScreenBoxTreeNode;
 import org.appdapter.gui.box.ScreenBoxContextImpl;
+import org.appdapter.gui.box.ScreenBoxTreeNodeImpl;
 import org.appdapter.gui.browse.BrowsePanel;
-import org.appdapter.gui.browse.ScreenBoxTreeNodeImpl;
-import org.appdapter.gui.rimpl.TriggerMenuFactory;
+import org.appdapter.gui.browse.Utility;
+import org.appdapter.gui.trigger.TriggerMenuFactory;
 
 /**
  * @author Stu B. <www.texpedient.com>

@@ -8,13 +8,10 @@ import org.appdapter.api.trigger.BoxContext;
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.core.name.FreeIdent;
 import org.appdapter.core.store.Repo;
-import org.appdapter.core.store.Repo.GraphStat;
 import org.appdapter.core.store.Repo.WithDirectory;
-import org.appdapter.gui.box.WrapperValue;
+import org.appdapter.gui.api.WrapperValue;
 import org.appdapter.gui.demo.DemoBrowser;
 import org.appdapter.gui.demo.DemoBrowser.RepoSubBoxFinder;
-import org.appdapter.gui.rimpl.MutableRepoBox;
-import org.appdapter.gui.rimpl.RepoBoxImpl;
 import org.slf4j.Logger;
 
 import com.hp.hpl.jena.query.QuerySolution;
@@ -81,7 +78,8 @@ public class DefaultMutableRepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<
 		}*/
 	}
 
-	@Override public Repo getRepo() {
+	@Override
+	public Repo getRepo() {
 		return myRepoWD;
 	}
 
@@ -89,12 +87,14 @@ public class DefaultMutableRepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<
 		return myRepoWD;
 	}
 
-	@Override public List getAllGraphStats() {
+	@Override
+	public List getAllGraphStats() {
 		Repo myRepo = getRepo();
 		return myRepo.getGraphStats();
 	}
 
-	@Override public Box findGraphBox(String graphURI) {
+	@Override
+	public Box findGraphBox(String graphURI) {
 		Logger logger = DemoBrowser.theLogger;
 
 		Box fnd = superfindGraphBox(graphURI);
@@ -131,27 +131,33 @@ public class DefaultMutableRepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<
 		return null;
 	}
 
-	@Override public void mount(String configPath) {
+	@Override
+	public void mount(String configPath) {
 		super.mount(configPath);
 	}
 
-	@Override public void formatStoreIfNeeded() {
+	@Override
+	public void formatStoreIfNeeded() {
 		super.formatStoreIfNeeded();
 	}
 
-	@Override public void importGraphFromURL(String tgtGraphName, String sourceURL, boolean replaceTgtFlag) {
+	@Override
+	public void importGraphFromURL(String tgtGraphName, String sourceURL, boolean replaceTgtFlag) {
 		super.importGraphFromURL(tgtGraphName, sourceURL, replaceTgtFlag);
 	}
 
-	@Override public String getUploadHomePath() {
+	@Override
+	public String getUploadHomePath() {
 		return super.getUploadHomePath();
 	}
 
-	@Override public Object reallyGetValue() {
+	@Override
+	public Object reallyGetValue() {
 		return myRepoWD;
 	}
 
-	@Override public void reallySetValue(Object newObject) throws UnsupportedOperationException {
+	@Override
+	public void reallySetValue(Object newObject) throws UnsupportedOperationException {
 		if (newObject instanceof String) {
 			mount(newObject.toString());
 			return;

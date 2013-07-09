@@ -1,7 +1,6 @@
 package org.appdapter.gui.swing;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Image;
@@ -25,7 +24,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.BeanInfo;
-import java.beans.IntrospectionException;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
@@ -35,16 +33,14 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.OverlayLayout;
-import javax.swing.ToolTipManager;
 
-import org.appdapter.api.trigger.BT;
 import org.appdapter.api.trigger.Box;
-import org.appdapter.api.trigger.DisplayContext;
-import org.appdapter.api.trigger.NamedObjectCollection;
 import org.appdapter.core.log.Debuggable;
+import org.appdapter.gui.api.DisplayContext;
+import org.appdapter.gui.api.NamedObjectCollection;
 import org.appdapter.gui.api.ObjectCollectionRemoveListener;
-import org.appdapter.gui.api.Utility;
-import org.appdapter.gui.rimpl.TriggerPopupMenu;
+import org.appdapter.gui.browse.Utility;
+import org.appdapter.gui.trigger.TriggerPopupMenu;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -294,7 +290,7 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 						JLabel label = new JLabel(new ImageIcon(image));
 						panel.add(label);
 					}
-				} catch (IntrospectionException err) {
+				} catch (Throwable err) {
 				}
 				//iconView = new IconView(object.getIcon());
 				//add(iconView);

@@ -7,7 +7,6 @@ package org.appdapter.gui.swing;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -20,7 +19,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-import org.appdapter.gui.impl.JJPanel;
 
 public class PropertySheet extends JJPanel {
 

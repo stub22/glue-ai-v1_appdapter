@@ -9,7 +9,7 @@ import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
 
-import org.appdapter.gui.api.PairTable;
+import org.appdapter.gui.util.PairTable;
 
 /**
 * JavaBeansCollection PropertyEditor implementation for boolean values.

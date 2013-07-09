@@ -1,10 +1,11 @@
 package org.appdapter.gui.repo;
 
+import org.appdapter.api.trigger.Trigger;
 import org.appdapter.gui.box.ScreenBoxImpl;
 
 import com.hp.hpl.jena.rdf.model.Model;
 
-public class ScreenModelBox extends ScreenBoxImpl {
+public class ScreenModelBox<TrigType extends Trigger<? extends ScreenBoxImpl<TrigType>>> extends ScreenBoxImpl<TrigType> {
 
 	final String myURI;
 	private Model myModel;
@@ -15,7 +16,8 @@ public class ScreenModelBox extends ScreenBoxImpl {
 		myModel = model;
 	}
 
-	@Override public String toString() {
+	@Override
+	public String toString() {
 		return getClass().getName() + "[uri=" + myURI + "model=" + myModel + "]";
 	}
 
@@ -24,7 +26,8 @@ public class ScreenModelBox extends ScreenBoxImpl {
 		this.myModel = m;
 	}
 
-	@Override public Object getValue() {
+	@Override
+	public Object getValue() {
 		return myModel;
 	}
 

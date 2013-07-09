@@ -10,11 +10,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import org.appdapter.api.trigger.BrowserPanelGUI;
-import org.appdapter.api.trigger.DisplayContext;
-import org.appdapter.gui.api.Utility;
+import org.appdapter.gui.api.BrowserPanelGUI;
+import org.appdapter.gui.api.DisplayContext;
+import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.editors.LargeObjectView;
-import org.appdapter.gui.impl.JJPanel;
 import org.appdapter.gui.util.PromiscuousClassUtils;
 
 /**

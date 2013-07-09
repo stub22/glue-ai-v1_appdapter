@@ -11,8 +11,8 @@ import java.util.Map;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 
-import org.appdapter.api.trigger.DisplayContext;
-import org.appdapter.gui.api.Utility;
+import org.appdapter.gui.api.DisplayContext;
+import org.appdapter.gui.browse.Utility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

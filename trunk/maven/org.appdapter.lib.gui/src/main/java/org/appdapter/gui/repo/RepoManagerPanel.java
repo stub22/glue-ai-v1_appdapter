@@ -33,11 +33,9 @@ import javax.swing.JTable;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.core.store.Repo;
-import org.appdapter.gui.api.Utility;
-import org.appdapter.gui.rimpl.MutableRepoBox;
-import org.appdapter.gui.rimpl.RepoBoxImpl;
-import org.appdapter.gui.rimpl.TriggerMenuFactory;
+import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.swing.ScreenBoxPanel;
+import org.appdapter.gui.trigger.TriggerMenuFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

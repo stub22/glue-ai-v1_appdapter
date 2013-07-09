@@ -25,9 +25,7 @@ import javax.swing.JTextArea;
 import javax.swing.tree.TreeModel;
 
 import org.appdapter.api.trigger.Box;
-import org.appdapter.api.trigger.DisplayContextProvider;
 import org.appdapter.api.trigger.MutableBox;
-import org.appdapter.api.trigger.ScreenBox.Kind;
 import org.appdapter.api.trigger.TriggerImpl;
 import org.appdapter.core.log.BasicDebugger;
 import org.appdapter.core.matdat.OfflineXlsSheetRepoSpec;
@@ -38,20 +36,21 @@ import org.appdapter.core.store.RepoBox;
 import org.appdapter.demo.DemoBrowserCtrl;
 import org.appdapter.demo.DemoBrowserUI;
 import org.appdapter.demo.DemoNavigatorCtrlFactory;
+import org.appdapter.gui.api.DisplayContextProvider;
+import org.appdapter.gui.api.ScreenBox.Kind;
 import org.appdapter.gui.box.ScreenBoxContextImpl;
 import org.appdapter.gui.box.ScreenBoxImpl;
-import org.appdapter.gui.browse.ScreenBoxTreeNodeImpl;
-import org.appdapter.gui.demo.triggers.BridgeTriggers;
-import org.appdapter.gui.demo.triggers.DatabaseTriggers;
-import org.appdapter.gui.demo.triggers.RepoTriggers;
+import org.appdapter.gui.box.ScreenBoxTreeNodeImpl;
+import org.appdapter.gui.editors.RepoTriggers;
+import org.appdapter.gui.repo.BridgeTriggers;
+import org.appdapter.gui.repo.DatabaseTriggers;
 import org.appdapter.gui.repo.DefaultMutableRepoBoxImpl;
-import org.appdapter.gui.rimpl.BootstrapTriggerFactory;
-import org.appdapter.gui.rimpl.RepoBoxImpl;
-import org.appdapter.gui.rimpl.RepoModelBoxImpl;
-import org.appdapter.gui.rimpl.SysTriggers;
+import org.appdapter.gui.repo.RepoBoxImpl;
+import org.appdapter.gui.repo.RepoModelBoxImpl;
+import org.appdapter.gui.trigger.BootstrapTriggerFactory;
+import org.appdapter.gui.trigger.SysTriggers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -150,7 +149,8 @@ final public class DemoBrowser {
 			// frame.pack();
 			DemoNavigatorCtrlFactory crtlMaker = new DemoNavigatorCtrlFactory() {
 
-				@Override public DemoNavigatorCtrl makeDemoNavigatorCtrl(String[] main, boolean defaultExampleCode1) {
+				@Override
+				public DemoNavigatorCtrl makeDemoNavigatorCtrl(String[] main, boolean defaultExampleCode1) {
 					return makeDemoNavigatorCtrlReal(main, defaultExampleCode1);
 				}
 
@@ -171,7 +171,8 @@ final public class DemoBrowser {
 	}
 
 	static public class AsApplet extends JApplet {
-		@Override public void init() {
+		@Override
+		public void init() {
 			javax.swing.Box box = new javax.swing.Box(BoxLayout.Y_AXIS);
 			try {
 				getContentPane().setLayout(new BorderLayout());
@@ -198,7 +199,8 @@ final public class DemoBrowser {
 
 	public static DemoNavigatorCtrl makeDemoNavigatorCtrlReal(String[] args, boolean isExampleCode) {
 		RepoSubBoxFinder rsbf = new RepoSubBoxFinder() {
-			@Override public Box findGraphBox(RepoBox parentBox, String graphURI) {
+			@Override
+			public Box findGraphBox(RepoBox parentBox, String graphURI) {
 				theLogger.info("finding graph box for " + graphURI + " in " + parentBox);
 				MutableBox mb = new RepoModelBoxImpl();
 				TriggerImpl dti = new SysTriggers.DumpTrigger();
@@ -245,12 +247,11 @@ final public class DemoBrowser {
 		return makeBoxContextImpl(boxClass, repoBoxClass, regTrigProto, repoTrigProto, isExampleCode);
 	}
 
-	@SuppressWarnings("unchecked") public static <BTS extends TriggerImpl<BT>, BT extends ScreenBoxImpl<BTS>, TBT extends TriggerImpl<BT>> TBT makeTriggerPrototype(Class<BT> boxClass) {
+	@SuppressWarnings("unchecked")
+	public static <BTS extends TriggerImpl<BT>, BT extends ScreenBoxImpl<BTS>, TBT extends TriggerImpl<BT>> TBT makeTriggerPrototype(Class<BT> boxClass) {
 		// The trigger subtype does not matter - what matters is capturing BT into the type.
 		return (TBT) new SysTriggers.QuitTrigger().makeTrigger(boxClass);
 	}
-
-	
 
 	// static class ConcBootstrapTF extends BootstrapTriggerFactory<TriggerImpl<BoxImpl<TriggerImpl>>> {
 	// }  //   TT extends TriggerImpl<BT>

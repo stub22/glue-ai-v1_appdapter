@@ -19,6 +19,7 @@ import javax.naming.NoInitialContextException;
 import javax.naming.spi.NamingManager;
 
 import org.appdapter.core.log.Debuggable;
+import org.appdapter.gui.api.Ontologized.HRKRefinement;
 import org.appdapter.gui.util.NamingResolver.SavedFromResolverMap;
 import org.appdapter.gui.util.ObjectFinder.Found;
 
@@ -144,9 +145,9 @@ public class InitialBoxedContext extends InitialContext implements Context, HRKR
 			String first = name.get(0);
 			String scheme = getURLScheme(first);
 			if (scheme != null) {
-				Context ctx = NamingManager.getURLContext(scheme, myProps);
-				if (ctx != null) {
-					return ctx;
+				Context ctxL = NamingManager.getURLContext(scheme, myProps);
+				if (ctxL != null) {
+					return ctxL;
 				}
 			}
 		}
