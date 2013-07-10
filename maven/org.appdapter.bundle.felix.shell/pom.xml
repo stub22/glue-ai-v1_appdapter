@@ -51,6 +51,13 @@
 		-->
 				
 		<dependency>
+			<artifactId>slf4j-api</artifactId>
+			<groupId>org.slf4j</groupId>
+			<type>jar</type>
+			<version>1.6.1</version>
+            <scope>provided</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.apache.log4j</groupId>
 			<artifactId>com.springsource.org.apache.log4j</artifactId>
 			<version>1.2.16</version>
