@@ -33,8 +33,8 @@ import com.hp.hpl.jena.assembler.assemblers.AssemblerBase;
 import com.hp.hpl.jena.rdf.model.Resource;
 import java.util.HashMap;
 import java.util.Map;
-import org.appdapter.bind.rdf.jena.assembly.ItemAssemblyReader;
-import org.appdapter.bind.rdf.jena.assembly.ItemAssemblyReaderImpl;
+//import org.appdapter.bind.rdf.jena.assembly.ItemAssemblyReader;
+//import org.appdapter.bind.rdf.jena.assembly.ItemAssemblyReaderImpl;
 
 import org.appdapter.core.log.BasicDebugger;
 import org.appdapter.core.log.Loggable;
