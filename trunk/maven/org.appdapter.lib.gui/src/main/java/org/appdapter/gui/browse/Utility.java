@@ -536,8 +536,24 @@ public class Utility {
 		if (stopAtClass == c) {
 			stopAtClass = null;
 		}
-		return Introspector.getBeanInfo(c, stopAtClass);
+		boolean wasInPing = isInClassLoadPing();
+		try {
+			inClassLoadingPing.set(Boolean.TRUE);
+			return Introspector.getBeanInfo(c, stopAtClass);
+		} finally {
+			inClassLoadingPing.set(wasInPing);
+		}
 	}
+
+	public static boolean isInClassLoadPing() {
+		return Boolean.TRUE.equals(inClassLoadingPing.get());
+	}
+
+	public static void isInClassLoadPing(boolean now) {
+		inClassLoadingPing.set(now);
+	}
+
+	private static ThreadLocal<Boolean> inClassLoadingPing = new ThreadLocal<Boolean>();
 
 	public static BeanInfo getPOJOInfo(Class<? extends Object> c, int useAllBeaninfo) throws IntrospectionException {
 		return Introspector.getBeanInfo(c, useAllBeaninfo);
@@ -817,14 +833,18 @@ public class Utility {
 	public static PropertyEditor findEditor(Class targetType) {
 
 		PropertyEditor ped = null;
+		boolean wasInClassloaderPing = isInClassLoadPing();
 		try {
 			if (usePropertyEditorManager) {
+				isInClassLoadPing(true);
 				ped = PropertyEditorManager.findEditor(targetType);
 				if (ped != null)
 					return ped;
 			}
 		} catch (Throwable e) {
 			// PropertyEditorManager is a wild and untamed thing
+		} finally {
+			isInClassLoadPing(wasInClassloaderPing);
 		}
 		Class<? extends PropertyEditor> pe = FunctionalClassRegistry.findImplmentingForMatch(PropertyEditor.class, targetType);
 		if (pe == null || !PropertyEditor.class.isAssignableFrom(pe)) {
@@ -842,12 +862,16 @@ public class Utility {
 	public static Class findEditorClass(Class targetType) {
 
 		PropertyEditor ped = null;
+		boolean wasInClassloaderPing = isInClassLoadPing();
 		try {
 			if (usePropertyEditorManager) {
+				isInClassLoadPing(true);
 				ped = PropertyEditorManager.findEditor(targetType);
 			}
 		} catch (Throwable e) {
 			// PropertyEditorManager is a wild and untamed thing
+		} finally {
+			isInClassLoadPing(wasInClassloaderPing);
 		}
 		Class<? extends PropertyEditor> pe = FunctionalClassRegistry.findImplmentingForMatch(PropertyEditor.class, targetType);
 		if (pe == null || !PropertyEditor.class.isAssignableFrom(pe)) {
@@ -860,8 +884,10 @@ public class Utility {
 	public static Collection<Class> findPanelClasses(Class targetType) {
 		HashSet<Class> panelClass = new HashSet<Class>();
 		PropertyEditor ped = null;
+		boolean wasInClassloaderPing = isInClassLoadPing();
 		try {
 			if (usePropertyEditorManager) {
+				isInClassLoadPing(true);
 				ped = PropertyEditorManager.findEditor(targetType);
 				if (ped != null) {
 					panelClass.add(ped.getClass());
@@ -869,6 +895,8 @@ public class Utility {
 			}
 		} catch (Throwable e) {
 			// PropertyEditorManager is a wild and untamed thing
+		} finally {
+			isInClassLoadPing(wasInClassloaderPing);
 		}
 		CollectionSetUtils.addIfNew(panelClass, FunctionalClassRegistry.findImplmentingForMatch(PropertyEditor.class, targetType), false);
 		CollectionSetUtils.addIfNew(panelClass, FunctionalClassRegistry.findImplmentingForMatch(Customizer.class, targetType), false);
@@ -1286,4 +1314,20 @@ public class Utility {
 		return clipboardCollection;
 	}
 
+	public static boolean isOSGi() {
+		ClassLoader cl = PromiscuousClassUtils.getCallerClassLoaderOrCurrent();
+		if (cl != null) {
+			Class clz = cl.getClass();
+			Class dc = clz.getDeclaringClass();
+			if (dc == null) // there is an situation that can cause this on some JVMs
+				dc = clz;
+			String cn = dc.getCanonicalName();
+			if (cn.contains("Bundle")) {
+				if (true)
+					return false; //for testing if OSGi loading is safe yet
+				return true;
+			}
+		}
+		return false;
+	}
 }

@@ -15,9 +15,9 @@ import java.util.List;
 import java.util.Vector;
 
 import org.appdapter.core.log.Debuggable;
+import org.appdapter.gui.browse.Utility;
 
 //import org.appdapter.core.log.Debuggable;
-
 
 /**
  * A class loader to allow for loading of other jars that are added as a URL.
@@ -40,7 +40,8 @@ public class FromManyClassLoader extends IsolatingClassLoaderBase {
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override public void addURL(final URL url) {
+	@Override
+	public void addURL(final URL url) {
 		super.addURL_super(url);
 	}
 
@@ -55,7 +56,8 @@ public class FromManyClassLoader extends IsolatingClassLoaderBase {
 
 	static Class[] CLASS_STRING_1 = new Class[] { String.class };
 
-	@Override public URL findResource(String name) {
+	@Override
+	public URL findResource(String name) {
 		return findPromiscuousResource(name, new ArrayList<URL>());
 	}
 
@@ -101,7 +103,8 @@ public class FromManyClassLoader extends IsolatingClassLoaderBase {
 		}
 	}
 
-	@Override public URL getResource(String name) {
+	@Override
+	public URL getResource(String name) {
 		if (PromiscuousClassUtils.contains("getResource", name)) {
 			return null;
 		}
@@ -122,7 +125,8 @@ public class FromManyClassLoader extends IsolatingClassLoaderBase {
 		}
 	}
 
-	@Override public Enumeration getResources(String name) throws IOException {
+	@Override
+	public Enumeration getResources(String name) throws IOException {
 		Vector vect = new Vector();
 		for (ClassLoader cl : getClassLoadersToSearch(true)) {
 			Enumeration result = PromiscuousClassUtils.callProtectedMethodNullOnUncheck(cl, "getResources", name);
@@ -132,7 +136,8 @@ public class FromManyClassLoader extends IsolatingClassLoaderBase {
 		return vect.elements();
 	}
 
-	@Override public Enumeration<URL> findResources(String name) throws IOException {
+	@Override
+	public Enumeration<URL> findResources(String name) throws IOException {
 		Vector<URL> vect = new Vector<URL>();
 		for (ClassLoader cl : getClassLoadersToSearch(true)) {
 			Enumeration<URL> result = PromiscuousClassUtils.callProtectedMethodNullOnUncheck(cl, "findResources", name);
@@ -170,7 +175,9 @@ public class FromManyClassLoader extends IsolatingClassLoaderBase {
 		return rememberClass(name, super.findLoadedClass(name));
 	}
 
-	@Override public Class findClassLocalMethodologyActuallyDefines(String name) throws ClassNotFoundException {
+	@Override
+	public Class findClassLocalMethodologyActuallyDefines(String name) throws ClassNotFoundException {
+		boolean showDebug = !Utility.isInClassLoadPing();
 		boolean useSystem = (name.startsWith("java.") /*|| name.startsWith("scala.")|| name.startsWith("sun.")*/);
 		if (useSystem) {
 			try {
@@ -178,7 +185,8 @@ public class FromManyClassLoader extends IsolatingClassLoaderBase {
 				Class loadedClass = systemLoader.loadClass(name);
 				return loadedClass;
 			} catch (Throwable t) {
-				Debuggable.printStackTrace(t);
+				if (showDebug)
+					Debuggable.printStackTrace(t);
 			}
 		}
 		Throwable cnf;
@@ -188,7 +196,8 @@ public class FromManyClassLoader extends IsolatingClassLoaderBase {
 				if (isSomething(result))
 					return rememberClass(name, result);
 			} catch (Throwable e) {
-				Debuggable.printStackTrace(e);
+				if (showDebug)
+					Debuggable.printStackTrace(e);
 				continue;
 			}
 		}
@@ -198,7 +207,8 @@ public class FromManyClassLoader extends IsolatingClassLoaderBase {
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override public boolean addPathStringsForDebug(List<Object> strings, boolean includeParent) {
+	@Override
+	public boolean addPathStringsForDebug(List<Object> strings, boolean includeParent) {
 		boolean changed = false;
 		for (ClassLoader url : getClassLoadersToSearch(false)) {
 			if (pathsOf(strings, url, includeParent))

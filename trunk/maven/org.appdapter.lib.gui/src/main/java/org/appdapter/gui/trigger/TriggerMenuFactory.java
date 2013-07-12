@@ -46,8 +46,6 @@ import org.appdapter.core.component.KnownComponent;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.UIAware;
 
-// JIDESOFT import com.jidesoft.swing.*;
-
 /**
  * @author Stu B. <www.texpedient.com>
  */
