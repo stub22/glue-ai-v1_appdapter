@@ -66,7 +66,7 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.6.1</version>
+			<version>1.7.5</version>
 			<scope>runtime</scope>
 		    <exclusions>
 		        <exclusion>
@@ -82,7 +82,7 @@
 			<plugin>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
-				<version>2.2.0</version>
+				<version>2.3.7</version>
 				<extensions>true</extensions>
 				<configuration>
 					<instructions>
@@ -100,7 +100,7 @@
 				<dependency>
 					<groupId>org.apache.felix</groupId>
 					<artifactId>org.apache.felix.main</artifactId>
-					<version>3.0.7</version>
+					<version>4.2.1</version>
 					<scope>provided</scope>
 				</dependency>
 
@@ -172,7 +172,7 @@
 				<dependency>
 					<groupId>org.apache.felix</groupId>
 					<artifactId>org.apache.felix.main</artifactId>
-					<version>3.0.7</version>
+					<version>4.2.1</version>
 					<scope>provided</scope>
 				</dependency>
                 <!-- org.apache.felix:org.apache.felix.gogo.shell:0.6.1 useless from Maven since stdin is swallowed -->
@@ -199,6 +199,15 @@
 									<entry key="felix.auto.deploy.action" value="uninstall,install,update,start" />
 									<entry key="org.osgi.framework.storage" value="${project.build.directory}${file.separator}felix-cache" />
 									<entry key="org.osgi.framework.bootdelegation" value="*" />
+                                    <!-- org.w3c.dom.* are missing from default.properties in felix 4.2.1, they are present in 3.0.7 -->
+                                    <entry key="org.osgi.framework.system.packages.extra" 
+                                           value="org.w3c.dom.css,
+                                                    org.w3c.dom.html,
+                                                    org.w3c.dom.stylesheets,
+                                                    org.w3c.dom.traversal,
+                                                    org.w3c.dom.ranges,
+                                                    org.w3c.dom.views,
+                                                    org.w3c.dom.xpath" />
 								</propertyfile>
 								<makeurl property="run.properties.url" file="${project.build.directory}/run.properties" />
 								<!--

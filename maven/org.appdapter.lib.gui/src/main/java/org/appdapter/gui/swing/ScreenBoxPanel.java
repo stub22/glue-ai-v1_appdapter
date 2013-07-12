@@ -107,7 +107,7 @@ abstract public class ScreenBoxPanel<BoxType extends Box> extends ObjectView<Box
 	protected GetSetObject box;
 
 	@Override
-	public void focusOnBox(Box b) {
+	public void focusOnBox(BoxType b) {
 		synchronized (valueLock) {
 			if (b instanceof GetSetObject)
 				box = (GetSetObject) b;
