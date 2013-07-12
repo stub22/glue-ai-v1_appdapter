@@ -25,6 +25,7 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkEvent;
 import org.osgi.framework.FrameworkListener;
+import org.slf4j.Logger;
 
 /**
  * Note:  Appdapter client bundles are *not* required to use this class, or to use
@@ -122,5 +123,9 @@ public abstract class BundleActivatorBase extends BasicDebugger implements Bundl
 		Bundle b = bundleCtx.getBundle();
 		String msg = getClass().getCanonicalName() + "." + action + "(ctx=[" + bundleCtx + "], bundle=[" + b + "])";
 		return msg;
+	}
+
+	public Logger getLogger() {
+		return super.getLogger();
 	}
 }

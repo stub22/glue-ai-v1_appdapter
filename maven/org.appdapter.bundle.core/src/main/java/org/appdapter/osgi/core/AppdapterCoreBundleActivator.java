@@ -7,8 +7,9 @@ import org.slf4j.LoggerFactory;
 
 public class AppdapterCoreBundleActivator extends BundleActivatorBase {
 	static Logger theLogger = LoggerFactory.getLogger(AppdapterCoreBundleActivator.class);
-	
-	@Override protected Logger getLogger() {
+
+	@Override
+	public Logger getLogger() {
 		return theLogger;
 	}
 
