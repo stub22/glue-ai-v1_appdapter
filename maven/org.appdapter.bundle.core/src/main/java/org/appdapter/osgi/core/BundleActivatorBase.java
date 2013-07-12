@@ -125,7 +125,4 @@ public abstract class BundleActivatorBase extends BasicDebugger implements Bundl
 		return msg;
 	}
 
-	public Logger getLogger() {
-		return super.getLogger();
-	}
 }
