@@ -18,33 +18,41 @@ import org.appdapter.gui.browse.Utility;
 
 import com.jidesoft.plaf.LookAndFeelFactory;
 
-//JIDESOFT import com.jidesoft.plaf.LookAndFeelFactory;
-
 public class LookAndFeelMenuItems extends JMenu {
 
 	private Thread findMoreLaf;
+	public static boolean scanMoreClasses = false;
 
 	public LookAndFeelMenuItems(String title) {
 		super(title);
-		//JIDESOFT  LookAndFeelFactory.installDefaultLookAndFeelAndExtension();
+		boolean isOSGi = Utility.isOSGi();
+		initGUI(isOSGi);
+	}
+
+	private void initGUI(boolean isOSGi) {
+		//JIDESOFT  
+		LookAndFeelFactory.installDefaultLookAndFeelAndExtension();
 		final LookAndFeelMenuItems menu = this;
-		menu.add(createLnfAction("NimbusLookAndFeel", "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel"));
 		menu.add(createLnfAction("Metal", "javax.swing.plaf.metal.MetalLookAndFeel"));
 		menu.add(createLnfAction("System", UIManager.getSystemLookAndFeelClassName()));
-		menu.add(createLnfAction("GTKLookAndFeel", "com.sun.java.swing.plaf.gtk.GTKLookAndFeel"));
-		menu.add(createLnfAction("MotifLookAndFeel", "com.sun.java.swing.plaf.motif.MotifLookAndFeel"));
+		if (!isOSGi) {
+			menu.add(createLnfAction("NimbusLookAndFeel", "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel"));
+			menu.add(createLnfAction("GTKLookAndFeel", "com.sun.java.swing.plaf.gtk.GTKLookAndFeel"));
+			menu.add(createLnfAction("MotifLookAndFeel", "com.sun.java.swing.plaf.motif.MotifLookAndFeel"));
+		}
 		this.findMoreLaf = new Thread() {
-			@Override public void run() {
+			@Override
+			public void run() {
 				addReflectiveLAndF(menu);
 			}
 		};
 
 		Class lafc = null;
-		lafc = LookAndFeelFactory.class;
+		if (!isOSGi)
+			lafc = LookAndFeelFactory.class;
 
 		if (lafc != null) {
 			for (Field fld : lafc.getDeclaredFields()) {
-
 				if (!Modifier.isStatic(fld.getModifiers()))
 					continue;
 				if (fld.getName().contains("_LNF") && fld.getType() == String.class) {
@@ -70,12 +78,15 @@ public class LookAndFeelMenuItems extends JMenu {
 				}
 			}
 		}
-		findMoreLaf.start();
+		if (!isOSGi)
+			findMoreLaf.start();
 	}
 
 	static void addReflectiveLAndF(JMenu menu) {
 
 		try {
+			if (!scanMoreClasses)
+				return;
 			Set<Class> lafs = org.appdapter.gui.util.ClassFinder.getClasses(LookAndFeel.class);
 			if (lafs != null) {
 				for (Class c : lafs) {
@@ -92,7 +103,8 @@ public class LookAndFeelMenuItems extends JMenu {
 
 	private static Action createLnfAction(String title, final String className) {
 		return new AbstractAction(title) {
-			@Override public void actionPerformed(ActionEvent e) {
+			@Override
+			public void actionPerformed(ActionEvent e) {
 				try {
 					UIManager.setLookAndFeel(className);
 				} catch (Exception e1) {
@@ -106,7 +118,8 @@ public class LookAndFeelMenuItems extends JMenu {
 
 	private static Action createLnfAction(String title, final Class clazz) {
 		return new AbstractAction(title) {
-			@Override public void actionPerformed(ActionEvent e) {
+			@Override
+			public void actionPerformed(ActionEvent e) {
 				try {
 					LookAndFeel laf = (LookAndFeel) clazz.newInstance();
 					UIManager.setLookAndFeel(laf);
@@ -121,7 +134,8 @@ public class LookAndFeelMenuItems extends JMenu {
 
 	private static Action setStyleAction(String title, final int style) {
 		return new AbstractAction(title) {
-			@Override public void actionPerformed(ActionEvent e) {
+			@Override
+			public void actionPerformed(ActionEvent e) {
 				try {
 					LookAndFeelFactory.installJideExtension();
 					LookAndFeelFactory.installJideExtension(style);

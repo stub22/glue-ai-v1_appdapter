@@ -566,18 +566,36 @@ abstract public class PromiscuousClassUtils {
 	// frame from the core libraries on the stack between this method's
 	// invocation and the desired invoker.
 	public static ClassLoader getCallerClassLoader() {
+		return getCallerClassLoader(1);
+	}
+
+	public static ClassLoader getCallerClassLoader(int depthSkip) {
 		// NOTE use of more generic Reflection.getCallerClass()
-		Class caller = Reflection.getCallerClass(3);
+		Class caller = Reflection.getCallerClass(depthSkip + 3);
 		// This can be null if the VM is requesting it
 		if (caller == null) {
+			// a breakpoint
 			return null;
 		}
 		// CANT Circumvent security check
 		return caller.getClassLoader();
 	}
 
+	public static ClassLoader getCallerClassLoaderOrCurrent() {
+		ClassLoader callerCL = getCallerClassLoader(1);
+		ClassLoader threadLoader = getThreadClassLoader();
+		if (threadLoader == null)
+			return callerCL;
+		if (callerCL == null)
+			return threadLoader;
+		if (callerCL != threadLoader) {
+			// just for a breakpoint
+			return threadLoader;
+		}
+		return threadLoader;
+	}
+
 	public static <T> Class<T> OneInstC(String p, String c) {
-		Debuggable.notImplemented();
 		try {
 			return (Class<T>) forName(p + "" + c);
 		} catch (ClassNotFoundException e) {
