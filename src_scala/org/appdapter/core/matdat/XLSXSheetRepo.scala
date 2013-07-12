@@ -84,6 +84,7 @@ object XLSXSheetRepoLoader extends BasicDebugger {
 
   }
 
+  //in 2.10.1 we should:  import scala.language.implicitConversions
   class CoalesceStr[A <: String](a: A) { def ??(b: A) = if (a == null || a.length == 0) b else a }
   implicit def coalesce_string[A <: String](a: A) = new CoalesceStr(a)
 

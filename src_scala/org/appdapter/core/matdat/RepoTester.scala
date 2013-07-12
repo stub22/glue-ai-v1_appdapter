@@ -18,11 +18,16 @@ package org.appdapter.core.matdat
 import org.appdapter.core.name.{ Ident, FreeIdent }
 import org.appdapter.core.store.{ Repo, InitialBinding }
 import org.appdapter.help.repo.{ RepoClient, RepoClientImpl, InitialBindingImpl }
-import org.appdapter.impl.store.{ FancyRepo, DatabaseRepo, FancyRepoFactory };
-//import org.appdapter.core.matdat.{SheetRepo, GoogSheetRepo, XLSXSheetRepo}
-import com.hp.hpl.jena.query.{ QuerySolution } // Query, QueryFactory, QueryExecution, QueryExecutionFactory, , QuerySolutionMap, Syntax};
+import org.appdapter.impl.store.{ FancyRepo, DatabaseRepo, FancyRepoFactory }
+import com.hp.hpl.jena.query.{ QuerySolution }
 import com.hp.hpl.jena.rdf.model.{ Model }
 import org.appdapter.core.log.BasicDebugger;
+// Currently we're on   Jena 2.6.4, ARQ 2.8.7, SDB 1.3.4
+import com.hp.hpl.jena.sparql.sse.SSE
+import com.hp.hpl.jena.sparql.modify.request.{ UpdateCreate, UpdateLoad }
+import com.hp.hpl.jena.update.{ GraphStore, GraphStoreFactory, UpdateAction, UpdateRequest }
+import com.hp.hpl.jena.sdb.{ Store, SDBFactory };
+import com.sun.org.apache.bcel.internal.classfile.Deprecated
 /**
  * @author Stu B. <www.texpedient.com>
  */
@@ -90,11 +95,6 @@ object RepoTester extends BasicDebugger {
   def copyAllRepoModels(sourceRepo: Repo.WithDirectory, targetRepo: Repo.WithDirectory): Unit = {
   }
 }
-// Currently we're on   Jena 2.6.4, ARQ 2.8.7, SDB 1.3.4
-import com.hp.hpl.jena.sparql.sse.SSE;
-import com.hp.hpl.jena.sparql.modify.request.{ UpdateCreate, UpdateLoad };
-import com.hp.hpl.jena.update.{ GraphStore, GraphStoreFactory, UpdateAction, UpdateRequest };
-import com.hp.hpl.jena.sdb.{ Store, SDBFactory };
 class BetterDatabaseRepo(sdbStore: Store, dirGraphID: Ident) extends DatabaseRepo(sdbStore, dirGraphID) {
   //	Current docs for GraphStoreFactory (more recent than the code version we're using) say,
   //	regarding   GraphStoreFactory. reate(Dataset dataset)
@@ -124,8 +124,9 @@ class BetterDatabaseRepo(sdbStore: Store, dirGraphID: Ident) extends DatabaseRep
     val loadReq: UpdateLoad = new UpdateLoad("etc/update-data.ttl", graphName);
 
     // Add the two operations and execute the request
-    upSpec.addUpdate(creReq);
-    upSpec.addUpdate(loadReq);
+    //@SuppressWarnings Deprecated
+    upSpec.addUpdate(creReq)
+    upSpec.addUpdate(loadReq)
 
     // Execute 
     UpdateAction.execute(upSpec, sdbUpdateGraphStore);

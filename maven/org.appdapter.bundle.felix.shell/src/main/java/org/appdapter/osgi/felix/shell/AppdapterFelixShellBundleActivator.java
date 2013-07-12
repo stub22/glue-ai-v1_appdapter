@@ -16,27 +16,27 @@
 
 package org.appdapter.osgi.felix.shell;
 
+import javax.swing.JFrame;
 
-import org.osgi.framework.BundleActivator;
+import org.appdapter.gui.demo.DemoBrowser;
+import org.appdapter.gui.demo.DemoNavigatorCtrl;
+import org.appdapter.osgi.core.BundleActivatorBase;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.swing.JFrame;
-import org.appdapter.osgi.core.BundleActivatorBase;
-import org.appdapter.gui.demo.DemoBrowser;
-import org.appdapter.gui.demo.DemoNavigatorCtrl;
 
 public class AppdapterFelixShellBundleActivator extends BundleActivatorBase {
 	static Logger theLogger = LoggerFactory.getLogger(AppdapterFelixShellBundleActivator.class);
 
 	private JFrame myDemoJFrame;
 
-	@Override protected Logger getLogger() {
+	@Override
+	public Logger getLogger() {
 		return theLogger;
 	}
 
-	@Override public void start(BundleContext context) throws Exception {
+	@Override
+	public void start(BundleContext context) throws Exception {
 
 		forceLog4jConfig();
 		super.start(context);
@@ -51,7 +51,8 @@ public class AppdapterFelixShellBundleActivator extends BundleActivatorBase {
 		theLogger.info("]Finished starting browser, bundle activation .start() complete.");
 	}
 
-	@Override public void stop(BundleContext context) throws Exception {
+	@Override
+	public void stop(BundleContext context) throws Exception {
 		String windupMsg = getClass().getCanonicalName() + ".stop(ctx=" + context + ")";
 		theLogger.info("[SLF4J] " + windupMsg);
 		System.out.println("[System.out]" + windupMsg);
