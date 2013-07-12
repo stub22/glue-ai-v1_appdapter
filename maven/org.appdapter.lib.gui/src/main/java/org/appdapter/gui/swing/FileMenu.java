@@ -5,21 +5,20 @@ import java.util.Iterator;
 import java.util.Vector;
 
 import javax.swing.Action;
+import javax.swing.JMenu;
 
-import org.appdapter.gui.swing.CollectionEditorUtil.Settings;
+import org.appdapter.gui.browse.Settings;
 
-import com.jidesoft.swing.JideMenu;
-
-public class FileMenu extends JideMenu {
+public class FileMenu extends JMenu {
 	/**
 	 * 
 	 */
 	private final CollectionEditorUtil collectionEditorUtil;
 	Vector recentFiles = new Vector();
 
-	FileMenu(CollectionEditorUtil collectionEditorUtil) {
+	FileMenu(CollectionEditorUtil val) {
 		super("File");
-		this.collectionEditorUtil = collectionEditorUtil;
+		this.collectionEditorUtil = val;
 		try {
 			addItems();
 		} catch (Throwable t) {

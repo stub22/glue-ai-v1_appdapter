@@ -8,15 +8,7 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.io.NotSerializableException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -30,12 +22,12 @@ import org.appdapter.gui.api.BoxPanelSwitchableView;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.NamedObjectCollection;
 import org.appdapter.gui.box.BoxedCollectionImpl;
+import org.appdapter.gui.browse.Settings;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.repo.Icons;
 import org.appdapter.gui.trigger.TriggerMenu;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 /**
  * The top-level Test for the POJOCollection code. It also contains the
@@ -135,7 +127,8 @@ public class CollectionEditorUtil implements PropertyChangeListener {
 
 	// ==== Property notification methods ===============
 
-	@Override public void propertyChange(PropertyChangeEvent evt) {
+	@Override
+	public void propertyChange(PropertyChangeEvent evt) {
 		if (evt.getSource() == collection) {
 			if (evt.getPropertyName().equals("selected")) {
 				updateSelectedMenu();
@@ -315,7 +308,8 @@ public class CollectionEditorUtil implements PropertyChangeListener {
 			super("Save", Icons.saveCollection);
 		}
 
-		@Override public void actionPerformed(ActionEvent evt) {
+		@Override
+		public void actionPerformed(ActionEvent evt) {
 			saveCollection();
 		}
 	}
@@ -325,7 +319,8 @@ public class CollectionEditorUtil implements PropertyChangeListener {
 			super("Save as...", Icons.saveCollectionAs);
 		}
 
-		@Override public void actionPerformed(ActionEvent evt) {
+		@Override
+		public void actionPerformed(ActionEvent evt) {
 			saveCollectionAs();
 		}
 	}
@@ -335,7 +330,8 @@ public class CollectionEditorUtil implements PropertyChangeListener {
 			super("New", Icons.newCollection);
 		}
 
-		@Override public void actionPerformed(ActionEvent evt) {
+		@Override
+		public void actionPerformed(ActionEvent evt) {
 			newCollection("NewCollection " + newCollectionSerial++, context);
 		}
 	}
@@ -345,7 +341,8 @@ public class CollectionEditorUtil implements PropertyChangeListener {
 			super("Open", Icons.openCollection);
 		}
 
-		@Override public void actionPerformed(ActionEvent evt) {
+		@Override
+		public void actionPerformed(ActionEvent evt) {
 			openCollection();
 		}
 	}
@@ -355,7 +352,8 @@ public class CollectionEditorUtil implements PropertyChangeListener {
 			super("Search...", Icons.search);
 		}
 
-		@Override public void actionPerformed(ActionEvent evt) {
+		@Override
+		public void actionPerformed(ActionEvent evt) {
 			makeRepoNav();
 		}
 
@@ -369,7 +367,8 @@ public class CollectionEditorUtil implements PropertyChangeListener {
 			this.file = file;
 		}
 
-		@Override public void actionPerformed(ActionEvent evt) {
+		@Override
+		public void actionPerformed(ActionEvent evt) {
 			openCollection(file);
 		}
 	}
@@ -388,80 +387,6 @@ public class CollectionEditorUtil implements PropertyChangeListener {
 			add(searchAction);
 		}
 	}
-
-	/**
-	 * Contains settings for the ObjectNavigator application
-	 * 
-	 * 
-	 */
-	static public class Settings implements java.io.Serializable {
-		private final static String FILENAME = Settings.class.getName() + ".ser";
-		private final static int RECENT_FILE_COUNT = 5;
-		transient static Settings settings;
-
-		public List recentFiles;
-
-		public Settings() {
-			recentFiles = new LinkedList();
-		}
-
-		public static void addRecentFile(File file) {
-			if (file != null && !settings.recentFiles.contains(file)) {
-				settings.recentFiles.add(0, file);
-			}
-			while (settings.recentFiles.size() > 5) {
-				settings.recentFiles.remove(4);
-			}
-		}
-
-		public static Iterator getRecentFiles() {
-			return settings.recentFiles.iterator();
-		}
-
-		static {
-			if (getFile().exists()) {
-				try {
-					loadFromFile();
-				} catch (Exception err) {
-					System.err.println("Warning - settings could not be loaded: " + err.getMessage());
-					settings = new Settings();
-				}
-			} else {
-				settings = new Settings();
-			}
-		}
-
-		@Override protected void finalize() {
-			try {
-				saveToFile();
-			} catch (Exception err) {
-				System.err.println("Warning - settings could not be saved: " + err.getMessage());
-			}
-		}
-
-		public static void loadFromFile() throws Exception {
-			InputStream fileIn = new FileInputStream(getFile());
-			ObjectInputStream objectIn = new ObjectInputStream(fileIn);
-			settings = (Settings) (objectIn.readObject());
-			objectIn.close();
-			fileIn.close();
-		}
-
-		public static void saveToFile() throws Exception {
-			FileOutputStream fileOut = new FileOutputStream(getFile());
-			ObjectOutputStream objectOut = new ObjectOutputStream(fileOut);
-			objectOut.writeObject(settings);
-			objectOut.close();
-			fileOut.close();
-		}
-
-		private static File getFile() {
-			File homeDir = new File(System.getProperties().getProperty("user.home"));
-			return new File(homeDir, FILENAME);
-		}
-
-	}
-
 	/*
 		public void showMessage(String string) {
 			Utility.getBoxPanelTabPane().showMessage(string);
