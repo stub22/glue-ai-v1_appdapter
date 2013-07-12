@@ -35,7 +35,7 @@ apsb:BuildableTrigger
 		.		
 
 apt:box_001 	rdf:type			apsb:BuildableBox;
-				apsb:javaFQCN		"org.appdapter.gui.demo.DemoBrowser$DemoRepoBoxImpl";
+				apsb:javaFQCN		"org.appdapter.gui.repo.DefaultMutableRepoBoxImpl";
 				apsb:label			"box 001 apsb label";
 				rdfs:label 			"box 001 rdfs label";
 				apsb:trigger		apt:trig_001a
@@ -47,7 +47,7 @@ apt:trig_001a	rdf:type			apsb:BuildableTrigger;
 				.
 	
 apt:box_002 	rdf:type			apsb:BuildableBox;
-				apsb:javaFQCN		"org.appdapter.gui.demo.DemoBrowser$DemoRepoBoxImpl";
+				apsb:javaFQCN		"org.appdapter.gui.repo.DefaultMutableRepoBoxImpl";
 				apsb:label			"box 002 apsb label";
 				rdfs:label 			"box 002 rdfs label";
 				apsb:trigger		apt:trig_001a;
