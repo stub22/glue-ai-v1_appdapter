@@ -38,17 +38,22 @@ public class RepoOper implements AnyOper {
 
 	@UISalient
 	static public interface ISeeToString {
-		@Override @UISalient(MenuName = "Call ToString") public String toString();
+		@Override
+		@UISalient(MenuName = "Call ToString")
+		public String toString();
 	}
 
 	@UISalient
 	static public interface Reloadable {
 
-		@UISalient(MenuName = "Reload Repo") void reloadAllModels();
+		@UISalient(MenuName = "Reload Repo")
+		void reloadAllModels();
 
-		@UISalient() void reloadSingleModel(String modelName);
+		@UISalient()
+		void reloadSingleModel(String modelName);
 
-		@UISalient(ToValueMethod = "toString") Dataset getMainQueryDataset();
+		@UISalient(ToValueMethod = "toString")
+		Dataset getMainQueryDataset();
 	}
 
 	// static class ConcBootstrapTF extends
@@ -66,7 +71,8 @@ public class RepoOper implements AnyOper {
 			m_repo = repo;
 		}
 
-		@Override public void fire(RB targetBox) {
+		@Override
+		public void fire(RB targetBox) {
 			String resolvedQueryURL = DemoResources.QUERY_PATH;
 			ClassLoader optCL = getClass().getClassLoader();
 			if (targetBox != null) {
@@ -83,7 +89,7 @@ public class RepoOper implements AnyOper {
 		}
 	}
 
-	static public class ReloadSingleModelTrigger extends TriggerImpl {
+	static public class ReloadSingleModelTrigger<RB extends RepoBox<TriggerImpl<RB>>> extends TriggerImpl<RB> {
 
 		final String graphURI;
 		final Reloadable m_repo;
@@ -93,7 +99,8 @@ public class RepoOper implements AnyOper {
 			m_repo = repo;
 		}
 
-		@Override public void fire(Box bt) {
+		@Override
+		public void fire(RB targetBox) {
 			m_repo.reloadSingleModel(graphURI);
 		}
 	}
