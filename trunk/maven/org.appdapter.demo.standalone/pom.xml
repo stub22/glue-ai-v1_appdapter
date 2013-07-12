@@ -54,7 +54,7 @@
 			<artifactId>slf4j-log4j12</artifactId>
 			<groupId>org.slf4j</groupId>
 			<type>jar</type>
-			<version>1.6.1</version>
+			<version>1.7.5</version>
 			<scope>runtime</scope>
 		    <exclusions>
 		        <exclusion>
