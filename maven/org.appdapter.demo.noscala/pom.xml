@@ -54,7 +54,7 @@
 			<artifactId>slf4j-log4j12</artifactId>
 			<groupId>org.slf4j</groupId>
 			<type>jar</type>
-			<version>1.6.1</version>
+			<version>1.7.5</version>
 		</dependency>		
 		<!-- *************** Test Deps *********************** -->
 			<!-- Junit itself is picked up transitively by SDB.  
@@ -128,7 +128,7 @@
 			<artifactId>slf4j-api</artifactId>
 			<groupId>org.slf4j</groupId>
 			<type>jar</type>
-			<version>1.6.1</version>
+			<version>1.7.5</version>
 
 		</dependency>
 		<dependency>

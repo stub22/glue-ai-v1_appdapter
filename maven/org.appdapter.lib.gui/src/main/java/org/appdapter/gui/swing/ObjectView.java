@@ -13,7 +13,7 @@ abstract public class ObjectView<BoxType extends Box>
 
 extends JJPanel implements GetSetObject {
 
-	abstract public void focusOnBox(Box b);
+	abstract public void focusOnBox(BoxType b);
 
 	public Object valueLock = new Object();
 
