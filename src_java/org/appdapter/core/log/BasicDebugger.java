@@ -59,6 +59,10 @@ public class BasicDebugger implements Loggable {
 	 * "org.slf4j.impl.StaticLoggerBinder". SLF4J: Defaulting to no-operation (NOP) logger implementation SLF4J: See
 	 * http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
 	 *
+	 *
+	 *
+	
+	Making this 'public' change hopefully not breaking too much but BasicDebugger's getLogger() code is used in many places .. when used by a inner class of a something overriding BasicDebugger its is not legal in the JVM to call this protected member.. so what is done is a synthetic method is secretly created in the inner class to workaround this.  Under certain source level conditions it is *still* illegal.. So by making this public.. there is no question there is legal access.. and also reduces class size (removes synthetics) and the initial worry of "wont subclasses need to be able to resolve SLF4J or have it in the class path during compile time? "  would have had the same answer where it was protected or public.  "I want to be able to extend BasicDebugger without the guilt of adding a 'logger' property to everything".. Hrrm I understand
 	 */
 	protected Logger getLogger() {
 		if (myLogger == null) {
