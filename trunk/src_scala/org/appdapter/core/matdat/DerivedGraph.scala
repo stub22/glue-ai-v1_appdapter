@@ -125,7 +125,7 @@ object DerivedGraphSpecReader extends BasicDebugger {
 			pipeAttrSL = rc.queryIndirectForAllSolutions(pqs.pplnAttrQueryQN, pqs.pplnGraphQN)		
 		} catch {
 			case t: Throwable =>  {
-				getLogger().error("Problem executing querySpec {} on repoClient {} ", pqs, rc)
+				getLogger().error("Problem executing querySpec {} on repoClient {} ", Array[Object]( pqs, rc))
 				getLogger().error("Stack trace: ", t)
 				return Set[DerivedGraphSpec]()
 			}

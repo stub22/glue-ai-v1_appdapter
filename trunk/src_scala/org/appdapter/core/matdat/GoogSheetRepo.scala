@@ -32,8 +32,8 @@ import org.appdapter.core.store.RepoOper
  *
  * This is a DirModel Loader it contains static methods for loading Google Docs Speedsheets
  */
-class GoogSheetRepo(directoryModel: Model, fmcls: java.util.List[ClassLoader] = null)
-  extends OmniLoaderRepo(directoryModel, fmcls) {
+class GoogSheetRepo(directoryModel: Model)
+  extends OmniLoaderRepo(directoryModel, null) {
 }
 object GoogSheetRepo {
   /////////////////////////////////////////
