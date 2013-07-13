@@ -221,7 +221,7 @@ object FileModelRepoLoader extends BasicDebugger {
       val rPath = repoPath_Lit.getString();
       val mPath = modelPath_Lit.getString();
 
-      getLogger().warn("Ready to read from [{}] / [{}]", rPath, mPath);
+      getLogger().warn("Ready to read from [{}] / [{}]", Array[Object]( rPath, mPath));
       val rdfURL = rPath + mPath;
 
       try {
@@ -230,7 +230,7 @@ object FileModelRepoLoader extends BasicDebugger {
         getLogger.warn("Read fileModel: {}", fileModel)
         PipelineRepoLoader.replaceOrUnion(mainDset, unionOrReplaceRes, graphURI, fileModel);
       } catch {
-        case except: Throwable => getLogger().error("Caught error loading file {}", rdfURL, except)
+        case except: Throwable => getLogger().error("Caught error loading file {}", Array[Object]( rdfURL, except))
       }
 
     }
@@ -248,7 +248,7 @@ object FileModelRepoLoader extends BasicDebugger {
       } else FileModelRepoLoader.readModelSheetFromURL(rdfURL, nsJavaMap, fileModelCLs);
     } catch {
       case except: Throwable => {
-        getLogger().error("Caught error loading file {}", rdfURL, except)
+        getLogger().error("Caught error loading file {}", Array[Object]( rdfURL, except))
         throw except
       }
     }
@@ -271,7 +271,7 @@ object FileModelRepoLoader extends BasicDebugger {
       }
     } catch {
       case except: Throwable => {
-        getLogger().error("Caught error loading file {}", rdfURL, except)
+        getLogger().error("Caught error loading file {}", Array[Object](rdfURL, except))
         throw except
       }
     }
