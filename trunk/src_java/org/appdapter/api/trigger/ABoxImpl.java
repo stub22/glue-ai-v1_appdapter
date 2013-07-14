@@ -28,11 +28,12 @@ import org.slf4j.helpers.NOPLogger;
  * @author Stu B. <www.texpedient.com>
  */
 
-public abstract class BoxImpl<TrigType extends Trigger<? extends BoxImpl<TrigType>>> extends KnownComponentImpl implements MutableBox<TrigType> {
+
+public abstract class ABoxImpl<TrigType extends Trigger<? extends ABoxImpl<TrigType>>> extends KnownComponentImpl implements MutableBox<TrigType> {
 
 	private BoxContext myBoxContext;
 
-	static Logger theLogger = LoggerFactory.getLogger(BoxImpl.class);
+	static Logger theLogger = LoggerFactory.getLogger(ABoxImpl.class);
 
 	/*
 	 *  "public" Removes the requirement for synthetic accessors

@@ -196,7 +196,11 @@ public class TriggerForMethod<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 		if (isStatic()) {
 			s = "Static|" + s;
 		}
-		s = Utility.getShortClassName(classOrFirstInterfaceR(_clazz)) + "|" + s;
+		Class fi = classOrFirstInterfaceR(_clazz);
+		Object o1 = Utility.dref(_object);
+		if (o1.getClass() != _clazz || _clazz.getDeclaredMethods().length > 6) {
+			s = Utility.getShortClassName(fi) + "|" + s;
+		}
 		Class getRet = getReturnType();
 		/*if (getRet == void.class) {
 			s = "Invoke|" + s;
@@ -204,6 +208,11 @@ public class TriggerForMethod<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 			s = _featureDescriptor.getClass().getSimpleName() + "|" + s;
 		}*/
 		s = s.replace("PropertyDescriptor|", "Show ");
+		if (!_clazz.isInstance(o1)) {
+			s = "Indirectly|" + s;
+		} else {
+			return s;
+		}
 		return s;
 	}
 
@@ -235,7 +244,7 @@ public class TriggerForMethod<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 		return myShortLabel;
 	}
 
-	private boolean isStatic() {
+	public boolean isStatic() {
 		Method m = getMethod();
 		if (m == null)
 			return false;
@@ -252,20 +261,29 @@ public class TriggerForMethod<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 			return;
 		}
 		Class[] pts = m.getParameterTypes();
-		boolean isStatic = Modifier.isStatic(m.getModifiers());
+		boolean isStatic = isStatic();
 		if (isStatic) {
 			jmi.setBackground(Color.ORANGE);
 		}
-		int needsArgument = pts.length;
+		
+		int needsArgumentsTotal = pts.length;
 		if (isStatic)
-			needsArgument = pts.length - 1;
-		if (needsArgument > 1) {
+			needsArgumentsTotal = pts.length - 1;
+		
+		if (needsArgumentsTotal > 1) {
 			jmi.setForeground(Color.GRAY);
 			jmi.setBackground(Color.BLACK);
 		} else {
-			if (needsArgument > 0) {
+			if (needsArgumentsTotal > 0) {
 				jmi.setForeground(Color.GRAY);
 			}
 		}
+	}
+
+	@Override public int hashCode() {
+		Method rm = this.getMethod();
+		if (rm != null)
+			return rm.hashCode();
+		return toString().hashCode();
 	}
 }

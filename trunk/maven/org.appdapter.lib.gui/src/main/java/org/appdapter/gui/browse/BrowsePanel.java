@@ -74,9 +74,14 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 	private TreeModel myTreeModel;
 	final DisplayContextUIImpl app;
 	private AddToTreeListener addToTreeListener;
+	public BoxContext myBoxContext;
 
+	public BoxContext getBoxContext() {
+		return myBoxContext;
+	}
+	
 	/** Creates new form BrowsePanel */
-	public BrowsePanel(TreeModel tm, BoxContext bctx) {
+	public BrowsePanel(TreeModel tm, BoxContext bctx0) {
 		Utility.uiObjects.toString();
 		Utility.browserPanel = this;
 		myTreeModel = tm;
@@ -88,8 +93,9 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 		Utility.collectionWatcher = new CollectionEditorUtil(app, ctx);
 		//myBoxPanelTabPane.add("Class Browser", Utility.selectionOfCollectionPanel);
 		myBoxPanelTabPane.add("POJO Browser", Utility.collectionWatcher.getNamedItemChooserPanel());
+		myBoxContext = bctx0;
 		hookTree();
-		this.addToTreeListener = new AddToTreeListener(myTree, ctx, bctx);
+		this.addToTreeListener = new AddToTreeListener(myTree, ctx, bctx0);
 		invalidate();
 	}
 

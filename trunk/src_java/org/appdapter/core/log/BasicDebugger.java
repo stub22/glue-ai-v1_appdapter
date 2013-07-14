@@ -35,6 +35,7 @@ public class BasicDebugger implements Loggable {
 	 */
 	public BasicDebugger(Class appClass) {
 		myAppClass = appClass;
+		Debuggable.allObjectsForDebug.add(this);
 	}
 
 	/**
@@ -42,6 +43,7 @@ public class BasicDebugger implements Loggable {
 	 */
 	public BasicDebugger() {
 		myAppClass = this.getClass();
+		Debuggable.allObjectsForDebug.add(this);
 	}
 
 	static Logger theFallbackLogger = null;

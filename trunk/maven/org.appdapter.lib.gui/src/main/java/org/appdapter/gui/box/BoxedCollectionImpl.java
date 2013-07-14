@@ -22,7 +22,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.appdapter.api.trigger.Box;
-import org.appdapter.api.trigger.BoxImpl;
+import org.appdapter.api.trigger.ABoxImpl;
+import org.appdapter.core.component.KnownComponent;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.BT;
 import org.appdapter.gui.api.BrowserPanelGUI;
@@ -581,7 +582,7 @@ public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChang
 			return MISSING_COMPONENT;
 		if (box instanceof BT)
 			return ((BT) box).getUniqueName(getNameToBoxIndex());
-		String lbl = ((BoxImpl) box).getShortLabel();
+		String lbl = ((KnownComponent) box).getShortLabel();
 		if (lbl != null)
 			return lbl;
 		return Utility.generateUniqueName(box.getValue(), this.nameIndex);

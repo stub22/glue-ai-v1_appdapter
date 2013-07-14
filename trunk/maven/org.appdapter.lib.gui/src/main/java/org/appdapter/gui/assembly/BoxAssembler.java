@@ -53,7 +53,7 @@ public class BoxAssembler extends DynamicCachingComponentAssembler<ScreenBoxImpl
 		}
 
 		Set<Item> extraItems = ItemFuncs.getLinkedItemSet(configItem, ComponentAssemblyNames.P_extraThing);
-		// System.out.println("Found extraItems: " + extraItems);
+		System.out.println("Found extraItems: " + extraItems);
 
 	}
 
