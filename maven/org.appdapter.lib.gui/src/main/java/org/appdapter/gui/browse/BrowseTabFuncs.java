@@ -21,8 +21,8 @@ import java.util.WeakHashMap;
 import javax.swing.JPanel;
 
 import org.appdapter.api.trigger.Box;
-import org.appdapter.api.trigger.BoxImpl;
 import org.appdapter.api.trigger.ObjectKey;
+import org.appdapter.core.component.KnownComponent;
 import org.appdapter.gui.api.BoxPanelSwitchableView;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.DisplayType;
@@ -36,7 +36,7 @@ public class BrowseTabFuncs {
 
 	static WeakHashMap<String, Box> boxKeyToImpl = new WeakHashMap<String, Box>();
 
-	protected static boolean isBoxTabKnown_maybe(DisplayContext dc, BoxImpl nonPanel) {
+	protected static boolean isBoxTabKnown_maybe(DisplayContext dc, KnownComponent nonPanel) {
 		BoxPanelSwitchableView tabbedPane = dc.getBoxPanelTabPane();
 		String key = ObjectKey.factory.getKeyName(tabbedPane, nonPanel);
 		return boxKeyToImpl.containsKey(key);

@@ -49,7 +49,6 @@ public class DemoNavigatorCtrl extends BaseDemoNavigatorCtrl implements DisplayC
 	}
 
 	@Override public void show() {
-		// TODO Auto-generated method stub
-
+		super.launchFrame(getClass().getCanonicalName());
 	}
 }

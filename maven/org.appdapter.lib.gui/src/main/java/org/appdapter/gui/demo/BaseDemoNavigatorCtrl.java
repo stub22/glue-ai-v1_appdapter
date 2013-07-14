@@ -15,6 +15,7 @@
  */
 
 package org.appdapter.gui.demo;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.MouseAdapter;
@@ -79,6 +80,10 @@ abstract public class BaseDemoNavigatorCtrl implements BrowserPanelGUI, org.appd
 		return myBP;
 	}
 
+	public BoxContext getBoxContext() {
+		return myBoxCtx;
+	}
+
 	public BaseDemoNavigatorCtrl(BoxContext bc, TreeModel tm, ScreenBoxTreeNode rootBTN, DisplayContextProvider dcp) {
 		myBoxCtx = bc;
 		myTM = tm;
@@ -97,19 +102,21 @@ abstract public class BaseDemoNavigatorCtrl implements BrowserPanelGUI, org.appd
 
 	public void launchFrame(String title) {
 		myJFrame = Utility.appFrame;
+		boolean firstTime = false;
 		if (myJFrame == null) {
 			Utility.appFrame = myJFrame = new JFrame();
-			myJFrame.setTitle(title);
+			firstTime = true;
+		} else {
+		}
+		myJFrame.setTitle(title);
+		if (firstTime) {
 			myJFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 			myJFrame.getContentPane().add(myBP, BorderLayout.CENTER);
 			myBP.checkParent();
 			myJFrame.pack();
-
-			myJFrame.setVisible(true);
-		} else {
-
-			throw new RuntimeException("Frame already launched!");
 		}
+		myJFrame.setVisible(true); //throw new RuntimeException("Frame already launched!");
+
 	}
 
 	public void addBoxToRoot(MutableBox childBox, boolean reload) {

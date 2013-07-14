@@ -178,7 +178,7 @@ final public class DemoBrowser {
 				getContentPane().setLayout(new BorderLayout());
 				getContentPane().add("Center", box);
 				box.add(new JLabel("Opening DemoNavigatorCtrl in a new window..."));
-				DemoNavigatorCtrl dnc = makeDemoNavigatorCtrlReal(new String[0], false);
+				DemoNavigatorCtrl dnc = makeDemoNavigatorCtrlReal(new String[0], defaultExampleCode);
 				dnc.launchFrame("Appdapter Demo Browser");
 				setVisible(false);
 				setSize(0, 0);
@@ -285,7 +285,7 @@ final public class DemoBrowser {
 			BT appBox = (BT) DemoServiceWrapFuncs.makeTestChildBoxImplWithObj(rootBox, (Class) regBoxClass, BasicDebugger.class, "app");
 			BT sysBox = (BT) DemoServiceWrapFuncs.makeTestChildBoxImplWithObj(rootBox, (Class) regBoxClass, ScreenBoxImpl.class, "sys");
 
-			//			if (!isExampleCode) 				return bctx;
+				if (!isExampleCode) 				return bctx;
 
 			RBT r1Box = (RBT) DemoServiceWrapFuncs.makeTestChildBoxImpl(repoBox, (Class) repoBoxClass, regTrigProtoE, "h2.td_001");
 

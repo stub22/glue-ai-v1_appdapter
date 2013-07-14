@@ -32,7 +32,7 @@ import javax.swing.JPanel;
 import org.appdapter.api.trigger.AnyOper.UIHidden;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContext;
-import org.appdapter.api.trigger.BoxImpl;
+import org.appdapter.api.trigger.ABoxImpl;
 import org.appdapter.api.trigger.MutableBox;
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.api.trigger.UserResult;
@@ -67,7 +67,7 @@ import org.slf4j.LoggerFactory;
  */
 
 @UIHidden
-public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<TrigType>>> extends BoxImpl<TrigType>
+public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<TrigType>>> extends ABoxImpl<TrigType>
 
 implements ScreenBox<TrigType>, GetSetObject, UserResult, Convertable, DisplayContextProvider {
 

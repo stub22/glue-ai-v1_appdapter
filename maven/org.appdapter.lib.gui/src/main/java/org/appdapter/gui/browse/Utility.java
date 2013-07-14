@@ -9,6 +9,7 @@ import java.beans.BeanInfo;
 import java.beans.Customizer;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
 import java.beans.PropertyVetoException;
@@ -24,6 +25,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -53,6 +55,7 @@ import org.appdapter.api.trigger.UserResult;
 import org.appdapter.core.boot.ClassLoaderUtils;
 import org.appdapter.core.component.KnownComponent;
 import org.appdapter.core.log.Debuggable;
+import org.appdapter.core.name.FreeIdent;
 import org.appdapter.core.name.Ident;
 import org.appdapter.core.store.Repo;
 import org.appdapter.gui.api.AddTabFrames;
@@ -98,20 +101,42 @@ import com.hp.hpl.jena.rdf.model.Model;
 //import sun.beans.editors.IntEditor;
 
 public class Utility {
-
+	public static List EMPTYLIST = new ArrayList();
+	public static Collection<AddTabFrames> addTabFramers = new HashSet<AddTabFrames>();
+	final static HashMap<Object, BT> allBoxes = new HashMap();
 	public static Logger theLogger = org.slf4j.LoggerFactory.getLogger(Utility.class);
 	private static final Class[] CLASS0 = new Class[0];
+	public static final Class Stringable = Enum.class;
+	final static Map<Class, ToFromStringConverter> toFromString = new HashMap<Class, ToFromStringConverter>();
+	static HashMap<String, LinkedList> displayLists = new HashMap<String, LinkedList>();
 
 	// ==== Instance variables ==========
 	public static BrowsePanel browserPanel;
 	public static NamedObjectCollection uiObjects = new BoxedCollectionImpl("All UI Objects", null);
+
+	static {
+		try {
+			uiObjects.findOrCreateBox("AssemberCacheGrabber1", new AssemberCacheGrabber());
+		} catch (PropertyVetoException e) {
+			e.printStackTrace();
+		}
+
+		toFromString.put(Ident.class, new ToFromStringConverter<Ident>(Ident.class) {
+
+			@Override public String toString(Ident toBecomeAString) {
+				return toBecomeAString.getAbsUriString();
+			}
+
+			@Override public Ident fromString(String title, Class further) {
+				return new FreeIdent(title);
+			}
+		});
+	}
 	public static BrowserPanelGUI controlApp;
 	public static BoxPanelSwitchableView theBoxPanelDisplayContext;
 	public static NamedItemChooserPanel namedItemChooserPanel;
 	public static CollectionEditorUtil collectionWatcher;
 	public static DisplayContext selectedDisplaySontext;
-
-	static HashMap<String, LinkedList> displayLists = new HashMap<String, LinkedList>();
 
 	public LinkedList getBoxListFrom(Object key) {
 		String strkey = key.toString();
@@ -125,17 +150,17 @@ public class Utility {
 	}
 
 	static public Object getCachedComponent(Ident id) {
-		NamedObjectCollection namedObjectCollection = getTreeBoxCollection();
-		if (namedObjectCollection == null) {
+		NamedObjectCollection noc = getTreeBoxCollection();
+		if (noc == null) {
 			Debuggable.warn("NULL namedObjectCollection");
 		}
-		return namedObjectCollection.findBoxByName(id.toString());
+		return noc.findBoxByName(id.toString());
 	}
 
-	static public void putCachedComponent(Ident id, Object comp) {
+	static public void recordCreated(NamedObjectCollection noc, Ident id, Object comp) {
 		BoxPanelSwitchableView boxPanelDisplayContext = getBoxPanelTabPane();
 		try {
-			recordCreated(uiObjects.findOrCreateBox(id.toString(), comp));
+			recordCreated(noc.findOrCreateBox(id.toString(), comp));
 		} catch (PropertyVetoException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -264,10 +289,6 @@ public class Utility {
 		}
 	}
 	 */
-	public static List EMPTYLIST = new ArrayList();
-
-	public static Collection<AddTabFrames> addTabFramers = new HashSet<AddTabFrames>();
-
 	public static List getTriggersFromBeanInfo(BeanInfo beanInfo) {
 		return EMPTYLIST;
 	}
@@ -478,6 +499,10 @@ public class Utility {
 	}
 
 	public static Object fromString(String title, Class type) throws ClassCastException {
+		ToFromStringConverter conv = getToFromConverter(type);
+		if (conv != null)
+			return conv.fromString(title, type);
+
 		if (!isToStringType(type)) {
 			BT box = getTreeBoxCollection().findBoxByName(title);
 			if (box == null) {
@@ -485,9 +510,11 @@ public class Utility {
 			}
 			return box.convertTo(type);
 		}
+
 		if (type == String.class)
 			return title;
 		type = nonPrimitiveTypeFor(type);
+
 		ClassCastException cce = null;
 		Class searchType = type;
 		while (searchType != null) {
@@ -787,13 +814,11 @@ public class Utility {
 		if (isToStringType(expected)) {
 			return new GetSetObject() {
 
-				@Override
-				public void setObject(Object object) throws InvocationTargetException {
-					getCurrentPOJOApp().showMessage("" + object);
+				@Override public void setObject(Object object) throws InvocationTargetException {
+					getCurrentPOJOApp().showMessage(makeToString(object));
 				}
 
-				@Override
-				public Object getValue() {
+				@Override public Object getValue() {
 					return getCurrentPOJOApp().getMessage();
 				}
 			};
@@ -1013,8 +1038,6 @@ public class Utility {
 		return objects;
 	}
 
-	static HashMap allBoxes = new HashMap();
-
 	public static synchronized boolean recordCreated(Object box) {
 		if (box instanceof BT) {
 			return recordBCreated((BT) box);
@@ -1129,6 +1152,37 @@ public class Utility {
 		return title;
 	}
 
+	public static String getEasyDefaultName(Object object) {
+		if (object == null)
+			return "<null>";
+		Class type = object.getClass();
+		if (type == Class.class)
+			return ((Class) object).getName();
+		if (type == String.class)
+			return ((String) object);
+		if (isToStringType(type))
+			return makeToString(object);
+		return null;
+	}
+
+	public static String makeToString(Object object) {
+		ToFromStringConverter conv = getToFromConverter(object.getClass());
+		if (conv != null)
+			return conv.toString(object);
+		return "" + object;
+	}
+
+	static public <T> ToFromStringConverter<T> getToFromConverter(Class<? extends T> findToString) {
+		synchronized (toFromString) {
+			for (Class c : toFromString.keySet()) {
+				if (c.isAssignableFrom(findToString)) {
+					return toFromString.get(c);
+				}
+			}
+		}
+		return null;
+	}
+
 	public static String hasDefaultName(Object object) {
 		if (object == null)
 			return "<null>";
@@ -1138,7 +1192,7 @@ public class Utility {
 		if (type == String.class)
 			return ((String) object);
 		if (isToStringType(type))
-			return "" + object;
+			return makeToString(object);
 		if (object instanceof BT) {
 			return ((BT) object).getUniqueName();
 		}
@@ -1165,6 +1219,9 @@ public class Utility {
 			return DisplayType.TOSTRING;
 		}
 		if (expected == Boolean.class) {
+			return DisplayType.TOSTRING;
+		}
+		if (getToFromConverter(expected) != null) {
 			return DisplayType.TOSTRING;
 		}
 		return DisplayType.PANEL;
@@ -1327,6 +1384,101 @@ public class Utility {
 					return false; //for testing if OSGi loading is safe yet
 				return true;
 			}
+		}
+		return false;
+	}
+
+	public static Collection<PropertyDescriptor> getProperties(Object object) throws IntrospectionException {
+		Map<String, PropertyDescriptor> props = new HashMap<String, PropertyDescriptor>();
+		final Class beanClass = object.getClass();
+		PropertyDescriptor[] pdsa = getBeanInfo(beanClass).getPropertyDescriptors();
+		if (pdsa != null) {
+			for (PropertyDescriptor p : pdsa) {
+				props.put(p.getName(), p);
+			}
+		}
+		int fnum = -1;
+		for (final Field f : getAllFields(beanClass)) {
+			fnum++;
+			String propName = PropertyDescriptorForField.clipPropertyNameMethod(f.getName(), "my").toLowerCase();
+			PropertyDescriptor pd = props.get(propName);
+			if (pd == null) {
+				pd = new PropertyDescriptorForField(f);
+				props.put(pd.getName().toLowerCase(), pd);
+			}
+		}
+		Collection<Method> ml = getAllMethods(beanClass);
+		for (Method m : ml) {
+			String propName = PropertyDescriptorForField.clipPropertyNameMethod(m.getName(), "is", "get", "set").toLowerCase();
+			PropertyDescriptor pd = props.get(propName);
+			Class[] pts = m.getParameterTypes();
+			int ptsl = pts.length;
+			if (pd != null) {
+				if (ptsl == 0 && isAssignableTypes(m.getReturnType(), pd.getPropertyType())) {
+					pd.setReadMethod(m);
+					continue;
+				} else {
+					if (ptsl == 1 && m.getReturnType() == void.class && isAssignableTypes(pts[0], pd.getPropertyType())) {
+						pd.setWriteMethod(m);
+						continue;
+					}
+				}
+			}
+		}
+		return props.values();
+	}
+
+	private static boolean isAssignableTypes(Class<?> c1, Class<?> c2) {
+		if (c1 == void.class || c2 == void.class)
+			return false;
+		if (c1.isAssignableFrom(c2) || c2.isAssignableFrom(c1))
+			return true;
+		return c1.isInterface() && c2.isInterface();
+	}
+
+	private static boolean disjointTypes(Class<?> c1, Class<?> c2) {
+		if (c1 == void.class || c2 == void.class)
+			return true;
+		if (c1.isAssignableFrom(c2) || c2.isAssignableFrom(c1))
+			return false;
+		return false;
+	}
+
+	private static Collection<Method> getAllMethods(Class clz) {
+		List<Method> methods = new ArrayList<Method>();
+		while (clz != null) {
+			for (Method m : clz.getDeclaredMethods()) {
+				methods.add(m);
+			}
+			clz = clz.getSuperclass();
+		}
+		return methods;
+	}
+
+	private static Collection<Field> getAllFields(Class clz) {
+		List<Field> methods = new ArrayList<Field>();
+		while (clz != null) {
+			for (Field m : clz.getDeclaredFields()) {
+				methods.add(m);
+			}
+			clz = clz.getSuperclass();
+		}
+		return methods;
+	}
+
+	public static boolean instanceOf(Object value, Class clz) {
+		if (clz == Stringable) {
+			return value == null || isToStringType(value.getClass());
+		}
+		if (clz.isInstance(value))
+			return true;
+		return false;
+	}
+
+	public static boolean instanceOfAny(Object value, Class... clss) {
+		for (Class c : clss) {
+			if (instanceOf(value, c))
+				return true;
 		}
 		return false;
 	}

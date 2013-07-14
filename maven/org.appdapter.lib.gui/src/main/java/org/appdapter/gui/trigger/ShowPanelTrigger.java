@@ -10,7 +10,7 @@ import org.appdapter.gui.browse.Utility;
 
 public class ShowPanelTrigger<BT extends Box<TriggerImpl<BT>>> extends TriggerForInstance<BT> {
 
-	Class panelClass;
+	final Class panelClass;
 
 	public ShowPanelTrigger(DisplayContext ctx, Class cls, WrapperValue obj, Class fd) {
 		_clazz = cls;
@@ -60,5 +60,10 @@ public class ShowPanelTrigger<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 	@Override
 	Object getIdentityObject() {
 		return panelClass;
+	}
+	
+	@Override
+	public int hashCode() {
+		return getIdentityObject().hashCode();
 	}
 }
