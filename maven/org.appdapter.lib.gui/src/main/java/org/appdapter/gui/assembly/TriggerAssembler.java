@@ -36,10 +36,12 @@ public class TriggerAssembler extends DynamicCachingComponentAssembler<TriggerIm
 	public TriggerAssembler(Resource builderConfRes) {
 		super(builderConfRes);
 	}
-	@Override protected void initExtendedFieldsAndLinks(TriggerImpl comp, Item configItem, Assembler asmblr, Mode mode) {
+
+	@Override
+	protected void initExtendedFieldsAndLinks(TriggerImpl comp, Item configItem, Assembler asmblr, Mode mode) {
 		theLogger.info("bonus trigger init here");
 		Ident compID = comp.getIdent();
-		// TriggerImpl	bt = TriggerImpl.attachNoargsTrigger(mbox, btClass, apsbLabel);
+		//TriggerImpl bt = TriggerImpl.attachNoargsTrigger(mbox, btClass, apsbLabel);
 	}
 
 }

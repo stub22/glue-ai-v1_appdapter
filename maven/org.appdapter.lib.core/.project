@@ -5,6 +5,7 @@
 	<projects>
 		<project>ext.bundle.jena_all_264</project>
 		<project>ext.bundle.xml.dom4j_161</project>
+		<project>ext.bundle.osgi.common</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

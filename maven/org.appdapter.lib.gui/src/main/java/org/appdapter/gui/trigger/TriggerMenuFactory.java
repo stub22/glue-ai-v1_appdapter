@@ -15,6 +15,7 @@
  */
 
 package org.appdapter.gui.trigger;
+
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
@@ -45,11 +46,16 @@ import org.appdapter.api.trigger.Trigger;
 import org.appdapter.core.component.KnownComponent;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.UIAware;
+import org.appdapter.gui.box.AbstractScreenBoxTreeNodeImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
 public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
+
+	static Logger theLogger = LoggerFactory.getLogger(TriggerMenuFactory.class);
 
 	public TriggerMenuFactory() {
 
@@ -69,7 +75,8 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 
 	public class TriggerSorter implements Comparator<TT> {
 
-		@Override public int compare(TT o1, TT o2) {
+		@Override
+		public int compare(TT o1, TT o2) {
 			int r = getTriggerSortName(o1).toLowerCase().compareTo(getTriggerSortName(o2).toLowerCase());
 			if (r == 0) {
 				return getTriggerName(o1).toLowerCase().compareTo(getTriggerName(o2).toLowerCase());
@@ -89,6 +96,13 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 			private void requestContextPopup(MouseEvent e) {
 				int x = e.getX();
 				int y = e.getY();
+				Object src = e.getSource();
+				if (!(src instanceof JTree)) {
+					if (src == null)
+						src = this;
+					theLogger.trace("Click Not in the tree " + src + " " + src.getClass());
+					return;
+				}
 				JTree tree = (JTree) e.getSource();
 				TreePath path = tree.getPathForLocation(x, y);
 				if (path == null) {
@@ -98,12 +112,19 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 
 				// Nodes are not *required* to implement TreeNode
 				DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) path.getLastPathComponent();
-				Box<TT> box = (Box<TT>) treeNode.getUserObject();
+				Object uo = treeNode.getUserObject();
+				TriggerPopupMenu popup;
+				if (uo instanceof Box) {
+					Box<TT> box = (Box<TT>) treeNode.getUserObject();
 
-				// String label = "popup: " + obj.toString(); // obj.getTreeLabel();
-				JPopupMenu popup = buildPopupMenu(box);
+					// String label = "popup: " + obj.toString(); // obj.getTreeLabel();
+					popup = buildPopupMenu(box);
+					if (treeNode instanceof AbstractScreenBoxTreeNodeImpl) {
+						((AbstractScreenBoxTreeNodeImpl) treeNode).addExtraTriggers(popup);
+						popup.show(tree, x, y);
+					}
+				}
 
-				popup.show(tree, x, y);
 			}
 
 			public void mousePressed(MouseEvent e) {
@@ -121,8 +142,8 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 		return ma;
 	}
 
-	public JPopupMenu buildPopupMenu(Box<TT> box) {
-		JPopupMenu popup = new TriggerPopupMenu(null, null, null, box);
+	public TriggerPopupMenu buildPopupMenu(Box<TT> box) {
+		TriggerPopupMenu popup = new TriggerPopupMenu(null, null, null, box);
 		addTriggersToPopup(box, popup);
 		return popup;
 	}
@@ -166,14 +187,16 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 			super(lbl);
 		}
 
-		@Override public JMenuItem add(JMenuItem c) {
+		@Override
+		public JMenuItem add(JMenuItem c) {
 			ensureUnequelyNamed(c);
 			JMenuItem r = super.add(c);
 			ensureFoundNamed(c);
 			return r;
 		}
 
-		@Override public Component add(Component c, int index) {
+		@Override
+		public Component add(Component c, int index) {
 			ensureUnequelyNamed(c);
 			mcomps.add(index, c);
 			Component r = super.add(c, index);
@@ -181,7 +204,8 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 			return r;
 		}
 
-		@Override public Component[] getComponents() {
+		@Override
+		public Component[] getComponents() {
 			if (true)
 				return mcomps.toArray(new Component[mcomps.size()]);
 			return super.getMenuComponents();
@@ -207,13 +231,15 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 			Debuggable.mustBeSameStrings("found=" + found, fnd);
 		}
 
-		@Override public void removeAll() {
+		@Override
+		public void removeAll() {
 			Debuggable.notImplemented();
 			mcomps.clear();
 			super.removeAll();
 		}
 
-		@Override public Component add(Component c) {
+		@Override
+		public Component add(Component c) {
 			ensureUnequelyNamed(c);
 			Component r = super.add(c);
 			mcomps.add(c);
@@ -221,11 +247,13 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 			return r;
 		}
 
-		@Override public String getText() {
+		@Override
+		public String getText() {
 			return super.getText();
 		}
 
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			Component p = getParent();//.toString();
 			if (p != null) {
 				return "" + TriggerMenuFactory.getLabel(p, 1) + "->" + TriggerMenuFactory.getLabel(this, 1);

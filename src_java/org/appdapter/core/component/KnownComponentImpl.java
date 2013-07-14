@@ -26,6 +26,10 @@ public class KnownComponentImpl extends BasicDebugger implements MutableKnownCom
 	private Ident myIdent;
 	private String myShortLabel, myDescription;
 
+	public KnownComponentImpl() {		
+		
+	}
+	
 	@Override public void setIdent(Ident id) {
 		myIdent = id;
 	}

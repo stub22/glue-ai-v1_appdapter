@@ -480,4 +480,6 @@ abstract public class TriggerForInstance<B extends Box<TriggerImpl<B>>> extends 
 			throw Debuggable.reThrowable(e1);
 		}
 	}
+	
+	abstract public int hashCode();
 }

@@ -35,4 +35,9 @@ public class ComponentCache<MKC extends MutableKnownComponent>  {
 	public void putCachedComponent(Ident id, MKC comp) {
 		myCompCache.put(id, comp);
 	}	
+	
+	// only for the debugger in UI
+	public Map<Ident, MKC> getCompCache() {
+		return myCompCache;
+	}
 }
