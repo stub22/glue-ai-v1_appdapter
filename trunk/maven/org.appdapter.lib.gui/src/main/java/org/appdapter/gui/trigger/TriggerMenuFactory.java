@@ -47,6 +47,7 @@ import org.appdapter.core.component.KnownComponent;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.UIAware;
 import org.appdapter.gui.box.AbstractScreenBoxTreeNodeImpl;
+import org.appdapter.gui.swing.SafeJMenu;
 import org.appdapter.gui.swing.SafeJMenuItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
