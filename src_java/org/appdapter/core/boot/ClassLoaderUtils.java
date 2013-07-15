@@ -187,10 +187,10 @@ public class ClassLoaderUtils {
 	static Map<String, ClassLoader> namedLoaders = new HashMap<String, ClassLoader>();
 
 	public static void registerClassLoader(BundleContext context, ClassLoader loader, String resourceClassLoaderType) {
-		registerClassLoader(context, loader, resourceClassLoaderType, false, false);
+		withClassLoader(context, loader, resourceClassLoaderType, false, false);
 	}
 
-	private static void registerClassLoader(BundleContext context, ClassLoader loader, String resourceClassLoaderType, boolean contextOptional, boolean isRemoval) {
+	private static void withClassLoader(BundleContext context, ClassLoader loader, String resourceClassLoaderType, boolean contextOptional, boolean isRemoval) {
 		if (loader == null && !isRemoval) {
 			theLogger.error(Debuggable.toInfoStringCompound("NULLS in registerClassLoader", context, loader, resourceClassLoaderType, "contextOptional=", contextOptional, "isRemoval=", isRemoval));
 			return;
@@ -233,15 +233,21 @@ public class ClassLoaderUtils {
 		context.registerService(ClassLoader.class.getName(), loader, props);
 	}
 
-	public static void registerClassLoader(BundleActivator something, BundleContext ctx) {
+	public static void registerClassLoader(Object something, BundleContext ctx) {
 		Class thisClass = something.getClass();
-		ClassLoaderUtils.registerClassLoader(ctx, thisClass.getClassLoader(), thisClass.getPackage().getName(), true, false);
+		if (something instanceof Class) {
+			thisClass = (Class) something;
+		}
+		withClassLoader(ctx, thisClass.getClassLoader(), thisClass.getPackage().getName(), true, false);
 
 	}
 
-	public static void unregisterClassLoader(BundleActivator something, BundleContext ctx) {
+	public static void unregisterClassLoader(Object something, BundleContext ctx) {
 		Class thisClass = something.getClass();
-		ClassLoaderUtils.registerClassLoader(ctx, thisClass.getClassLoader(), thisClass.getPackage().getName(), false, true);
+		if (something instanceof Class) {
+			thisClass = (Class) something;
+		}
+		withClassLoader(ctx, thisClass.getClassLoader(), thisClass.getPackage().getName(), false, true);
 
 	}
 
