@@ -12,7 +12,7 @@ import org.appdapter.gui.api.NamedObjectCollection;
  *
  * 
  */
-public class TriggerMenu extends JMenu {
+public class TriggerMenu extends SafeJMenu {
 	TriggerMenuController controller;
 
 	public TriggerMenu(String title, DisplayContext context, NamedObjectCollection noc, BT box, Object object) {

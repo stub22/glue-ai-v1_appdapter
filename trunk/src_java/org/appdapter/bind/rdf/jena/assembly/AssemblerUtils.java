@@ -43,60 +43,66 @@ import com.hp.hpl.jena.util.FileManager;
 public class AssemblerUtils {
 	static Logger theLogger = LoggerFactory.getLogger(AssemblerUtils.class);
 	static BasicDebugger theDbg = new BasicDebugger();
-    
-    private static AssemblerSession theDefaultSession = new AssemblerSession();
-    private static Map<AssemblerSession,Map<Class, ComponentCache>> theSessionComponentCacheMap = new HashMap<AssemblerSession, Map<Class, ComponentCache>>();
-    
-    /**
-     * Clears all of the objects of a given type from the object cache.
-     * 
-     * @param c The Type of cache that is too be cleared
-     * @param s The session that owns the caches
-     */
-    public static void clearCacheForAssemblerSubclassForSession(Class c, AssemblerSession s) {
-        Map<Class, ComponentCache> map = AssemblerUtils.getComponentCacheMap(s);
-        map.put(c, null);
-	}
-    
-    /**
-     * Clears all of the caches in a given session.
-     * 
-     * @param s The session that owns the caches
-     */
-	public static void clearAllSubclassCachesForSession(AssemblerSession s) { 
-        Map<Class, ComponentCache> map = AssemblerUtils.getComponentCacheMap(s);
-        map.clear();
-	}
-    
-    
-    public static AssemblerSession getDefaultSession(){
-        return theDefaultSession;
-    }
-    
-    public static Map<Class, ComponentCache> getComponentCacheMap(AssemblerSession session){
-        Map<Class, ComponentCache> map = theSessionComponentCacheMap.get(session);
-        if(map == null){
-            map = new HashMap<Class, ComponentCache>();
-            theSessionComponentCacheMap.put(session, map);
-        }
-        return map;
-    }
 
-	public static Set<Object>	buildAllRootsInModel(Assembler jenaAssembler, Model jenaModel, Mode jenaAssemblyMode) {
+	private static AssemblerSession theDefaultSession = new AssemblerSession();
+	private static Map<AssemblerSession, Map<Class, ComponentCache>> theSessionComponentCacheMap = new HashMap<AssemblerSession, Map<Class, ComponentCache>>();
+
+	/**
+	 * Clears all of the objects of a given type from the object cache.
+	 * 
+	 * @param c The Type of cache that is too be cleared
+	 * @param s The session that owns the caches
+	 */
+	public static void clearCacheForAssemblerSubclassForSession(Class c, AssemblerSession s) {
+		Map<Class, ComponentCache> map = AssemblerUtils.getComponentCacheMap(s);
+		map.put(c, null);
+	}
+
+	/**
+	 * Clears all of the caches in a given session.
+	 * 
+	 * @param s The session that owns the caches
+	 */
+	public static void clearAllSubclassCachesForSession(AssemblerSession s) {
+		Map<Class, ComponentCache> map = AssemblerUtils.getComponentCacheMap(s);
+		map.clear();
+	}
+
+	public static AssemblerSession getDefaultSession() {
+		return theDefaultSession;
+	}
+
+	public static Map<Class, ComponentCache> getComponentCacheMap(AssemblerSession session) {
+		Map<Class, ComponentCache> map = theSessionComponentCacheMap.get(session);
+		if (map == null) {
+			map = new HashMap<Class, ComponentCache>();
+			theSessionComponentCacheMap.put(session, map);
+		}
+		return map;
+	}
+
+	public static Set<Object> buildAllRootsInModel(Assembler jenaAssembler, Model jenaModel, Mode jenaAssemblyMode) {
 		Set<Object> results = new HashSet<Object>();
 		Set<Resource> aroots = AssemblerHelp.findAssemblerRoots(jenaModel);
 		theLogger.info("Found " + aroots.size() + " assembler-roots in model");
 		for (Resource aroot : aroots) {
-			Object result = jenaAssembler.open(jenaAssembler, aroot, jenaAssemblyMode);
-			results.add(result);
+			// needed a problem report on each item
+			try {
+				Object result = jenaAssembler.open(jenaAssembler, aroot, jenaAssemblyMode);
+				results.add(result);
+			} catch (Throwable t) {
+				theLogger.error("Cannot assemble item " + aroot, t);
+			}
 		}
 		return results;
 	}
-	public static Set<Object>	buildAllRootsInModel(Model jenaModel) {
+
+	public static Set<Object> buildAllRootsInModel(Model jenaModel) {
 		return buildAllRootsInModel(Assembler.general, jenaModel, Mode.DEFAULT);
 	}
+
 	public static Set<Object> buildAllObjectsInRdfFile(String rdfURL) {
-		Model	loadedModel =  FileManager.get().loadModel(rdfURL);
+		Model loadedModel = FileManager.get().loadModel(rdfURL);
 		Set<Object> results = buildAllRootsInModel(loadedModel);
 		return results;
 	}
@@ -110,18 +116,19 @@ public class AssemblerUtils {
 		Set<Object> loadedStuff = buildAllObjectsInRdfFile(rdfConfigFlexPath);
 		return loadedStuff;
 	}
+
 	public static <T> T readOneConfigObjFromPath(Class<T> configType, String rdfConfigFlexPath, ClassLoader optResourceClassLoader) {
-		Set<Object> loadedStuff = buildObjSetFromPath (rdfConfigFlexPath, optResourceClassLoader);
+		Set<Object> loadedStuff = buildObjSetFromPath(rdfConfigFlexPath, optResourceClassLoader);
 		int objCount = loadedStuff.size();
 		if (objCount != 1) {
 			throw new RuntimeException("Expected one config thing but got " + objCount + " from path[" + rdfConfigFlexPath + "]");
 		}
-		Object singleConfigObj =  loadedStuff.toArray()[0];
+		Object singleConfigObj = loadedStuff.toArray()[0];
 		Class objClass = singleConfigObj.getClass();
 		if (configType.isAssignableFrom(objClass)) {
 			return (T) singleConfigObj;
 		} else {
 			throw new RuntimeException("Expected config object type " + configType + " but got " + objClass);
 		}
-	}	
+	}
 }
