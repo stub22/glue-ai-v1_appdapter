@@ -8,7 +8,6 @@ import javax.swing.Action;
 import javax.swing.JMenu;
 
 import org.appdapter.gui.browse.Settings;
-import org.appdapter.gui.trigger.SafeJMenu;
 
 public class FileMenu extends SafeJMenu {
 	/**
