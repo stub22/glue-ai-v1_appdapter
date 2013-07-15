@@ -37,7 +37,6 @@ import javax.swing.JDesktopPane;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JTabbedPane;
@@ -60,6 +59,8 @@ import org.appdapter.gui.swing.CollectionEditorUtil;
 import org.appdapter.gui.swing.DisplayContextUIImpl;
 import org.appdapter.gui.swing.LookAndFeelMenuItems;
 import org.appdapter.gui.swing.ObjectTabsForTabbedView;
+import org.appdapter.gui.swing.SafeJMenuItem;
+import org.appdapter.gui.trigger.SafeJMenu;
 
 import com.jidesoft.swing.JideScrollPane;
 import com.jidesoft.swing.JideSplitPane;
@@ -230,26 +231,26 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 	}
 
 	private JMenu makeSubMenu1Example() {
-		JMenu menu, submenu;
-		JMenuItem menuItem;
+		SafeJMenu menu, submenu;
+		SafeJMenuItem menuItem;
 		JRadioButtonMenuItem rbMenuItem;
 		JCheckBoxMenuItem cbMenuItem;
 
-		menu = new JMenu("A Menu");
+		menu = new SafeJMenu("A Menu");
 		menu.setMnemonic(KeyEvent.VK_A);
 		menu.getAccessibleContext().setAccessibleDescription("The only menu in this program that has menu items");
 
 		//a group of JMenuItems
-		menuItem = new JMenuItem("A text-only menu item", KeyEvent.VK_T);
+		menuItem = new SafeJMenuItem("A text-only menu item", KeyEvent.VK_T);
 		menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_1, ActionEvent.ALT_MASK));
 		menuItem.getAccessibleContext().setAccessibleDescription("This doesn't really do anything");
 		menu.add(menuItem);
 
-		menuItem = new JMenuItem("Both text and icon", new ImageIcon("images/middle.gif"));
+		menuItem = new SafeJMenuItem("Both text and icon", new ImageIcon("images/middle.gif"));
 		menuItem.setMnemonic(KeyEvent.VK_B);
 		menu.add(menuItem);
 
-		menuItem = new JMenuItem(new ImageIcon("images/middle.gif"));
+		menuItem = new SafeJMenuItem(new ImageIcon("images/middle.gif"));
 		menuItem.setMnemonic(KeyEvent.VK_D);
 		menu.add(menuItem);
 
@@ -279,14 +280,14 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 
 		//a submenu
 		menu.addSeparator();
-		submenu = new JMenu("A submenu");
+		submenu = new SafeJMenu("A submenu");
 		submenu.setMnemonic(KeyEvent.VK_S);
 
-		menuItem = new JMenuItem("An item in the submenu");
+		menuItem = new SafeJMenuItem("An item in the submenu");
 		menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_2, ActionEvent.ALT_MASK));
 		submenu.add(menuItem);
 
-		menuItem = new JMenuItem("Another item");
+		menuItem = new SafeJMenuItem("Another item");
 		submenu.add(menuItem);
 
 		menu.add(submenu);

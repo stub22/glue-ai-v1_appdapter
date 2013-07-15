@@ -11,7 +11,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.Observer;
 import java.util.logging.Logger;
 
 public abstract class Debuggable {

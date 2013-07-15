@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.appdapter.core.log.Debuggable;
+import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
@@ -232,13 +233,13 @@ public class ClassLoaderUtils {
 		context.registerService(ClassLoader.class.getName(), loader, props);
 	}
 
-	public static void registerClassLoader(Object something, BundleContext ctx) {
+	public static void registerClassLoader(BundleActivator something, BundleContext ctx) {
 		Class thisClass = something.getClass();
 		ClassLoaderUtils.registerClassLoader(ctx, thisClass.getClassLoader(), thisClass.getPackage().getName(), true, false);
 
 	}
 
-	public static void unregisterClassLoader(Object something, BundleContext ctx) {
+	public static void unregisterClassLoader(BundleActivator something, BundleContext ctx) {
 		Class thisClass = something.getClass();
 		ClassLoaderUtils.registerClassLoader(ctx, thisClass.getClassLoader(), thisClass.getPackage().getName(), false, true);
 

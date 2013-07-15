@@ -34,6 +34,14 @@ apsb:BuildableTrigger
 		ja:assembler		"org.appdapter.gui.assembly.TriggerAssembler" 
 		.		
 
+cs:BuildableThingActionFilterSpec
+		a 					rdfs:Class;
+		rdfs:subClassOf 	ja:Object;
+		ja:assembler		"org.cogchar.impl.thing.filters.ThingActionFilterBuilder" 
+		.	
+
+
+
 apt:box_001 	rdf:type			apsb:BuildableBox;
 				apsb:javaFQCN		"org.appdapter.gui.demo.DemoBrowser$DemoRepoBoxImpl";
 				apsb:label			"box 001 apsb label";

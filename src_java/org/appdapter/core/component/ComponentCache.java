@@ -19,23 +19,19 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.appdapter.core.name.Ident;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-/**
- * @author Stu B. <www.texpedient.com>
- */
-public class ComponentCache<MKC extends MutableKnownComponent>  {
-	static Logger theLogger = LoggerFactory.getLogger(ComponentCache.class);
-	private	Map<Ident, MKC> myCompCache = new HashMap<Ident, MKC>();	
+public class ComponentCache<MKC extends MutableKnownComponent> {
+
+	private Map<Ident, MKC> myCompCache = new HashMap<Ident, MKC>();
+
 	public MKC getCachedComponent(Ident id) {
 		return myCompCache.get(id);
 	}
 
 	public void putCachedComponent(Ident id, MKC comp) {
 		myCompCache.put(id, comp);
-	}	
-	
+	}
+
 	// only for the debugger in UI
 	public Map<Ident, MKC> getCompCache() {
 		return myCompCache;
