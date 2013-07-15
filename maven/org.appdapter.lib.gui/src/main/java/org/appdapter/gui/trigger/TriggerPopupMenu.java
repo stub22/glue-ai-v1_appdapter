@@ -6,10 +6,13 @@ import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.UIManager;
+import javax.swing.plaf.MenuItemUI;
 
 import org.appdapter.gui.api.BT;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.NamedObjectCollection;
+import org.appdapter.gui.swing.SafeJMenuItem;
 
 /**
  * A Popup menu for a object. The valid actions are
@@ -51,7 +54,7 @@ public class TriggerPopupMenu extends JPopupMenu {
 	 * @since 1.3
 	 */
 	protected JMenuItem createActionComponent(Action a) {
-		JMenuItem mi = new JMenuItem() {
+		JMenuItem mi = new SafeJMenuItem() {
 			protected PropertyChangeListener createActionPropertyChangeListener(Action a) {
 				PropertyChangeListener pcl = createActionChangeListener(this);
 				if (pcl == null) {

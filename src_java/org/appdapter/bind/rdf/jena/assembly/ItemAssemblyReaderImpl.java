@@ -23,6 +23,7 @@ import java.util.List;
 import org.appdapter.core.item.Item;
 import org.appdapter.core.item.JenaResourceItem;
 import org.appdapter.core.log.BasicDebugger;
+import org.appdapter.core.name.FreeIdent;
 import org.appdapter.core.name.Ident;
 import org.appdapter.core.name.ModelIdent;
 
@@ -48,11 +49,12 @@ public class ItemAssemblyReaderImpl extends BasicDebugger implements ItemAssembl
 			infoSource = (Item) compID;
 		}
 		return infoSource;
-	} 
-	@Override	public Ident getConfigPropertyIdent(Item infoSource, Ident compID, String fieldName) {
+	}
+
+	@Override public Ident getConfigPropertyIdent(Item infoSource, Ident compID, String fieldName) {
 		Ident infoSourceID = infoSource.getIdent();
 		logDebug("infoSourceID=" + infoSourceID + ", compID=" + compID);
-		ModelIdent	someModelIdent = null;
+		ModelIdent someModelIdent = null;
 		if (infoSourceID instanceof ModelIdent) {
 			someModelIdent = (ModelIdent) infoSourceID;
 		} else if (compID instanceof ModelIdent) {
@@ -68,8 +70,7 @@ public class ItemAssemblyReaderImpl extends BasicDebugger implements ItemAssembl
 	}
 
 	// If we are using JenaResourceItems, then fieldName will be an absoluteURI.
-	@Override
-	public String readConfigValString(Ident compID, String fieldName, Item optionalItem, String defaultVal) {
+	@Override public String readConfigValString(Ident compID, String fieldName, Item optionalItem, String defaultVal) {
 		String resultVal = null;
 		Item infoSource = chooseBestConfigItem(compID, optionalItem);
 		// Typical output is
@@ -81,8 +82,9 @@ public class ItemAssemblyReaderImpl extends BasicDebugger implements ItemAssembl
 		}
 		return resultVal;
 	}
-	@Override
-	public Long readConfigValLong(Ident compID, String fieldName, Item optionalItem, Long defaultVal) {
+
+
+	@Override public Long readConfigValLong(Ident compID, String fieldName, Item optionalItem, Long defaultVal) {
 		Long resultVal = null;
 		Item infoSource = chooseBestConfigItem(compID, optionalItem);
 		// Typical output is
@@ -95,8 +97,7 @@ public class ItemAssemblyReaderImpl extends BasicDebugger implements ItemAssembl
 		return resultVal;
 	}
 
-	@Override
-	public Double readConfigValDouble(Ident compID, String fieldName, Item optionalItem, Double defaultVal) {
+	@Override public Double readConfigValDouble(Ident compID, String fieldName, Item optionalItem, Double defaultVal) {
 		Double resultVal = null;
 		Item infoSource = chooseBestConfigItem(compID, optionalItem);
 		// Typical output is
@@ -109,11 +110,10 @@ public class ItemAssemblyReaderImpl extends BasicDebugger implements ItemAssembl
 		return resultVal;
 	}
 
-	@Override
-	public List<Item> readLinkedItemSeq(Item configItem, String collectionLinkName) {
+	@Override public List<Item> readLinkedItemSeq(Item configItem, String collectionLinkName) {
 		Ident linkNameID = getConfigPropertyIdent(configItem, configItem.getIdent(), collectionLinkName);
 		List<Item> linkedItems = ((JenaResourceItem) configItem).getLinkedOrderedList(linkNameID);
-		logDebug("Got linkedItem collection at [" + collectionLinkName + "=" + linkNameID + "] = " + linkedItems);	
+		logDebug("Got linkedItem collection at [" + collectionLinkName + "=" + linkNameID + "] = " + linkedItems);
 		return linkedItems;
 	}
 
@@ -126,18 +126,16 @@ public class ItemAssemblyReaderImpl extends BasicDebugger implements ItemAssembl
 	 * @param sortFieldNames
 	 * @return 
 	 */
-	@Override
-	public List<Object> findOrMakeLinkedObjects(Item configItem, String linkName, Assembler asmblr, Mode mode, List<Item.SortKey> sortFieldNames) {
-		List<Object>	resultList = new ArrayList<Object>();
+	@Override public List<Object> findOrMakeLinkedObjects(Item configItem, String linkName, Assembler asmblr, Mode mode, List<Item.SortKey> sortFieldNames) {
+		List<Object> resultList = new ArrayList<Object>();
 		Ident linkNameID = getConfigPropertyIdent(configItem, configItem.getIdent(), linkName);
 		List<Item> linkedItems = configItem.getLinkedItemsSorted(linkNameID, sortFieldNames);
 		resultList = resultListFromItems(linkedItems, asmblr, mode);
 		return resultList;
 	}
 
-	@Override
-	public List<Object> findOrMakeLinkedObjSeq(Item configItem, String collectionLinkName, Assembler asmblr, Mode mode) {
-		List<Object>	resultList = new ArrayList<Object>();
+	@Override public List<Object> findOrMakeLinkedObjSeq(Item configItem, String collectionLinkName, Assembler asmblr, Mode mode) {
+		List<Object> resultList = new ArrayList<Object>();
 		List<Item> linkedItems = readLinkedItemSeq(configItem, collectionLinkName);
 		resultList = resultListFromItems(linkedItems, asmblr, mode);
 		logDebug("Opened object collection : " + resultList);
@@ -152,8 +150,9 @@ public class ItemAssemblyReaderImpl extends BasicDebugger implements ItemAssembl
 			logWarn("Expected one collection link at " + linkName + "=" + linkNameID + " but found " + linkedItemSet);
 		}
 		 * 
-		 */		
+		 */
 	}
+
 	/**
 	 * For every linkedItem which is actually a JenaResourceItem, use the Jena assembler system to find/create
 	 * the assembled object for that item.
@@ -164,9 +163,8 @@ public class ItemAssemblyReaderImpl extends BasicDebugger implements ItemAssembl
 	 * @return 
 	 */
 
-	@Override
-	public List<Object> resultListFromItems(Collection<Item> linkedItems, Assembler assmblr, Mode mode) {
-		List<Object>	resultList = new ArrayList<Object>();
+	@Override public List<Object> resultListFromItems(Collection<Item> linkedItems, Assembler assmblr, Mode mode) {
+		List<Object> resultList = new ArrayList<Object>();
 		for (Item linkedItem : linkedItems) {
 			if (linkedItem instanceof JenaResourceItem) {
 				JenaResourceItem jri = (JenaResourceItem) linkedItem;
@@ -182,5 +180,5 @@ public class ItemAssemblyReaderImpl extends BasicDebugger implements ItemAssembl
 			}
 		}
 		return resultList;
-	}	
+	}
 }

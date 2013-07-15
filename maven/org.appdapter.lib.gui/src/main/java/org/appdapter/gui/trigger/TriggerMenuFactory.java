@@ -47,6 +47,7 @@ import org.appdapter.core.component.KnownComponent;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.UIAware;
 import org.appdapter.gui.box.AbstractScreenBoxTreeNodeImpl;
+import org.appdapter.gui.swing.SafeJMenuItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -180,7 +181,7 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 		addTriggerToPoppup(popup, box, path, 0, trig);
 	}
 
-	static public class JMenuWithPath extends JMenu {
+	static public class JMenuWithPath extends SafeJMenu {
 		ArrayList<Component> mcomps = new ArrayList<Component>();
 
 		public JMenuWithPath(String lbl) {
@@ -376,7 +377,7 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 
 	public JMenuItem makeMenuItem(final Box<TT> b, String lbl, final TT trig) {
 		String path[] = getTriggerPath(trig);
-		JMenuItem jmi = new JMenuItem(getTriggerName(trig));
+		JMenuItem jmi = new SafeJMenuItem(getTriggerName(trig));
 		if (trig instanceof UIAware) {
 			((UIAware) trig).visitComponent(jmi);
 		}

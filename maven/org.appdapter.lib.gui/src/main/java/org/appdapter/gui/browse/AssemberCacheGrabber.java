@@ -17,44 +17,106 @@ public class AssemberCacheGrabber extends BasicDebugger {
 		return AssemblerUtils.getComponentCacheMap(AssemblerUtils.getDefaultSession());
 	}
 
+	public boolean longThreadQuit = false;
+
 	@UISalient public void loadAssemblerClasses() {
-		NamedObjectCollection bp = Utility.getTreeBoxCollection();
+		final NamedObjectCollection bp = Utility.getTreeBoxCollection();
 		Map<Class, ComponentCache> map = getCacheMap();
-		Object[] clzes;
+		final Object[] clzes;
 		synchronized (map) {
 			clzes = map.keySet().toArray();
 		}
-		for (Object c : clzes) {
-			bp.findOrCreateBox(c);
-		}
+		setLongRunner(new Runnable() {
+			@Override public void run() {
+				for (Object c : clzes) {
+					bp.findOrCreateBox(c);
+					if (longThreadQuit) {
+						longThreadQuit = false;
+						return;
+					}
+				}
+			}
+		});
 	}
 
-	@UISalient public void loadAssemblerInstances() {
-		NamedObjectCollection bp = Utility.getTreeBoxCollection();
+	@UISalient() public void loadAssemblerInstances() {
+		final NamedObjectCollection bp = Utility.getTreeBoxCollection();
 		Map<Class, ComponentCache> cmap = getCacheMap();
-		Object[] clzes;
+		final Object[] clzes;
 		synchronized (cmap) {
 			clzes = cmap.values().toArray();
 		}
 
-		for (Object c : clzes) {
-			Map<Ident, Object> map = (Map<Ident, Object>) ((ComponentCache) c).getCompCache();
-			synchronized (map) {
-				for (Map.Entry<Ident, Object> me : map.entrySet()) {
-					Utility.recordCreated(bp, me.getKey(), me.getValue());
+		setLongRunner(new Runnable() {
+
+			@Override public void run() {
+				for (Object c : clzes) {
+					Map<Ident, Object> map = (Map<Ident, Object>) ((ComponentCache) c).getCompCache();
+					synchronized (map) {
+						for (Map.Entry<Ident, Object> me : map.entrySet()) {
+							if (longThreadQuit) {
+								longThreadQuit = false;
+								return;
+							}
+							Utility.recordCreated(bp, me.getKey(), me.getValue());
+						}
+					}
 				}
 			}
+		});
+	}
+
+	private Object longThreadSync = this;
+	public Thread longThread;
+
+	synchronized void setLongRunner(final Runnable longRunner) {
+
+		synchronized (longThreadSync) {
+			if (this.longThread != null) {
+				longThreadQuit = true;
+				try {
+					longThread.join();
+				} catch (InterruptedException e) {
+				}
+			}
+			longThread = new Thread() {
+				public void destroy() {
+					longThreadQuit = true;
+				}
+
+				public void run() {
+					longRunner.run();
+					synchronized (longThreadSync) {
+						if (longThread == Thread.currentThread()) {
+							longThread = null;
+						}
+					}
+				};
+			};
+			longThreadQuit = false;
+			longThread.start();
 		}
+
 	}
 
 	@UISalient public void loadBasicDebuggerInstances() {
 		Collection all = Debuggable.allObjectsForDebug;
-		NamedObjectCollection bp = Utility.getTreeBoxCollection();
+		final NamedObjectCollection bp = Utility.getTreeBoxCollection();
+		final Collection allCopy;
 		synchronized (all) {
-			all = new LinkedList(all);
+			allCopy = new LinkedList(all);
 		}
-		for (Object o : all) {
-			bp.findOrCreateBox(o);
-		}
+		setLongRunner(new Runnable() {
+
+			@Override public void run() {
+				for (Object o : allCopy) {
+					if (longThreadQuit) {
+						longThreadQuit = false;
+						return;
+					}
+					bp.findOrCreateBox(o);
+				}
+			}
+		});
 	}
 }

@@ -208,6 +208,7 @@ public class TriggerForMethod<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 			s = _featureDescriptor.getClass().getSimpleName() + "|" + s;
 		}*/
 		s = s.replace("PropertyDescriptor|", "Show ");
+		s = s.replace("ScalaObject|", "");
 		if (!_clazz.isInstance(o1)) {
 			s = "Indirectly|" + s;
 		} else {

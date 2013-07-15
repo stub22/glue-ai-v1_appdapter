@@ -335,11 +335,14 @@ abstract public class AbstractScreenBoxTreeNodeImpl extends DefaultMutableTreeNo
 						t.printStackTrace();
 					}
 				} else {
-					Method rm = pd.getReadMethod();
 					if (pd == null)
 						continue;
+					Method rm = pd.getReadMethod();
+					if (rm == null)
+						continue;
 					try {
-						v = pd.getReadMethod().invoke(object);
+						rm.setAccessible(true);
+						v = rm.invoke(object);
 					} catch (Throwable e) {
 						e.printStackTrace();
 					}
