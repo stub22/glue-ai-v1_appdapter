@@ -16,12 +16,6 @@
 
 package org.appdapter.bind.rdf.jena.assembly;
 
-import com.hp.hpl.jena.assembler.Assembler;
-import com.hp.hpl.jena.assembler.AssemblerHelp;
-import com.hp.hpl.jena.assembler.Mode;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.util.FileManager;
 import java.util.HashMap;
 
 import java.util.HashSet;
