@@ -35,8 +35,6 @@ import org.slf4j.LoggerFactory;
 
 import com.hp.hpl.jena.rdf.model.RDFNode;
 
-import feclipse.PromiscuousClassUtils;
-
 /**
  * @author Stu B. <www.texpedient.com>
  */
@@ -132,7 +130,7 @@ public class JenaLiteralUtils {
 	}
 
 	public static <T> T convert(RDFNode e, Class<T> type) throws Throwable {
-		type = PromiscuousClassUtils.nonPrimitiveTypeFor(type);
+		type = nonPrimitiveTypeFor(type);
 		if (Number.class.isAssignableFrom(type)) {
 			return (T) e.asLiteral().getValue();
 		}
@@ -163,6 +161,30 @@ public class JenaLiteralUtils {
 			throw new ClassCastException("Cannot create " + type + " from " + e);
 		}
 		return (T) eval;
+	}
+
+	public static Class nonPrimitiveTypeFor(Class wrapper) {
+		if (!wrapper.isPrimitive())
+			return wrapper;
+		if (wrapper == Boolean.TYPE)
+			return Boolean.class;
+		if (wrapper == Byte.TYPE)
+			return Byte.class;
+		if (wrapper == Character.TYPE)
+			return Character.class;
+		if (wrapper == Short.TYPE)
+			return Short.class;
+		if (wrapper == Integer.TYPE)
+			return Integer.class;
+		if (wrapper == Long.TYPE)
+			return Long.class;
+		if (wrapper == Float.TYPE)
+			return Float.class;
+		if (wrapper == Double.TYPE)
+			return Double.class;
+		if (wrapper == Void.TYPE)
+			return Void.class;
+		throw new ClassCastException("cant make non primitive from :" + wrapper);
 	}
 
 }
