@@ -187,4 +187,36 @@ public class JenaLiteralUtils {
 		throw new ClassCastException("cant make non primitive from :" + wrapper);
 	}
 
+	public static boolean isMatchAny(Ident val) {
+		if (val == null)
+			return true;
+		return false;
+	}
+
+	public static boolean isTypeMatch(Ident hasThingType, Ident targetThingTypeID) {
+		if (isMatchAny(hasThingType) || isMatchAny(targetThingTypeID))
+			return true;
+		if (hasThingType.equals(targetThingTypeID)) {
+			return true;
+		}
+		return false;
+	}
+
+	public static boolean isIndividualMatch(Ident hasThing, Ident targetThingID) {
+		if (isMatchAny(hasThing) || isMatchAny(targetThingID))
+			return true;
+		if (hasThing.equals(targetThingID)) {
+			return true;
+		}
+		return false;
+	}
+
+	public static boolean isMatch(Object mustBe, Object raw) {
+		if (mustBe == null)
+			return false;
+		if (raw == null)
+			return false;
+		return mustBe.equals(raw);
+	}
+
 }
