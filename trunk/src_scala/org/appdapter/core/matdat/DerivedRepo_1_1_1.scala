@@ -16,7 +16,7 @@
 
 package org.appdapter.core.matdat
 
-import com.hp.hpl.jena.query.DataSource
+import com.hp.hpl.jena.query.Dataset
 import com.hp.hpl.jena.query.Dataset
 import com.hp.hpl.jena.rdf.model.Model
 import com.hp.hpl.jena.rdf.model.ModelFactory
@@ -81,7 +81,7 @@ class DerivedRepoLoader extends InstallableRepoReader {
   override def getContainerType() = "cc:PipelineModel"
   override def getSheetType() = "ccrt:UnionModel"
   override def isDerivedLoader() = true
-  override def loadModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: DataSource, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
+  override def loadModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
     DerivedRepoLoader.loadSheetModelsIntoTargetDataset(repo, mainDset, dirModel, fileModelCLs)
   }
 }
@@ -90,7 +90,7 @@ class DerivedRepoLoader extends InstallableRepoReader {
 
 object DerivedRepoLoader extends BasicDebugger {
 
-  def loadSheetModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: DataSource, myDirectoryModel: Model, fileModelCLs: java.util.List[ClassLoader]) = {
+  def loadSheetModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: Dataset, myDirectoryModel: Model, fileModelCLs: java.util.List[ClassLoader]) = {
 
     val nsJavaMap: java.util.Map[String, String] = myDirectoryModel.getNsPrefixMap()
 
@@ -119,9 +119,9 @@ object DerivedRepoLoader extends BasicDebugger {
     }
   }
 
-  def loadPipeline(pplnGraphQN: String, repo: Repo.WithDirectory, mainDset: DataSource, myDirectoryModel: Model, fileModelCLs: java.util.List[ClassLoader]) = {
+  def loadPipeline(pplnGraphQN: String, repo: Repo.WithDirectory, mainDset: Dataset, myDirectoryModel: Model, fileModelCLs: java.util.List[ClassLoader]) = {
 
-    val mainDset: DataSource = repo.getMainQueryDataset().asInstanceOf[DataSource];
+    val mainDset: Dataset = repo.getMainQueryDataset().asInstanceOf[Dataset];
     val rc = new org.appdapter.help.repo.RepoClientImpl(repo, RepoSpecDefaultNames.DFLT_TGT_GRAPH_SPARQL_VAR, OmniLoaderRepoTest.QUERY_SOURCE_GRAPH_QN)
     val solList = DerivedGraphSpecReader_1_1_1.queryDerivedGraphSpecs(rc, new PipelineQuerySpec_1_1_1(OmniLoaderRepoTest.PIPELINE_QUERY_QN,
       OmniLoaderRepoTest.PIPELINE_GRAPH_QN, pplnGraphQN));

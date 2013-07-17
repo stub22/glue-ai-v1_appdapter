@@ -26,7 +26,7 @@ import org.appdapter.demo.DemoResources;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.hp.hpl.jena.query.DataSource;
+// import com.hp.hpl.jena.query.DataSource;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Model;
 
@@ -120,11 +120,11 @@ public class RepoOper implements AnyOper {
 	}
 
 	public static void replaceDatasetElements(Dataset dest, Dataset src, String onlyModel) {
-		if (!(dest instanceof DataSource)) {
+		if (!(dest instanceof Dataset)) {
 			theLogger.error("Destination is not a datasource! " + dest.getClass() + " " + dest);
 			return;
 		}
-		DataSource sdest = (DataSource) dest;
+		Dataset sdest = (Dataset) dest;
 		boolean onSrc = true, onDest = true;
 		if (!dest.containsNamedModel(onlyModel)) {
 			onSrc = false;
@@ -155,11 +155,11 @@ public class RepoOper implements AnyOper {
 	}
 
 	public static void replaceDatasetElements(Dataset dest, Dataset src) {
-		if (!(dest instanceof DataSource)) {
+		if (!(dest instanceof Dataset)) {
 			theLogger.error("Destination is not a datasource! " + dest.getClass() + " " + dest);
 			return;
 		}
-		DataSource sdest = (DataSource) dest;
+		Dataset sdest = (Dataset) dest;
 		Model defDestModel = dest.getDefaultModel();
 		Model defSrcModel = src.getDefaultModel();
 		replaceModelElements(defDestModel, defSrcModel);

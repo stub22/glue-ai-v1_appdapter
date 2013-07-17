@@ -18,7 +18,7 @@ package org.appdapter.impl.store
 import com.hp.hpl.jena.rdf.model.{Model, Statement, Resource, Property, Literal, RDFNode, ModelFactory, InfModel}
 import com.hp.hpl.jena.datatypes.xsd.XSDDatatype
 import com.hp.hpl.jena.query.{Query, QueryFactory, QueryExecution, QueryExecutionFactory, QuerySolution, QuerySolutionMap, Syntax};
-import com.hp.hpl.jena.query.{Dataset, DatasetFactory, DataSource};
+import com.hp.hpl.jena.query.{Dataset, DatasetFactory};
 import com.hp.hpl.jena.query.{ResultSet, ResultSetFormatter, ResultSetRewindable, ResultSetFactory};
 
 import com.hp.hpl.jena.ontology.{OntProperty, ObjectProperty, DatatypeProperty}

@@ -23,7 +23,7 @@ import org.appdapter.core.name.Ident
 import org.appdapter.core.store.{ InitialBinding, Repo }
 import org.appdapter.impl.store.{ DatabaseRepo, FancyRepoFactory }
 
-import com.hp.hpl.jena.query.{ DataSource, QuerySolution }
+import com.hp.hpl.jena.query.{ Dataset, QuerySolution }
 import com.hp.hpl.jena.rdf.model.Model
 /**
  * @author Stu B. <www.texpedient.com>
@@ -33,7 +33,7 @@ abstract class InstallableRepoReader extends SpecialRepoLoader {
   def getContainerType(): String
   def getSheetType(): String
   def isDerivedLoader(): Boolean = false
-  def loadModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: DataSource, dirModel: Model, fileModelCLs: java.util.List[ClassLoader])
+  def loadModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader])
 }
 
 abstract class SpecialRepoLoader extends BasicDebugger {

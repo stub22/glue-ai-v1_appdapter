@@ -43,7 +43,7 @@ import com.hp.hpl.jena.query.Syntax;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.sparql.util.DatasetUtils;
-import com.hp.hpl.jena.sparql.util.graph.GraphFactory;
+import com.hp.hpl.jena.sparql.graph.GraphFactory;
 import com.hp.hpl.jena.vocabulary.RDF;
 
 /**
@@ -70,9 +70,12 @@ public class SPARQL_Utils {
     public static Model resultSetToModel(ResultSet rs) {
         Model m = GraphFactory.makeDefaultModel() ;
         ResultSetFormatter.asRDF(m, rs) ;
+		/*  Removed from Appdapter 2013-07-13, presumed unused.
         if ( m.getNsPrefixURI("rs") == null ) {
             m.setNsPrefix("rs", com.hp.hpl.jena.vocabulary.ResultSet.getURI() ) ;
 		}
+		* 
+		*/ 
         if ( m.getNsPrefixURI("rdf") == null ) {
             m.setNsPrefix("rdf", RDF.getURI() ) ;
 		}
