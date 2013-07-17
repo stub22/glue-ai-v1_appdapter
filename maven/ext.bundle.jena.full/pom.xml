@@ -6,16 +6,182 @@
 		<artifactId>org.appdapter.modules.core</artifactId>
 		<version>1.1.1-SNAPSHOT</version>
 		<relativePath>../org.appdapter.modules.core/pom.xml</relativePath>
-	</parent>	
-    <artifactId>ext.bundle.jena_all_264</artifactId>
+	</parent>
+	<!-- Artifact ID updated on 2013-07-17 from ext.bundle.jena_all_264 to what you see on next line (v 2.10.1) -->
+    <artifactId>ext.bundle.jena_all_2_10_1</artifactId>
     <packaging>bundle</packaging>
-    <name>ext.bundle.jena_all_264 - OSGi - Jena wrapper</name>
-	<description>Jena + ARQ + SDB.  Versions used match the midpoint of Joseki 3.4.3 and 3.4.4.</description>
-	<!--
+    <name>${artifactId} - OSGi - Jena wrapper</name>
+	<description>Jena 2.10.1, ARQ + SDB</description>
+  <dependencies>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.7.5</version>
+			<scope>runtime</scope>
+		    <exclusions>
+				<!-- We exclude the normally embedded Log4J version, because it is not OSGi friendly.
+					We instead use the bundled version supplied by SpringSource below.
+				-->			
+		        <exclusion>
+		            <artifactId>log4j</artifactId>
+		            <groupId>log4j</groupId>
+		        </exclusion>
+		    </exclusions>
+		</dependency>
+		<dependency>
+			<!-- Here is an OSGi-friendly Log4J bundle, which we presume can be initialized through
+				the methods provided by Appdapter, which assumes a log4j.properties file at
+				root of this bundle.  To initialize Log4J differently, we could make this a
+				compile-scoped dependency, and then do any Log4J config using code, e.g.
+				using "BasicConfigurator".
+			-->			
+			<groupId>org.apache.log4j</groupId>
+			<artifactId>com.springsource.org.apache.log4j</artifactId>
+			<version>1.2.16</version>
+			<scope>runtime</scope>			
+		</dependency>	
+<!--        <dependency>
+            <groupId>xml-apis</groupId>
+            <artifactId>xml-apis</artifactId>
+            <version>1.3.04</version>
+        </dependency>-->
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.osgi.core</artifactId>
+            <version>1.4.0</version>
+        </dependency>
+		<!-- *************** Runtime Deps *********************** -->		
+		<dependency>
+			<groupId>org.apache.servicemix.bundles</groupId>
+			<artifactId>org.apache.servicemix.bundles.xmlresolver</artifactId>
+			<version>1.2_3</version>
+			<scope>runtime</scope>
+		</dependency>		
+		<dependency>
+			<groupId>com.ibm.icu</groupId>
+			<artifactId>com.springsource.com.ibm.icu</artifactId>
+			<version>3.4.5</version>
+			<scope>runtime</scope>		
+		</dependency>
+		<dependency>
+			<groupId>org.apache.servicemix.bundles</groupId>
+			<artifactId>org.apache.servicemix.bundles.lucene</artifactId>
+			<version>3.0.3_2</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.servicemix.bundles</groupId>
+			<artifactId>org.apache.servicemix.bundles.xerces</artifactId>
+			<version>2.9.1_5</version>
+			<!-- We use "runtime" scope, because Xerces is needed when we compile references to Jena XSD-based 
+				datatypes for literals (in Scala, anyway) in customers of this bundle.  Without it we'll see:
+				
+     Missing dependency 'class org.apache.xerces.impl.dv.XSSimpleType', 
+     required by ...ext.bundle.jena_all_264\1.0.7-SNAPSHOT\ext.bundle.jena_all_264-1.0.7-SNAPSHOT.jar(com/hp/hpl/jena/datatypes/xsd/XSDDatatype.class)
+            -->
+			
+            <scope>compile</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>xml-apis</artifactId>
+                    <groupId>xml-apis</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.servicemix.bundles</groupId>
+            <artifactId>org.apache.servicemix.bundles.javax.mail</artifactId>
+            <version>1.4.1_4</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.servicemix.specs</groupId>
+            <artifactId>org.apache.servicemix.specs.activation-api-1.1</artifactId>
+            <version>1.8.0</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>apache-jena-libs</artifactId>
+            <type>pom</type>
+            <version>2.10.1</version>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>lucene-core</artifactId>
+                    <groupId>org.apache.lucene</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>stax-api</artifactId>
+                    <groupId>stax</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>wstx-asl</artifactId>
+                    <groupId>org.codehaus.woodstox</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>log4j</artifactId>
+                    <groupId>log4j</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>icu4j</artifactId>
+                    <groupId>com.ibm.icu</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>xercesImpl</artifactId>
+                    <groupId>xerces</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>slf4j-log4j12</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena-sdb</artifactId>
+            <type>jar</type>
+            <version>1.3.6</version>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>lucene-core</artifactId>
+                    <groupId>org.apache.lucene</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>stax-api</artifactId>
+                    <groupId>stax</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>wstx-asl</artifactId>
+                    <groupId>org.codehaus.woodstox</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>log4j</artifactId>
+                    <groupId>log4j</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>icu4j</artifactId>
+                    <groupId>com.ibm.icu</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>xercesImpl</artifactId>
+                    <groupId>xerces</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>slf4j-log4j12</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+    </dependencies>	
+	<!-- OLD   Dependencies used to wrap Jena 2.6.4, through 2013-07-17, when replaced with above deps.
+		Note that this project artifact ID also changed on this date.
 		Joseki 3.4.4 http://joseki.cvs.sourceforge.net/viewvc/joseki/Joseki3/pom.xml?revision=1.50&view=markup
 			<ver.jena>2.6.4</ver.jena>
 			<ver.arq>2.8.8</ver.arq>  <== We are using 2.8.7 below, which is used in Joseki 3.4.3. <ver.sdb>1.3.4</ver.sdb>  <== We are using this, but Joseki 3.4.3 uses 1.3.3. -->
-    <dependencies>
+   <!--
+   <dependencies>
         <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.osgi.core</artifactId>
@@ -57,7 +223,9 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		-->
 		<!-- *************** Runtime Deps *********************** -->		
+		<!--
 		<dependency>
 			<groupId>org.apache.servicemix.bundles</groupId>
 			<artifactId>org.apache.servicemix.bundles.xmlresolver</artifactId>
@@ -80,13 +248,14 @@
 			<groupId>org.apache.servicemix.bundles</groupId>
 			<artifactId>org.apache.servicemix.bundles.xerces</artifactId>
 			<version>2.9.1_5</version>
+		-->
 			<!-- We use "runtime" scope, because Xerces is needed when we compile references to Jena XSD-based 
 				datatypes for literals (in Scala, anyway) in customers of this bundle.  Without it we'll see:
 				
 	 Missing dependency 'class org.apache.xerces.impl.dv.XSSimpleType', 
 	 required by ...ext.bundle.jena_all_264\1.0.7-SNAPSHOT\ext.bundle.jena_all_264-1.0.7-SNAPSHOT.jar(com/hp/hpl/jena/datatypes/xsd/XSDDatatype.class)
 			-->
-			
+	<!--		
 			<scope>compile</scope>
 			<exclusions>
 				<exclusion>
@@ -167,7 +336,7 @@
             </exclusions>
         </dependency>
     </dependencies>
-
+	-->
     <build>
         <plugins>
             <plugin>
@@ -184,7 +353,7 @@
 						<DynamicImport-Package>org.appdapter.*,org.cogchar.*</DynamicImport-Package>
                         <Bundle-Activator>org.appdapter.ext.bundle.jena.full.Activator</Bundle-Activator>
 						<!-- The sdb.* packages require Junit -->
-						<Export-Package>org.appdapter.*,arq.*,com.hp.hpl.jena.*,etc.*,org.openjena.*,vocabularies.*, jena.*</Export-Package>
+						<Export-Package>org.appdapter.*,arq.*,com.hp.hpl.jena.*,etc.*,org.openjena.*,vocabularies.*, jena.*, org.apache.jena.*</Export-Package>
 						<Private-Package>riotcmd</Private-Package>
                     </instructions>
                 </configuration>

@@ -32,10 +32,10 @@ import com.hp.hpl.jena.graph.Factory;
 import com.hp.hpl.jena.graph.Graph;
 import com.hp.hpl.jena.graph.GraphUtil;
 import com.hp.hpl.jena.graph.Node;
-import com.hp.hpl.jena.graph.Reifier;
+// import com.hp.hpl.jena.graph.Reifier;
 import com.hp.hpl.jena.graph.Triple;
-import com.hp.hpl.jena.graph.TripleMatch;
-import com.hp.hpl.jena.graph.impl.GraphBase;
+// import com.hp.hpl.jena.graph.TripleMatch;
+// import com.hp.hpl.jena.graph.impl.GraphBase;
 import com.hp.hpl.jena.graph.impl.LiteralLabel;
 import com.hp.hpl.jena.graph.impl.LiteralLabelFactory;
 import com.hp.hpl.jena.rdf.model.AnonId;
@@ -568,7 +568,7 @@ public class ModelStuff {
         catch (Exception e)
             { throw new JenaException( e ); }
         }
-
+/*
     protected static Graph getReificationTriples( final Reifier r )
         {
         return new GraphBase( ReificationStyle.Minimal )
@@ -578,7 +578,7 @@ public class ModelStuff {
             };
         }
 	
-	
+	*/
 	
      /**
         create a Statement in a given Model with (S, P, O) extracted by parsing a string.

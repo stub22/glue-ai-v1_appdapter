@@ -22,7 +22,7 @@ import org.appdapter.core.log.BasicDebugger
 import org.appdapter.core.store.{ FileStreamUtils, Repo }
 import org.appdapter.impl.store.QueryHelper
 
-import com.hp.hpl.jena.query.{ DataSource, QuerySolution, ResultSet, ResultSetFactory }
+import com.hp.hpl.jena.query.{ Dataset, QuerySolution, ResultSet, ResultSetFactory }
 import com.hp.hpl.jena.rdf.model.{ Literal, Model, ModelFactory, RDFNode, Resource }
 
 /**
@@ -38,14 +38,14 @@ import com.hp.hpl.jena.rdf.model.{ Literal, Model, ModelFactory, RDFNode, Resour
 class CsvFileSheetLoader extends InstallableRepoReader {
   override def getContainerType() = "ccrt:CsvFileRepo"
   override def getSheetType() = "ccrt:CsvFileSheet"
-  override def loadModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: DataSource, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
+  override def loadModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
     CsvFileSheetLoader.loadSheetModelsIntoTargetDataset(repo, mainDset, dirModel, fileModelCLs)
   }
 }
 
 object CsvFileSheetLoader extends BasicDebugger {
 
-  def loadSheetModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: DataSource,
+  def loadSheetModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: Dataset,
     myDirectoryModel: Model, clList: java.util.List[ClassLoader]) = {
 
     val nsJavaMap: java.util.Map[String, String] = myDirectoryModel.getNsPrefixMap()

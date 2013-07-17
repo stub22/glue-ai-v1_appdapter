@@ -22,10 +22,7 @@ import org.appdapter.demo.DemoBrowserUI
 import org.appdapter.help.repo.RepoClientImpl
 import org.appdapter.impl.store.QueryHelper
 
-import com.hp.hpl.jena.query.{ DataSource, Dataset, QuerySolution }
-import com.hp.hpl.jena.rdf.model.Model
-
-import com.hp.hpl.jena.query.{ ResultSetFactory, ResultSet, QuerySolution, DataSource }
+import com.hp.hpl.jena.query.{ Dataset, QuerySolution, ResultSetFactory, ResultSet }
 import com.hp.hpl.jena.rdf.model.{ Resource, RDFNode, ModelFactory, Model, Literal }
 import java.io.Reader
 import org.appdapter.core.store.{ FileStreamUtils }
@@ -72,7 +69,7 @@ class OmniLoaderRepo(myRepoSpecStart: RepoSpec, myDebugNameIn: String, myBasePat
   }
 
   def loadPipeline(pplnGraphQN: String) = {
-    val mainDset: DataSource = getMainQueryDataset().asInstanceOf[DataSource];
+    val mainDset: Dataset = getMainQueryDataset().asInstanceOf[Dataset];
     PipelineRepoLoader.loadPipeline(pplnGraphQN, this, mainDset);
   }
 
@@ -83,14 +80,14 @@ class PipelineRepoLoader extends InstallableRepoReader {
   override def getContainerType() = "cc:PipelineModel"
   override def getSheetType() = "ccrt:UnionModel"
   override def isDerivedLoader() = true
-  override def loadModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: DataSource, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
+  override def loadModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
     PipelineRepoLoader.loadSheetModelsIntoTargetDataset(repo, mainDset, dirModel, fileModelCLs)
   }
 }
 
 object PipelineRepoLoader extends BasicDebugger {
 
-  def loadSheetModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: DataSource, myDirectoryModel: Model, fileModelCLs: java.util.List[ClassLoader]) = {
+  def loadSheetModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: Dataset, myDirectoryModel: Model, fileModelCLs: java.util.List[ClassLoader]) = {
 
     val nsJavaMap: java.util.Map[String, String] = myDirectoryModel.getNsPrefixMap()
 
@@ -119,7 +116,7 @@ object PipelineRepoLoader extends BasicDebugger {
     }
   }
 
-  def loadPipeline(pplnGraphQN: String, repo: Repo.WithDirectory, mainDset: DataSource) = {
+  def loadPipeline(pplnGraphQN: String, repo: Repo.WithDirectory, mainDset: Dataset) = {
 
     val rc = new RepoClientImpl(repo, RepoSpecDefaultNames.DFLT_TGT_GRAPH_SPARQL_VAR, RepoSpecDefaultNames.DFLT_QRY_SRC_GRAPH_QN)
     val pqs = new PipelineQuerySpec(RepoSpecDefaultNames.PIPE_ATTR_QQN, RepoSpecDefaultNames.PIPE_SOURCE_QQN, pplnGraphQN);
@@ -132,7 +129,7 @@ object PipelineRepoLoader extends BasicDebugger {
     }
   }
 
-  def replaceOrUnion(mainDset: DataSource, unionOrReplaceRes: Resource, graphURI: String, sheetModel: Model) {
+  def replaceOrUnion(mainDset: Dataset, unionOrReplaceRes: Resource, graphURI: String, sheetModel: Model) {
     mainDset.replaceNamedModel(graphURI, sheetModel)
   }
 }

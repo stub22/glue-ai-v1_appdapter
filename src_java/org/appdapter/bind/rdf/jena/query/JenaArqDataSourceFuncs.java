@@ -19,7 +19,7 @@ package org.appdapter.bind.rdf.jena.query;
 import org.appdapter.bind.rdf.jena.model.JenaModelUtils;
 import org.appdapter.core.log.BasicDebugger;
 
-import com.hp.hpl.jena.query.DataSource;
+// import com.hp.hpl.jena.query.DataSource;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.query.DatasetFactory;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -38,20 +38,19 @@ public class JenaArqDataSourceFuncs {
 	  * And even in the case of memory models, is Jena making a copy for us?
 	  * Need to do some experimenting here.
 	**/
-	public static DataSource makeIndependentDataSourceFromDataset(Dataset dset) {
+	public static Dataset makeIndependentDataSourceFromDataset(Dataset dset) {
 		Model newDefaultModel = null;
 		Model oldDefaultModel = dset.getDefaultModel();
 		if (oldDefaultModel != null) {
 			newDefaultModel = JenaModelUtils.makeNaiveCopy(oldDefaultModel);
 		}
 		Dataset copy = DatasetFactory.make(dset, newDefaultModel);
-		// We KNOW this is a DataSource from reading the ARQ 2.1 impl!!!  Ahem.
- 		return (DataSource)  copy;
+ 		return copy;
 	}	
 	
 	/** 	
 	**/
-	public static void ensureDefaultModelNotNull(DataSource ds) {
+	public static void ensureDefaultModelNotNull(Dataset ds) {
 		if (ds.getDefaultModel() == null) {
 			Model emptyModel = ModelFactory.createDefaultModel();
 			ds.setDefaultModel(emptyModel);
@@ -61,7 +60,7 @@ public class JenaArqDataSourceFuncs {
 	/** 	If no model yet exists within dataset @ nameURI, then we create it.
 			If nameURI is null, then we merge into (or create) the "default model"
 	**/
-	public static void mergeModelIntoDataSource(DataSource ds, String nameURI, Model m) {
+	public static void mergeModelIntoDataSource(Dataset ds, String nameURI, Model m) {
 		// Serializing model contents is expensive when the models aren't tiny.
 		theDbg.logDebug("Merging in model with name " + nameURI); // + " and contents " + m);
 
