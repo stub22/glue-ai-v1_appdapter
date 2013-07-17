@@ -26,7 +26,7 @@ import org.appdapter.core.store.{ Repo, RepoOper }
 import org.appdapter.impl.store.{ DirectRepo, QueryHelper }
 import org.appdapter.core.store.{ FileStreamUtils }
 
-import com.hp.hpl.jena.query.{ DataSource, QuerySolution }
+import com.hp.hpl.jena.query.{ Dataset, QuerySolution }
 import com.hp.hpl.jena.rdf.model.{ Literal, Model, Resource }
 /**
  * @author Stu B. <www.texpedient.com>
@@ -67,7 +67,7 @@ abstract class SheetRepo(directoryModel: Model, var fileModelCLs: java.util.List
   // BEGIN NEXT DIFF
 
   final def loadDerivedModelsIntoMainDataset(clList: java.util.List[ClassLoader]) = {
-    val mainDset: DataSource = getMainQueryDataset().asInstanceOf[DataSource];
+    val mainDset: Dataset = getMainQueryDataset().asInstanceOf[Dataset];
     var clListG = this.getClassLoaderList(clList)
     FileModelRepoLoader.loadSheetModelsIntoTargetDataset(this, mainDset, myDirectoryModel, clListG)
     DerivedRepoLoader.loadSheetModelsIntoTargetDataset(this, mainDset, myDirectoryModel, clListG)
@@ -138,7 +138,7 @@ abstract class SheetRepo(directoryModel: Model, var fileModelCLs: java.util.List
   }
 
   def updateFromDirModel() {
-    val mainDset: DataSource = getMainQueryDataset().asInstanceOf[DataSource];
+    val mainDset: Dataset = getMainQueryDataset().asInstanceOf[Dataset];
     val dirModel = getDirectoryModel;
     val fileModelCLs: java.util.List[ClassLoader] = this.getClassLoaderList(this.fileModelCLs);
     val dirModelLoaders: java.util.List[InstallableRepoReader] = SheetRepo.getDirModelLoaders();
@@ -184,14 +184,14 @@ abstract class SheetRepo(directoryModel: Model, var fileModelCLs: java.util.List
 class FileModelRepoLoader extends InstallableRepoReader {
   override def getContainerType() = "ccrt:FileRepo"
   override def getSheetType() = "ccrt:FileModel"
-  override def loadModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: DataSource, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
+  override def loadModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
     FileModelRepoLoader.loadSheetModelsIntoTargetDataset(repo, mainDset, dirModel, fileModelCLs)
   }
 }
 
 object FileModelRepoLoader extends BasicDebugger {
 
-  def loadSheetModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: DataSource,
+  def loadSheetModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: Dataset,
     myDirectoryModel: Model, clList: java.util.List[ClassLoader]) = {
 
     val nsJavaMap: java.util.Map[String, String] = myDirectoryModel.getNsPrefixMap()
@@ -260,7 +260,7 @@ object FileModelRepoLoader extends BasicDebugger {
       val ext: java.lang.String = FileStreamUtils.getFileExt(rdfURL);
       if (ext != null && (ext.equals("xlsx") || ext.equals("xls"))) {
         XLSXSheetRepoLoader.loadXLSXSheetRepo(rdfURL, "Nspc", "Dir", clList, null).
-          getMainQueryDataset().asInstanceOf[DataSource].getDefaultModel
+          getMainQueryDataset().asInstanceOf[Dataset].getDefaultModel
       } else if (ext != null && (ext.equals("csv"))) {
         CsvFileSheetLoader.readModelSheet(rdfURL, nsJavaMap, clList);
       } else {

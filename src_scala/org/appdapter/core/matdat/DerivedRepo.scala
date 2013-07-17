@@ -16,7 +16,6 @@
 
 package org.appdapter.core.matdat
 
-import com.hp.hpl.jena.query.DataSource
 import com.hp.hpl.jena.query.Dataset
 import com.hp.hpl.jena.rdf.model.Model
 import com.hp.hpl.jena.rdf.model.ModelFactory

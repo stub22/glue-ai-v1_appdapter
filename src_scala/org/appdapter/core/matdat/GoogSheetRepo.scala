@@ -16,7 +16,7 @@
 
 package org.appdapter.core.matdat
 
-import com.hp.hpl.jena.query.{ ResultSet, ResultSetRewindable, ResultSetFactory, Dataset, DataSource, QuerySolution, QuerySolutionMap }
+import com.hp.hpl.jena.query.{ ResultSet, ResultSetRewindable, ResultSetFactory, Dataset, QuerySolution, QuerySolutionMap }
 import com.hp.hpl.jena.rdf.model.{ Model, Resource, Literal, RDFNode, ModelFactory }
 import com.hp.hpl.jena.shared.PrefixMapping
 import org.appdapter.core.boot.ClassLoaderUtils
@@ -51,7 +51,7 @@ object GoogSheetRepo {
 class GoogSheetRepoLoader extends InstallableRepoReader {
   override def getContainerType() = "ccrt:GoogSheetRepo"
   override def getSheetType() = "ccrt:GoogSheet"
-  override def loadModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: DataSource, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
+  override def loadModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
     GoogSheetRepoLoader.loadSheetModelsIntoTargetDataset(repo, mainDset, dirModel, fileModelCLs)
   }
 }
@@ -78,7 +78,7 @@ object GoogSheetRepoLoader extends BasicDebugger {
   /////////////////////////////////////////
   /// Read sheet models
   /////////////////////////////////////////
-  def loadSheetModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: DataSource, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) = {
+  def loadSheetModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) = {
 
     val nsJavaMap: java.util.Map[String, String] = dirModel.getNsPrefixMap()
     // getLogger().debug("Dir Model NS Prefix Map {} ", nsJavaMap)

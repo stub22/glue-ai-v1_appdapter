@@ -21,7 +21,7 @@ import java.io.StringReader;
 import java.util.Iterator;
 import java.util.List;
 
-import com.hp.hpl.jena.query.DataSource;
+// import com.hp.hpl.jena.query.DataSource;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.query.DatasetFactory;
 import com.hp.hpl.jena.rdf.model.InfModel;
@@ -111,7 +111,7 @@ Includes the rules defined in the given file in this file. The included rules wi
 	}
 
 	public static Dataset makeInferredDataset (Dataset underlyingDataset, Reasoner reasoner) {
-		DataSource inferredDataset = DatasetFactory.create();
+		Dataset inferredDataset = DatasetFactory.create();
 		Model defModel = underlyingDataset.getDefaultModel();
 		if (defModel != null) {
 			Model infDefModel = makeInferredModel(defModel, reasoner);

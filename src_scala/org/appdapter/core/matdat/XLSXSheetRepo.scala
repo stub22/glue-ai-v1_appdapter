@@ -16,7 +16,7 @@
 
 package org.appdapter.core.matdat
 
-import com.hp.hpl.jena.query.{ ResultSetFactory, ResultSet, QuerySolution, DataSource }
+import com.hp.hpl.jena.query.{ ResultSetFactory, ResultSet, QuerySolution, Dataset }
 import com.hp.hpl.jena.rdf.model.{ Resource, RDFNode, ModelFactory, Model, Literal }
 import java.io.Reader
 import org.appdapter.core.store.{ FileStreamUtils }
@@ -39,14 +39,14 @@ import org.appdapter.core.log.BasicDebugger
 class XLSXSheetRepoLoader extends InstallableRepoReader {
   override def getContainerType() = "ccrt:XlsxWorkbookRepo"
   override def getSheetType() = "ccrt:XlsxSheet"
-  override def loadModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: DataSource, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
+  override def loadModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
     XLSXSheetRepoLoader.loadSheetModelsIntoTargetDataset(repo, mainDset, dirModel, fileModelCLs)
   }
 }
 
 object XLSXSheetRepoLoader extends BasicDebugger {
 
-  def loadSheetModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: DataSource, myDirectoryModel: Model, fileModelCLs: java.util.List[ClassLoader]) = {
+  def loadSheetModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: Dataset, myDirectoryModel: Model, fileModelCLs: java.util.List[ClassLoader]) = {
 
     val nsJavaMap: java.util.Map[String, String] = myDirectoryModel.getNsPrefixMap()
 

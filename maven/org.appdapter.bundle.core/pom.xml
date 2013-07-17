@@ -88,7 +88,7 @@
 			<version>2.10.2</version>
 		</dependency>
 		<dependency>
-			<artifactId>ext.bundle.jena_all_264</artifactId>
+			<artifactId>ext.bundle.jena_all_2_10_1</artifactId>
 			<groupId>${project.groupId}</groupId>
 			<type>jar</type>
 			<version>${project.version}</version>

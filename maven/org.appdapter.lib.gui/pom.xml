@@ -84,7 +84,7 @@ central repo.
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>ext.bundle.jena_all_264</artifactId>
+			<artifactId>ext.bundle.jena_all_2_10_1</artifactId>
             <version>${project.version}</version>
 		 <type>jar</type>
 		</dependency>		

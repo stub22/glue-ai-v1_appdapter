@@ -26,7 +26,8 @@ import org.appdapter.bind.rdf.jena.query.JenaArqQueryFuncs;
 import org.appdapter.bind.rdf.jena.query.JenaArqResultSetProcessor;
 import org.appdapter.core.name.Ident;
 
-import com.hp.hpl.jena.query.DataSource;
+// Removed in ARQ 2.9.3 - "Use Dataset" import com.hp.hpl.jena.query.DataSource;
+// http://svn.apache.org/repos/asf/jena/trunk/jena-arq/ReleaseNotes.txt
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.query.QuerySolution;
@@ -42,11 +43,10 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 
 	public void replaceNamedModel(Ident modelID, Model jenaModel) {
 		Dataset repoDset = getMainQueryDataset();
-		DataSource repoDsource = (DataSource) repoDset;
-		Lock lock = repoDsource.getLock();
+		Lock lock = repoDset.getLock();
 		try {
 			lock.enterCriticalSection(false);
-			repoDsource.replaceNamedModel(modelID.getAbsUriString(), jenaModel);
+			repoDset.replaceNamedModel(modelID.getAbsUriString(), jenaModel);
 		} finally {
 			lock.leaveCriticalSection();
 		}
@@ -55,17 +55,17 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 	// A bit like database's addNamedModel (but this is not implmentation of Mutable.. unless a subclass claims it is)
 	public void addNamedModel(Ident modelID, Model jenaModel) {
 		Dataset repoDset = getMainQueryDataset();
-		DataSource repoDsource = (DataSource) repoDset;
-		Lock lock = repoDsource.getLock();
+		// DataSource repoDsource = (DataSource) repoDset;
+		Lock lock = repoDset.getLock();
 		try {
 			lock.enterCriticalSection(false);
 			String name = modelID.getAbsUriString();
-			if (!repoDsource.containsNamedModel(name)) {
-				repoDsource.addNamedModel(name, jenaModel);
+			if (!repoDset.containsNamedModel(name)) {
+				repoDset.addNamedModel(name, jenaModel);
 			} else {
-				Model before = repoDsource.getNamedModel(name);
+				Model before = repoDset.getNamedModel(name);
 				jenaModel.add(before);
-				repoDsource.replaceNamedModel(name, jenaModel);
+				repoDset.replaceNamedModel(name, jenaModel);
 			}
 		} finally {
 			lock.leaveCriticalSection();

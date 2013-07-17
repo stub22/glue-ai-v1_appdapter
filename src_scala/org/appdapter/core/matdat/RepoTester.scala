@@ -125,8 +125,8 @@ class BetterDatabaseRepo(sdbStore: Store, dirGraphID: Ident) extends DatabaseRep
 
     // Add the two operations and execute the request
     //@SuppressWarnings Deprecated
-    upSpec.addUpdate(creReq)
-    upSpec.addUpdate(loadReq)
+    upSpec.add(creReq)
+    upSpec.add(loadReq)
 
     // Execute 
     UpdateAction.execute(upSpec, sdbUpdateGraphStore);

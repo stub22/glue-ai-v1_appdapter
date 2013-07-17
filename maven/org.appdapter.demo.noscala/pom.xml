@@ -56,7 +56,11 @@
 			<type>jar</type>
 			<version>1.7.5</version>
 		</dependency>		
-		<!-- *************** Test Deps *********************** -->
+		<!-- *************** Test Deps *********************** 
+		
+		2013-07-13 these are out of date, now that we are using Jena 2.10.1.
+		
+		-->
 			<!-- Junit itself is picked up transitively by SDB.  
 				 Same comment regarding explicit/implicit applies as for runtime above.
 			-->
@@ -99,7 +103,7 @@
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>ext.bundle.jena_all_264</artifactId>
+			<artifactId>ext.bundle.jena_all_2_10_1</artifactId>
 			<version>${project.version}</version>
 			<exclusions>
 				<exclusion>
