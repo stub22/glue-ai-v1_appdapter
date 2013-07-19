@@ -56,7 +56,14 @@
 			<artifactId>org.apache.servicemix.bundles.xmlresolver</artifactId>
 			<version>1.2_3</version>
 			<scope>runtime</scope>
-		</dependency>		
+		</dependency>
+                	
+		<dependency>
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
+			<version>1.6</version>
+			<scope>runtime</scope>
+		</dependency>                
 		<dependency>
 			<groupId>com.ibm.icu</groupId>
 			<artifactId>com.springsource.com.ibm.icu</artifactId>
@@ -353,7 +360,7 @@
 						<DynamicImport-Package>org.appdapter.*,org.cogchar.*</DynamicImport-Package>
                         <Bundle-Activator>org.appdapter.ext.bundle.jena.full.Activator</Bundle-Activator>
 						<!-- The sdb.* packages require Junit -->
-						<Export-Package>org.appdapter.*,arq.*,com.hp.hpl.jena.*,etc.*,org.openjena.*,vocabularies.*, jena.*, org.apache.jena.*</Export-Package>
+						<Export-Package>org.appdapter.*,arq.*,tdb.*,com.hp.hpl.jena.*,etc.*,org.openjena.*,vocabularies.*, jena.*, org.apache.jena.*</Export-Package>
 						<Private-Package>riotcmd</Private-Package>
                     </instructions>
                 </configuration>
