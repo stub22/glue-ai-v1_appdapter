@@ -170,12 +170,6 @@ central repo.
 			<artifactId>specs_2.10</artifactId>
 			<version>1.6.9</version>
 			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<artifactId>scala-library</artifactId>
-					<groupId>org.scala-lang</groupId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		
 		<dependency>
@@ -184,12 +178,6 @@ central repo.
 			<version>4.7_3</version>
 			<scope>test</scope>
         </dependency>
-		<dependency>
-			<groupId>org.scala-tools.testing</groupId>
-			<artifactId>specs_${scala.version}</artifactId>
-			<version>1.6.9</version>
-			<scope>test</scope>
-		</dependency>
 		<dependency>
 			<groupId>org.scalatest</groupId>
 			<artifactId>scalatest_2.10</artifactId>
@@ -231,7 +219,7 @@ central repo.
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.6.2</version>
+			<version>1.7.5</version>
 			<scope>test</scope>
 		</dependency>
 	 
