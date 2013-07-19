@@ -43,13 +43,18 @@ public class JenaFileManagerUtils {
 	public static void ensureClassLoaderRegisteredWithJenaFM(FileManager fm, ClassLoader cl) {
 		LocatorClassLoader candidateLCL = new LocatorClassLoader(cl);
 		// First, ensure that cl is not already registered
-		Iterator<Locator> locs = fm.locators();
-		while (locs.hasNext()) { 
-			Locator l = locs.next();
-			if (candidateLCL.equals(l)) {
-				theLogger.info("Found existing equivalent Jena FM loader for: " + cl);
-				return;
+		try {
+			Iterator<Locator> locs = fm.locators();
+			while (locs.hasNext()) {
+				Locator l = locs.next();
+				if (candidateLCL.equals(l)) {
+					theLogger.info("Found existing equivalent Jena FM loader for: " + cl);
+					return;
+				}
 			}
+		} catch (UnsupportedOperationException uoe) {
+			// new jena throws if there are no locators yet?
+			//uoe.printStackTrace();
 		}
 		theLogger.info("Registering new Jena FM loader for: " + cl);
 		fm.addLocator(candidateLCL); 
