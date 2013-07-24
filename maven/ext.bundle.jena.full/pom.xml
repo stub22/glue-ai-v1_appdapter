@@ -366,7 +366,7 @@
                         <Bundle-Activator>org.appdapter.ext.bundle.jena.full.Activator</Bundle-Activator>
 						<!-- The sdb.* packages require Junit -->
 						<Export-Package>org.appdapter.*,arq.*,tdb.*,com.hp.hpl.jena.*,etc.*,org.openjena.*,vocabularies.*, jena.*, org.apache.jena.*</Export-Package>
-						<Private-Package>riotcmd</Private-Package>
+						<Private-Package>riotcmd, org.apache.http.*</Private-Package>
                     </instructions>
                 </configuration>
             </plugin>
