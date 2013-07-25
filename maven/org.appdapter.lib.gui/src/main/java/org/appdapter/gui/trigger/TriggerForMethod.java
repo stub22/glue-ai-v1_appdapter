@@ -1,26 +1,32 @@
 package org.appdapter.gui.trigger;
 
+import static org.appdapter.gui.trigger.TriggerMenuFactory.describeMethod;
+
 import java.awt.Color;
 import java.beans.FeatureDescriptor;
-import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
+import java.lang.reflect.Proxy;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.appdapter.api.trigger.AnyOper.AskIfEqual;
 import org.appdapter.api.trigger.AnyOper.UISalient;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.api.trigger.TriggerImpl;
 import org.appdapter.core.component.KnownComponent;
+import org.appdapter.core.convert.ReflectUtils;
+import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.DisplayContext;
-import org.appdapter.gui.api.Ontologized.AskIfEqual;
+import org.appdapter.gui.api.WrapperValue;
+import org.appdapter.gui.browse.PropertyDescriptorForField;
 import org.appdapter.gui.browse.Utility;
-import org.appdapter.gui.util.CollectionSetUtils;
 
 public class TriggerForMethod<BT extends Box<TriggerImpl<BT>>> extends TriggerForInstance<BT> implements Comparable<Trigger>, AskIfEqual {
 	//extends TriggerForInstance implements Comparable<Trigger>, AskIfEqual {
 
-	private UISalient isSalientMethod;
+	final boolean isDeclNonStatic;
 
 	public void applySalience(UISalient uiSalient) {
 		if (uiSalient == null)
@@ -33,20 +39,75 @@ public class TriggerForMethod<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 
 	}
 
-	public String menuName;
-	FeatureDescriptor _featureDescriptor;
+	public boolean appliesTarget(Class cls) {
+		List<Class> params = getParameters();
+		if (params.size() > 0)
+			return params.get(0).isAssignableFrom(cls);
+		return false;
+	}
 
-	public TriggerForMethod(DisplayContext ctx, Class cls, Object obj, FeatureDescriptor fd) {
+	public boolean noOperand() {
+		List<Class> params = getParameters();
+		return params.size() < 2;
+	}
+
+	public boolean appliesToOperand(Class cls) {
+		if (cls == null || cls == Void.class || cls == void.class) {
+			return noOperand();
+		}
+		List<Class> params = getParameters();
+		if (params.size() > 1)
+			return params.get(1).isAssignableFrom(cls);
+		return false;
+	}
+
+	public TriggerForInstance createTrigger(String prependMenu, DisplayContext ctx, WrapperValue poj) {
+		return new TriggerForMethod(prependMenu, ctx, arg0Clazz, poj, method, true, featureDesc);
+	}
+
+	public String menuName;
+	public String prependMenu;
+	public Method method;
+	final public FeatureDescriptor featureDesc;
+	public PropertyDescriptorForField propDesc;
+
+	//FeatureDescriptor _featureDescriptor;
+
+	/*public TriggerForMethod(DisplayContext ctx, Class cls, Object obj, FeatureDescriptor fd) {
 		_clazz = cls;
 		_object = obj;
 		_featureDescriptor = fd;
 		displayContext = ctx;
 		setDescription(describeFD(fd));
 		setShortLabel(getMenuPath());
+	}*/
+
+	public TriggerForMethod(String prepend, DisplayContext ctx, Class cls, Object obj, Method fd, boolean isDeclNonStatic0, FeatureDescriptor feature) {
+		prependMenu = prepend;
+		arg0Clazz = cls;
+		displayContext = ctx;
+		method = fd;
+		featureDesc = feature;
+		_object = obj;
+		isDeclNonStatic = isDeclNonStatic0;
+		if (isDeclNonStatic && !ReflectUtils.isStatic(method)) {
+			Debuggable.warn("");
+		}
+		String desc = describeMethod(fd);
+		if (featureDesc instanceof PropertyDescriptorForField) {
+			propDesc = (PropertyDescriptorForField) feature;
+			desc = desc + " " + propDesc.getShortDescription();
+			menuName = propDesc.getSyntheticName(method);
+
+			setDescription(desc);
+		} else {
+			setDescription(desc);
+		}
+		setShortLabel(getMenuPath());
 	}
 
 	@Override Object getIdentityObject() {
-		return CollectionSetUtils.first(getReadMethodObject(_featureDescriptor), _featureDescriptor);
+		return method;
 	}
 
 	/**
@@ -90,7 +151,8 @@ public class TriggerForMethod<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 		}
 		KnownComponent other = (KnownComponent) obj;
 		/// assume they are named the same
-		if (other.getShortLabel().equals(getShortLabel()))
+		String osl = other.getShortLabel();
+		if (osl != null && osl.equals(getShortLabel()))
 			return true;
 
 		// for now assume a different job if a different datatype
@@ -107,8 +169,12 @@ public class TriggerForMethod<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 			Method om = tfi.getMethod();
 			if (om != null) {
 				boolean sameMName = rm.getName().equals(om.getName());
-				if (sameMName)
+				if (sameMName) {
+					if (om.getParameterTypes().length != rm.getParameterTypes().length) {
+						return false;
+					}
 					return true;
+				}
 				return false;
 			}
 		}
@@ -151,29 +217,34 @@ public class TriggerForMethod<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 	}
 
 	public void fireIT(Box targetBox) throws InvocationTargetException {
-		Method m = getReadMethodObject(_featureDescriptor);
+		Method m = getMethod();
 		if (m != null) {
-			Class rt = m.getReturnType();
+			Class rt = ReflectUtils.nonPrimitiveTypeFor(m.getReturnType());
 			try {
-				Object obj = Utility.invokeFromUI(_object, m);
-				if (rt != void.class)
+				Object tryValue = targetBox;
+				if (_object != null) {
+					tryValue = _object;
+				}
+				Object obj = Utility.invokeFromUI(tryValue, m);
+				if (obj != null) {
+					Class rc = obj.getClass();
+					if (!rt.isAssignableFrom(rc)) {
+						rt = rc;
+					}
+
+				}
+				if (rt != Void.class)
 					addSubResult(targetBox, obj, rt);
 				return;
 
 			} catch (InvocationTargetException e) {
 				throw e;
 			} catch (Throwable e) {
+				e.printStackTrace();
 				throw new InvocationTargetException(e);
 			}
 		}
 		getLogger().debug(this.toString() + " firing on " + targetBox.toString());
-	}
-
-	private Class getDeclaringClass() {
-		Method m = getMethod();
-		if (m == null)
-			return _clazz;
-		return m.getDeclaringClass();
 	}
 
 	@Override public String getDescription() {
@@ -188,19 +259,28 @@ public class TriggerForMethod<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 	public String getMenuName() {
 		if (menuName != null)
 			return menuName;
-		return (" " + _featureDescriptor.getDisplayName() + " ").replace(" get", "Show ").replace(" set", "Replace ").trim();
+		return (" " + getMethod().getName() + " ").replace(" get", "Show ").replace(" set", "Replace ").trim();
 	}
 
 	public String getMenuPath() {
 		String s = getMenuName();
-		if (isStatic()) {
+		if (!isDeclNonStatic && ReflectUtils.isStatic(getMethod())) {
 			s = "Static|" + s;
 		}
-		Class fi = classOrFirstInterfaceR(_clazz);
+		Class fi = getMethod().getDeclaringClass();//  classOrFirstInterfaceR(_clazz);
 		Object o1 = Utility.dref(_object);
-		if (o1.getClass() != _clazz || _clazz.getDeclaredMethods().length > 6) {
-			s = Utility.getShortClassName(fi) + "|" + s;
+		if (Proxy.isProxyClass(fi)) {
+
+			if (propDesc != null) {
+				fi = propDesc.getField().getDeclaringClass();
+			}
 		}
+
+		String shortClassName = Utility.getShortClassName(fi);
+
+		//	if (true || ((o1 != null && o1.getClass() != _clazz) || _clazz.getDeclaredMethods().length > 6)) {
+		s = shortClassName + "|" + s;
+		//	}
 		Class getRet = getReturnType();
 		/*if (getRet == void.class) {
 			s = "Invoke|" + s;
@@ -209,7 +289,8 @@ public class TriggerForMethod<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 		}*/
 		s = s.replace("PropertyDescriptor|", "Show ");
 		s = s.replace("ScalaObject|", "");
-		if (!_clazz.isInstance(o1)) {
+		s = prependMenu + s;
+		if (o1 != null && !isDeclNonStatic && /*!_clazz.isInstance(o1)*/fi != o1.getClass()) {
 			s = "Indirectly|" + s;
 		} else {
 			return s;
@@ -218,15 +299,20 @@ public class TriggerForMethod<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 	}
 
 	public Method getMethod() {
-		Method m = getReadMethodObject(_featureDescriptor);
-		return m;
+		return method;
 	}
 
-	private Class[] getParameters() {
+	public List<Class> getParameters() {
 		Method m = getMethod();
+		ArrayList<Class> al = new ArrayList<Class>();
 		if (m == null)
-			return CLASS0;
-		return m.getParameterTypes();
+			return al;
+		if (!ReflectUtils.isStatic(m))
+			al.add(m.getDeclaringClass());
+		for (Class c : m.getParameterTypes()) {
+			al.add(c);
+		}
+		return al;
 	}
 
 	private Class getReturnType() {
@@ -239,39 +325,32 @@ public class TriggerForMethod<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 	@Override public String getShortLabel() {
 		String myShortLabel = super.getShortLabel();
 		if (myShortLabel == null) {
-			myShortLabel = "" + _featureDescriptor;
+			myShortLabel = "" + getMethod();
 			setShortLabel(myShortLabel);
 		}
 		return myShortLabel;
 	}
 
-	public boolean isStatic() {
-		Method m = getMethod();
-		if (m == null)
-			return false;
-		return Modifier.isStatic(m.getModifiers());
-	}
-
 	public void setMenuInfo() {
-		if (_featureDescriptor instanceof PropertyDescriptor) {
-			jmi.setBackground(Color.GREEN);
-		}
-		Method m = getReadMethodObject(_featureDescriptor);
+		Method m = getMethod();
 		if (m == null) {
 			jmi.setBackground(Color.RED);
 			return;
 		}
-		Class[] pts = m.getParameterTypes();
-		boolean isStatic = isStatic();
+		boolean isStatic = !isDeclNonStatic && ReflectUtils.isStatic(m);
 		if (isStatic) {
 			jmi.setBackground(Color.ORANGE);
 		}
-		
-		int needsArgumentsTotal = pts.length;
-		if (isStatic)
-			needsArgumentsTotal = pts.length - 1;
-		
+
+		int needsArgumentsTotal = getParameters().size();
+
+		if (_object != null)
+			needsArgumentsTotal--;
+
 		if (needsArgumentsTotal > 1) {
+			jmi.setForeground(Color.WHITE);
+			jmi.setBackground(Color.BLACK);
+		} else if (needsArgumentsTotal > 2) {
 			jmi.setForeground(Color.GRAY);
 			jmi.setBackground(Color.BLACK);
 		} else {

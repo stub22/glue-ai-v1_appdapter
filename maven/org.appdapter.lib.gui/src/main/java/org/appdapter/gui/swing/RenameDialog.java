@@ -32,7 +32,7 @@ public class RenameDialog extends JFrame {
 	public RenameDialog(DisplayContext context, BT object) {
 		super("Rename");
 		this.context = context;
-		setIconImage(DisplayContextUIImpl.getImage(Utility.getResource("mainFrame.gif")));
+		setIconImage(Utility.getImage(Utility.getResource("mainFrame.gif")));
 		this.object = object;
 
 		java.util.Map nocmap = noc.getNameToBoxIndex();

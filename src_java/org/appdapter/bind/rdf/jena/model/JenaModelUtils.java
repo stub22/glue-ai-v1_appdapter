@@ -20,6 +20,7 @@ import java.net.URL;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.appdapter.api.trigger.AnyOper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +45,7 @@ import com.hp.hpl.jena.util.iterator.ExtendedIterator;
  * @author Stu B. <www.texpedient.com>
  */
 
-public class JenaModelUtils {
+public class JenaModelUtils implements AnyOper.UtilClass {
 	private static Logger 		theLogger = LoggerFactory.getLogger(JenaModelUtils.class);
 	
 	public static void logDebug(String s) {

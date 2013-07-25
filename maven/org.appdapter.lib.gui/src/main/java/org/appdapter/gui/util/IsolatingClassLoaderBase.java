@@ -11,11 +11,11 @@ import java.net.URLStreamHandlerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.appdapter.api.trigger.AnyOper;
+import org.appdapter.api.trigger.AnyOper.HRKRefinement;
 import org.appdapter.core.log.Debuggable;
-import org.appdapter.gui.api.Ontologized;
-import org.appdapter.gui.api.Ontologized.HRKRefinement;
 
-abstract public class IsolatingClassLoaderBase extends URLClassLoader implements HRKRefinement, Ontologized.HRKAdded {
+abstract public class IsolatingClassLoaderBase extends URLClassLoader implements HRKRefinement, AnyOper.HRKAdded {
 
 	public static <ET> boolean addCollection(List<Object> strings, ClassLoader thiz, ET[] elems) {
 		boolean changed = false;
@@ -85,8 +85,7 @@ abstract public class IsolatingClassLoaderBase extends URLClassLoader implements
 	 * }
 	 * </code>
 	 */
-	@Override
-	public abstract void addURL(URL url);
+	@Override public abstract void addURL(URL url);
 
 	public final void addURL_super(URL url) {
 		super.addURL(url);
@@ -127,13 +126,11 @@ abstract public class IsolatingClassLoaderBase extends URLClassLoader implements
 	/**
 	 * {@inheritDoc}
 	 */
-	final @Override
-	public Class<?> loadClass(final String name) throws ClassNotFoundException {
+	final @Override public Class<?> loadClass(final String name) throws ClassNotFoundException {
 		return loadClass(name, false);
 	}
 
-	final @Override
-	public Class loadClass(String name, boolean resolve) throws ClassNotFoundException {
+	final @Override public Class loadClass(String name, boolean resolve) throws ClassNotFoundException {
 		// First, check if the class has already been loaded
 		Class c = findLoadedClass(name);
 		ClassLoader parent = getParent();
@@ -190,8 +187,7 @@ abstract public class IsolatingClassLoaderBase extends URLClassLoader implements
 		}
 	}
 
-	@Override
-	public String toString() {
+	@Override public String toString() {
 		ArrayList<Object> strings = new ArrayList<Object>();
 		this.addPathStringsForDebug(strings, true);
 		final StringBuilder str = new StringBuilder();

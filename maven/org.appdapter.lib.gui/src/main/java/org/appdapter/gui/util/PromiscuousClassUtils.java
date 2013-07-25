@@ -35,9 +35,9 @@ import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.appdapter.api.trigger.AnyOper;
+import org.appdapter.api.trigger.AnyOper.HRKRefinement;
 import org.appdapter.core.log.Debuggable;
-import org.appdapter.gui.api.Ontologized;
-import org.appdapter.gui.api.Ontologized.HRKRefinement;
 
 import sun.reflect.Reflection;
 
@@ -427,7 +427,7 @@ abstract public class PromiscuousClassUtils {
 	}
 
 	public static void ensureOntoligized(Class interfaceClass) {
-		boolean wasTrue = true || Ontologized.class.isAssignableFrom(interfaceClass);
+		boolean wasTrue = true || AnyOper.class.isAssignableFrom(interfaceClass);
 		if (!wasTrue) {
 			Debuggable.LOGGER.warning("interfaceClass " + interfaceClass + " is not Ontoligized");
 		}

@@ -13,6 +13,7 @@ import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
 
+import org.appdapter.core.convert.NoSuchConversionException;
 import org.appdapter.gui.api.BT;
 import org.appdapter.gui.api.NamedObjectCollection;
 import org.appdapter.gui.api.POJOCollectionListener;
@@ -144,7 +145,11 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 		if (obj != null)
 			return obj;
 		if (Utility.isToStringType(type)) {
-			return Utility.fromString(title, type);
+			try {
+				return Utility.fromString(title, type);
+			} catch (NoSuchConversionException e) {
+				e.printStackTrace();
+			}
 		}
 		return null;
 	}

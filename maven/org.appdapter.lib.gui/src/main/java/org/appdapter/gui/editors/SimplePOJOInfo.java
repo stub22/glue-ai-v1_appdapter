@@ -1,28 +1,123 @@
 package org.appdapter.gui.editors;
 
+import java.awt.Image;
 import java.beans.BeanDescriptor;
 import java.beans.BeanInfo;
+import java.beans.Customizer;
+import java.beans.EventSetDescriptor;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
+import java.beans.MethodDescriptor;
 import java.beans.PropertyDescriptor;
 import java.beans.SimpleBeanInfo;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 
-abstract public class SimplePOJOInfo extends SimpleBeanInfo {
+import org.appdapter.core.log.Debuggable;
+import org.appdapter.gui.browse.PropertyDescriptorForField;
+import org.appdapter.gui.browse.Utility;
+
+public class SimplePOJOInfo extends SimpleBeanInfo {
 
 	final public BeanDescriptor getBeanDescriptor() {
+		if (normalBeanInfo != null) {
+			BeanDescriptor bd = normalBeanInfo.getBeanDescriptor();
+			if (bd != null)
+				return bd;
+		}
 		return new BeanDescriptor(beanClass, customizers.get(0));
 	}
 
-	Class beanClass;
-	BeanInfo normalBeanInfo;
 	ArrayList<Class> customizers = new ArrayList<Class>();
 
-	public SimplePOJOInfo(Class cls, Class customizer) {
+	Class beanClass;
+	BeanInfo normalBeanInfo;
+
+	PropertyDescriptor[] pdcache;
+	MethodDescriptor[] mdcache;
+
+	Object targetObject;
+
+	final static PropertyDescriptor[] NO_PROPS = new PropertyDescriptor[0];
+
+	@Override public PropertyDescriptor[] getPropertyDescriptors() {
+		if (pdcache == null) {
+			if (normalBeanInfo == null)
+				return NO_PROPS;
+			PropertyDescriptor[] before = normalBeanInfo.getPropertyDescriptors();
+			try {
+				pdcache = Utility.getProperties(this.targetObject, beanClass, before).toArray(NO_PROPS);
+				return pdcache;
+			} catch (IntrospectionException e) {
+				Debuggable.printStackTrace(e);
+				return before;
+			}
+		}
+		return pdcache;
+	}
+
+	@Override public MethodDescriptor[] getMethodDescriptors() {
+		if (mdcache == null) {
+			if (normalBeanInfo == null)
+				return new MethodDescriptor[0];
+			mdcache = normalBeanInfo.getMethodDescriptors();
+		}
+		return mdcache;
+	}
+
+	@Override public Image getIcon(int iconKind) {
+		if (normalBeanInfo == null)
+			return super.getIcon(iconKind);
+		return normalBeanInfo.getIcon(iconKind);
+	}
+
+	/**
+	 * This is a utility method to help in loading icon images.
+	 * It takes the name of a resource file associated with the
+	 * current object's class file and loads an image object
+	 * from that file.  Typically images will be GIFs.
+	 * <p>
+	 * @param resourceName  A pathname relative to the directory
+	 *		holding the class file of the current class.  For example,
+	 *		"wombat.gif".
+	 * @return  an image object.  May be null if the load failed.
+	 */
+	public java.awt.Image loadImage(final String resourceName) {
+		java.awt.Image img = Utility.loadImage(getClass(), resourceName);
+		if (img != null)
+			return img;
+		return null;
+	}
+
+	@Override public EventSetDescriptor[] getEventSetDescriptors() {
+		if (normalBeanInfo == null)
+			return new EventSetDescriptor[0];
+		return normalBeanInfo.getEventSetDescriptors();
+	}
+
+	@Override public int getDefaultPropertyIndex() {
+		if (normalBeanInfo == null)
+			return super.getDefaultPropertyIndex();
+		return normalBeanInfo.getDefaultPropertyIndex();
+	}
+
+	@Override public int getDefaultEventIndex() {
+		if (normalBeanInfo == null)
+			return super.getDefaultEventIndex();
+		return normalBeanInfo.getDefaultEventIndex();
+	}
+
+	public SimplePOJOInfo(Class cls, Class<? extends Customizer> customizer, BeanInfo orig, Object target) {
+		this(cls, customizer);
+		targetObject = target;
+		normalBeanInfo = orig;
+	}
+
+	public SimplePOJOInfo(Class cls, Class<? extends Customizer> customizer) {
 		super();
 		beanClass = cls;
-		customizers.add(customizer);
+		if (customizer != null)
+			customizers.add(customizer);
 	}
 
 	static int inGNInfo = 0;
@@ -44,62 +139,24 @@ abstract public class SimplePOJOInfo extends SimpleBeanInfo {
 			return null;
 		inGNInfo++;
 		try {
+			if (useNormalBeanInfo())
+				normalBeanInfo.getAdditionalBeanInfo();
 			return new BeanInfo[] { getNormalBeanInfo() };
 		} finally {
 			inGNInfo--;
 		}
 	}
 
-	@Override public PropertyDescriptor[] getPropertyDescriptors() {
-		if (true)
-			return null;
-		if (properties == null) {
-			properties = computeFieldProperties(beanClass);
-		}
-		return properties;
+	private boolean useNormalBeanInfo() {
+		return false;
 	}
 
-	private PropertyDescriptor[] computeFieldProperties(Class beanClass2) {
-		ArrayList<Field> fields = new ArrayList<Field>();
-		PropertyDescriptor[] pdsAlready = null;//getNormalBeanInfo().getPropertyDescriptors();
-
-		while (beanClass2 != null) {
-			for (Field f : beanClass2.getDeclaredFields()) {
-				if (pdsAlready != null) {
-					for (PropertyDescriptor pd : pdsAlready) {
-						if (pd.getName().equalsIgnoreCase(fixName(f.getName()))) {
-							f = null;
-							break;
-						}
-					}
-				}
-				if (f == null)
-					continue;
-				fields.add(f);
-			}
-			beanClass2 = beanClass2.getSuperclass();
-		}
-		return fieldsToProperties(fields);
-	}
-
-	static String fixName(String name) {
-		if (name.startsWith("m_")) {
-			name = name.substring(2);
-		} else if (name.startsWith("f_")) {
-			name = name.substring(2);
-		}
-		while (name.startsWith("_")) {
-			name = name.substring(1);
-		}
-		return name;
-	}
-
-	private PropertyDescriptor[] fieldsToProperties(ArrayList<Field> fields) {
+	private PropertyDescriptor[] fieldsToProperties(ArrayList<Field> fields, Object poj) {
 		int len = fields.size();
 		ArrayList<PropertyDescriptor> pds = new ArrayList<PropertyDescriptor>();
 		for (Field f : fields) {
 			try {
-				pds.add(new PropertyDescriptorForField(f).makePD());
+				pds.add(PropertyDescriptorForField.findOrCreate(f).makePD(poj));
 			} catch (Throwable e) {
 				throw BrokenBeanInfo(e);
 			}
@@ -118,75 +175,5 @@ abstract public class SimplePOJOInfo extends SimpleBeanInfo {
 	}
 
 	private PropertyDescriptor[] properties;
-
-	static public class PropertyDescriptorForField {
-
-		Class beanClass;
-		Class propertyType;
-		String propertyName;
-		Field fld;
-		private java.lang.reflect.Method writeMethod;
-		private java.lang.reflect.Method readMethod;
-		private Object m_obj;
-
-		public PropertyDescriptorForField(Field f) throws IntrospectionException {
-			fld = f;
-			beanClass = f.getDeclaringClass();
-			propertyName = fixName(f.getName());
-			propertyType = f.getType();
-		}
-
-		public PropertyDescriptor makePD() {
-			refreshRWMethods();
-			try {
-				return new PropertyDescriptor(propertyName, readMethod, writeMethod) {
-					@Override public String getName() {
-						return propertyName;
-					}
-
-					@Override public synchronized java.lang.reflect.Method getReadMethod() {
-						refreshRWMethods();
-						return readMethod;
-					}
-
-					@Override public synchronized java.lang.reflect.Method getWriteMethod() {
-						refreshRWMethods();
-						return writeMethod;
-					}
-				};
-			} catch (IntrospectionException e) {
-				throw BrokenBeanInfo(e);
-			}
-		}
-
-		public Object readNamedProperty() {
-			try {
-				return fld.get(m_obj);
-			} catch (Throwable e) {
-				throw BrokenBeanInfo(e);
-			}
-		}
-
-		void writeNamedProperty(Object value) {
-			try {
-				fld.set(m_obj, value);
-			} catch (Throwable e) {
-				throw BrokenBeanInfo(e);
-			}
-		}
-
-		protected void refreshRWMethods() {
-			readMethod = getMethod("readNamedProperty");
-			writeMethod = getMethod("writeNamedProperty", Object.class);
-		}
-
-		public java.lang.reflect.Method getMethod(String string, Class... parameterTypes) {
-			try {
-				return getClass().getDeclaredMethod(string, parameterTypes);
-			} catch (Throwable e) {
-				throw BrokenBeanInfo(e);
-			}
-		}
-	}
 
 }

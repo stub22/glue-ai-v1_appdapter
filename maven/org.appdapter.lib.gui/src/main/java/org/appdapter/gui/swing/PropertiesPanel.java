@@ -36,8 +36,7 @@ public class PropertiesPanel<BoxType extends Box> extends ScreenBoxPanel<BoxType
 		setObject(val);
 	}
 
-	@Override
-	public Object getValue() {
+	@Override public Object getValue() {
 		return objectValue;
 	}
 
@@ -45,15 +44,15 @@ public class PropertiesPanel<BoxType extends Box> extends ScreenBoxPanel<BoxType
 		if (val == this) {
 			return;
 		}
-		this.objectValue = val;
 		if (objClass == null) {
 			objClass = val.getClass();
 		}
-		if (objClass == objectValue) {
+		if (objClass == val) {
 			reloadObjectGUI(null);
 		} else {
 			reloadObjectGUI(val);
 		}
+		this.objectValue = val;
 	}
 
 	/*private JComponent createRow(PropertyDescriptor descriptor) {
@@ -75,8 +74,7 @@ public class PropertiesPanel<BoxType extends Box> extends ScreenBoxPanel<BoxType
 	 }*/
 
 	class PropertyComparator implements Comparator {
-		@Override
-		public int compare(Object first, Object second) {
+		@Override public int compare(Object first, Object second) {
 			PropertyDescriptor a = (PropertyDescriptor) first;
 			PropertyDescriptor b = (PropertyDescriptor) second;
 			String nameA = a.getName();
@@ -84,22 +82,19 @@ public class PropertiesPanel<BoxType extends Box> extends ScreenBoxPanel<BoxType
 			return nameA.compareTo(nameB);
 		}
 
-		@Override
-		public boolean equals(Object o) {
+		@Override public boolean equals(Object o) {
 			return (o instanceof PropertiesPanel.PropertyComparator);
 		}
 	}
 
-	@Override
-	protected void initSubclassGUI() {
+	@Override protected void initSubclassGUI() {
 		removeAll();
 		//setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		//setLayout(new VerticalLayout(VerticalLayout.LEFT, true));
 		setLayout(new BorderLayout());
 	}
 
-	@Override
-	protected void completeSubClassGUI() {
+	@Override protected void completeSubClassGUI() {
 		removeAll();
 		setLayout(new BorderLayout());
 
@@ -132,8 +127,10 @@ public class PropertiesPanel<BoxType extends Box> extends ScreenBoxPanel<BoxType
 
 	}
 
-	@Override
-	protected boolean reloadObjectGUI(Object val) {
+
+	@Override protected boolean reloadObjectGUI(Object val) {
+		if (super.showingInGUI == val)
+			return false;
 		objectValue = val;
 		if (val != null) {
 			completeSubClassGUI();

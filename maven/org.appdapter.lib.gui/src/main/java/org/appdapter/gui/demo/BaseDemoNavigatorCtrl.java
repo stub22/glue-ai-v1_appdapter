@@ -115,6 +115,7 @@ abstract public class BaseDemoNavigatorCtrl implements BrowserPanelGUI, org.appd
 			myBP.checkParent();
 			myJFrame.pack();
 		}
+		myBP.setVisible(true);
 		myJFrame.setVisible(true); //throw new RuntimeException("Frame already launched!");
 
 	}
@@ -128,8 +129,11 @@ abstract public class BaseDemoNavigatorCtrl implements BrowserPanelGUI, org.appd
 	}
 
 	@Override public UserResult showScreenBox(Object anyObject) {
+		return showScreenBox(null, anyObject);
+	}
+	@Override public UserResult showScreenBox(String title, Object anyObject) {
 		try {
-			return myBP.showScreenBox(anyObject);
+			return myBP.showScreenBox(title, anyObject);
 		} catch (Exception e) {
 			return myBP.showError(e.getMessage(), e);
 		}

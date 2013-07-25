@@ -1,13 +1,11 @@
 package org.appdapter.gui.swing;
 
 import javax.swing.Action;
-import javax.swing.DefaultButtonModel;
 import javax.swing.Icon;
-import javax.swing.JMenu;
+import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.UIManager;
 import javax.swing.plaf.MenuItemUI;
-import javax.swing.plaf.PopupMenuUI;
 
 public class SafeJMenuItem extends JMenuItem {
 

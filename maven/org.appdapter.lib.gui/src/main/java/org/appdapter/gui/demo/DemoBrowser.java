@@ -24,13 +24,11 @@ import javax.swing.JLabel;
 import javax.swing.JTextArea;
 import javax.swing.tree.TreeModel;
 
+import org.appdapter.api.trigger.AnyOper;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.MutableBox;
 import org.appdapter.api.trigger.TriggerImpl;
 import org.appdapter.core.log.BasicDebugger;
-import org.appdapter.core.matdat.OfflineXlsSheetRepoSpec;
-import org.appdapter.core.matdat.OnlineSheetRepoSpec;
-import org.appdapter.core.matdat.RepoSpec;
 import org.appdapter.core.store.Repo;
 import org.appdapter.core.store.RepoBox;
 import org.appdapter.demo.DemoBrowserCtrl;
@@ -55,7 +53,7 @@ import org.slf4j.LoggerFactory;
 /**
  * @author Stu B. <www.texpedient.com>
  */
-final public class DemoBrowser {
+final public class DemoBrowser implements AnyOper.Singleton {
 	public static Logger theLogger = getLogger();
 
 	public static DemoNavigatorCtrl makeDemoNavigatorCtrl(String[] args) {
@@ -63,24 +61,7 @@ final public class DemoBrowser {
 		if (repoNav == null) {
 			repoNav = DemoBrowser.makeDemoNavigatorCtrlReal(args, false);
 		}
-		addSampleElements(repoNav);
 		return repoNav;
-	}
-
-	private static void addSampleElements(DemoBrowserCtrl browser) {
-		browser.addObject("OfflineRepoSpec", makeOfflineRepoSpec(), false);
-		browser.addObject("OnlineRepoSpec", makeOnlineRepoSpec(), true);
-	}
-
-	public static RepoSpec makeOnlineRepoSpec() {
-		if (true) {
-			return new OnlineSheetRepoSpec(BMC_SHEET_KEY, BMC_NAMESPACE_SHEET_NUM, BMC_DIRECTORY_SHEET_NUM, null);
-		}
-		return null;
-	}
-
-	public static RepoSpec makeOfflineRepoSpec() {
-		return new OfflineXlsSheetRepoSpec(BMC_WORKBOOK_PATH, BMC_NAMESPACE_SHEET_NAME, BMC_DIRECTORY_SHEET_NAME, null);
 	}
 
 	// These constants are used to test the ChanBinding model found in "GluePuma_BehavMasterDemo"
@@ -149,8 +130,7 @@ final public class DemoBrowser {
 			// frame.pack();
 			DemoNavigatorCtrlFactory crtlMaker = new DemoNavigatorCtrlFactory() {
 
-				@Override
-				public DemoNavigatorCtrl makeDemoNavigatorCtrl(String[] main, boolean defaultExampleCode1) {
+				@Override public DemoNavigatorCtrl makeDemoNavigatorCtrl(String[] main, boolean defaultExampleCode1) {
 					return makeDemoNavigatorCtrlReal(main, defaultExampleCode1);
 				}
 
@@ -159,7 +139,6 @@ final public class DemoBrowser {
 			//frame.setSize(800, 600);
 			//org.appdapter.gui.pojo.Utility.centerWindow(frame);
 			mainControl = DemoBrowserUI.makeDemoNavigatorCtrl(args);
-			addSampleElements(mainControl);
 			mainControl.launchFrame("This is ObjectNavigator");
 			//frame.show();
 			//frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -171,8 +150,7 @@ final public class DemoBrowser {
 	}
 
 	static public class AsApplet extends JApplet {
-		@Override
-		public void init() {
+		@Override public void init() {
 			javax.swing.Box box = new javax.swing.Box(BoxLayout.Y_AXIS);
 			try {
 				getContentPane().setLayout(new BorderLayout());
@@ -199,8 +177,7 @@ final public class DemoBrowser {
 
 	public static DemoNavigatorCtrl makeDemoNavigatorCtrlReal(String[] args, boolean isExampleCode) {
 		RepoSubBoxFinder rsbf = new RepoSubBoxFinder() {
-			@Override
-			public Box findGraphBox(RepoBox parentBox, String graphURI) {
+			@Override public Box findGraphBox(RepoBox parentBox, String graphURI) {
 				theLogger.info("finding graph box for " + graphURI + " in " + parentBox);
 				MutableBox mb = new RepoModelBoxImpl();
 				TriggerImpl dti = new SysTriggers.DumpTrigger();
@@ -247,8 +224,7 @@ final public class DemoBrowser {
 		return makeBoxContextImpl(boxClass, repoBoxClass, regTrigProto, repoTrigProto, isExampleCode);
 	}
 
-	@SuppressWarnings("unchecked")
-	public static <BTS extends TriggerImpl<BT>, BT extends ScreenBoxImpl<BTS>, TBT extends TriggerImpl<BT>> TBT makeTriggerPrototype(Class<BT> boxClass) {
+	@SuppressWarnings("unchecked") public static <BTS extends TriggerImpl<BT>, BT extends ScreenBoxImpl<BTS>, TBT extends TriggerImpl<BT>> TBT makeTriggerPrototype(Class<BT> boxClass) {
 		// The trigger subtype does not matter - what matters is capturing BT into the type.
 		return (TBT) new SysTriggers.QuitTrigger().makeTrigger(boxClass);
 	}
@@ -268,7 +244,7 @@ final public class DemoBrowser {
 	 */
 	public static <TBT extends TriggerImpl<BT>, BT extends ScreenBoxImpl<TBT>, TRBT extends TriggerImpl<RBT>, RBT extends RepoBoxImpl<TRBT>>
 
-	ScreenBoxContextImpl makeBoxContextImpl(Class<BT> regBoxClass, Class<RBT> repoBoxClass, TriggerImpl<BT> regTrigProto, TriggerImpl<RBT> repoTrigProto, boolean isExampleCode) {
+			ScreenBoxContextImpl makeBoxContextImpl(Class<BT> regBoxClass, Class<RBT> repoBoxClass, TriggerImpl<BT> regTrigProto, TriggerImpl<RBT> repoTrigProto, boolean isExampleCode) {
 		try {
 
 			ScreenBoxContextImpl bctx = new ScreenBoxContextImpl();
@@ -285,7 +261,8 @@ final public class DemoBrowser {
 			BT appBox = (BT) DemoServiceWrapFuncs.makeTestChildBoxImplWithObj(rootBox, (Class) regBoxClass, BasicDebugger.class, "app");
 			BT sysBox = (BT) DemoServiceWrapFuncs.makeTestChildBoxImplWithObj(rootBox, (Class) regBoxClass, ScreenBoxImpl.class, "sys");
 
-				if (!isExampleCode) 				return bctx;
+			if (!isExampleCode)
+				return bctx;
 
 			RBT r1Box = (RBT) DemoServiceWrapFuncs.makeTestChildBoxImpl(repoBox, (Class) repoBoxClass, regTrigProtoE, "h2.td_001");
 

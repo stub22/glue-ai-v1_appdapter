@@ -61,6 +61,11 @@ public class AddToTreeListener implements POJOCollectionListener {
 			//	obj = d;
 		}
 		Class oc = obj.getClass();
+
+		if (!isRemoval) {
+			Utility.addObjectFeatures(obj);
+		}
+
 		if (oc.isArray())
 			return;
 		if (Utility.isToStringType(oc))
@@ -87,6 +92,19 @@ public class AddToTreeListener implements POJOCollectionListener {
 	}
 
 	private void saveInClassTree(Box belowBox, Class oc, MutableBox objectBox, boolean isRemoval) throws PropertyVetoException {
+		try {
+			saveInClassTree0(belowBox, oc, objectBox, isRemoval);
+		} catch (Exception e2) {
+			//e2.printStackTrace();
+			try {
+				saveInClassTree0(belowBox, oc, objectBox, isRemoval);
+			} catch (Exception e) {
+
+			}
+		}
+	}
+
+	private void saveInClassTree0(Box belowBox, Class oc, MutableBox objectBox, boolean isRemoval) throws PropertyVetoException {
 		String cn = Utility.getShortClassName(oc);
 		MutableBox objectClassBox = (MutableBox) col.findOrCreateBox(cn, oc).asBox();
 		if (!isRemoval) {

@@ -16,13 +16,14 @@
 
 package org.appdapter.core.component;
 
+import org.appdapter.api.trigger.AnyOper.HasIdent;
 import org.appdapter.core.name.Ident;
 
 /**
  * @author Stu B. <www.texpedient.com>
  *  A known box is an interactable entity tied to a modeled representation of that entity (in some repo).
  */
-public interface KnownComponent {
+public interface KnownComponent extends HasIdent {
 	public Ident getIdent();
 
 	public String getDescription();

@@ -4,6 +4,7 @@ import java.lang.reflect.Method;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.TriggerImpl;
+import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.WrapperValue;
 import org.appdapter.gui.browse.Utility;
@@ -13,7 +14,7 @@ public class ShowPanelTrigger<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 	final Class panelClass;
 
 	public ShowPanelTrigger(DisplayContext ctx, Class cls, WrapperValue obj, Class fd) {
-		_clazz = cls;
+		arg0Clazz = cls;
 		_object = obj;
 		panelClass = fd;
 		displayContext = ctx;
@@ -29,13 +30,13 @@ public class ShowPanelTrigger<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 	public void fireIT(Box targetBox) {
 		Object value = getValueOr(targetBox);
 		try {
-			Method m = Utility.getDeclaredMethod(panelClass, "focusOnBox", targetBox.getClass());
+			Method m = ReflectUtils.getDeclaredMethod(panelClass, "focusOnBox", (Class)null);
 			if (m != null) {
 				value = targetBox;
 			} else {
-				m = Utility.getDeclaredMethod(panelClass, "setObject", Object.class);
+				m = ReflectUtils.getDeclaredMethod(panelClass, "setObject", Object.class);
 				if (m == null)
-					m = Utility.getDeclaredMethod(panelClass, "setValue", Object.class);
+					m = ReflectUtils.getDeclaredMethod(panelClass, "setValue", Object.class);
 				if (m == null) {
 					getLogger().error("No way to set object in panel " + panelClass);
 					return;

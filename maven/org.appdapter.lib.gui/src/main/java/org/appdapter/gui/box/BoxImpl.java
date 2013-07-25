@@ -1,13 +1,10 @@
 package org.appdapter.gui.box;
 
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 
 import org.appdapter.api.trigger.ABoxImpl;
 import org.appdapter.api.trigger.Trigger;
-import org.appdapter.gui.util.CollectionSetUtils;
 
 public class BoxImpl<TrigType extends Trigger<? extends ABoxImpl<TrigType>>> extends ABoxImpl<TrigType> {
 

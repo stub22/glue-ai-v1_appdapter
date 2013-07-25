@@ -13,6 +13,8 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.logging.Logger;
 
+import org.appdapter.core.convert.ReflectUtils;
+
 public abstract class Debuggable {
 
 	public static int PRINT_DEPTH = 3;
@@ -179,26 +181,22 @@ public abstract class Debuggable {
 		if (c == null || c == Object.class)
 			return objKey(o);
 		java.lang.reflect.Field[] fs = c.getDeclaredFields();
-		if (fs.length > 0) {
-			StringBuffer sb = new StringBuffer();
-			for (int i = 0; i < fs.length; i++) {
-				java.lang.reflect.Field f = fs[i];
-				boolean isSt = Modifier.isStatic(f.getModifiers());
-				if (isSt)
-					continue;
-				f.setAccessible(true);
-				try {
-					Object val = f.get(o);
-					sb.append(f.getName() + "=" + toInfoStringV(val, depth) + ",");
-				} catch (Error e) {
-					UnhandledException(e);
-				} catch (Exception e) {
-				}
-
+		StringBuffer sb = new StringBuffer();
+		for (int i = 0; i < fs.length; i++) {
+			java.lang.reflect.Field f = fs[i];
+			boolean isSt = Modifier.isStatic(f.getModifiers());
+			if (isSt)
+				continue;
+			f.setAccessible(true);
+			try {
+				Object val = f.get(o);
+				sb.append(f.getName() + "=" + toInfoStringV(val, depth) + ",");
+			} catch (Error e) {
+				UnhandledException(e);
+			} catch (Exception e) {
 			}
-			return sb.toString() + toInfoStringFC(o, c.getSuperclass(), depth);
 		}
-		return "cls0=" + toInfoStringC(c);
+		return sb.toString() + toInfoStringFC(o, c.getSuperclass(), depth);
 	}
 
 	public static String objKey(Object o) {
@@ -231,6 +229,7 @@ public abstract class Debuggable {
 
 	public static <T> T notImplemented(Object... params) {
 		String msg = "notImplemented: " + toInfoStringA(params, ",", PRINT_DEPTH);
+		warn(msg);
 		if (true)
 			throw new AbstractMethodError(msg);
 		return (T) null;
@@ -308,17 +307,17 @@ public abstract class Debuggable {
 		}
 		Throwable newVer;
 		try {
-			newVer = newInstance(newClass, C_ST, cause.getMessage(), cause);
+			newVer = ReflectUtils.newInstance(newClass, C_ST, cause.getMessage(), cause);
 		} catch (Throwable nsm) {
 			try {
-				newVer = newInstance(newClass, C_T, cause);
+				newVer = ReflectUtils.newInstance(newClass, C_T, cause);
 			} catch (Throwable nsm1) {
 				try {
-					newVer = newInstance(newClass, C_S, cause.getMessage());
+					newVer = ReflectUtils.newInstance(newClass, C_S, cause.getMessage());
 					newVer.initCause(cause);
 				} catch (Throwable nsm2) {
 					try {
-						newVer = newInstance(newClass, C_0);
+						newVer = ReflectUtils.newInstance(newClass, C_0);
 						newVer.initCause(cause);
 					} catch (Throwable nsm3) {
 						return null;
@@ -343,94 +342,12 @@ public abstract class Debuggable {
 			Throwable ec = ex.getCause();
 			if (ec != cause) {
 				try {
-					Debuggable.setField(ex, ex.getClass(), Throwable.class, "cause", cause);
+					ReflectUtils.setField(ex, ex.getClass(), Throwable.class, "cause", cause);
 				} catch (Throwable e2) {
 					// cannot set the cause?!
 				}
 			}
 		} catch (Throwable unseen) {
-		}
-	}
-
-	public static <T> T newInstance(Class<T> classOf, Class[] types, Object... args) throws Throwable {
-		Constructor<T> c = classOf.getDeclaredConstructor((Class[]) types);
-		c.setAccessible(true);
-		return c.newInstance(args);
-	}
-
-	public static void setField(Object obj, Class classOf, Class otherwise, String fieldname, Object value) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, Throwable {
-		{
-			Throwable why = null;
-			Field causeF;
-			try {
-				causeF = classOf.getField(fieldname);
-				try {
-					causeF.set(obj, value);
-					return;
-				} catch (IllegalArgumentException e) {
-					why = e;
-				} catch (IllegalAccessException e) {
-					why = e;
-				}
-			} catch (SecurityException e) {
-				why = e;
-			} catch (NoSuchFieldException e) {
-				why = e;
-			}
-			try {
-				causeF = otherwise.getDeclaredField(fieldname);
-				causeF.setAccessible(true);
-				causeF.set(obj, value);
-			} catch (SecurityException e) {
-				throw e;
-			} catch (NoSuchFieldException e) {
-				if (why != null)
-					throw why;
-				throw e;
-			}
-		}
-	}
-
-	public static Object getField(Object obj, Class classOf, Class otherwise, String fieldname) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, Throwable {
-		{
-			Throwable why = null;
-			Field causeF;
-			if (classOf != null) {
-				try {
-					causeF = classOf.getField(fieldname);
-					try {
-						causeF.setAccessible(true);
-						return causeF.get(obj);
-					} catch (IllegalArgumentException e) {
-						why = e;
-					} catch (IllegalAccessException e) {
-						why = e;
-					}
-				} catch (SecurityException e) {
-					why = e;
-				} catch (NoSuchFieldException e) {
-					why = e;
-				}
-			}
-			try {
-				causeF = otherwise.getDeclaredField(fieldname);
-				causeF.setAccessible(true);
-				return causeF.get(obj);
-			} catch (SecurityException e) {
-				throw e;
-			} catch (NoSuchFieldException e) {
-				classOf = otherwise.getSuperclass();
-				if (classOf != null) {
-					try {
-						return getField(obj, null, classOf, fieldname);
-					} catch (NoSuchFieldException nsfe) {
-
-					}
-				}
-				if (why != null)
-					throw why;
-				throw e;
-			}
 		}
 	}
 

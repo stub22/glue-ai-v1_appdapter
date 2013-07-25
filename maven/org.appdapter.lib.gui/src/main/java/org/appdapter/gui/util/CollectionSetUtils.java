@@ -5,9 +5,9 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 
-import org.appdapter.gui.api.Ontologized.AskIfEqual;
-import org.appdapter.gui.api.Ontologized.DontAdd;
-import org.appdapter.gui.api.Ontologized.HRKRefinement;
+import org.appdapter.api.trigger.AnyOper.AskIfEqual;
+import org.appdapter.api.trigger.AnyOper.DontAdd;
+import org.appdapter.api.trigger.AnyOper.HRKRefinement;
 
 public abstract class CollectionSetUtils {
 

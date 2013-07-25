@@ -11,7 +11,7 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 
-import org.appdapter.gui.api.Ontologized.HRKRefinement;
+import org.appdapter.api.trigger.AnyOper.HRKRefinement;
 
 /**
  * A class loader to allow for loading of other jars that are added as a URL.

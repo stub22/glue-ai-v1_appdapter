@@ -11,6 +11,7 @@ import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.BT;
 import org.appdapter.gui.api.BoxPanelSwitchableView;
 import org.appdapter.gui.api.BrowserPanelGUI;
+import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.NamedObjectCollection;
 import org.appdapter.gui.api.POJOCollectionListener;
 import org.appdapter.gui.box.BoxedCollectionImpl;
@@ -74,7 +75,7 @@ public class EmptyDisplayContext extends BoxedCollectionImpl implements BrowserP
 		throw new PropertyVetoException("Cant create objects in " + this, new PropertyChangeEvent(this, "objects", null, obj));
 	}
 
-	@Override public BrowserPanelGUI getDisplayContext() {
+	@Override public DisplayContext getDisplayContext() {
 		return Utility.getDisplayContext();
 	}
 
@@ -102,12 +103,16 @@ public class EmptyDisplayContext extends BoxedCollectionImpl implements BrowserP
 		return getDisplayContext().getBoxPanelTabPane();
 	}
 
-	@Override public UserResult showScreenBox(Object value) throws Exception {
-		return getDisplayContext().showScreenBox(value);
+	@Override public UserResult showScreenBox(String title, Object value) throws Exception {
+		return super.getCurrentContext().showScreenBox(title, value);
+	}
+
+	@Override public UserResult showScreenBox(Object anyObject) throws Exception {
+		return showScreenBox(null, anyObject);
 	}
 
 	@Override public UserResult showMessage(String string) {
-		return getDisplayContext().showMessage(string);
+		return getCurrentContext().showMessage(string);
 	}
 
 	public BoxPanelSwitchableView getLocalCollectionUI() {

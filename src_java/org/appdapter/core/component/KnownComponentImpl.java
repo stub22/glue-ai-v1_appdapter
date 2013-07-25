@@ -16,6 +16,7 @@
 
 package org.appdapter.core.component;
 
+import org.appdapter.bind.rdf.jena.model.JenaLiteralUtils;
 import org.appdapter.core.log.BasicDebugger;
 import org.appdapter.core.name.Ident;
 
@@ -26,12 +27,13 @@ public class KnownComponentImpl extends BasicDebugger implements MutableKnownCom
 	private Ident myIdent;
 	private String myShortLabel, myDescription;
 
-	public KnownComponentImpl() {		
-		
+	public KnownComponentImpl() {
+
 	}
-	
-	@Override public void setIdent(Ident id) {
+
+	final @Override public void setIdent(Ident id) {
 		myIdent = id;
+		JenaLiteralUtils.onSetIdent(id, this);
 	}
 
 	@Override public Ident getIdent() {

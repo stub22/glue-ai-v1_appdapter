@@ -28,9 +28,9 @@ import javax.swing.AbstractAction;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
-import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 
+import org.appdapter.api.trigger.AnyOper.UIProvider;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContext;
 import org.appdapter.api.trigger.UserResult;
@@ -42,7 +42,6 @@ import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.DisplayContextProvider;
 import org.appdapter.gui.api.GetSetObject;
 import org.appdapter.gui.api.NamedObjectCollection;
-import org.appdapter.gui.api.Ontologized.UIProvider;
 import org.appdapter.gui.api.ScreenBoxTreeNode;
 import org.appdapter.gui.browse.PropertyDescriptorForField;
 import org.appdapter.gui.browse.Utility;
@@ -89,7 +88,7 @@ abstract public class AbstractScreenBoxTreeNodeImpl extends DefaultMutableTreeNo
 	 * @see org.appdapter.gui.box.DisplayNode#getBox()
 	 */
 	final public Box getBox() {
-		return (Box) getUserObject();
+		return (Box) super.getUserObject();
 	}
 
 	public abstract Iterable<BT> getTreeRepresentedChildren();
@@ -103,7 +102,7 @@ abstract public class AbstractScreenBoxTreeNodeImpl extends DefaultMutableTreeNo
 	 */
 	final public AbstractScreenBoxTreeNodeImpl findTreeNodeDisplayContext(Box b) {
 
-		userObject = getUserObject();
+		Object userObject = getBox();
 		if (Utility.boxesRepresentSame(b, userObject)) {
 			return this;
 		} else {
@@ -271,7 +270,8 @@ abstract public class AbstractScreenBoxTreeNodeImpl extends DefaultMutableTreeNo
 			});
 		}
 		Box thizBox = getBox();
-		Object value = userObject = getUserObject();
+		Object userObject = thizBox;
+		Object value = userObject;
 		if (userObject instanceof BT) {
 			value = ((BT) userObject).getValue();
 			Class beanClass = value.getClass();
@@ -325,7 +325,7 @@ abstract public class AbstractScreenBoxTreeNodeImpl extends DefaultMutableTreeNo
 		try {
 			for (PropertyDescriptor pd : Utility.getProperties(object)) {
 				Class pt = pd.getPropertyType();
-				if (skipStringables && (Utility.isToStringType(pt) || pt == Class.class))
+				if (skipStringables && (pt == null || (Utility.isToStringType(pt) || pt == Class.class)))
 					continue;
 				Object v = null;
 				if (pd instanceof PropertyDescriptorForField) {

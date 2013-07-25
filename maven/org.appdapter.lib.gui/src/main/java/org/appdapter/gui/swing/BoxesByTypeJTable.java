@@ -13,6 +13,7 @@ import javax.swing.table.AbstractTableModel;
 
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.browse.Utility;
+import org.appdapter.gui.trigger.TriggerMenuFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +35,7 @@ public class BoxesByTypeJTable {
 
 	public BoxesByTypeJTable(DisplayContext context, List objects, Class objectClass,
 			String[] propNames) throws Exception {
-		objectInfo = Utility.getBeanInfo(objectClass);
+		objectInfo = Utility.getBeanInfo(objectClass, false, null, TriggerMenuFactory.ADD_ALL);
 
 		if (objects == null) {
 			this.objects = new LinkedList();

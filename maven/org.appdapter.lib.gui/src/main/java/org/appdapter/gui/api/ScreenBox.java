@@ -17,10 +17,10 @@ package org.appdapter.gui.api;
 
 import javax.swing.JPanel;
 
+import org.appdapter.api.trigger.AnyOper.UIProvider;
 import org.appdapter.api.trigger.MutableBox;
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.core.component.KnownComponent;
-import org.appdapter.gui.api.Ontologized.UIProvider;
 
 /**
  * @author Stu B. <www.texpedient.com>

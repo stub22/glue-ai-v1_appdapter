@@ -14,6 +14,7 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.browse.Utility;
 import org.slf4j.Logger;
@@ -69,7 +70,7 @@ public class MethodsPanel extends JJPanel implements ActionListener, ListSelecti
 			Object[] params = paramPanel.getValues();
 			theLogger.debug("Invoking " + method + " on " + object + " with args " + params);
 
-			Object returnValue = Utility.invoke(object, method, params);
+			Object returnValue = ReflectUtils.invoke(object, method, params);
 			resultPanel.setResultValue(returnValue);
 		}
 	}
