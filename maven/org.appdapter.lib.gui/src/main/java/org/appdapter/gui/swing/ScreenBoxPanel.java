@@ -46,7 +46,11 @@ abstract public class ScreenBoxPanel<BoxType extends Box> extends ObjectView<Box
 				return;
 			objectValue = bean;
 			try {
+				Object wasShowingInGUI = showingInGUI;
 				reloadObjectGUI(bean);
+				if (showingInGUI == wasShowingInGUI) {
+					showingInGUI = bean;
+				}
 			} catch (Throwable e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -105,9 +109,9 @@ abstract public class ScreenBoxPanel<BoxType extends Box> extends ObjectView<Box
 
 	protected Class objClass;
 	protected GetSetObject box;
+	public Object showingInGUI;
 
-	@Override
-	public void focusOnBox(BoxType b) {
+	@Override public void focusOnBox(BoxType b) {
 		synchronized (valueLock) {
 			if (b instanceof GetSetObject)
 				box = (GetSetObject) b;
@@ -117,8 +121,7 @@ abstract public class ScreenBoxPanel<BoxType extends Box> extends ObjectView<Box
 		}
 	}
 
-	@Override
-	public Object getValue() {
+	@Override public Object getValue() {
 		synchronized (valueLock) {
 			Object val = null;
 			if (box != null) {
@@ -139,8 +142,7 @@ abstract public class ScreenBoxPanel<BoxType extends Box> extends ObjectView<Box
 	 * the new pojObject instead.
 	 */
 
-	@Override
-	public void objectValueChanged(Object oval, Object bean) {
+	@Override public void objectValueChanged(Object oval, Object bean) {
 		synchronized (valueLock) {
 			if (oval != null) {
 				if (objClass == null)

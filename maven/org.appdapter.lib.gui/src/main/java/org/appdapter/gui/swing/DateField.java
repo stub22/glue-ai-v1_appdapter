@@ -22,6 +22,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JTextField;
 
+import org.appdapter.core.convert.NoSuchConversionException;
 import org.appdapter.gui.browse.Utility;
 
 /**
@@ -44,7 +45,7 @@ public class DateField extends JVPanel implements KeyListener, ActionListener, F
 		return getDate();
 	}
 
-	@Override public void setObject(Object obj) throws InvocationTargetException {
+	@Override public void setObject(Object obj) throws InvocationTargetException, NoSuchConversionException {
 		setDate(Utility.recast(obj, Date.class));
 	}
 

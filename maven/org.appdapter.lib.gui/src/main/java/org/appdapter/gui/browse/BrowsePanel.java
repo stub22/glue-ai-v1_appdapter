@@ -81,6 +81,10 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 		return myBoxContext;
 	}
 	
+	public static void main(String[] args) {
+		Utility.ensureRunning();
+	}
+
 	/** Creates new form BrowsePanel */
 	public BrowsePanel(TreeModel tm, BoxContext bctx0) {
 		Utility.uiObjects.toString();
@@ -118,7 +122,12 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 				String text = getText();
 				if (false && hazFocus && sel) {
 					Object deref = Utility.dref(value);
-					showScreenBox(deref);
+					try {
+						showScreenBox(deref);
+					} catch (Exception e) {
+						e.printStackTrace();
+						throw Debuggable.reThrowable(e);
+					}
 				}
 				// here is the code to customize the StyledLabel for each tree node
 			}
@@ -140,6 +149,7 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 	public void setVisible(boolean aFlag) {
 		checkParent();
 		super.setVisible(aFlag);
+		Utility.updateToolsMenu();
 	}
 
 	public void addNotify() {
@@ -219,7 +229,7 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 		menuBar = myTopFrameMenu = Utility.getMenuBar();
 		myTopFrameMenu.removeAll();
 
-		menuBar.add(Utility.collectionWatcher.getMenu());
+		menuBar.add(Utility.collectionWatcher.getFileMenu());
 		//Build the first menu.
 		menuBar.add(makeSubMenu1Example());
 
@@ -236,9 +246,12 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 		JRadioButtonMenuItem rbMenuItem;
 		JCheckBoxMenuItem cbMenuItem;
 
-		menu = new SafeJMenu("A Menu");
+		Utility.toolsMenu = menu = new SafeJMenu("Tools");
 		menu.setMnemonic(KeyEvent.VK_A);
-		menu.getAccessibleContext().setAccessibleDescription("The only menu in this program that has menu items");
+		menu.getAccessibleContext().setAccessibleDescription("Tool menu items");
+		Utility.updateToolsMenu();
+		if (true)
+			return menu;
 
 		//a group of JMenuItems
 		menuItem = new SafeJMenuItem("A text-only menu item", KeyEvent.VK_T);
@@ -421,21 +434,25 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 		return myBoxPanelStatus.getText();
 	}
 
-	public UserResult showScreenBox(Object anyObject) {
+	public UserResult showScreenBox(String title, Object anyObject) {
 		try {
 			if (anyObject == null)
 				return Utility.asUserResult(null);
-			return addObject(null, anyObject, Utility.getDisplayType(anyObject.getClass()), true);
+			return addObject(title, anyObject, Utility.getDisplayType(anyObject.getClass()), true);
 		} catch (Exception e) {
 			throw Debuggable.UnhandledException(e);
 		}
+	}
+
+	@Override public UserResult showScreenBox(Object anyObject) throws Exception {
+		return showScreenBox(null, anyObject);
 	}
 
 	public UserResult addObject(String title, Object anyObject, DisplayType attachType, boolean showAsap) {
 		try {
 			BT impl = getTreeBoxCollection().findOrCreateBox(title, anyObject);
 			if (showAsap) {
-				return app.showScreenBox(impl);
+				return app.showScreenBox(title, impl);
 			}
 			return UserResult.SUCCESS;
 		} catch (Exception e) {

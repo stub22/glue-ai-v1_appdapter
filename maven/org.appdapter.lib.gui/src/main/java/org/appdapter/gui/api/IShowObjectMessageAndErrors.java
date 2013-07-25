@@ -1,7 +1,7 @@
 package org.appdapter.gui.api;
 
+import org.appdapter.api.trigger.AnyOper.UIProvider;
 import org.appdapter.api.trigger.UserResult;
-import org.appdapter.gui.api.Ontologized.UIProvider;
 
 
 
@@ -15,8 +15,13 @@ public interface IShowObjectMessageAndErrors extends UIProvider {
 	/**
 	 * Opens up a GUI to show the details of the given value
 	 */
-	UserResult showScreenBox(Object value) throws Exception;
+	UserResult showScreenBox(String title, Object value) throws Exception;
 
+	/**
+	 * Opens up a GUI to show the details of the given value
+	 */
+	UserResult showScreenBox(Object value) throws Exception;
+	
 	/**
 	 * Displays the given information message somehow
 	 */

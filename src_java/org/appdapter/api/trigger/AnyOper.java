@@ -19,6 +19,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 import org.appdapter.core.component.KnownComponent;
+import org.appdapter.core.name.Ident;
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -26,12 +27,19 @@ import org.appdapter.core.component.KnownComponent;
 // / Dmiles needed something in java to cover Dmiles's Scala blindspots
 public interface AnyOper {
 
+	public interface UtilClass {
+
+	}
+
+	public interface Singleton {
+
+	}
+
 	/**
 		 * @author Administrator
 		 *
 		 */
-	@UISalient
-	public static interface Reloadable {
+	@UISalient public static interface Reloadable {
 
 		void reload();
 
@@ -41,13 +49,11 @@ public interface AnyOper {
 		 * @author Administrator
 		 *
 		 */
-	@Retention(RetentionPolicy.RUNTIME)
-	public @interface UIHidden {
+	@Retention(RetentionPolicy.RUNTIME) public @interface UIHidden {
 
 	}
 
-	@Retention(RetentionPolicy.RUNTIME)
-	static public @interface UISalient {
+	@Retention(RetentionPolicy.RUNTIME) static public @interface UISalient {
 		/**
 		 * "" == do nothing to the result 
 		 * "toString" .. call the toString method on Result
@@ -91,10 +97,59 @@ public interface AnyOper {
 
 	}
 
-	@UISalient(ApplyToClass = "HASIDENT")
-	static public interface HasIdent extends ApplyToClassInterfaces {
-		@UISalient(MenuName = "Show Ident", ToValueMethod = "toString") void getIdent();
+	@UISalient(ApplyToClass = "HASIDENT") static public interface HasIdent extends ApplyToClassInterfaces {
+		@UISalient(MenuName = "Show Ident", ToValueMethod = "toString") Ident getIdent();
 
 		Class HASIDENT = KnownComponent.class;
+	}
+
+	public interface UIProvider {
+
+	}
+
+	public interface OntoPriority extends AnyOper {
+	}
+
+	public interface HRKRefinement extends AnyOper {
+	}
+
+	public interface HRKAdded extends AnyOper {
+
+	}
+
+	public interface NamedClassObservable extends AnyOper {
+
+	}
+
+	public interface NamedClassService extends AnyOper {
+	}
+
+	public interface NamedClassValue extends AnyOper {
+
+	}
+
+	public interface UserInputComponent {
+
+	}
+
+	public interface NamedClassServiceFactory extends NamedClassService {
+
+	}
+
+	public interface LegacyClass extends AnyOper {
+
+	}
+
+	public interface UseLast extends OntoPriority {
+	}
+
+	public interface UseFirst extends OntoPriority {
+	}
+
+	public interface DontAdd extends OntoPriority {
+	}
+
+	public interface AskIfEqual {
+		public boolean same(Object obj);
 	}
 }

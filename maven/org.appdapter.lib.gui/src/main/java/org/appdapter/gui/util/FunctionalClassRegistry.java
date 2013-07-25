@@ -82,7 +82,7 @@ public class FunctionalClassRegistry<RSLTCLASS> extends FunctionalRegistryMap<Cl
 	@SuppressWarnings("unchecked") public Class<RSLTCLASS> tryFirst(Class c) {
 		BeanInfo objectInfo;
 		try {
-			objectInfo = Utility.getBeanInfo(c);
+			objectInfo = Utility.getBeanInfoNoF(c, false);
 		} catch (IntrospectionException e) {
 			return null;
 		}

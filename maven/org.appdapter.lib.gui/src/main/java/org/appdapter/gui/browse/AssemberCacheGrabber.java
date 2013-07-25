@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Map;
 
+import org.appdapter.api.trigger.AnyOper;
 import org.appdapter.api.trigger.AnyOper.UISalient;
 import org.appdapter.bind.rdf.jena.assembly.AssemblerUtils;
 import org.appdapter.core.component.ComponentCache;
@@ -12,9 +13,14 @@ import org.appdapter.core.log.Debuggable;
 import org.appdapter.core.name.Ident;
 import org.appdapter.gui.api.NamedObjectCollection;
 
-public class AssemberCacheGrabber extends BasicDebugger {
+public class AssemberCacheGrabber extends BasicDebugger implements AnyOper.Singleton {
+
 	public Map<Class, ComponentCache> getCacheMap() {
 		return AssemblerUtils.getComponentCacheMap(AssemblerUtils.getDefaultSession());
+	}
+
+	public static String anyToString(Object any) {
+		return "" + any;
 	}
 
 	public boolean longThreadQuit = false;

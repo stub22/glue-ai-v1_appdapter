@@ -1,7 +1,5 @@
 package org.appdapter.gui.trigger;
 
-import javax.swing.JMenu;
-
 import org.appdapter.gui.api.BT;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.NamedObjectCollection;

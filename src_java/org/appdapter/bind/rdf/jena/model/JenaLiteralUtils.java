@@ -22,17 +22,23 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
 import org.appdapter.bind.rdf.jena.assembly.AssemblerUtils;
 import org.appdapter.core.component.ComponentCache;
+import org.appdapter.core.component.IdentToObjectListener;
+import org.appdapter.core.convert.Converter;
+import org.appdapter.core.convert.NoSuchConversionException;
+import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.core.name.FreeIdent;
 import org.appdapter.core.name.Ident;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.hp.hpl.jena.graph.FrontsNode;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 
 /**
@@ -41,47 +47,6 @@ import com.hp.hpl.jena.rdf.model.RDFNode;
 
 public class JenaLiteralUtils {
 	public static Logger theLogger = LoggerFactory.getLogger(JenaLiteralUtils.class);
-
-	public static <T> T convertList(List<RDFNode> e, Class<T> type) throws Throwable {
-		T result = null;
-		if (e == null || e.size() == 0)
-			return result;
-		int len = e.size();
-		if (type.isArray()) {
-			Class ctype = type.getComponentType();
-			result = (T) Array.newInstance(ctype, e.size());
-			for (int i = 0; i < len; i++) {
-				Array.set(result, i, convert(e.get(i), ctype));
-			}
-			return result;
-		}
-		if (!Collection.class.isAssignableFrom(type)) {
-			if (len != 1) {
-				theLogger.warn("Can only use one result from " + e);
-			}
-			return convert(e.get(0), type);
-		}
-		Class<T> concrete = null;
-		if (Modifier.isAbstract(type.getModifiers()) || type.isInterface()) {
-			for (Class c : new Class[] { ArrayList.class, Stack.class, HashSet.class }) {
-				if (type.isAssignableFrom(c)) {
-					concrete = c;
-				}
-			}
-			if (concrete == null) {
-				throw new ClassCastException("Cannot create abstract " + type + " from " + e);
-			}
-		} else {
-			concrete = type;
-		}
-		Collection cresult = (Collection) (result = concrete.newInstance());
-		Iterator<RDFNode> its = e.listIterator();
-		Class<Object> compType = Object.class;
-		while (its.hasNext()) {
-			cresult.add(convert(its.next(), compType));
-		}
-		return result;
-	}
 
 	public static Object findComponent(Ident ident, Class mustBe) {
 		Map<Class, ComponentCache> cmap = getCacheMap();
@@ -111,7 +76,11 @@ public class JenaLiteralUtils {
 		return AssemblerUtils.getComponentCacheMap(AssemblerUtils.getDefaultSession());
 	}
 
-	static public Object anyOfAssemblerInstances(Ident ident) {
+	public static Map<Class, ComponentCache> getObjectCacheMap() {
+		return AssemblerUtils.getComponentCacheMap(AssemblerUtils.getDefaultSession());
+	}
+
+	public static Object anyOfAssemblerInstances(Ident ident) {
 		Map<Class, ComponentCache> cmap = getCacheMap();
 		Object[] clzes;
 		synchronized (cmap) {
@@ -129,8 +98,13 @@ public class JenaLiteralUtils {
 		return null;
 	}
 
-	public static <T> T convert(RDFNode e, Class<T> type) throws Throwable {
-		type = nonPrimitiveTypeFor(type);
+	public static <T> T convertRDFNodeStatic(Object e0, Class<T> type) throws Throwable {
+		if (!(e0 instanceof RDFNode)) {
+			throw new NoSuchConversionException(e0, type);
+		}
+
+		RDFNode e = (RDFNode) e0;
+		type = ReflectUtils.nonPrimitiveTypeFor(type);
 		if (Number.class.isAssignableFrom(type)) {
 			return (T) e.asLiteral().getValue();
 		}
@@ -147,7 +121,11 @@ public class JenaLiteralUtils {
 			return (T) new FreeIdent(e.asNode().getURI());
 		}
 		if (String.class.isAssignableFrom(type)) {
-			return (T) e.asLiteral().getValue();
+			try {
+				return (T) e.asLiteral().getValue();
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
 		}
 		Object eval = e;
 		if (e.isLiteral()) {
@@ -155,36 +133,15 @@ public class JenaLiteralUtils {
 		} else if (e.isURIResource()) {
 			String uri = e.asNode().getURI();
 			eval = findComponent(new FreeIdent(uri), type);
+			if (eval == null) {
+
+			}
 		}
 
 		if (!type.isInstance(eval)) {
-			throw new ClassCastException("Cannot create " + type + " from " + e);
+			throw new NoSuchConversionException(e0, type);
 		}
 		return (T) eval;
-	}
-
-	public static Class nonPrimitiveTypeFor(Class wrapper) {
-		if (!wrapper.isPrimitive())
-			return wrapper;
-		if (wrapper == Boolean.TYPE)
-			return Boolean.class;
-		if (wrapper == Byte.TYPE)
-			return Byte.class;
-		if (wrapper == Character.TYPE)
-			return Character.class;
-		if (wrapper == Short.TYPE)
-			return Short.class;
-		if (wrapper == Integer.TYPE)
-			return Integer.class;
-		if (wrapper == Long.TYPE)
-			return Long.class;
-		if (wrapper == Float.TYPE)
-			return Float.class;
-		if (wrapper == Double.TYPE)
-			return Double.class;
-		if (wrapper == Void.TYPE)
-			return Void.class;
-		throw new ClassCastException("cant make non primitive from :" + wrapper);
 	}
 
 	public static boolean isMatchAny(Ident val) {
@@ -217,6 +174,38 @@ public class JenaLiteralUtils {
 		if (raw == null)
 			return false;
 		return mustBe.equals(raw);
+	}
+
+	public static LinkedList<IdentToObjectListener> identListeners = new LinkedList<IdentToObjectListener>();
+
+	public static void addIdListener(IdentToObjectListener listener) {
+		synchronized (identListeners) {
+			identListeners.remove(listener);
+			identListeners.add(0, listener);
+		}
+	}
+
+	public static void removeIdListener(IdentToObjectListener listener) {
+		synchronized (identListeners) {
+			identListeners.remove(listener);
+		}
+	}
+
+	public static void onSetIdent(Ident id, Object value) {
+
+		synchronized (identListeners) {
+			for (IdentToObjectListener listener : identListeners) {
+				listener.registerURI(id, value);
+			}
+		}
+	}
+
+	public static void onRemoveIdent(Ident id, Object value) {
+		synchronized (identListeners) {
+			for (IdentToObjectListener listener : identListeners) {
+				listener.deregisterURI(id, value);
+			}
+		}
 	}
 
 }

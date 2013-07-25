@@ -102,7 +102,7 @@ public class JenaResourceItem extends BaseItem implements ModelIdent {
 	}
 
 	public Map<Property, List<RDFNode>> getPropertyMap() {
-		Model model = myResource.getModel();
+		Model model = getModel();
 		Map<Property, List<RDFNode>> properties = new HashMap<Property, List<RDFNode>>();
 		StmtIterator iter = model.listStatements();
 		// TODO this is slow
@@ -125,7 +125,7 @@ public class JenaResourceItem extends BaseItem implements ModelIdent {
 
 	protected List<RDFNode> getPropertyValues(Ident fieldID) {
 		List<RDFNode> results = new ArrayList<RDFNode>();
-		Model model = myResource.getModel();
+		Model model = getModel();
 		Resource fieldPropertyRes = null;
 		if (fieldID instanceof JenaResourceItem) {
 			fieldPropertyRes = ((JenaResourceItem) fieldID).myResource;
@@ -143,6 +143,10 @@ public class JenaResourceItem extends BaseItem implements ModelIdent {
 			}
 		}
 		return results;
+	}
+
+	public Model getModel() {
+		return getJenaResource().getModel();
 	}
 
 	protected RDFNode getSinglePropertyVal(Ident fieldID, boolean throwOnFailure) {

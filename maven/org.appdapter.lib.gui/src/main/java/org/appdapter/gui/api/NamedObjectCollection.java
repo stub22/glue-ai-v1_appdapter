@@ -9,7 +9,7 @@ import java.io.NotSerializableException;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.appdapter.gui.api.Ontologized.UIProvider;
+import org.appdapter.api.trigger.AnyOper.UIProvider;
 
 /**
 * A container of objects and corresponding Boxes, which

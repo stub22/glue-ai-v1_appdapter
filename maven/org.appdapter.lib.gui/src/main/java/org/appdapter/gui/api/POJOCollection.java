@@ -4,7 +4,7 @@ import java.beans.PropertyVetoException;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.appdapter.gui.api.Ontologized.UIProvider;
+import org.appdapter.api.trigger.AnyOper.UIProvider;
 
 
 public interface POJOCollection extends UIProvider {

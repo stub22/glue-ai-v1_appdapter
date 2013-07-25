@@ -3,7 +3,7 @@ package org.appdapter.gui.util;
 import java.util.Collection;
 import java.util.ServiceLoader;
 
-import org.appdapter.gui.api.Ontologized;
+import org.appdapter.api.trigger.AnyOper;
 import org.appdapter.gui.util.ObjectFinder.Found;
 import org.appdapter.gui.util.ObjectFinder.FoundObject;
 
@@ -29,7 +29,7 @@ public class ClassLoadingNamingResolver implements NamingResolver {
 			PromiscuousClassUtils.ensureOntoligized(cls);
 		}
 
-		Class<Ontologized> clo = (Class<Ontologized>) cls;
+		Class<AnyOper> clo = (Class<AnyOper>) cls;
 		final ServiceLoader<T> sl = (ServiceLoader<T>) ServiceLoader.load(clo);
 		if (sl != null)
 			return new FoundObject<O>(null, name, new ObjectFinder.GetF<O>() {

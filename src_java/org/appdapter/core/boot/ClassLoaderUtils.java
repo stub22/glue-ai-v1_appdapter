@@ -17,6 +17,7 @@
 package org.appdapter.core.boot;
 
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -28,8 +29,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.appdapter.core.log.Debuggable;
-import org.osgi.framework.BundleActivator;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
 import org.slf4j.Logger;
@@ -238,7 +240,7 @@ public class ClassLoaderUtils {
 		if (something instanceof Class) {
 			thisClass = (Class) something;
 		}
-		withClassLoader(ctx, thisClass.getClassLoader(), thisClass.getPackage().getName(), true, false);
+		withClassLoader(ctx, getClassLoader(thisClass), thisClass.getPackage().getName(), true, false);
 
 	}
 
@@ -247,8 +249,25 @@ public class ClassLoaderUtils {
 		if (something instanceof Class) {
 			thisClass = (Class) something;
 		}
-		withClassLoader(ctx, thisClass.getClassLoader(), thisClass.getPackage().getName(), false, true);
+		withClassLoader(ctx, getClassLoader(thisClass), thisClass.getPackage().getName(), false, true);
 
+	}
+
+	public static ClassLoader getClassLoader(Class thisClass) {
+		ClassLoader cl = null;
+		Bundle bundle = FrameworkUtil.getBundle(thisClass);
+		if (bundle != null)
+			cl = getClasssLoader(bundle);
+		if (cl != null)
+			return cl;
+		cl = thisClass.getClassLoader();
+		if (cl != null)
+			return cl;
+		return null;
+	}
+
+	public static ClassLoader getClasssLoader(Bundle bundle) {
+		return null;
 	}
 
 	public static URL getFileResource(String resourceClassLoaderType, String resourceName) {

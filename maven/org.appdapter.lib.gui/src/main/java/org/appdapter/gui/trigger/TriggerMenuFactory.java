@@ -22,10 +22,21 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.BeanInfo;
+import java.beans.EventSetDescriptor;
+import java.beans.FeatureDescriptor;
+import java.beans.MethodDescriptor;
+import java.beans.PropertyDescriptor;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Field;
+import java.lang.reflect.Member;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 import javax.swing.AbstractButton;
@@ -41,146 +52,30 @@ import javax.swing.text.JTextComponent;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
+import org.appdapter.api.trigger.AnyOper.UIHidden;
+import org.appdapter.api.trigger.AnyOper.UISalient;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.core.component.KnownComponent;
+import org.appdapter.core.log.BasicDebugger;
 import org.appdapter.core.log.Debuggable;
+import org.appdapter.core.log.Loggable;
+import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.UIAware;
+import org.appdapter.gui.api.WrapperValue;
 import org.appdapter.gui.box.AbstractScreenBoxTreeNodeImpl;
+import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.swing.SafeJMenu;
 import org.appdapter.gui.swing.SafeJMenuItem;
+import org.appdapter.gui.util.CollectionSetUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
+@SuppressWarnings("unchecked")
 public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
-
-	static Logger theLogger = LoggerFactory.getLogger(TriggerMenuFactory.class);
-
-	public TriggerMenuFactory() {
-
-	}
-
-	static TriggerMenuFactory triggerMenuFactory = new TriggerMenuFactory();
-
-	public static TriggerMenuFactory getInstance(Object obj) {
-		Class triggerClass = Object.class;
-		if (obj instanceof Class) {
-			triggerClass = (Class) obj;
-		} else if (obj != null) {
-			triggerClass = obj.getClass();
-		}
-		return triggerMenuFactory;
-	}
-
-	public class TriggerSorter implements Comparator<TT> {
-
-		@Override
-		public int compare(TT o1, TT o2) {
-			int r = getTriggerSortName(o1).toLowerCase().compareTo(getTriggerSortName(o2).toLowerCase());
-			if (r == 0) {
-				return getTriggerName(o1).toLowerCase().compareTo(getTriggerName(o2).toLowerCase());
-			}
-			return r;
-		}
-	}
-
-	private String getTriggerSortName(TT t) {
-		String[] tn = getTriggerName(t).split("|");
-		return tn[tn.length - 1];
-	}
-
-	public MouseAdapter makePopupMouseAdapter() {
-		MouseAdapter ma = new MouseAdapter() {
-
-			private void requestContextPopup(MouseEvent e) {
-				int x = e.getX();
-				int y = e.getY();
-				Object src = e.getSource();
-				if (!(src instanceof JTree)) {
-					if (src == null)
-						src = this;
-					theLogger.trace("Click Not in the tree " + src + " " + src.getClass());
-					return;
-				}
-				JTree tree = (JTree) e.getSource();
-				TreePath path = tree.getPathForLocation(x, y);
-				if (path == null) {
-					return;
-				}
-				tree.setSelectionPath(path);
-
-				// Nodes are not *required* to implement TreeNode
-				DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) path.getLastPathComponent();
-				Object uo = treeNode.getUserObject();
-				TriggerPopupMenu popup;
-				if (uo instanceof Box) {
-					Box<TT> box = (Box<TT>) treeNode.getUserObject();
-
-					// String label = "popup: " + obj.toString(); // obj.getTreeLabel();
-					popup = buildPopupMenu(box);
-					if (treeNode instanceof AbstractScreenBoxTreeNodeImpl) {
-						((AbstractScreenBoxTreeNodeImpl) treeNode).addExtraTriggers(popup);
-						popup.show(tree, x, y);
-					}
-				}
-
-			}
-
-			public void mousePressed(MouseEvent e) {
-				if (e.isPopupTrigger()) {
-					requestContextPopup(e);
-				}
-			}
-
-			public void mouseReleased(MouseEvent e) {
-				if (e.isPopupTrigger()) {
-					requestContextPopup(e);
-				}
-			}
-		};
-		return ma;
-	}
-
-	public TriggerPopupMenu buildPopupMenu(Box<TT> box) {
-		TriggerPopupMenu popup = new TriggerPopupMenu(null, null, null, box);
-		addTriggersToPopup(box, popup);
-		return popup;
-	}
-
-	public void addTriggersToPopup(Box<TT> box, JComponent popup) {
-		if (box instanceof UIAware) {
-			((UIAware) box).visitComponent(popup);
-		}
-		if (popup instanceof TriggerPopupMenu) {
-			// Allready added the items?
-			//return;
-		}
-		List<TT> trigs = new ArrayList<TT>();
-		trigs.addAll(box.getTriggers());
-		int c1 = trigs.size();
-		Collections.sort(trigs, new TriggerSorter());
-		int c2 = trigs.size();
-		if (c1 == c2) {
-			HashMap<String, TT> map = new HashMap<String, TT>();
-			for (TT t : trigs) {
-				map.put(t.getShortLabel().toLowerCase(), t);
-			}
-			trigs = new ArrayList<TT>(map.values());
-			c2 = trigs.size();
-			Collections.sort(trigs, new TriggerSorter());
-		}
-		for (TT trig : trigs) {
-			addTriggerToPoppup(popup, box, trig);
-		}
-	}
-
-	private void addTriggerToPoppup(Container popup, Box<TT> box, TT trig) {
-		String[] path = getTriggerPath(trig);
-		addTriggerToPoppup(popup, box, path, 0, trig);
-	}
 
 	static public class JMenuWithPath extends SafeJMenu {
 		ArrayList<Component> mcomps = new ArrayList<Component>();
@@ -189,16 +84,15 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 			super(lbl);
 		}
 
-		@Override
-		public JMenuItem add(JMenuItem c) {
+		@Override public Component add(Component c) {
 			ensureUnequelyNamed(c);
-			JMenuItem r = super.add(c);
+			Component r = super.add(c);
+			mcomps.add(c);
 			ensureFoundNamed(c);
 			return r;
 		}
 
-		@Override
-		public Component add(Component c, int index) {
+		@Override public Component add(Component c, int index) {
 			ensureUnequelyNamed(c);
 			mcomps.add(index, c);
 			Component r = super.add(c, index);
@@ -206,11 +100,11 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 			return r;
 		}
 
-		@Override
-		public Component[] getComponents() {
-			if (true)
-				return mcomps.toArray(new Component[mcomps.size()]);
-			return super.getMenuComponents();
+		@Override public JMenuItem add(JMenuItem c) {
+			ensureUnequelyNamed(c);
+			JMenuItem r = super.add(c);
+			ensureFoundNamed(c);
+			return r;
 		}
 
 		private void ensureFoundNamed(Component c) {
@@ -233,29 +127,23 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 			Debuggable.mustBeSameStrings("found=" + found, fnd);
 		}
 
-		@Override
-		public void removeAll() {
+		@Override public Component[] getComponents() {
+			if (true)
+				return mcomps.toArray(new Component[mcomps.size()]);
+			return super.getMenuComponents();
+		}
+
+		@Override public String getText() {
+			return super.getText();
+		}
+
+		@Override public void removeAll() {
 			Debuggable.notImplemented();
 			mcomps.clear();
 			super.removeAll();
 		}
 
-		@Override
-		public Component add(Component c) {
-			ensureUnequelyNamed(c);
-			Component r = super.add(c);
-			mcomps.add(c);
-			ensureFoundNamed(c);
-			return r;
-		}
-
-		@Override
-		public String getText() {
-			return super.getText();
-		}
-
-		@Override
-		public String toString() {
+		@Override public String toString() {
 			Component p = getParent();//.toString();
 			if (p != null) {
 				return "" + TriggerMenuFactory.getLabel(p, 1) + "->" + TriggerMenuFactory.getLabel(this, 1);
@@ -264,7 +152,197 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 		}
 	}
 
-	private void addTriggerToPoppup(Container popup, Box<TT> box, String[] path, int idx, TT trig) {
+	static public class TriggerSorter implements Comparator<Trigger> {
+
+		@Override public int compare(Trigger o1, Trigger o2) {
+			int r = getTriggerSortName(o1).toLowerCase().compareTo(getTriggerSortName(o2).toLowerCase());
+			if (r == 0) {
+				return getTriggerName(o1).toLowerCase().compareTo(getTriggerName(o2).toLowerCase());
+			}
+			return r;
+		}
+	}
+
+	static Logger theLogger = LoggerFactory.getLogger(TriggerMenuFactory.class);
+
+	static TriggerMenuFactory triggerMenuFactory = new TriggerMenuFactory();
+
+	public static final TriggerFilter ADD_ALL = new TriggerFilter(true);
+
+	public static final TriggerFilter ADD_INSTANCE = new TriggerFilter(false) {
+		{
+			addInstance = true;
+			addSuperClass = true;
+			addAllAccessLevels(true);
+		}
+	};
+
+	public static final TriggerFilter ADD_STATIC = new TriggerFilter(false) {
+		{
+			addStatic = true;
+			addSuperClass = true;
+			addAllAccessLevels(true);
+		}
+	};
+
+	public final static Class[] CLASS0 = new Class[0];
+
+	public static <TrigType> void addClasses(DisplayContext ctx, Class cls, HashSet<Class> classesVisited) {
+		if (cls == null)
+			return;
+		if (classesVisited.contains(cls))
+			return;
+		classesVisited.add(cls);
+		addClasses(ctx, cls, classesVisited);
+		for (Class cls2 : cls.getInterfaces()) {
+			addClasses(ctx, cls2, classesVisited);
+		}
+		addClasses(ctx, cls.getSuperclass(), classesVisited);
+	}
+
+	public static <TrigType> void addClassLevelTriggers(DisplayContext ctx, Class cls, List<TrigType> tgs, WrapperValue poj) {
+		addClassLevelTriggers(ctx, cls, tgs, poj, ADD_ALL, "", false);
+	}
+
+	public static <TrigType> void addClassLevelTriggers(DisplayContext ctx, Class cls, List<TrigType> tgs, WrapperValue poj, TriggerFilter rulesOfAdd, String prepended, boolean isDeclNonStatic) {
+		addClassLevelTriggers00(ctx, cls, tgs, poj, rulesOfAdd, prepended, isDeclNonStatic);
+		Object inst = Utility.dref(poj);
+		if (inst instanceof Class) {
+			addClassLevelTriggers00(ctx, (Class) inst, tgs, null, rulesOfAdd, prepended, isDeclNonStatic);
+		}
+	}
+
+	static <TrigType> void addClassLevelTriggers00(DisplayContext ctx, Class cls, List<TrigType> tgs, WrapperValue poj, TriggerFilter rulesOfAdd, String prepended, boolean isDeclNonStatic) {
+		HashSet<Class> skippedTriggersClasses = getSkippedTriggerClasses();
+		HashSet<Class> flat = new HashSet<Class>();
+		if (rulesOfAdd.addSuperClass) {
+			addClasses(ctx, cls, flat);
+		} else {
+			flat.add(cls);
+		}
+		for (Class cls2 : flat) {
+			if (skippedTriggersClasses.contains(cls2))
+				continue;
+
+			addClassLevelTriggersPerClass(ctx, cls2, tgs, poj, rulesOfAdd, prepended, isDeclNonStatic);
+		}
+	}
+
+	public static <TrigType> void addClassLevelTriggersPerClass(DisplayContext ctx, Class cls, List<TrigType> tgs, WrapperValue poj, TriggerFilter rulesOfAdd, String prepended, boolean isDeclNonStatic) {
+		try {
+			if (rulesOfAdd.addPanelClasses)
+				addPanelClasses(ctx, cls, tgs, poj);
+			if (rulesOfAdd.addGlobalStatics)
+				addGlobalStatics(ctx, cls, tgs, poj);
+			boolean onlyThisClass = true;
+			BeanInfo bi = Utility.getBeanInfo(cls, onlyThisClass, poj);
+			if (bi == null)
+				return;
+			addFeatureTriggers(ctx, cls, bi.getMethodDescriptors(), tgs, poj, rulesOfAdd, prepended, isDeclNonStatic);
+			addFeatureTriggers(ctx, cls, bi.getEventSetDescriptors(), tgs, poj, rulesOfAdd, prepended, isDeclNonStatic);
+			addFeatureTriggers(ctx, cls, bi.getPropertyDescriptors(), tgs, poj, rulesOfAdd, prepended, isDeclNonStatic);
+		} catch (Exception e) {
+			Utility.theLogger.error("" + cls, e);
+
+		}
+	}
+
+	@SuppressWarnings("unchecked") public static <TrigType> void addFeatureTriggers(DisplayContext ctx, Class cls, FeatureDescriptor[] fd, List<TrigType> tgs, WrapperValue poj,
+			TriggerFilter rulesOfAdd, String prepended, boolean isDeclNonStatic) {
+		for (FeatureDescriptor f : fd) {
+			addFeatureDesc(ctx, cls, f, tgs, poj, rulesOfAdd, prepended, isDeclNonStatic);
+		}
+
+	}
+
+	@SuppressWarnings("unchecked") public static <TrigType> void addFeatureDesc(DisplayContext ctx, Class cls, FeatureDescriptor fd, List<TrigType> tgs, WrapperValue poj, TriggerFilter rulesOfAdd,
+			String prepended, boolean isDeclNonStatic) {
+		if (!rulesOfAdd.addEvents && fd instanceof EventSetDescriptor)
+			return;
+
+		if (fd instanceof MethodDescriptor) {
+			MethodDescriptor md = (MethodDescriptor) fd;
+			addFMethodTrigWF(ctx, cls, md.getMethod(), tgs, poj, rulesOfAdd, prepended, fd);
+			return;
+		}
+
+		if (fd instanceof PropertyDescriptor) {
+			PropertyDescriptor md = (PropertyDescriptor) fd;
+			addFMethodTrigWF(ctx, cls, md.getReadMethod(), tgs, poj, rulesOfAdd, prepended, fd);
+			addFMethodTrigWF(ctx, cls, md.getWriteMethod(), tgs, poj, rulesOfAdd, prepended, fd);
+			return;
+		}
+	}
+
+	@SuppressWarnings("unchecked") private static <TrigType> void addFMethodTrigWF(DisplayContext ctx, Class cls, Method method, List<TrigType> tgs, WrapperValue poj, TriggerFilter rulesOfAdd,
+			String prepended, FeatureDescriptor featureDesc) {
+		if (method == null)
+			return;
+		addMethodAsTrigWF0(ctx, cls, method, tgs, poj, rulesOfAdd, prepended, false, featureDesc);
+	}
+
+	@SuppressWarnings("unchecked") public static <TrigType> void addMethodAsTrig(DisplayContext ctx, Class cls, Method method, List<TrigType> tgs, WrapperValue poj, TriggerFilter rulesOfAdd,
+			String prepended, boolean isDeclNonStatic) {
+		addMethodAsTrigWF0(ctx, cls, method, tgs, poj, rulesOfAdd, prepended, isDeclNonStatic, null);
+	}
+
+	private static <TrigType> void addMethodAsTrigWF0(DisplayContext ctx, Class cls, Method method, List<TrigType> tgs, WrapperValue poj, TriggerFilter rulesOfAdd, String prepended,
+			boolean isDeclNonStatic, FeatureDescriptor featureDesc) {
+		boolean clsHidden = hasAnotation(cls, UIHidden.class);
+		boolean clsSalient = hasAnotation(cls, UISalient.class);
+		UISalient isSalientCls = (UISalient) cls.getAnnotation(UISalient.class);
+		UISalient isSalientMethod = isSalientCls;
+		if (hasAnotation(method, UIHidden.class)) {
+			return;
+		}
+		if (hasAnotation(method, UISalient.class)) {
+			isSalientMethod = method.getAnnotation(UISalient.class);
+		} else {
+			if (clsHidden)
+				return;
+			isSalientMethod = isSalientCls;
+		}
+		if (!rulesOfAdd.accepts((Member) method))
+			return;
+
+		Class cls00 = method.getDeclaringClass();
+		TriggerForMethod tfi = new TriggerForMethod(prepended, ctx, cls00, poj, method, isDeclNonStatic, featureDesc);
+		tfi.applySalience(isSalientMethod);
+		if (!tgs.contains(tfi))
+			tgs.add((TrigType) tfi);
+
+	}
+
+	public static <TrigType> void addGlobalStatics(DisplayContext ctx, Class cls, List<TrigType> tgs, WrapperValue poj) {
+		for (Trigger trig : Utility.getGlobalStaticTriggers(ctx, cls, poj)) {
+			CollectionSetUtils.addIfNew(tgs, (TrigType) trig);
+		}
+	}
+
+	public static <TrigType> void addPanelClasses(DisplayContext ctx, Class cls, List<TrigType> tgs, WrapperValue poj) {
+		for (Class pnlClz : Utility.findPanelClasses(cls)) {
+			if (pnlClz == null)
+				continue;
+			CollectionSetUtils.addIfNew(tgs, ((TrigType) new ShowPanelTrigger(ctx, cls, poj, pnlClz)));
+		}
+	}
+
+	static void addSeparatorIfNeeded(Container popup, int greaterThan) {
+		if (popup.getComponentCount() > greaterThan) {
+			if (popup instanceof JMenu) {
+				JMenu jmenu = (JMenu) popup;
+				jmenu.addSeparator();
+				return;
+			}
+			if (popup instanceof JPopupMenu) {
+				JPopupMenu jmenu = (JPopupMenu) popup;
+				jmenu.addSeparator();
+				return;
+			}
+		}
+	}
+
+	public static void addTriggerToPoppup(Container popup, Box box, String[] path, int idx, Trigger trig) {
 		boolean isLast = path.length - idx == 1;
 		if (idx >= path.length) {
 			// trying to get something longer than array
@@ -287,19 +365,61 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 		addTriggerToPoppup((Container) child, box, path, idx + 1, trig);
 	}
 
-	static void addSeparatorIfNeeded(Container popup, int greaterThan) {
-		if (popup.getComponentCount() > greaterThan) {
-			if (popup instanceof JMenu) {
-				JMenu jmenu = (JMenu) popup;
-				jmenu.addSeparator();
-				return;
-			}
-			if (popup instanceof JPopupMenu) {
-				JPopupMenu jmenu = (JPopupMenu) popup;
-				jmenu.addSeparator();
-				return;
-			}
+	public static void addTriggerToPoppup(Container popup, Box box, Trigger trig) {
+		String[] path = getTriggerPath(trig);
+		org.appdapter.gui.trigger.TriggerMenuFactory.addTriggerToPoppup(popup, box, path, 0, trig);
+	}
+
+	private static Component[] childrenOf(Container popup) {
+		if (popup instanceof JMenu)
+			return ((JMenu) popup).getMenuComponents();
+		return popup.getComponents();
+	}
+
+	public static Class classOrFirstInterface(Class _clazz2) {
+		if (true)
+			return _clazz2;
+		if (_clazz2 == null)
+			return null;
+		if (_clazz2 == Object.class)
+			return null;
+		if (_clazz2.isInterface())
+			return _clazz2;
+		if (hasAnotation(_clazz2, UISalient.class))
+			return _clazz2;
+		for (Class c : _clazz2.getInterfaces()) {
+			if (hasAnotation(c, UIHidden.class))
+				continue;
+			if (c.getPackage().getName().startsWith("j"))
+				continue;
+			c = classOrFirstInterface(c);
+			if (c == null)
+				continue;
+			return c;
 		}
+		Class sc = classOrFirstInterface(_clazz2.getSuperclass());
+		if (sc != null)
+			return sc;
+		return _clazz2;
+	}
+
+	public static Class classOrFirstInterfaceR(Class _clazz2) {
+		if (true)
+			return _clazz2;
+		Class sc = classOrFirstInterface(_clazz2);
+		if (sc != null)
+			return sc;
+		return _clazz2;
+
+	}
+
+	public static String describeMethod(Method fd) {
+		return fd.toString() + " decl=" + fd.getDeclaringClass();
+	}
+
+	public static String describeFD(FeatureDescriptor fd) {
+		return fd.getName() + " " + fd.getShortDescription() + " " + fd.getClass().getSimpleName() + " " + Debuggable.toInfoStringF(fd);
+
 	}
 
 	static Component findChildNamed(Container popup, boolean toLowerCase, Comparable<String> fnd) {
@@ -325,10 +445,29 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 		return c2;
 	}
 
-	private static Component[] childrenOf(Container popup) {
-		if (popup instanceof JMenu)
-			return ((JMenu) popup).getMenuComponents();
-		return popup.getComponents();
+	public static Field getAnyFieldObject(Class cls, FeatureDescriptor fd) {
+		if (cls == null) {
+			return null;
+		}
+		String name = fd.getName();
+		if (fd instanceof PropertyDescriptor) {
+			for (Field f : cls.getDeclaredFields()) {
+				if (f.getName().equalsIgnoreCase(name)) {
+					return f;
+				}
+			}
+		}
+		return getAnyFieldObject(cls.getSuperclass(), fd);
+	}
+
+	public static TriggerMenuFactory getInstance(Object obj) {
+		Class triggerClass = Object.class;
+		if (obj instanceof Class) {
+			triggerClass = (Class) obj;
+		} else if (obj != null) {
+			triggerClass = obj.getClass();
+		}
+		return triggerMenuFactory;
 	}
 
 	public static String getLabel(Component c, int maxDepth) {
@@ -376,7 +515,97 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 		return null;
 	}
 
-	public JMenuItem makeMenuItem(final Box<TT> b, String lbl, final TT trig) {
+	public static Method getReadMethodObject(FeatureDescriptor _featureDescriptor) {
+		if (_featureDescriptor instanceof MethodDescriptor) {
+			MethodDescriptor md = (MethodDescriptor) _featureDescriptor;
+			return md.getMethod();
+		}
+		if (_featureDescriptor instanceof EventSetDescriptor) {
+			EventSetDescriptor md = (EventSetDescriptor) _featureDescriptor;
+			Method em = md.getGetListenerMethod();// md.getGetListenerMethod();
+			if (em != null)
+				return em;
+			return null;// md.getGetListenerMethod();
+		}
+		if (_featureDescriptor instanceof PropertyDescriptor) {
+			PropertyDescriptor md = (PropertyDescriptor) _featureDescriptor;
+			Method m = md.getReadMethod();
+			if (m != null)
+				return m;
+			Method m2 = md.getWriteMethod();
+			if (m2 != null)
+				return m2;
+		}
+		return null;
+	}
+
+	public static String getShortLabel(Trigger trig) {
+		String toStr;
+		if (trig instanceof KnownComponent) {
+			toStr = ((KnownComponent) trig).getShortLabel();
+			if (isRealLabel(toStr))
+				return toStr;
+		}
+		return "" + trig;
+	}
+
+	private static HashSet<Class> getSkippedTriggerClasses() {
+		HashSet<Class> flat = new HashSet<Class>();
+		flat.add(Object.class);
+		flat.add(BasicDebugger.class);
+		flat.add(Loggable.class);
+		// flat.add(NoObject.class);
+		flat.add(UIHidden.class);
+		flat.add(Annotation.class);
+		return flat;
+	}
+
+	public static String getTriggerName(Trigger trig) {
+		String[] path = getTriggerPath(trig);
+		if (path == null || path.length == 0)
+			return "" + getShortLabel(trig);
+		return path[path.length - 1].trim();
+	}
+
+	public static String[] getTriggerPath(Trigger trig) {
+		return getShortLabel(trig).split("\\|");
+	}
+
+	public static String getTriggerSortName(Trigger t) {
+		String[] tn = getTriggerName(t).split("|");
+		return tn[tn.length - 1];
+	}
+
+	private static boolean hasAnotation(AnnotatedElement method, final Class<? extends Annotation> class1) {
+		if (method == null)
+			return false;
+		if (true)
+			return method.isAnnotationPresent(class1);
+
+		Annotation[] decl = method.getAnnotations();
+		if (CollectionSetUtils.containsOne(decl, new CollectionSetUtils.TAccepts<Annotation>() {
+			@Override public boolean isCompleteOn(Annotation e) {
+				return resultOf(e);
+			}
+
+			@Override public boolean resultOf(Annotation e) {
+				return class1.isAnnotationPresent(e.annotationType());
+			}
+		})) {
+			return true;
+		}
+		return false;
+	}
+
+	private static boolean isRealLabel(String toStr) {
+		if (toStr == null)
+			return false;
+		if (toStr.length() == 0)
+			return false;
+		return true;
+	}
+
+	public static JMenuItem makeMenuItem(final Box b, String lbl_unused, final Trigger trig) {
 		String path[] = getTriggerPath(trig);
 		JMenuItem jmi = new SafeJMenuItem(getTriggerName(trig));
 		if (trig instanceof UIAware) {
@@ -391,22 +620,105 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 		return jmi;
 	}
 
-	private String getTriggerName(TT trig) {
-		String[] path = getTriggerPath(trig);
-		if (path == null || path.length == 0)
-			return "" + trig.getShortLabel();
-		return path[path.length - 1].trim();
-	}
+	///===================================== INSTANCE METHODS =======================================================
 
-	private String[] getTriggerPath(TT trig) {
-		return trig.getShortLabel().split("\\|");
+	public TriggerMenuFactory() {
+
 	}
 
 	public void addMenuItem(Action a, Box box, JMenu menu) {
-		addTriggerToPoppup(menu, box, (TT) a);
+		addTriggerToPoppup(menu, box, ensureTrigger(a));
 	}
 
 	public void addMenuItem(Action a, Box box, JPopupMenu menu) {
-		addTriggerToPoppup(menu, box, (TT) a);
+		addTriggerToPoppup(menu, box, ensureTrigger(a));
+	}
+
+	public void addTriggersToPopup(Box box, JComponent popup) {
+		if (box instanceof UIAware) {
+			((UIAware) box).visitComponent(popup);
+		}
+		if (popup instanceof TriggerPopupMenu) {
+			// Allready added the items?
+			//return;
+		}
+		List<TT> trigs = new ArrayList();
+		trigs.addAll(box.getTriggers());
+		int c1 = trigs.size();
+		Collections.sort(trigs, new TriggerSorter());
+		int c2 = trigs.size();
+		if (true || c1 == c2) {
+			HashMap<String, TT> map = new HashMap<String, TT>();
+			for (TT t : trigs) {
+				map.put(t.getShortLabel().toLowerCase(), t);
+			}
+			trigs = new ArrayList<TT>(map.values());
+			c2 = trigs.size();
+			Collections.sort(trigs, new TriggerSorter());
+		}
+		for (TT trig : trigs) {
+			addTriggerToPoppup(popup, box, trig);
+		}
+	}
+
+	public TriggerPopupMenu buildPopupMenu(Box<TT> box) {
+		TriggerPopupMenu popup = new TriggerPopupMenu(null, null, null, box);
+		addTriggersToPopup(box, popup);
+		return popup;
+	}
+
+	private Trigger ensureTrigger(final Action a) {
+		if (a instanceof Trigger)
+			return (Trigger) a;
+		return new TriggerForAction(a);
+	}
+
+	public MouseAdapter makePopupMouseAdapter() {
+		MouseAdapter ma = new MouseAdapter() {
+
+			public void mousePressed(MouseEvent e) {
+				if (e.isPopupTrigger()) {
+					requestContextPopup(e);
+				}
+			}
+
+			public void mouseReleased(MouseEvent e) {
+				if (e.isPopupTrigger()) {
+					requestContextPopup(e);
+				}
+			}
+
+			private void requestContextPopup(MouseEvent e) {
+				int x = e.getX();
+				int y = e.getY();
+				Object src = e.getSource();
+				if (!(src instanceof JTree)) {
+					if (src == null)
+						src = this;
+					theLogger.trace("Click Not in the tree " + src + " " + src.getClass());
+					return;
+				}
+				JTree tree = (JTree) e.getSource();
+				TreePath path = tree.getPathForLocation(x, y);
+				if (path == null) {
+					return;
+				}
+				tree.setSelectionPath(path);
+
+				// Nodes are not *required* to implement TreeNode
+				DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) path.getLastPathComponent();
+				Object uo = treeNode.getUserObject();
+				TriggerPopupMenu popup;
+				Box<TT> box = (Box<TT>) Utility.asBoxed(uo);
+
+				// String label = "popup: " + obj.toString(); // obj.getTreeLabel();
+				popup = buildPopupMenu(box);
+				if (treeNode instanceof AbstractScreenBoxTreeNodeImpl) {
+					((AbstractScreenBoxTreeNodeImpl) treeNode).addExtraTriggers(popup);
+				}
+				popup.show(tree, x, y);
+			}
+		};
+		return ma;
 	}
 }

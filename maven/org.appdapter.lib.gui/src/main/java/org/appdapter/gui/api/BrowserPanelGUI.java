@@ -1,6 +1,6 @@
 package org.appdapter.gui.api;
 
-import org.appdapter.gui.api.Ontologized.UIProvider;
+import org.appdapter.api.trigger.AnyOper.UIProvider;
 
 
 
