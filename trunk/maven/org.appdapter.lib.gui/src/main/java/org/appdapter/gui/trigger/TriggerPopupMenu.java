@@ -6,8 +6,6 @@ import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
-import javax.swing.UIManager;
-import javax.swing.plaf.MenuItemUI;
 
 import org.appdapter.gui.api.BT;
 import org.appdapter.gui.api.DisplayContext;

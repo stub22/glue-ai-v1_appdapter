@@ -5,7 +5,6 @@ import java.util.Iterator;
 import java.util.Vector;
 
 import javax.swing.Action;
-import javax.swing.JMenu;
 
 import org.appdapter.gui.browse.Settings;
 

@@ -284,7 +284,7 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 		if (object != null) {
 			if (showIcon) {
 				try {
-					BeanInfo info = Utility.getBeanInfo(object.getClass());
+					BeanInfo info = Utility.getBeanInfo(object.getClass(), object);
 					Image image = info.getIcon(BeanInfo.ICON_COLOR_16x16);
 					if (image != null) {
 						JLabel label = new JLabel(new ImageIcon(image));

@@ -22,11 +22,11 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
 import org.appdapter.api.trigger.AnyOper.UIHidden;
+import org.appdapter.api.trigger.AnyOper.UIProvider;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.core.name.Ident;
-import org.appdapter.gui.api.Ontologized.UIProvider;
 import org.appdapter.gui.box.ScreenBoxImpl;
 import org.appdapter.gui.browse.Utility;
 

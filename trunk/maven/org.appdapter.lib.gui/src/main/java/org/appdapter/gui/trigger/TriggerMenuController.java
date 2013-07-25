@@ -46,9 +46,6 @@ public class TriggerMenuController implements POJOCollectionListener {
 			noc = context0.getLocalBoxedChildren();
 		this.localCollection = noc;
 
-		if (object == null && this.boxed != null)
-			object = boxed.getValueOrThis();
-
 		triggerFactory = TriggerMenuFactory.getInstance(context);
 		syncBoxedObject();
 		if (localCollection != null) {
@@ -94,13 +91,22 @@ public class TriggerMenuController implements POJOCollectionListener {
 	}
 
 	private void syncBoxedObject() {
-		if (localCollection != null) {
-			if (boxed == null) {
-				boxed = localCollection.findOrCreateBox(object);
+		if (boxed == null && object != null) {
+			if (object instanceof BT) {
+				boxed = (BT) object;
+			} else {
+				if (localCollection != null) {
+					boxed = localCollection.findOrCreateBox(object);
+				} else {
+					boxed = Utility.asWrapped(object);
+				}
 			}
 		}
+		if (object == null && this.boxed != null)
+			object = boxed.getValueOrThis();
+
 		if (object == null) {
-			object = boxed;
+			object = Utility.dref(boxed);
 		}
 	}
 

@@ -1,8 +1,15 @@
 package org.appdapter.gui.browse;
 
+import static org.appdapter.gui.trigger.TriggerMenuFactory.ADD_ALL;
+import static org.appdapter.gui.trigger.TriggerMenuFactory.ADD_INSTANCE;
+import static org.appdapter.gui.trigger.TriggerMenuFactory.ADD_STATIC;
+import static org.appdapter.gui.trigger.TriggerMenuFactory.addMethodAsTrig;
+import static org.appdapter.gui.trigger.TriggerMenuFactory.addTriggerToPoppup;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.beans.BeanInfo;
@@ -32,6 +39,7 @@ import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -39,8 +47,12 @@ import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
+import javax.imageio.ImageIO;
 import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
@@ -49,11 +61,20 @@ import javax.swing.JSpinner.DateEditor;
 import javax.swing.ToolTipManager;
 import javax.tools.FileObject;
 
+import org.appdapter.api.trigger.AnyOper.Singleton;
+import org.appdapter.api.trigger.AnyOper.UtilClass;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.GetObject;
+import org.appdapter.api.trigger.Trigger;
 import org.appdapter.api.trigger.UserResult;
+import org.appdapter.bind.rdf.jena.model.JenaLiteralUtils;
 import org.appdapter.core.boot.ClassLoaderUtils;
 import org.appdapter.core.component.KnownComponent;
+import org.appdapter.core.convert.Converter;
+import org.appdapter.core.convert.NoSuchConversionException;
+import org.appdapter.core.convert.OptionalArg;
+import org.appdapter.core.convert.ReflectUtils;
+import org.appdapter.core.convert.TypeAssignable;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.core.name.FreeIdent;
 import org.appdapter.core.name.Ident;
@@ -82,56 +103,191 @@ import org.appdapter.gui.editors.LargeObjectView.BasicObjectCustomizer;
 import org.appdapter.gui.editors.LargeObjectView.ClassCustomizer;
 import org.appdapter.gui.editors.LargeObjectView.CollectionCustomizer;
 import org.appdapter.gui.editors.LargeObjectView.ThrowableCustomizer;
+import org.appdapter.gui.editors.SimplePOJOInfo;
 import org.appdapter.gui.editors.UseEditor;
 import org.appdapter.gui.repo.ModelMatrixPanel;
 import org.appdapter.gui.repo.RepoManagerPanel;
 import org.appdapter.gui.swing.CollectionEditorUtil;
+import org.appdapter.gui.swing.DisplayContextUIImpl.UnknownIcon;
 import org.appdapter.gui.swing.ErrorDialog;
 import org.appdapter.gui.swing.FileMenu;
 import org.appdapter.gui.swing.NamedItemChooserPanel;
 import org.appdapter.gui.swing.ObjectChoiceComboPanel;
+import org.appdapter.gui.swing.SafeJMenu;
+import org.appdapter.gui.trigger.TriggerFilter;
+import org.appdapter.gui.trigger.TriggerForInstance;
+import org.appdapter.gui.trigger.TriggerForMethod;
+import org.appdapter.gui.trigger.TriggerMenuFactory;
+import org.appdapter.gui.trigger.TriggerMenuFactory.TriggerSorter;
 import org.appdapter.gui.util.CollectionSetUtils;
 import org.appdapter.gui.util.FunctionalClassRegistry;
 import org.appdapter.gui.util.PromiscuousClassUtils;
 import org.slf4j.Logger;
 
 import com.hp.hpl.jena.rdf.model.Model;
-
 //import sun.beans.editors.ColorEditor;
 //import sun.beans.editors.IntEditor;
 
 public class Utility {
+
+	static public class UtilityConverter implements Converter {
+
+		@Override public <T> T recast(Object obj, Class<T> objNeedsToBe) throws NoSuchConversionException {
+			return Utility.recast(obj, objNeedsToBe);
+		}
+
+		@Override public Integer declaresConverts(Object val, Class objClass, Class objNeedsToBe) {
+			if (objClass == String.class) {
+				if (Utility.getToFromConverter(objNeedsToBe, String.class) != null)
+					return WILL;
+			}
+			if (objClass != null) {
+				if (Utility.getToFromConverter(objNeedsToBe, objClass) != null)
+					return WILL;
+			}
+			return MIGHT;// .declaresConverts(val, objClass, objNeedsToBe);
+		}
+
+	}
+
+	private static ThreadLocal<Boolean> inClassLoadingPing = new ThreadLocal<Boolean>();
 	public static List EMPTYLIST = new ArrayList();
 	public static Collection<AddTabFrames> addTabFramers = new HashSet<AddTabFrames>();
 	final static HashMap<Object, BT> allBoxes = new HashMap();
 	public static Logger theLogger = org.slf4j.LoggerFactory.getLogger(Utility.class);
 	private static final Class[] CLASS0 = new Class[0];
 	public static final Class Stringable = Enum.class;
-	final static Map<Class, ToFromStringConverter> toFromString = new HashMap<Class, ToFromStringConverter>();
+	final static Map<Class, Map<Class, ToFromKeyConverter>> toFrmKeyCnvMap = new HashMap<Class, Map<Class, ToFromKeyConverter>>();
 	static HashMap<String, LinkedList> displayLists = new HashMap<String, LinkedList>();
 
 	// ==== Instance variables ==========
 	public static BrowsePanel browserPanel;
 	public static NamedObjectCollection uiObjects = new BoxedCollectionImpl("All UI Objects", null);
 
-	static {
-		try {
-			uiObjects.findOrCreateBox("AssemberCacheGrabber1", new AssemberCacheGrabber());
-		} catch (PropertyVetoException e) {
-			e.printStackTrace();
+	static ArrayList<TriggerForInstance> appMenuGlobalTriggers = new ArrayList<TriggerForInstance>();
+	static ArrayList<TriggerForMethod> objectContextMenuTriggers = new ArrayList<TriggerForMethod>();
+
+	public static SafeJMenu toolsMenu;
+
+	public static void addSingletonMethods(Object object) {
+		addSingletonMethods(object, object.getClass());
+	}
+
+	public static void addSingletonMethods(Object object, Class clz) {
+		List<TriggerForInstance> menuGlobalTriggers = Utility.appMenuGlobalTriggers;
+		synchronized (menuGlobalTriggers) {
+			WrapperValue wrap = asWrapped(object);
+			DisplayContext ctx = getDisplayContext();
+			int ps1 = menuGlobalTriggers.size();
+			for (Method m : clz.getDeclaredMethods()) {
+				// declared methods not static
+				if (!ReflectUtils.isStatic(m)) {
+					if (m.isSynthetic())
+						continue;
+					if (m.getParameterTypes().length == 0) {
+						addMethodAsTrig(ctx, clz, m, menuGlobalTriggers, wrap, ADD_INSTANCE, "MadeGlobs", false);
+					} else {
+
+					}
+				}
+			}
+			Collections.sort(menuGlobalTriggers, new TriggerSorter());
+			int ps2 = menuGlobalTriggers.size();
+			if (ps1 != ps2) {
+				updateToolsMenu();
+			}
 		}
+	}
 
-		toFromString.put(Ident.class, new ToFromStringConverter<Ident>(Ident.class) {
+	public static void addClassStaticMethods(Class clz) {
+		List<TriggerForInstance> appMenuGlobalTriggers = Utility.appMenuGlobalTriggers;
+		synchronized (appMenuGlobalTriggers) {
+			DisplayContext ctx = getDisplayContext();
+			int ps1 = appMenuGlobalTriggers.size();
+			for (Method m : clz.getDeclaredMethods()) {
+				if (ReflectUtils.isStatic(m)) {
+					if (m.isSynthetic())
+						continue;
+					if (m.getParameterTypes().length == 0) {
+						TriggerMenuFactory.addMethodAsTrig(ctx, clz, m, appMenuGlobalTriggers, null, ADD_STATIC, "TrigGlobally|", true);
+					} else {
+						TriggerMenuFactory.addMethodAsTrig(ctx, clz, m, objectContextMenuTriggers, null, ADD_STATIC, "TrigLocally|", true);
+					}
+				}
+			}
+			Collections.sort(appMenuGlobalTriggers, new TriggerSorter());
+			int ps2 = appMenuGlobalTriggers.size();
+			if (ps1 != ps2) {
+				updateToolsMenu();
+			}
+		}
+	}
 
-			@Override public String toString(Ident toBecomeAString) {
+	public static void updateToolsMenu() {
+		List<TriggerForInstance> appMenuGlobalTriggers = Utility.appMenuGlobalTriggers;
+		synchronized (appMenuGlobalTriggers) {
+			if (toolsMenu == null)
+				return;
+			toolsMenu.removeAll();
+			Collections.sort(appMenuGlobalTriggers, new TriggerSorter());
+			for (TriggerForInstance tfi : appMenuGlobalTriggers) {
+				addTriggerToPoppup(toolsMenu, null, tfi);
+			}
+		}
+	}
+
+	public static List<TriggerForInstance> getAppMenuGlobalMethods() {
+		synchronized (appMenuGlobalTriggers) {
+			return new ArrayList<TriggerForInstance>(appMenuGlobalTriggers);
+		}
+	}
+
+	public static List<TriggerForMethod> getObjectGlobalMethods() {
+		synchronized (objectContextMenuTriggers) {
+			return new ArrayList<TriggerForMethod>(objectContextMenuTriggers);
+		}
+	}
+
+	static {
+		Utility.addSingletonMethods(new AssemberCacheGrabber());
+		ReflectUtils.registerConverter(new UtilityConverter());
+		Map<Class, ToFromKeyConverter> toFrmKeyCnv = getKeyConvMap(String.class);
+		toFrmKeyCnv.put(Ident.class, new ToFromKeyConverter<Ident, String>(Ident.class, String.class) {
+
+			@Override public String toKey(Ident toBecomeAString) {
 				return toBecomeAString.getAbsUriString();
 			}
 
-			@Override public Ident fromString(String title, Class further) {
+			@Override public Ident fromKey(String title, Class further) {
 				return new FreeIdent(title);
 			}
 		});
 	}
+
+	private static Map<Class, ToFromKeyConverter> getKeyConvMap(Class keyType) {
+		Map<Class, ToFromKeyConverter> toFrmKeyCnv = toFrmKeyCnvMap.get(keyType);
+		if (toFrmKeyCnv == null) {
+			toFrmKeyCnv = new HashMap<Class, ToFromKeyConverter>();
+			toFrmKeyCnvMap.put(keyType, toFrmKeyCnv);
+		}
+		return toFrmKeyCnv;
+	}
+
+	public static void addObjectFeatures(Object obj) {
+		if (obj == null)
+			return;
+		if (obj instanceof Singleton) {
+			Utility.addSingletonMethods((Singleton) obj);
+		} else if (obj instanceof Class) {
+			Utility.addClassStaticMethods((Class) obj);
+		} else {
+			if (obj instanceof UtilClass) {
+				Class oc = obj.getClass();
+				addClassStaticMethods(oc);
+			}
+		}
+	}
+
 	public static BrowserPanelGUI controlApp;
 	public static BoxPanelSwitchableView theBoxPanelDisplayContext;
 	public static NamedItemChooserPanel namedItemChooserPanel;
@@ -162,13 +318,12 @@ public class Utility {
 		try {
 			recordCreated(noc.findOrCreateBox(id.toString(), comp));
 		} catch (PropertyVetoException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Debuggable.printStackTrace(e);
 			throw reThrowable(e);
 		}
 	}
 
-	//public static FileMenu fileMenu = new FileMenu();
+	// public static FileMenu fileMenu = new FileMenu();
 	public static JMenuBar appMenuBar0;
 	public static FileMenu fileMenu;
 	public static JFrame appFrame;
@@ -242,14 +397,18 @@ public class Utility {
 		return controlApp;
 	}
 
-	public static BrowserPanelGUI getDisplayContext() {
+	public static DisplayContext getDisplayContext() {
+		if (selectedDisplaySontext != null)
+			return selectedDisplaySontext;
 		return controlApp;
 	}
 
-	/*public static void setDisplayContext(BrowserPanelGUI browserPanelGUI) {
-		Debuggable.notImplemented();
-
-	}*/
+	/*
+	 * public static void setDisplayContext(BrowserPanelGUI browserPanelGUI) {
+	 * Debuggable.notImplemented();
+	 * 
+	 * }
+	 */
 
 	/**
 	 * Sets the global objects context
@@ -265,29 +424,16 @@ public class Utility {
 	 * public static POJOCollectionWithSwizzler getDefaultContext() { return
 	 * context; }
 	 */
-	//public static POJOApp objectsContext = null;
-
-	public static Object asPOJO(Object object) {
-		if (object instanceof BT) {
-			object = ((BT) object).getValue();
-		}
-		return object;
-	}
+	// public static POJOApp objectsContext = null;
 
 	/*
-	public static POJOBox addObject(Object object, boolean showASAP) {
-
-		if (object instanceof POJOBox) {
-			return ((POJOBox) object);
-		}
-		try {
-			BoxPanelSwitchableView boxPanelDisplayContext = getBoxPanelTabPane();
-			return boxPanelDisplayContext.addObject(object, showASAP);
-		} catch (Exception e) {
-			theLogger.error("addObject", object, e);
-			throw reThrowable(e);
-		}
-	}
+	 * public static POJOBox addObject(Object object, boolean showASAP) {
+	 * 
+	 * if (object instanceof POJOBox) { return ((POJOBox) object); } try {
+	 * BoxPanelSwitchableView boxPanelDisplayContext = getBoxPanelTabPane();
+	 * return boxPanelDisplayContext.addObject(object, showASAP); } catch
+	 * (Exception e) { theLogger.error("addObject", object, e); throw
+	 * reThrowable(e); } }
 	 */
 	public static List getTriggersFromBeanInfo(BeanInfo beanInfo) {
 		return EMPTYLIST;
@@ -308,7 +454,7 @@ public class Utility {
 		PropertyEditorManager.registerEditor(Date.class, DateEditor.class);
 
 		PropertyEditorManager.setEditorSearchPath(new String[] { AbstractCollectionBeanInfo.class.getPackage().getName() });
-		//ClassFinder.getClasses(PropertyEditor);
+		// ClassFinder.getClasses(PropertyEditor);
 
 		registerTabs(ClassCustomizer.class, Class.class);
 		registerTabs(CollectionCustomizer.class, Collection.class);
@@ -322,18 +468,16 @@ public class Utility {
 		registerPanels(ModelMatrixPanel.class, Model.class);
 
 		registerCustomizer(ArrayContentsPanel.class, Object[].class);
-		//registerCustomizer(IndexedCustomizer.class, List.class);
+		// registerCustomizer(IndexedCustomizer.class, List.class);
 	}
 
 	public static void registerTabs(Class class1, Class class2) {
 		try {
 			addTabFramers.add((AddTabFrames) newInstance(class1));
 		} catch (InstantiationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Debuggable.printStackTrace(e);
 		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Debuggable.printStackTrace(e);
 		}
 	}
 
@@ -353,111 +497,24 @@ public class Utility {
 		Introspector.setBeanInfoSearchPath(new String[] { AbstractCollectionBeanInfo.class.getPackage().getName() });
 	}
 
-	public static Object invokeFromUI(Object obj0, Method method) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		return invoke(obj0, method);
-	}
+	public static Object invokeFromUI(Object obj0, Method method) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+		return ReflectUtils.invokeOptional(obj0, method, new OptionalArg() {
 
-	public static Method getDeclaredMethod(Class search, String name, Class... parameterTypes) throws SecurityException {
-		Method m = getDeclaredMethod(search, name, false, parameterTypes);
-		if (m != null)
-			return m;
-		m = getDeclaredMethod(search, name, true, parameterTypes);
-		if (m == null)
-			return null;
-		return m;
-	}
-
-	public static Method getDeclaredMethod(Class search, String name, boolean laxPTs, Class... parameterTypes) throws SecurityException {
-		try {
-			return search.getDeclaredMethod(name, parameterTypes);
-		} catch (NoSuchMethodException e) {
-			if (laxPTs) {
-				int ptlen = parameterTypes.length;
-				for (Method m : search.getDeclaredMethods()) {
-					if (!m.getName().equalsIgnoreCase(name))
-						continue;
-					Class[] mp = m.getParameterTypes();
-					if (mp.length != ptlen)
-						continue;
-					boolean cant = false;
-					for (int i = 0; i < ptlen; i++) {
-						if (Utility.isDisjoint(mp[i], parameterTypes[i])) {
-							cant = true;
-							break;
-						}
-					}
-					if (cant)
-						continue;
-					return m;
+			@Override public Object getArg(Class type) {
+				Collection objs = getClipboard().findObjectsByType(type);
+				if (objs.size() != 1) {
+					throw new NoSuchElementException("" + type);
 				}
+				return objs.toArray()[0];
 			}
-			Class nis = search.getSuperclass();
-			if (nis != null)
-				return getDeclaredMethod(nis, name, laxPTs, parameterTypes);
-			return null;
-		}
+		});
 	}
 
-	public static boolean isDisjoint(Class to, Class from) {
-		to = nonPrimitiveTypeFor(to);
-		from = nonPrimitiveTypeFor(from);
-		if (to.isAssignableFrom(from))
-			return false;
-		if (from.isAssignableFrom(to))
-			return false;
-		return true;
-	}
-
-	public static Object invoke(Object obj0, Method method, Object... params) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		Object obj = obj0;
-		boolean isStatic = Modifier.isStatic(method.getModifiers());
-		Class[] ts = method.getParameterTypes();
-		Class objNeedsToBe = method.getDeclaringClass();
-		int ml = ts.length;
-		if (isStatic) {
-			obj = null;
-		} else {
-			Object obj2 = recast(obj, objNeedsToBe);
-			if (!objNeedsToBe.isInstance(obj2)) {
-				Class searchMethods = obj.getClass();
-				Method method2 = getDeclaredMethod(searchMethods, method.getName(), ts);
-				if (method2 != null) {
-					return invoke(obj, method, params);
-				}
-				throw new IllegalArgumentException("no such method on " + obj0 + " of type " + method);
-
-			} else {
-				obj = obj2;
-			}
-		}
-		int pl = params.length;
-
-		method.setAccessible(true);
-		if (ml == 0) {
-			return method.invoke(obj);
-		}
-		// not an array of array
-		if (pl > 1 && ml == pl) {
-			if (isStatic)
-				obj = null;
-			return method.invoke(obj, params);
-		}
-
-		if (pl == 1 && ml > 1) {
-			Object p0 = params[0];
-			if (p0 instanceof Object[]) {
-				method.invoke(obj, (Object[]) p0);
-			}
-		}
-
-		return method.invoke(obj, params);
-	}
-
-	public static <T> T recast(Object obj, Class<T> objNeedsToBe) {
+	public static <T> T recast(Object obj, Class<T> objNeedsToBe) throws NoSuchConversionException {
 		return recast(obj, objNeedsToBe, null);
 	}
 
-	public static <T> T recast(final Object val, Class<T> objNeedsToBe, LinkedList<Object> except) {
+	public static <T> T recast(final Object val, Class<T> objNeedsToBe, LinkedList<Object> except) throws NoSuchConversionException {
 		Object obj = val;
 		if (obj == null)
 			return null;
@@ -490,43 +547,45 @@ public class Utility {
 		return (T) obj;
 	}
 
-	public static Class nonPrimitiveTypeFor(Class type) {
-		return PromiscuousClassUtils.nonPrimitiveTypeFor(type);
-	}
-
 	static public boolean isToStringType(Class type) {
 		return DisplayType.TOSTRING == getDisplayType(type);
 	}
 
-	public static Object fromString(String title, Class type) throws ClassCastException {
-		ToFromStringConverter conv = getToFromConverter(type);
+	public static Object fromString(Object title, Class type) throws NoSuchConversionException {
+		Class keyClass = title.getClass();
+		ToFromKeyConverter conv = getToFromConverter(type, keyClass);
 		if (conv != null)
-			return conv.fromString(title, type);
+			return conv.fromKey(title, type);
 
 		if (!isToStringType(type)) {
-			BT box = getTreeBoxCollection().findBoxByName(title);
-			if (box == null) {
-				throw new ClassCastException(type + " findBoxByName " + title);
+			if (title instanceof String) {
+				String stitle = (String) title;
+				BT box = getTreeBoxCollection().findBoxByName(stitle);
+				if (box == null) {
+					throw new NoSuchConversionException(type + " findBoxByName " + title);
+				}
+				return box.convertTo(type);
 			}
-			return box.convertTo(type);
 		}
 
-		if (type == String.class)
+		if (type == keyClass)
 			return title;
-		type = nonPrimitiveTypeFor(type);
+		type = ReflectUtils.nonPrimitiveTypeFor(type);
 
-		ClassCastException cce = null;
+		NoSuchConversionException cce = null;
 		Class searchType = type;
 		while (searchType != null) {
 			for (Method m : searchType.getDeclaredMethods()) {
 				if (m.getReturnType() == type) {
 					Class[] pt = m.getParameterTypes();
-					if (pt != null && pt.length == 1 && pt[0] == String.class && Modifier.isStatic(m.getModifiers())) {
+					if (pt != null && pt.length == 1 && Modifier.isStatic(m.getModifiers())) {
 						try {
+							if (TypeAssignable.CASTING_ONLY.declaresConverts(title, keyClass, pt[0]) == TypeAssignable.WONT)
+								continue;
 							m.setAccessible(true);
 							return m.invoke(null, title);
 						} catch (Throwable e) {
-							cce = new ClassCastException(type + " " + m.getName() + " " + title);
+							cce = new NoSuchConversionException(type + " " + m.getName() + " " + title, e);
 						}
 					}
 				}
@@ -535,10 +594,12 @@ public class Utility {
 		}
 		if (cce != null)
 			throw cce;
-		throw new ClassCastException(type + " fromString " + title);
+		throw new NoSuchConversionException(type + " fromString " + title);
 	}
 
 	public static RuntimeException reThrowable(Throwable e) {
+		if (true)
+			return Debuggable.reThrowable(e);
 		if (e instanceof InvocationTargetException)
 			e = e.getCause();
 		if (e instanceof RuntimeException)
@@ -548,12 +609,21 @@ public class Utility {
 		return new RuntimeException(e);
 	}
 
-	public static BeanInfo getBeanInfo(Class c) throws IntrospectionException {
-		return getBeanInfo(c, false);
+	public static BeanInfo getBeanInfo(Class c, final Object toBindTo) throws IntrospectionException {
+		return getBeanInfo(c, false, toBindTo);
 	}
 
-	public static BeanInfo getBeanInfo(Class c, boolean onlythisClass) throws IntrospectionException {
-		Class stopAtClass = null;//Object.class;// c.getSuperclass();
+	public static BeanInfo getBeanInfo(Class c, boolean onlythisClass, final Object toBindTo) throws IntrospectionException {
+		return getBeanInfo(c, onlythisClass, null, ADD_ALL);
+	}
+
+	public static BeanInfo getBeanInfo(final Class c, boolean onlythisClass, final Object toBindTo, TriggerFilter includeFields) throws IntrospectionException {
+		final BeanInfo bi = getBeanInfoNoF(c, onlythisClass);
+		return new SimplePOJOInfo(c, null, bi, toBindTo);
+	}
+
+	public static BeanInfo getBeanInfoNoF(Class c, boolean onlythisClass) throws IntrospectionException {
+		Class stopAtClass = null;// Object.class;// c.getSuperclass();
 		if (onlythisClass) {
 			stopAtClass = c.getSuperclass();
 			if (stopAtClass == null && !c.isInterface()) {
@@ -566,7 +636,8 @@ public class Utility {
 		boolean wasInPing = isInClassLoadPing();
 		try {
 			inClassLoadingPing.set(Boolean.TRUE);
-			return Introspector.getBeanInfo(c, stopAtClass);
+			BeanInfo bi = Introspector.getBeanInfo(c, stopAtClass);
+			return bi;
 		} finally {
 			inClassLoadingPing.set(wasInPing);
 		}
@@ -579,8 +650,6 @@ public class Utility {
 	public static void isInClassLoadPing(boolean now) {
 		inClassLoadingPing.set(now);
 	}
-
-	private static ThreadLocal<Boolean> inClassLoadingPing = new ThreadLocal<Boolean>();
 
 	public static BeanInfo getPOJOInfo(Class<? extends Object> c, int useAllBeaninfo) throws IntrospectionException {
 		return Introspector.getBeanInfo(c, useAllBeaninfo);
@@ -715,7 +784,8 @@ public class Utility {
 	/**
 	 * Generates a default name for the given object, while will be something
 	 * like "Button1", "Button2", etc.
-	 * @param nameIndex 
+	 * 
+	 * @param nameIndex
 	 */
 	public static String generateUniqueName(Object object, Map<String, BT> checkAgainst) {
 		return generateUniqueName_sug(object, null, checkAgainst);
@@ -799,7 +869,7 @@ public class Utility {
 			theLogger.info("result from " + whereFrom + " was " + obj);
 			if (obj != null) {
 				DisplayType attachType = getDisplayType(expected);
-				getCurrentPOJOApp().showScreenBox(obj);
+				getCurrentPOJOApp().showScreenBox(null, obj);
 			}
 		}
 
@@ -839,21 +909,22 @@ public class Utility {
 	}
 
 	private static Class makeCustomizerFromEditor(Class objClass) {
-		PropertyEditor pe = findEditor(objClass);
+		Class pe = findEditorClass(objClass);
 		if (pe != null) {
 			return UseEditor.class;
 		}
 		return null;
 	}
 
-	public static boolean usePropertyEditorManager = true;
+	public static boolean usePropertyEditorManager = false;
 
 	/**
 	 * Locate a value editor for a given target type.
-	 *
-	 * @param targetType  The Class object for the type to be edited
-	 * @return An editor object for the given target class. 
-	 * The result is null if no suitable editor can be found.
+	 * 
+	 * @param targetType
+	 *            The Class object for the type to be edited
+	 * @return An editor object for the given target class. The result is null
+	 *         if no suitable editor can be found.
 	 */
 	public static PropertyEditor findEditor(Class targetType) {
 
@@ -1033,7 +1104,7 @@ public class Utility {
 	public static Collection<BT> boxObjects(Iterable<Object> pojoCollectionObjects) {
 		LinkedList<BT> objects = new LinkedList<BT>();
 		for (Object pojo : pojoCollectionObjects) {
-			objects.add(boxObject(pojo));
+			objects.add(asWrapped(pojo));
 		}
 		return objects;
 	}
@@ -1055,12 +1126,23 @@ public class Utility {
 		return true;
 	}
 
-	public static BT boxObject(Object pojo) {
+	public static BT asWrapped(Object pojo) {
 		if (pojo instanceof BT)
 			return (BT) pojo;
 		if (pojo instanceof IGetBox)
 			return ((IGetBox) pojo).getBT();
 		return uiObjects.findOrCreateBox(pojo);
+	}
+
+	public static Box asBoxed(Object pojo) {
+		if (pojo instanceof Box)
+			return (Box) pojo;
+		if (pojo instanceof IGetBox.NotWrapper)
+			return ((IGetBox.NotWrapper) pojo).asBox();
+
+		if (pojo instanceof IGetBox)
+			return ((IGetBox) pojo).getBT().asBox();
+		return asWrapped(pojo).asBox();
 	}
 
 	public static Collection<Object> unboxObjects(Iterable<? extends BT> pojoCollectionObjects) {
@@ -1076,10 +1158,9 @@ public class Utility {
 	}
 
 	/*
-		public static POJOBox addObject(Object obj) {
-			return addObject(obj, false);
-		}
-	*/
+	 * public static POJOBox addObject(Object obj) { return addObject(obj,
+	 * false); }
+	 */
 	public static UserResult showError(DisplayContext context, String msg, Throwable error) {
 		if (msg == null)
 			msg = error.getMessage();
@@ -1166,17 +1247,18 @@ public class Utility {
 	}
 
 	public static String makeToString(Object object) {
-		ToFromStringConverter conv = getToFromConverter(object.getClass());
+		ToFromKeyConverter<?, String> conv = getToFromConverter(object.getClass(), String.class);
 		if (conv != null)
-			return conv.toString(object);
+			return conv.toKeyFromObject(object);
 		return "" + object;
 	}
 
-	static public <T> ToFromStringConverter<T> getToFromConverter(Class<? extends T> findToString) {
-		synchronized (toFromString) {
-			for (Class c : toFromString.keySet()) {
-				if (c.isAssignableFrom(findToString)) {
-					return toFromString.get(c);
+	static public <T, K> ToFromKeyConverter<T, K> getToFromConverter(Class<T> valueClazz, Class<K> key) {
+		Map<Class, ToFromKeyConverter> toFrmKeyCnv = getKeyConvMap(key);
+		synchronized (toFrmKeyCnv) {
+			for (Class c : toFrmKeyCnv.keySet()) {
+				if (c.isAssignableFrom(valueClazz)) {
+					return toFrmKeyCnv.get(c);
 				}
 			}
 		}
@@ -1202,6 +1284,17 @@ public class Utility {
 				return title;
 			}
 		}
+		if (object instanceof KnownComponent) {
+			KnownComponent kc = (KnownComponent) object;
+			Ident id = kc.getIdent();
+			if (id != null) {
+				Object f = JenaLiteralUtils.findComponent(id, object.getClass());
+				if (f == object) {
+					return id.getLocalName();
+				}
+				return id.getAbsUriString();
+			}
+		}
 		return null;
 	}
 
@@ -1221,7 +1314,7 @@ public class Utility {
 		if (expected == Boolean.class) {
 			return DisplayType.TOSTRING;
 		}
-		if (getToFromConverter(expected) != null) {
+		if (getToFromConverter(expected, String.class) != null) {
 			return DisplayType.TOSTRING;
 		}
 		return DisplayType.PANEL;
@@ -1324,9 +1417,30 @@ public class Utility {
 	}
 
 	public static boolean boxesRepresentSame(Box b, Object userObject) {
-		if (b == null)
-			return dref(userObject) == null;
-		return dref(userObject) == dref(b);
+		if (userObject == b)
+			return true;
+		Object b0 = dref(b);
+		Object uo0 = dref(userObject);
+		if (b == null || b0 == null)
+			return uo0 == null;
+		if (uo0 == b0)
+			return true;
+		Object b00 = drefO(b0);
+		Object uo00 = drefO(uo0);
+		if (uo00 == b00)
+			return true;
+		return false;
+	}
+
+	public static String properCase(String shortClassName) {
+		if (shortClassName.contains(" ")) {
+			StringBuffer buffer = new StringBuffer();
+			for (String sp : shortClassName.split(" ")) {
+				buffer.append(properCase(sp));
+			}
+			return buffer.toString();
+		}
+		return shortClassName.substring(0, 1).toUpperCase() + shortClassName.substring(1);
 	}
 
 	public static String spaceCase(String shortClassName) {
@@ -1376,12 +1490,13 @@ public class Utility {
 		if (cl != null) {
 			Class clz = cl.getClass();
 			Class dc = clz.getDeclaringClass();
-			if (dc == null) // there is an situation that can cause this on some JVMs
+			if (dc == null) // there is an situation that can cause this on some
+							// JVMs
 				dc = clz;
 			String cn = dc.getCanonicalName();
 			if (cn.contains("Bundle")) {
 				if (true)
-					return false; //for testing if OSGi loading is safe yet
+					return false; // for testing if OSGi loading is safe yet
 				return true;
 			}
 		}
@@ -1389,81 +1504,54 @@ public class Utility {
 	}
 
 	public static Collection<PropertyDescriptor> getProperties(Object object) throws IntrospectionException {
-		Map<String, PropertyDescriptor> props = new HashMap<String, PropertyDescriptor>();
 		final Class beanClass = object.getClass();
-		PropertyDescriptor[] pdsa = getBeanInfo(beanClass).getPropertyDescriptors();
+		PropertyDescriptor[] pdsa = getBeanInfo(beanClass, false).getPropertyDescriptors();
+		return getProperties(object, beanClass, pdsa);
+	}
+
+	public static Collection<PropertyDescriptor> getProperties(Object object, Class beanClass, PropertyDescriptor[] pdsa) throws IntrospectionException {
+		Map<String, PropertyDescriptor> props = new HashMap<String, PropertyDescriptor>();
 		if (pdsa != null) {
 			for (PropertyDescriptor p : pdsa) {
-				props.put(p.getName(), p);
+				props.put(p.getName().toLowerCase(), p);
 			}
 		}
 		int fnum = -1;
-		for (final Field f : getAllFields(beanClass)) {
+		for (final Field f : ReflectUtils.getAllFields(beanClass)) {
 			fnum++;
 			String propName = PropertyDescriptorForField.clipPropertyNameMethod(f.getName(), "my").toLowerCase();
 			PropertyDescriptor pd = props.get(propName);
 			if (pd == null) {
-				pd = new PropertyDescriptorForField(f);
+				pd = PropertyDescriptorForField.findOrCreate(f).makePD(object);
 				props.put(pd.getName().toLowerCase(), pd);
 			}
 		}
-		Collection<Method> ml = getAllMethods(beanClass);
+		Collection<Method> ml = ReflectUtils.getAllMethods(beanClass);
 		for (Method m : ml) {
 			String propName = PropertyDescriptorForField.clipPropertyNameMethod(m.getName(), "is", "get", "set").toLowerCase();
 			PropertyDescriptor pd = props.get(propName);
 			Class[] pts = m.getParameterTypes();
 			int ptsl = pts.length;
 			if (pd != null) {
-				if (ptsl == 0 && isAssignableTypes(m.getReturnType(), pd.getPropertyType())) {
-					pd.setReadMethod(m);
-					continue;
-				} else {
-					if (ptsl == 1 && m.getReturnType() == void.class && isAssignableTypes(pts[0], pd.getPropertyType())) {
-						pd.setWriteMethod(m);
+				Class propType = pd.getPropertyType();
+				try {
+					if (ptsl == 0 && ReflectUtils.isSameType(m.getReturnType(), propType)) {
+						pd.setReadMethod(m);
 						continue;
+					} else {
+						if (ptsl == 1 && m.getReturnType() == void.class && ReflectUtils.isSameType(pts[0], propType)) {
+							pd.setWriteMethod(m);
+							continue;
+						}
 					}
+				} catch (Throwable t) {
+					Debuggable.printStackTrace(t);
+					throw reThrowable(t);
+
 				}
 			}
 		}
 		return props.values();
-	}
-
-	private static boolean isAssignableTypes(Class<?> c1, Class<?> c2) {
-		if (c1 == void.class || c2 == void.class)
-			return false;
-		if (c1.isAssignableFrom(c2) || c2.isAssignableFrom(c1))
-			return true;
-		return c1.isInterface() && c2.isInterface();
-	}
-
-	private static boolean disjointTypes(Class<?> c1, Class<?> c2) {
-		if (c1 == void.class || c2 == void.class)
-			return true;
-		if (c1.isAssignableFrom(c2) || c2.isAssignableFrom(c1))
-			return false;
-		return false;
-	}
-
-	private static Collection<Method> getAllMethods(Class clz) {
-		List<Method> methods = new ArrayList<Method>();
-		while (clz != null) {
-			for (Method m : clz.getDeclaredMethods()) {
-				methods.add(m);
-			}
-			clz = clz.getSuperclass();
-		}
-		return methods;
-	}
-
-	private static Collection<Field> getAllFields(Class clz) {
-		List<Field> methods = new ArrayList<Field>();
-		while (clz != null) {
-			for (Field m : clz.getDeclaredFields()) {
-				methods.add(m);
-			}
-			clz = clz.getSuperclass();
-		}
-		return methods;
 	}
 
 	public static boolean instanceOf(Object value, Class clz) {
@@ -1482,4 +1570,109 @@ public class Utility {
 		}
 		return false;
 	}
+
+	public static BT asBTNoCreate(Object obj) {
+		if (obj instanceof BT) {
+			return (BT) obj;
+		}
+		if (obj instanceof IGetBox) {
+			return ((IGetBox) obj).getBT();
+		}
+		return null;
+	}
+
+	static public Icon getIcon(Class info) {
+		try {
+			return getIcon(Utility.getBeanInfo(info, null));
+		} catch (Throwable e) {
+			Debuggable.printStackTrace(e);
+			return new UnknownIcon();
+		}
+	}
+
+	/**
+	 * Returns an Icon for this object, determined using BeanInfo. If no icon
+	 * was found a default icon will be returned.
+	 */
+	static public Icon getIcon(BeanInfo info) {
+		Icon icon;
+		try {
+			Image image;
+			image = info.getIcon(BeanInfo.ICON_COLOR_16x16);
+			if (image == null) {
+				image = info.getIcon(BeanInfo.ICON_MONO_16x16);
+			}
+
+			if (image == null) {
+				icon = new UnknownIcon();
+			} else {
+				icon = new ImageIcon(image);
+			}
+		} catch (Exception err) {
+			icon = new UnknownIcon();
+		}
+		return icon;
+	}
+
+	public static ImageIcon getIcon(String string) {
+		return new ImageIcon(getImage(string));
+	}
+
+	public static Image getImage(String string) {
+		return getImage(Utility.getResource(string));
+	}
+
+	public static Image getImage(URL uri) {
+		try {
+			return ImageIO.read(uri);
+		} catch (IOException e) {
+			Debuggable.printStackTrace(e);
+			return null;
+		}
+	}
+
+	public static java.net.URL getResource(final Class c, String name) {
+		ClassLoader cl = ClassLoaderUtils.getClassLoader(c);
+		if (cl == null) {
+			// A system class.
+			return ClassLoader.getSystemResource(name);
+		}
+		return cl.getResource(name);
+	}
+
+	public static java.awt.Image loadImage(final Class c, final String resourceName) {
+		try {
+			java.awt.image.ImageProducer ip = (java.awt.image.ImageProducer) java.security.AccessController.doPrivileged(new java.security.PrivilegedAction() {
+				public Object run() {
+					java.net.URL url;
+					if ((url = getResource(c, resourceName)) == null) {
+						return null;
+					} else {
+						try {
+							return url.getContent();
+						} catch (java.io.IOException ioe) {
+							return null;
+						}
+					}
+				}
+			});
+
+			if (ip == null)
+				return null;
+			java.awt.Toolkit tk = java.awt.Toolkit.getDefaultToolkit();
+			return tk.createImage(ip);
+		} catch (Exception ex) {
+			return null;
+		}
+	}
+
+	public static Collection<Trigger> getGlobalStaticTriggers(DisplayContext ctx, Class cls, WrapperValue poj) {
+		ArrayList<Trigger> triggersFound = new ArrayList<Trigger>();
+		for (TriggerForMethod trigc : getObjectGlobalMethods()) {
+			if (trigc.appliesTarget(cls))
+				triggersFound.add(trigc.createTrigger("G-ST|", ctx, poj));
+		}
+		return triggersFound;
+	}
+
 }

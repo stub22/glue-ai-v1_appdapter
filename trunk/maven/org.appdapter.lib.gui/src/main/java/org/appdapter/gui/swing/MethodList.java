@@ -44,7 +44,7 @@ public class MethodList extends JJList {
 		List methods;
 
 		public Model() throws Exception {
-			BeanInfo info = Utility.getBeanInfo(getPOJOClass());
+			BeanInfo info = Utility.getBeanInfo(getPOJOClass(), object);
 
 			MethodDescriptor[] descriptors;
 			descriptors = info.getMethodDescriptors();

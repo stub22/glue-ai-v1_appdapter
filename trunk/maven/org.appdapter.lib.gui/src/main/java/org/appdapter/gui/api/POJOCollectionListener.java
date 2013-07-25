@@ -1,6 +1,6 @@
 package org.appdapter.gui.api;
 
-import org.appdapter.gui.api.Ontologized.UIProvider;
+import org.appdapter.api.trigger.AnyOper.UIProvider;
 
 public interface POJOCollectionListener extends UIProvider {
 	public void pojoAdded(Object obj, BT box);

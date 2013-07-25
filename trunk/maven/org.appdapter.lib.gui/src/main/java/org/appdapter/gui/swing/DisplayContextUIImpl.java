@@ -6,25 +6,19 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Graphics;
-import java.awt.Image;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.PropertyVetoException;
-import java.io.IOException;
-import java.net.URL;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.imageio.ImageIO;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
@@ -48,7 +42,7 @@ import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.editors.RenameDialog;
 import org.appdapter.gui.repo.Icons;
 import org.appdapter.gui.trigger.AbstractTriggerAction;
-import org.appdapter.gui.trigger.TriggerForInstance;
+import org.appdapter.gui.trigger.TriggerMenuFactory;
 import org.appdapter.gui.util.PairTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -121,12 +115,12 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 			super("Copy to " + noc.getName(), Icons.addToCollection);
 			super.boxed = box;
 			super.currentCollection = noc;
-			this.value = val;
+			this.setValue(val);
 		}
 
 		@Override public void actionPerformed(ActionEvent evt) {
 			try {
-				currentCollection.findOrCreateBox(value);
+				currentCollection.findOrCreateBox(getValue());
 			} catch (Exception e) {
 				showError(toString(), e);
 			}
@@ -136,14 +130,14 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 	class PropertiesAction extends AbstractTriggerAction {
 
 		PropertiesAction(BT box, Object object) {
-			super("Properties", getIcon("properties"));
+			super("Properties", Utility.getIcon("properties"));
 			super.boxed = box;
-			this.value = object;
+			this.setValue(object);
 		}
 
 		@Override public void actionPerformed(ActionEvent evt) {
 			try {
-				showScreenBox(Utility.getPropertiesPanel(value));
+				showScreenBox(Utility.getPropertiesPanel(getValue()));
 			} catch (Throwable err) {
 				Utility.showError(null, null, err);
 			}
@@ -153,14 +147,14 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 	class RemoveAction extends AbstractTriggerAction {
 
 		RemoveAction(BT box, Object object, NamedObjectCollection noc) {
-			super("Remove from " + noc.getName(), getIcon("removeFromCollection"));
-			this.value = object;
+			super("Remove from " + noc.getName(), Utility.getIcon("removeFromCollection"));
+			this.setValue(object);
 			super.boxed = box;
 			currentCollection = noc;
 		}
 
 		@Override public void actionPerformed(ActionEvent evt) {
-			getCurrentCollection().removeObject(value);
+			getCurrentCollection().removeObject(getValue());
 		}
 	}
 
@@ -169,12 +163,15 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 		RenameAction(BT box, Object object, NamedObjectCollection noc) {
 			super("Change label in " + noc.getName());
 			super.boxed = box;
-			this.value = object;
+			this.setValue(object);
 			currentCollection = noc;
 		}
 
 		@Override public void actionPerformed(ActionEvent evt) {
-			BT wrapper = currentCollection.findBoxByObject(value);
+			BT wrapper = null;//boxed;
+			if (wrapper == null) {
+				wrapper = currentCollection.findBoxByObject(getValue());
+			}
 			if (wrapper != null) {
 				RenameDialog dialog = new RenameDialog(DisplayContextUIImpl.this, wrapper);
 				dialog.show();
@@ -187,7 +184,7 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 	 * A rather ugly but workable default icon used in cases where there is no
 	 * known icon for the object.
 	 */
-	static class UnknownIcon implements Icon, java.io.Serializable {
+	public static class UnknownIcon implements Icon, java.io.Serializable {
 		@Override public int getIconHeight() {
 			return 16;
 		}
@@ -205,14 +202,14 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 
 	class ViewAction extends AbstractTriggerAction {
 
-		ViewAction(BT box, Object value) {
+		ViewAction(BT box, Component value) {
 			super("View", Icons.viewObject);
 			super.boxed = box;
-			this.value = value;
+			this.setValue(value);
 		}
 
 		@Override public void actionPerformed(ActionEvent evt) {
-			showObjectGUI((Component) value);
+			showObjectGUI((Component) getValue());
 		}
 	}
 
@@ -222,44 +219,6 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 	// ==== Other public methods =========================
 
 	private static Logger theLogger = LoggerFactory.getLogger(DisplayContextUIImpl.class);
-
-	/**
-	 * Returns an Icon for this object, determined using BeanInfo. If no icon
-	 * was found a default icon will be returned.
-	 */
-	static public Icon getIcon(BeanInfo info) {
-		Icon icon;
-		try {
-			Image image;
-			image = info.getIcon(BeanInfo.ICON_COLOR_16x16);
-			if (image == null) {
-				image = info.getIcon(BeanInfo.ICON_MONO_16x16);
-			}
-
-			if (image == null) {
-				icon = new UnknownIcon();
-			} else {
-				icon = new ImageIcon(image);
-			}
-		} catch (Exception err) {
-			icon = new UnknownIcon();
-		}
-		return icon;
-	}
-
-	public static ImageIcon getIcon(String string) {
-		return new ImageIcon(getImage(Utility.getResource(string)));
-	}
-
-	public static Image getImage(URL uri) {
-		try {
-			return ImageIO.read(uri);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return null;
-		}
-	}
 
 	JInternalFrame classBrowser = null;
 
@@ -352,10 +311,9 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 		try {
 			// Get an icon for the object
 			Icon icon;
-			icon = getIcon(Utility.getBeanInfo(c));
-			//frame.setIconImage((icon));
-
-		} catch (IntrospectionException e) {
+			icon = Utility.getIcon(c);
+			//	frame.setIconImage(new ImageIcon(icon));
+		} catch (Exception e) {
 		}
 		// Put the GUI and icon in the frame
 		frame.getContentPane().add(view);
@@ -368,9 +326,9 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 		try {
 			// Get an icon for the object
 			Icon icon;
-			icon = getIcon(Utility.getBeanInfo(c));
+			icon = Utility.getIcon(c);
 			frame.setFrameIcon(icon);
-		} catch (IntrospectionException e) {
+		} catch (Exception e) {
 		}
 		// Put the GUI and icon in the frame
 		frame.getContentPane().add(view);
@@ -459,7 +417,7 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 			}
 		}
 		if (box == null) {
-			box = Utility.boxObject(val);
+			box = Utility.asWrapped(val);
 		}
 
 		List actions = new LinkedList();
@@ -477,7 +435,7 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 		}
 		actions.add(new PropertiesAction(box, object));
 		Class cls = val.getClass();
-		TriggerForInstance.addClassLevelTriggers(getDisplayContext().getDisplayContext(), cls, actions, (WrapperValue) box);
+		TriggerMenuFactory.addClassLevelTriggers(getDisplayContext().getDisplayContext(), cls, actions, (WrapperValue) box);
 		return actions;
 	}
 
@@ -503,7 +461,7 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 		}
 	}
 
-	private JPanel objectToPanel(Object object, boolean attachToUIAsap) {
+	private JPanel objectToPanel(String title, Object object, boolean attachToUIAsap) {
 
 		if (object instanceof JPanel) {
 			return (JPanel) object;
@@ -512,7 +470,12 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 		if (object == null) {
 			return null;
 		}
-		return getCurrentCollection().findOrCreateBox(object).getPropertiesPanel();
+		object = Utility.dref(object);
+		try {
+			return getCurrentCollection().findOrCreateBox(title, object).getPropertiesPanel();
+		} catch (PropertyVetoException e) {
+			throw Debuggable.reThrowable(e);
+		}
 	}
 
 	public void reload() {
@@ -588,8 +551,12 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 		Debuggable.notImplemented();
 	}
 
+	public UserResult showScreenBox(String title, Object object) {
+		return showScreenBoxAsResult(title, object);
+	}
+
 	public UserResult showScreenBox(Object object) {
-		return showScreenBoxAsResult(null, object);
+		return showScreenBox(null, object);
 	}
 
 	/**
@@ -602,6 +569,7 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 		if (object instanceof String) {
 			return Utility.browserPanel.showMessage("RESULT:" + object);
 		}
+		Utility.recordCreated(object);
 		if (Utility.isToStringType(object.getClass())) {
 			return Utility.browserPanel.showMessage(Utility.getDefaultName(object));
 		}
@@ -610,7 +578,7 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 			Component comp = (Component) object;
 			pnl = ComponentHost.asPanel(comp, object);
 		} else {
-			pnl = objectToPanel(object, true);
+			pnl = objectToPanel(title, object, true);
 		}
 		try {
 			showObjectGUI(pnl.getName(), pnl, true);
@@ -681,7 +649,8 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 			return;
 		} else if (object instanceof JComponent) {
 			JInternalFrame f = new JInternalFrame(name, true, true, true, true);
-			f.setFrameIcon(getIcon(Utility.getBeanInfo(Utility.dref(object).getClass())));
+			Object value = Utility.dref(object);
+			f.setFrameIcon(Utility.getIcon(value.getClass()));
 			f.getContentPane().add(object);
 			if (!DisplayContextUIImpl.ALLOW_MULTIPLE_WINDOWS) {
 				objectWindows.add(object, f);

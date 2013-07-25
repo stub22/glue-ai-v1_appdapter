@@ -18,26 +18,24 @@ import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import org.appdapter.api.trigger.AnyOper.UserInputComponent;
+import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.BT;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.GetSetObject;
 import org.appdapter.gui.api.IValidate;
 import org.appdapter.gui.api.NamedObjectCollection;
-import org.appdapter.gui.api.Ontologized.UserInputComponent;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.editors.ValueEditor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.hp.hpl.jena.rdf.model.Model;
 
 @SuppressWarnings({ "serial" })
 public class PropertyValueControl extends JVPanel implements PropertyChangeListener, IValidate, GetSetObject, ValueEditor {
@@ -220,7 +218,7 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 			Object val = getValueSomeType();
 			if (val == null)
 				return null;
-			if (Utility.nonPrimitiveTypeFor(type).isInstance(val))
+			if (ReflectUtils.nonPrimitiveTypeFor(type).isInstance(val))
 				return val;
 			NamedObjectCollection fromCollection = provalctrl.getNamedObjectCollection();
 			BT bval = fromCollection.findBoxByObject(val);
@@ -398,7 +396,7 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 	}
 
 	private static PropertyDescriptor getPropertyDescriptor(Object object, String propName) throws IntrospectionException {
-		BeanInfo info = Utility.getBeanInfo(object.getClass());
+		BeanInfo info = Utility.getBeanInfo(object.getClass(), object);
 		PropertyDescriptor[] array = info.getPropertyDescriptors();
 		int len = array.length;
 		for (int i = 0; i < len; ++i) {
@@ -597,7 +595,7 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 	private void listenToSource() {
 		try {
 			if (source != null) {
-				BeanInfo info = Utility.getBeanInfo(source.getClass());
+				BeanInfo info = Utility.getBeanInfo(source.getClass(), source);
 				EventSetDescriptor[] events = info.getEventSetDescriptors();
 				for (int i = 0; i < events.length; ++i) {
 					EventSetDescriptor event = events[i];
@@ -654,13 +652,13 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 						pn = property.getDisplayName();
 					if (pn != null) {
 						try {
-							return Debuggable.getField(obj, obj.getClass(), obj.getClass(), pn);
+							return ReflectUtils.getFieldValue(obj, obj.getClass(), obj.getClass(), pn);
 						} catch (NoSuchFieldException nsfe) {
 							try {
-								return Debuggable.getField(obj, obj.getClass(), obj.getClass(), "_" + pn);
+								return ReflectUtils.getFieldValue(obj, obj.getClass(), obj.getClass(), "_" + pn);
 							} catch (NoSuchFieldException nsfe1) {
 								try {
-									return Debuggable.getField(obj, obj.getClass(), obj.getClass(), "m_" + pn);
+									return ReflectUtils.getFieldValue(obj, obj.getClass(), obj.getClass(), "m_" + pn);
 								} catch (NoSuchFieldException nsfe2) {
 
 								}
@@ -673,23 +671,7 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 			if (readMethod == null) {
 				throw new Exception("readMethod = null for object " + obj + " and property '" + property.getName() + "'!!!");
 			}
-			readMethod.setAccessible(true);
-			boolean isStatic = Modifier.isStatic(readMethod.getModifiers());
-			Class requiredClass = Object.class;
-			if (!isStatic) {
-				requiredClass = readMethod.getDeclaringClass();
-				obj = Utility.recast(obj, requiredClass);
-				if (!requiredClass.isInstance(obj)) {
-					readMethod = obj.getClass().getDeclaredMethod(readMethod.getName());
-				}
-			} else {
-				obj = null;
-			}
-			Object boundValue = readMethod.invoke(obj);
-			if (type == Model.class && boundValue == null) {
-				boundValue = readMethod.invoke(obj);
-			}
-			return boundValue;
+			return ReflectUtils.invoke(source, readMethod);
 		} catch (InvocationTargetException err) {
 			realCause = err.getCause();
 		} catch (Exception err) {
@@ -895,7 +877,7 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 	private void stopListeningToSource() {
 		try {
 			if (source != null) {
-				BeanInfo info = Utility.getBeanInfo(source.getClass());
+				BeanInfo info = Utility.getBeanInfo(source.getClass(), source);
 				EventSetDescriptor[] events = info.getEventSetDescriptors();
 				for (int i = 0; i < events.length; ++i) {
 					EventSetDescriptor event = events[i];

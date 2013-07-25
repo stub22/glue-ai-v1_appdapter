@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,7 +23,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.appdapter.api.trigger.Box;
-import org.appdapter.api.trigger.ABoxImpl;
 import org.appdapter.core.component.KnownComponent;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.BT;
@@ -42,13 +42,13 @@ import org.slf4j.LoggerFactory;
  * which add the concept of "name" and "selected".
  * <p>
  * 
- * Each object inside the BoxedCollection has a corresponding Box. A
- * Box has a reference to the object in memory it represents. Given an
- * object the only way to find the corresponding Box is to use
- * getBox(Object boxed)
+ * Each value inside the BoxedCollection has a corresponding Box. A
+ * Box has a reference to the value in memory it represents. Given an
+ * value the only way to find the corresponding Box is to use
+ * getBox(Object wrapper)
  * <p>
  * 
- * PropertyChangeListeners can register to find out when the selected object is
+ * PropertyChangeListeners can register to find out when the selected value is
  * changed, in which case the property "selectedBoxed" will change.
  * <p>
  * 
@@ -58,12 +58,12 @@ import org.slf4j.LoggerFactory;
  * @see Box
  * 
  */
-@SuppressWarnings("serial")
-public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChangeListener, PropertyChangeListener, Serializable {
+@SuppressWarnings("serial") public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChangeListener, PropertyChangeListener, Serializable {
 	// ==== Static variables ===================
 	private static Logger theLogger = LoggerFactory.getLogger(BoxedCollectionImpl.class);
 
 	static public NamedObjectCollection load(File source) throws IOException, ClassNotFoundException {
+
 		FileInputStream fileIn = new FileInputStream(source);
 		ObjectInputStream objectIn = new ObjectInputStream(fileIn);
 		NamedObjectCollection b = (NamedObjectCollection) objectIn.readObject();
@@ -79,6 +79,7 @@ public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChang
 	//private List objectList = new LinkedList();
 	protected LinkedList<BT> boxList = new LinkedList<BT>();
 	//private LinkedList objectList = new LinkedList();
+	transient public Object syncObject = boxList;
 
 	// ============ Constructors
 	// ==================================================
@@ -101,7 +102,7 @@ public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChang
 	// ==== Transient instance variables ===================
 	transient private PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
 
-	// The currently selected object
+	// The currently selected value
 	private Object selected = null;
 
 	String toStringText;
@@ -114,46 +115,47 @@ public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChang
 		this.displayContext = displayedAt;
 	}
 
-	public boolean addBoxed(String title, BT box) {
-		synchronized (boxList) {
+	public boolean addBoxed(String title, BT wrapper) {
+		synchronized (syncObject) {
 			BT prev = findBoxByName(title);
-			if (prev == box)
+			if (prev == wrapper)
 				return true;
 			if (prev != null) {
 				Debuggable.notImplemented("Already existing name: " + title);
 			}
 
 			// Add it
-			// objectsToBoxs.put(obj, box);
-			boxList.add(box);
-			objectList.add(box.getValueOrThis());
+			// objectsToBoxs.put(value, wrapper);
+			Object value = wrapper.getValueOrThis();
+			boxList.add(wrapper);
+			objectList.add(value);
 
 			if (objectsToWrappers != null) {
 				synchronized (objectsToWrappers) {
-					objectsToWrappers.put(box.getValue(), box);
+					objectsToWrappers.put(value, wrapper);
 				}
 			}
 			if (title == null) {
-				title = getTitleOf(box);
+				title = getTitleOf(wrapper);
 			}
 			if (nameIndex != null) {
 				synchronized (nameIndex) {
-					nameIndex.put(title, box);
+					nameIndex.put(title, wrapper);
 				}
 			}
 
 			// Add myself as listener
-			box.addVetoableChangeListener(this);
-			box.addPropertyChangeListener(this);
+			wrapper.addVetoableChangeListener(this);
+			wrapper.addPropertyChangeListener(this);
 
 			// Update the name index
-			// nameIndex.put(box.getName(), box);
+			// nameIndex.put(wrapper.getName(), wrapper);
 
 			// notify collectionListeners
 			Iterator it = colListeners.iterator();
 			while (it.hasNext()) {
 				// @temp
-				((POJOCollectionListener) it.next()).pojoAdded(box.getValueOrThis(), (BT) box);
+				((POJOCollectionListener) it.next()).pojoAdded(value, (BT) wrapper);
 			}
 			return true;
 		}
@@ -164,58 +166,58 @@ public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChang
 	 * Listeners will find out when objects are added or removed
 	 */
 	public void addListener(POJOCollectionListener l) {
-		colListeners.add(l);
-	}
-
-	public BT addObjectMaybe(Object obj) throws PropertyVetoException {
-		synchronized (boxList) {
-			return addObjectMaybe(null, obj);
+		synchronized (syncObject) {
+			colListeners.add(l);
 		}
 	}
 
-	public BT addObjectMaybe(String label, Object obj) throws PropertyVetoException {
+	public BT addObjectMaybe(Object value) throws PropertyVetoException {
+		return addObjectMaybe(null, value);
+	}
 
-		BT box = findBoxByObject(obj);
-		if (box == null) {
-			box = findBoxByName(label);
-		}
+	public BT addObjectMaybe(String label, Object value) throws PropertyVetoException {
+		synchronized (syncObject) {
+			BT wrapper = findBoxByObject(value);
+			if (wrapper == null) {
+				wrapper = findBoxByName(label);
+			}
 
-		// Create the object box, with a unique name
-		String title = label;
-		if (title == null) {
-			title = generateUniqueName(obj);
+			// Create the value wrapper, with a unique name
+			String title = label;
+			if (title == null) {
+				title = generateUniqueName(value);
+			}
+			if (wrapper == null)
+				wrapper = new ObjectWrapper(this, title, value);
+			return wrapper;
 		}
-		if (box == null)
-			box = new ObjectWrapper(this, title, obj);
-		return box;
 
 	}
 
 	static class ObjectWrapper extends POJOBoxImpl implements BT, IGetBox {
-		@Override
-		public BT getBT() {
+		@Override public BT getBT() {
 			return this;
 		}
 
 		//public Object value;
 		private NamedObjectCollection noc;
 
-		public void setNameValue(String uniqueName, Object obj) {
-			valueSetAs = obj;
+		public void setNameValue(String uniqueName, Object value) {
+			valueSetAs = value;
 
 			if (uniqueName == null) {
-				uniqueName = Utility.generateUniqueName(obj, uniqueName, noc.getNameToBoxIndex());
+				uniqueName = Utility.generateUniqueName(value, uniqueName, noc.getNameToBoxIndex());
 			}
 			name = uniqueName;
-			if (obj == null) {
+			if (value == null) {
 
-				obj = new NullPointerException(uniqueName).fillInStackTrace();
+				value = new NullPointerException(uniqueName).fillInStackTrace();
 			}
 			if (clz == null)
-				clz = obj.getClass();
+				clz = value.getClass();
 
 			setShortLabel(uniqueName);
-			setObject(obj);
+			setObject(value);
 		}
 
 		/*
@@ -224,33 +226,29 @@ public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChang
 		}*/
 
 		/**
-		 * Creates a new ScreenBox for the given object
+		 * Creates a new ScreenBox for the given value
 		 * and assigns it a default name.
 		 */
-		public ObjectWrapper(NamedObjectCollection noc, String title, Object val) {
+		public ObjectWrapper(NamedObjectCollection noc, String title, Object value) {
 			this.noc = noc;
-			setNameValue(title, val);
+			setNameValue(title, value);
 		}
 
-		@Override
-		public Object reallyGetValue() {
+		@Override public Object reallyGetValue() {
 			return valueSetAs;
 		}
 
-		@Override
-		public void reallySetValue(Object newObject) {
+		@Override public void reallySetValue(Object newObject) {
 			valueSetAs = newObject;
 		}
 
-		@Override
-		public Object getValue() {
+		@Override public Object getValue() {
 			if (valueSetAs != null)
 				return valueSetAs;
 			return this;
 		}
 
-		@Override
-		public Object getValueOrThis() {
+		@Override public Object getValueOrThis() {
 			if (valueSetAs != null)
 				return valueSetAs;
 			return this;
@@ -262,30 +260,31 @@ public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChang
 	 * is changed.
 	 */
 	public void addPropertyChangeListener(PropertyChangeListener p) {
-		propSupport.addPropertyChangeListener(p);
+		synchronized (syncObject) {
+			propSupport.addPropertyChangeListener(p);
+		}
 	}
 
 	/**
 	 * Checks if this namedObjects contains the given value
 	 */
-	@Override
-	public boolean containsObject(Object object) {
+	@Override public boolean containsObject(Object value) {
+		synchronized (syncObject) {
+			value = Utility.dref(value);
 
-		object = Utility.dref(object);
-
-		if (objectsToWrappers != null) {
-			synchronized (objectsToWrappers) {
-				return objectsToWrappers.containsKey(object);
+			if (objectsToWrappers != null) {
+				synchronized (objectsToWrappers) {
+					return objectsToWrappers.containsKey(value);
+				}
 			}
-		}
-		if (objectList != null)
-			return objectList.contains(object);
+			if (objectList != null)
+				return objectList.contains(value);
 
-		return findBoxByObject(object) != null;
+			return findBoxByObject(value) != null;
+		}
 	}
 
-	@Override
-	public String getName() {
+	@Override public String getName() {
 		return toStringText;
 	}
 
@@ -295,12 +294,14 @@ public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChang
 	 * Checks if this namedObjects contains the given value wrapper
 	 */
 	private boolean containsWrapper(BT wrapper) {
-		return boxList.contains(wrapper);
+		synchronized (syncObject) {
+			return boxList.contains(wrapper);
+		}
 		//    return objectsToWrappers.containsValue(value);
 	}
 
 	/**
-	 * Creates a new object of the given class and adds to this namedObjects.
+	 * Creates a new value of the given class and adds to this namedObjects.
 	 * The given class must have an empty constructor.
 	 *
 	 * @throws InstantiationException if the given Class represents an abstract class, an interface, an array class, a primitive type, or void; or if the instantiation fails for some other reason
@@ -309,62 +310,68 @@ public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChang
 	 * @returns the newly created ScreenBox
 	 */
 	public synchronized Object createAndAddObject(Class cl) throws InstantiationException, IllegalAccessException {
-		//Create the object
-		Object obj = cl.newInstance();
+		//Create the value
+		Object value = cl.newInstance();
 
 		//Add it
-		findOrCreateBox(obj);
-		return obj;
+		findOrCreateBox(value);
+		return value;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public BT findBoxByName(String name) {
+	@Override public BT findBoxByName(String name) {
 		if (name == null)
 			return null;
-		if (nameIndex != null) {
-			synchronized (nameIndex) {
-				BT boxl = nameIndex.get(name);
-				if (boxl instanceof BT)
-					return (BT) boxl;
+		synchronized (syncObject) {
+			if (nameIndex != null) {
+				synchronized (nameIndex) {
+					BT boxl = nameIndex.get(name);
+					if (boxl instanceof BT)
+						return (BT) boxl;
+				}
+				return null;
 			}
-			return null;
 		}
-		for (BT box : getScreenBoxes()) {
-			if (box.isNamed(name)) {
-				return box;
+		for (BT wrapper : getScreenBoxes()) {
+			if (wrapper.isNamed(name)) {
+				return wrapper;
 			}
 		}
 		return null;
 	}
 
 	/**
-	 * Returns the wrapper corresponding to the given object, i.e
-	 * the ScreenBox who's object corresponds to the given one.
-	 * Returns null if the BoxedCollection does not contain the given object.
+	 * Returns the wrapper corresponding to the given value, i.e
+	 * the ScreenBox who's value corresponds to the given one.
+	 * Returns null if the BoxedCollection does not contain the given value.
 	 */
-	public BT findBoxByObject(Object object) {
+	public BT findBoxByObject(Object value) {
 
-		if (object == null)
+		if (value == null)
 			return null;
 
-		object = Utility.dref(object, object);
-
-		if (object instanceof String) {
-			return findBoxByName((String) object);
+		BT utilityBT = Utility.asBTNoCreate(value);
+		if (utilityBT != null) {
+			return utilityBT;
 		}
-		int i = objectList.indexOf(object);
+
+		value = Utility.dref(value, value);
+
+		if (value instanceof String) {
+			return findBoxByName((String) value);
+		}
+		int i = objectList.indexOf(value);
 		if (i != -1) {
 			BT wrapper = (BT) boxList.get(i);
 			if (wrapper != null)
 				return wrapper;
 		}
 
-		for (BT box : getScreenBoxes()) {
-			if (box.representsObject(object))
-				return box;
+		for (BT wrapper : getScreenBoxes()) {
+			if (wrapper.representsObject(value))
+				return wrapper;
 		}
 		return null;
 	}
@@ -391,21 +398,20 @@ public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChang
 		Set result = new HashSet();
 		Iterator it = getObjects();
 		while (it.hasNext()) {
-			Object obj = it.next();
-			if (type.isInstance(obj)) {
-				result.add(obj);
+			Object value = it.next();
+			if (type.isInstance(value)) {
+				result.add(value);
 			}
 		}
-		for (BT obj : getScreenBoxes()) {
-			if (obj.isTypeOf(type)) {
-				result.add(obj.convertTo(type));
+		for (BT value : getScreenBoxes()) {
+			if (value.isTypeOf(type)) {
+				result.add(value.convertTo(type));
 			}
 		}
 		return result;
 	}
 
-	@Override
-	public BT findOrCreateBox(Object value) {
+	@Override public BT findOrCreateBox(Object value) {
 		try {
 			return findOrCreateBox(null, value);
 		} catch (PropertyVetoException e) {
@@ -414,12 +420,22 @@ public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChang
 	}
 
 	/**
-	 * Adds the given object to the BoxedCollection, if it does not already exist.
+	 * Adds the given value to the BoxedCollection, if it does not already exist.
 	 *
-	 * @returns true if the object was added, i.e. if it didn't already exist.
+	 * @returns true if the value was added, i.e. if it didn't already exist.
 	 */
-	public synchronized BT findOrCreateBox(String title, Object obj) throws PropertyVetoException {
-		BT wrapper = findBoxByObject(obj);
+	public BT findOrCreateBox(String title, Object value) throws PropertyVetoException {
+		synchronized (syncObject) {
+			return findOrCreateBox0(title, value);
+		}
+	}
+
+	private BT findOrCreateBox0(String title, Object value) throws PropertyVetoException {
+		BT utilityBT = Utility.asBTNoCreate(value);
+		if (utilityBT != null) {
+			return utilityBT;
+		}
+		BT wrapper = findBoxByObject(value);
 		if (wrapper != null) {
 			{
 				if (title != null) {
@@ -432,16 +448,16 @@ public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChang
 			}
 		} else {
 			if (title == null) {
-				title = generateUniqueName(obj);
+				title = generateUniqueName(value);
 			}
 			//Create the value wrapper, with a unique name
-			wrapper = (BT) new ObjectWrapper(this, title, obj);
+			wrapper = (BT) new ObjectWrapper(this, title, value);
 
 			//Add it
-			//objectsToWrappers.put(obj, wrapper);
-			objectList.add((Object) obj);
+			//objectsToWrappers.put(value, wrapper);
+			objectList.add((Object) value);
 			boxList.add(wrapper);
-			objectsToWrappers.put(obj, wrapper);
+			objectsToWrappers.put(value, wrapper);
 
 			//Add myself as listener
 			wrapper.addVetoableChangeListener(this);
@@ -450,11 +466,11 @@ public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChang
 			//Update the name index
 			nameIndex.put(title, wrapper);
 
-			//notify namedObjectsListeners
+			//notify namedObjectsListeners			
 			Iterator it = colListeners.iterator();
 			while (it.hasNext()) {
 				//@temp
-				((POJOCollectionListener) it.next()).pojoAdded(obj, wrapper);
+				((POJOCollectionListener) it.next()).pojoAdded(value, wrapper);
 			}
 
 			return wrapper;
@@ -462,11 +478,13 @@ public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChang
 	}
 
 	/**
-	 * Generates a default name for the given object, while will be something
+	 * Generates a default name for the given value, while will be something
 	 * like "Button1", "Button2", etc.
 	 */
-	public String generateUniqueName(Object object) {
-		return Utility.generateUniqueName(object, getNameToBoxIndex());
+	public String generateUniqueName(Object value) {
+		synchronized (syncObject) {
+			return Utility.generateUniqueName(value, getNameToBoxIndex());
+		}
 	}
 
 	/**
@@ -474,24 +492,20 @@ public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChang
 	 * NOTE - this could be a bit slow! Avoid whenever possible.
 	 * The code can be optimized for this, but it isn't right now.
 	 */
-	@Override
-	public Iterator getBoxes() {
+	@Override public Iterator getBoxes() {
 		//LinkedList boxList = getBoxListFrom(DisplayType.TOSTRING);
 		LinkedList list = new LinkedList();
-		synchronized (boxList) {
-			Iterator it = boxList.iterator();
-			while (it.hasNext()) {
-				list.add(it.next());
+		synchronized (syncObject) {
+			list.addAll(boxList);
+			if (true)
+				return list.iterator();
+			else {
+				Iterator it = getObjects();
+				while (it.hasNext()) {
+					list.add(findOrCreateBox(it.next()));
+				}
+				return list.iterator();
 			}
-		}
-		if (true)
-			return list.iterator();
-		else {
-			Iterator it = getObjects();
-			while (it.hasNext()) {
-				list.add(findOrCreateBox(it.next()));
-			}
-			return list.iterator();
 		}
 	}
 
@@ -499,7 +513,7 @@ public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChang
 	 * {@inheritDoc}
 	 */
 	public int getBoxesCount() {
-		synchronized (boxList) {
+		synchronized (syncObject) {
 			return boxList.size();
 		}
 	}
@@ -513,13 +527,14 @@ public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChang
 	//==== Manipulating the collection of objects ==================
 
 	private BT getEventBox(PropertyChangeEvent evt) {
-		BT box = (BT) evt.getSource();
-		return box;
+		BT wrapper = (BT) evt.getSource();
+		return wrapper;
 	}
 
-	@Override
-	public Map<String, BT> getNameToBoxIndex() {
-		return nameIndex;
+	@Override public Map<String, BT> getNameToBoxIndex() {
+		synchronized (syncObject) {
+			return nameIndex;
+		}
 	}
 
 	//==== Queries ========================
@@ -528,39 +543,39 @@ public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChang
 	 * Returns the value at the given index
 	 */
 	private Object getObjectAt(int index) {
-		return objectList.get(index);
+		synchronized (syncObject) {
+			return objectList.get(index);
+		}
 	}
 
 	/**
 	 * Returns the current number of objects in the namedObjects
 	 */
 	private int getObjectCount() {
-		return objectList.size();
+		synchronized (syncObject) {
+			return objectList.size();
+		}
 	}
 
 	/**
 	 * Returns an iterator over all the objects
 	 */
 	public Iterator getObjects() {
-		return objectList.iterator();
+		synchronized (syncObject) {
+			return new ArrayList(objectList).iterator();
+		}
 	}
 
 	public Iterable<BT> getScreenBoxes() {
-		//LinkedList boxList = getBoxListFrom(DisplayType.TOSTRING);
-		LinkedList list = new LinkedList();
-		synchronized (boxList) {
-			Iterator it = boxList.iterator();
-			while (it.hasNext()) {
-				list.add(it.next());
-			}
+		synchronized (syncObject) {
+			return new ArrayList<BT>(boxList);
 		}
-		return list;
 	}
 
 	public Iterable<BT> getScreenBoxes(DisplayType attachType) {
 		//	LinkedList boxList = getBoxListFrom(attachType);
 		LinkedList list = new LinkedList();
-		synchronized (boxList) {
+		synchronized (syncObject) {
 			Iterator it = boxList.iterator();
 			while (it.hasNext()) {
 				list.add(it.next());
@@ -577,31 +592,33 @@ public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChang
 		return selected;
 	}
 
-	private String getTitleOf(Box box) {
-		if (box == null)
+	private String getTitleOf(Box wrapper) {
+		if (wrapper == null)
 			return MISSING_COMPONENT;
-		if (box instanceof BT)
-			return ((BT) box).getUniqueName(getNameToBoxIndex());
-		String lbl = ((KnownComponent) box).getShortLabel();
+		if (wrapper instanceof BT)
+			return ((BT) wrapper).getUniqueName(getNameToBoxIndex());
+		String lbl = ((KnownComponent) wrapper).getShortLabel();
 		if (lbl != null)
 			return lbl;
-		return Utility.generateUniqueName(box.getValue(), this.nameIndex);
+		return Utility.generateUniqueName(wrapper.getValue(), this.nameIndex);
 	}
 
-	public String getTitleOf(Object box) {
-		if (box == null)
+	public String getTitleOf(Object value) {
+		if (value == null)
 			return "<null>";
-		if (box instanceof Box) {
-			return getTitleOf((Box) box);
-		}
-		if (box instanceof String) {
-			return getTitleOf(findBoxByName("" + box));
-		}
-		BT boxed = findBoxByObject(box);
-		if (boxed == null)
-			return MISSING_COMPONENT;
-		return getTitleOf(boxed);
+		synchronized (syncObject) {
 
+			if (value instanceof Box) {
+				return getTitleOf((Box) value);
+			}
+			if (value instanceof String) {
+				return getTitleOf(findBoxByName("" + value));
+			}
+			BT wrapper = findBoxByObject(value);
+			if (wrapper == null)
+				return MISSING_COMPONENT;
+			return getTitleOf(wrapper);
+		}
 	}
 
 	//===== Manipulating the selected value ===============
@@ -615,25 +632,27 @@ public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChang
 	 * serialization, and add itself as listener to all the objects.
 	 */
 	public void initAfterLoading() {
-		if (colListeners == null) {
-			colListeners = new HashSet();
-		}
+		synchronized (syncObject) {
+			if (colListeners == null) {
+				colListeners = new HashSet();
+			}
 
-		if (propSupport == null) {
-			propSupport = new PropertyChangeSupport(this);
-		}
+			if (propSupport == null) {
+				propSupport = new PropertyChangeSupport(this);
+			}
 
-		Iterator it = getBoxes();
-		while (it.hasNext()) {
-			BT b = (BT) it.next();
-			b.addVetoableChangeListener(this);
-			b.addPropertyChangeListener(this);
+			Iterator it = getBoxes();
+			while (it.hasNext()) {
+				BT b = (BT) it.next();
+				b.addVetoableChangeListener(this);
+				b.addPropertyChangeListener(this);
+			}
 		}
 	}
 
-	private BT makeWrapper(Object object) throws PropertyVetoException {
-		BT box = new ObjectWrapper(this, generateUniqueName(object), object);
-		return box;
+	private BT makeWrapper(Object value) throws PropertyVetoException {
+		BT wrapper = new ObjectWrapper(this, generateUniqueName(value), value);
+		return wrapper;
 	}
 
 	//===== Property notifications (i.e. others notifying me) =========
@@ -644,6 +663,12 @@ public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChang
 	 * its state as necessary.
 	 */
 	public synchronized void propertyChange(PropertyChangeEvent evt) {
+		synchronized (syncObject) {
+			propertyChange0(evt);
+		}
+	}
+
+	private void propertyChange0(PropertyChangeEvent evt) {
 		if (evt.getPropertyName().equals("name")) {
 			//Name has changed - so update the name index
 			BT value = (BT) (evt.getSource());
@@ -661,11 +686,11 @@ public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChang
 			//to update my internal state
 			Boolean newValue = (Boolean) evt.getNewValue();
 			BT wrapper = (BT) evt.getSource();
-			Object object = wrapper.getValue();
-			if (containsObject(object)) {
+			Object value = wrapper.getValue();
+			if (containsObject(value)) {
 				if (newValue.equals(new Boolean(true))) {
 					try {
-						setSelectedObject(object);
+						setSelectedObject(value);
 					} catch (PropertyVetoException err) {
 						theLogger.warn("The NamedObjectCollection was notified that a value has been selected, and when trying to update the internal state a PropertyVetoException occurred", err);
 					}
@@ -682,8 +707,7 @@ public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChang
 
 	//====== Save and load operations ================================
 
-	@Override
-	public void reload() {
+	@Override public void reload() {
 		Debuggable.notImplemented();
 
 	}
@@ -691,9 +715,10 @@ public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChang
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public void removeListener(POJOCollectionListener l) {
-		colListeners.remove(l);
+	@Override public void removeListener(POJOCollectionListener l) {
+		synchronized (syncObject) {
+			colListeners.remove(l);
+		}
 	}
 
 	//======== Utility methods ==================================
@@ -709,30 +734,36 @@ public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChang
 	 * will be notified. <p>
 	 *
 	 */
-	public synchronized boolean removeObject(Object obj) {
+	public synchronized boolean removeObject(Object value) {
+		synchronized (syncObject) {
+			return removeObject0(value);
+		}
+	}
+
+	private boolean removeObject0(Object value) {
 		//Find the wrapper
-		BT wrapper = findBoxByObject(obj);
+		BT wrapper = findBoxByObject(value);
 		if (wrapper == null)
 			return false;
 		Object realObj = wrapper.getValue();
-		if (realObj != null && realObj != obj) {
-			theLogger.warn("This box is for a differnt object " + wrapper + " not " + obj);
-			obj = realObj;
+		if (realObj != null && realObj != value) {
+			theLogger.warn("This wrapper is for a differnt value " + wrapper + " not " + value);
+			value = realObj;
 		}
 
 		String title = wrapper.getUniqueName();
 
 		//Remove it
-		//objectsToWrappers.remove(obj);
-		objectList.remove(obj);
+		//objectsToWrappers.remove(value);
+		objectList.remove(value);
 		boxList.remove(wrapper);
-		objectsToWrappers.remove(obj);
+		objectsToWrappers.remove(value);
 
 		//Update the name index			
 		nameIndex.remove(title);
 
 		//Deselect it if necessary
-		if (selected == obj) {
+		if (selected == value) {
 			try {
 				//The value will fire a PropertyChangeEvent which I will
 				//catch, so I don't need to do setSelectedObject(null)
@@ -743,9 +774,11 @@ public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChang
 		}
 
 		//notify namedObjectsListeners
-		Iterator it = colListeners.iterator();
-		while (it.hasNext()) {
-			((POJOCollectionListener) it.next()).pojoRemoved(obj, wrapper);
+		synchronized (colListeners) {
+			Iterator it = colListeners.iterator();
+			while (it.hasNext()) {
+				((POJOCollectionListener) it.next()).pojoRemoved(value, wrapper);
+			}
 		}
 		return true;
 
@@ -756,45 +789,49 @@ public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChang
 	 * is changed.
 	 */
 	public void removePropertyChangeListener(PropertyChangeListener p) {
-		propSupport.removePropertyChangeListener(p);
+		synchronized (syncObject) {
+			propSupport.removePropertyChangeListener(p);
+		}
 	}
 
-	@Override
-	public void renameObject(String oldName, String newName) throws PropertyVetoException {
-		BT value = findOrCreateBox(newName, findObjectByName(oldName));
-		value.setUniqueName(newName);
+	@Override public void renameObject(String oldName, String newName) throws PropertyVetoException {
+		BT wrapper = findOrCreateBox(newName, findObjectByName(oldName));
+		wrapper.setUniqueName(newName);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public void save(File destination) throws IOException {
+	@Override public void save(File destination) throws IOException {
 		theLogger.debug("Saving collection to " + destination);
-		FileOutputStream fileOut = new FileOutputStream(destination);
-		ObjectOutputStream objectOut = new ObjectOutputStream(fileOut);
-		objectOut.writeObject(this);
-		fileOut.close();
+		synchronized (syncObject) {
+			FileOutputStream fileOut = new FileOutputStream(destination);
+			ObjectOutputStream objectOut = new ObjectOutputStream(fileOut);
+			objectOut.writeObject(this);
+			fileOut.close();
+		}
 		theLogger.debug("Successfully saved!");
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	public synchronized void setSelectedComponent(Object object) throws PropertyVetoException {
-		object = Utility.asPOJO(object);
-		if (selected != object && containsObject(object)) {
+	public synchronized void setSelectedComponent(Object value) throws PropertyVetoException {
+		synchronized (syncObject) {
+			value = Utility.dref(value);
+			if (selected != value && containsObject(value)) {
 
-			// Deselect the old box (if any)
-			Object oldSelected = selected;
-			BT oldBox = findOrCreateBox(oldSelected);
+				// Deselect the old wrapper (if any)
+				Object oldSelected = selected;
+				BT oldBox = findOrCreateBox(oldSelected);
 
-			// Update my "selected" instance variable
-			selected = object;
+				// Update my "selected" instance variable
+				selected = value;
 
-			// Fire a property change
-			propSupport.firePropertyChange("selected", oldSelected, selected);
+				// Fire a property change
+				propSupport.firePropertyChange("selected", oldSelected, selected);
 
+			}
 		}
 	}
 
@@ -805,30 +842,29 @@ public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChang
 	 *
 	 * @throws PropertyVetoException if someone refused to let the selected value change
 	 */
-	public synchronized void setSelectedObject(Object object) throws PropertyVetoException {
-		if (selected != object && containsObject(object)) {
+	public synchronized void setSelectedObject(Object value) throws PropertyVetoException {
+		if (selected != value && containsObject(value)) {
+			synchronized (syncObject) {
+				//Deselect the old wrapper (if any)
+				Object oldSelected = selected;
+				BT oldWrapper = findOrCreateBox(oldSelected);
+				if (oldWrapper != null) {
+					oldWrapper.setUISelected(false);
+				}
 
-			//Deselect the old wrapper (if any)
-			Object oldSelected = selected;
-			BT oldWrapper = findOrCreateBox(oldSelected);
-			if (oldWrapper != null) {
-				oldWrapper.setUISelected(false);
+				//Update my "selected" instance variable
+				selected = value;
+
+				//Make sure the corresponding wrapper knows its selected
+				findOrCreateBox(selected).setUISelected(true);
+
+				//Fire a property change
+				propSupport.firePropertyChange("selected", oldSelected, selected);
 			}
-
-			//Update my "selected" instance variable
-			selected = object;
-
-			//Make sure the corresponding wrapper knows its selected
-			findOrCreateBox(selected).setUISelected(true);
-
-			//Fire a property change
-			propSupport.firePropertyChange("selected", oldSelected, selected);
-
 		}
 	}
 
-	@Override
-	public String toString() {
+	@Override public String toString() {
 		return toStringText;
 	}
 
@@ -844,8 +880,8 @@ public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChang
 		if (evt.getPropertyName().equals("name")) {
 			//The name of a wrapper has changed. Make sure there are no name collisions
 			BT wrapper = (BT) (evt.getSource());
-			Object object = wrapper.getValue();
-			if (containsObject(object)) {
+			Object value = wrapper.getValue();
+			if (containsObject(value)) {
 				String name = (String) evt.getNewValue();
 				BT otherWrapper = findBoxByName(name);
 				if (otherWrapper != null && otherWrapper != wrapper) {
@@ -855,7 +891,7 @@ public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChang
 		}
 	}
 
-	public BrowserPanelGUI getLocalTreeAPI() {
+	public BrowserPanelGUI getCurrentContext() {
 		return Utility.getCurrentContext();
 	}
 }

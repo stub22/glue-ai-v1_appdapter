@@ -187,7 +187,7 @@ public class CollectionEditorUtil implements PropertyChangeListener {
 			try {
 				setNamedObjectCollection(BoxedCollectionImpl.load(file));
 				Settings.addRecentFile(file);
-				getMenu().refreshRecentFileList();
+				getFileMenu().refreshRecentFileList();
 			} catch (Exception err) {
 				Utility.browserPanel.showError("Opening failed", err);
 			}
@@ -243,7 +243,7 @@ public class CollectionEditorUtil implements PropertyChangeListener {
 
 	// ==== Private methods ===================
 
-	private void updateSelectedMenu() {
+	public void updateSelectedMenu() {
 		JMenuBar menuBar = Utility.appMenuBar0;
 		if (menuBar != null && selectedMenu != null) {
 			menuBar.remove(selectedMenu);
@@ -268,7 +268,7 @@ public class CollectionEditorUtil implements PropertyChangeListener {
 	 * Creates and initialized the GUI components within the ObjectNavigator.
 	 * Should only be called once.
 	 */
-	public synchronized FileMenu getMenu() {
+	public synchronized FileMenu getFileMenu() {
 
 		//panel.setLayout(new BorderLayout());
 		//Utility.selectionOfCollectionPanel = new LargeClassChooser(context);

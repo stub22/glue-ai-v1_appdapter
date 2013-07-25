@@ -1,9 +1,7 @@
 package org.appdapter.gui.swing;
 
+import javax.swing.JComponent;
 import javax.swing.JMenu;
-import javax.swing.UIManager;
-import javax.swing.plaf.MenuItemUI;
-import javax.swing.plaf.PopupMenuUI;
 
 
 public class SafeJMenu extends JMenu {

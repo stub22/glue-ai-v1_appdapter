@@ -10,6 +10,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import org.appdapter.core.convert.NoSuchConversionException;
 import org.appdapter.gui.api.BrowserPanelGUI;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.browse.Utility;
@@ -86,7 +87,7 @@ public class ClassBrowserPanel extends JJPanel implements ActionListener {
 		}
 	}
 
-	public void setObject(Object object) throws java.lang.reflect.InvocationTargetException {
+	public void setObject(Object object) throws java.lang.reflect.InvocationTargetException, NoSuchConversionException {
 		Class clazz = Utility.recast(object, Class.class);
 		text.setText(clazz.getCanonicalName());
 		if (context == null) {
