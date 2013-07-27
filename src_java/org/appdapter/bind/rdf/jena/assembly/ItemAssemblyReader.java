@@ -27,23 +27,29 @@ import com.hp.hpl.jena.assembler.Mode;
 
 /**
  * @author Stu B. <www.texpedient.com>
+ * 
+ * Original thought was that these link+field property names are abstract names that needn't necessarily be "absolute URIs".
+ * However, in practice, as of 2013, when we are using Jena to do the value lookups, then these Strings are always treated
+ * as absolute URIs.   To improve this situation, the customer application code (that is using this assembly reader)
+ * should make use of existing utilitiesfor constructing *explicit* property Idents, and use those instead of relying 
+ * on these methods to *implicitly* resolve the link/field property names.
  */
 
 public interface ItemAssemblyReader {
 
-	List<Object> findOrMakeLinkedObjSeq(Item configItem, String collectionLinkName, Assembler asmblr, Mode mode);
+	List<Object> findOrMakeLinkedObjSeq(Item configItem, String collectionLinkName_absUri, Assembler asmblr, Mode mode);
 
-	List<Object> findOrMakeLinkedObjects(Item configItem, String linkName, Assembler asmblr, Mode mode, List<Item.SortKey> sortFieldNames);
+	List<Object> findOrMakeLinkedObjects(Item configItem, String linkName_absUri, Assembler asmblr, Mode mode, List<Item.SortKey> sortFieldNames);
 
-	Ident getConfigPropertyIdent(Item infoSource, Ident compID, String fieldName);
+	Ident getConfigPropertyIdent(Item infoSource, Ident compID, String fieldName_absUri);
 
-	Double readConfigValDouble(Ident compID, String fieldName, Item optionalItem, Double defaultVal);
+	Double readConfigValDouble(Ident compID, String fieldName_absUri, Item optionalItem, Double defaultVal);
 
-	Long readConfigValLong(Ident compID, String fieldName, Item optionalItem, Long defaultVal);
+	Long readConfigValLong(Ident compID, String fieldName_absUri, Item optionalItem, Long defaultVal);
 
-	String readConfigValString(Ident compID, String fieldName, Item optionalItem, String defaultVal);
+	String readConfigValString(Ident compID, String fieldName_absUri, Item optionalItem, String defaultVal);
 
-	List<Item> readLinkedItemSeq(Item configItem, String collectionLinkName);
+	List<Item> readLinkedItemSeq(Item configItem, String collectionLinkName_absUri);
 
 	/**
 	 * For every linkedItem which is actually a JenaResourceItem, use the Jena assembler system to find/create
