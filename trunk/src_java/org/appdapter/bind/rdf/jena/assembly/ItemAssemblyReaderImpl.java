@@ -51,7 +51,7 @@ public class ItemAssemblyReaderImpl extends BasicDebugger implements ItemAssembl
 		return infoSource;
 	}
 
-	@Override public Ident getConfigPropertyIdent(Item infoSource, Ident compID, String fieldName) {
+	@Override public Ident getConfigPropertyIdent(Item infoSource, Ident compID, String fieldName_absUri) {
 		Ident infoSourceID = infoSource.getIdent();
 		logDebug("infoSourceID=" + infoSourceID + ", compID=" + compID);
 		ModelIdent someModelIdent = null;
@@ -62,21 +62,21 @@ public class ItemAssemblyReaderImpl extends BasicDebugger implements ItemAssembl
 		}
 		Ident propertyIdent = null;
 		if (someModelIdent != null) {
-			propertyIdent = someModelIdent.getIdentInSameModel(fieldName);
+			propertyIdent = someModelIdent.getIdentInSameModel(fieldName_absUri);
 		} else {
-			logWarning("Cannot find a bootstrap ident to resolve fieldName: " + fieldName);
+			logWarning("Cannot find a bootstrap ident to resolve fieldName: " + fieldName_absUri);
 		}
 		return propertyIdent;
 	}
 
 	// If we are using JenaResourceItems, then fieldName will be an absoluteURI.
-	@Override public String readConfigValString(Ident compID, String fieldName, Item optionalItem, String defaultVal) {
+	@Override public String readConfigValString(Ident compID, String fieldName_absUri, Item optionalItem, String defaultVal) {
 		String resultVal = null;
 		Item infoSource = chooseBestConfigItem(compID, optionalItem);
 		// Typical output is
 		// Resolved fieldName http://www.appdapter.org/schema/box#label to propertyIdent: JenaResourceItem[res=http://www.appdapter.org/schema/box#label]
-		Ident propertyIdent = getConfigPropertyIdent(infoSource, compID, fieldName);
-		logDebug("Resolved fieldName " + fieldName + " to propertyIdent: " + propertyIdent + ", to be fetched from source " + infoSource);
+		Ident propertyIdent = getConfigPropertyIdent(infoSource, compID, fieldName_absUri);
+		logDebug("Resolved fieldName " + fieldName_absUri + " to propertyIdent: " + propertyIdent + ", to be fetched from source " + infoSource);
 		if (propertyIdent != null) {
 			resultVal = infoSource.getValString(propertyIdent, defaultVal);
 		}
@@ -84,59 +84,59 @@ public class ItemAssemblyReaderImpl extends BasicDebugger implements ItemAssembl
 	}
 
 
-	@Override public Long readConfigValLong(Ident compID, String fieldName, Item optionalItem, Long defaultVal) {
+	@Override public Long readConfigValLong(Ident compID, String fieldName_absUri, Item optionalItem, Long defaultVal) {
 		Long resultVal = null;
 		Item infoSource = chooseBestConfigItem(compID, optionalItem);
 		// Typical output is
 		// Resolved fieldName http://www.appdapter.org/schema/box#label to propertyIdent: JenaResourceItem[res=http://www.appdapter.org/schema/box#label]
-		Ident propertyIdent = getConfigPropertyIdent(infoSource, compID, fieldName);
-		logDebug("Resolved fieldName " + fieldName + " to propertyIdent: " + propertyIdent + ", to be fetched from source " + infoSource);
+		Ident propertyIdent = getConfigPropertyIdent(infoSource, compID, fieldName_absUri);
+		logDebug("Resolved fieldName " + fieldName_absUri + " to propertyIdent: " + propertyIdent + ", to be fetched from source " + infoSource);
 		if (propertyIdent != null) {
 			resultVal = infoSource.getValLong(propertyIdent, defaultVal);
 		}
 		return resultVal;
 	}
 
-	@Override public Double readConfigValDouble(Ident compID, String fieldName, Item optionalItem, Double defaultVal) {
+	@Override public Double readConfigValDouble(Ident compID, String fieldName_absUri, Item optionalItem, Double defaultVal) {
 		Double resultVal = null;
 		Item infoSource = chooseBestConfigItem(compID, optionalItem);
 		// Typical output is
 		// Resolved fieldName http://www.appdapter.org/schema/box#label to propertyIdent: JenaResourceItem[res=http://www.appdapter.org/schema/box#label]
-		Ident propertyIdent = getConfigPropertyIdent(infoSource, compID, fieldName);
-		logDebug("Resolved fieldName " + fieldName + " to propertyIdent: " + propertyIdent + ", to be fetched from source " + infoSource);
+		Ident propertyIdent = getConfigPropertyIdent(infoSource, compID, fieldName_absUri);
+		logDebug("Resolved fieldName " + fieldName_absUri + " to propertyIdent: " + propertyIdent + ", to be fetched from source " + infoSource);
 		if (propertyIdent != null) {
 			resultVal = infoSource.getValDouble(propertyIdent, defaultVal);
 		}
 		return resultVal;
 	}
 
-	@Override public List<Item> readLinkedItemSeq(Item configItem, String collectionLinkName) {
-		Ident linkNameID = getConfigPropertyIdent(configItem, configItem.getIdent(), collectionLinkName);
+	@Override public List<Item> readLinkedItemSeq(Item configItem, String collectionLinkName_absUri) {
+		Ident linkNameID = getConfigPropertyIdent(configItem, configItem.getIdent(), collectionLinkName_absUri);
 		List<Item> linkedItems = ((JenaResourceItem) configItem).getLinkedOrderedList(linkNameID);
-		logDebug("Got linkedItem collection at [" + collectionLinkName + "=" + linkNameID + "] = " + linkedItems);
+		logDebug("Got linkedItem collection at [" + collectionLinkName_absUri + "=" + linkNameID + "] = " + linkedItems);
 		return linkedItems;
 	}
 
 	/**
 	 * Note that the returned list is *not* yet sorted!  To be fixed.
 	 * @param configItem
-	 * @param linkName
+	 * @param linkName_absUri
 	 * @param asmblr
 	 * @param mode
 	 * @param sortFieldNames
 	 * @return 
 	 */
-	@Override public List<Object> findOrMakeLinkedObjects(Item configItem, String linkName, Assembler asmblr, Mode mode, List<Item.SortKey> sortFieldNames) {
+	@Override public List<Object> findOrMakeLinkedObjects(Item configItem, String linkName_absUri, Assembler asmblr, Mode mode, List<Item.SortKey> sortFieldNames) {
 		List<Object> resultList = new ArrayList<Object>();
-		Ident linkNameID = getConfigPropertyIdent(configItem, configItem.getIdent(), linkName);
+		Ident linkNameID = getConfigPropertyIdent(configItem, configItem.getIdent(), linkName_absUri);
 		List<Item> linkedItems = configItem.getLinkedItemsSorted(linkNameID, sortFieldNames);
 		resultList = resultListFromItems(linkedItems, asmblr, mode);
 		return resultList;
 	}
 
-	@Override public List<Object> findOrMakeLinkedObjSeq(Item configItem, String collectionLinkName, Assembler asmblr, Mode mode) {
+	@Override public List<Object> findOrMakeLinkedObjSeq(Item configItem, String collectionLinkName_absUri, Assembler asmblr, Mode mode) {
 		List<Object> resultList = new ArrayList<Object>();
-		List<Item> linkedItems = readLinkedItemSeq(configItem, collectionLinkName);
+		List<Item> linkedItems = readLinkedItemSeq(configItem, collectionLinkName_absUri);
 		resultList = resultListFromItems(linkedItems, asmblr, mode);
 		logDebug("Opened object collection : " + resultList);
 		return resultList;
