@@ -129,7 +129,7 @@ public class ItemAssemblyReaderImpl extends BasicDebugger implements ItemAssembl
 	@Override public List<Object> findOrMakeLinkedObjects(Item configItem, String linkName_absUri, Assembler asmblr, Mode mode, List<Item.SortKey> sortFieldNames) {
 		List<Object> resultList = new ArrayList<Object>();
 		Ident linkNameID = getConfigPropertyIdent(configItem, configItem.getIdent(), linkName_absUri);
-		List<Item> linkedItems = configItem.getLinkedItemsSorted(linkNameID, sortFieldNames);
+		List<Item> linkedItems = configItem.getLinkedItemsSorted(linkNameID, Item.LinkDirection.FORWARD, sortFieldNames);
 		resultList = resultListFromItems(linkedItems, asmblr, mode);
 		return resultList;
 	}

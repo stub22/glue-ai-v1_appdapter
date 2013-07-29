@@ -56,16 +56,14 @@ public class ItemFuncs {
 
 	public static Set<Item> getLinkedItemSet(Item parent, String linkName) {
 		Ident pid = getNeighborIdent(parent, linkName);
-		return parent.getLinkedItemSet(pid);
+		return parent.getLinkedItemSet(pid, Item.LinkDirection.FORWARD);
 	}
-	public static int getLinkedItemCount(Item parent, String linkName) {
+	public static int getLinkedItemCount(Item parent, String linkName, Item.LinkDirection linkDir) {
 		Ident pid = getNeighborIdent(parent, linkName);
-		return parent.getLinkedItemCount(pid);
+		return parent.getLinkedItemCount(pid, Item.LinkDirection.FORWARD);
 	}
-	public static Item getSingleLinkedItem(Item parent, String linkName) {
+	public static Item getSingleLinkedItem(Item parent, String linkName, Item.LinkDirection linkDir) {
 		Ident pid = getNeighborIdent(parent, linkName);
-		return parent.getSingleLinkedItem(pid);
+		return parent.getSingleLinkedItem(pid, Item.LinkDirection.FORWARD);
 	}
-	
-	
 }

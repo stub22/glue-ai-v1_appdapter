@@ -51,8 +51,11 @@ public class ArqRowItem extends ResultItem {
 			throw new RuntimeException("Cannot locate literal value for varName: " + varName + " extracted from fieldID: " + fieldID);
 		}
 	}
-
-	@Override protected List<Item> getLinkedItems(Ident linkName) {
+	@Override protected List<Item> getLinkedItems(Ident linkName, LinkDirection linkDir) {
+		if (linkDir != LinkDirection.FORWARD) {
+			// Should we define a new "direction" for query results?
+			throw new UnsupportedOperationException("Only FORWARD link direction is supported for ArqRowItem");
+		}
 		List<Item> result = new ArrayList<Item>();
 		String varName = linkName.getLocalName();
 		Resource r1 = mySolutionCopy.getResource(varName);

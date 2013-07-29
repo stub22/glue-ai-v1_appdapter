@@ -132,7 +132,7 @@ object DerivedGraphSpecReader_1_1_1 extends BasicDebugger {
     for ((pipeKeyID, typeSet) <- pipeTypeSetsByID) {
       val pipeGraphRes = pipeModel.getResource(pipeKeyID.getAbsUriString())
       val typedRes = new JenaTR_1_1_1(pipeGraphRes, typeSet)
-      val linkedPipeSrcItems = typedRes.getLinkedItemSet(DerivedGraphNames_1_1_1.P_sourceModel);
+      val linkedPipeSrcItems = typedRes.getLinkedItemSet(DerivedGraphNames_1_1_1.P_sourceModel, Item.LinkDirection.FORWARD);
       // Note JavaConverters is not the same as JavaConversions
       import scala.collection.JavaConverters._
       val scalaSet: Set[Ident] = linkedPipeSrcItems.asScala.map(_.asInstanceOf[Ident]).toSet
