@@ -74,5 +74,13 @@ trait ModelClientCore extends org.appdapter.core.store.ModelClient {
 		val res = makeResourceForURI(uri)
 		new JenaResourceItem(res);
 	}
-
+	override  def makeItemForIdent(id : Ident) : Item = {
+		id match {
+			case itemAlready : Item  => itemAlready
+			case otherIdent : Ident => { 
+				val res = makeResourceForIdent (otherIdent); 
+				new JenaResourceItem(res)
+			}
+		}
+	}
 }

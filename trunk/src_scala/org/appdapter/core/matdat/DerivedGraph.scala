@@ -18,6 +18,7 @@ package org.appdapter.core.matdat
 
 import org.appdapter.core.log.{BasicDebugger};
 import org.appdapter.core.name.{Ident, FreeIdent};
+import org.appdapter.core.item.{Item};
 import org.appdapter.core.store.{Repo, InitialBinding, ModelClient }
 import org.appdapter.help.repo.{RepoClient, RepoClientImpl, InitialBindingImpl, SolutionList} 
 import org.appdapter.impl.store.{FancyRepo};
@@ -157,7 +158,7 @@ object DerivedGraphSpecReader extends BasicDebugger {
 		for ((outPipeKeyID, typeSet) <- outPipeTypeSetsByID) {
 			val outPipeDGSpecRes = pipeSpecModel.getResource(outPipeKeyID.getAbsUriString())
 			val typedRes = new JenaTR(outPipeDGSpecRes, typeSet)
-			val linkedPipeSrcItems = typedRes.getLinkedItemSet(DerivedGraphNames.P_sourceModel);
+			val linkedPipeSrcItems = typedRes.getLinkedItemSet(DerivedGraphNames.P_sourceModel, Item.LinkDirection.FORWARD);
 			// Note JavaConverters is not the same as JavaConversions
 			import scala.collection.JavaConverters._
 			val linkedUpstreamPipeIDSet : Set[Ident] = linkedPipeSrcItems.asScala.map(_.asInstanceOf[Ident]).toSet

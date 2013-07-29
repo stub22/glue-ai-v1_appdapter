@@ -170,10 +170,15 @@ public class JenaResourceItem extends BaseItem implements ModelIdent {
 		return resultLit;
 	}
 
-	@Override protected List<Item> getLinkedItems(Ident linkName) {
-		List<RDFNode> nodes = getPropertyValues(linkName);
+	@Override protected List<Item> getLinkedItems(Ident linkName, LinkDirection linkDir) {
+		List<RDFNode> linkedNodes;
+		if (linkDir == LinkDirection.FORWARD) {
+			linkedNodes = getPropertyValues(linkName);
+		} else {
+			linkedNodes = new ArrayList<RDFNode>();
+		}
 		List<Item> results = new ArrayList<Item>();
-		for (RDFNode rn : nodes) {
+		for (RDFNode rn : linkedNodes) {
 			Resource res = rn.asResource();
 			JenaResourceItem jri = new JenaResourceItem(res);
 			results.add(jri);
