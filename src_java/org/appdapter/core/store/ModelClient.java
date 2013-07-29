@@ -23,6 +23,9 @@ import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Resource;
 /**
  * @author Stu B. <www.texpedient.com>
+ * 
+ * May be a wrapper for a local model *or* a handle to some remote model.
+ * 
  */
 
 public interface ModelClient {
@@ -43,4 +46,5 @@ public interface ModelClient {
 	
 	public Ident makeIdentForURI(String uri);
 	
+	public Item makeItemForIdent(Ident id);
 }

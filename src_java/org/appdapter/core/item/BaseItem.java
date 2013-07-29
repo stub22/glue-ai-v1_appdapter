@@ -37,22 +37,22 @@ public abstract class BaseItem implements Item {
 	static Logger theLogger = LoggerFactory.getLogger(BaseItem.class);
 	protected abstract Literal getLiteralVal(Ident fieldID, boolean throwOnFailure);
 
-	protected abstract List<Item> getLinkedItems(Ident linkName);
+	protected abstract List<Item> getLinkedItems(Ident linkName, LinkDirection linkDir);
 
 
-	public int getLinkedItemCount(Ident linkName) {
-		Collection<Item> linkedItems = getLinkedItems(linkName);
+	@Override public int getLinkedItemCount(Ident linkName, LinkDirection linkDir) {
+		Collection<Item> linkedItems = getLinkedItems(linkName, linkDir);
 		return linkedItems.size();
 	}
 
-	public Set<Item> getLinkedItemSet(Ident linkName) {
-		Collection<Item> linkedItems = getLinkedItems(linkName);
+	@Override public Set<Item> getLinkedItemSet(Ident linkName, LinkDirection linkDir) {
+		Collection<Item> linkedItems = getLinkedItems(linkName, linkDir);
 		Set s = new HashSet<Item>(linkedItems);
 		return s;
 	}
 
-	public Item getSingleLinkedItem(Ident linkName) {
-		Collection<Item> linkedItems = getLinkedItems(linkName);
+	@Override public Item getSingleLinkedItem(Ident linkName, LinkDirection linkDir) {
+		Collection<Item> linkedItems = getLinkedItems(linkName, linkDir);
 		int size = linkedItems.size();
 		if (size == 1) {
 			Item items[] = new Item[1];
@@ -69,9 +69,9 @@ public abstract class BaseItem implements Item {
 	 * @param sortFieldNames - presently ignored.
 	 * @return 
 	 */
-	@Override public List<Item> getLinkedItemsSorted(Ident linkName, List<SortKey> sortFieldNames) {
+	@Override public List<Item> getLinkedItemsSorted(Ident linkName, LinkDirection linkDir, List<SortKey> sortFieldNames) {
 		// theLogger.warn("These items are not yet really sorted by linkName: " + linkName);
-		return getLinkedItems(linkName);
+		return getLinkedItems(linkName, linkDir);
 	}
 	public Ident getValIdent(Ident fieldName) {
 		throw new UnsupportedOperationException("Not supported yet.");
@@ -106,10 +106,28 @@ public abstract class BaseItem implements Item {
 		}
 	}
 
+	@Override public Integer getValInteger(Ident fieldID, Integer defaultVal) {
+		Literal lit = getLiteralVal(fieldID, false); 
+		if (lit != null) {
+			return lit.getInt();
+		} else {
+			return defaultVal;
+		}
+	}
+
+	
 	@Override public String getValString(Ident fieldID, String defaultVal) {
 		Literal lit = getLiteralVal(fieldID, false);
 		if (lit != null) {
 			return lit.getString();
+		} else {
+			return defaultVal;
+		}
+	}
+	@Override public Boolean getValBoolean(Ident fieldID, Boolean defaultVal) {
+		Literal lit = getLiteralVal(fieldID, false); 
+		if (lit != null) {
+			return lit.getBoolean();
 		} else {
 			return defaultVal;
 		}
