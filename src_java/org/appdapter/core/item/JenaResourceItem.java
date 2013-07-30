@@ -27,6 +27,7 @@ import org.appdapter.core.name.ModelIdent;
 import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.NodeIterator;
+import com.hp.hpl.jena.rdf.model.ResIterator;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.RDFList;
 import com.hp.hpl.jena.rdf.model.RDFNode;
@@ -123,7 +124,7 @@ public class JenaResourceItem extends BaseItem implements ModelIdent {
 		return properties;
 	}
 
-	protected List<RDFNode> getPropertyValues(Ident fieldID) {
+	protected List<RDFNode> getPropertyValues(Ident fieldID, LinkDirection linkDir) {
 		List<RDFNode> results = new ArrayList<RDFNode>();
 		Model model = getModel();
 		Resource fieldPropertyRes = null;
@@ -137,10 +138,18 @@ public class JenaResourceItem extends BaseItem implements ModelIdent {
 		}
 		if (fieldPropertyRes != null) {
 			Property fieldProperty = fieldPropertyRes.as(Property.class);
-			NodeIterator nodeIt = model.listObjectsOfProperty(myResource, fieldProperty);
-			while (nodeIt.hasNext()) {
-				results.add(nodeIt.nextNode());
-			}
+		
+			if (linkDir == LinkDirection.FORWARD) {
+				NodeIterator nodeIt = model.listObjectsOfProperty(myResource, fieldProperty);
+				while (nodeIt.hasNext()) {
+					results.add(nodeIt.nextNode());
+				}
+			} else if (linkDir == LinkDirection.REVERSE) {
+				ResIterator resIt = model.listResourcesWithProperty(fieldProperty, myResource);
+				while (resIt.hasNext()) {
+					results.add(resIt.nextResource());
+				}
+			} 
 		}
 		return results;
 	}
@@ -150,7 +159,7 @@ public class JenaResourceItem extends BaseItem implements ModelIdent {
 	}
 
 	protected RDFNode getSinglePropertyVal(Ident fieldID, boolean throwOnFailure) {
-		List<RDFNode> nodes = getPropertyValues(fieldID);
+		List<RDFNode> nodes = getPropertyValues(fieldID, Item.LinkDirection.FORWARD);
 		int nodeListSize = nodes.size();
 		if (nodeListSize == 1) {
 			return nodes.get(0);
@@ -172,11 +181,7 @@ public class JenaResourceItem extends BaseItem implements ModelIdent {
 
 	@Override protected List<Item> getLinkedItems(Ident linkName, LinkDirection linkDir) {
 		List<RDFNode> linkedNodes;
-		if (linkDir == LinkDirection.FORWARD) {
-			linkedNodes = getPropertyValues(linkName);
-		} else {
-			linkedNodes = new ArrayList<RDFNode>();
-		}
+		linkedNodes = getPropertyValues(linkName, linkDir);
 		List<Item> results = new ArrayList<Item>();
 		for (RDFNode rn : linkedNodes) {
 			Resource res = rn.asResource();
