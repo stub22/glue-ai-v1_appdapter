@@ -2,7 +2,6 @@ package org.appdapter.gui.util;
 
 import static org.appdapter.gui.util.CollectionSetUtils.addAllNew;
 import static org.appdapter.gui.util.CollectionSetUtils.*;
-import static org.appdapter.gui.util.*;
 import static org.appdapter.gui.util.CollectionSetUtils.*;
 import static org.appdapter.gui.util.PromiscuousClassUtilsA.*;
 
