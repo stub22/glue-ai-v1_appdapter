@@ -53,14 +53,8 @@ import org.appdapter.gui.trigger.TriggerMenuFactory;
  */
 abstract public class BaseDemoNavigatorCtrl implements BrowserPanelGUI, org.appdapter.demo.DemoBrowserCtrl {
 
-	public BaseDemoNavigatorCtrl() {
-		myBoxCtx = new ScreenBoxContextImpl();
-		myTM = ((ScreenBoxContextImpl) myBoxCtx).getTreeModel();
-	}
-
 	public BrowserPanelGUI getLocalTreeAPI() {
-		Debuggable.notImplemented();
-		return null;
+		return this;
 	}
 
 	private TreeModel myTM;
@@ -84,17 +78,26 @@ abstract public class BaseDemoNavigatorCtrl implements BrowserPanelGUI, org.appd
 		return myBoxCtx;
 	}
 
+	public BaseDemoNavigatorCtrl() {
+		myRootBTN = new ScreenBoxTreeNodeImpl(null, null, true, null);
+		myBoxCtx = new ScreenBoxContextImpl(myRootBTN);
+		myTM = ((ScreenBoxContextImpl) myBoxCtx).ensureTreeModel();
+		myDCP = myRootBTN;
+		setupBrowsePanel();
+	}
+
 	public BaseDemoNavigatorCtrl(BoxContext bc, TreeModel tm, ScreenBoxTreeNode rootBTN, DisplayContextProvider dcp) {
+		myRootBTN = (ScreenBoxTreeNodeImpl) rootBTN;
 		myBoxCtx = bc;
 		myTM = tm;
-		myRootBTN = (ScreenBoxTreeNodeImpl) rootBTN;
 		myDCP = dcp;
 		setupBrowsePanel();
 	}
 
 	private void setupBrowsePanel() {
 		myBP = new BrowsePanel(myTM, myBoxCtx);
-		myRootBTN.setDisplayContext(myBP.getDisplayContext());
+		DisplayContext dc = myBP.getDisplayContext();
+		myRootBTN.setDisplayContext(dc);
 		TriggerMenuFactory tmf = TriggerMenuFactory.getInstance(myBoxCtx); // TODO: Needs type params
 		MouseAdapter menuMA = tmf.makePopupMouseAdapter();
 		myBP.addTreeMouseAdapter(menuMA);
@@ -105,10 +108,15 @@ abstract public class BaseDemoNavigatorCtrl implements BrowserPanelGUI, org.appd
 		boolean firstTime = false;
 		if (myJFrame == null) {
 			Utility.appFrame = myJFrame = new JFrame();
+			///if (title == null) title = getClass().getCanonicalName();
 			firstTime = true;
 		} else {
+			//was: throw new RuntimeException("Frame already launched!");
 		}
-		myJFrame.setTitle(title);
+
+		if (title != null)
+			myJFrame.setTitle(title);
+
 		if (firstTime) {
 			myJFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 			myJFrame.getContentPane().add(myBP, BorderLayout.CENTER);
@@ -116,7 +124,7 @@ abstract public class BaseDemoNavigatorCtrl implements BrowserPanelGUI, org.appd
 			myJFrame.pack();
 		}
 		myBP.setVisible(true);
-		myJFrame.setVisible(true); //throw new RuntimeException("Frame already launched!");
+		myJFrame.setVisible(true);
 
 	}
 
@@ -131,6 +139,7 @@ abstract public class BaseDemoNavigatorCtrl implements BrowserPanelGUI, org.appd
 	@Override public UserResult showScreenBox(Object anyObject) {
 		return showScreenBox(null, anyObject);
 	}
+
 	@Override public UserResult showScreenBox(String title, Object anyObject) {
 		try {
 			return myBP.showScreenBox(title, anyObject);
@@ -155,16 +164,16 @@ abstract public class BaseDemoNavigatorCtrl implements BrowserPanelGUI, org.appd
 		return getNOC();
 	}
 
-	@Override public UserResult showMessage(String message) {
-		return myBP.showMessage(message);
+	@Override public UserResult showMessage(String message, Class extraInfo) {
+		return myBP.showMessage(message, extraInfo);
 	}
 
 	@Override public BoxPanelSwitchableView getBoxPanelTabPane() {
 		return myBP.getBoxPanelTabPane();
 	}
 
-	public UserResult addObject(String title, Object child, DisplayType attachType, boolean showAsap) throws UnsatisfiedLinkError {
-		return myBP.addObject(title, child, attachType, showAsap);
+	public UserResult addObject(String title, Object child, DisplayType attachType, boolean showASAP) throws UnsatisfiedLinkError {
+		return myBP.addObject(title, child, attachType, showASAP, false);
 
 	}
 
@@ -180,9 +189,13 @@ abstract public class BaseDemoNavigatorCtrl implements BrowserPanelGUI, org.appd
 		return myBP.showError(msg, error);
 	}
 
-	@Override public UserResult attachChildUI(String title, Object anyObject, boolean showASAP) {
+	@Override public UserResult addObject(String title, Object anyObject, boolean showASAP) {
+		return myBP.addObject(title, anyObject, DisplayType.ANY, showASAP, false);
+	}
 
-		return myBP.addObject(title, anyObject, DisplayType.ANY, showASAP);
+	@Override public UserResult addObject(String title, Object anyObject, boolean showASAP, boolean expandChildren) {
+
+		return myBP.addObject(title, anyObject, DisplayType.ANY, showASAP, expandChildren);
 	}
 
 	private NamedObjectCollection getNOC() {
@@ -218,7 +231,7 @@ abstract public class BaseDemoNavigatorCtrl implements BrowserPanelGUI, org.appd
 	}
 
 	@Override public void initialize(String[] args) {
-		Debuggable.notImplemented();
+
 	}
 
 }

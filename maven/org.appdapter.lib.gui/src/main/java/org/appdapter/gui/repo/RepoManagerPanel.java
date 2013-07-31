@@ -31,6 +31,8 @@ import javax.swing.JFileChooser;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 
+import org.appdapter.api.trigger.AnyOper.UISalient;
+import org.appdapter.api.trigger.AnyOper.UtilClass;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.core.store.Repo;
 import org.appdapter.gui.browse.Utility;
@@ -42,8 +44,16 @@ import org.slf4j.LoggerFactory;
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public class RepoManagerPanel extends ScreenBoxPanel<MutableRepoBox> implements Customizer {
+public class RepoManagerPanel extends ScreenBoxPanel<MutableRepoBox> implements Customizer, UtilClass {
 	static Logger theLogger = LoggerFactory.getLogger(RepoManagerPanel.class);
+
+	@UISalient static public RepoManagerPanel showRepoManagerPanel(final Repo repo) {
+		return new RepoManagerPanel() {
+			{
+				setObject(repo);
+			}
+		};
+	}
 
 	@Override protected void initSubclassGUI() throws Throwable {
 		initComponents();
@@ -54,6 +64,10 @@ public class RepoManagerPanel extends ScreenBoxPanel<MutableRepoBox> implements 
 
 	@Override public boolean isObjectBoundGUI() {
 		return false;
+	}
+
+	@Override public Class<MutableRepoBox> getClassOfBox() {
+		return MutableRepoBox.class;
 	}
 
 	private MutableRepoBox myFocusBox;
@@ -228,7 +242,7 @@ public class RepoManagerPanel extends ScreenBoxPanel<MutableRepoBox> implements 
 
 	@Override public Object getValue() {
 		if (myFocusBox != null)
-			return myFocusBox.getRepo();
+			return myFocusBox.getValue();
 		return this;
 	}
 

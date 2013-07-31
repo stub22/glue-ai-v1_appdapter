@@ -32,7 +32,7 @@ public interface DisplayContext extends UIProvider/*, IShowObjectMessageAndError
 
 	public Collection getTriggersFromUI(BT box, Object object);
 
-	public UserResult attachChildUI(String title, Object value, boolean showASAP) throws Exception;
+	public UserResult addObject(String title, Object value, boolean showASAP) throws Exception;
 
 	public String getTitleOf(Object value);
 

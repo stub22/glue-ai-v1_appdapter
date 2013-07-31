@@ -1,13 +1,17 @@
 package org.appdapter.gui.swing;
 
+import java.awt.event.ActionEvent;
+
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 
-
 public class SafeJMenu extends JMenu {
 
-	public SafeJMenu(String text) {
+	final Object targetMaybe;
+
+	public SafeJMenu(boolean iamObject, String text, Object target) {
 		super(text);
+		targetMaybe = target;		
 	}
 
 	/**
@@ -21,6 +25,10 @@ public class SafeJMenu extends JMenu {
 		} catch (Throwable t) {
 
 		}
+	}
+
+	protected void fireActionPerformed(ActionEvent event) {
+		super.fireActionPerformed(event);
 	}
 
 }

@@ -49,10 +49,6 @@ public abstract class RepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<TT>>>
 	static Logger theLogger = LoggerFactory.getLogger(RepoBoxImpl.class);
 	private LazySlow<Repo.Mutable> myRepo;
 
-	@Override final public Object getValue() {
-		return getRepo();
-	}
-
 	@Override public Box findGraphBox(String graphURI) {
 		Logger logger = theLogger;
 
@@ -65,7 +61,7 @@ public abstract class RepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<TT>>>
 
 		BoxContext ctx = getBoxContext();
 		List<Repo.GraphStat> graphStats = getAllGraphStats();
-		Model m = getRepo().getNamedModel(new FreeIdent(graphURI));
+		Model m = getValue().getNamedModel(new FreeIdent(graphURI));
 
 		for (Repo.GraphStat gs : graphStats) {
 			if (gs.graphURI.equals(graphURI)) {
@@ -95,7 +91,7 @@ public abstract class RepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<TT>>>
 	}
 
 	@Override public Object reallyGetValue() {
-		return getRepo();
+		return getValue();
 	}
 
 	@Override public void reallySetValue(Object newObject) throws UnsupportedOperationException, ClassCastException {
@@ -105,6 +101,11 @@ public abstract class RepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<TT>>>
 
 	// Store		myStore;
 	// public static String	myStoreConfigPath;	
+
+	@Override public Repo getValue() {
+		return getMRepo();
+	}
+	
 
 	@Override public Repo getRepo() {
 		return getMRepo();

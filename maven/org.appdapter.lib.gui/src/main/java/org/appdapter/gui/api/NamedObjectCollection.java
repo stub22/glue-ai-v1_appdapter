@@ -89,11 +89,11 @@ public interface NamedObjectCollection //
 	//<T> Collection<POJOBox<? extends T>> findBoxesByType(Class<T> type);
 
 	/**
-	 * Returns an iterator over all the object boxs. NOTE - this could be a
+	 * Returns an iterator over all the object boxes. NOTE - this could be a
 	 * bit slow! Avoid whenever possible. The code can be optimized for this,
 	 * but it isn't right now.
 	 */
-	Iterator getBoxes();
+	Iterator<BT> getBoxes();
 
 	/**
 	 * Returns the current number of objects in the collection
@@ -173,5 +173,7 @@ public interface NamedObjectCollection //
 	void setSelectedObject(Object object) throws PropertyVetoException;
 
 	String getName();
+
+	BT asWrapped(Object d);
 
 }

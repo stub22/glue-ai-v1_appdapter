@@ -58,7 +58,8 @@ import org.slf4j.LoggerFactory;
  * @see Box
  * 
  */
-@SuppressWarnings("serial") public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChangeListener, PropertyChangeListener, Serializable {
+@SuppressWarnings("serial")
+public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChangeListener, PropertyChangeListener, Serializable {
 	// ==== Static variables ===================
 	private static Logger theLogger = LoggerFactory.getLogger(BoxedCollectionImpl.class);
 
@@ -492,7 +493,7 @@ import org.slf4j.LoggerFactory;
 	 * NOTE - this could be a bit slow! Avoid whenever possible.
 	 * The code can be optimized for this, but it isn't right now.
 	 */
-	@Override public Iterator getBoxes() {
+	@Override public Iterator<BT> getBoxes() {
 		//LinkedList boxList = getBoxListFrom(DisplayType.TOSTRING);
 		LinkedList list = new LinkedList();
 		synchronized (syncObject) {
@@ -619,6 +620,13 @@ import org.slf4j.LoggerFactory;
 				return MISSING_COMPONENT;
 			return getTitleOf(wrapper);
 		}
+	}
+
+	@Override public BT asWrapped(Object d) {
+		if (d == null || d instanceof BT) {
+			return (BT) d;
+		}
+		return findOrCreateBox(d);
 	}
 
 	//===== Manipulating the selected value ===============

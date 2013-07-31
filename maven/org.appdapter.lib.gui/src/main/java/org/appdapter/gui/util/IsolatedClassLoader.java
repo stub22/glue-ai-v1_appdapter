@@ -1,8 +1,8 @@
 package org.appdapter.gui.util;
 
 import static org.appdapter.gui.util.CollectionSetUtils.addAllNew;
-import static org.appdapter.gui.util.PromiscuousClassUtils.addClassloader;
-import static org.appdapter.gui.util.PromiscuousClassUtils.rememberClass;
+import static org.appdapter.gui.util.PromiscuousClassUtilsA.addClassloader;
+import static org.appdapter.gui.util.PromiscuousClassUtilsA.rememberClass;
 
 import java.io.IOException;
 import java.net.URL;
@@ -124,7 +124,7 @@ public final class IsolatedClassLoader extends FromManyClassLoader implements HR
 
 		try {
 			if (useSystem) {
-				loadedClass = PromiscuousClassUtils.forName(name, false, null);
+				loadedClass = PromiscuousClassUtilsA.forName(name, false, null);
 			} else {
 				loadedClass = findClass(name);
 			}

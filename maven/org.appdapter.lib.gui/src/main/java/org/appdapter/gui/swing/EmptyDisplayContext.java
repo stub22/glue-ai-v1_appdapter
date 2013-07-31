@@ -111,8 +111,8 @@ public class EmptyDisplayContext extends BoxedCollectionImpl implements BrowserP
 		return showScreenBox(null, anyObject);
 	}
 
-	@Override public UserResult showMessage(String string) {
-		return getCurrentContext().showMessage(string);
+	@Override public UserResult showMessage(String string, Class extraInfo) {
+		return getCurrentContext().showMessage(string, extraInfo);
 	}
 
 	public BoxPanelSwitchableView getLocalCollectionUI() {
@@ -120,9 +120,12 @@ public class EmptyDisplayContext extends BoxedCollectionImpl implements BrowserP
 		return null;
 	}
 
-	@Override public UserResult attachChildUI(String title, Object value, boolean showASAP) throws Exception {
-		Debuggable.notImplemented();
-		return null;
+	public UserResult addObject(String title, Object value, boolean showASAP) throws Exception {
+		return Utility.browserPanel.addObject(title, value, showASAP, false);
+	}
+
+	@Override public UserResult addObject(String title, Object value, boolean showASAP, boolean expandChildren) {
+		return Utility.browserPanel.addObject(title, value, showASAP, expandChildren);
 	}
 
 }

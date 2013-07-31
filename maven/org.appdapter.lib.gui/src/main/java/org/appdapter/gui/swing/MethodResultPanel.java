@@ -73,7 +73,7 @@ class MethodResultPanel extends JJPanel {
 				add("Center", value);
 				invalidate();
 				validate();
-				Utility.setLastResult(this, object, expectedType);
+				Utility.addSubResult(null, null, null, object, expectedType);
 			}
 		} catch (Exception err) {
 			theLogger.error("An error occurred", err);

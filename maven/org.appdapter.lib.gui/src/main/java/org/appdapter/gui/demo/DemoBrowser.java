@@ -29,16 +29,18 @@ import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.MutableBox;
 import org.appdapter.api.trigger.TriggerImpl;
 import org.appdapter.core.log.BasicDebugger;
+import org.appdapter.core.log.Debuggable;
 import org.appdapter.core.store.Repo;
 import org.appdapter.core.store.RepoBox;
-import org.appdapter.demo.DemoBrowserCtrl;
 import org.appdapter.demo.DemoBrowserUI;
 import org.appdapter.demo.DemoNavigatorCtrlFactory;
+import org.appdapter.demo.DemoResources;
 import org.appdapter.gui.api.DisplayContextProvider;
 import org.appdapter.gui.api.ScreenBox.Kind;
 import org.appdapter.gui.box.ScreenBoxContextImpl;
 import org.appdapter.gui.box.ScreenBoxImpl;
 import org.appdapter.gui.box.ScreenBoxTreeNodeImpl;
+import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.editors.RepoTriggers;
 import org.appdapter.gui.repo.BridgeTriggers;
 import org.appdapter.gui.repo.DatabaseTriggers;
@@ -56,12 +58,30 @@ import org.slf4j.LoggerFactory;
 final public class DemoBrowser implements AnyOper.Singleton {
 	public static Logger theLogger = getLogger();
 
-	public static DemoNavigatorCtrl makeDemoNavigatorCtrl(String[] args) {
-		DemoNavigatorCtrl repoNav = (DemoNavigatorCtrl) DemoBrowserUI.makeDemoNavigatorCtrl(args);
-		if (repoNav == null) {
-			repoNav = DemoBrowser.makeDemoNavigatorCtrlReal(args, false);
+	public static DemoNavigatorCtrl mainControl;
+
+	public static void showObject(String optionalName, Object any, boolean showASAP, boolean loadChildren) {
+		// This can take up to a few seconds, depending on log level.  
+		try {
+			if (mainControl == null) {
+				mainControl = DemoBrowser.makeDemoNavigatorCtrl(null);
+			}
+			mainControl.addObject(optionalName, any, showASAP, loadChildren);
+			mainControl.show();
+
+		} catch (Exception e1) {
+			Debuggable.printStackTrace(e1);
 		}
-		return repoNav;
+	}
+
+	public static DemoNavigatorCtrl makeDemoNavigatorCtrl(String[] args) {
+		if (mainControl == null) {
+			mainControl = (DemoNavigatorCtrl) DemoBrowserUI.makeDemoNavigatorCtrl(args);
+			if (mainControl == null) {
+				mainControl = DemoBrowser.makeDemoNavigatorCtrlReal(args, false);
+			}
+		}
+		return mainControl;
 	}
 
 	// These constants are used to test the ChanBinding model found in "GluePuma_BehavMasterDemo"
@@ -92,8 +112,6 @@ final public class DemoBrowser implements AnyOper.Singleton {
 	}
 
 	static public boolean defaultExampleCode = false;
-
-	static public DemoBrowserCtrl mainControl = null;
 
 	/**
 	 *  Ensure the main instance is started
@@ -138,7 +156,7 @@ final public class DemoBrowser implements AnyOper.Singleton {
 			DemoBrowserUI.registerDemo(crtlMaker);
 			//frame.setSize(800, 600);
 			//org.appdapter.gui.pojo.Utility.centerWindow(frame);
-			mainControl = DemoBrowserUI.makeDemoNavigatorCtrl(args);
+			mainControl = (DemoNavigatorCtrl) DemoBrowserUI.makeDemoNavigatorCtrl(args);
 			mainControl.launchFrame("This is ObjectNavigator");
 			//frame.show();
 			//frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -184,7 +202,7 @@ final public class DemoBrowser implements AnyOper.Singleton {
 				dti.setShortLabel("ping-" + graphURI);
 				mb.attachTrigger(dti);
 
-				Repo parentRepo = parentBox.getRepo();
+				Repo parentRepo = parentBox.getValue();
 
 				return mb;
 			}
@@ -202,7 +220,7 @@ final public class DemoBrowser implements AnyOper.Singleton {
 	public static BaseDemoNavigatorCtrl makeDemoNavigatorCtrl(String[] args, Class<? extends ScreenBoxImpl> boxClass, Class<? extends RepoBoxImpl> repoBoxClass, boolean isExampleCode) {
 		// From this BoxImpl.class, is makeBCI is able to infer the full BT=BoxImpl<... tree?
 		ScreenBoxContextImpl bctx = makeBCI(boxClass, repoBoxClass, isExampleCode);
-		TreeModel tm = bctx.getTreeModel();
+		TreeModel tm = bctx.ensureTreeModel();
 		ScreenBoxTreeNodeImpl rootBTN = (ScreenBoxTreeNodeImpl) tm.getRoot();
 
 		DisplayContextProvider dcp = bctx;
@@ -244,22 +262,24 @@ final public class DemoBrowser implements AnyOper.Singleton {
 	 */
 	public static <TBT extends TriggerImpl<BT>, BT extends ScreenBoxImpl<TBT>, TRBT extends TriggerImpl<RBT>, RBT extends RepoBoxImpl<TRBT>>
 
-			ScreenBoxContextImpl makeBoxContextImpl(Class<BT> regBoxClass, Class<RBT> repoBoxClass, TriggerImpl<BT> regTrigProto, TriggerImpl<RBT> repoTrigProto, boolean isExampleCode) {
+	ScreenBoxContextImpl makeBoxContextImpl(Class<BT> regBoxClass, Class<RBT> repoBoxClass, TriggerImpl<BT> regTrigProto, TriggerImpl<RBT> repoTrigProto, boolean isExampleCode) {
 		try {
 
-			ScreenBoxContextImpl bctx = new ScreenBoxContextImpl();
 
 			BT rootBox = (BT) DemoServiceWrapFuncs.makeTestBoxImpl((Class) regBoxClass, (TriggerImpl) regTrigProto, "All Objects");
-			bctx.contextualizeAndAttachRootBox(rootBox);
+		
+			ScreenBoxContextImpl bctx = new ScreenBoxContextImpl(rootBox);
 
 			BootstrapTriggerFactory btf = new BootstrapTriggerFactory();
 			btf.attachTrigger(rootBox, new SysTriggers.QuitTrigger(), "quit");
 
 			TriggerImpl regTrigProtoE = regTrigProto;
 
+			BT clipboardBox = (BT) DemoServiceWrapFuncs.makeTestChildBoxImplWithObj(rootBox, (Class) regBoxClass, Utility.getClipboard(), "Clipboard");
 			BT repoBox = (BT) DemoServiceWrapFuncs.makeTestChildBoxImplWithObj(rootBox, (Class) regBoxClass, Repo.class, "repo");
 			BT appBox = (BT) DemoServiceWrapFuncs.makeTestChildBoxImplWithObj(rootBox, (Class) regBoxClass, BasicDebugger.class, "app");
 			BT sysBox = (BT) DemoServiceWrapFuncs.makeTestChildBoxImplWithObj(rootBox, (Class) regBoxClass, ScreenBoxImpl.class, "sys");
+			BT classBox = (BT) DemoServiceWrapFuncs.makeTestChildBoxImplWithObj(rootBox, (Class) regBoxClass, Class.class, "By Class");
 
 			if (!isExampleCode)
 				return bctx;
@@ -289,7 +309,7 @@ final public class DemoBrowser implements AnyOper.Singleton {
 			btf.attachTrigger(pumappBox, new SysTriggers.DumpTrigger(), "dumpP");
 
 			BT buckTreeBox = (BT) DemoServiceWrapFuncs.makeTestChildBoxImpl(appBox, (Class) regBoxClass, regTrigProtoE, "bucksum");
-			btf.attachTrigger(buckTreeBox, new BridgeTriggers.MountSubmenuFromTriplesTrigger(), "loadSubmenus");
+			btf.attachTrigger(buckTreeBox, new BridgeTriggers.MountSubmenuFromTriplesTrigger(DemoResources.MENU_ASSEMBLY_PATH), "loadSubmenus");
 
 			/*
 						makeChildNode(appNode, "custy");

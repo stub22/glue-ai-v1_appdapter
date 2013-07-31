@@ -16,7 +16,7 @@ public class FileMenu extends SafeJMenu {
 	Vector recentFiles = new Vector();
 
 	FileMenu(CollectionEditorUtil val) {
-		super("File");
+		super(false, "File", val);
 		this.collectionEditorUtil = val;
 		try {
 			addItems();

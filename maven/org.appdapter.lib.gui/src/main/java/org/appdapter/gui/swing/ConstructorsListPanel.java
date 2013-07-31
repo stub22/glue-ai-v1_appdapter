@@ -5,6 +5,7 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.reflect.Constructor;
+import java.util.Collection;
 import java.util.Hashtable;
 
 import javax.swing.JButton;
@@ -18,7 +19,7 @@ import org.appdapter.gui.browse.Utility;
 /**
  * A GUI component that shows all the constructors provided by a given class
  */
-public class ClassConstructorsPanel<BoxType extends Box> extends ScreenBoxPanel<BoxType> implements ActionListener {
+public class ConstructorsListPanel<BoxType extends Box> extends ScreenBoxPanel<BoxType> implements ActionListener {
 	//==== Instance variables ==========================
 
 	//Class cls;
@@ -32,12 +33,12 @@ public class ClassConstructorsPanel<BoxType extends Box> extends ScreenBoxPanel<
 
 	//==== Constructors =============================
 
-	public ClassConstructorsPanel(DisplayContext context, Class cls) {
+	public ConstructorsListPanel(DisplayContext context, Class cls) {
 		this.context = context;
 		reloadObjectGUI(cls);
 	}
 
-	public ClassConstructorsPanel(Class cls) throws Exception {
+	public ConstructorsListPanel(Class cls) throws Exception {
 		this(Utility.getCurrentContext(), cls);
 	}
 
@@ -113,6 +114,10 @@ public class ClassConstructorsPanel<BoxType extends Box> extends ScreenBoxPanel<
 
 	@Override protected void initSubclassGUI() throws Throwable {
 
+	}
+
+	@Override public Class<Class> getClassOfBox() {
+		return Class.class;
 	}
 
 }

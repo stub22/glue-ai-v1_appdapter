@@ -15,7 +15,7 @@ public class TriggerFilter {
 	boolean addInstance;
 	boolean addStatic;
 	boolean addSuperClass;
-	boolean addPanelClasses;
+	boolean addPanelClasses = UtilityMenuOptions.addPanelClasses;
 	boolean addPrivate;
 	boolean addProtected;
 	boolean addPackage;
@@ -24,13 +24,13 @@ public class TriggerFilter {
 	boolean addMethods = true;
 	boolean addNonMembers = true;
 	boolean addEvents = false;
-	boolean addGlobalStatics = true;
+	boolean addGlobalStatics = UtilityMenuOptions.addGlobalStatics;
 
 	TriggerFilter(boolean addIt) {
 		this.addInstance = addIt;
 		this.addStatic = addIt;
 		this.addSuperClass = addIt;
-		this.addPanelClasses = addIt;
+		//this.addPanelClasses = addIt;
 		this.addAllAccessLevels(addIt);
 	}
 

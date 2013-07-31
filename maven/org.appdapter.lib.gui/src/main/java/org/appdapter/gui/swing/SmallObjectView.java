@@ -3,7 +3,6 @@ package org.appdapter.gui.swing;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Image;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -23,11 +22,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
 
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -40,6 +39,7 @@ import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.NamedObjectCollection;
 import org.appdapter.gui.api.ObjectCollectionRemoveListener;
 import org.appdapter.gui.browse.Utility;
+import org.appdapter.gui.editors.ObjectPanelHost;
 import org.appdapter.gui.trigger.TriggerPopupMenu;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +54,7 @@ public class SmallObjectView<BoxType extends Box>
 
 extends ObjectView<Box>
 
-implements PropertyChangeListener, MouseListener, ActionListener, DragGestureListener, Transferable, DragSourceListener, DropTargetListener {
+implements PropertyChangeListener, MouseListener, ActionListener, DragGestureListener, Transferable, DragSourceListener, DropTargetListener, ObjectPanelHost {
 
 	class PropertyButton extends JButton {
 		public PropertyButton() {
@@ -282,12 +282,12 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 		panel.setLayout(new FlowLayout(FlowLayout.LEFT));
 		Object object = getValue();
 		if (object != null) {
+			Class objectClass = object.getClass();
 			if (showIcon) {
 				try {
-					BeanInfo info = Utility.getBeanInfo(object.getClass(), object);
-					Image image = info.getIcon(BeanInfo.ICON_COLOR_16x16);
+					Icon image = Utility.getIcon(objectClass);
 					if (image != null) {
-						JLabel label = new JLabel(new ImageIcon(image));
+						JLabel label = new JLabel(image);
 						panel.add(label);
 					}
 				} catch (Throwable err) {
@@ -303,7 +303,7 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 				label = new JLabel(title);
 				panel.add(label);
 			}
-			if (showPropButton && !object.getClass().isPrimitive()) {
+			if (showPropButton && !objectClass.isPrimitive()) {
 				propButton = new PropertyButton();
 				panel.add(propButton);
 				propButton.addActionListener(this);

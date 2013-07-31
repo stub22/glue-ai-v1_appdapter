@@ -16,10 +16,6 @@ public class DemoNavigatorCtrl extends BaseDemoNavigatorCtrl implements DisplayC
 		super();
 	}
 
-	@Override public void addObject(String title, Object obj, boolean displayForegroundASAP) {
-		attachChildUI(title, obj, displayForegroundASAP);
-	}
-
 	public DemoNavigatorCtrl(BoxContext bc, TreeModel tm, ScreenBoxTreeNode rootBTN, DisplayContextProvider dcp) {
 		super(bc, tm, rootBTN, dcp);
 	}
@@ -32,16 +28,20 @@ public class DemoNavigatorCtrl extends BaseDemoNavigatorCtrl implements DisplayC
 		super.addBoxToRoot(childBox, reload);
 	}
 
-	@Override public void addRepo(String title, Object boxOrRepo) {
-		super.addRepo(title, boxOrRepo);
+	@Override public void addRepo(String title, Object anyObject) {
+		super.addRepo(title, anyObject);
 	}
 
-	@Override public UserResult attachChildUI(String title, Object boxOrRepo, boolean showASAP) {
-		return super.attachChildUI(title, boxOrRepo, showASAP);
+	public UserResult addObject(String title, Object anyObject, boolean showASAP) {
+		return super.addObject(title, anyObject, showASAP);
 	}
 
-	public void addObject(String title, Object boxOrRepo) {
-		attachChildUI(title, boxOrRepo, false);
+	@Override public UserResult addObject(String title, Object anyObject, boolean showASAP, boolean expandChildren) {
+		return super.addObject(title, anyObject, showASAP, expandChildren);
+	}
+
+	public void addObject(String title, Object anyObject) {
+		addObject(title, anyObject, false);
 	}
 
 	public JFrame getFrame() {
@@ -49,6 +49,6 @@ public class DemoNavigatorCtrl extends BaseDemoNavigatorCtrl implements DisplayC
 	}
 
 	@Override public void show() {
-		super.launchFrame(getClass().getCanonicalName());
+		launchFrame(null);
 	}
 }

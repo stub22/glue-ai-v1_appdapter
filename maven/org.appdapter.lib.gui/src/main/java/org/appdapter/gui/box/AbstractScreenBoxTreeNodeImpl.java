@@ -34,6 +34,7 @@ import org.appdapter.api.trigger.AnyOper.UIProvider;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContext;
 import org.appdapter.api.trigger.UserResult;
+import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.BT;
 import org.appdapter.gui.api.BoxPanelSwitchableView;
@@ -50,23 +51,17 @@ import org.appdapter.gui.trigger.TriggerPopupMenu;
 /**
  * @author Stu B. <www.texpedient.com>
  */
+@SuppressWarnings("serial")
 abstract public class AbstractScreenBoxTreeNodeImpl extends DefaultMutableTreeNode implements GetSetObject, UIProvider, DisplayContextProvider, DisplayContext {
 
+	abstract public String toString();
+
 	protected DisplayContext myDisplayContext;
-	public BoxPanelSwitchableView bsv;
-	private NamedObjectCollection thisNamedObjectCollection;
+	protected BoxPanelSwitchableView bsv;
+	protected NamedObjectCollection thisNamedObjectCollection;
 
 	public BrowserPanelGUI getLocalTreeAPI() {
-		Debuggable.notImplemented();
-		return (BrowserPanelGUI) Utility.getDisplayContext();
-	}
-
-	public AbstractScreenBoxTreeNodeImpl(NamedObjectCollection noc, Box box, boolean allowsChildren0) {
-		super(box, allowsChildren0);
-		if (allowsChildren0 && noc == null) {
-			noc = new BoxedCollectionImpl("Object chilens for " + box, this);
-		}
-		thisNamedObjectCollection = noc;
+		return (BrowserPanelGUI) Utility.getCurrentContext();
 	}
 
 	final public DisplayContext getDisplayContext() {
@@ -147,11 +142,6 @@ abstract public class AbstractScreenBoxTreeNodeImpl extends DefaultMutableTreeNo
 		return (ScreenBoxTreeNode) findTreeNodeDisplayContext(b);
 	}
 
-	protected DisplayContext getDisplayContextNoLoop() {
-		Debuggable.notImplemented();
-		return Utility.getCurrentContext();
-	}
-
 	/*
 		@Override public Component getComponent() {
 			DisplayContext displayContext = getDisplayContextNoLoop();
@@ -168,7 +158,7 @@ abstract public class AbstractScreenBoxTreeNodeImpl extends DefaultMutableTreeNo
 	}
 
 	@Override public Collection getTriggersFromUI(BT box, Object object) {
-		DisplayContext displayContext = getDisplayContextNoLoop();
+		DisplayContext displayContext = getDisplayContext();
 		return displayContext.getTriggersFromUI(box, object);
 	}
 
@@ -189,7 +179,7 @@ abstract public class AbstractScreenBoxTreeNodeImpl extends DefaultMutableTreeNo
 
 		}
 	*/
-	@Override public UserResult attachChildUI(String title, Object value, boolean showASAP) throws Exception {
+	@Override public UserResult addObject(String title, Object value, boolean showASAP) throws Exception {
 		return Utility.asUserResult(attachChildObject(title, value));
 	}
 
@@ -207,19 +197,29 @@ abstract public class AbstractScreenBoxTreeNodeImpl extends DefaultMutableTreeNo
 		if (prev != null)
 			return prev;
 		ScreenBoxTreeNodeImpl childNode = new ScreenBoxTreeNodeImpl(parentNode.bsv, childBox, true, null);
-		//String childName = childBox.toString();
-		DefaultTreeModel myTreeModel = getTreeModel();
+		String childName = childBox.toString();
 		parentNode.add(childNode);
-		if (myTreeModel != null) {
-			if (parentNode instanceof TreeNode)
+
+		if (parentNode instanceof TreeNode) {
+			DefaultTreeModel myTreeModel = findTreeModel();
+			if (myTreeModel != null) {
 				myTreeModel.reload((TreeNode) parentNode);
+			}
 		}
+
 		return childNode;
 	}
 
-	public DefaultTreeModel getTreeModel() {
-		BoxContext myBoxCtx = getBox().getBoxContext();
-		return (DefaultTreeModel) ((ScreenBoxContextImpl) myBoxCtx).getTreeModel();
+	public DefaultTreeModel findTreeModel() {
+		Box box = getBox();
+		BoxContext myBoxCtx = box.getBoxContext();
+		if (myBoxCtx == null) {
+			return (DefaultTreeModel) Utility.browserPanel.myTreeModel;
+		}
+		DefaultTreeModel tm = (DefaultTreeModel) ((ScreenBoxContextImpl) myBoxCtx).getTreeModel();
+		if (tm != null)
+			return tm;
+		return null;
 	}
 
 	public AbstractScreenBoxTreeNodeImpl attachChildObject(String title, Object value) {
@@ -287,12 +287,12 @@ abstract public class AbstractScreenBoxTreeNodeImpl extends DefaultMutableTreeNo
 				return;
 			}
 			if (value instanceof Map) {
-				popup.add(new MapValuesAsChildren("Map entries", (Map) value));
+				popup.add(new MapValuesAsChildren("Map entries", (Map) value, this));
 				return;
 			}
 			if (!Utility.instanceOfAny(value, Class.class, Collection.class, Object[].class, Utility.Stringable)) {
-				Map map = propertyDescriptors(value, true, true);
-				popup.add(new MapValuesAsChildren("Member values", map));
+				Map map = Utility.propertyDescriptors(value, true, true);
+				popup.add(new MapValuesAsChildren("Member values", map, this));
 			}
 		}
 		return;
@@ -301,7 +301,7 @@ abstract public class AbstractScreenBoxTreeNodeImpl extends DefaultMutableTreeNo
 	public class MapValuesAsChildren extends AbstractAction {
 		private Map<Object, Object> map;
 
-		public MapValuesAsChildren(String what, Map ofobj) {
+		public MapValuesAsChildren(String what, Map ofobj, AbstractScreenBoxTreeNodeImpl impl) {
 			super(what + " as children... " + ofobj.size());
 			this.map = ofobj;
 		}
@@ -318,45 +318,6 @@ abstract public class AbstractScreenBoxTreeNodeImpl extends DefaultMutableTreeNo
 				attachChildObject(Utility.getUniqueName(ent.getKey()), ent.getValue());
 			}
 		}
-	}
-
-	static Map<String, Object> propertyDescriptors(Object object, boolean skipNulls, boolean skipStringables) {
-		Map<String, Object> showProps = new HashMap<String, Object>();
-		try {
-			for (PropertyDescriptor pd : Utility.getProperties(object)) {
-				Class pt = pd.getPropertyType();
-				if (skipStringables && (pt == null || (Utility.isToStringType(pt) || pt == Class.class)))
-					continue;
-				Object v = null;
-				if (pd instanceof PropertyDescriptorForField) {
-					try {
-						v = ((PropertyDescriptorForField) pd).getFieldValue(object);
-					} catch (Throwable t) {
-						t.printStackTrace();
-					}
-				} else {
-					if (pd == null)
-						continue;
-					Method rm = pd.getReadMethod();
-					if (rm == null)
-						continue;
-					try {
-						rm.setAccessible(true);
-						v = rm.invoke(object);
-					} catch (Throwable e) {
-						e.printStackTrace();
-					}
-				}
-
-				if (v == null && skipNulls)
-					continue;
-				showProps.put(pd.getName(), v);
-
-			}
-		} catch (IntrospectionException e) {
-			e.printStackTrace();
-		}
-		return showProps;
 	}
 
 	public class CollectionValuesAsChildren extends AbstractAction {
