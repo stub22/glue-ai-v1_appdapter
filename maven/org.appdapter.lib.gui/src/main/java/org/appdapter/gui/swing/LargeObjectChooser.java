@@ -94,7 +94,18 @@ public class LargeObjectChooser extends JPanel implements POJOCollectionListener
 		reloadContents();
 	}
 
+	CantankerousJob reloadConts = new CantankerousJob("reloadContents", this) {
+		@Override public void run() {
+			reloadContents00();
+		}
+	};
+
 	public void reloadContents() {
+		reloadConts.attempt();
+	}
+
+	public void reloadContents00() {
+
 		panel.removeAll();
 
 		Iterator it = localCollection.getObjects();

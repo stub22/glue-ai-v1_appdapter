@@ -11,6 +11,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
@@ -271,7 +272,7 @@ public class PropertyDescriptorForField extends PropertyDescriptor implements Co
 		readMethodOr = readMethod;
 	}
 
-	public PropertyDescriptorForField(Field fld, String propertyNameForField, ClassLoader used, Method rm, Method wm) throws IntrospectionException {
+	protected PropertyDescriptorForField(Field fld, String propertyNameForField, ClassLoader used, Method rm, Method wm) throws IntrospectionException {
 		super(propertyNameForField, rm, wm);
 		f = fld;
 		getDeclaringClass = f.getDeclaringClass();
@@ -382,8 +383,10 @@ public class PropertyDescriptorForField extends PropertyDescriptor implements Co
 		return propertyName;
 	}
 
-	public String getSyntheticName(Method method) {
-		// TODO Auto-generated method stub
+	public String getSyntheticName(Member method) {
+		if (method == f) {
+			return Utility.properCase(getDisplayName());
+		}
 		if (readMethodOr == method)
 			return "get" + Utility.properCase(getDisplayName());
 		// TODO Auto-generated method stub
@@ -392,15 +395,17 @@ public class PropertyDescriptorForField extends PropertyDescriptor implements Co
 		return "method " + method + " is not for " + getShortDescription();
 	}
 
-	@Override public Integer declaresConverts(Object val, Class valClass, Class objNeedsToBe) {
+	@Override public Integer declaresConverts(Object val, Class valClass, Class objNeedsToBe, int maxCvt) {
 		return objNeedsToBe == proxyClass ? WILL : WONT;
 	}
 
-	@Override public <T> T recast(Object obj, Class<T> objNeedsToBe) throws NoSuchConversionException {
+	@Override public <T> T convert(Object obj, Class<T> objNeedsToBe, int maxCvt) throws NoSuchConversionException {
+		if (objNeedsToBe.isInstance(obj))
+			return (T) obj;
 		if (objNeedsToBe.isAssignableFrom(proxyClass)) {
-			return (T) getObjectFrom(obj);
+			return (T) newProxyInstance(obj);
 		}
-		Object object = ReflectUtils.recast(obj, getDeclaringClass);
+		Object object = ReflectUtils.recast(obj, getDeclaringClass,maxCvt);
 		T t = (T) newProxyInstance(obj);
 		return t;
 

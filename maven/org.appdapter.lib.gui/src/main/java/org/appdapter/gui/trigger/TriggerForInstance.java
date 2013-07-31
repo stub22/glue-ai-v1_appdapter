@@ -1,21 +1,25 @@
 package org.appdapter.gui.trigger;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.InvocationTargetException;
 
 import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.text.DefaultEditorKit.PasteAction;
 
 import org.appdapter.api.trigger.AnyOper.AskIfEqual;
 import org.appdapter.api.trigger.AnyOper.UISalient;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContext;
 import org.appdapter.api.trigger.MutableBox;
+import org.appdapter.api.trigger.MutableTrigger;
 import org.appdapter.api.trigger.TriggerImpl;
 import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.core.log.Debuggable;
@@ -24,14 +28,41 @@ import org.appdapter.gui.api.BT;
 import org.appdapter.gui.api.BoxPanelSwitchableView;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.DisplayType;
+import org.appdapter.gui.api.GetDisplayContext;
 import org.appdapter.gui.api.UIAware;
+import org.appdapter.gui.api.WrapperValue;
+import org.appdapter.gui.browse.KMCTrigger;
 import org.appdapter.gui.browse.Utility;
 
-abstract public class TriggerForInstance<B extends Box<TriggerImpl<B>>> extends TriggerImpl<B> implements AskIfEqual, UIAware, Action {
+abstract public class TriggerForInstance<BoxType extends Box<? extends MutableTrigger<BoxType>>> extends TriggerImpl implements
 
+ButtonFactory, AskIfEqual, UIAware, Action, ActionListener, KMCTrigger, GetDisplayContext {
+
+	/**
+	 *  the Class that this menu item is placed on (using the Box)
+	 */
 	Class arg0Clazz;
+	/**
+	 *  the object that this menu item is placed on (using the Box)
+	 */
+	WrapperValue _object;
+	DisplayContext displayContext;
+	AbstractButton jmi;
 
-	Object _object;
+	//abstract protected void fireIT(Box b, ActionEvent e) throws InvocationTargetException;
+
+	public void fireIT(Box targetBox, ActionEvent actevt) throws InvocationTargetException {
+		getLogger().debug(this.toString() + " firing on " + targetBox.toString());
+		Object obj = valueOf(targetBox, actevt, true, true);
+		try {
+			Utility.addSubResult(this, targetBox, actevt, obj, getReturnType());
+		} catch (PropertyVetoException e) {
+			Debuggable.printStackTrace(e);
+		}
+
+	}
+
+	public abstract Object valueOf(Box targetBox, ActionEvent actevt, boolean wantSideEffect, boolean isPaste) throws InvocationTargetException;
 
 	private Action actionImpl = new AbstractAction() {
 
@@ -41,25 +72,19 @@ abstract public class TriggerForInstance<B extends Box<TriggerImpl<B>>> extends 
 
 		@Override public void actionPerformed(ActionEvent e) {
 			TriggerForInstance.this.actionPerformed(e);
-
 		}
 
 		public String toString() {
-			return getMenuPath();
+			return getShortLabel();
 		}
 
 	};
 
-	DisplayContext displayContext;
-
-	protected UISalient isSalientMethod;
-	JMenuItem jmi;
-
-	@Override public void actionPerformed(ActionEvent e) {
+	final @Override public void actionPerformed(ActionEvent e) {
 		try {
-			fireIT(Utility.asWrapped(e.getSource()).asBox());
+			fireIT(Utility.asWrapped(e.getSource()).asBox(), e);
 		} catch (InvocationTargetException e1) {
-			e1.printStackTrace();
+			Debuggable.printStackTrace(e1);
 			throw Debuggable.reThrowable(e1);
 		}
 	}
@@ -68,59 +93,8 @@ abstract public class TriggerForInstance<B extends Box<TriggerImpl<B>>> extends 
 		actionImpl.addPropertyChangeListener(listener);
 	}
 
-	protected void addSubResult(Box targetBox, Object obj, Class expected) throws PropertyVetoException {
-		expected = ReflectUtils.nonPrimitiveTypeFor(expected);
-		if (Number.class.isAssignableFrom(expected)) {
-			expected = String.class;
-			obj = "" + obj;
-		}
-		if (Enum.class.isAssignableFrom(expected)) {
-			expected = String.class;
-			obj = "" + obj;
-		}
-		if (obj == null) {
-			obj = "Null " + expected;
-			expected = String.class;
-		}
-		if (expected == String.class) {
-			Utility.setLastResult(this, obj, expected);
-			try {
-				Utility.browserPanel.showMessage("" + obj);
-				return;
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				return;
-			}
-		}
-		DisplayType dt = Utility.getDisplayType(expected);
-		final DisplayType edt = dt;
-		if (dt == DisplayType.TREE) {
-			BT boxed = Utility.getTreeBoxCollection().findOrCreateBox(null, obj);
-			BoxContext bc = targetBox.getBoxContext();
-			bc.contextualizeAndAttachChildBox((Box) targetBox, (MutableBox) boxed);
-			return;
-		}
-		if (dt == DisplayType.TOSTRING) {
-			Utility.setLastResult(this, obj, expected);
-			return;
-		}
-		try {
-			Utility.getCurrentContext().showScreenBox(obj);
-		} catch (Exception e) {
-			BT boxed = Utility.getTreeBoxCollection().findOrCreateBox(null, obj);
-			BoxContext bc = targetBox.getBoxContext();
-			JPanel pnl = boxed.getPropertiesPanel();
-			if (dt == DisplayType.FRAME) {
-				BoxPanelSwitchableView jtp = Utility.getBoxPanelTabPane();
-				jtp.addComponent(pnl.getName(), pnl, DisplayType.FRAME);
-				return;
-			}
-			BoxPanelSwitchableView jtp = Utility.getBoxPanelTabPane();
-			jtp.addComponent(pnl.getName(), pnl, DisplayType.PANEL);
-
-		}
-
+	final @Override public String getShortLabel() {
+		return getMenuPath();
 	}
 
 	@Override public boolean equals(Object obj) {
@@ -133,16 +107,14 @@ abstract public class TriggerForInstance<B extends Box<TriggerImpl<B>>> extends 
 
 	@Override public void fire(Box targetBox) {
 		try {
-			fireIT(targetBox);
+			fireIT(targetBox, null);
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}
 
 	}
 
-	abstract public void fireIT(Box targetBox) throws InvocationTargetException;
-
-	DisplayContext getDisplayContext() {
+	public DisplayContext getDisplayContext() {
 		if (displayContext != null)
 			return displayContext;
 		return Utility.getCurrentContext();
@@ -154,12 +126,17 @@ abstract public class TriggerForInstance<B extends Box<TriggerImpl<B>>> extends 
 
 	abstract Object getIdentityObject();
 
-	abstract public String getMenuName();
-
-	public String getMenuPath() {
-		String s = getMenuName();
-		return s;
+	final public String getMenuName() {
+		String path = getMenuPath().trim();
+		while (path.endsWith("|"))
+			path = path.substring(0, path.length() - 1);
+		String nym = path.substring(path.lastIndexOf('|') + 1);
+		if (nym.trim().length() == 0)
+			return path;
+		return nym;
 	}
+
+	abstract public String getMenuPath();
 
 	@Override public Object getValue(String key) {
 		return actionImpl.getValue(key);
@@ -177,6 +154,8 @@ abstract public class TriggerForInstance<B extends Box<TriggerImpl<B>>> extends 
 	@Override public boolean isEnabled() {
 		return actionImpl.isEnabled();
 	}
+
+	abstract public Class getReturnType();
 
 	@Override public void putValue(String key, Object value) {
 		actionImpl.putValue(key, value);
@@ -203,7 +182,6 @@ abstract public class TriggerForInstance<B extends Box<TriggerImpl<B>>> extends 
 
 	@Override public void setEnabled(boolean b) {
 		actionImpl.setEnabled(b);
-
 	}
 
 	abstract void setMenuInfo();
@@ -217,16 +195,25 @@ abstract public class TriggerForInstance<B extends Box<TriggerImpl<B>>> extends 
 		String s = getDescription();
 		if (s != null)
 			return s;
-		return getMenuPath();
+		return getShortLabel();
 	}
 
-	@Override public void visitComponent(JComponent comp) {
+	@Override public JComponent visitComponent(JComponent comp) {
 		if (comp instanceof JMenuItem) {
 			jmi = (JMenuItem) comp;
-			jmi.setText(getMenuName());
+			jmi.setName(getShortLabel());
+
+			String str = getMenuName();
+			if (str.trim().length() == 0) {
+				jmi.setText(str);
+			}
+			jmi.setText(str);
 			jmi.setToolTipText(getDescription());
 			setMenuInfo();
 		}
+		return jmi;
 	}
+
+	abstract public void applySalience(UISalient isSalient);
 
 }

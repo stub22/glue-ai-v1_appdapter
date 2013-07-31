@@ -11,7 +11,7 @@ import org.appdapter.gui.api.GetSetObject;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.swing.ScreenBoxPanel;
 
-public class UseEditor<BoxType extends Box> extends ScreenBoxPanel<BoxType> implements Customizer {
+public class UseEditor<BoxType extends Box> extends ScreenBoxPanel<BoxType> implements Customizer, ObjectPanel {
 
 	private PropertyEditor ec;
 	private Component custEditor;
@@ -49,15 +49,13 @@ public class UseEditor<BoxType extends Box> extends ScreenBoxPanel<BoxType> impl
 		super.removePropertyChangeListener(listener);
 	}
 
-	@Override
-	protected void completeSubClassGUI() throws Throwable {
+	@Override protected void completeSubClassGUI() throws Throwable {
 		removeAll();
 		this.custEditor = ec.getCustomEditor();
 		add(this.custEditor);
 	}
 
-	@Override
-	protected boolean reloadObjectGUI(Object object) {
+	@Override protected boolean reloadObjectGUI(Object object) {
 		if (object != null) {
 			if (box != null) {
 				try {
@@ -75,12 +73,15 @@ public class UseEditor<BoxType extends Box> extends ScreenBoxPanel<BoxType> impl
 		return false;
 	}
 
-	@Override
-	protected void initSubclassGUI() throws Throwable {
+	@Override protected void initSubclassGUI() throws Throwable {
 		if (ec == null && objClass != null) {
 			ec = Utility.findEditor(objClass);
 		}
 
+	}
+
+	@Override public Class<? extends Object> getClassOfBox() {
+		return Object.class;
 	}
 
 }

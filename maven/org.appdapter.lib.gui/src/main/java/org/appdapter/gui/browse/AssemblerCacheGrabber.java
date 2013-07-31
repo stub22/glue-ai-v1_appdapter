@@ -13,7 +13,7 @@ import org.appdapter.core.log.Debuggable;
 import org.appdapter.core.name.Ident;
 import org.appdapter.gui.api.NamedObjectCollection;
 
-public class AssemberCacheGrabber extends BasicDebugger implements AnyOper.Singleton {
+public class AssemblerCacheGrabber extends BasicDebugger implements AnyOper.Singleton {
 
 	public Map<Class, ComponentCache> getCacheMap() {
 		return AssemblerUtils.getComponentCacheMap(AssemblerUtils.getDefaultSession());
@@ -21,6 +21,11 @@ public class AssemberCacheGrabber extends BasicDebugger implements AnyOper.Singl
 
 	public static String anyToString(Object any) {
 		return "" + any;
+	}
+
+	@Override public String toString() {
+		// TODO Auto-generated method stub
+		return super.toString();
 	}
 
 	public boolean longThreadQuit = false;
@@ -92,7 +97,8 @@ public class AssemberCacheGrabber extends BasicDebugger implements AnyOper.Singl
 
 				public void run() {
 					longRunner.run();
-					synchronized (longThreadSync) {
+					//synchronized (longThreadSync) 
+					{
 						if (longThread == Thread.currentThread()) {
 							longThread = null;
 						}
@@ -116,6 +122,8 @@ public class AssemberCacheGrabber extends BasicDebugger implements AnyOper.Singl
 
 			@Override public void run() {
 				for (Object o : allCopy) {
+					if (o.getClass() == BasicDebugger.class)
+						continue;
 					if (longThreadQuit) {
 						longThreadQuit = false;
 						return;

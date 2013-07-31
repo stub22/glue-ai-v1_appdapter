@@ -1,5 +1,7 @@
 package org.appdapter.gui.swing;
 
+import java.awt.event.ActionEvent;
+
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JComponent;
@@ -8,6 +10,8 @@ import javax.swing.UIManager;
 import javax.swing.plaf.MenuItemUI;
 
 public class SafeJMenuItem extends JMenuItem {
+
+	private Object savedContext;
 
 	/**
 	 * Resets the UI property with a value from the current look and feel.
@@ -26,11 +30,15 @@ public class SafeJMenuItem extends JMenuItem {
 		}
 	}
 
+	protected void fireActionPerformed(ActionEvent event) {
+		super.fireActionPerformed(event);
+	}
+
 	/**
 	* Creates a <code>JMenuItem</code> with no set text or icon.
 	*/
-	public SafeJMenuItem() {
-		this(null, (Icon) null);
+	public SafeJMenuItem(Object ctx, boolean iamObject) {
+		this(ctx, iamObject, null, (Icon) null);
 	}
 
 	/**
@@ -38,8 +46,8 @@ public class SafeJMenuItem extends JMenuItem {
 	 *
 	 * @param icon the icon of the <code>JMenuItem</code>
 	 */
-	public SafeJMenuItem(Icon icon) {
-		this(null, icon);
+	public SafeJMenuItem(Object ctx, boolean iamObject, Icon icon) {
+		this(ctx, iamObject, null, icon);
 	}
 
 	/**
@@ -47,8 +55,8 @@ public class SafeJMenuItem extends JMenuItem {
 	 *
 	 * @param text the text of the <code>JMenuItem</code>
 	 */
-	public SafeJMenuItem(String text) {
-		this(text, (Icon) null);
+	public SafeJMenuItem(Object ctx, boolean iamObject, String text) {
+		this(ctx, iamObject, text, (Icon) null);
 	}
 
 	/**
@@ -58,8 +66,9 @@ public class SafeJMenuItem extends JMenuItem {
 	 * @param a the action of the <code>JMenuItem</code>
 	 * @since 1.3
 	 */
-	public SafeJMenuItem(Action a) {
+	public SafeJMenuItem(Object ctx, boolean iamObject, Action a) {
 		super(a);
+		this.savedContext = ctx;
 	}
 
 	/**
@@ -68,8 +77,9 @@ public class SafeJMenuItem extends JMenuItem {
 	 * @param text the text of the <code>JMenuItem</code>
 	 * @param icon the icon of the <code>JMenuItem</code>
 	 */
-	public SafeJMenuItem(String text, Icon icon) {
+	public SafeJMenuItem(Object ctx, boolean iamObject, String text, Icon icon) {
 		super(text, icon);
+		this.savedContext = ctx;
 	}
 
 	/**
@@ -79,8 +89,9 @@ public class SafeJMenuItem extends JMenuItem {
 	 * @param text the text of the <code>JMenuItem</code>
 	 * @param mnemonic the keyboard mnemonic for the <code>JMenuItem</code>
 	 */
-	public SafeJMenuItem(String text, int mnemonic) {
+	public SafeJMenuItem(Object ctx, boolean iamObject, String text, int mnemonic) {
 		super(text, mnemonic);
+		this.savedContext = ctx;
 	}
 
 }

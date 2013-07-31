@@ -310,7 +310,7 @@ public abstract class POJOBoxImpl<TrigType extends Trigger<? extends POJOBoxImpl
 				return (Component) o;
 			}
 		}
-		return findOrCreateBoxPanel(Kind.OBJECT_PROPERTIES);
+		return findOrCreateBoxPanel(getDisplayType());
 	}
 
 	@Override
@@ -338,7 +338,7 @@ public abstract class POJOBoxImpl<TrigType extends Trigger<? extends POJOBoxImpl
 
 	@Override
 	public Container getDisplayTarget(DisplayType attachType) {
-		return getPropertiesPanel();
+		return findOrCreateBoxPanel(attachType);
 	}
 
 	@Override

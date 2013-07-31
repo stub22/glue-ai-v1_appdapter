@@ -1,7 +1,9 @@
 package org.appdapter.gui.browse;
 
+import java.awt.Container;
 import java.beans.PropertyVetoException;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.RandomAccess;
 
 import javax.swing.JTree;
@@ -12,20 +14,29 @@ import org.appdapter.api.trigger.MutableBox;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.BT;
 import org.appdapter.gui.api.NamedObjectCollection;
+import org.appdapter.gui.api.POJOCollection;
 import org.appdapter.gui.api.POJOCollectionListener;
 
 public class AddToTreeListener implements POJOCollectionListener {
 
-	JTree jtree;
-	NamedObjectCollection col;
-	BoxContext mybctx;
+	public String toString() {
+		return Debuggable.toInfoStringF(this);
+	}
 
-	public AddToTreeListener(JTree myTree, NamedObjectCollection ctx, BoxContext bctx) {
+	NamedObjectCollection col;
+	MutableBox root;
+	BoxContext mybctx;
+	Container jtree;
+	boolean organizeIntoClasses;
+
+	public AddToTreeListener(Container myTree, NamedObjectCollection ctx, BoxContext bctx, MutableBox root, boolean organizeIntoClasses) {
 		mybctx = bctx;
 		jtree = myTree;
 		col = ctx;
+		this.root = root;
+		this.organizeIntoClasses = organizeIntoClasses;
 		addboxes(ctx);
-		col.addListener(this);
+		ctx.addListener(this);
 	}
 
 	private void addboxes(NamedObjectCollection ctx) {
@@ -57,14 +68,40 @@ public class AddToTreeListener implements POJOCollectionListener {
 
 	void pojoUpdate(Object obj, BT box, boolean isRemoval) throws PropertyVetoException {
 		Object d = Utility.dref(obj);
-		if (d != null && d != obj) {
-			//	obj = d;
+		if (!isRemoval) {
+			if (d != null && d != obj) {
+				obj = d;
+			}
+			if (obj == null) {
+				obj = box.getValueOrThis();
+			}
+			if (box == null) {
+				box = col.asWrapped(d);
+			}
 		}
-		Class oc = obj.getClass();
+		if (organizeIntoClasses) {
+			pojoUpdateObjectWithClass(obj, box, isRemoval);
+		} else {
+			pojoUpdateObjectOnly(obj, box, isRemoval);
+		}
+	}
+
+	void pojoUpdateObjectOnly(Object anyObject, BT box, boolean isRemoval) throws PropertyVetoException {
+
+		Class oc = anyObject.getClass();
 
 		if (!isRemoval) {
-			Utility.addObjectFeatures(obj);
+			Utility.addObjectFeatures(anyObject);
+			addChildObject(root, box.getUniqueName(), anyObject);
+		} else {
+			removeChildObject(root, box.getUniqueName(), anyObject);
 		}
+
+	}
+
+	void pojoUpdateObjectWithClass(Object obj, BT box, boolean isRemoval) throws PropertyVetoException {
+
+		Class oc = obj.getClass();
 
 		if (oc.isArray())
 			return;
@@ -72,6 +109,10 @@ public class AddToTreeListener implements POJOCollectionListener {
 			return;
 		if (obj instanceof RandomAccess)
 			return;
+
+		if (!isRemoval) {
+			Utility.addObjectFeatures(obj);
+		}
 
 		MutableBox objectBox = (MutableBox) box;
 
@@ -86,27 +127,25 @@ public class AddToTreeListener implements POJOCollectionListener {
 	}
 
 	public MutableBox getFirstBox(Object obj) throws PropertyVetoException {
-		if (obj == null)
+		if (obj == null) {
+			if (root != null)
+				return root;
 			return (MutableBox) mybctx.getRootBox();
-		return (MutableBox) col.findOrCreateBox(null, obj).asBox();
+		}
+		return (MutableBox) findOrCreateBox(col, null, obj);
 	}
 
 	private void saveInClassTree(Box belowBox, Class oc, MutableBox objectBox, boolean isRemoval) throws PropertyVetoException {
 		try {
-			saveInClassTree0(belowBox, oc, objectBox, isRemoval);
+			saveInTreeWC(belowBox, oc, objectBox, isRemoval);
 		} catch (Exception e2) {
-			//e2.printStackTrace();
-			try {
-				saveInClassTree0(belowBox, oc, objectBox, isRemoval);
-			} catch (Exception e) {
-
-			}
+			Debuggable.printStackTrace(e2);
 		}
 	}
 
-	private void saveInClassTree0(Box belowBox, Class oc, MutableBox objectBox, boolean isRemoval) throws PropertyVetoException {
+	private void saveInTreeWC(Box belowBox, Class oc, MutableBox objectBox, boolean isRemoval) {
 		String cn = Utility.getShortClassName(oc);
-		MutableBox objectClassBox = (MutableBox) col.findOrCreateBox(cn, oc).asBox();
+		MutableBox objectClassBox = (MutableBox) findOrCreateBox(col, cn, oc);
 		if (!isRemoval) {
 			mybctx.contextualizeAndAttachChildBox(belowBox, objectClassBox);
 			mybctx.contextualizeAndAttachChildBox((Box) objectClassBox, objectBox);
@@ -130,4 +169,60 @@ public class AddToTreeListener implements POJOCollectionListener {
 		}
 	}
 
+	public void treeExpand(Object anyObject, int i) {
+		BT bt = Utility.asWrapped(anyObject);
+		try {
+			pojoUpdate(bt.getValue(), bt, false);
+			treeExpand0(anyObject, i);
+		} catch (PropertyVetoException e) {
+			e.printStackTrace();
+			throw Debuggable.reThrowable(e);
+		}
+	}
+
+	public void treeExpand0(Object anyObject, int i) {
+		if (i >= 0) {
+			int ii = i - 1;
+			try {
+				Map map = Utility.propertyDescriptors(anyObject, true, true);
+				for (Iterator iterator = map.entrySet().iterator(); iterator.hasNext();) {
+					Map.Entry entry = (Map.Entry) iterator.next();
+					String title = "" + entry.getKey();
+					Object child = entry.getValue();
+					addChildObject(anyObject, title, child);
+					if (i > 0) {
+						treeExpand0(child, ii);
+					}
+				}
+
+			} catch (PropertyVetoException e) {
+				Debuggable.printStackTrace(e);
+				throw Debuggable.reThrowable(e);
+			}
+		}
+
+	}
+
+	public void addChildObject(Object anyObject, String title, Object child) throws PropertyVetoException {
+		MutableBox parent = getFirstBox(anyObject);
+		MutableBox objectBox = (MutableBox) findOrCreateBox(col, title, child);
+		mybctx.contextualizeAndAttachChildBox((Box) parent, objectBox);
+	}
+
+	public void removeChildObject(Object anyObject, String title, Object child) throws PropertyVetoException {
+		MutableBox parent = getFirstBox(anyObject);
+		MutableBox objectBox = (MutableBox) findOrCreateBox(col, title, child);
+		mybctx.contextualizeAndAttachChildBox((Box) parent, objectBox);
+
+	}
+
+	private MutableBox findOrCreateBox(NamedObjectCollection col2, String title, Object child) {
+		if (child instanceof MutableBox)
+			return (MutableBox) child;
+		try {
+			return (MutableBox) col.findOrCreateBox(title, child).asBox();
+		} catch (PropertyVetoException e) {
+			throw Debuggable.reThrowable(e);
+		}
+	}
 }

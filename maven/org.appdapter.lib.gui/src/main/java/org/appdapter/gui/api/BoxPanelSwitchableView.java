@@ -3,6 +3,7 @@ package org.appdapter.gui.api;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.util.List;
 
 import javax.swing.Icon;
 import javax.swing.event.ChangeListener;
@@ -42,5 +43,7 @@ public interface BoxPanelSwitchableView {
 	public void setSelectedComponent(Component boxP);
 
 	public Dimension getSize(DisplayType frame);
+
+	public List<Component> containsComponentOfClass(Class comp);
 
 }

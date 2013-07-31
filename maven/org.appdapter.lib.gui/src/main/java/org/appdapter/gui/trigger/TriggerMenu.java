@@ -15,7 +15,7 @@ public class TriggerMenu extends SafeJMenu {
 	TriggerMenuController controller;
 
 	public TriggerMenu(String title, DisplayContext context, NamedObjectCollection noc, BT box, Object object) {
-		super(title);
+		super(true, title, box);
 		controller = new TriggerMenuController(context, noc, object, box, this);
 	}
 }

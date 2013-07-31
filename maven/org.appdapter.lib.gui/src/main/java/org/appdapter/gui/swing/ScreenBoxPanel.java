@@ -5,12 +5,13 @@ import org.appdapter.gui.api.BT;
 import org.appdapter.gui.api.FocusOnBox;
 import org.appdapter.gui.api.GetSetObject;
 import org.appdapter.gui.browse.Utility;
+import org.appdapter.gui.editors.ObjectPanel;
 
 /**
  * A Tabbed GUI component used to render 
  * 
  */
-abstract public class ScreenBoxPanel<BoxType extends Box> extends ObjectView<BoxType> implements GetSetObject, FocusOnBox<BoxType> {
+abstract public class ScreenBoxPanel<BoxType extends Box> extends ObjectView<BoxType> implements GetSetObject, FocusOnBox<BoxType>, ObjectPanel {
 
 	protected abstract boolean reloadObjectGUI(Object obj) throws Throwable;
 

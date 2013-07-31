@@ -12,6 +12,7 @@ import java.util.Iterator;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.GetSetObject;
+import org.appdapter.gui.browse.Utility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +34,8 @@ public class PropertiesPanel<BoxType extends Box> extends ScreenBoxPanel<BoxType
 		this.context = context;
 		this.objClass = objClass;
 		this.staticOnly = staticOnly;
-		setObject(val);
+		final Object val0 = val;
+		setObject(val0);
 	}
 
 	@Override public Object getValue() {
@@ -53,6 +55,10 @@ public class PropertiesPanel<BoxType extends Box> extends ScreenBoxPanel<BoxType
 			reloadObjectGUI(val);
 		}
 		this.objectValue = val;
+	}
+
+	@Override public Class<? extends Object> getClassOfBox() {
+		return Object.class;
 	}
 
 	/*private JComponent createRow(PropertyDescriptor descriptor) {
@@ -127,16 +133,21 @@ public class PropertiesPanel<BoxType extends Box> extends ScreenBoxPanel<BoxType
 
 	}
 
-
 	@Override protected boolean reloadObjectGUI(Object val) {
 		if (super.showingInGUI == val)
 			return false;
+		showingInGUI = val;
 		objectValue = val;
-		if (val != null) {
-			completeSubClassGUI();
-		} else {
-			initSubclassGUI();
-		}
+
+		Utility.replaceRunnable(this, new Runnable() {
+			public void run() {
+				if (objectValue != null) {
+					completeSubClassGUI();
+				} else {
+					initSubclassGUI();
+				}
+			};
+		});
 		return true;
 	}
 

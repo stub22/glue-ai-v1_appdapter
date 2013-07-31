@@ -22,6 +22,7 @@ import org.appdapter.api.trigger.TriggerImpl;
 import org.appdapter.core.store.Repo.GraphStat;
 import org.appdapter.core.store.RepoBox;
 import org.appdapter.demo.DemoResources;
+import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.repo.MutableRepoBox;
 
 /**
@@ -30,33 +31,32 @@ import org.appdapter.gui.repo.MutableRepoBox;
 public class RepoTriggers {
 
 	public static class OpenTrigger<MRB extends MutableRepoBox<TriggerImpl<MRB>>> extends TriggerImpl<MRB> {
-		@Override
-		public void fire(MRB targetBox) {
-			String storeConfigResolvedPath = DemoResources.STORE_CONFIG_PATH; // DemoResources.resolveResourcePathToURL_WhichJenaCantUseInCaseOfJarFileRes(DemoResources.STORE_CONFIG_PATH);
+		String storeConfigResolvedPath = DemoResources.STORE_CONFIG_PATH; // DemoResources.resolveResourcePathToURL_WhichJenaCantUseInCaseOfJarFileRes(DemoResources.STORE_CONFIG_PATH);
+
+		@Override public void fire(MRB targetBox) {
 			// Model data = FileManager.get().loadModel(dataPath.toString());
 			targetBox.mount(storeConfigResolvedPath);
 		}
 	}
 
 	public static class InitTrigger<MRB extends MutableRepoBox<TriggerImpl<MRB>>> extends TriggerImpl<MRB> {
-		@Override
-		public void fire(MRB targetBox) {
+		@Override public void fire(MRB targetBox) {
 			targetBox.formatStoreIfNeeded();
 		}
 	}
 
 	public static class DumpStatsTrigger<RB extends org.appdapter.core.store.RepoBox<RBT>, RBT extends TriggerImpl<RB>> extends TriggerImpl<RB> {
-		@Override
-		public void fire(RB targetBox) {
+		@Override public void fire(RB targetBox) {
 			List<GraphStat> stats = targetBox.getAllGraphStats();
+			Utility.attachTo(targetBox, "stats", stats);
 		}
 	}
 
 	public static class QueryTrigger<RB extends RepoBox<TriggerImpl<RB>>> extends TriggerImpl<RB> {
 
-		@Override
-		public void fire(RB targetBox) {
-			String resolvedQueryURL = DemoResources.QUERY_PATH;
+		String resolvedQueryURL = DemoResources.QUERY_PATH;
+
+		@Override public void fire(RB targetBox) {
 			ClassLoader optCL = DemoResources.class.getClassLoader();
 			String resultXML = targetBox.processQueryAtUrlAndProduceXml(resolvedQueryURL, optCL);
 			logInfo("ResultXML\n-----------------------------------" + resultXML + "\n---------------------------------");
@@ -67,8 +67,7 @@ public class RepoTriggers {
 		// ModGraph modGraph = new ModGraph();
 
 		// Want contravariance?
-		@Override
-		public void fire(MRB targetBox) {
+		@Override public void fire(MRB targetBox) {
 			try {
 				String tgtGraphName = "yowza";
 

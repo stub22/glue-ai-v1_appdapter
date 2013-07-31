@@ -8,8 +8,10 @@ import java.util.HashMap;
 
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.browse.Utility;
+import static org.appdapter.gui.util.CollectionSetUtils.*;
+import static org.appdapter.gui.util.PromiscuousClassUtilsA.*;
 
-public class FunctionalClassRegistry<RSLTCLASS> extends FunctionalRegistryMap<Class, Class<RSLTCLASS>> {
+class FunctionalClassRegistry<RSLTCLASS> extends FunctionalRegistryMap<Class, Class<RSLTCLASS>> {
 
 	/**
 	 * Finds a Class that implements a delegateType that processes the  objClass
@@ -58,12 +60,12 @@ public class FunctionalClassRegistry<RSLTCLASS> extends FunctionalRegistryMap<Cl
 			return null;
 		String fnd = getLowerSimplestNameMinusBeanInfo(c);
 		try {
-			for (Class<RSLTCLASS> possible : ClassFinder.getClasses(baseClass)) {
-				if (!PromiscuousClassUtils.isCreateable(possible))
+			for (Class<?> possible : ClassFinder.getClasses(baseClass)) {
+				if (!isCreateable(possible))
 					continue;
 				String cn = getLowerSimplestNameMinusBeanInfo(possible);
 				if (cn.toLowerCase().contains(fnd.toLowerCase()))
-					return possible;
+					return (Class<RSLTCLASS>) possible;
 			}
 		} catch (IOException e) {
 			Debuggable.UnhandledException(e);

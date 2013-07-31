@@ -21,6 +21,9 @@
  */
 
 package org.appdapter.gui.repo;
+
+import java.sql.Connection;
+
 import org.appdapter.api.trigger.Box;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.swing.ScreenBoxPanel;
@@ -30,6 +33,10 @@ import org.appdapter.gui.swing.ScreenBoxPanel;
  */
 
 public class DatabaseManagerPanel extends ScreenBoxPanel<Box> {
+
+	@Override public Class<Connection> getClassOfBox() {
+		return Connection.class;
+	}
 
 	/** Creates new form DatabaseManagerPanel */
 	public DatabaseManagerPanel() {

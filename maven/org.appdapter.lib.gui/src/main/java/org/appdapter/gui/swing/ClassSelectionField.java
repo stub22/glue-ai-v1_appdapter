@@ -10,7 +10,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import org.appdapter.gui.browse.Utility;
-import org.appdapter.gui.util.PromiscuousClassUtils;
+import org.appdapter.gui.util.PromiscuousClassUtilsA;
 
 /**
   A GUI widget that lets you select a class.
@@ -88,7 +88,7 @@ public class ClassSelectionField extends JJPanel {
 
 	private void checkControls() {
 		try {
-			setSelectedClass(PromiscuousClassUtils.forName(text.getText()), false);
+			setSelectedClass(PromiscuousClassUtilsA.forName(text.getText()), false);
 		} catch (Exception err) {
 			setSelectedClass(null);
 		}

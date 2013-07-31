@@ -16,8 +16,10 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyDescriptor;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collection;
 
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -652,17 +654,14 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 						pn = property.getDisplayName();
 					if (pn != null) {
 						try {
-							return ReflectUtils.getFieldValue(obj, obj.getClass(), obj.getClass(), pn);
+							Collection<Field> fields = ReflectUtils.findFields(obj, null, obj.getClass(), false, null, false, pn);
+							if (fields != null && fields.size() > 0)
+								return ReflectUtils.getFieldValue(obj, fields.iterator().next());
+							fields = ReflectUtils.findFields(obj, null, obj.getClass(), true, null, true, pn);
+							if (fields != null && fields.size() > 0)
+								return ReflectUtils.getFieldValue(obj, fields.iterator().next());
 						} catch (NoSuchFieldException nsfe) {
-							try {
-								return ReflectUtils.getFieldValue(obj, obj.getClass(), obj.getClass(), "_" + pn);
-							} catch (NoSuchFieldException nsfe1) {
-								try {
-									return ReflectUtils.getFieldValue(obj, obj.getClass(), obj.getClass(), "m_" + pn);
-								} catch (NoSuchFieldException nsfe2) {
-
-								}
-							}
+							//							
 						}
 					}
 				}

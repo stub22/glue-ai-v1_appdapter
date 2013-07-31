@@ -16,27 +16,59 @@
 
 package org.appdapter.gui.repo;
 
+import java.awt.event.ActionEvent;
+import java.lang.reflect.InvocationTargetException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Set;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContext;
 import org.appdapter.api.trigger.MutableBox;
+import org.appdapter.api.trigger.Trigger;
 import org.appdapter.api.trigger.TriggerImpl;
+import org.appdapter.api.trigger.AnyOper.UISalient;
 import org.appdapter.bind.rdf.jena.assembly.AssemblerUtils;
 import org.appdapter.bind.rdf.jena.model.JenaFileManagerUtils;
+import org.appdapter.core.convert.ReflectUtils;
+import org.appdapter.core.log.Debuggable;
 import org.appdapter.demo.DemoResources;
+import org.appdapter.gui.api.DisplayContext;
+import org.appdapter.gui.api.WrapperValue;
+import org.appdapter.gui.trigger.KMCTriggerImpl;
+import org.appdapter.gui.trigger.TriggerForClass;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
 public class BridgeTriggers {
 
-	public static class MountSubmenuFromTriplesTrigger<BT extends Box<TriggerImpl<BT>>> extends TriggerImpl<BT> {
+	public static class MountSubmenuFromTriplesTrigger<BT extends Box<TriggerImpl<BT>>> extends TriggerImpl<BT> implements TriggerForClass {
+
+		@UISalient(MenuName = "triplesURLParam")
+		public static Class<URL> boxTargetClass = URL.class;
+
+		@Override public boolean appliesTarget(Class cls, Object anyObject) {
+			return ReflectUtils.convertsTo(anyObject, cls, boxTargetClass);
+		}
+
+		@Override public Trigger createTrigger(String menuFmt, DisplayContext ctx, WrapperValue poj) {
+			return new MountSubmenuFromTriplesTrigger(ReflectUtils.recast(poj, boxTargetClass));
+		}
+
+		String triplesURL;
+
+		public MountSubmenuFromTriplesTrigger(URL triplesURLParam) {
+			triplesURL = triplesURLParam.toExternalForm();
+		}
+
+		public MountSubmenuFromTriplesTrigger(String triplesURLParam) {
+			triplesURL = triplesURLParam;
+		}
+
 		@Override public void fire(BT targetBox) {
 			logInfo(toString() + ".fire()");
 			BoxContext bc = targetBox.getBoxContext();
-
-			String triplesURL = DemoResources.MENU_ASSEMBLY_PATH;
 			JenaFileManagerUtils.ensureClassLoaderRegisteredWithDefaultJenaFM(DemoResources.class.getClassLoader());
 			logInfo("Loading triples from URL: " + triplesURL);
 			try {

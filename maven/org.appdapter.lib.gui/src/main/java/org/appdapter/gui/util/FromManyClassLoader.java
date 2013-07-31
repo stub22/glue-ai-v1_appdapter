@@ -2,8 +2,8 @@ package org.appdapter.gui.util;
 
 import static org.appdapter.gui.util.CollectionSetUtils.addAllNew;
 import static org.appdapter.gui.util.CollectionSetUtils.addIfNew;
-import static org.appdapter.gui.util.PromiscuousClassUtils.isSomething;
-import static org.appdapter.gui.util.PromiscuousClassUtils.rememberClass;
+import static org.appdapter.gui.util.CollectionSetUtils.*;
+import static org.appdapter.gui.util.PromiscuousClassUtilsA.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,12 +17,13 @@ import java.util.Vector;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.browse.Utility;
 
+
 //import org.appdapter.core.log.Debuggable;
 
 /**
  * A class loader to allow for loading of other jars that are added as a URL.
  */
-public class FromManyClassLoader extends IsolatingClassLoaderBase {
+public class FromManyClassLoader extends URLClassLoaderBase {
 	/** Dynamically added ClassLoaders. */
 	private final Collection<ClassLoader> classLoadersToSearch;
 
@@ -62,16 +63,16 @@ public class FromManyClassLoader extends IsolatingClassLoaderBase {
 	}
 
 	public URL findPromiscuousResource(String name, Collection<URL> exceptFor) {
-		if (PromiscuousClassUtils.contains("findResource", name)) {
+		if (contains("findResource", name)) {
 			return null;
 		}
-		PromiscuousClassUtils.push("findResource", name);
+		push("findResource", name);
 		try {
 			Collection<ClassLoader> cls = getClassLoadersToSearch(true);
 			URL url = null;
 			for (ClassLoader cl : cls) {
 				try {
-					url = PromiscuousClassUtils.callProtectedMethodNullOnUncheck(cl, "findResource", name);
+					url = callProtectedMethodNullOnUncheck(cl, "findResource", name);
 					if (isSomething(url)) {
 						if (exceptFor.contains(url))
 							continue;
@@ -99,21 +100,21 @@ public class FromManyClassLoader extends IsolatingClassLoaderBase {
 			}
 
 		} finally {
-			PromiscuousClassUtils.pop("findResource", name);
+			pop("findResource", name);
 		}
 	}
 
 	@Override
 	public URL getResource(String name) {
-		if (PromiscuousClassUtils.contains("getResource", name)) {
+		if (contains("getResource", name)) {
 			return null;
 		}
-		PromiscuousClassUtils.push("getResource", name);
+		push("getResource", name);
 		try {
 			Collection<ClassLoader> cls = getClassLoadersToSearch(true);
 			Vector vect = new Vector();
 			for (ClassLoader cl : cls) {
-				URL result = PromiscuousClassUtils.callProtectedMethodNullOnUncheck(cl, "getResource", name);
+				URL result = callProtectedMethodNullOnUncheck(cl, "getResource", name);
 				if (result != null)
 					addIfNew(vect, result);
 			}
@@ -121,7 +122,7 @@ public class FromManyClassLoader extends IsolatingClassLoaderBase {
 				return null;
 			return (URL) vect.elements().nextElement();
 		} finally {
-			PromiscuousClassUtils.pop("getResource", name);
+			pop("getResource", name);
 		}
 	}
 
@@ -129,7 +130,7 @@ public class FromManyClassLoader extends IsolatingClassLoaderBase {
 	public Enumeration getResources(String name) throws IOException {
 		Vector vect = new Vector();
 		for (ClassLoader cl : getClassLoadersToSearch(true)) {
-			Enumeration result = PromiscuousClassUtils.callProtectedMethodNullOnUncheck(cl, "getResources", name);
+			Enumeration result = callProtectedMethodNullOnUncheck(cl, "getResources", name);
 			if (result != null)
 				addAllNew(vect, result);
 		}
@@ -140,7 +141,7 @@ public class FromManyClassLoader extends IsolatingClassLoaderBase {
 	public Enumeration<URL> findResources(String name) throws IOException {
 		Vector<URL> vect = new Vector<URL>();
 		for (ClassLoader cl : getClassLoadersToSearch(true)) {
-			Enumeration<URL> result = PromiscuousClassUtils.callProtectedMethodNullOnUncheck(cl, "findResources", name);
+			Enumeration<URL> result = callProtectedMethodNullOnUncheck(cl, "findResources", name);
 			if (result != null)
 				addAllNew(vect, result);
 		}
@@ -164,11 +165,11 @@ public class FromManyClassLoader extends IsolatingClassLoaderBase {
 	}
 
 	public Class<?> findLoadedClassLocalMethodology(String name) throws ClassNotFoundException {
-		Class pl = PromiscuousClassUtils.findLoadedClassByName(name);
+		Class pl = findLoadedClassByName(name);
 		if (pl != null)
 			return pl;
 		for (ClassLoader cl : getClassLoadersToSearch(true)) {
-			Class<?> result = PromiscuousClassUtils.callProtectedMethodNullOnUncheck(cl, "findLoadedClass", name);
+			Class<?> result = callProtectedMethodNullOnUncheck(cl, "findLoadedClass", name);
 			if (isSomething(result))
 				return rememberClass(name, result);
 		}
@@ -192,7 +193,7 @@ public class FromManyClassLoader extends IsolatingClassLoaderBase {
 		Throwable cnf;
 		for (ClassLoader cl : getClassLoadersToSearch(true)) {
 			try {
-				Class<?> result = PromiscuousClassUtils.callProtectedMethodNullOnUncheck(cl, "findClass", name);
+				Class<?> result = callProtectedMethodNullOnUncheck(cl, "findClass", name);
 				if (isSomething(result))
 					return rememberClass(name, result);
 			} catch (Throwable e) {

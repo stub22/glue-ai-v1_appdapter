@@ -41,8 +41,7 @@ public class LookAndFeelMenuItems extends JMenu {
 			menu.add(createLnfAction("MotifLookAndFeel", "com.sun.java.swing.plaf.motif.MotifLookAndFeel"));
 		}
 		this.findMoreLaf = new Thread() {
-			@Override
-			public void run() {
+			@Override public void run() {
 				addReflectiveLAndF(menu);
 			}
 		};
@@ -87,7 +86,7 @@ public class LookAndFeelMenuItems extends JMenu {
 		try {
 			if (!scanMoreClasses)
 				return;
-			Set<Class> lafs = org.appdapter.gui.util.ClassFinder.getClasses(LookAndFeel.class);
+			Set<Class<? extends LookAndFeel>> lafs = org.appdapter.gui.util.ClassFinder.getClasses(LookAndFeel.class);
 			if (lafs != null) {
 				for (Class c : lafs) {
 					if (Modifier.isAbstract(c.getModifiers()))
@@ -103,8 +102,7 @@ public class LookAndFeelMenuItems extends JMenu {
 
 	private static Action createLnfAction(String title, final String className) {
 		return new AbstractAction(title) {
-			@Override
-			public void actionPerformed(ActionEvent e) {
+			@Override public void actionPerformed(ActionEvent e) {
 				try {
 					UIManager.setLookAndFeel(className);
 				} catch (Exception e1) {
@@ -118,8 +116,7 @@ public class LookAndFeelMenuItems extends JMenu {
 
 	private static Action createLnfAction(String title, final Class clazz) {
 		return new AbstractAction(title) {
-			@Override
-			public void actionPerformed(ActionEvent e) {
+			@Override public void actionPerformed(ActionEvent e) {
 				try {
 					LookAndFeel laf = (LookAndFeel) clazz.newInstance();
 					UIManager.setLookAndFeel(laf);
@@ -134,8 +131,7 @@ public class LookAndFeelMenuItems extends JMenu {
 
 	private static Action setStyleAction(String title, final int style) {
 		return new AbstractAction(title) {
-			@Override
-			public void actionPerformed(ActionEvent e) {
+			@Override public void actionPerformed(ActionEvent e) {
 				try {
 					LookAndFeelFactory.installJideExtension();
 					LookAndFeelFactory.installJideExtension(style);

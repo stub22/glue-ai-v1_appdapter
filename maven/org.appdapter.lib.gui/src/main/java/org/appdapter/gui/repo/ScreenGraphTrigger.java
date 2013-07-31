@@ -13,13 +13,18 @@ public class ScreenGraphTrigger<MRB extends Box<TriggerImpl<MRB>>> extends Trigg
 		myDebugName = myDebugNym;
 	}
 
-	@Override
-	public String toString() {
+	@Override public String getShortLabel() {
+		String str = super.getShortLabel();
+		if (str != null)
+			return str;
+		return myDebugName;
+	}
+
+	@Override public String toString() {
 		return getClass().getName() + "[name=" + myDebugName + "]";
 	}
 
-	@Override
-	public void fire(Box targetBox) {
+	@Override public void fire(Box targetBox) {
 		getLogger().debug(this.toString() + " firing on " + targetBox.toString());
 
 	}
