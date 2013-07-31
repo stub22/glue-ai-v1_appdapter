@@ -28,6 +28,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedList;
 
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
@@ -46,8 +48,11 @@ import javax.swing.KeyStroke;
 import javax.swing.ToolTipManager;
 import javax.swing.tree.TreeModel;
 
+import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContext;
+import org.appdapter.api.trigger.MutableBox;
 import org.appdapter.api.trigger.UserResult;
+import org.appdapter.core.convert.NoSuchConversionException;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.BT;
 import org.appdapter.gui.api.BoxPanelSwitchableView;
@@ -55,6 +60,8 @@ import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.DisplayType;
 import org.appdapter.gui.api.IShowObjectMessageAndErrors;
 import org.appdapter.gui.api.NamedObjectCollection;
+import org.appdapter.gui.box.ScreenBoxContextImpl;
+import org.appdapter.gui.box.ScreenBoxImpl;
 import org.appdapter.gui.swing.CollectionEditorUtil;
 import org.appdapter.gui.swing.DisplayContextUIImpl;
 import org.appdapter.gui.swing.LookAndFeelMenuItems;
@@ -72,36 +79,62 @@ import com.jidesoft.tree.StyledTreeCellRenderer;
  */
 public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessageAndErrors {
 
-	private TreeModel myTreeModel;
-	final DisplayContextUIImpl app;
-	private AddToTreeListener addToTreeListener;
+	public TreeModel myTreeModel;
+	public DisplayContextUIImpl app;
+	public AddToTreeListener addToTreeListener;
 	public BoxContext myBoxContext;
+	private AddToTreeListener addClipToTreeListener;
 
 	public BoxContext getBoxContext() {
 		return myBoxContext;
 	}
-	
+
 	public static void main(String[] args) {
 		Utility.ensureRunning();
 	}
 
 	/** Creates new form BrowsePanel */
 	public BrowsePanel(TreeModel tm, BoxContext bctx0) {
-		Utility.uiObjects.toString();
+		synchronized (Utility.featureQueueLock) {
+			init(tm, bctx0, Utility.uiObjects, Utility.getClipboard());
+		}
+	}
+
+	public void init(TreeModel tm, BoxContext bctx0, NamedObjectCollection ctx, NamedObjectCollection clipboard) {
 		Utility.browserPanel = this;
 		myTreeModel = tm;
 		initComponents();
 		Utility.theBoxPanelDisplayContext = myBoxPanelSwitchableViewImpl = new ObjectTabsForTabbedView(myBoxPanelTabPane);
 		setTabbedPaneOptions();
-		Utility.controlApp = app = new DisplayContextUIImpl(myBoxPanelSwitchableViewImpl, this, Utility.uiObjects);
-		NamedObjectCollection ctx = Utility.getTreeBoxCollection();
+		Utility.controlApp = app = new DisplayContextUIImpl(myBoxPanelSwitchableViewImpl, this, ctx);
 		Utility.collectionWatcher = new CollectionEditorUtil(app, ctx);
-		//myBoxPanelTabPane.add("Class Browser", Utility.selectionOfCollectionPanel);
 		myBoxPanelTabPane.add("POJO Browser", Utility.collectionWatcher.getNamedItemChooserPanel());
 		myBoxContext = bctx0;
 		hookTree();
-		this.addToTreeListener = new AddToTreeListener(myTree, ctx, bctx0);
+		this.addToTreeListener = new AddToTreeListener(myTree, ctx, bctx0, (MutableBox) bctx0.getRootBox(), true);
+		addClipboard(clipboard);
+
+		LinkedList<Object> todoList = Utility.featureQueueUp;
+		Utility.featureQueueUp = null;
+		for (Iterator iterator = todoList.iterator(); iterator.hasNext();) {
+			Object object = (Object) iterator.next();
+			Utility.addObjectFeatures(object);
+		}
+
 		invalidate();
+	}
+
+	private void addClipboard(NamedObjectCollection clipboard) {
+		try {
+			Box suposeRoot = myBoxContext.getRootBox();
+			ScreenBoxImpl clipboardBox = new ScreenBoxImpl();
+			clipboardBox.setObject(clipboard);
+			addToTreeListener.addChildObject(suposeRoot, "Clipboard", clipboardBox);
+			ScreenBoxContextImpl clipContext = new ScreenBoxContextImpl(clipboardBox);
+			this.addClipToTreeListener = new AddToTreeListener(myTree, clipboard, clipContext, clipboardBox, false);
+		} catch (Exception e) {
+
+		}
 	}
 
 	private void setTabbedPaneOptions() {
@@ -246,7 +279,9 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 		JRadioButtonMenuItem rbMenuItem;
 		JCheckBoxMenuItem cbMenuItem;
 
-		Utility.toolsMenu = menu = new SafeJMenu("Tools");
+		Object jmenuTarget = this;
+
+		Utility.toolsMenu = menu = new SafeJMenu(false, "Tools", jmenuTarget);
 		menu.setMnemonic(KeyEvent.VK_A);
 		menu.getAccessibleContext().setAccessibleDescription("Tool menu items");
 		Utility.updateToolsMenu();
@@ -254,16 +289,16 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 			return menu;
 
 		//a group of JMenuItems
-		menuItem = new SafeJMenuItem("A text-only menu item", KeyEvent.VK_T);
+		menuItem = new SafeJMenuItem(jmenuTarget, false, "A text-only menu item", KeyEvent.VK_T);
 		menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_1, ActionEvent.ALT_MASK));
 		menuItem.getAccessibleContext().setAccessibleDescription("This doesn't really do anything");
 		menu.add(menuItem);
 
-		menuItem = new SafeJMenuItem("Both text and icon", new ImageIcon("images/middle.gif"));
+		menuItem = new SafeJMenuItem(jmenuTarget, false, "Both text and icon", new ImageIcon("images/middle.gif"));
 		menuItem.setMnemonic(KeyEvent.VK_B);
 		menu.add(menuItem);
 
-		menuItem = new SafeJMenuItem(new ImageIcon("images/middle.gif"));
+		menuItem = new SafeJMenuItem(jmenuTarget, false, new ImageIcon("images/middle.gif"));
 		menuItem.setMnemonic(KeyEvent.VK_D);
 		menu.add(menuItem);
 
@@ -293,14 +328,14 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 
 		//a submenu
 		menu.addSeparator();
-		submenu = new SafeJMenu("A submenu");
+		submenu = new SafeJMenu(true, "A submenu", null);
 		submenu.setMnemonic(KeyEvent.VK_S);
 
-		menuItem = new SafeJMenuItem("An item in the submenu");
+		menuItem = new SafeJMenuItem(jmenuTarget, true, "An item in the submenu");
 		menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_2, ActionEvent.ALT_MASK));
 		submenu.add(menuItem);
 
-		menuItem = new SafeJMenuItem("Another item");
+		menuItem = new SafeJMenuItem(jmenuTarget, true, "Another item");
 		submenu.add(menuItem);
 
 		menu.add(submenu);
@@ -393,6 +428,7 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 
 	private void myBoxPanelStatusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_myBoxPanelStatusActionPerformed
 		// TODO add your handling code here:
+
 	}//GEN-LAST:event_myBoxPanelStatusActionPerformed
 
 	public void addTreeMouseAdapter(MouseAdapter ma) {
@@ -420,13 +456,27 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 	private BoxPanelSwitchableView myBoxPanelSwitchableViewImpl;
 
 	// End of variables declaration//GEN-END:variables
+	Class myBoxPanelStatusType = null;
 
 	public NamedObjectCollection getTreeBoxCollection() {
 		return Utility.getTreeBoxCollection();
 	}
 
-	public UserResult showMessage(String message) {
+	public UserResult showMessage(String message, Class expected) {
 		myBoxPanelStatus.setText(message);
+		myBoxPanelStatusType = expected;
+		Object was = null;
+		if (expected != null && expected != String.class) {
+			try {
+				was = Utility.fromString(message, expected);
+			} catch (NoSuchConversionException e) {
+			}
+			if (expected.isInstance(was)) {
+				JPanel pnl = Utility.getPropertiesPanel(was);
+				showScreenBox(message, pnl);
+			}
+		}
+
 		return null;
 	}
 
@@ -438,7 +488,7 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 		try {
 			if (anyObject == null)
 				return Utility.asUserResult(null);
-			return addObject(title, anyObject, Utility.getDisplayType(anyObject.getClass()), true);
+			return addObject(title, anyObject, Utility.getDisplayType(anyObject.getClass()), true, false);
 		} catch (Exception e) {
 			throw Debuggable.UnhandledException(e);
 		}
@@ -448,11 +498,14 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 		return showScreenBox(null, anyObject);
 	}
 
-	public UserResult addObject(String title, Object anyObject, DisplayType attachType, boolean showAsap) {
+	public UserResult addObject(String title, Object anyObject, DisplayType attachType, boolean showASAP, boolean expandChildren) {
 		try {
 			BT impl = getTreeBoxCollection().findOrCreateBox(title, anyObject);
-			if (showAsap) {
+			if (showASAP) {
 				return app.showScreenBox(title, impl);
+			}
+			if (expandChildren) {
+				treeExpand(anyObject);
 			}
 			return UserResult.SUCCESS;
 		} catch (Exception e) {
@@ -460,8 +513,12 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 		}
 	}
 
+	public void treeExpand(Object anyObject) {
+		addToTreeListener.treeExpand(anyObject, 1);
+	}
+
 	public UserResult showScreenBox(String title, Object anyObject, DisplayType attachType) {
-		return addObject(title, anyObject, attachType, true);
+		return addObject(title, anyObject, attachType, true, false);
 	}
 
 	public BoxPanelSwitchableView getBoxPanelTabPane() {
@@ -508,4 +565,10 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 		myBoxPanelTabPane.add(title, thing);
 
 	}
+
+	@Override public UserResult addObject(String title, Object anyObject, boolean showASAP, boolean expandChildren) {
+		UserResult res = addObject(title, anyObject, DisplayType.TREE, showASAP, expandChildren);
+		return res;
+	}
+
 }

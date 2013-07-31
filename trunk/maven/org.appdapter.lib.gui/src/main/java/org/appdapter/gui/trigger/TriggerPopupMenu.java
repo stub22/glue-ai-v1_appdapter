@@ -51,8 +51,8 @@ public class TriggerPopupMenu extends JPopupMenu {
 	 *
 	 * @since 1.3
 	 */
-	protected JMenuItem createActionComponent(Action a) {
-		JMenuItem mi = new SafeJMenuItem() {
+	protected JMenuItem createActionComponent(Action a, Object ctx) {
+		JMenuItem mi = new SafeJMenuItem(ctx, true) {
 			protected PropertyChangeListener createActionPropertyChangeListener(Action a) {
 				PropertyChangeListener pcl = createActionChangeListener(this);
 				if (pcl == null) {

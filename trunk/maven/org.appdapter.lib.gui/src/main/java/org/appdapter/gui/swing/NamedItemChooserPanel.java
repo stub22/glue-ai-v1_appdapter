@@ -13,7 +13,7 @@ import org.appdapter.gui.api.FocusOnBox;
 import org.appdapter.gui.api.GetSetObject;
 import org.appdapter.gui.api.NamedObjectCollection;
 import org.appdapter.gui.browse.Utility;
-import org.appdapter.gui.util.PromiscuousClassUtils;
+import org.appdapter.gui.util.PromiscuousClassUtilsA;
 
 public class NamedItemChooserPanel extends JJPanel implements GetSetObject, FocusOnBox<Box> {
 
@@ -29,7 +29,7 @@ public class NamedItemChooserPanel extends JJPanel implements GetSetObject, Focu
 		Utility.namedItemChooserPanel = this;
 		this.context = context0;
 		namedObjects = context0.getLocalBoxedChildren();
-		PromiscuousClassUtils.ensureInstalled();
+		PromiscuousClassUtilsA.ensureInstalled();
 		Utility.registerEditors();
 		Utility.setBeanInfoSearchPath();
 		initGUI();
@@ -73,5 +73,7 @@ public class NamedItemChooserPanel extends JJPanel implements GetSetObject, Focu
 		}
 
 	}
-
+	@Override public Class<Box> getClassOfBox() {
+		return Box.class;
+	}
 }

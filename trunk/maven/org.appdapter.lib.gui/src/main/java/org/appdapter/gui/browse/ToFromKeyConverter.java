@@ -11,10 +11,10 @@ abstract public class ToFromKeyConverter<VALUECLASS, KEYCLASS> implements Conver
 	protected Class<VALUECLASS> valueClass;
 	protected Class<KEYCLASS> keyClass;
 
-	@Override public Integer declaresConverts(Object val, Class valClass, Class objNeedsToBe) {
+	@Override public Integer declaresConverts(Object val, Class valClass, Class objNeedsToBe, int maxCvt) {
 		if (valClass != keyClass)
 			return WONT;
-		return CASTING_ONLY.declaresConverts(val, valueClass, objNeedsToBe);
+		return CASTING_ONLY.declaresConverts(val, valueClass, objNeedsToBe, maxCvt);
 	}
 
 	protected ToFromKeyConverter(Class<VALUECLASS> toClz, Class<KEYCLASS> fromClz) {
@@ -26,11 +26,11 @@ abstract public class ToFromKeyConverter<VALUECLASS, KEYCLASS> implements Conver
 		valueClass = null;
 	}
 
-	@Override public <T> T recast(Object obj, Class<T> objNeedsToBe) throws NoSuchConversionException {
+	@Override public <T> T convert(Object obj, Class<T> objNeedsToBe, int maxCvt) throws NoSuchConversionException {
 		if (obj == null)
 			throw new NoSuchConversionException(obj, objNeedsToBe);
 		Class objClass = obj.getClass();
-		if (declaresConverts(obj, objClass, objNeedsToBe) == WONT)
+		if (declaresConverts(obj, objClass, objNeedsToBe, maxCvt) == WONT)
 			throw new NoSuchConversionException(obj, objNeedsToBe);
 		if (objNeedsToBe.isAssignableFrom(keyClass)) {
 			// try to go to Key

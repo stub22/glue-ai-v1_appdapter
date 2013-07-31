@@ -47,11 +47,19 @@ public class ScreenBoxContextImpl extends BoxContextImpl implements DisplayConte
 
 	//private TableModel myTableModel;
 
-	public ScreenBoxContextImpl() {
+	private ScreenBoxContextImpl() {
+	}
+
+	public ScreenBoxContextImpl(MutableBox rootBox) {
+		contextualizeAndAttachRootBox(rootBox);
+	}
+
+	public ScreenBoxContextImpl(ScreenBoxTreeNodeImpl rootNode) {
+		setRootNode(rootNode);
 	}
 
 	private void setRootNode(ScreenBoxTreeNodeImpl rootNode) {
-		myRootNode = (ScreenBoxTreeNodeImpl) rootNode;
+		myRootNode = rootNode;
 	}
 
 	public Box getRootBox() {
@@ -97,7 +105,7 @@ public class ScreenBoxContextImpl extends BoxContextImpl implements DisplayConte
 
 	public void contextualizeAndAttachRootBox(MutableBox rootBox) {
 
-		ScreenBoxTreeNodeImpl rootNode = new ScreenBoxTreeNodeImpl(null, rootBox, true, Utility.uiObjects);
+		ScreenBoxTreeNodeImpl rootNode = new ScreenBoxTreeNodeImpl(null, rootBox, true, null);
 		setRootNode(rootNode);
 		rootBox.setContext(this);
 		((ScreenBox) rootBox).setDisplayContextProvider(this);
@@ -112,7 +120,7 @@ public class ScreenBoxContextImpl extends BoxContextImpl implements DisplayConte
 		if (prev != null)
 			return prev;
 		ScreenBoxTreeNodeImpl childNode = new ScreenBoxTreeNodeImpl(parentNode.bsv, childBox, true, null);
-		//String childName = childBox.toString();
+		String childName = childBox.toString();
 		parentNode.add(childNode);
 		if (myTreeModel != null) {
 			if (parentNode instanceof TreeNode)
@@ -160,15 +168,19 @@ public class ScreenBoxContextImpl extends BoxContextImpl implements DisplayConte
 		((ScreenBox) childBox).setDisplayContextProvider(null);
 	}
 
-	public TreeModel getTreeModel() {
+	public TreeModel ensureTreeModel() {
 		if (myTreeModel == null) {
 			myTreeModel = new DefaultTreeModel(myRootNode);
 		}
 		return myTreeModel;
 	}
 
-	public void reloadTreeModel() {
-		TreeModel tm = getTreeModel();
+	public TreeModel getTreeModel() {
+		return myTreeModel;
+	}
+
+	public void ensureAndReloadTreeModel() {
+		TreeModel tm = ensureTreeModel();
 		DefaultTreeModel dtm = (DefaultTreeModel) tm;
 		dtm.reload();
 	}

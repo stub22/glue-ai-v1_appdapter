@@ -28,15 +28,28 @@ public class ScreenBoxTreeNodeImpl extends AbstractScreenBoxTreeNodeImpl impleme
 	 */
 	private static final long serialVersionUID = 1L;
 
-	public ScreenBoxTreeNodeImpl(BoxPanelSwitchableView bsv, Box rootBox, boolean allowsChildrn, NamedObjectCollection noc) {
-		super(noc, (MutableBox) rootBox, allowsChildrn);
+	public ScreenBoxTreeNodeImpl(BoxPanelSwitchableView bsv, Box box, boolean allowsChildrn, NamedObjectCollection noc) {
 		this.bsv = bsv;
+		super.userObject = box;
+		if (!(box instanceof BT)) {
+			getUserObject();
+		}
+		this.allowsChildren = allowsChildrn;
+		if (allowsChildrn && noc == null) {
+			noc = new BoxedCollectionImpl("Object chilens for " + box, this);
+		}
+		this.thisNamedObjectCollection = noc;
 	}
 
 	public Object getUserObject() {
 		Object userObject = super.getUserObject();
 		if (userObject instanceof WrapperValue) {
-			userObject = ((WrapperValue) userObject).reallyGetValue();
+			Object userObject2 = ((WrapperValue) userObject).reallyGetValue();
+			if (userObject2 != null) {
+				if (userObject2 instanceof MutableBox) {
+					userObject = userObject2;
+				}
+			}
 		}
 		return userObject;
 	}
@@ -51,14 +64,14 @@ public class ScreenBoxTreeNodeImpl extends AbstractScreenBoxTreeNodeImpl impleme
 
 	public String wasToString() {
 		String toStr = null;
-		Object userObject = getUserObject();
-		if (userObject instanceof WrapperValue) {
-			Object rv = ((WrapperValue) userObject).reallyGetValue();
+		Object value = super.getUserObject();
+		if (value instanceof WrapperValue) {
+			Object rv = ((WrapperValue) value).reallyGetValue();
 			if (rv != null)
-				userObject = rv;
+				value = rv;
 		}
-		if (userObject instanceof HasIdent) {
-			HasIdent kc = (HasIdent) userObject;
+		if (value instanceof HasIdent) {
+			HasIdent kc = (HasIdent) value;
 			Ident id = kc.getIdent();
 			if (id != null) {
 				toStr = id.getLocalName();
@@ -67,8 +80,8 @@ public class ScreenBoxTreeNodeImpl extends AbstractScreenBoxTreeNodeImpl impleme
 
 			}
 		}
-		if (userObject instanceof KnownComponent) {
-			KnownComponent kc = (KnownComponent) userObject;
+		if (value instanceof KnownComponent) {
+			KnownComponent kc = (KnownComponent) value;
 			toStr = kc.getShortLabel();
 			if (toStr != null)
 				return toStr;
@@ -80,9 +93,8 @@ public class ScreenBoxTreeNodeImpl extends AbstractScreenBoxTreeNodeImpl impleme
 			if (toStr != null)
 				return toStr;
 		}
-		toStr = super.toString();
 		if (toStr == null) {
-			return "<ScreenBoxTreeNodeImpl null>";
+			return "<default ScreenBoxTreeNodeImpl null>";
 		}
 		return toStr;
 	}

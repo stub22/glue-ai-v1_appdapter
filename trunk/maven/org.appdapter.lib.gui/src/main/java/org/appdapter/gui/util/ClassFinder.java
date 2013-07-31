@@ -10,6 +10,9 @@ import java.util.StringTokenizer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import static org.appdapter.gui.util.CollectionSetUtils.*;
+import static org.appdapter.gui.util.PromiscuousClassUtilsA.*;
+
 /**
  * This is a stateless utility class that contains code for looking up
  * classes in the CLASSPATH and EXTDIRS in the current JVM. <br>
@@ -37,12 +40,12 @@ public class ClassFinder {
 	 * Returns a set of all classes that implement or extend
 	 * the given class, directly or indirectly.
 	 */
-	public static Set<Class> getClasses(Class ancestor) throws IOException {
+	public static <T> Set<Class<? extends T>> getClasses(Class<T> ancestor) throws IOException {
 		///.trace("Scaning for subclasses of " + ancestor);
 		if (class_Cache != null && class_Cache.size() > 10) {
-			return (Set<Class>) PromiscuousClassUtils.getImplementingClasses(ancestor);
+			return (Set<Class<? extends T>>) getImplementingClasses(ancestor);
 		}
-		Set<Class> set = getClasses("", ancestor);
+		Set<Class<? extends T>> set = getClasses("", ancestor);
 		//theLogger.trace("returning " + set.size() + "  subclasses of " + ancestor);
 		return set;
 	}
@@ -51,7 +54,7 @@ public class ClassFinder {
 
 	public static Set<Class> getAllClasses() throws IOException {
 		if (class_Cache == null) {
-			class_Cache = PromiscuousClassUtils.classesSeen;
+			class_Cache = classesSeen;
 			synchronized (class_Cache) {
 				class_Cache.addAll(getClasses("", null));
 			}
@@ -63,7 +66,7 @@ public class ClassFinder {
 	 * Returns a set of all classes within the given package (recursively)
 	 * that implement or extend the given class, directly or indirectly.
 	 */
-	public static Set<Class> getClasses(String packageName, Class ancestor) throws IOException {
+	public static <T> Set<Class<? extends T>> getClasses(String packageName, Class<T> ancestor) throws IOException {
 		return getClasses(packageName, ancestor, null, null, defaultUndesirableClassModifiers);
 	}
 
@@ -71,7 +74,7 @@ public class ClassFinder {
 	 * Returns a set of all classes within the given package (recursively)
 	 * that implement or extend the given class, directly or indirectly.
 	 */
-	public static Set<Class> getClasses(String packageName, Class ancestor, ClassLoader classLoader, String dirsString) throws IOException {
+	public static <T> Set<Class<? extends T>> getClasses(String packageName, Class<T> ancestor, ClassLoader classLoader, String dirsString) throws IOException {
 		return getClasses(packageName, ancestor, classLoader, dirsString, defaultUndesirableClassModifiers);
 	}
 
@@ -81,8 +84,8 @@ public class ClassFinder {
 	 * All classes that have at least one modifier from <code>undesirableClassModifiers</code>
 	 * set are skipped.
 	 */
-	public static Set<Class> getClasses(String packageName, Class ancestor, ClassLoader classLoader, String dirsString, int undesirableClassModifiers) throws IOException {
-		Set classes = new HashSet();
+	public static <T> Set<Class<? extends T>> getClasses(String packageName, Class<T> ancestor, ClassLoader classLoader, String dirsString, int undesirableClassModifiers) throws IOException {
+		Set<Class<? extends T>> classes = new HashSet();
 
 		if (packageName == null) {
 			packageName = "";
@@ -92,7 +95,7 @@ public class ClassFinder {
 			//use the default class loader for this class
 			classLoader = ClassFinder.class.getClassLoader();
 
-		classLoader = PromiscuousClassUtils.coerceClassloader(classLoader,true,false,false);
+		classLoader = coerceClassloader(classLoader, true, false, false);
 
 		//Get all class names
 		Set allClassNames = getAllClassNames(dirsString);
@@ -109,7 +112,7 @@ public class ClassFinder {
 				try {
 					Class cls = null;
 					try {
-						cls = PromiscuousClassUtils.forName(className, false, classLoader);
+						cls = forName(className, false, classLoader);
 					} catch (NoClassDefFoundError ncdfe) {
 						//ignore the exception because nothing can be do in this case
 						continue;
@@ -177,7 +180,7 @@ public class ClassFinder {
 	 *
 	 * @param dirsString additional directiories to search, it can be <code>null</code>
 	 */
-	public static Set getAllClassNames(String dirsString) throws IOException {
+	public synchronized static Set getAllClassNames(String dirsString) throws IOException {
 		Set classNames = new HashSet();
 		Set classPathFiles = getClassPathFiles();
 		if (dirsString != null)

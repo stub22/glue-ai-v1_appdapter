@@ -105,17 +105,19 @@ public class ComponentHost extends JJPanel implements DisplayContext, GetObject,
 	}
 
 	@Override public Collection getTriggersFromUI(BT box, Object object) {
-		Debuggable.notImplemented();
-		return null;
+		return Utility.getCurrentPOJOApp().getTriggersFromUI(box, object);
 	}
 
-	@Override public UserResult attachChildUI(String title, Object value, boolean showASAP) throws Exception {
-		Debuggable.notImplemented();
-		return null;
+	@Override public UserResult addObject(String title, Object anyObject, boolean showASAP) throws Exception {
+		return Utility.getCurrentPOJOApp().addObject(title, anyObject, showASAP, false);
 	}
 
 	@Override public String getTitleOf(Object value) {
 		return getLocalBoxedChildren().getTitleOf(value);
+	}
+
+	@Override public Class<Box> getClassOfBox() {
+		return Box.class;
 	}
 
 }

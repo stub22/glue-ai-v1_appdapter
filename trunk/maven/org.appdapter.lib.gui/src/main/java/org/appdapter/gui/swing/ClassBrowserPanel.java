@@ -15,7 +15,7 @@ import org.appdapter.gui.api.BrowserPanelGUI;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.editors.LargeObjectView;
-import org.appdapter.gui.util.PromiscuousClassUtils;
+import org.appdapter.gui.util.PromiscuousClassUtilsA;
 
 /**
  * A GUI component that lets you select any class and browse
@@ -78,7 +78,7 @@ public class ClassBrowserPanel extends JJPanel implements ActionListener {
 	private void showClass() {
 		classPanel.removeAll();
 		try {
-			Class cl = PromiscuousClassUtils.forName(text.getText());
+			Class cl = PromiscuousClassUtilsA.forName(text.getText());
 			LargeObjectView view = new LargeObjectView();
 			view.setObject(cl); //context, cl);
 			classPanel.add("Center", view);

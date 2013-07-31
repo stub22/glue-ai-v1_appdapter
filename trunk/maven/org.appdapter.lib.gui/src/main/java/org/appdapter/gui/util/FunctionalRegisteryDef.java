@@ -2,7 +2,7 @@ package org.appdapter.gui.util;
 
 import java.util.HashSet;
 
-public class FunctionalRegisteryDef<SRCHKEY, RESULT> {
+class FunctionalRegisteryDef<SRCHKEY, RESULT> {
 
 	static public interface MapTester<SRCHKEY2> {
 		int meetSearchCriteria(SRCHKEY2 t, SRCHKEY2 c);

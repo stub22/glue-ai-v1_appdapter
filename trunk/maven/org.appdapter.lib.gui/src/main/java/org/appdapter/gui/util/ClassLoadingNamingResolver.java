@@ -21,12 +21,12 @@ public class ClassLoadingNamingResolver implements NamingResolver {
 			return null;
 		if (cls == null) {
 			try {
-				cls = PromiscuousClassUtils.forName(name);
+				cls = PromiscuousClassUtilsA.forName(name);
 			} catch (ClassNotFoundException e) {
 				cls = null;
 			}
 		} else {
-			PromiscuousClassUtils.ensureOntoligized(cls);
+			PromiscuousClassUtilsA.ensureOntoligized(cls);
 		}
 
 		Class<AnyOper> clo = (Class<AnyOper>) cls;

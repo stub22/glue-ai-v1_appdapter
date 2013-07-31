@@ -79,7 +79,7 @@ public class DefaultMutableRepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<
 	}
 
 	@Override
-	public Repo getRepo() {
+	final public Repo getValue() {
 		return myRepoWD;
 	}
 
@@ -89,7 +89,7 @@ public class DefaultMutableRepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<
 
 	@Override
 	public List getAllGraphStats() {
-		Repo myRepo = getRepo();
+		Repo myRepo = getValue();
 		return myRepo.getGraphStats();
 	}
 

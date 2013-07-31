@@ -21,7 +21,7 @@ import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.GetSetObject;
 import org.appdapter.gui.api.POJOCollectionListener;
 import org.appdapter.gui.browse.Utility;
-import org.appdapter.gui.util.PromiscuousClassUtils;
+import org.appdapter.gui.util.PromiscuousClassUtilsA;
 
 public class ClassChooserPanel extends JPanel implements ActionListener, DocumentListener, POJOCollectionListener {
 	Class selectedClass = null;
@@ -49,8 +49,8 @@ public class ClassChooserPanel extends JPanel implements ActionListener, Documen
 			classGroveler = new Thread("Class groveler") {
 				public void run() {
 					while (true) {
-						PromiscuousClassUtils.getImplementingClasses(PropertyEditor.class);
-						PromiscuousClassUtils.getImplementingClasses(GetSetObject.class);
+						PromiscuousClassUtilsA.getImplementingClasses(PropertyEditor.class);
+						PromiscuousClassUtilsA.getImplementingClasses(GetSetObject.class);
 						resetAutoComplete();
 						try {
 							Thread.sleep(30000);
@@ -132,7 +132,7 @@ public class ClassChooserPanel extends JPanel implements ActionListener, Documen
 	private void classFieldChanged() {
 		try {
 			final JTextComponent tc = (JTextComponent) classField.getEditor().getEditorComponent();
-			selectedClass = PromiscuousClassUtils.forName(tc.getText());
+			selectedClass = PromiscuousClassUtilsA.forName(tc.getText());
 		} catch (Exception err) {
 			selectedClass = null;
 		}

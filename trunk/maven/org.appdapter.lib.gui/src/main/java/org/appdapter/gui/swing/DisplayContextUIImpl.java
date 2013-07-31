@@ -28,6 +28,7 @@ import javax.swing.event.InternalFrameListener;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.UserResult;
+import org.appdapter.core.convert.NoSuchConversionException;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.BT;
 import org.appdapter.gui.api.BoxPanelSwitchableView;
@@ -360,7 +361,7 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 
 	public NamedObjectCollection getCurrentCollection() {
 		if (localCollection == null) {
-			Debuggable.notImplemented();
+			return Utility.getTreeBoxCollection();
 		}
 		return localCollection;
 	}
@@ -435,7 +436,7 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 		}
 		actions.add(new PropertiesAction(box, object));
 		Class cls = val.getClass();
-		TriggerMenuFactory.addClassLevelTriggers(getDisplayContext().getDisplayContext(), cls, actions, (WrapperValue) box);
+		TriggerMenuFactory.addTriggersForInstance(getDisplayContext().getDisplayContext(), cls, actions, (WrapperValue) box);
 		return actions;
 	}
 
@@ -464,7 +465,13 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 	private JPanel objectToPanel(String title, Object object, boolean attachToUIAsap) {
 
 		if (object instanceof JPanel) {
-			return (JPanel) object;
+			JPanel pnl = (JPanel) object;
+			if (title != null) {
+				if (pnl.getName() == null) {
+					pnl.setName(title);
+				}
+			}
+			return pnl;
 		}
 
 		if (object == null) {
@@ -509,8 +516,8 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 		return Utility.showError(null, msg, e);
 	}
 
-	@Override public UserResult showMessage(String msg) {
-		return Utility.browserPanel.showMessage(msg);
+	@Override public UserResult showMessage(String msg, Class extraInfo) {
+		return Utility.browserPanel.showMessage(msg, extraInfo);
 	}
 
 	/**
@@ -564,14 +571,33 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 	 */
 	public UserResult showScreenBoxAsResult(String title, Object object) {
 		if (object == null) {
-			return Utility.browserPanel.showMessage("RESULT: " + "null");
+			return Utility.browserPanel.showMessage("RESULT: " + "null", null);
 		}
+		final Object objectIn = object;
+		object = Utility.dref(object);
+
 		if (object instanceof String) {
-			return Utility.browserPanel.showMessage("RESULT:" + object);
+			return Utility.browserPanel.showMessage("RESULT:" + object, String.class);
+
 		}
+		Class objClass = object.getClass();
 		Utility.recordCreated(object);
-		if (Utility.isToStringType(object.getClass())) {
-			return Utility.browserPanel.showMessage(Utility.getDefaultName(object));
+		if (Utility.isToStringType(objClass)) {
+			String str = Utility.makeToString(object);
+			if (title == null)
+				title = str;
+			Object roundTrip = null;
+			try {
+				roundTrip = Utility.fromString(str, objClass);
+			} catch (NoSuchConversionException e) {
+			}
+			if (roundTrip != null) {
+				if ((roundTrip.getClass() == objClass)) {
+					Utility.browserPanel.showMessage(str, objClass);
+					return UserResult.SUCCESS;
+				}
+			}
+			// this did not round trip maybe something more interesting like a JenaResource
 		}
 		JPanel pnl = null;
 		if (object instanceof Component) {
@@ -592,7 +618,7 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 	/**
 	 * Opens up a GUI to show the details of the given value
 	 */
-	public UserResult attachChildUI(String label, Object valueIn, boolean showASAP) throws Exception {
+	public UserResult addObject(String label, Object valueIn, boolean showASAP) throws Exception {
 
 		Object value = valueIn;
 		if (showASAP && valueIn instanceof Component) {
@@ -694,6 +720,10 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 			}
 		}
 
+	}
+
+	@Override public UserResult addObject(String title, Object anyObject, boolean showASAP, boolean expandChildren) {
+		return Utility.browserPanel.addObject(title, anyObject, showASAP, expandChildren);
 	}
 
 }

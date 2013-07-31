@@ -52,7 +52,7 @@ import org.appdapter.gui.repo.ModelMatrixPanel;
 import org.appdapter.gui.repo.RepoManagerPanel;
 import org.appdapter.gui.swing.ComponentHost;
 import org.appdapter.gui.trigger.TriggerMenuFactory;
-import org.appdapter.gui.util.PromiscuousClassUtils;
+import org.appdapter.gui.util.PromiscuousClassUtilsA;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -386,7 +386,7 @@ implements ScreenBox<TrigType>, GetSetObject, UserResult, Convertable, DisplayCo
 			if (Customizer.class == customizer) {
 				cust = Utility.findCustomizerClass(objClass);
 			}
-			if (PromiscuousClassUtils.isCreateable(cust)) {
+			if (PromiscuousClassUtilsA.isCreateable(cust)) {
 				try {
 					return ComponentHost.asPanel(findOrCreateBoxPanel(Utility.newInstance(cust)), val);
 				} catch (InstantiationException e) {
@@ -480,7 +480,7 @@ implements ScreenBox<TrigType>, GetSetObject, UserResult, Convertable, DisplayCo
 	@Override public List<TrigType> getTriggers() {
 		List<TrigType> tgs = super.getTriggers();
 		for (Class cls : getTypes()) {
-			TriggerMenuFactory.addClassLevelTriggers(getDisplayContext(), cls, tgs, this.getWrapperValue());
+			TriggerMenuFactory.addTriggersForInstance(getDisplayContext(), cls, tgs, this.getWrapperValue());
 		}
 		return tgs;
 	}
