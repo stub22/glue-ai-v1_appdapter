@@ -381,7 +381,7 @@ public class ReflectUtils {
 						Class pt = ts[workingOn];
 						nps[workingOn] = optionalArg.getArg(pt);
 					} catch (Throwable tt) {
-
+						Debuggable.expectedToIgnore(tt, NoSuchConversionException.class);
 					}
 				}
 			}
@@ -391,12 +391,12 @@ public class ReflectUtils {
 			Object p = params[i];
 			Class pt = ts[i];
 			try {
-				nps[i] = recastOrNull(converter, p, pt);
+				nps[i] = recast(converter, p, pt);
 				if (nps[i] != p) {
 					anyChange = true;
 				}
 			} catch (Throwable tt) {
-
+				Debuggable.expectedToIgnore(tt, NoSuchConversionException.class);
 			}
 		}
 		if (!isVarArgs) {
