@@ -91,7 +91,7 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 	 * @param sourceModel A Jena model
 	 * @return A reference to the new editor window
 	 */
-	public static ModelAsTurtleEditor open(Model sourceModel) {
+	@UISalient public static ModelAsTurtleEditor open(Model sourceModel) {
 		return new ModelAsTurtleEditor(sourceModel, "Jena Model Editor for " + sourceModel);
 	}
 
@@ -167,9 +167,18 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 	 * @param sourceModel The model bound to the editor
 	 * @param title The full title of the editor window
 	 */
-	private ModelAsTurtleEditor(Model sourceModel, String title) {
+	public ModelAsTurtleEditor(Model sourceModel, String title) {
 		this.window = Utility.getAppFrame();
 		this.titleShouldBe = title;
+
+		this.setObject(sourceModel);
+	}
+
+	public ModelAsTurtleEditor(Model sourceModel) {
+		this.window = Utility.getAppFrame();
+		if (sourceModel != null) {
+			this.titleShouldBe = sourceModel.getNsPrefixURI("");
+		}
 
 		this.setObject(sourceModel);
 	}
@@ -481,6 +490,12 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 		contentPane.add(Box.createRigidArea(new Dimension(16, 0)), BorderLayout.WEST);
 		contentPane.add(Box.createRigidArea(new Dimension(0, 12)), BorderLayout.NORTH);
 		contentPane.add(Box.createRigidArea(new Dimension(0, 12)), BorderLayout.SOUTH);
+
+		if (Utility.getAppFrame() == window)
+			return;
+
+		if (true)
+			return;
 
 		// Hack to prevent resizing the window below a minimum size
 		this.window.addComponentListener(new ComponentAdapter() {

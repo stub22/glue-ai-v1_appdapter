@@ -16,13 +16,14 @@ import java.util.logging.Logger;
 
 import org.appdapter.api.trigger.AnyOper.UIHidden;
 import org.appdapter.api.trigger.AnyOper.UISalient;
+import org.appdapter.core.convert.NoSuchConversionException;
 import org.appdapter.core.convert.ReflectUtils;
 
 @UIHidden
 public abstract class Debuggable {
 
 	@UISalient
-	public static boolean QuitelyDoNotShowExceptions = false; 
+	public static boolean QuitelyDoNotShowExceptions = false;
 	public static int PRINT_DEPTH = 3;
 	public static LinkedList<Object> allObjectsForDebug = new LinkedList<Object>();
 
@@ -54,7 +55,8 @@ public abstract class Debuggable {
 	public static RuntimeException warn(Object... objects) {
 		String dstr = Debuggable.toInfoStringA(objects, " : ", PRINT_DEPTH);
 		RuntimeException rte = new NullPointerException(dstr);
-		if (!QuitelyDoNotShowExceptions) rte.printStackTrace();
+		if (!QuitelyDoNotShowExceptions)
+			rte.printStackTrace();
 		return rte;
 	}
 
@@ -430,7 +432,8 @@ public abstract class Debuggable {
 
 	public static void printStackTrace(final Throwable ex, PrintStream ps, int maxLines) {
 		Throwable e = ex;
-		if (QuitelyDoNotShowExceptions) return; 
+		if (QuitelyDoNotShowExceptions)
+			return;
 		while (e != null) {
 			printStackTraceLocal(e, ps, 100);
 			ps.println("\n Caused by... ");
@@ -483,6 +486,15 @@ public abstract class Debuggable {
 		synchronized (allObjectsForDebug) {
 			allObjectsForDebug.add(obj);
 		}
+	}
+
+	public static void expectedToIgnore(Throwable e, Class... classes) {
+		for (Class c : classes) {
+			if (c.isInstance(e))
+				return;
+		}
+		printStackTrace(e);
+
 	}
 
 }
