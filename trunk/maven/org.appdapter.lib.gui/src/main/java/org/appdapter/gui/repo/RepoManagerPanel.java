@@ -186,7 +186,10 @@ public class RepoManagerPanel extends ScreenBoxPanel<MutableRepoBox> implements 
 	private JPopupMenu fetchMenuForFocusCell(int row, int col) {
 		JPopupMenu popMenu = null;
 		Box cellSubBox = myRGTM.findSubBox(row, col);
-
+		Box val = Utility.asWrapped(cellSubBox.getValue()).asBox();
+		if (val != cellSubBox && val != null) {
+			cellSubBox = val;
+		}
 		if (cellSubBox != null) {
 			if (myTMF == null) {
 				myTMF = TriggerMenuFactory.getInstance(this); // TODO: Needs type params
