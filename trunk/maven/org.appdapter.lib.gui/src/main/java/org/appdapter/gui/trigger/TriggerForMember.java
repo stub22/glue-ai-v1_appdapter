@@ -325,16 +325,19 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 			@Override public Object call() throws Exception {
 				return valueOf(null, null, false, false);
 			}
-		}, member.getName());
+		}, member.getName(), getMissingParemetersTotal());
 	}
 
-	static public String getMenuPath(String menuFormat, boolean isStatic, Object o1, Class tdc, Class mdc, Class getReturnType, Callable valueOf, String memberName) {
+	static public String getMenuPath(String menuFormat, boolean isStatic, Object o1, Class tdc, Class mdc, Class getReturnType, Callable valueOf, String memberName, int missingParamsTotal) {
 		String s = menuFormat;
 		if (s == null || s.length() == 0) {
 			s = "%c|%m";
 		}
 		if (isStatic) {
 			s = "Static|" + s;
+		}
+		if (missingParamsTotal > 0) {
+			s = "More Params Needed|" + s;
 		}
 		Class fi = mdc;
 		if (s.contains("%c")) {
@@ -543,10 +546,7 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 			}
 		}
 
-		int needsArgumentsTotal = getParameters().size();
-
-		if (_object != null)
-			needsArgumentsTotal--;
+		int needsArgumentsTotal = getMissingParemetersTotal();
 
 		if (needsArgumentsTotal > 1) {
 			jmi.setForeground(Color.WHITE);
@@ -559,6 +559,14 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 				jmi.setForeground(Color.GRAY);
 			}
 		}
+	}
+
+	public int getMissingParemetersTotal() {
+		int needsArgumentsTotal = getParameters().size();
+
+		if (_object != null)
+			needsArgumentsTotal--;
+		return needsArgumentsTotal;
 	}
 
 	@Override public AbstractButton makeMenuItem(final Box b) {
