@@ -37,7 +37,9 @@ public interface DemoBrowserCtrl {
 
 	void initialize(String[] args);
 
-	void addObject(String title, Object obj, boolean displayForegroundASAP);
+	UserResult addObject(String title, Object anyObject, boolean showASAP, boolean expandChildren);
+
+	UserResult addObject(String title, Object anyObject, boolean showASAP);
 
 	void show();
 }

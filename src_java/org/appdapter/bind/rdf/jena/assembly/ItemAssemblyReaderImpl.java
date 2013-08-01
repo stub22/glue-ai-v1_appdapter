@@ -23,12 +23,13 @@ import java.util.List;
 import org.appdapter.core.item.Item;
 import org.appdapter.core.item.JenaResourceItem;
 import org.appdapter.core.log.BasicDebugger;
-import org.appdapter.core.name.FreeIdent;
+import org.appdapter.core.log.Debuggable;
 import org.appdapter.core.name.Ident;
 import org.appdapter.core.name.ModelIdent;
 
 import com.hp.hpl.jena.assembler.Assembler;
 import com.hp.hpl.jena.assembler.Mode;
+import com.hp.hpl.jena.rdf.model.Resource;
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -82,7 +83,6 @@ public class ItemAssemblyReaderImpl extends BasicDebugger implements ItemAssembl
 		}
 		return resultVal;
 	}
-
 
 	@Override public Long readConfigValLong(Ident compID, String fieldName_absUri, Item optionalItem, Long defaultVal) {
 		Long resultVal = null;
@@ -169,11 +169,16 @@ public class ItemAssemblyReaderImpl extends BasicDebugger implements ItemAssembl
 			if (linkedItem instanceof JenaResourceItem) {
 				JenaResourceItem jri = (JenaResourceItem) linkedItem;
 				// The assembler
-				Object assembledObject = assmblr.open(assmblr, jri.getJenaResource(), mode);
-				if (assembledObject != null) {
-					resultList.add(assembledObject);
-				} else {
-					logWarning("Got null assembly result for item, ignoring: " + linkedItem);
+				Resource r = jri.getJenaResource();
+				try {
+					Object assembledObject = assmblr.open(assmblr, r, mode);
+					if (assembledObject != null) {
+						resultList.add(assembledObject);
+					} else {
+						logWarning("Got null assembly result for item, ignoring: " + linkedItem);
+					}
+				} catch (Throwable t) {
+					logWarning(Debuggable.toInfoStringArgV("Error in ", r, t));
 				}
 			} else {
 				logWarning("Cannot assemble linked object from non-Jena item: " + linkedItem);

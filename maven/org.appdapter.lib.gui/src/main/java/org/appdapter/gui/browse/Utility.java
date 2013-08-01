@@ -391,7 +391,7 @@ public class Utility extends UtilityMenuOptions {
 				}
 				clz = clz.getSuperclass();
 			}
-			
+
 			if (ReflectUtils.implementsAllClasses(clz, ObjectPanel.class, Component.class)) {
 				if (ReflectUtils.isCreatable(clz)) {
 					try {
@@ -1218,7 +1218,8 @@ public class Utility extends UtilityMenuOptions {
 	}
 
 	public static Collection<Class<? extends Component>> findComponentClasses(Class objClass) {
-		return findImplmentingForMatch(Component.class, objClass);
+		Collection<Class<? extends Component>> im = findImplmentingForMatch(Component.class, objClass);
+		return im;
 	}
 
 	private static <T> Collection<Class<? extends T>> findImplmentingForMatch(Class<T> mustBe, Class objClass) {
@@ -1227,10 +1228,13 @@ public class Utility extends UtilityMenuOptions {
 			List<Class<? extends T>> list = new ArrayList<Class<? extends T>>();
 			for (Pair<Class, Class> rl : classToClassRegistry) {
 				Class l = rl.getLeft();
+				if (l == ModelAsTurtleEditor.class) {
+					theLogger.debug("searching for " + mustBe + " for " + objClass);
+				}
 				if (!typesMatch(mustBe, l, useAssignable))
 					continue;
 				Class r = rl.getRight();
-				if (typesMatch(objClass, r, useAssignable)) {
+				if (typesMatch(r, objClass, useAssignable)) {
 					list.add(l);
 				}
 			}

@@ -28,7 +28,6 @@ public interface BoxContext {
 	public List<Box> getOpenChildBoxes(Box parent);
 	public <BTo extends Box<TT>, TT extends Trigger<BTo>> List<BTo> getOpenChildBoxesNarrowed(Box parent, Class<BTo> boxClass, Class<TT> trigClass);
 
-
 	public void contextualizeAndAttachChildBox(Box<?> parentBox, MutableBox<?> childBox);
 	
 	public void contextualizeAndDetachChildBox(Box<?> parentBox, MutableBox<?> childBox);

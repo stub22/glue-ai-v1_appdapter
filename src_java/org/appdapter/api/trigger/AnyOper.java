@@ -39,7 +39,8 @@ public interface AnyOper {
 		 * @author Administrator
 		 *
 		 */
-	@UISalient public static interface Reloadable {
+	@UISalient
+	public static interface Reloadable {
 
 		void reload();
 
@@ -49,11 +50,13 @@ public interface AnyOper {
 		 * @author Administrator
 		 *
 		 */
-	@Retention(RetentionPolicy.RUNTIME) public @interface UIHidden {
+	@Retention(RetentionPolicy.RUNTIME)
+	public @interface UIHidden {
 
 	}
 
-	@Retention(RetentionPolicy.RUNTIME) static public @interface UISalient {
+	@Retention(RetentionPolicy.RUNTIME)
+	static public @interface UISalient {
 		/**
 		 * "" == do nothing to the result 
 		 * "toString" .. call the toString method on Result
@@ -91,13 +94,17 @@ public interface AnyOper {
 		 * @return 
 		 */
 		public String ApplyToClass() default "";
+
+		public boolean NonPublicMethods() default true;
+
 	}
 
 	static interface ApplyToClassInterfaces {
 
 	}
 
-	@UISalient(ApplyToClass = "HASIDENT") static public interface HasIdent extends ApplyToClassInterfaces {
+	@UISalient(ApplyToClass = "HASIDENT")
+	static public interface HasIdent extends ApplyToClassInterfaces {
 		@UISalient(MenuName = "Show Ident", ToValueMethod = "toString") Ident getIdent();
 
 		Class HASIDENT = KnownComponent.class;

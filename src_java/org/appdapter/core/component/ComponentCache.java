@@ -18,9 +18,10 @@ package org.appdapter.core.component;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.appdapter.api.trigger.GetObject;
 import org.appdapter.core.name.Ident;
 
-public class ComponentCache<MKC extends MutableKnownComponent> {
+public class ComponentCache<MKC extends MutableKnownComponent> implements GetObject {
 
 	private Map<Ident, MKC> myCompCache = new HashMap<Ident, MKC>();
 
@@ -34,6 +35,13 @@ public class ComponentCache<MKC extends MutableKnownComponent> {
 
 	// only for the debugger in UI
 	public Map<Ident, MKC> getCompCache() {
+		return myCompCache;
+	}
+
+	/**
+	 * This helps the UI understand this is a wrapper object
+	 */
+	@Override public Object getValue() {
 		return myCompCache;
 	}
 }

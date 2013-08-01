@@ -18,6 +18,7 @@ package org.appdapter.core.component;
 
 import org.appdapter.bind.rdf.jena.model.JenaLiteralUtils;
 import org.appdapter.core.log.BasicDebugger;
+import org.appdapter.core.log.Debuggable;
 import org.appdapter.core.name.Ident;
 
 /**
@@ -57,10 +58,16 @@ public class KnownComponentImpl extends BasicDebugger implements MutableKnownCom
 	}
 
 	public String getFieldSummary() {
+		if (Debuggable.useDebuggableToString) {
+			return Debuggable.toInfoStringF(this);
+		}
 		return "desc=" + myDescription;
 	}
 
 	@Override public String toString() {
-		return this.getClass().getSimpleName() + "-" + hashCode() + "-" + getShortLabel() + "[" + getFieldSummary() + "]";
+		if (Debuggable.useDebuggableToString) {
+			return Debuggable.toInfoStringF(this, true);
+		}
+		return Debuggable.getCanonicalSimpleName(getClass()) + "-" + hashCode() + "-" + getShortLabel() + "[" + getFieldSummary() + "]";
 	}
 }
