@@ -20,40 +20,39 @@ import java.util.HashSet;
 import java.util.Iterator;
 
 import org.appdapter.api.trigger.AnyOper;
-import org.appdapter.api.trigger.Box;
+import org.appdapter.api.trigger.AnyOper.UIHidden;
 import org.appdapter.api.trigger.TriggerImpl;
 import org.appdapter.demo.DemoResources;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// import com.hp.hpl.jena.query.DataSource;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.shared.Lock;
+
+// import com.hp.hpl.jena.query.DataSource;
 
 /**
  * @author Dmiles
  */
 // / Dmiles needed something in java to cover Dmiles's Scala blindspots
+@UIHidden
 public class RepoOper implements AnyOper {
 
 	@UISalient
 	static public interface ISeeToString {
-		@Override
-		@UISalient(MenuName = "Call ToString")
-		public String toString();
+		@Override @UISalient(MenuName = "Call ToString") public String toString();
 	}
 
 	@UISalient
 	static public interface Reloadable {
 
-		@UISalient(MenuName = "Reload Repo")
-		void reloadAllModels();
+		@UISalient(MenuName = "Reload Repo") void reloadAllModels();
 
-		@UISalient()
-		void reloadSingleModel(String modelName);
+		@UISalient() void reloadSingleModel(String modelName);
 
-		@UISalient(ToValueMethod = "toString")
-		Dataset getMainQueryDataset();
+		@UISalient(ToValueMethod = "toString") Dataset getMainQueryDataset();
 	}
 
 	// static class ConcBootstrapTF extends
@@ -71,8 +70,7 @@ public class RepoOper implements AnyOper {
 			m_repo = repo;
 		}
 
-		@Override
-		public void fire(RB targetBox) {
+		@Override public void fire(RB targetBox) {
 			String resolvedQueryURL = DemoResources.QUERY_PATH;
 			ClassLoader optCL = getClass().getClassLoader();
 			if (targetBox != null) {
@@ -99,13 +97,15 @@ public class RepoOper implements AnyOper {
 			m_repo = repo;
 		}
 
-		@Override
-		public void fire(RB targetBox) {
+		@Override public void fire(RB targetBox) {
 			m_repo.reloadSingleModel(graphURI);
 		}
 	}
 
 	static Logger theLogger = LoggerFactory.getLogger(RepoOper.class);
+
+	@UISalient
+	private static boolean inPlaceReplacements;
 
 	public static void replaceModelElements(Model dest, Model src) {
 		if (src == dest) {
@@ -151,6 +151,61 @@ public class RepoOper implements AnyOper {
 			dest.getNamedModel(onlyModel).removeAll();
 			theLogger.info("clearing model " + onlyModel);
 			return;
+		}
+	}
+
+	public static void replaceNamedModel(Dataset dest, String urlModel, Model model, Resource unionOrReplace) {
+		Lock lock = dest.getLock();
+		lock.enterCriticalSection(Lock.WRITE);
+		Lock oldLock = null;
+		model.enterCriticalSection(Lock.READ);
+		try {
+			boolean isReplace = true;
+			if (unionOrReplace != null) {
+				theLogger.warn("Found union/replace = " + unionOrReplace + " on " + urlModel);
+			}
+			boolean onDest = true;
+			if (!dest.containsNamedModel(urlModel)) {
+				onDest = false;
+			}
+			if (!onDest) {
+				dest.addNamedModel(urlModel, model);
+				theLogger.warn("Added new model " + urlModel);
+				return;
+			}
+			Model old = dest.getNamedModel(urlModel);
+			if (old == model) {
+				old = null;
+				theLogger.warn("Nothing to do.. same model " + urlModel);
+				return;
+			}
+			oldLock = old.getLock();
+			oldLock.enterCriticalSection(Lock.WRITE);
+			long sizeBefore = old.size();
+			if (RepoOper.inPlaceReplacements) {
+				old.removeAll();
+				theLogger.warn("In place (Replacing) old model " + urlModel + " size=" + sizeBefore + "-> " + old.size());
+				isReplace = false;
+			}
+			if (!isReplace) {
+				old.add(model);
+				sizeBefore = old.size();
+				old.getNsPrefixMap().putAll(model.getNsPrefixMap());
+				long sizeNow = old.size();
+				theLogger.warn("Merging into old model " + urlModel + " size(" + sizeBefore + "+" + model.size() + ")->" + sizeNow);
+				return;
+			}
+			theLogger.warn("Replacing old model " + urlModel + " size=" + sizeBefore + "->" + model.size());
+			dest.replaceNamedModel(urlModel, model);
+		} finally {
+			if (oldLock != null)
+				oldLock.leaveCriticalSection();
+
+			if (model != null) {
+				model.leaveCriticalSection();
+			}
+			if (lock != null)
+				lock.leaveCriticalSection();
 		}
 	}
 

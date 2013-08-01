@@ -17,6 +17,7 @@ package org.appdapter.core.log;
 
 import java.net.URL;
 
+import org.appdapter.api.trigger.AnyOper.UIHidden;
 import org.appdapter.bind.log4j.Log4jFuncs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +26,7 @@ import org.slf4j.helpers.NOPLogger;
 /**
  * @author Stu B. <www.texpedient.com>
  */
+@UIHidden
 public class BasicDebugger implements Loggable {
 
 	private Class myAppClass;
@@ -35,7 +37,7 @@ public class BasicDebugger implements Loggable {
 	 */
 	public BasicDebugger(Class appClass) {
 		myAppClass = appClass;
-		Debuggable.allObjectsForDebug.add(this);
+		Debuggable.addForDebug(this);
 	}
 
 	/**
@@ -43,7 +45,7 @@ public class BasicDebugger implements Loggable {
 	 */
 	public BasicDebugger() {
 		myAppClass = this.getClass();
-		Debuggable.allObjectsForDebug.add(this);
+		Debuggable.addForDebug(this);
 	}
 
 	static Logger theFallbackLogger = null;

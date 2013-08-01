@@ -16,9 +16,14 @@
 
 package org.appdapter.core.name;
 
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.Resource;
+
 /**
  * @author Stu B. <www.texpedient.com>
  */
 public interface ModelIdent extends Ident {
 	public Ident getIdentInSameModel(String absURI);
+
+	Resource getJenaResource();
 }

@@ -85,7 +85,7 @@ public class JenaResourceItem extends BaseItem implements ModelIdent {
 		return this;
 	}
 
-	@Override public String toString() {
+	final @Override public String toString() {
 		return "JenaResourceItem[res=" + myResource.toString() + "]";
 	}
 

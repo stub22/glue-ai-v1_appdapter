@@ -125,12 +125,13 @@ object PipelineRepoLoader extends BasicDebugger {
     for (dgSpec <- dgSpecSet) {
       val derivedModelProvider = dgSpec.makeDerivedModelProvider(repo);
       val derivedModel = derivedModelProvider.getModel()
-      mainDset.replaceNamedModel(pplnGraphQN, derivedModel)
+      // null for now
+      replaceOrUnion(mainDset, null, pplnGraphQN, derivedModel)
     }
   }
 
   def replaceOrUnion(mainDset: Dataset, unionOrReplaceRes: Resource, graphURI: String, sheetModel: Model) {
-    mainDset.replaceNamedModel(graphURI, sheetModel)
+    RepoOper.replaceNamedModel(mainDset, graphURI, sheetModel, unionOrReplaceRes)
   }
 }
 
@@ -187,7 +188,7 @@ object OmniLoaderRepoTest {
     val repo = repoSpec.makeRepo;
     repo.loadSheetModelsIntoMainDataset();
     repo.loadDerivedModelsIntoMainDataset(null);
-    repoNav.addObject(repo.toString(), repo, true);
+    repoNav.addObject(repo.toString(), repo, true, false);
   }
 
 }

@@ -22,20 +22,22 @@ package org.appdapter.core.name;
  * with all other possible Idents (i.e. JenaResourceItems).  These are only 2 impls extant as of 2013-06-01.
  */
 public class FreeIdent implements Ident {
-	private	String		myAbsUri;
-	private String		myLocalName;
-	
+	final private String myAbsUri;
+	final private String myLocalName;
+
 	public FreeIdent(Ident src) {
 		// Will fail if src is a Jena blank-node
 		this(src.getAbsUriString(), src.getLocalName());
 	}
-	public FreeIdent (String absUri, String localName) {
+
+	public FreeIdent(String absUri, String localName) {
 		if (!absUri.endsWith(localName)) {
 			throw new RuntimeException("Uri[" + absUri + "] does not end with LocalName[" + localName + "]");
 		}
 		myAbsUri = absUri;
 		myLocalName = localName;
 	}
+
 	public FreeIdent(String absUriWithOneHash) {
 		int len = absUriWithOneHash.length();
 		int hashIndex = absUriWithOneHash.indexOf('#');
@@ -45,6 +47,7 @@ public class FreeIdent implements Ident {
 		myAbsUri = absUriWithOneHash;
 		myLocalName = absUriWithOneHash.substring(hashIndex + 1);
 	}
+
 	@Override public String getAbsUriString() {
 		return myAbsUri;
 	}
@@ -52,6 +55,7 @@ public class FreeIdent implements Ident {
 	@Override public String getLocalName() {
 		return myLocalName;
 	}
+
 	@Override public boolean equals(Object o) {
 		if ((o != null) && (o instanceof Ident)) {
 			String otherAbsUri = ((Ident) o).getAbsUriString();
@@ -60,11 +64,16 @@ public class FreeIdent implements Ident {
 			return false;
 		}
 	}
+
 	@Override public int hashCode() {
 		return myAbsUri.hashCode();
 	}
 
 	@Override public String toString() {
 		return "FreeIdent[absUri=" + myAbsUri + "]";
-	}	
+	}
+
+	public Ident getIdent() {
+		return this;
+	}
 }

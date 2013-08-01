@@ -21,6 +21,7 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -116,6 +117,12 @@ public class AssemblerUtils {
 
 	public static Set<Object> buildAllObjectsInRdfFile(String rdfURL) {
 		Model loadedModel = FileManager.get().loadModel(rdfURL);
+		Set<Object> results = buildAllRootsInModel(loadedModel);
+		return results;
+	}
+
+	public static Set<Object> buildAllObjectsInRdfFile(URL rdfURL) {
+		Model loadedModel = FileManager.get().loadModel(rdfURL.toExternalForm());
 		Set<Object> results = buildAllRootsInModel(loadedModel);
 		return results;
 	}

@@ -33,7 +33,7 @@ public class AssemblerConverter implements Converter {
 		// TODO Auto-generated constructor stub
 	}
 
-	@Override public <T> T recast(Object obj, Class<T> objNeedsToBe) throws NoSuchConversionException {
+	@Override public <T> T convert(Object obj, Class<T> objNeedsToBe, int maxCvt) throws NoSuchConversionException {
 		try {
 			return JenaLiteralUtils.convertRDFNodeStatic(obj, objNeedsToBe);
 		} catch (Throwable e) {
@@ -88,8 +88,7 @@ public class AssemblerConverter implements Converter {
 	}
 
 	public static void setObjectField(Object thingActionFilterImpl, Item item, ItemAssemblyReader reader, Method writeMethod, String pdn, Class pdt, Assembler asmblr, Mode mode)
-			throws IllegalAccessException,
-			InvocationTargetException {
+			throws IllegalAccessException, InvocationTargetException {
 		if (pdt == null) {
 			if (writeMethod != null) {
 				pdt = writeMethod.getParameterTypes()[0];
@@ -117,7 +116,7 @@ public class AssemblerConverter implements Converter {
 		}
 	}
 
-	@Override public Integer declaresConverts(Object obj, Class objClass, Class objNeedsToBe) {
+	@Override public Integer declaresConverts(Object obj, Class objClass, Class objNeedsToBe, int maxCvt) {
 		return MIGHT;
 	}
 }

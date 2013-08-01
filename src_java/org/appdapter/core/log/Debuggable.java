@@ -8,15 +8,21 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.logging.Logger;
 
+import org.appdapter.api.trigger.AnyOper.UIHidden;
+import org.appdapter.api.trigger.AnyOper.UISalient;
 import org.appdapter.core.convert.ReflectUtils;
 
+@UIHidden
 public abstract class Debuggable {
 
+	@UISalient
+	public static boolean QuitelyDoNotShowExceptions = false; 
 	public static int PRINT_DEPTH = 3;
 	public static LinkedList<Object> allObjectsForDebug = new LinkedList<Object>();
 
@@ -48,7 +54,7 @@ public abstract class Debuggable {
 	public static RuntimeException warn(Object... objects) {
 		String dstr = Debuggable.toInfoStringA(objects, " : ", PRINT_DEPTH);
 		RuntimeException rte = new NullPointerException(dstr);
-		rte.printStackTrace();
+		if (!QuitelyDoNotShowExceptions) rte.printStackTrace();
 		return rte;
 	}
 
@@ -108,7 +114,7 @@ public abstract class Debuggable {
 		if (o instanceof Number)
 			return "" + o;
 		if (o instanceof Enum)
-			return o.getClass().getCanonicalName() + "." + o;
+			return getCanonicalSimpleName(o.getClass()) + "." + o;
 		if (o instanceof byte[])
 			return toInfoStringQ(new String((byte[]) o), quoted);
 		if (o instanceof char[])
@@ -121,9 +127,22 @@ public abstract class Debuggable {
 			return toInfoStringThrowable((Throwable) o);
 		if (o instanceof Object[])
 			return "[" + toInfoStringA((Object[]) o, ",", depth) + "]";
-		if (!declaresToString(o.getClass()))
-			return toInfoStringF(o, depth);
-		return "" + o;
+		Class oc = o.getClass();
+		Method toStr = declaresToString(oc, "toDebugString");
+		if (toStr == null)
+			toStr = declaresToString(oc, "toString");
+		if (toStr != null) {
+			try {
+				return "" + toStr.invoke(o);
+			} catch (Throwable e) {
+			}
+		}
+		return toInfoStringF(o, depth);
+
+	}
+
+	public static String getCanonicalSimpleName(Class utilClass) {
+		return ReflectUtils.getCanonicalSimpleName(utilClass);
 	}
 
 	private static String toInfoStringThrowable(Throwable o) {
@@ -140,14 +159,18 @@ public abstract class Debuggable {
 	final public static Class[] CLASSES0 = new Class[0];
 	public static final boolean IsAndroid = false;
 
-	private static boolean declaresToString(Class<? extends Object> class1) {
+	private static Method declaresToString(Class<? extends Object> class1, String named) {
 		try {
-			Class declOn = class1.getMethod("toString", CLASSES0).getDeclaringClass();
-			return declOn != Object.class;
+			Method method = class1.getMethod(named, CLASSES0);
+
+			if (method.getDeclaringClass() == Object.class) {
+				return null;
+			}
+			return method;
 		} catch (SecurityException e) {
 		} catch (NoSuchMethodException e) {
 		}
-		return false;
+		return null;
 	}
 
 	static ThreadLocal<HashSet<String>> DontDescend = new ThreadLocal<HashSet<String>>() {
@@ -155,58 +178,102 @@ public abstract class Debuggable {
 			return new HashSet<String>();
 		}
 	};
+	public static boolean useDebuggableToString = true;
 
 	public static String toInfoStringF(Object o) {
 		return toInfoStringF(o, PRINT_DEPTH);
 	}
 
 	public static String toInfoStringF(Object o, int depth) {
+		return toInfoStringF(o, depth, false);
+	}
+
+	public static String toInfoStringF(Object o, boolean reverseFields) {
+		return toInfoStringF(o, PRINT_DEPTH, reverseFields);
+	}
+
+	public static String toInfoStringF(Object o, int depth, boolean reverseFields) {
 		if (o == null)
 			return "<Null>";
 		String key = objKey(o);
+		Class c = o.getClass();
 		HashSet<String> keys = DontDescend.get();
-		if (DontDescend.get().contains(key) || depth <= 0)
+		if (c == Object.class || keys.contains(key) || depth <= 0)
 			return "{" + key + "}";
 		try {
 			keys.add(key);
-			return toInfoStringFC(o, o.getClass(), depth - 1);
+			String toStr = toInfoStringFC0(o, o.getClass(), depth - 1, reverseFields);
+			if (toStr == null || toStr.length() == 0) {
+				toStr = key;
+			} else {
+				toStr += "," + key;
+			}
+			return "{" + toStr + "}";
 		} finally {
 			keys.remove(key);
 		}
 	}
 
-	public static String toInfoStringFC(Object o, Class c, int depth) {
-		if (o == null)
-			return /* "(" + T.class + ")" + */"<Null>";
-		if (c == null || c == Object.class)
-			return objKey(o);
-		java.lang.reflect.Field[] fs = c.getDeclaredFields();
+	public static String toInfoStringFC0(Object o, Class declaredClass, int depth, boolean reverseFields) {
+
 		StringBuffer sb = new StringBuffer();
-		for (int i = 0; i < fs.length; i++) {
+
+		boolean needComma = toStringFields(o, declaredClass, depth, sb);
+		declaredClass = declaredClass.getSuperclass();
+		if (declaredClass == null || declaredClass == Object.class)
+			return sb.toString();
+		String sc = toInfoStringFC0(o, declaredClass, depth, reverseFields);
+		if (sc == null || sc.length() == 0)
+			return sb.toString();
+		if (!needComma || sb == null || sb.length() == 0)
+			return sc;
+
+		if (reverseFields) {
+			return sc + "," + sb.toString();
+		}
+		return sb.append(sc).toString();
+	}
+
+	private static boolean toStringFields(Object o, Class declaredClass, int depth, StringBuffer sb) {
+		if (declaredClass == null || declaredClass == Object.class)
+			return false;
+		if (declaredClass == Debuggable.class || declaredClass == BasicDebugger.class)
+			return false;
+		java.lang.reflect.Field[] fs = declaredClass.getDeclaredFields();
+		if (fs == null)
+			return false;
+		int len = fs.length;
+		if (len == 0)
+			return false;
+		for (int i = 0; i < len; i++) {
 			java.lang.reflect.Field f = fs[i];
 			boolean isSt = Modifier.isStatic(f.getModifiers());
 			if (isSt)
 				continue;
-			f.setAccessible(true);
+			boolean wasA = f.isAccessible();
+			if (!wasA)
+				f.setAccessible(true);
 			try {
 				Object val = f.get(o);
-				sb.append(f.getName() + "=" + toInfoStringV(val, depth) + ",");
-			} catch (Error e) {
-				UnhandledException(e);
-			} catch (Exception e) {
+				if (i != 0) {
+					sb.append(",");
+				}
+				sb.append(f.getName() + "=" + toInfoStringV(val, depth));
+			} catch (Throwable e) {
+			} finally {
+				if (!wasA)
+					f.setAccessible(false);
 			}
 		}
-		return sb.toString() + toInfoStringFC(o, c.getSuperclass(), depth);
+		return true;
 	}
 
 	public static String objKey(Object o) {
-		return "cls=" + toInfoStringC(o.getClass()) + ",inst=" + java.lang.System.identityHashCode(o);
+		return "inst=" + toInfoStringC(o.getClass()) + "@" + java.lang.System.identityHashCode(o);
 	}
 
 	private static String toInfoStringC(Class c) {
-		if (c == null)
-			return "<?>";
-		return c.getSimpleName();
+		return getCanonicalSimpleName(c);
 	}
 
 	public static boolean mustBeSameStrings(String gs1, String gs2) {
@@ -356,13 +423,14 @@ public abstract class Debuggable {
 	final static Class[] C_T = new Class[] { Throwable.class };
 	final static Class[] C_0 = new Class[] {};
 
-	public static void printStackTrace(final Throwable ex) {
+	public static RuntimeException printStackTrace(final Throwable ex) {
 		printStackTrace(ex, System.err, -1);
-		return;
+		return reThrowable(ex);
 	}
 
 	public static void printStackTrace(final Throwable ex, PrintStream ps, int maxLines) {
 		Throwable e = ex;
+		if (QuitelyDoNotShowExceptions) return; 
 		while (e != null) {
 			printStackTraceLocal(e, ps, 100);
 			ps.println("\n Caused by... ");
@@ -408,6 +476,12 @@ public abstract class Debuggable {
 			return baos.toString("ISO-8859-1");
 		} catch (UnsupportedEncodingException e) {
 			return baos.toString();
+		}
+	}
+
+	public static void addForDebug(Object obj) {
+		synchronized (allObjectsForDebug) {
+			allObjectsForDebug.add(obj);
 		}
 	}
 
