@@ -2,6 +2,7 @@ package org.appdapter.gui.trigger;
 
 import java.awt.event.ActionEvent;
 import java.beans.Customizer;
+import java.beans.PropertyEditor;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -61,6 +62,7 @@ abstract public class UtilityMenuOptions implements UtilClass {
 		withSubclasses(ObjectPanel.class, fw);
 		withSubclasses(UtilClass.class, fw);
 		withSubclasses(Customizer.class, fw);
+		withSubclasses(PropertyEditor.class, fw);
 		Utility.addClassStaticMethods(RepoManagerPanel.class);
 	}
 

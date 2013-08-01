@@ -55,6 +55,7 @@ public interface AnyOper {
 
 	}
 
+
 	@Retention(RetentionPolicy.RUNTIME)
 	static public @interface UISalient {
 		/**
@@ -96,6 +97,9 @@ public interface AnyOper {
 		public String ApplyToClass() default "";
 
 		public boolean NonPublicMethods() default true;
+		
+
+		public boolean IsPanel() default false;
 
 	}
 
@@ -113,7 +117,7 @@ public interface AnyOper {
 	public interface UIProvider {
 
 	}
-
+	
 	public interface OntoPriority extends AnyOper {
 	}
 

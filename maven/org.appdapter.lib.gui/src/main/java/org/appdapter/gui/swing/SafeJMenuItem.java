@@ -9,9 +9,13 @@ import javax.swing.JMenuItem;
 import javax.swing.UIManager;
 import javax.swing.plaf.MenuItemUI;
 
-public class SafeJMenuItem extends JMenuItem {
+import org.appdapter.api.trigger.AnyOper.UISalient;
+import org.appdapter.gui.api.GetSetObject;
 
-	private Object savedContext;
+public class SafeJMenuItem extends JMenuItem implements UISwingReplacement, GetSetObject {
+
+	@UISalient
+	public Object userObject;
 
 	/**
 	 * Resets the UI property with a value from the current look and feel.
@@ -68,7 +72,7 @@ public class SafeJMenuItem extends JMenuItem {
 	 */
 	public SafeJMenuItem(Object ctx, boolean iamObject, Action a) {
 		super(a);
-		this.savedContext = ctx;
+		this.userObject = ctx;
 	}
 
 	/**
@@ -79,7 +83,7 @@ public class SafeJMenuItem extends JMenuItem {
 	 */
 	public SafeJMenuItem(Object ctx, boolean iamObject, String text, Icon icon) {
 		super(text, icon);
-		this.savedContext = ctx;
+		this.userObject = ctx;
 	}
 
 	/**
@@ -91,7 +95,15 @@ public class SafeJMenuItem extends JMenuItem {
 	 */
 	public SafeJMenuItem(Object ctx, boolean iamObject, String text, int mnemonic) {
 		super(text, mnemonic);
-		this.savedContext = ctx;
+		this.userObject = ctx;
+	}
+
+	@Override public Object getValue() {
+		return userObject;
+	}
+
+	@Override public void setObject(Object object) {
+		userObject = object;
 	}
 
 }
