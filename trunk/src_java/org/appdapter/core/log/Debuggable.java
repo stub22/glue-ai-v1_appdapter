@@ -54,7 +54,7 @@ public abstract class Debuggable {
 
 	public static RuntimeException warn(Object... objects) {
 		String dstr = Debuggable.toInfoStringA(objects, " : ", PRINT_DEPTH);
-		RuntimeException rte = new NullPointerException(dstr);
+		RuntimeException rte = new RuntimeException(dstr);
 		if (!QuitelyDoNotShowExceptions)
 			rte.printStackTrace();
 		return rte;

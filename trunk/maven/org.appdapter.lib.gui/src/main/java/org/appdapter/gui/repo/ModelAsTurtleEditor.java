@@ -71,8 +71,8 @@ import com.hp.hpl.jena.rdf.model.Statement;
 public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 	static Logger theLogger = LoggerFactory.getLogger(ModelMatrixPanel.class);
 
-	@UISalient static public ModelAsTurtleEditor showModelMatrixPanel(final Model obj) {
-		return new ModelAsTurtleEditor(obj, "" + obj);
+	@UISalient(IsPanel = true) static public ModelAsTurtleEditor showTurtleTextEditor(Model obj) {
+		return new ModelAsTurtleEditor(obj);
 	}
 
 	static {

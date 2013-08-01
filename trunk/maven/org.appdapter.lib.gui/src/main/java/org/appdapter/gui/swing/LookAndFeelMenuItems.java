@@ -12,9 +12,11 @@ import javax.swing.JMenu;
 import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.browse.Utility;
+import org.appdapter.gui.util.PromiscuousClassUtilsA;
 
 import com.jidesoft.plaf.LookAndFeelFactory;
 
@@ -26,20 +28,31 @@ public class LookAndFeelMenuItems extends JMenu {
 	public LookAndFeelMenuItems(String title) {
 		super(title);
 		boolean isOSGi = Utility.isOSGi();
-		initGUI(isOSGi);
+		try {
+			initGUI(isOSGi);
+		} catch (Throwable t) {
+			Debuggable.trace("" + t);
+		}
 	}
 
 	private void initGUI(boolean isOSGi) {
-		//JIDESOFT  
-		LookAndFeelFactory.installDefaultLookAndFeelAndExtension();
 		final LookAndFeelMenuItems menu = this;
 		menu.add(createLnfAction("Metal", "javax.swing.plaf.metal.MetalLookAndFeel"));
 		menu.add(createLnfAction("System", UIManager.getSystemLookAndFeelClassName()));
+		menu.add(createLnfAction("CrossPlatform", UIManager.getCrossPlatformLookAndFeelClassName()));
+
 		if (!isOSGi) {
 			menu.add(createLnfAction("NimbusLookAndFeel", "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel"));
 			menu.add(createLnfAction("GTKLookAndFeel", "com.sun.java.swing.plaf.gtk.GTKLookAndFeel"));
 			menu.add(createLnfAction("MotifLookAndFeel", "com.sun.java.swing.plaf.motif.MotifLookAndFeel"));
 		}
+		if (true)
+			return;
+
+		//JIDESOFT  
+		if (!isOSGi)
+			LookAndFeelFactory.installDefaultLookAndFeelAndExtension();
+
 		this.findMoreLaf = new Thread() {
 			@Override public void run() {
 				addReflectiveLAndF(menu);
@@ -103,13 +116,7 @@ public class LookAndFeelMenuItems extends JMenu {
 	private static Action createLnfAction(String title, final String className) {
 		return new AbstractAction(title) {
 			@Override public void actionPerformed(ActionEvent e) {
-				try {
-					UIManager.setLookAndFeel(className);
-				} catch (Exception e1) {
-				}
-				JFrame frame = Utility.getAppFrame();
-				SwingUtilities.updateComponentTreeUI(frame);
-				frame.pack();
+				setLookAndFeel(className);
 			}
 		};
 	}
@@ -119,14 +126,37 @@ public class LookAndFeelMenuItems extends JMenu {
 			@Override public void actionPerformed(ActionEvent e) {
 				try {
 					LookAndFeel laf = (LookAndFeel) clazz.newInstance();
-					UIManager.setLookAndFeel(laf);
+					setLookAndFeel(laf);
 				} catch (Exception e1) {
 				}
-				JFrame frame = Utility.getAppFrame();
-				SwingUtilities.updateComponentTreeUI(frame);
-				frame.pack();
 			}
 		};
+	}
+
+	protected static void setLookAndFeel(LookAndFeel laf) {
+		try {
+			UIManager.setLookAndFeel(laf);
+			updateComponentTreeUI();
+		} catch (Exception e1) {
+		}
+	}
+
+	protected static void setLookAndFeel(String laf) {
+		try {
+			UIManager.setLookAndFeel((LookAndFeel) PromiscuousClassUtilsA.forName(laf, false, null).newInstance());
+			updateComponentTreeUI();
+		} catch (Exception e1) {
+			try {
+				UIManager.setLookAndFeel(new javax.swing.plaf.metal.MetalLookAndFeel());
+			} catch (UnsupportedLookAndFeelException e) {
+			}
+		}
+	}
+
+	protected static void updateComponentTreeUI() {
+		JFrame frame = Utility.getAppFrame();
+		SwingUtilities.updateComponentTreeUI(frame);
+		frame.pack();
 	}
 
 	private static Action setStyleAction(String title, final int style) {
@@ -137,10 +167,9 @@ public class LookAndFeelMenuItems extends JMenu {
 					LookAndFeelFactory.installJideExtension(style);
 				} catch (Exception e1) {
 				}
-				JFrame frame = Utility.getAppFrame();
-				SwingUtilities.updateComponentTreeUI(frame);
-				frame.pack();
+				updateComponentTreeUI();
 			}
 		};
 	}
+
 }
