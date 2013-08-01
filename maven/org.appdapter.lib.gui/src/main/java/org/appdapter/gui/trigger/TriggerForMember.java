@@ -328,6 +328,9 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 		}, member.getName(), getMissingParemetersTotal());
 	}
 
+	@UISalient
+	static public boolean PrefixWithIndirectyWhenIndirect = false;
+
 	static public String getMenuPath(String menuFormat, boolean isStatic, Object o1, Class tdc, Class mdc, Class getReturnType, Callable valueOf, String memberName, int missingParamsTotal) {
 		String s = menuFormat;
 		if (s == null || s.length() == 0) {
@@ -336,23 +339,21 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 		if (isStatic) {
 			s = "Static|" + s;
 		}
-		if (missingParamsTotal > 0) {
-			s = "More Params Needed|" + s;
-		}
 		Class fi = mdc;
 		if (s.contains("%c")) {
 			String strval = Utility.getShortClassName(fi);
 			//	if (true || ((o1 != null && o1.getClass() != _clazz) || _clazz.getDeclaredMethods().length > 6)) {
 			if (o1 != null && fi != o1.getClass()) {
-				strval = "Indirectly|" + strval;
+				//strval = "Indirectly|" + strval;
 			}
 			s = replace(s, "%c", strval);
 		}
 		if (s.contains("%d")) {
 			fi = mdc;
 			String strval = Utility.getShortClassName(fi);
-			if (o1 != null && fi.isInstance(o1)) {
-				strval = "Indirectly|" + strval;
+			if (o1 != null && !fi.isInstance(o1)) {
+				if (PrefixWithIndirectyWhenIndirect)
+					strval = "Indirectly|" + strval;
 			}
 			s = replace(s, "%d", strval);
 		}
@@ -393,8 +394,9 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 				}
 			}
 			String strval = Utility.getShortClassName(fi);
-			if (o1 != null && fi.isInstance(o1)) {
-				strval = "Indirectly|" + strval;
+			if (o1 != null && !fi.isInstance(o1)) {
+				if (PrefixWithIndirectyWhenIndirect)
+					strval = "Indirectly|" + strval;
 			}
 			s = replace(s, "%i", strval);
 		}
@@ -426,6 +428,9 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 				}
 			}
 			strval = Utility.spaceCase(Utility.properCase(strval));
+			if (missingParamsTotal > 0) {
+				strval = "More Params Needed|" + strval;
+			}
 			s = replace(s, "%m", strval);
 		}
 		return s;
