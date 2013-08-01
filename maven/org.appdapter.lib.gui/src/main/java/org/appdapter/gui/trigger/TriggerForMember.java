@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 import javax.swing.AbstractButton;
-import javax.swing.JCheckBoxMenuItem;
 
 import org.appdapter.api.trigger.AnyOper.AskIfEqual;
 import org.appdapter.api.trigger.AnyOper.UISalient;
@@ -31,6 +30,7 @@ import org.appdapter.gui.api.UIAware;
 import org.appdapter.gui.api.WrapperValue;
 import org.appdapter.gui.browse.PropertyDescriptorForField;
 import org.appdapter.gui.browse.Utility;
+import org.appdapter.gui.swing.SafeJCheckBoxMenuItem;
 import org.appdapter.gui.swing.SafeJMenuItem;
 
 public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerForInstance<BT> implements Comparable<Trigger>, AskIfEqual, TriggerForClass {
@@ -219,32 +219,37 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 		getLogger().debug(Debuggable.toInfoStringArgV(this, " firing on ", targetBox, " with " + actevt));
 		Object obj = valueOf(targetBox, actevt, true, true);
 		Class rt = nonPrimReturnType();
-		if (rt != Void.class) {
-			if (obj != null) {
-				Class rc = obj.getClass();
-				if (!rt.isAssignableFrom(rc)) {
-					rt = rc;
-				}
-				try {
-					Utility.addSubResult(this, targetBox, actevt, obj, rt);
-				} catch (PropertyVetoException e) {
-					Debuggable.printStackTrace(e);
-				}
-			}
+		try {
+			Utility.addSubResult(this, targetBox, actevt, obj, rt);
+		} catch (PropertyVetoException e) {
+			Debuggable.printStackTrace(e);
 		}
+
 	}
 
 	public Object valueOf(Box targetBox, ActionEvent actevt, boolean wantSideEffect, boolean isPaste) throws InvocationTargetException {
+		boolean was = Debuggable.QuitelyDoNotShowExceptions;
+		if (!wantSideEffect) {
+			Debuggable.QuitelyDoNotShowExceptions = true;
+		}
+		try {
+			return valueOfImpl(targetBox, actevt, wantSideEffect, isPaste);
+		} finally {
+			Debuggable.QuitelyDoNotShowExceptions = was;
+		}
+	}
+
+	private Object valueOfImpl(Box targetBox, ActionEvent actevt, boolean wantSideEffect, boolean isPaste) throws InvocationTargetException {
+		Class rt = nonPrimReturnType();
 		Member m = getMember();
 		{
-			Class rt = nonPrimReturnType();
+
 			try {
 				Object tryValue = targetBox;
 				if (_object != null) {
 					tryValue = _object;
 				}
 				Object obj;
-
 				if (m instanceof Field) {
 					String op = "Setting";
 					Field f = (Field) m;
@@ -281,13 +286,15 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 					return value;
 				}
 				// is a method
-				if (isSideEffectSafe || wantSideEffect) {
-					obj = Utility.invokeFromUI(tryValue, (Method) m);
-					return obj;
-				} else {
-					return null;
+				if (m instanceof Method) {
+					if (isSideEffectSafe || wantSideEffect) {
+						obj = Utility.invokeFromUI(tryValue, (Method) m);
+						return obj;
+					} else {
+						return null;
+					}
 				}
-
+				return m;
 			} catch (InvocationTargetException e) {
 				throw e;
 			} catch (Throwable e) {
@@ -345,6 +352,10 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 				strval = "Indirectly|" + strval;
 			}
 			s = replace(s, "%d", strval);
+		}
+		if (s.contains("%o")) {
+			String strval = Utility.getUniqueName(ReflectUtils.recastOrNull(o1, tdc, "<NoConversion>"));
+			s = replace(s, "%o", strval);
 		}
 		if (s.contains("%i")) {
 			fi = mdc;
@@ -554,7 +565,7 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 		if (jmi == null) {
 			final TriggerForMember trig = this;
 			if (isSideEffectSafe && nonPrimReturnType() == Boolean.class) {
-				jmi = new JCheckBoxMenuItem(getMenuName(), getSafeValue() == Boolean.TRUE);
+				jmi = new SafeJCheckBoxMenuItem(b, true, getMenuName(), null, getSafeValue() == Boolean.TRUE);
 			} else {
 				jmi = new SafeJMenuItem(b, true, getMenuName());
 			}

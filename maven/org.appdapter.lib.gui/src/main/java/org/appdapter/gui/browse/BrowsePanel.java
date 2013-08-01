@@ -28,6 +28,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 
@@ -48,6 +49,9 @@ import javax.swing.KeyStroke;
 import javax.swing.ToolTipManager;
 import javax.swing.tree.TreeModel;
 
+import org.appdapter.api.trigger.AnyOper.Singleton;
+import org.appdapter.api.trigger.AnyOper.UIHidden;
+import org.appdapter.api.trigger.AnyOper.UISalient;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContext;
 import org.appdapter.api.trigger.MutableBox;
@@ -77,13 +81,17 @@ import com.jidesoft.tree.StyledTreeCellRenderer;
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessageAndErrors {
+@UIHidden
+public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessageAndErrors, Singleton {
 
 	public TreeModel myTreeModel;
 	public DisplayContextUIImpl app;
 	public AddToTreeListener addToTreeListener;
 	public BoxContext myBoxContext;
 	private AddToTreeListener addClipToTreeListener;
+
+	@UISalient
+	boolean OnTreeFocusShowObject = false;
 
 	public BoxContext getBoxContext() {
 		return myBoxContext;
@@ -120,7 +128,7 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 			Object object = (Object) iterator.next();
 			Utility.addObjectFeatures(object);
 		}
-
+		Utility.addObjectFeatures(this);
 		invalidate();
 	}
 
@@ -150,17 +158,24 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 		ToolTipManager.sharedInstance().registerComponent(myTree);
 		/**JIDESOFT */
 		myTree.setCellRenderer(new StyledTreeCellRenderer() {
+
 			protected void customizeStyledLabel(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hazFocus) {
-				super.customizeStyledLabel(tree, value, sel, expanded, leaf, row, hazFocus);
-				String text = getText();
-				if (false && hazFocus && sel) {
-					Object deref = Utility.dref(value);
-					try {
-						showScreenBox(deref);
-					} catch (Exception e) {
-						e.printStackTrace();
-						throw Debuggable.reThrowable(e);
+				try {
+					super.customizeStyledLabel(tree, value, sel, expanded, leaf, row, hazFocus);
+					if (OnTreeFocusShowObject && hazFocus && sel) {
+						Object deref = Utility.dref(value);
+						if (deref != null && deref != value) {
+							try {
+								String text = getText();
+								showScreenBox(text, deref);
+							} catch (Exception e) {
+								e.printStackTrace();
+								throw Debuggable.reThrowable(e);
+							}
+						}
 					}
+				} catch (Throwable t) {
+					Debuggable.printStackTrace(t);
 				}
 				// here is the code to customize the StyledLabel for each tree node
 			}
@@ -485,6 +500,7 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 	}
 
 	public UserResult showScreenBox(String title, Object anyObject) {
+
 		try {
 			if (anyObject == null)
 				return Utility.asUserResult(null);
@@ -498,7 +514,14 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 		return showScreenBox(null, anyObject);
 	}
 
+	LinkedList<Object> workingOnShowingObject = new LinkedList<Object>();
+
 	public UserResult addObject(String title, Object anyObject, DisplayType attachType, boolean showASAP, boolean expandChildren) {
+		synchronized (workingOnShowingObject) {
+			if (workingOnShowingObject.contains(anyObject))
+				return UserResult.SUCCESS;
+			workingOnShowingObject.add(anyObject);
+		}
 		try {
 			BT impl = getTreeBoxCollection().findOrCreateBox(title, anyObject);
 			if (showASAP) {
@@ -509,7 +532,12 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 			}
 			return UserResult.SUCCESS;
 		} catch (Exception e) {
-			throw Debuggable.UnhandledException(e);
+			//throw Debuggable.UnhandledException(e);
+			return UserResult.SUCCESS;			
+		} finally {
+			synchronized (workingOnShowingObject) {
+				workingOnShowingObject.remove(anyObject);
+			}
 		}
 	}
 

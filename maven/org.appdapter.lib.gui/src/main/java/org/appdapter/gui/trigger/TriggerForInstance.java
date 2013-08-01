@@ -15,6 +15,7 @@ import javax.swing.JPanel;
 import javax.swing.text.DefaultEditorKit.PasteAction;
 
 import org.appdapter.api.trigger.AnyOper.AskIfEqual;
+import org.appdapter.api.trigger.AnyOper.UIHidden;
 import org.appdapter.api.trigger.AnyOper.UISalient;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContext;

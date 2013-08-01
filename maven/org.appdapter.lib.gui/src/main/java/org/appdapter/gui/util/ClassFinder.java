@@ -1,17 +1,21 @@
 package org.appdapter.gui.util;
 
+import static org.appdapter.gui.util.PromiscuousClassUtilsA.classesSeen;
+import static org.appdapter.gui.util.PromiscuousClassUtilsA.coerceClassloader;
+import static org.appdapter.gui.util.PromiscuousClassUtilsA.forName;
+import static org.appdapter.gui.util.PromiscuousClassUtilsA.getImplementingClasses;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-
-import static org.appdapter.gui.util.CollectionSetUtils.*;
-import static org.appdapter.gui.util.PromiscuousClassUtilsA.*;
 
 /**
  * This is a stateless utility class that contains code for looking up
@@ -180,7 +184,27 @@ public class ClassFinder {
 	 *
 	 * @param dirsString additional directiories to search, it can be <code>null</code>
 	 */
+	static Map<String, Set> cachedClassNames = new HashMap<String, Set>();
+
 	public synchronized static Set getAllClassNames(String dirsString) throws IOException {
+		synchronized (cachedClassNames) {
+			String key = dirsString;
+			if (key == null)
+				key = "$CLASSPATH";
+			Set fnd = cachedClassNames.get(key);
+			if (fnd != null)
+				return fnd;
+			if (cachedClassNames.containsKey(key)) {
+				return null;
+			}
+			cachedClassNames.put(key, null);
+			fnd = getAllClassNames0(dirsString);
+			cachedClassNames.put(key, fnd);
+			return fnd;
+		}
+	}
+
+	public synchronized static Set getAllClassNames0(String dirsString) throws IOException {
 		Set classNames = new HashSet();
 		Set classPathFiles = getClassPathFiles();
 		if (dirsString != null)
