@@ -1,6 +1,7 @@
 package org.appdapter.gui.trigger;
 
 import java.awt.event.ActionEvent;
+import java.beans.Customizer;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -29,8 +30,8 @@ import org.appdapter.gui.box.BoxImpl;
 import org.appdapter.gui.box.ScreenBoxImpl;
 import org.appdapter.gui.browse.KMCTrigger;
 import org.appdapter.gui.browse.Utility;
+import org.appdapter.gui.editors.ObjectPanel;
 import org.appdapter.gui.repo.RepoManagerPanel;
-import org.appdapter.gui.util.ClassFinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,30 +46,42 @@ abstract public class UtilityMenuOptions implements UtilClass {
 	public static boolean usePropertyEditorManager = false;
 	public static boolean useSeperateSlowThreads = false;
 
+	interface VoidFunc<A> {
+		void call(A r);
+	}
+
 	public static void findAndloadMissingUtilityClasses() throws IOException {
 		Utility.addClassStaticMethods(JenaModelUtils.class);
-		for (Class utilClass : Utility.getCoreClasses(UtilClass.class)) {
-			try {
-				if (utilClass.isInterface())
-					continue;
-				Utility.addClassStaticMethods(utilClass);
-			} catch (Throwable t) {
-				Debuggable.printStackTrace(t);
+		VoidFunc fw = new VoidFunc<Class>() {
+			@Override public void call(Class utilClass) {
+				if (!utilClass.isInterface())
+					Utility.addClassStaticMethods(utilClass);
 			}
-		}
+		};
+		withSubclasses(ObjectPanel.class, fw);
+		withSubclasses(UtilClass.class, fw);
+		withSubclasses(Customizer.class, fw);
 		Utility.addClassStaticMethods(RepoManagerPanel.class);
 	}
 
-	public static void findAndloadMissingTriggers() throws IOException {
-		for (Class utilClass : Utility.getCoreClasses(Trigger.class)) {
+	private static <T> void withSubclasses(Class<T> sc, VoidFunc<Class<? extends T>> func) {
+		for (Class utilClass : Utility.getCoreClasses(sc)) {
 			try {
-				addTriggerClass(utilClass);
+				func.call(utilClass);
 			} catch (Throwable t) {
 				Debuggable.printStackTrace(t);
 			}
-
 		}
+	}
 
+	public static void findAndloadMissingTriggers() throws IOException {
+		VoidFunc fw = new VoidFunc<Class>() {
+			@Override public void call(Class utilClass) {
+				if (!utilClass.isInterface())
+					Utility.addClassStaticMethods(utilClass);
+			}
+		};
+		withSubclasses(Trigger.class, fw);
 	}
 
 	static private Set<Class> allBoxTypes = new HashSet<Class>();

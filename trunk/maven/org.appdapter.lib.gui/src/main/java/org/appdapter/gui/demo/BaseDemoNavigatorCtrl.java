@@ -64,7 +64,7 @@ abstract public class BaseDemoNavigatorCtrl implements BrowserPanelGUI, org.appd
 	private BrowsePanel myBP;
 	private JFrame myJFrame;
 
-	@Override public DisplayContext getDisplayContext() {
+	public DisplayContext getDisplayContext() {
 		if (myBP != null)
 			return myBP.getDisplayContext();
 		return this;
@@ -206,7 +206,7 @@ abstract public class BaseDemoNavigatorCtrl implements BrowserPanelGUI, org.appd
 		return getNOC().getTitleOf(anyObject);
 	}
 
-	@Override public void addListener(POJOCollectionListener objectChoice) {
+	public void addListener(POJOCollectionListener objectChoice) {
 		getNOC().addListener(objectChoice);
 	}
 
@@ -218,11 +218,11 @@ abstract public class BaseDemoNavigatorCtrl implements BrowserPanelGUI, org.appd
 		return getNOC().findObjectByName(title);
 	}
 
-	@Override public Collection findObjectsByType(Class type) {
+	public Collection findObjectsByType(Class type) {
 		return getNOC().findObjectsByType(type);
 	}
 
-	@Override public BT findOrCreateBox(Object newObject) {
+	public BT findOrCreateBox(Object newObject) {
 		return getNOC().findOrCreateBox(newObject);
 	}
 

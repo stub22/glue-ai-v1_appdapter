@@ -436,7 +436,7 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 		}
 		actions.add(new PropertiesAction(box, object));
 		Class cls = val.getClass();
-		TriggerMenuFactory.addTriggersForInstance(getDisplayContext().getDisplayContext(), cls, actions, (WrapperValue) box);
+		TriggerMenuFactory.addTriggersForInstance(getDisplayContext(), cls, actions, (WrapperValue) box);
 		return actions;
 	}
 
@@ -559,7 +559,7 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 	}
 
 	public UserResult showScreenBox(String title, Object object) {
-		return showScreenBoxAsResult(title, object);
+		return showScreenBoxAsResult(title, object, null);
 	}
 
 	public UserResult showScreenBox(Object object) {
@@ -569,7 +569,7 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 	/**
 	 * Opens up a GUI to show the details of the given object
 	 */
-	public UserResult showScreenBoxAsResult(String title, Object object) {
+	public UserResult showScreenBoxAsResult(String title, Object object, Class typeWhenNull) {
 		if (object == null) {
 			return Utility.browserPanel.showMessage("RESULT: " + "null", null);
 		}
