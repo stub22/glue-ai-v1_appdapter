@@ -1,12 +1,14 @@
 package org.appdapter.gui.swing;
 
 import java.awt.LayoutManager;
+import java.lang.reflect.InvocationTargetException;
 
 import javax.swing.JPanel;
 
+import org.appdapter.core.convert.NoSuchConversionException;
 import org.appdapter.gui.browse.Utility;
 
-public class JJPanel extends JPanel {
+public class JJPanel extends JPanel implements UISwingReplacement {
 	public JJPanel() {
 		super();
 	}
@@ -33,6 +35,14 @@ public class JJPanel extends JPanel {
 
 	public Object getValue() throws Throwable {
 		return null;
+	}
+
+	@Override public void updateUI() {
+		try {
+			super.updateUI();
+		} catch (Throwable t) {
+
+		}
 	}
 
 }

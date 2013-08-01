@@ -4,14 +4,17 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.Action;
 import javax.swing.Icon;
-import javax.swing.JComponent;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JComponent;
 import javax.swing.UIManager;
 import javax.swing.plaf.MenuItemUI;
 
-public class SafeJCheckBoxMenuItem extends JCheckBoxMenuItem {
+import org.appdapter.gui.api.GetSetObject;
 
-	private Object savedContext;
+public class SafeJCheckBoxMenuItem extends JCheckBoxMenuItem implements UISwingReplacement, GetSetObject {
+
+	@UISalient
+	public Object userObject;
 
 	/**
 	 * Resets the UI property with a value from the current look and feel.
@@ -43,7 +46,7 @@ public class SafeJCheckBoxMenuItem extends JCheckBoxMenuItem {
 	 */
 	public SafeJCheckBoxMenuItem(Object ctx, boolean iamObject, Action a) {
 		super(a);
-		this.savedContext = ctx;
+		this.userObject = ctx;
 	}
 
 	/**
@@ -54,7 +57,15 @@ public class SafeJCheckBoxMenuItem extends JCheckBoxMenuItem {
 	 */
 	public SafeJCheckBoxMenuItem(Object ctx, boolean iamObject, String text, Icon icon, boolean isChecked) {
 		super(text, isChecked);
-		this.savedContext = ctx;
+		this.userObject = ctx;
+	}
+
+	@Override public Object getValue() {
+		return userObject;
+	}
+
+	public void setObject(Object object) {
+		userObject = object;
 	}
 
 }
