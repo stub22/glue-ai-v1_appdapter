@@ -333,8 +333,15 @@ public class ReflectUtils {
 		return con.getParameterTypes();
 	}
 
-	static Object[] evaluateAbility(Converter converter, Class[] ts, boolean isVarArgs, Object[] params, OptionalArg optionalArg) throws IllegalAccessException, IllegalArgumentException,
-			InvocationTargetException, NoSuchMethodException, InstantiationException {
+	static Object[] evaluateAbility(Converter converter, Class[] ts, boolean isVarArgs, Object[] params, OptionalArg optionalArg) {
+		try {
+			return evaluateAbility0(converter, ts, isVarArgs, params, optionalArg);
+		} catch (Throwable t) {
+			return new Object[ts.length];
+		}
+	}
+
+	static Object[] evaluateAbility0(Converter converter, Class[] ts, boolean isVarArgs, Object[] params, OptionalArg optionalArg) {
 		optionalArg.reset();
 		int ml = ts.length;
 		if (params == null) {
@@ -362,14 +369,20 @@ public class ReflectUtils {
 
 		int neededArgs = lastParamNum - pl;
 
+		lastParamNum--;
+
 		if (neededArgs > 0) {
 			if (optionalArg == null) {
 				Debuggable.warn("Not enough arguments ! neededArgs = " + neededArgs);
 			} else {
 				for (int i = 0; i < neededArgs; i++) {
 					int workingOn = i + lastParamNum;
-					Class pt = ts[workingOn];
-					nps[workingOn] = optionalArg.getArg(pt);
+					try {
+						Class pt = ts[workingOn];
+						nps[workingOn] = optionalArg.getArg(pt);
+					} catch (Throwable tt) {
+
+					}
 				}
 			}
 		}
@@ -377,9 +390,13 @@ public class ReflectUtils {
 		for (int i = 0; i < lastParamNum; i++) {
 			Object p = params[i];
 			Class pt = ts[i];
-			nps[i] = recast(converter, p, pt);
-			if (nps[i] != p) {
-				anyChange = true;
+			try {
+				nps[i] = recastOrNull(converter, p, pt);
+				if (nps[i] != p) {
+					anyChange = true;
+				}
+			} catch (Throwable tt) {
+
 			}
 		}
 		if (!isVarArgs) {
@@ -400,15 +417,27 @@ public class ReflectUtils {
 				ArrayList xp = new ArrayList();
 				for (int i = lastParamNum; i < pl; i++) {
 					Object p = params[i];
-					xp.add(recast(converter, p, pt));
+					Object o = recastOrNull(converter, p, pt);
+					if (o == null)
+						return nps;
+					xp.add(o);
 				}
 				lpv = xp.toArray();
 			}
-			nps[lastParamNum] = recast(converter, lpv, ts[lastParamNum]);
+			nps[lastParamNum] = recastOrNull(converter, lpv, ts[lastParamNum]);
 			return evaluateAbility(converter, ts, isVarArgs, nps, optionalArg);
 		}
 		return nps;
 
+	}
+
+	private static Object recastOrNull(Converter converter, Object p, Class pt) {
+		try {
+			return recast(converter, p, pt);
+		} catch (Throwable e) {
+			Debuggable.expectedToIgnore(e, NoSuchConversionException.class);
+			return null;
+		}
 	}
 
 	private static Object invokeAVConstructors(Converter converter, Constructor method, Object[] params, OptionalArg optionalArg) throws IllegalAccessException, IllegalArgumentException,

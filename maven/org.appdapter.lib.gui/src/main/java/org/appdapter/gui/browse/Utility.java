@@ -1467,12 +1467,18 @@ public class Utility extends UtilityMenuOptions {
 					Component cp;
 					try {
 						cp = (Component) ReflectUtils.invokeConstructorOptional(new UtilityConverter(), new UtilityOptionalArgs(), comp, object);
+						if (cp == null) {
+							theLogger.warn("Did not create " + comp);
+							continue;
+						}
 						if (cp instanceof SetObject) {
 							((SetObject) cp).setObject(object);
 						}
 						tabs.addTab(prefix, cp);
 
 					} catch (Throwable e) {
+						e.printStackTrace();
+						theLogger.error("Did not create " + comp, e);
 					}
 
 				}
