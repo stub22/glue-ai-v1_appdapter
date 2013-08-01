@@ -203,7 +203,7 @@ object RepoSpecDefaultNames {
     print("Starting Whackamole");
     import org.appdapter.demo.DemoBrowserUI
     val repoNav = DemoBrowserUI.makeDemoNavigatorCtrl(args);
-    repoNav.addObject(null, repo, true);
+    repoNav.addObject(null, repo, true, false);
     java.lang.Thread.sleep(60000000);
   }
 

@@ -16,13 +16,15 @@
 
 package org.appdapter.core.name;
 
+import org.appdapter.api.trigger.AnyOper.HasIdent;
+
 /**
  *
  * @author Stu B. <www.texpedient.com>
  *
  * We expect Ident impls to be well behaved w.r.t. hashCode() and equals()
  */
-public interface Ident {
+public interface Ident extends HasIdent {
 	public String getAbsUriString();
 	// Typically either a variable name or a fragmentID.
 	public String getLocalName();

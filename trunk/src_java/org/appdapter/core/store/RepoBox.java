@@ -25,7 +25,7 @@ import org.appdapter.api.trigger.Trigger;
  * @author Stu B. <www.texpedient.com>
  */
 public interface RepoBox<TT extends Trigger<? extends RepoBox<TT>>> extends Box<TT> {
-	public Repo getRepo();  // Return type should be yet another type parameter of the interface.
+	public Repo getValue();  // Return type should be yet another type parameter of the interface.
 	
 	public List<Repo.GraphStat>		getAllGraphStats();
 	
@@ -33,4 +33,6 @@ public interface RepoBox<TT extends Trigger<? extends RepoBox<TT>>> extends Box<
 	public String processQueryAtUrlAndProduceXml(String queryURL, ClassLoader optResourceCL);
 	
 	public Box findGraphBox(String graphURI);
+
+	public Repo getRepo();
 }

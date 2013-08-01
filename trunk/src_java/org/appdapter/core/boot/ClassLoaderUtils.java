@@ -206,9 +206,11 @@ public class ClassLoaderUtils {
 		} else if (resourceClassLoaderType.isEmpty() || resourceClassLoaderType.equals(ALL_RESOURCE_CLASSLOADER_TYPES)) {
 			resourceClassLoaderType = ALL_RESOURCE_CLASSLOADER_TYPES;
 			isNamed = false;
-		}
-		theLogger.info(Debuggable.toInfoStringCompound("registerClassLoader", context, loader, resourceClassLoaderType, "contextOptional=", contextOptional, "isRemoval=", isRemoval,
-				"isNamed=", isNamed));
+		}/*
+		theLogger.info(Debuggable.toInfoStringCompound("registerClassLoader", 
+				context, loader, resourceClassLoaderType, "contextOptional=", 
+				contextOptional, "isRemoval=", isRemoval,
+				"isNamed=", isNamed));*/
 		synchronized (namedLoaders) {
 			if (isRemoval) {
 				allSeenEverLoaders.remove(loader);

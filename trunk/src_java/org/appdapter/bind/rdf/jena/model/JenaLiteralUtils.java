@@ -109,10 +109,13 @@ public class JenaLiteralUtils {
 			return (T) e.asLiteral().getValue();
 		}
 		if (Boolean.class.isAssignableFrom(type)) {
-			return (T) e.asLiteral().getValue();
+			return (T) (Boolean) (e.asLiteral().getBoolean());
+		}
+		if (Character.class.isAssignableFrom(type)) {
+			return (T) (Character) e.asLiteral().getChar();
 		}
 		if (RDFNode.class.isAssignableFrom(type)) {
-			Class<RDFNode> rtype = (Class<RDFNode>) type;
+			Class<? extends RDFNode> rtype = (Class<? extends RDFNode>) type;
 
 			if (e.canAs(rtype))
 				return (T) e.as(rtype);
@@ -122,7 +125,9 @@ public class JenaLiteralUtils {
 		}
 		if (String.class.isAssignableFrom(type)) {
 			try {
-				return (T) e.asLiteral().getValue();
+				String lv = e.asLiteral().getString();
+				lv = unquote(lv);
+				return (T) lv;
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
@@ -132,9 +137,10 @@ public class JenaLiteralUtils {
 			eval = e.asLiteral().getValue();
 		} else if (e.isURIResource()) {
 			String uri = e.asNode().getURI();
+			Ident id = new FreeIdent(uri);
 			eval = findComponent(new FreeIdent(uri), type);
 			if (eval == null) {
-
+				eval = e.asNode();
 			}
 		}
 
@@ -142,6 +148,17 @@ public class JenaLiteralUtils {
 			throw new NoSuchConversionException(e0, type);
 		}
 		return (T) eval;
+	}
+
+	private static String unquote(String lv) {
+		int len = lv.length();
+		if (!lv.startsWith("\"") || !lv.endsWith("\""))
+			return lv;
+		String clv = lv.substring(1, len - 2);
+		if (!clv.endsWith("\\") && !clv.contains("\"")) {
+			return clv;
+		}
+		return lv;
 	}
 
 	public static boolean isMatchAny(Ident val) {
