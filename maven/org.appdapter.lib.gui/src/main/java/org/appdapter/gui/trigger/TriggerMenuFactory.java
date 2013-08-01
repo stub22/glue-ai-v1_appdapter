@@ -143,7 +143,6 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 		}
 
 		@Override public void removeAll() {
-			Debuggable.notImplemented();
 			mcomps.clear();
 			super.removeAll();
 		}
@@ -608,8 +607,8 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 	private static HashSet<Class> getSkippedTriggerClasses() {
 		HashSet<Class> flat = new HashSet<Class>();
 		flat.add(Object.class);
-		flat.add(BasicDebugger.class);
-		flat.add(Loggable.class);
+		//flat.add(BasicDebugger.class);
+		//flat.add(Loggable.class);
 		// flat.add(NoObject.class);
 		flat.add(UIHidden.class);
 		flat.add(Annotation.class);

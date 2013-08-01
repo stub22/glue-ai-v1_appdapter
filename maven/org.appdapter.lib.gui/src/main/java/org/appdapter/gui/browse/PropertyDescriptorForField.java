@@ -123,7 +123,11 @@ public class PropertyDescriptorForField extends PropertyDescriptor implements Co
 		}
 
 		public Object getTargetObject() {
-			return getObjectFrom(targetObject);
+			try {
+				return getObjectFrom(targetObject);
+			} catch (NoSuchConversionException e) {
+				throw Debuggable.reThrowable(e);
+			}
 		}
 
 		public void setTargetObject(Object s) {
@@ -200,7 +204,7 @@ public class PropertyDescriptorForField extends PropertyDescriptor implements Co
 		}
 	}
 
-	Object getObjectFrom(Object proxy) {
+	Object getObjectFrom(Object proxy) throws NoSuchConversionException {
 		Object obj = proxy;
 		if (isStatic()) {
 			return null;
@@ -405,7 +409,7 @@ public class PropertyDescriptorForField extends PropertyDescriptor implements Co
 		if (objNeedsToBe.isAssignableFrom(proxyClass)) {
 			return (T) newProxyInstance(obj);
 		}
-		Object object = ReflectUtils.recast(obj, getDeclaringClass,maxCvt);
+		Object object = ReflectUtils.recast(obj, getDeclaringClass, maxCvt);
 		T t = (T) newProxyInstance(obj);
 		return t;
 

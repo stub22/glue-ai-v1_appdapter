@@ -19,6 +19,7 @@ package org.appdapter.gui.api;
 import java.util.Collection;
 
 import org.appdapter.api.trigger.AnyOper.UIProvider;
+import org.appdapter.api.trigger.Trigger;
 import org.appdapter.api.trigger.UserResult;
 
 /**
@@ -30,10 +31,22 @@ public interface DisplayContext extends UIProvider/*, IShowObjectMessageAndError
 
 	public NamedObjectCollection getLocalBoxedChildren();
 
-	public Collection getTriggersFromUI(BT box, Object object);
+	/**
+	 * Return triggers that are useful specifically to this DisplayContext (example: Remove $obj from this tab)
+	 * 
+	 * @param box
+	 * @param object
+	 * @return
+	 */
+	public Collection<Trigger> getTriggersFromUI(BT box, Object object);
 
 	public UserResult addObject(String title, Object value, boolean showASAP) throws Exception;
 
+	/**
+	 * Return the local Name of $obj
+	 * @param value
+	 * @return
+	 */
 	public String getTitleOf(Object value);
 
 }

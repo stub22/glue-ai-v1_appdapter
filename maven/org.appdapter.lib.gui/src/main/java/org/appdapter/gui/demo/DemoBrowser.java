@@ -69,8 +69,8 @@ final public class DemoBrowser implements AnyOper.Singleton {
 			mainControl.addObject(optionalName, any, showASAP, loadChildren);
 			mainControl.show();
 
-		} catch (Exception e1) {
-			Debuggable.printStackTrace(e1);
+		} catch (Throwable e1) {
+			//Debuggable.printStackTrace(e1);
 		}
 	}
 

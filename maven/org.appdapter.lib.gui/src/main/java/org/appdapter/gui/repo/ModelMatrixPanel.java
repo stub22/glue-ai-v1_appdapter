@@ -60,7 +60,7 @@ public class ModelMatrixPanel<BoxType extends Box> extends ScreenBoxPanel<BoxTyp
 	}
 
 	@Override public boolean isObjectBoundGUI() {
-		return false;
+		return true;
 	}
 
 	@Override public Class<? extends Map<String, Model>> getClassOfBox() {

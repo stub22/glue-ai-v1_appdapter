@@ -30,6 +30,7 @@ import org.appdapter.api.trigger.TriggerImpl;
 import org.appdapter.api.trigger.AnyOper.UISalient;
 import org.appdapter.bind.rdf.jena.assembly.AssemblerUtils;
 import org.appdapter.bind.rdf.jena.model.JenaFileManagerUtils;
+import org.appdapter.core.convert.NoSuchConversionException;
 import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.demo.DemoResources;
@@ -53,7 +54,11 @@ public class BridgeTriggers {
 		}
 
 		@Override public Trigger createTrigger(String menuFmt, DisplayContext ctx, WrapperValue poj) {
-			return new MountSubmenuFromTriplesTrigger(ReflectUtils.recast(poj, boxTargetClass));
+			try {
+				return new MountSubmenuFromTriplesTrigger(ReflectUtils.recast(poj, boxTargetClass));
+			} catch (NoSuchConversionException e) {
+				throw Debuggable.reThrowable(e);
+			}
 		}
 
 		String triplesURL;
