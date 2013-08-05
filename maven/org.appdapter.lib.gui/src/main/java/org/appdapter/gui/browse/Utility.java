@@ -272,13 +272,13 @@ public class Utility extends UtilityMenuOptions {
 	};
 
 	public static Object getOptionalArg(Class type) throws NoSuchConversionException {
-		Boolean was = Utility.disableOptionalArgs.get();
+		Boolean was = Utility.disableOptionalArgs.get() == Boolean.TRUE;
 		if (was)
 			return null;
 
 		Collection c = getClipboard().findObjectsByType(type);
 		if (c.size() == 1) {
-			return first(c);
+			return firstItem(c);
 		}
 
 		synchronized (lastResults) {
@@ -292,9 +292,17 @@ public class Utility extends UtilityMenuOptions {
 
 		c = findUIObjectsByType(type, false, true, true);
 		if (c.size() == 1) {
-			return first(c);
+			return firstItem(c);
 		}
-		return ReflectUtils.noSuchConversion(OptionalArg.class, type, null);
+		return null;//ReflectUtils.noSuchConversion(OptionalArg.class, type, null);
+	}
+
+	private static Object firstItem(Collection c) {
+		if (c == null)
+			return null;
+		for (Object o : c)
+			return o;
+		return null;
 	}
 
 	public static Collection<Object> findUIObjectsByType(Class type, boolean useClipboard, boolean useLastResults, boolean useEverything) {
@@ -2092,15 +2100,15 @@ public class Utility extends UtilityMenuOptions {
 			}
 
 			@Override public <TrigType> void addTriggersForObjectInstance(DisplayContext ctx, Class cls, List<TrigType> tgs, Object poj, TriggerFilter rulesOfAdd, String menuFmt) {
-				TriggerMenuFactory.addTriggersForObjectInstanceMaster(ctx, cls, tgs, poj, ADD_ALL, menuFmt, false);
+				//TriggerMenuFactory.addTriggersForObjectInstanceMaster(ctx, cls, tgs, poj, ADD_ALL, menuFmt, false);
 				Object also = dref(poj);
-				if (also != null && also != poj) {
-					TriggerMenuFactory.addTriggersForObjectInstanceMaster(ctx, also.getClass(), tgs, also, ADD_ALL, menuFmt, false);
-				}
-				Object also2 = drefO(poj);
-				if (also2 != null && also2 != poj && also2 != also) {
-					TriggerMenuFactory.addTriggersForObjectInstanceMaster(ctx, also2.getClass(), tgs, also2, ADD_ALL, menuFmt, false);
-				}
+				//if (also != null && also != poj) {
+				TriggerMenuFactory.addTriggersForObjectInstanceMaster(ctx, also.getClass(), tgs, also, ADD_ALL, menuFmt, false);
+				//}
+				//Object also2 = drefO(poj);
+				//if (also2 != null && also2 != poj && also2 != also) {
+				//TriggerMenuFactory.addTriggersForObjectInstanceMaster(ctx, also2.getClass(), tgs, also2, ADD_ALL, menuFmt, false);
+				//}
 			}
 		});
 	}

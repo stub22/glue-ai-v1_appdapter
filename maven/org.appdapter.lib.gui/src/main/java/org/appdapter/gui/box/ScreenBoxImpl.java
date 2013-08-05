@@ -494,8 +494,9 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 
 	public List<TrigType> getTriggers() {
 		List<TrigType> tgs = super.getTriggers();
+		DisplayContext dc =  getDisplayContext();
 		for (Class cls : getTypes()) {
-			TriggerMenuFactory.addTriggersForInstance(getDisplayContext(), cls, tgs, this);
+			TriggerMenuFactory.addTriggersForInstance(dc, cls, tgs, this);
 		}
 		return tgs;
 	}
