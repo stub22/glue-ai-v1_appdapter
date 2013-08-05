@@ -58,7 +58,7 @@ public class ShowPanelTrigger<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 				}
 			}
 			Object cust = Utility.newInstance(panelClass);
-			m.invoke(cust, value);
+			m.invoke(cust, Utility.recast(value, m.getParameterTypes()[0]));
 			//@TODO cust.addPropertyChangeListener(listener)
 			getDisplayContext().addObject(null, cust, true);
 			return cust;
