@@ -174,6 +174,10 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 		this.setObject(sourceModel);
 	}
 
+	public ModelAsTurtleEditor() {
+		this.window = Utility.getAppFrame();
+	}
+
 	public ModelAsTurtleEditor(Model sourceModel) {
 		this.window = Utility.getAppFrame();
 		if (sourceModel != null) {
@@ -434,9 +438,9 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 	 * Sets up the window.
 	 */
 	private void initGUIForReference() {
-	
+
 		this.removeAll();
-	
+
 		// set up Turtle text area
 		this.turtleTextArea = new JTextArea();
 		this.turtleTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
@@ -449,12 +453,12 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 		// make text area scrollable
 		JScrollPane scroller = new JScrollPane(this.turtleTextArea, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		scroller.setPreferredSize(new Dimension(400, 300));
-	
+
 		// set up the right-side panel with the buttons
 		this.buttons = new JJPanel();
 		this.buttons.setLayout(new BoxLayout(this.buttons, BoxLayout.PAGE_AXIS));
 		this.buttons.setBorder(BorderFactory.createEmptyBorder(0, 12, 0, 16));
-	
+
 		// buttons
 		makeButton("Add this to the model", new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -476,13 +480,13 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 				replaceModelWithTurtle();
 			}
 		});
-	
+
 		// cursor position label
 		this.cursorPositionLabel = new JLabel("Status bar");
 		this.cursorPositionLabel.setFont(new Font("Dialog", Font.PLAIN, 10));
 		this.buttons.add(Box.createVerticalGlue());
 		this.buttons.add(this.cursorPositionLabel);
-	
+
 		// put pieces together and add some borders
 		Container contentPane = this;//.getContentPane();
 		contentPane.add(scroller, BorderLayout.CENTER);
@@ -490,13 +494,13 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 		contentPane.add(Box.createRigidArea(new Dimension(16, 0)), BorderLayout.WEST);
 		contentPane.add(Box.createRigidArea(new Dimension(0, 12)), BorderLayout.NORTH);
 		contentPane.add(Box.createRigidArea(new Dimension(0, 12)), BorderLayout.SOUTH);
-	
+
 		if (Utility.getAppFrame() == window)
 			return;
-	
+
 		if (true)
 			return;
-	
+
 		// Hack to prevent resizing the window below a minimum size
 		this.window.addComponentListener(new ComponentAdapter() {
 			public void componentResized(ComponentEvent e) {
@@ -517,19 +521,19 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 				ModelAsTurtleEditor.this.window.setSize(width, height);
 			}
 		});
-	
+
 		if (Utility.getAppFrame() == window)
 			return;
-	
+
 		// DISPOSE_ON_CLOSE so we can have multiple windows running
 		this.window.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		this.window.pack();
-	
+
 		// Randomly set initial window positions (otherwise they would
 		// all sit overlapping in the top left corner)
 		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
 		this.window.setLocation(random.nextInt(screen.width - this.window.getWidth()), random.nextInt(screen.height - this.window.getHeight()));
-	
+
 	}
 
 	/**
