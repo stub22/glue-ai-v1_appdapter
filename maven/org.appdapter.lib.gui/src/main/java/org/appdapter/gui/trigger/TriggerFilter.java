@@ -26,6 +26,15 @@ public class TriggerFilter {
 	boolean addEvents = false;
 	boolean addGlobalStatics = UtilityMenuOptions.addGlobalStatics;
 
+	public TriggerFilter clone() {
+		try {
+			return (TriggerFilter) super.clone();
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+			return this;
+		}
+	}
+
 	TriggerFilter(boolean addIt) {
 		this.addInstance = addIt;
 		this.addStatic = addIt;

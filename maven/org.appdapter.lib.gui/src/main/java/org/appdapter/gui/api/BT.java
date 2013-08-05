@@ -1,19 +1,20 @@
 package org.appdapter.gui.api;
 
 import java.awt.Component;
-import java.beans.BeanInfo;
-import java.beans.IntrospectionException;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.JPanel;
 
 import org.appdapter.api.trigger.AnyOper.UIHidden;
+import org.appdapter.api.trigger.AnyOper.UIProvider;
 import org.appdapter.api.trigger.Box;
-import org.appdapter.api.trigger.GetObject;
+import org.appdapter.api.trigger.Trigger;
+import org.appdapter.api.trigger.UserResult;
 
 /**
  * A wrapper for objects used in the ScreenBox system. It holds an object,
@@ -25,15 +26,20 @@ import org.appdapter.api.trigger.GetObject;
  * 
  */
 @UIHidden
-public interface BT extends org.appdapter.gui.api.IGetBox, GetObject, Convertable, WrapperValue//, Box<? extends Trigger<? extends Box<BT>>>
+public interface BT<TT extends Trigger<? extends ScreenBox<TT>>> //
+		extends ScreenBox<TT>, GetSetObject, UserResult, IGetBox, Convertable, DisplayContextProvider, //
+		java.io.Serializable //, GetDisplayContext, UIProvider, WrapperValue //
+//Map.Entry
+
+/*<TrigType extends Trigger<? extends POJOBoxImpl<TrigType>>> extends MutableBox<TrigType>*//*extends org.appdapter.gui.api.IGetBox, GetObject, Convertable, *//*, Box<? extends Trigger<? extends Box<BT>>>*/
 //extends ScreenBox, java.io.Serializable, GetSetObject, MutableBox {
 {
 
-	public Box asBox();
+	//public Box asBox();
 
 	public abstract Object getDisplayTarget(DisplayType attachType);
 
-	public abstract org.appdapter.gui.api.DisplayType getDisplayType();
+	public abstract DisplayType getDisplayType();
 
 	//	public <T> T[] getObjects(Class<T> type);
 
@@ -41,7 +47,9 @@ public interface BT extends org.appdapter.gui.api.IGetBox, GetObject, Convertabl
 
 	//	public <T> T convertTo(Class<T> c);
 
-	public String getDebugName();
+	//	public String getDebugName();
+
+	//	public String getKey();
 
 	/**
 	 * This is used for ScreenComponentImpls to tell their BoxPanelSwitchableView that a
@@ -53,20 +61,20 @@ public interface BT extends org.appdapter.gui.api.IGetBox, GetObject, Convertabl
 	 * This would happen, for example, if someone is trying to rename a object
 	 * to a name that another object within this collection already has.
 	 */
-	public abstract void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException;
+	//	public abstract void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException;
 
 	/**
 	 * This is used for ScreenComponentImpls to tell their BoxPanelSwitchableView that a
 	 * property such as "name" or "selected" has changed. The BoxPanelSwitchableView
 	 * will update its state as necessary.
 	 */
-	public abstract void propertyChange(PropertyChangeEvent evt);
+	//public abstract void propertyChange(PropertyChangeEvent evt);
 
 	/** 
 	 * This returns the decomposed Mixins
 	 * @return
 	 */
-	public Iterable<Object> getObjects();
+	//public Iterable<Object> getObjects();
 
 	//@Override public List<TrigType> getTriggers();
 
@@ -106,7 +114,7 @@ public interface BT extends org.appdapter.gui.api.IGetBox, GetObject, Convertabl
 	/**
 	 * Returns the Class[]s that this object wrapper represents
 	 */
-	abstract public Iterable<Class> getTypes();
+	//abstract public Set<Class> getTypes();
 
 	/**
 	 * Returns the name of this object
@@ -124,9 +132,9 @@ public interface BT extends org.appdapter.gui.api.IGetBox, GetObject, Convertabl
 	/**
 	 * Gets a BeanInfo object for this object, using the Introspector class
 	 */
-	public BeanInfo getBeanInfo() throws IntrospectionException;
+	//public BeanInfo getBeanInfo() throws IntrospectionException;
 
-	public Class<? extends Object> getObjectClass();
+	//public Class<? extends Object> getObjectClass();
 
 	public boolean isTypeOf(Class type);
 
@@ -134,7 +142,7 @@ public interface BT extends org.appdapter.gui.api.IGetBox, GetObject, Convertabl
 
 	public boolean isNamed(String test);
 
-	public JPanel getPropertiesPanel();
+	//public JPanel getPropertiesPanel();
 
 	public Component getComponent(DisplayType attachType);
 
@@ -155,12 +163,12 @@ public interface BT extends org.appdapter.gui.api.IGetBox, GetObject, Convertabl
 	/**
 	 * Returns the object that this value wrapper represents
 	 */
-	public Object getValue();
+	//public Object getValue();
 
 	/**
 	 * Returns the name of this value
 	 */
-	public String getUniqueName();
+	//public String getShortLabel();
 
 	/**
 	 * Changes the name of this value. The name should never be null.
@@ -185,10 +193,14 @@ public interface BT extends org.appdapter.gui.api.IGetBox, GetObject, Convertabl
 	 */
 	public String toString();
 
-	public void setValue(Object newValue);
+	//public Object setValue(Object newValue);
 
 	//	public abstract Object getValue();
 
 	public abstract Object getValueOrThis();
+
+	public abstract Object setValue(Object newValue);
+
+	//public <T> T convertTo(Class<T> type);
 
 }

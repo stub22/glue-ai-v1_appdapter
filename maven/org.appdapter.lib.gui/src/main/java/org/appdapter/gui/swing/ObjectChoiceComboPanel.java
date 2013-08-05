@@ -51,7 +51,7 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 		initGUI();
 		combo.setSelectedItem(value);
 		if (context != null)
-			context.addListener(this);
+			context.addListener(this, true);
 	}
 
 	@Override public void addPropertyChangeListener(PropertyChangeListener p) {
@@ -73,12 +73,12 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 		model.setSelectedItem(object);
 	}
 
-	@Override public void pojoAdded(Object obj, BT box) {
+	@Override public void pojoAdded(Object obj, BT box, Object senderCollection) {
 		if (type.isInstance(obj))
 			model.reload();
 	}
 
-	@Override public void pojoRemoved(Object obj, BT box) {
+	@Override public void pojoRemoved(Object obj, BT box, Object senderCollection) {
 		if (type.isInstance(obj))
 			model.reload();
 	}
@@ -126,14 +126,14 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 	private void showMenu(int x, int y) {
 		Object object = model.getSelectedBean();
 		if (object != null) {
-			TriggerPopupMenu menu = new TriggerPopupMenu(null, null, null, object);
+			TriggerPopupMenu menu = new TriggerPopupMenu(null, null, object);
 			add(menu);
 			menu.show(this, x, y);
 		}
 	}
 
 	public String objectToString(Object object) {
-		return Utility.getUniqueName(object, null, context);
+		return Utility.getUniqueName(object, context);
 	}
 
 	public Object stringToObject(String title) {

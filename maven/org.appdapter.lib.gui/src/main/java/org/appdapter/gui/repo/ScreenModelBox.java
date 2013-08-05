@@ -7,6 +7,10 @@ import com.hp.hpl.jena.rdf.model.Model;
 
 public class ScreenModelBox<TrigType extends Trigger<? extends ScreenBoxImpl<TrigType>>> extends ScreenBoxImpl<TrigType> {
 
+	@Override public String getShortLabel() {
+		return myURI;
+	}
+
 	final String myURI;
 	private Model myModel;
 
@@ -16,8 +20,7 @@ public class ScreenModelBox<TrigType extends Trigger<? extends ScreenBoxImpl<Tri
 		myModel = model;
 	}
 
-	@Override
-	public String toString() {
+	@Override public String toString() {
 		return getClass().getName() + "[uri=" + myURI + "model=" + myModel + "]";
 	}
 
@@ -26,8 +29,7 @@ public class ScreenModelBox<TrigType extends Trigger<? extends ScreenBoxImpl<Tri
 		this.myModel = m;
 	}
 
-	@Override
-	public Object getValue() {
+	@Override public Object getValue() {
 		return myModel;
 	}
 

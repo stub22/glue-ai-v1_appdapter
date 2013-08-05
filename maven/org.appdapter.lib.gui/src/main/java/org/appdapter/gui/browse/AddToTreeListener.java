@@ -36,7 +36,7 @@ public class AddToTreeListener implements POJOCollectionListener {
 		this.root = root;
 		this.organizeIntoClasses = organizeIntoClasses;
 		addboxes(ctx);
-		ctx.addListener(this);
+		ctx.addListener(this, false);
 	}
 
 	private void addboxes(NamedObjectCollection ctx) {
@@ -52,7 +52,7 @@ public class AddToTreeListener implements POJOCollectionListener {
 		jtree.invalidate();
 	}
 
-	@Override public void pojoAdded(Object obj, BT box) {
+	@Override public void pojoAdded(Object obj, BT box, Object senderCollection) {
 		pojoAdded0(obj, box);
 		invalidate();
 	}
@@ -76,7 +76,7 @@ public class AddToTreeListener implements POJOCollectionListener {
 				obj = box.getValueOrThis();
 			}
 			if (box == null) {
-				box = col.asWrapped(d);
+				box = Utility.asWrapped(d);
 			}
 		}
 		if (organizeIntoClasses) {
@@ -92,9 +92,9 @@ public class AddToTreeListener implements POJOCollectionListener {
 
 		if (!isRemoval) {
 			Utility.addObjectFeatures(anyObject);
-			addChildObject(root, box.getUniqueName(), anyObject);
+			addChildObject(root, box.getShortLabel(), anyObject);
 		} else {
-			removeChildObject(root, box.getUniqueName(), anyObject);
+			removeChildObject(root, box.getShortLabel(), anyObject);
 		}
 
 	}
@@ -111,7 +111,7 @@ public class AddToTreeListener implements POJOCollectionListener {
 			return;
 
 		if (!isRemoval) {
-			Utility.addObjectFeatures(obj);
+			// Utility.addObjectFeatures(obj);
 		}
 
 		MutableBox objectBox = (MutableBox) box;
@@ -121,6 +121,8 @@ public class AddToTreeListener implements POJOCollectionListener {
 		if (obj instanceof Class)
 			return;
 		for (Class ifc : oc.getInterfaces()) {
+			if (!Utility.isLocalInterface(ifc))
+				continue;
 			MutableBox faceBox = getFirstBox(Class.class);
 			saveInClassTree(faceBox, ifc, objectBox, isRemoval);
 		}
@@ -132,7 +134,7 @@ public class AddToTreeListener implements POJOCollectionListener {
 				return root;
 			return (MutableBox) mybctx.getRootBox();
 		}
-		return (MutableBox) findOrCreateBox(col, null, obj);
+		return (MutableBox) findOrCreateBox(null, obj);
 	}
 
 	private void saveInClassTree(Box belowBox, Class oc, MutableBox objectBox, boolean isRemoval) throws PropertyVetoException {
@@ -145,7 +147,7 @@ public class AddToTreeListener implements POJOCollectionListener {
 
 	private void saveInTreeWC(Box belowBox, Class oc, MutableBox objectBox, boolean isRemoval) {
 		String cn = Utility.getShortClassName(oc);
-		MutableBox objectClassBox = (MutableBox) findOrCreateBox(col, cn, oc);
+		MutableBox objectClassBox = (MutableBox) findOrCreateBox(cn, oc);
 		if (!isRemoval) {
 			mybctx.contextualizeAndAttachChildBox(belowBox, objectClassBox);
 			mybctx.contextualizeAndAttachChildBox((Box) objectClassBox, objectBox);
@@ -155,7 +157,7 @@ public class AddToTreeListener implements POJOCollectionListener {
 		}
 	}
 
-	@Override public void pojoRemoved(Object obj, BT box) {
+	@Override public void pojoRemoved(Object obj, BT box, Object senderCollection) {
 		pojoRemoved0(obj, box);
 		invalidate();
 	}
@@ -205,22 +207,22 @@ public class AddToTreeListener implements POJOCollectionListener {
 
 	public void addChildObject(Object anyObject, String title, Object child) throws PropertyVetoException {
 		MutableBox parent = getFirstBox(anyObject);
-		MutableBox objectBox = (MutableBox) findOrCreateBox(col, title, child);
+		MutableBox objectBox = (MutableBox) findOrCreateBox(title, child);
 		mybctx.contextualizeAndAttachChildBox((Box) parent, objectBox);
 	}
 
 	public void removeChildObject(Object anyObject, String title, Object child) throws PropertyVetoException {
 		MutableBox parent = getFirstBox(anyObject);
-		MutableBox objectBox = (MutableBox) findOrCreateBox(col, title, child);
-		mybctx.contextualizeAndAttachChildBox((Box) parent, objectBox);
+		MutableBox objectBox = (MutableBox) findOrCreateBox(title, child);
+		mybctx.contextualizeAndDetachChildBox((Box) parent, objectBox);
 
 	}
 
-	private MutableBox findOrCreateBox(NamedObjectCollection col2, String title, Object child) {
+	private MutableBox findOrCreateBox(String title, Object child) {
 		if (child instanceof MutableBox)
 			return (MutableBox) child;
 		try {
-			return (MutableBox) col.findOrCreateBox(title, child).asBox();
+			return (MutableBox) Utility.asWrapped(title, child);
 		} catch (PropertyVetoException e) {
 			throw Debuggable.reThrowable(e);
 		}

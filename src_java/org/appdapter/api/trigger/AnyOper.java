@@ -34,7 +34,9 @@ public interface AnyOper {
 	public interface Singleton {
 
 	}
+	public interface Autoload {
 
+	}
 	/**
 		 * @author Administrator
 		 *
@@ -54,7 +56,6 @@ public interface AnyOper {
 	public @interface UIHidden {
 
 	}
-
 
 	@Retention(RetentionPolicy.RUNTIME)
 	static public @interface UISalient {
@@ -97,9 +98,12 @@ public interface AnyOper {
 		public String ApplyToClass() default "";
 
 		public boolean NonPublicMethods() default true;
-		
+
+		public boolean IsSideEffectSafe() default false;
 
 		public boolean IsPanel() default false;
+
+		boolean IsNotSideEffectSafe() default false;
 
 	}
 
@@ -117,7 +121,7 @@ public interface AnyOper {
 	public interface UIProvider {
 
 	}
-	
+
 	public interface OntoPriority extends AnyOper {
 	}
 

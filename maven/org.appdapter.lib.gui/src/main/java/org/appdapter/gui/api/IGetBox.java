@@ -5,7 +5,7 @@ import org.appdapter.api.trigger.Box;
 
 public interface IGetBox {
 
-	public BT getBT();
+	public BT getBox();
 	
 	public interface NotWrapper {
 

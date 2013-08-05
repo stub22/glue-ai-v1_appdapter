@@ -7,7 +7,6 @@ import javax.swing.JButton;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
-import org.appdapter.gui.api.BT;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.NamedObjectCollection;
 import org.appdapter.gui.swing.SafeJMenuItem;
@@ -19,8 +18,8 @@ import org.appdapter.gui.swing.SafeJMenuItem;
 public class TriggerPopupMenu extends JPopupMenu {
 	final TriggerMenuController controller;
 
-	public TriggerPopupMenu(DisplayContext context, NamedObjectCollection noc, BT box, Object object) {
-		controller = new TriggerMenuController(context, noc, object, box, this);
+	public TriggerPopupMenu(DisplayContext context, NamedObjectCollection noc, Object object) {
+		controller = new TriggerMenuController(context, noc, object, this);
 	}
 
 	/**

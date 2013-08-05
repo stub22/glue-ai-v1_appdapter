@@ -41,6 +41,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.appdapter.api.trigger.AnyOper.UISalient;
 import org.appdapter.bind.rdf.jena.model.JenaFileManagerUtils;
 import org.appdapter.core.boot.ClassLoaderUtils;
 import org.appdapter.core.log.Debuggable;
@@ -56,11 +57,16 @@ import com.hp.hpl.jena.util.FileManager;
 
 public class FileStreamUtils {
 
+	@UISalient
+	public static boolean SheetURLDataReaderMayReturnNullOnError = true;
+
 	public static Reader makeSheetURLDataReader(String fullUrlTxt) throws IOException {
 		try {
 			return new InputStreamReader((new URL(fullUrlTxt)).openStream());
 		} catch (Throwable t) {
 			theLogger.error("Cannot read[" + fullUrlTxt + "]", t);
+			if (SheetURLDataReaderMayReturnNullOnError)
+				return null;
 			throw Debuggable.reThrowable(t, IOException.class);
 		}
 	}
@@ -108,20 +114,6 @@ public class FileStreamUtils {
 			theLogger.error("getWorkbookSheetCsvReaderAt ", e);
 		}
 		return null;
-	}
-
-	public static boolean doBreak(Object... s) {
-
-		PrintStream v = System.out;
-		new Exception("" + s[0]).fillInStackTrace().printStackTrace(v);
-		for (int i = 0; i < s.length; i++) {
-			getLogger().error("" + s[i]);
-		}
-		if (true)
-			return false;
-		getLogger().info("Press enter to continue");
-		System.console().readLine();
-		return true;
 	}
 
 	public static Model getModelIfAvailable(String sheetLocation, String sheetName, java.util.Map nsMap, java.util.List<ClassLoader> fileModelCLs) {
@@ -386,8 +378,8 @@ public class FileStreamUtils {
 
 			if (s == null || s.length() < 1) {
 				if (!debugString) {
-					doBreak(t + " really? " + c, "cell=" + cell, "cellAsString=" + s, "row.getClass= " + row.getClass(), "sheet=" + cell.getSheet().getSheetName(), "row=" + cell.getRow(), "rowstr = "
-							+ getRowDebugString(row, width));
+					Debuggable.doBreak(t + " really? " + c, "cell=" + cell, "cellAsString=" + s, "row.getClass= " + row.getClass(), "sheet=" + cell.getSheet().getSheetName(), "row=" + cell.getRow(),
+							"rowstr = " + getRowDebugString(row, width));
 				}
 			}
 			c = s;

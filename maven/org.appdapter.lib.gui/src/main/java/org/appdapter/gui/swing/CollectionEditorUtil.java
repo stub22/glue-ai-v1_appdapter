@@ -65,14 +65,16 @@ public class CollectionEditorUtil implements PropertyChangeListener {
 	Action saveAsAction = new SaveAsAction();
 	Action newAction = new NewAction();
 	Action searchAction = new SearchAction();
+	//final NamedItemChooserPanel clipBoardPanel;
+	final NamedItemChooserPanel nameItemChooserPanel;
 
 	// ======== Constructors =============================0
 
 	/**
 	 * Creates a new ObjectNavigator that shows the given collection
 	 */
-	public CollectionEditorUtil(DisplayContext context0, NamedObjectCollection collection0) {
-		this.nameItemChooserPanel = Utility.namedItemChooserPanel = new NamedItemChooserPanel(context0);
+	public CollectionEditorUtil(String titleOfCollection, DisplayContext context0, NamedObjectCollection collection0) {
+		this.nameItemChooserPanel = new NamedItemChooserPanel(context0, collection0);
 		this.context = context0;
 		setNamedObjectCollection(collection0);
 	}
@@ -83,8 +85,8 @@ public class CollectionEditorUtil implements PropertyChangeListener {
 
 	// ====== Property getters ==============
 
-	public NamedItemChooserPanel getNamedItemChooserPanel() {
-		return Utility.namedItemChooserPanel;
+	public NamedItemChooserPanel getGUIPanel() {
+		return nameItemChooserPanel;
 	}
 
 	public static BoxPanelSwitchableView getDefaultFrame() {
@@ -102,8 +104,6 @@ public class CollectionEditorUtil implements PropertyChangeListener {
 	public NamedObjectCollection getCollectionWithSwizzler() {
 		return collection;
 	}
-
-	final NamedItemChooserPanel nameItemChooserPanel;
 
 	public static int newCollectionSerial;
 
@@ -127,8 +127,7 @@ public class CollectionEditorUtil implements PropertyChangeListener {
 
 	// ==== Property notification methods ===============
 
-	@Override
-	public void propertyChange(PropertyChangeEvent evt) {
+	@Override public void propertyChange(PropertyChangeEvent evt) {
 		if (evt.getSource() == collection) {
 			if (evt.getPropertyName().equals("selected")) {
 				updateSelectedMenu();
@@ -212,7 +211,7 @@ public class CollectionEditorUtil implements PropertyChangeListener {
 	}
 
 	void saveCollectionAs() {
-		FileDialog dialog = new FileDialog(getFrame(), "Save ObjectNavigator", FileDialog.SAVE);
+		FileDialog dialog = new FileDialog(getFrame(), "Save " + getCollectionName(), FileDialog.SAVE);
 		dialog.setFile("mycollection.ser");
 		dialog.show();
 		String fileName = dialog.getFile();
@@ -222,6 +221,10 @@ public class CollectionEditorUtil implements PropertyChangeListener {
 		if (fileName != null) {
 			saveCollection(new File(directory, fileName));
 		}
+	}
+
+	public String getCollectionName() {
+		return collection.getName();
 	}
 
 	void saveCollection(File file) {
@@ -252,7 +255,7 @@ public class CollectionEditorUtil implements PropertyChangeListener {
 
 		Object selected = collection.getSelectedObject();
 		if (selected != null) {
-			selectedMenu = new TriggerMenu("With Selected", null, collection, (BT) null, selected);
+			selectedMenu = new TriggerMenu("With Selected", null, collection, selected);
 			menuBar.add(selectedMenu);
 		}
 		nameItemChooserPanel.invalidate();
@@ -273,11 +276,7 @@ public class CollectionEditorUtil implements PropertyChangeListener {
 		//panel.setLayout(new BorderLayout());
 		//Utility.selectionOfCollectionPanel = new LargeClassChooser(context);
 		if (fileMenu == null) {
-			if (Utility.fileMenu != null) {
-				fileMenu = Utility.fileMenu;
-			} else {
-				Utility.fileMenu = fileMenu = new FileMenu(this);
-			}
+			fileMenu = new FileMenu(getCollectionName(), this);
 		}
 		checkControls();
 		//menuBar.add(fileMenu);
@@ -308,8 +307,7 @@ public class CollectionEditorUtil implements PropertyChangeListener {
 			super("Save", Icons.saveCollection);
 		}
 
-		@Override
-		public void actionPerformed(ActionEvent evt) {
+		@Override public void actionPerformed(ActionEvent evt) {
 			saveCollection();
 		}
 	}
@@ -319,8 +317,7 @@ public class CollectionEditorUtil implements PropertyChangeListener {
 			super("Save as...", Icons.saveCollectionAs);
 		}
 
-		@Override
-		public void actionPerformed(ActionEvent evt) {
+		@Override public void actionPerformed(ActionEvent evt) {
 			saveCollectionAs();
 		}
 	}
@@ -330,8 +327,7 @@ public class CollectionEditorUtil implements PropertyChangeListener {
 			super("New", Icons.newCollection);
 		}
 
-		@Override
-		public void actionPerformed(ActionEvent evt) {
+		@Override public void actionPerformed(ActionEvent evt) {
 			newCollection("NewCollection " + newCollectionSerial++, context);
 		}
 	}
@@ -341,8 +337,7 @@ public class CollectionEditorUtil implements PropertyChangeListener {
 			super("Open", Icons.openCollection);
 		}
 
-		@Override
-		public void actionPerformed(ActionEvent evt) {
+		@Override public void actionPerformed(ActionEvent evt) {
 			openCollection();
 		}
 	}
@@ -352,8 +347,7 @@ public class CollectionEditorUtil implements PropertyChangeListener {
 			super("Search...", Icons.search);
 		}
 
-		@Override
-		public void actionPerformed(ActionEvent evt) {
+		@Override public void actionPerformed(ActionEvent evt) {
 			makeRepoNav();
 		}
 
@@ -367,8 +361,7 @@ public class CollectionEditorUtil implements PropertyChangeListener {
 			this.file = file;
 		}
 
-		@Override
-		public void actionPerformed(ActionEvent evt) {
+		@Override public void actionPerformed(ActionEvent evt) {
 			openCollection(file);
 		}
 	}

@@ -88,18 +88,19 @@ public class ClassFinder {
 	 * All classes that have at least one modifier from <code>undesirableClassModifiers</code>
 	 * set are skipped.
 	 */
-	public static <T> Set<Class<? extends T>> getClasses(String packageName, Class<T> ancestor, ClassLoader classLoader, String dirsString, int undesirableClassModifiers) throws IOException {
+	public static <T> Set<Class<? extends T>> getClasses(String packageName, Class<T> ancestor, ClassLoader classLoader0, String dirsString, int undesirableClassModifiers) throws IOException {
 		Set<Class<? extends T>> classes = new HashSet();
 
 		if (packageName == null) {
 			packageName = "";
 		}
 
-		if (classLoader == null)
+		ClassLoader classLoader;
+		if (classLoader0 == null)
 			//use the default class loader for this class
 			classLoader = ClassFinder.class.getClassLoader();
-
-		classLoader = coerceClassloader(classLoader, true, false, false);
+		else
+			classLoader = coerceClassloader(classLoader0, true, false, false);
 
 		//Get all class names
 		Set allClassNames = getAllClassNames(dirsString);

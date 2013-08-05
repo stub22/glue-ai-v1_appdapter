@@ -16,6 +16,7 @@
 
 package org.appdapter.core.component;
 
+import org.appdapter.bind.rdf.jena.assembly.CachingComponentAssembler;
 import org.appdapter.bind.rdf.jena.model.JenaLiteralUtils;
 import org.appdapter.core.log.BasicDebugger;
 import org.appdapter.core.log.Debuggable;
@@ -50,10 +51,17 @@ public class KnownComponentImpl extends BasicDebugger implements MutableKnownCom
 	}
 
 	@Override public String getShortLabel() {
+		if (myShortLabel != null && myShortLabel.equals(CachingComponentAssembler.DEFAULT_LABEL)) {
+			return null;
+		}
 		return myShortLabel;
 	}
 
 	@Override public void setShortLabel(String shortLabel) {
+		if (shortLabel.equals(CachingComponentAssembler.DEFAULT_LABEL)) {
+			this.myShortLabel = shortLabel;
+			return;
+		}
 		this.myShortLabel = shortLabel;
 	}
 

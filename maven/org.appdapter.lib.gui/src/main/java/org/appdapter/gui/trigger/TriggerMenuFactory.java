@@ -25,25 +25,25 @@ import java.awt.event.MouseEvent;
 import java.beans.BeanInfo;
 import java.beans.EventSetDescriptor;
 import java.beans.FeatureDescriptor;
-import java.beans.IntrospectionException;
 import java.beans.MethodDescriptor;
 import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.AbstractButton;
 import javax.swing.Action;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -61,12 +61,9 @@ import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.core.component.KnownComponent;
 import org.appdapter.core.convert.ReflectUtils;
-import org.appdapter.core.log.BasicDebugger;
 import org.appdapter.core.log.Debuggable;
-import org.appdapter.core.log.Loggable;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.UIAware;
-import org.appdapter.gui.api.WrapperValue;
 import org.appdapter.gui.box.AbstractScreenBoxTreeNodeImpl;
 import org.appdapter.gui.browse.PropertyDescriptorForField;
 import org.appdapter.gui.browse.Utility;
@@ -82,90 +79,26 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("unchecked")
 public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 
+	static public class TriggerSorter implements Comparator {
+
+		@Override public int compare(Object o1, Object o2) {
+			int r = getLabel(o1, 2).compareToIgnoreCase(getLabel(o2, 2));
+			if (r == 0) {
+				return ((Integer) System.identityHashCode(o1)).compareTo(System.identityHashCode(o2));
+			}
+			return r;
+		}
+	}
+
 	static public class JMenuWithPath extends SafeJMenu {
-		ArrayList<Component> mcomps = new ArrayList<Component>();
 
 		public JMenuWithPath(String lbl, Object obj) {
 			super(true, lbl, obj);
 		}
-
-		@Override public Component add(Component c) {
-			ensureUnequelyNamed(c);
-			Component r = super.add(c);
-			mcomps.add(c);
-			ensureFoundNamed(c);
-			return r;
-		}
-
-		@Override public Component add(Component c, int index) {
-			ensureUnequelyNamed(c);
-			mcomps.add(index, c);
-			Component r = super.add(c, index);
-			ensureFoundNamed(c);
-			return r;
-		}
-
-		@Override public JMenuItem add(JMenuItem c) {
-			ensureUnequelyNamed(c);
-			JMenuItem r = super.add(c);
-			ensureFoundNamed(c);
-			return r;
-		}
-
-		private void ensureFoundNamed(Component c) {
-			String fnd = TriggerMenuFactory.getLabel(c, 1);
-			Component found = findChildNamed(this, true, fnd);
-			if (found != null) {
-				return;
-			}
-			found = findChildNamed(this, true, fnd);
-			Debuggable.mustBeSameStrings("found=" + found, fnd);
-		}
-
-		private void ensureUnequelyNamed(Component c) {
-			String fnd = TriggerMenuFactory.getLabel(c, 1);
-			Component found = findChildNamed(this, true, fnd);
-			if (found == null) {
-				Component p = getParent();
-				return;
-			}
-			Debuggable.mustBeSameStrings("found=" + found, fnd);
-		}
-
-		@Override public Component[] getComponents() {
-			if (true)
-				return mcomps.toArray(new Component[mcomps.size()]);
-			return super.getMenuComponents();
-		}
-
-		@Override public String getText() {
-			return super.getText();
-		}
-
-		@Override public void removeAll() {
-			mcomps.clear();
-			super.removeAll();
-		}
-
-		@Override public String toString() {
-			Component p = getParent();//.toString();
-			if (p != null) {
-				return "" + TriggerMenuFactory.getLabel(p, 1) + "->" + TriggerMenuFactory.getLabel(this, 1);
-			}
-			return TriggerMenuFactory.getLabel(this, 1);
-		}
 	}
 
-	static public class TriggerSorter implements Comparator<Trigger> {
-
-		@Override public int compare(Trigger o1, Trigger o2) {
-			int r = getTriggerSortName(o1).toLowerCase().compareTo(getTriggerSortName(o2).toLowerCase());
-			if (r == 0) {
-				return getTriggerName(o1).toLowerCase().compareTo(getTriggerName(o2).toLowerCase());
-			}
-			return r;
-		}
-	}
+	//It also looks better if you're ignoring case sensitivity:
+	public static TriggerSorter nodeComparator = new TriggerSorter();
 
 	static Logger theLogger = LoggerFactory.getLogger(TriggerMenuFactory.class);
 
@@ -204,20 +137,18 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 		addClasses(ctx, cls.getSuperclass(), classesVisited);
 	}
 
-	public static <TrigType> void addTriggersForInstance(DisplayContext ctx, Class cls, List<TrigType> tgs, WrapperValue poj) {
+	public static <TrigType> void addTriggersForInstance(DisplayContext ctx, Class cls, List<TrigType> tgs, Object poj) {
 		for (TriggerAdder ta : Utility.getTriggerAdders(ctx, cls, poj)) {
-			ta.addTriggersForObjectInstance(ctx, cls, tgs, poj, ADD_ALL, "");
+			ta.addTriggersForObjectInstance(ctx, cls, tgs, poj, ADD_ALL, null);
 		}
 	}
 
-	public static <TrigType> void addTriggersForObjectInstance(DisplayContext ctx, Class cls, List<TrigType> tgs, WrapperValue poj, TriggerFilter rulesOfAdd, String menuPrepend,
-			boolean isDeclNonStatic) {
-		addTriggersForObjectInstanceMaster(ctx, cls, tgs, poj, rulesOfAdd, menuPrepend, isDeclNonStatic);
+	public static <TrigType> void addTriggersForObjectInstance(DisplayContext ctx, Class cls, List<TrigType> tgs, Object poj, TriggerFilter rulesOfAdd, String menuFmt, boolean isDeclNonStatic) {
+		addTriggersForObjectInstanceMaster(ctx, cls, tgs, poj, rulesOfAdd, menuFmt, isDeclNonStatic);
 	}
 
-	public static <TrigType> void addTriggersForObjectInstanceMaster(DisplayContext ctx, Class cls, List<TrigType> tgs, WrapperValue poj, TriggerFilter rulesOfAdd, String menuName,
-			boolean isDeclNonStatic) {
-		addClassLevelTriggers00(ctx, cls, tgs, poj, rulesOfAdd, menuName, isDeclNonStatic);
+	public static <TrigType> void addTriggersForObjectInstanceMaster(DisplayContext ctx, Class cls, List<TrigType> tgs, Object poj, TriggerFilter rulesOfAdd, String menuFmt, boolean isDeclNonStatic) {
+		addClassLevelTriggers00(ctx, cls, tgs, poj, rulesOfAdd, menuFmt, isDeclNonStatic);
 
 		if (rulesOfAdd.addPanelClasses)
 			addPanelClasses(ctx, cls, tgs, poj);
@@ -227,11 +158,13 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 
 		Object inst = Utility.dref(poj);
 		if (inst instanceof Class) {
-			addClassLevelTriggers00(ctx, (Class) inst, tgs, null, rulesOfAdd, menuName, isDeclNonStatic);
+			TriggerFilter copy = (TriggerFilter) rulesOfAdd.clone();
+			copy.addInstance = false;
+			addClassLevelTriggers00(ctx, (Class) inst, tgs, null, copy, menuFmt, isDeclNonStatic);
 		}
 	}
 
-	static <TrigType> void addClassLevelTriggers00(DisplayContext ctx, Class cls, List<TrigType> tgs, WrapperValue poj, TriggerFilter rulesOfAdd, String menuName, boolean isDeclNonStatic) {
+	static <TrigType> void addClassLevelTriggers00(DisplayContext ctx, Class cls, List<TrigType> tgs, Object poj, TriggerFilter rulesOfAdd, String menuFmt, boolean isDeclNonStatic) {
 		HashSet<Class> skippedTriggersClasses = getSkippedTriggerClasses();
 		HashSet<Class> flat = new HashSet<Class>();
 		if (rulesOfAdd.addSuperClass) {
@@ -244,11 +177,11 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 				continue;
 			if (cls2.isInterface())
 				continue;
-			addClassLevelTriggersPerClass(ctx, cls2, tgs, poj, rulesOfAdd, menuName, isDeclNonStatic);
+			addClassLevelTriggersPerClass(ctx, cls2, tgs, poj, rulesOfAdd, menuFmt, isDeclNonStatic);
 		}
 	}
 
-	public static <TrigType> void addClassLevelTriggersPerClass(DisplayContext ctx, Class cls, List<TrigType> tgs, WrapperValue poj, TriggerFilter rulesOfAdd, String menuName, boolean isDeclNonStatic) {
+	public static <TrigType> void addClassLevelTriggersPerClass(DisplayContext ctx, Class cls, List<TrigType> tgs, Object poj, TriggerFilter rulesOfAdd, String menuFmt, boolean isDeclNonStatic) {
 		boolean allowStatic = poj == null || isDeclNonStatic;
 		boolean allowNonStatic = poj != null;
 		for (Method m : cls.getDeclaredMethods()) {
@@ -261,7 +194,7 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 				continue;
 			if (!isStatic && !allowNonStatic)
 				continue;
-			addFMethodTrigWF(ctx, cls, m, tgs, poj, rulesOfAdd, menuName, null, false);
+			addFMethodTrigWF(ctx, cls, m, tgs, poj, rulesOfAdd, menuFmt, null, false);
 		}
 		for (Field m : cls.getDeclaredFields()) {
 			if (m.isSynthetic())
@@ -273,71 +206,70 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 				continue;
 			if (ReflectUtils.nonPrimitiveTypeFor(ReflectUtils.getReturnType(m)) == Boolean.class) {
 				try {
-					addFMethodTrigWF(ctx, cls, m, tgs, poj, rulesOfAdd, menuName, PropertyDescriptorForField.findOrCreate(m), false);
+					addFMethodTrigWF(ctx, cls, m, tgs, poj, rulesOfAdd, menuFmt, PropertyDescriptorForField.findOrCreate(m), true);
 				} catch (Throwable e) {
-					Utility.theLogger.error("" + cls, e);
+					Utility.theLogger.warn("" + cls + ": " + e);
 				}
 			}
 		}
 	}
 
-	public static <TrigType> void addClassLevelTriggersPerBeanClass(DisplayContext ctx, Class cls, List<TrigType> tgs, WrapperValue poj, TriggerFilter rulesOfAdd, String menuName,
-			boolean isDeclNonStatic) {
+	public static <TrigType> void addClassLevelTriggersPerBeanClass(DisplayContext ctx, Class cls, List<TrigType> tgs, Object poj, TriggerFilter rulesOfAdd, String menuFmt, boolean isDeclNonStatic) {
 		try {
 			boolean onlyThisClass = true;
 			BeanInfo bi = Utility.getBeanInfo(cls, onlyThisClass, poj);
 			if (bi == null)
 				return;
-			addFeatureTriggers(ctx, cls, bi.getMethodDescriptors(), tgs, poj, rulesOfAdd, menuName, isDeclNonStatic);
-			addFeatureTriggers(ctx, cls, bi.getEventSetDescriptors(), tgs, poj, rulesOfAdd, menuName, isDeclNonStatic);
-			addFeatureTriggers(ctx, cls, bi.getPropertyDescriptors(), tgs, poj, rulesOfAdd, menuName, isDeclNonStatic);
+			addFeatureTriggers(ctx, cls, bi.getMethodDescriptors(), tgs, poj, rulesOfAdd, menuFmt, isDeclNonStatic);
+			addFeatureTriggers(ctx, cls, bi.getEventSetDescriptors(), tgs, poj, rulesOfAdd, menuFmt, isDeclNonStatic);
+			addFeatureTriggers(ctx, cls, bi.getPropertyDescriptors(), tgs, poj, rulesOfAdd, menuFmt, isDeclNonStatic);
 		} catch (Exception e) {
 			Utility.theLogger.error("" + cls, e);
 
 		}
 	}
 
-	@SuppressWarnings("unchecked") public static <TrigType> void addFeatureTriggers(DisplayContext ctx, Class cls, FeatureDescriptor[] fd, List<TrigType> tgs, WrapperValue poj,
-			TriggerFilter rulesOfAdd, String menuName, boolean isDeclNonStatic) {
+	@SuppressWarnings("unchecked") public static <TrigType> void addFeatureTriggers(DisplayContext ctx, Class cls, FeatureDescriptor[] fd, List<TrigType> tgs, Object poj, TriggerFilter rulesOfAdd,
+			String menuFmt, boolean isDeclNonStatic) {
 		for (FeatureDescriptor f : fd) {
-			addFeatureDesc(ctx, cls, f, tgs, poj, rulesOfAdd, menuName, isDeclNonStatic);
+			addFeatureDesc(ctx, cls, f, tgs, poj, rulesOfAdd, menuFmt, isDeclNonStatic);
 		}
 
 	}
 
-	@SuppressWarnings("unchecked") public static <TrigType> void addFeatureDesc(DisplayContext ctx, Class cls, FeatureDescriptor fd, List<TrigType> tgs, WrapperValue poj, TriggerFilter rulesOfAdd,
-			String menuName, boolean isDeclNonStatic) {
+	@SuppressWarnings("unchecked") public static <TrigType> void addFeatureDesc(DisplayContext ctx, Class cls, FeatureDescriptor fd, List<TrigType> tgs, Object poj, TriggerFilter rulesOfAdd,
+			String menuFmt, boolean isDeclNonStatic) {
 		if (!rulesOfAdd.addEvents && fd instanceof EventSetDescriptor)
 			return;
 
 		if (fd instanceof MethodDescriptor) {
 			MethodDescriptor md = (MethodDescriptor) fd;
-			addFMethodTrigWF(ctx, cls, md.getMethod(), tgs, poj, rulesOfAdd, menuName, fd, false);
+			addFMethodTrigWF(ctx, cls, md.getMethod(), tgs, poj, rulesOfAdd, menuFmt, fd, false);
 			return;
 		}
 
 		if (fd instanceof PropertyDescriptor) {
 			PropertyDescriptor md = (PropertyDescriptor) fd;
-			addFMethodTrigWF(ctx, cls, md.getReadMethod(), tgs, poj, rulesOfAdd, menuName, fd, true);
-			addFMethodTrigWF(ctx, cls, md.getWriteMethod(), tgs, poj, rulesOfAdd, menuName, fd, false);
+			addFMethodTrigWF(ctx, cls, md.getReadMethod(), tgs, poj, rulesOfAdd, menuFmt, fd, true);
+			addFMethodTrigWF(ctx, cls, md.getWriteMethod(), tgs, poj, rulesOfAdd, menuFmt, fd, false);
 			return;
 		}
 	}
 
-	private static <TrigType> void addFMethodTrigWF(DisplayContext ctx, Class cls, Member method, List<TrigType> tgs, WrapperValue poj, TriggerFilter rulesOfAdd, String menuName,
+	private static <TrigType> void addFMethodTrigWF(DisplayContext ctx, Class cls, Member method, List<TrigType> tgs, Object poj, TriggerFilter rulesOfAdd, String menuFmt,
 			FeatureDescriptor featureDesc, boolean isSafe) {
 		if (method == null)
 			return;
-		addMethodAsTrigWF0(ctx, cls, method, tgs, poj, rulesOfAdd, menuName, false, featureDesc, isSafe);
+		addMethodAsTrigWF0(ctx, cls, method, tgs, poj, rulesOfAdd, menuFmt, false, featureDesc, isSafe);
 	}
 
-	public static <TrigType> void addMethodAsTrig(DisplayContext ctx, Class cls, Member method, List<TrigType> tgs, WrapperValue poj, TriggerFilter rulesOfAdd, String menuName,
-			boolean isDeclNonStatic, boolean isSafe) {
-		addMethodAsTrigWF0(ctx, cls, method, tgs, poj, rulesOfAdd, menuName, isDeclNonStatic, null, isSafe);
+	public static <TrigType> void addMethodAsTrig(DisplayContext ctx, Class cls, Member method, List<TrigType> tgs, Object poj, TriggerFilter rulesOfAdd, String menuFmt, boolean isDeclNonStatic,
+			boolean isSafe) {
+		addMethodAsTrigWF0(ctx, cls, method, tgs, poj, rulesOfAdd, menuFmt, isDeclNonStatic, null, isSafe);
 	}
 
-	private static <TrigType> void addMethodAsTrigWF0(DisplayContext ctx, Class cls, Member method, List<TrigType> tgs, WrapperValue poj, TriggerFilter rulesOfAdd, String menuName,
-			boolean isDeclNonStatic, FeatureDescriptor featureDesc, boolean isSafe) {
+	private static <TrigType> void addMethodAsTrigWF0(DisplayContext ctx, Class cls, Member method, List<TrigType> tgs, Object poj, TriggerFilter rulesOfAdd, String menuFmt, boolean isDeclNonStatic,
+			FeatureDescriptor featureDesc, boolean isSafe) {
 		boolean clsHidden = hasAnotation(cls, UIHidden.class);
 		boolean clsSalient = hasAnotation(cls, UISalient.class);
 		UISalient isSalientCls = (UISalient) cls.getAnnotation(UISalient.class);
@@ -357,14 +289,14 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 			return;
 
 		Class cls00 = method.getDeclaringClass();
-		TriggerForMember tfi = new TriggerForMember(menuName, ctx, cls00, poj, method, isDeclNonStatic, featureDesc, isSafe);
+		TriggerForMember tfi = new TriggerForMember(menuFmt, ctx, cls00, poj, method, isDeclNonStatic, featureDesc, isSafe);
 		tfi.applySalience(isSalientMethod);
 		if (!tgs.contains(tfi))
 			tgs.add((TrigType) tfi);
 
 	}
 
-	public static <TrigType> void addGlobalStatics(DisplayContext ctx, Class cls, List<TrigType> tgs, WrapperValue poj) {
+	public static <TrigType> void addGlobalStatics(DisplayContext ctx, Class cls, List<TrigType> tgs, Object poj) {
 		if (!UtilityMenuOptions.addGlobalStatics)
 			return;
 		for (Trigger trig : Utility.getGlobalStaticTriggers(ctx, cls, poj)) {
@@ -372,7 +304,7 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 		}
 	}
 
-	public static <TrigType> void addPanelClasses(DisplayContext ctx, Class cls, List<TrigType> tgs, WrapperValue poj) {
+	public static <TrigType> void addPanelClasses(DisplayContext ctx, Class cls, List<TrigType> tgs, Object poj) {
 		if (!UtilityMenuOptions.addPanelClasses)
 			return;
 		for (Class pnlClz : Utility.findPanelClasses(cls)) {
@@ -397,7 +329,7 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 		}
 	}
 
-	public static void addTriggerToPoppup(Container popup, Box box, String[] path, int idx, Trigger trig) {
+	public static void addTriggerToPoppup(Container popup, Object box, String[] path, int idx, Trigger trig) {
 		boolean isLast = path.length - idx == 1;
 		if (idx >= path.length) {
 			// trying to get something longer than array
@@ -420,9 +352,9 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 		addTriggerToPoppup((Container) child, box, path, idx + 1, trig);
 	}
 
-	public static void addTriggerToPoppup(Container popup, Box box, Trigger trig) {
+	public static void addTriggerToPoppup(Container popup, Object box, Trigger trig) {
 		String[] path = getTriggerPath(trig);
-		org.appdapter.gui.trigger.TriggerMenuFactory.addTriggerToPoppup(popup, box, path, 0, trig);
+		addTriggerToPoppup(popup, box, path, 0, trig);
 	}
 
 	private static Component[] childrenOf(Container popup) {
@@ -477,7 +409,7 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 
 	}
 
-	static Component findChildNamed(Container popup, boolean toLowerCase, Comparable<String> fnd) {
+	public static Component findChildNamed(Container popup, boolean toLowerCase, Comparable<String> fnd) {
 		Component[] comps = childrenOf(popup);
 		if (comps == null || comps.length == 0)
 			return null;
@@ -525,7 +457,22 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 		return triggerMenuFactory;
 	}
 
-	public static String getLabel(Component c, int maxDepth) {
+	public static String getLabel(Object c, int maxDepth) {
+		if (c instanceof Trigger) {
+			return getTriggerSortName((Trigger) c);
+		}
+		if (c instanceof KnownComponent) {
+			String shortLabel = ((KnownComponent) c).getShortLabel();
+			if (shortLabel != null)
+				return shortLabel;
+		}
+		if (c instanceof Component) {
+			return getLabelC((Component) c, maxDepth);
+		}
+		return "" + c;
+	}
+
+	public static String getLabelC(Component c, int maxDepth) {
 
 		if (c instanceof JPopupMenu) {
 			return ((JPopupMenu) c).getLabel();
@@ -594,14 +541,20 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 		return null;
 	}
 
-	public static String getShortLabel(Trigger trig) {
-		String toStr;
-		if (trig instanceof KnownComponent) {
-			toStr = ((KnownComponent) trig).getShortLabel();
-			if (isRealLabel(toStr))
-				return toStr;
+	public static String getShortLabel(Trigger t) {
+		if (t == null)
+			return "<null trigger>";
+		String shortLabel = null;
+		if (t instanceof KnownComponent) {
+			shortLabel = ((KnownComponent) t).getShortLabel();
+		} else if (t instanceof TriggerForInstance) {
+			shortLabel = ((TriggerForInstance) t).getMenuPath();
+		} else if (t instanceof Component) {
+			shortLabel = getLabel((Component) t, 2);
 		}
-		return "" + trig;
+		if (shortLabel != null && isRealLabel(shortLabel))
+			return shortLabel;
+		return "" + t;
 	}
 
 	private static HashSet<Class> getSkippedTriggerClasses() {
@@ -623,11 +576,15 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 	}
 
 	public static String[] getTriggerPath(Trigger trig) {
-		return getShortLabel(trig).split("\\|");
+		return getTriggerPath(getShortLabel(trig));
+	}
+
+	private static String[] getTriggerPath(String shortLabel) {
+		return shortLabel.split("\\|");
 	}
 
 	public static String getTriggerSortName(Trigger t) {
-		String[] tn = getTriggerName(t).split("|");
+		String[] tn = getTriggerPath(t);
 		return tn[tn.length - 1];
 	}
 
@@ -660,10 +617,10 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 		return true;
 	}
 
-	public static AbstractButton makeMenuItem(final Box b, String lbl_unused, final Trigger trig) {
+	public static AbstractButton makeMenuItem(final Object/**/b, String lbl, final Trigger trig) {
 
 		if (trig instanceof ButtonFactory) {
-			return ((ButtonFactory) trig).makeMenuItem(b);
+			return ((ButtonFactory) trig).makeMenuItem(lbl, b);
 		}
 		AbstractButton jmi = new SafeJMenuItem(b, true, getTriggerName(trig));
 		if (trig instanceof UIAware) {
@@ -674,7 +631,7 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 		} else {
 			jmi.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					trig.fire(b);
+					trig.fire(Utility.asBox(b, e));
 				}
 			});
 		}
@@ -687,15 +644,15 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 
 	}
 
-	public void addMenuItem(Action a, Box box, JMenu menu) {
+	public void addMenuItem(Action a, Object/**/box, JMenu menu) {
 		addTriggerToPoppup(menu, box, ensureTrigger(a));
 	}
 
-	public void addMenuItem(Action a, Box box, JPopupMenu menu) {
+	public void addMenuItem(Action a, Object/**/box, JPopupMenu menu) {
 		addTriggerToPoppup(menu, box, ensureTrigger(a));
 	}
 
-	public void addTriggersToPopup(Box box, JComponent popup) {
+	static public void addTriggersToPopup(Object/**/box, JComponent popup) {
 		if (box instanceof UIAware) {
 			popup = ((UIAware) box).visitComponent(popup);
 		}
@@ -703,27 +660,32 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 			// Allready added the items?
 			//return;
 		}
-		List<TT> trigs = new ArrayList();
-		trigs.addAll(box.getTriggers());
-		int c1 = trigs.size();
-		Collections.sort(trigs, new TriggerSorter());
-		int c2 = trigs.size();
-		if (true || c1 == c2) {
-			HashMap<String, TT> map = new HashMap<String, TT>();
-			for (TT t : trigs) {
-				map.put(t.getShortLabel().toLowerCase(), t);
-			}
-			trigs = new ArrayList<TT>(map.values());
-			c2 = trigs.size();
-			Collections.sort(trigs, new TriggerSorter());
-		}
-		for (TT trig : trigs) {
+		List<Trigger> trigs = getTriggers(box);
+		for (Trigger trig : trigs) {
 			addTriggerToPoppup(popup, box, trig);
 		}
 	}
 
-	public TriggerPopupMenu buildPopupMenu(Box<TT> box) {
-		TriggerPopupMenu popup = new TriggerPopupMenu(null, null, null, box);
+	private static List<Trigger> sortTriggers(List<Trigger> trigs) {
+		HashMap<String, Trigger> map = new HashMap<String, Trigger>();
+		for (Trigger t : trigs) {
+			String shortLabel = getShortLabel(t);
+			map.put(shortLabel.toLowerCase(), t);
+		}
+		trigs = new ArrayList(map.values());
+		Collections.sort(trigs, new TriggerSorter());
+		return trigs;
+	}
+
+	static List<Trigger> getTriggers(Object box) {
+		if (!(box instanceof Box)) {
+			box = Utility.asBoxed(box);
+		}
+		return sortTriggers(((Box) box).getTriggers());
+	}
+
+	static public TriggerPopupMenu buildPopupMenu(Object/**/box) {
+		TriggerPopupMenu popup = new TriggerPopupMenu(null, null, box);
 		addTriggersToPopup(box, popup);
 		return popup;
 	}
@@ -770,10 +732,10 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 				DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) path.getLastPathComponent();
 				Object uo = treeNode.getUserObject();
 				TriggerPopupMenu popup;
-				Box<TT> box = (Box<TT>) Utility.asBoxed(uo);
+				//Object/**/box = (Object/**/) Utility.asBoxed(uo);
 
 				// String label = "popup: " + obj.toString(); // obj.getTreeLabel();
-				popup = buildPopupMenu(box);
+				popup = buildPopupMenu(uo);
 				if (treeNode instanceof AbstractScreenBoxTreeNodeImpl) {
 					((AbstractScreenBoxTreeNodeImpl) treeNode).addExtraTriggers(popup);
 				}
@@ -783,4 +745,51 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 		return ma;
 	}
 
+	public static void addMap(Map lastResults, Container popup) {
+		Map<?, ?> lr;
+		synchronized (lastResults) {
+			lr = new HashMap(lastResults);
+		}
+		for (Map.Entry me : lr.entrySet()) {
+			String[] path = getTriggerPath(Utility.getUniqueName(me.getKey()));
+			Object box = me.getValue();
+			List trigs = getTriggers(box);
+			addTriggersToPoppup(box, path, trigs, popup);
+		}
+	}
+
+	public static void addCollection(String prepend, Collection lastResults, Container popup) {
+		String[] path;
+		if (prepend == null || prepend.length() == 0) {
+			path = new String[0];
+		} else {
+			path = getTriggerPath(prepend);
+		}
+		ArrayList lr;
+		synchronized (lastResults) {
+			lr = new ArrayList(lastResults);
+		}
+		for (Object box : lr) {
+			List trigs = getTriggers(box);
+			addTriggersToPoppup(box, path, trigs, popup);
+		}
+	}
+
+	private static void addTriggersToPoppup(Object box, String[] path, Collection<Trigger> triggers, Container popup) {
+		for (Trigger t : triggers) {
+			List<String> sl = joinArrays(path, getTriggerPath(t));
+			addTriggerToPoppup(popup, box, sl.toArray(new String[sl.size()]), 0, t);
+		}
+
+	}
+
+	private static <T> List<T> joinArrays(T[] path, T[] ts) {
+		if (path == null || path.length == 0)
+			return Arrays.asList(ts);
+		ArrayList<T> sl = new ArrayList();
+		sl.addAll(Arrays.asList(path));
+		if (ts != null || ts.length > 0)
+			sl.addAll(Arrays.asList(ts));
+		return sl;
+	}
 }

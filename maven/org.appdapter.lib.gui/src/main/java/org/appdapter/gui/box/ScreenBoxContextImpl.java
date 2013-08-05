@@ -25,6 +25,7 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 
 import org.appdapter.api.trigger.Box;
+import org.appdapter.api.trigger.BoxContext;
 import org.appdapter.api.trigger.BoxContextImpl;
 import org.appdapter.api.trigger.MutableBox;
 import org.appdapter.core.log.Debuggable;
@@ -131,7 +132,8 @@ public class ScreenBoxContextImpl extends BoxContextImpl implements DisplayConte
 
 	protected ScreenBoxTreeNode detatchChildBoxNode(ScreenBoxTreeNodeImpl parentNode, Box childBox) {
 		//  childBox should already have context(==this) and displayContext.
-		if (childBox.getBoxContext() != this) {
+		BoxContext cbxt = childBox.getBoxContext();
+		if (cbxt != null && cbxt != this) {
 			Debuggable.warn("deattach a childBox[" + childBox + "] which is not in this context [" + this + "]");
 		}
 		ScreenBoxTreeNodeImpl prev = (ScreenBoxTreeNodeImpl) parentNode.findTreeNodeDisplayContext(childBox);

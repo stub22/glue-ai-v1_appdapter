@@ -53,7 +53,7 @@ public class BridgeTriggers {
 			return ReflectUtils.convertsTo(anyObject, cls, boxTargetClass);
 		}
 
-		@Override public Trigger createTrigger(String menuFmt, DisplayContext ctx, WrapperValue poj) {
+		@Override public Trigger createTrigger(String menuFmt, DisplayContext ctx, Object poj) {
 			try {
 				return new MountSubmenuFromTriplesTrigger(ReflectUtils.recast(poj, boxTargetClass));
 			} catch (NoSuchConversionException e) {
@@ -91,6 +91,10 @@ public class BridgeTriggers {
 			} catch (Exception e) {
 
 			}
+		}
+
+		@Override public Object getIdentityObject() {
+			return (getClass() + ":" + triplesURL).intern();
 		}
 	}
 }

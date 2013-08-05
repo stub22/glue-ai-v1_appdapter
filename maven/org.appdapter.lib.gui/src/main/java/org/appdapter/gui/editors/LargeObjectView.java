@@ -22,7 +22,7 @@ import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.swing.ConstructorsListPanel;
 import org.appdapter.gui.swing.CollectionContentsPanel;
 import org.appdapter.gui.swing.ErrorPanel;
-import org.appdapter.gui.swing.LargeObjectChooser;
+import org.appdapter.gui.swing.*;
 import org.appdapter.gui.swing.MethodsPanel;
 import org.appdapter.gui.swing.ObjectTabsForTabbedView;
 import org.appdapter.gui.swing.ObjectView;
@@ -304,14 +304,15 @@ extends ObjectView<BoxType> implements Customizer, GetSetObject, ObjectPanelHost
 			if (!(object instanceof Collection)) {
 				return;
 			}
+			String title = "The contents of " + object;
 			if (cmds != SetTabTo.ADD)
 				return;
 			try {
-				CollectionContentsPanel cc = new CollectionContentsPanel(context, (Collection) object, tabs);
+				CollectionContentsPanel cc = new CollectionContentsPanel(context, title, (Collection) object, tabs);
 				tabs.insertTab("Contents", null, cc, null, 0);
 				tabs.addChangeListener(cc);
 			} catch (Exception err) {
-				tabs.insertTab("Contents", null, new ErrorPanel("The contents of " + object + " could not be shown", err), null, 0);
+				tabs.insertTab("Contents", null, new ErrorPanel(title + " could not be shown", err), null, 0);
 			}
 		}
 	}

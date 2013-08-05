@@ -9,29 +9,39 @@ import org.appdapter.api.trigger.MutableTrigger;
 import org.appdapter.core.component.KnownComponent;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.core.name.Ident;
-import org.appdapter.gui.api.BT;
 import org.appdapter.gui.api.NamedObjectCollection;
 import org.appdapter.gui.browse.KMCTrigger;
-import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.util.CollectionSetUtils;
 
 abstract public class AbstractTriggerAction extends AbstractAction implements KMCTrigger, MutableTrigger, KnownComponent {
 
-	public BT boxed;
 	private Object value;
 	protected NamedObjectCollection currentCollection;
+
+	@Override public Object getIdentityObject() {
+		return getShortLabel().intern();
+	}
 
 	/**
 	 * @return the value
 	 */
 	public Object getValue() {
 		Object value = this.value;
-		if (value == null)
-			value = Utility.dref(boxed);
-		else {
-			value = Utility.dref(value);
-		}
 		return value;
+	}
+
+	@Override public boolean equals(Object obj) {
+		if (!(obj instanceof TriggerForType))
+			return false;
+		return getIdentityObject() == ((TriggerForType) obj).getIdentityObject();
+	}
+
+	@Override public int hashCode() {
+		return getIdentityObject().hashCode();
+	}
+
+	public NamedObjectCollection getCurrentCollection() {
+		return currentCollection;
 	}
 
 	/**

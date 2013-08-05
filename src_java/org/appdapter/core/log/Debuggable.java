@@ -5,8 +5,6 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -16,7 +14,6 @@ import java.util.logging.Logger;
 
 import org.appdapter.api.trigger.AnyOper.UIHidden;
 import org.appdapter.api.trigger.AnyOper.UISalient;
-import org.appdapter.core.convert.NoSuchConversionException;
 import org.appdapter.core.convert.ReflectUtils;
 
 @UIHidden
@@ -50,6 +47,20 @@ public abstract class Debuggable {
 			throw rte;
 		}
 		return null;
+	}
+
+	public static boolean doBreak(Object... s) {
+
+		PrintStream v = System.out;
+		new Exception("" + s[0]).fillInStackTrace().printStackTrace(v);
+		for (int i = 0; i < s.length; i++) {
+			System.console().printf("\n" + s[i]);
+		}
+		if (!Debuggable.useSystemConsoleBreaks)
+			return false;
+		System.console().printf("\nPress enter to continue\n");
+		System.console().readLine();
+		return true;
 	}
 
 	public static RuntimeException warn(Object... objects) {
@@ -181,6 +192,7 @@ public abstract class Debuggable {
 		}
 	};
 	public static boolean useDebuggableToString = true;
+	public static boolean useSystemConsoleBreaks = false;
 
 	public static String toInfoStringF(Object o) {
 		return toInfoStringF(o, PRINT_DEPTH);

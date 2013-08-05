@@ -28,7 +28,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
 
@@ -47,6 +48,7 @@ import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.KeyStroke;
 import javax.swing.ToolTipManager;
+import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeModel;
 
 import org.appdapter.api.trigger.AnyOper.Singleton;
@@ -115,18 +117,20 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 		Utility.theBoxPanelDisplayContext = myBoxPanelSwitchableViewImpl = new ObjectTabsForTabbedView(myBoxPanelTabPane);
 		setTabbedPaneOptions();
 		Utility.controlApp = app = new DisplayContextUIImpl(myBoxPanelSwitchableViewImpl, this, ctx);
-		Utility.collectionWatcher = new CollectionEditorUtil(app, ctx);
-		myBoxPanelTabPane.add("POJO Browser", Utility.collectionWatcher.getNamedItemChooserPanel());
+		Utility.clipBoardUtil = new CollectionEditorUtil(clipboard.getName(), app, clipboard);
+		myBoxPanelTabPane.add("Clipboard", Utility.clipBoardUtil.getGUIPanel());
 		myBoxContext = bctx0;
 		hookTree();
 		this.addToTreeListener = new AddToTreeListener(myTree, ctx, bctx0, (MutableBox) bctx0.getRootBox(), true);
-		addClipboard(clipboard);
+		//addClipboard(clipboard);
 
-		LinkedList<Object> todoList = Utility.featureQueueUp;
-		Utility.featureQueueUp = null;
-		for (Iterator iterator = todoList.iterator(); iterator.hasNext();) {
-			Object object = (Object) iterator.next();
-			Utility.addObjectFeatures(object);
+		synchronized (Utility.featureQueueLock) {
+			LinkedList<Object> todoList = Utility.featureQueueUp;
+			Utility.featureQueueUp = null;
+			for (Iterator iterator = todoList.iterator(); iterator.hasNext();) {
+				Object object = (Object) iterator.next();
+				Utility.addObjectFeatures(object);
+			}
 		}
 		Utility.addObjectFeatures(this);
 		invalidate();
@@ -198,6 +202,7 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 		checkParent();
 		super.setVisible(aFlag);
 		Utility.updateToolsMenu();
+		Utility.updateLastResultsMenu();
 	}
 
 	public void addNotify() {
@@ -275,87 +280,26 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 		JMenuBar menuBar;
 		JMenu menu, submenu;
 		menuBar = myTopFrameMenu = Utility.getMenuBar();
+
 		myTopFrameMenu.removeAll();
 
-		menuBar.add(Utility.collectionWatcher.getFileMenu());
-		//Build the first menu.
-		menuBar.add(makeSubMenu1Example());
+		menuBar.add(Utility.clipBoardUtil.getFileMenu());
+
+		menu = Utility.toolsMenu = new SafeJMenu(false, "Tools", this);
+		menu.setMnemonic(KeyEvent.VK_T);
+		menu.getAccessibleContext().setAccessibleDescription("Tool menu items");
+		menuBar.add(menu);
+
+		menu = Utility.lastResultsMenu = new SafeJMenu(false, "Results", this);
+		menu.setMnemonic(KeyEvent.VK_R);
+		menu.getAccessibleContext().setAccessibleDescription("Last returns");
+		menuBar.add(menu);
 
 		createLookAndFeelMenu();
 
 		if (oldJMenuBar != null && oldJMenuBar != menuBar)
 			menuBar.add(oldJMenuBar);
 
-	}
-
-	private JMenu makeSubMenu1Example() {
-		SafeJMenu menu, submenu;
-		SafeJMenuItem menuItem;
-		JRadioButtonMenuItem rbMenuItem;
-		JCheckBoxMenuItem cbMenuItem;
-
-		Object jmenuTarget = this;
-
-		Utility.toolsMenu = menu = new SafeJMenu(false, "Tools", jmenuTarget);
-		menu.setMnemonic(KeyEvent.VK_A);
-		menu.getAccessibleContext().setAccessibleDescription("Tool menu items");
-		Utility.updateToolsMenu();
-		if (true)
-			return menu;
-
-		//a group of JMenuItems
-		menuItem = new SafeJMenuItem(jmenuTarget, false, "A text-only menu item", KeyEvent.VK_T);
-		menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_1, ActionEvent.ALT_MASK));
-		menuItem.getAccessibleContext().setAccessibleDescription("This doesn't really do anything");
-		menu.add(menuItem);
-
-		menuItem = new SafeJMenuItem(jmenuTarget, false, "Both text and icon", new ImageIcon("images/middle.gif"));
-		menuItem.setMnemonic(KeyEvent.VK_B);
-		menu.add(menuItem);
-
-		menuItem = new SafeJMenuItem(jmenuTarget, false, new ImageIcon("images/middle.gif"));
-		menuItem.setMnemonic(KeyEvent.VK_D);
-		menu.add(menuItem);
-
-		//a group of radio button menu items
-		menu.addSeparator();
-		ButtonGroup group = new ButtonGroup();
-		rbMenuItem = new JRadioButtonMenuItem("A radio button menu item");
-		rbMenuItem.setSelected(true);
-		rbMenuItem.setMnemonic(KeyEvent.VK_R);
-		group.add(rbMenuItem);
-		menu.add(rbMenuItem);
-
-		rbMenuItem = new JRadioButtonMenuItem("Another one");
-		rbMenuItem.setMnemonic(KeyEvent.VK_O);
-		group.add(rbMenuItem);
-		menu.add(rbMenuItem);
-
-		//a group of check box menu items
-		menu.addSeparator();
-		cbMenuItem = new JCheckBoxMenuItem("A check box menu item");
-		cbMenuItem.setMnemonic(KeyEvent.VK_C);
-		menu.add(cbMenuItem);
-
-		cbMenuItem = new JCheckBoxMenuItem("Another one");
-		cbMenuItem.setMnemonic(KeyEvent.VK_H);
-		menu.add(cbMenuItem);
-
-		//a submenu
-		menu.addSeparator();
-		submenu = new SafeJMenu(true, "A submenu", null);
-		submenu.setMnemonic(KeyEvent.VK_S);
-
-		menuItem = new SafeJMenuItem(jmenuTarget, true, "An item in the submenu");
-		menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_2, ActionEvent.ALT_MASK));
-		submenu.add(menuItem);
-
-		menuItem = new SafeJMenuItem(jmenuTarget, true, "Another item");
-		submenu.add(menuItem);
-
-		menu.add(submenu);
-
-		return menu;
 	}
 
 	//GEN-BEGIN:initComponents
@@ -533,7 +477,7 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 			return UserResult.SUCCESS;
 		} catch (Exception e) {
 			//throw Debuggable.UnhandledException(e);
-			return UserResult.SUCCESS;			
+			return UserResult.SUCCESS;
 		} finally {
 			synchronized (workingOnShowingObject) {
 				workingOnShowingObject.remove(anyObject);
@@ -577,8 +521,8 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 		return null;//myDesktopPane;
 	}
 
-	public Collection getTriggersFromUI(BT box, Object object) {
-		return app.getTriggersFromUI(box, object);
+	public Collection getTriggersFromUI(Object object) {
+		return app.getTriggersFromUI(object);
 	}
 
 	public UserResult showError(String msg, Throwable error) {
