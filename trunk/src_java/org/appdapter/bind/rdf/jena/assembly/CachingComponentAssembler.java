@@ -58,51 +58,55 @@ import org.slf4j.LoggerFactory;
 public abstract class CachingComponentAssembler<MKC extends MutableKnownComponent> extends AssemblerBase {
 	private Logger myLogger = LoggerFactory.getLogger(getClass());
 	private static Logger theBackupLogger = LoggerFactory.getLogger(CachingComponentAssembler.class);
-	
+
+	final public static String DEFAULT_LABEL = "default-label-";
+	public static String DEFAULT_DESC = "default-desc";
 	//private	static Map<Class, ComponentCache> theCachesByAssmblrSubclass = new HashMap<Class, ComponentCache>();
 
 	// private	BasicDebugger myDebugger = new BasicDebugger(getClass());
-	
-	protected ItemAssemblyReader		myReader = new ItemAssemblyReaderImpl();
-	
-	protected Logger getLogger() { 
+
+	protected ItemAssemblyReader myReader = new ItemAssemblyReaderImpl();
+
+	protected Logger getLogger() {
 		return myLogger;
 	}
+
 	public CachingComponentAssembler() {
 		// myDebugger = new BasicDebugger();
 	}
-	
-	public ItemAssemblyReader getReader() { 
+
+	public ItemAssemblyReader getReader() {
 		return myReader;
 	}
-	
-    protected AssemblerSession getSession(){
-        return AssemblerUtils.getDefaultSession();
-    }
-    
-	protected ComponentCache<MKC>	getCache() { 
-		Class	tc = getClass();
+
+	protected AssemblerSession getSession() {
+		return AssemblerUtils.getDefaultSession();
+	}
+
+	protected ComponentCache<MKC> getCache() {
+		Class tc = getClass();
 		// Not really type-safe, ugh.
-        Map<Class, ComponentCache> map = AssemblerUtils.getComponentCacheMap(getSession());
+		Map<Class, ComponentCache> map = AssemblerUtils.getComponentCacheMap(getSession());
 		ComponentCache<MKC> cc = map.get(tc);
-		if (cc == null) { 
+		if (cc == null) {
 			cc = new ComponentCache<MKC>();
 			map.put(tc, cc);
 		}
 		return cc;
 	}
-    
-    /* This will be removed
+
+	/* This will be removed
 	public static void clearCacheForAssemblerSubclass(Class c) {
 		//theCachesByAssmblrSubclass.put(c, null);
 	}
 	public static void clearAllSubclassCaches() { 
 		//theCachesByAssmblrSubclass = new HashMap<Class, ComponentCache>();
 	}//*/
-    
+
 	protected abstract Class<MKC> decideComponentClass(Ident componentID, Item componentConfigItem);
+
 	protected abstract void initExtendedFieldsAndLinks(MKC comp, Item configItem, Assembler asmblr, Mode mode);
-	
+
 	public CachingComponentAssembler(Resource assemblerConfResource) {
 		super();
 		// The AssemblerGroup re-does this on every call to open(), so we need to put our caches outside.
@@ -124,8 +128,7 @@ public abstract class CachingComponentAssembler<MKC extends MutableKnownComponen
 		}
 		return knownComp;
 	}
-    
-    
+
 	public MKC fetchOrMakeComponent(Ident compID, Item confItem, Assembler asmblr, Mode mode) {
 		ComponentCache<MKC> cc = getCache();
 		MKC knownComp = cc.getCachedComponent(compID);
@@ -140,41 +143,39 @@ public abstract class CachingComponentAssembler<MKC extends MutableKnownComponen
 		}
 		return knownComp;
 	}
-    
-    
+
 	private void initFieldsAndLinks(MKC comp, Item optionalExplicitItem, Assembler asmblr, Mode mode) {
 		initLabelFields(comp, optionalExplicitItem);
-		Item infoSource = ((ItemAssemblyReaderImpl) myReader). chooseBestConfigItem(comp.getIdent(), optionalExplicitItem);
+		Item infoSource = ((ItemAssemblyReaderImpl) myReader).chooseBestConfigItem(comp.getIdent(), optionalExplicitItem);
 		if (infoSource != null) {
 			initExtendedFieldsAndLinks(comp, infoSource, asmblr, mode);
 		}
 	}
 
-	
 	private void initLabelFields(MKC comp, Item optionalExplicitItem) {
 		// Try to treat comp.ident as Jena resource and fetch label+desc automagically.
 		Ident compID = comp.getIdent();
-		String labelValString = myReader.readConfigValString(compID, ComponentAssemblyNames.P_label, optionalExplicitItem, "default-label");
+		String labelValString = myReader.readConfigValString(compID, ComponentAssemblyNames.P_label, optionalExplicitItem, DEFAULT_LABEL);
 		comp.setShortLabel(labelValString);
-		String descValString = myReader.readConfigValString(compID, ComponentAssemblyNames.P_description, optionalExplicitItem, "default-desc");
+		String descValString = myReader.readConfigValString(compID, ComponentAssemblyNames.P_description, optionalExplicitItem, DEFAULT_DESC);
 		comp.setDescription(descValString);
 	}
 
-/**
-	 * Our plugin for the Jena assembler will look in our cache first, making a new component only if requred.
-	 * TODO:  Attempt conformance with the Jena Assembler "Mode" param.
-	 * @param asmblr
-	 * @param rsrc
-	 * @param mode
-	 * @return 
-	 */
+	/**
+		 * Our plugin for the Jena assembler will look in our cache first, making a new component only if requred.
+		 * TODO:  Attempt conformance with the Jena Assembler "Mode" param.
+		 * @param asmblr
+		 * @param rsrc
+		 * @param mode
+		 * @return 
+		 */
 	final public Object open(Assembler asmblr, Resource rsrc, Mode mode) {
 		getLogger().debug("Assembler[{}] is opening component at: {}", this, rsrc);
 		JenaResourceItem wrapperItem = new JenaResourceItem(rsrc);
 		//Class<MKC> componentClass = decideComponentClass(wrapperItem, wrapperItem);
 		//MKC comp = null;
 		//if (componentClass != null) {
-		MKC	comp = fetchOrMakeComponent(wrapperItem, wrapperItem, asmblr, mode);
+		MKC comp = fetchOrMakeComponent(wrapperItem, wrapperItem, asmblr, mode);
 		//}
 		return comp;
 	}
@@ -201,5 +202,5 @@ public abstract class CachingComponentAssembler<MKC extends MutableKnownComponen
 		myDebugger.logDebug(msg);
 	}
 	* 
-	*/ 
+	*/
 }

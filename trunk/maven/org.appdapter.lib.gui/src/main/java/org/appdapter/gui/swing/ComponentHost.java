@@ -104,8 +104,8 @@ public class ComponentHost extends JJPanel implements DisplayContext, GetObject,
 		return Utility.getTreeBoxCollection();
 	}
 
-	@Override public Collection getTriggersFromUI(BT box, Object object) {
-		return Utility.getCurrentPOJOApp().getTriggersFromUI(box, object);
+	@Override public Collection getTriggersFromUI(Object object) {
+		return Utility.getCurrentPOJOApp().getTriggersFromUI(object);
 	}
 
 	@Override public UserResult addObject(String title, Object anyObject, boolean showASAP) throws Exception {

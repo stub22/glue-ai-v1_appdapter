@@ -8,8 +8,10 @@ import java.io.IOException;
 import java.io.NotSerializableException;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import org.appdapter.api.trigger.AnyOper.UIProvider;
+import org.appdapter.gui.box.ScreenBoxImpl;
 
 /**
 * A container of objects and corresponding Boxes, which
@@ -50,7 +52,7 @@ public interface NamedObjectCollection //
 	 */
 	//POJOBox findOrCreateBox(Object object);
 
-	boolean addBoxed(String named, BT object);
+	boolean addBoxed(String named, BT screenBoxImpl);
 
 	/**
 	 * Checks if this collection contains the given object
@@ -162,7 +164,7 @@ public interface NamedObjectCollection //
 	 * Adds a POJOCollectionListener to this context. The listener will
 	 * find out when objects are added or removed.
 	 */
-	public void addListener(POJOCollectionListener o);
+	public void addListener(POJOCollectionListener o, boolean catchup);
 
 	/**
 	 * Adds a POJOCollectionListener to this context. The listener will
@@ -175,5 +177,7 @@ public interface NamedObjectCollection //
 	String getName();
 
 	BT asWrapped(Object d);
+	
+	Set getLiveCollection();
 
 }

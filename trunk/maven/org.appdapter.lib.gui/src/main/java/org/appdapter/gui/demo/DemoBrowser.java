@@ -70,7 +70,7 @@ final public class DemoBrowser implements AnyOper.Singleton {
 			mainControl.show();
 
 		} catch (Throwable e1) {
-			//Debuggable.printStackTrace(e1);
+			Debuggable.printStackTrace(e1);
 		}
 	}
 
@@ -265,9 +265,8 @@ final public class DemoBrowser implements AnyOper.Singleton {
 	ScreenBoxContextImpl makeBoxContextImpl(Class<BT> regBoxClass, Class<RBT> repoBoxClass, TriggerImpl<BT> regTrigProto, TriggerImpl<RBT> repoTrigProto, boolean isExampleCode) {
 		try {
 
+			BT rootBox = (BT) DemoServiceWrapFuncs.makeTestBoxImpl((Class) regBoxClass, (TriggerImpl) regTrigProto, "All Objects", Class.class);
 
-			BT rootBox = (BT) DemoServiceWrapFuncs.makeTestBoxImpl((Class) regBoxClass, (TriggerImpl) regTrigProto, "All Objects");
-		
 			ScreenBoxContextImpl bctx = new ScreenBoxContextImpl(rootBox);
 
 			BootstrapTriggerFactory btf = new BootstrapTriggerFactory();
@@ -275,11 +274,13 @@ final public class DemoBrowser implements AnyOper.Singleton {
 
 			TriggerImpl regTrigProtoE = regTrigProto;
 
-			BT clipboardBox = (BT) DemoServiceWrapFuncs.makeTestChildBoxImplWithObj(rootBox, (Class) regBoxClass, Utility.getClipboard(), "Clipboard");
+			if (!isExampleCode)
+				return bctx;
+
 			BT repoBox = (BT) DemoServiceWrapFuncs.makeTestChildBoxImplWithObj(rootBox, (Class) regBoxClass, Repo.class, "repo");
 			BT appBox = (BT) DemoServiceWrapFuncs.makeTestChildBoxImplWithObj(rootBox, (Class) regBoxClass, BasicDebugger.class, "app");
 			BT sysBox = (BT) DemoServiceWrapFuncs.makeTestChildBoxImplWithObj(rootBox, (Class) regBoxClass, ScreenBoxImpl.class, "sys");
-			BT classBox = (BT) DemoServiceWrapFuncs.makeTestChildBoxImplWithObj(rootBox, (Class) regBoxClass, Class.class, "By Class");
+			BT clipboardBox = (BT) DemoServiceWrapFuncs.makeTestChildBoxImplWithObj(rootBox, (Class) regBoxClass, Utility.getClipboard(), "Clipboard");
 
 			if (!isExampleCode)
 				return bctx;

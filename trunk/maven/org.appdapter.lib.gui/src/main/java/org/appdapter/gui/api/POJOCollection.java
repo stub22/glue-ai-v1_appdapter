@@ -6,10 +6,13 @@ import java.util.Iterator;
 
 import org.appdapter.api.trigger.AnyOper.UIProvider;
 
-
 public interface POJOCollection extends UIProvider {
 
-	public void addListener(POJOCollectionListener objectChoice);
+	/**
+	 * Adds a POJOCollectionListener to this context. The listener will
+	 * find out when objects are added or removed.
+	 */
+	public void addListener(POJOCollectionListener o, boolean catchup);
 
 	public DisplayContext getDisplayContext();
 

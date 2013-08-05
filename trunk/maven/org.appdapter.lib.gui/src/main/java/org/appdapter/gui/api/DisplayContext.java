@@ -38,7 +38,7 @@ public interface DisplayContext extends UIProvider/*, IShowObjectMessageAndError
 	 * @param object
 	 * @return
 	 */
-	public Collection<Trigger> getTriggersFromUI(BT box, Object object);
+	public Collection<Trigger> getTriggersFromUI(Object object);
 
 	public UserResult addObject(String title, Object value, boolean showASAP) throws Exception;
 

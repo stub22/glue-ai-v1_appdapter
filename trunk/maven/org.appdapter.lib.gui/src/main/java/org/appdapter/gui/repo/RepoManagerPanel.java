@@ -36,6 +36,7 @@ import org.appdapter.api.trigger.AnyOper.UtilClass;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.core.store.Repo;
 import org.appdapter.gui.browse.Utility;
+import org.appdapter.gui.editors.ObjectPanel;
 import org.appdapter.gui.swing.ScreenBoxPanel;
 import org.appdapter.gui.trigger.TriggerMenuFactory;
 import org.slf4j.Logger;
@@ -44,7 +45,7 @@ import org.slf4j.LoggerFactory;
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public class RepoManagerPanel extends ScreenBoxPanel<MutableRepoBox> implements Customizer, UtilClass {
+public class RepoManagerPanel extends ScreenBoxPanel<MutableRepoBox> implements Customizer, UtilClass, ObjectPanel {
 	static Logger theLogger = LoggerFactory.getLogger(RepoManagerPanel.class);
 
 	@UISalient static public RepoManagerPanel showRepoManagerPanel(final Repo repo) {
@@ -188,7 +189,7 @@ public class RepoManagerPanel extends ScreenBoxPanel<MutableRepoBox> implements 
 		Box cellSubBox = myRGTM.findSubBox(row, col);
 		Object bv = cellSubBox.getValue();
 		if (bv != null) {
-			Box val = Utility.asWrapped(bv).asBox();
+			Box val = Utility.asBoxed(bv);
 			if (val != cellSubBox && val != null) {
 				cellSubBox = val;
 			}

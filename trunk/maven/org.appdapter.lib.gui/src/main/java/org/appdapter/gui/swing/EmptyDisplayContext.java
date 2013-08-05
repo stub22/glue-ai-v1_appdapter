@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Vector;
 
+import org.appdapter.api.trigger.Trigger;
 import org.appdapter.api.trigger.UserResult;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.BT;
@@ -126,6 +127,11 @@ public class EmptyDisplayContext extends BoxedCollectionImpl implements BrowserP
 
 	@Override public UserResult addObject(String title, Object value, boolean showASAP, boolean expandChildren) {
 		return Utility.browserPanel.addObject(title, value, showASAP, expandChildren);
+	}
+
+	@Override public Collection<Trigger> getTriggersFromUI(Object object) {
+		// TODO Auto-generated method stub
+		return Utility.browserPanel.getTriggersFromUI(object);
 	}
 
 }

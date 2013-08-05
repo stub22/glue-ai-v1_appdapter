@@ -112,9 +112,9 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 
 	class AddAction extends AbstractTriggerAction {
 
-		AddAction(BT box, Object val, NamedObjectCollection noc) {
+		AddAction(Object val, NamedObjectCollection noc) {
 			super("Copy to " + noc.getName(), Icons.addToCollection);
-			super.boxed = box;
+
 			super.currentCollection = noc;
 			this.setValue(val);
 		}
@@ -130,9 +130,9 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 
 	class PropertiesAction extends AbstractTriggerAction {
 
-		PropertiesAction(BT box, Object object) {
+		PropertiesAction(Object object) {
 			super("Properties", Utility.getIcon("properties"));
-			super.boxed = box;
+
 			this.setValue(object);
 		}
 
@@ -147,23 +147,24 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 
 	class RemoveAction extends AbstractTriggerAction {
 
-		RemoveAction(BT box, Object object, NamedObjectCollection noc) {
+		RemoveAction(Object object, NamedObjectCollection noc) {
 			super("Remove from " + noc.getName(), Utility.getIcon("removeFromCollection"));
 			this.setValue(object);
-			super.boxed = box;
-			currentCollection = noc;
+
+			this.currentCollection = noc;
 		}
 
 		@Override public void actionPerformed(ActionEvent evt) {
-			getCurrentCollection().removeObject(getValue());
+			NamedObjectCollection col = getCurrentCollection();
+			col.removeObject(getValue());
 		}
 	}
 
 	class RenameAction extends AbstractTriggerAction {
 
-		RenameAction(BT box, Object object, NamedObjectCollection noc) {
+		RenameAction(Object object, NamedObjectCollection noc) {
 			super("Change label in " + noc.getName());
-			super.boxed = box;
+
 			this.setValue(object);
 			currentCollection = noc;
 		}
@@ -203,9 +204,9 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 
 	class ViewAction extends AbstractTriggerAction {
 
-		ViewAction(BT box, Component value) {
+		ViewAction(Component value) {
 			super("View", Icons.viewObject);
-			super.boxed = box;
+
 			this.setValue(value);
 		}
 
@@ -261,9 +262,9 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 		}
 	}
 
-	@Override public void addListener(POJOCollectionListener objectChoice) {
+	@Override public void addListener(POJOCollectionListener objectChoice, boolean catchup) {
 		final POJOCollection collection = getLocalBoxedChildren();
-		collection.addListener(objectChoice);
+		collection.addListener(objectChoice, catchup);
 	}
 
 	/**
@@ -407,46 +408,36 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 	/**
 	 * Returns all actions that can be carried out on the given object
 	 */
-	@Override public Collection getTriggersFromUI(BT box, Object object) {
+	@Override public Collection getTriggersFromUI(Object object) {
 
 		Object val = object;
-		if (val == null) {
-			if (box != null) {
-				val = box.getValueOrThis();
-			} else {
-
-			}
-		}
-		if (box == null) {
-			box = Utility.asWrapped(val);
-		}
 
 		List actions = new LinkedList();
 		if (object == null)
 			return actions;
 
 		NamedObjectCollection currentCollection = getCurrentCollection();
-		addCollectionActions(box, object, actions, currentCollection);
+		addCollectionActions(object, actions, currentCollection);
 
 		NamedObjectCollection clipboardCollection = Utility.getClipboard();
-		addCollectionActions(box, object, actions, clipboardCollection);
+		addCollectionActions(object, actions, clipboardCollection);
 
 		if (object instanceof Component) {
-			actions.add(new ViewAction(box, (Component) object));
+			actions.add(new ViewAction((Component) object));
 		}
-		actions.add(new PropertiesAction(box, object));
+		actions.add(new PropertiesAction(object));
 		Class cls = val.getClass();
-		TriggerMenuFactory.addTriggersForInstance(getDisplayContext(), cls, actions, (WrapperValue) box);
+		TriggerMenuFactory.addTriggersForInstance(getDisplayContext(), cls, actions, object);
 		return actions;
 	}
 
-	private void addCollectionActions(BT box, Object object, List actions, final NamedObjectCollection col) {
+	private void addCollectionActions(Object object, List actions, final NamedObjectCollection col) {
 		if (col != null) {
 			if (col.containsObject(object)) {
-				actions.add(new RenameAction(box, object, col));
-				actions.add(new RemoveAction(box, object, col));
+				actions.add(new RenameAction(object, col));
+				actions.add(new RemoveAction(object, col));
 			} else {
-				actions.add(new AddAction(box, object, col));
+				actions.add(new AddAction(object, col));
 			}
 			actions.add(new AbstractTriggerAction("Global", "Show " + col.getName()) {
 
@@ -629,7 +620,7 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 		BT wrapper = collection.findOrCreateBox(label, value);
 		value = wrapper.getValueOrThis();
 		if (label == null)
-			label = wrapper.getUniqueName();
+			label = wrapper.getShortLabel();
 		JPanel view = wrapper.getPropertiesPanel();
 		showObjectGUI(label, view, showASAP);
 		return Utility.asUserResult(view);

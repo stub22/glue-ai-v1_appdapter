@@ -26,7 +26,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import org.appdapter.api.trigger.AnyOper.UserInputComponent;
 import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.BT;
@@ -109,10 +108,19 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 		SmallObjectView view = null;
 
 		public ObjectReferenceEditor(Class type, boolean editable, PropertyValueControl pvc, Container validater) {
+			if (editable) {
+				if (type == String.class) {
+					Debuggable.warn("This is not good for strings!");
+				}
+			}
 			provalctrl = pvc;
 			this.type = type;
 			this.editable = editable;
 			validator = validater;
+			String[] tags = getTags();
+			if (tags.length < 2) {
+			//	Debuggable.warn("TAGS=", tags);
+			}
 		}
 
 		public String[] getTags() {
@@ -767,7 +775,11 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 			}
 			writeEditorValue();
 		}
+		if (comp instanceof ObjectChoiceComboPanel) {
 
+		} else {
+
+		}
 		if (comp != null) {
 			if (showLabel && property != null) {
 				add("West", new JLabel(property.getDisplayName() + ": "));

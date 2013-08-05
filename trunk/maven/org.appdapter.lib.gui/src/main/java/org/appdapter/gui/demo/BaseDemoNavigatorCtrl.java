@@ -181,8 +181,8 @@ abstract public class BaseDemoNavigatorCtrl implements BrowserPanelGUI, org.appd
 		addObject(title, anyObject, DisplayType.TREE, true);
 	}
 
-	@Override public Collection getTriggersFromUI(BT box, Object object) {
-		return myBP.getTriggersFromUI(box, object);
+	@Override public Collection getTriggersFromUI(Object object) {
+		return myBP.getTriggersFromUI(object);
 	}
 
 	@Override public UserResult showError(String msg, Throwable error) {
@@ -206,8 +206,8 @@ abstract public class BaseDemoNavigatorCtrl implements BrowserPanelGUI, org.appd
 		return getNOC().getTitleOf(anyObject);
 	}
 
-	public void addListener(POJOCollectionListener objectChoice) {
-		getNOC().addListener(objectChoice);
+	public void addListener(POJOCollectionListener objectChoice, boolean catchup) {
+		getNOC().addListener(objectChoice, catchup);
 	}
 
 	@Override public Iterator<Object> getObjects() {

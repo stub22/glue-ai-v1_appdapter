@@ -24,14 +24,13 @@ import java.util.Set;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.core.component.KnownComponent;
+import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.BT;
 import org.appdapter.gui.api.BrowserPanelGUI;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.DisplayType;
-import org.appdapter.gui.api.IGetBox;
 import org.appdapter.gui.api.NamedObjectCollection;
-import org.appdapter.gui.api.POJOBoxImpl;
 import org.appdapter.gui.api.POJOCollectionListener;
 import org.appdapter.gui.browse.Utility;
 import org.slf4j.Logger;
@@ -59,7 +58,7 @@ import org.slf4j.LoggerFactory;
  * 
  */
 @SuppressWarnings("serial")
-public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChangeListener, PropertyChangeListener, Serializable {
+public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChangeListener, PropertyChangeListener, Serializable, Set {
 	// ==== Static variables ===================
 	private static Logger theLogger = LoggerFactory.getLogger(BoxedCollectionImpl.class);
 
@@ -156,7 +155,7 @@ public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChang
 			Iterator it = colListeners.iterator();
 			while (it.hasNext()) {
 				// @temp
-				((POJOCollectionListener) it.next()).pojoAdded(value, (BT) wrapper);
+				((POJOCollectionListener) it.next()).pojoAdded(value, (BT) wrapper, this);
 			}
 			return true;
 		}
@@ -166,9 +165,16 @@ public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChang
 	/**
 	 * Listeners will find out when objects are added or removed
 	 */
-	public void addListener(POJOCollectionListener l) {
+	public void addListener(POJOCollectionListener l, boolean catchup) {
 		synchronized (syncObject) {
 			colListeners.add(l);
+		}
+		if (catchup) {
+			Iterator it = getBoxes();
+			while (it.hasNext()) {
+				BT b = (BT) it.next();
+				l.pojoAdded(b.getValue(), b, this);
+			}
 		}
 	}
 
@@ -189,71 +195,10 @@ public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChang
 				title = generateUniqueName(value);
 			}
 			if (wrapper == null)
-				wrapper = new ObjectWrapper(this, title, value);
+				wrapper = (BT)new ScreenBoxImpl(this, title, value);
 			return wrapper;
 		}
 
-	}
-
-	static class ObjectWrapper extends POJOBoxImpl implements BT, IGetBox {
-		@Override public BT getBT() {
-			return this;
-		}
-
-		//public Object value;
-		private NamedObjectCollection noc;
-
-		public void setNameValue(String uniqueName, Object value) {
-			valueSetAs = value;
-
-			if (uniqueName == null) {
-				uniqueName = Utility.generateUniqueName(value, uniqueName, noc.getNameToBoxIndex());
-			}
-			name = uniqueName;
-			if (value == null) {
-
-				value = new NullPointerException(uniqueName).fillInStackTrace();
-			}
-			if (clz == null)
-				clz = value.getClass();
-
-			setShortLabel(uniqueName);
-			setObject(value);
-		}
-
-		/*
-		public POJOBoxImpl(NamedObjectCollection noc, String label) {
-		this(noc, label, null);
-		}*/
-
-		/**
-		 * Creates a new ScreenBox for the given value
-		 * and assigns it a default name.
-		 */
-		public ObjectWrapper(NamedObjectCollection noc, String title, Object value) {
-			this.noc = noc;
-			setNameValue(title, value);
-		}
-
-		@Override public Object reallyGetValue() {
-			return valueSetAs;
-		}
-
-		@Override public void reallySetValue(Object newObject) {
-			valueSetAs = newObject;
-		}
-
-		@Override public Object getValue() {
-			if (valueSetAs != null)
-				return valueSetAs;
-			return this;
-		}
-
-		@Override public Object getValueOrThis() {
-			if (valueSetAs != null)
-				return valueSetAs;
-			return this;
-		}
 	}
 
 	/**
@@ -452,7 +397,7 @@ public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChang
 				title = generateUniqueName(value);
 			}
 			//Create the value wrapper, with a unique name
-			wrapper = (BT) new ObjectWrapper(this, title, value);
+			wrapper = (BT) new ScreenBoxImpl(this, title, value);
 
 			//Add it
 			//objectsToWrappers.put(value, wrapper);
@@ -468,10 +413,9 @@ public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChang
 			nameIndex.put(title, wrapper);
 
 			//notify namedObjectsListeners			
-			Iterator it = colListeners.iterator();
+			Iterator it = ReflectUtils.copyOf(colListeners).iterator();
 			while (it.hasNext()) {
-				//@temp
-				((POJOCollectionListener) it.next()).pojoAdded(value, wrapper);
+				((POJOCollectionListener) it.next()).pojoAdded(value, wrapper, this);
 			}
 
 			return wrapper;
@@ -659,7 +603,7 @@ public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChang
 	}
 
 	private BT makeWrapper(Object value) throws PropertyVetoException {
-		BT wrapper = new ObjectWrapper(this, generateUniqueName(value), value);
+		BT wrapper = (BT)new ScreenBoxImpl(this, generateUniqueName(value), value);
 		return wrapper;
 	}
 
@@ -759,16 +703,7 @@ public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChang
 			value = realObj;
 		}
 
-		String title = wrapper.getUniqueName();
-
-		//Remove it
-		//objectsToWrappers.remove(value);
-		objectList.remove(value);
-		boxList.remove(wrapper);
-		objectsToWrappers.remove(value);
-
-		//Update the name index			
-		nameIndex.remove(title);
+		String title = wrapper.getShortLabel();
 
 		//Deselect it if necessary
 		if (selected == value) {
@@ -781,12 +716,29 @@ public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChang
 			}
 		}
 
+		boolean worked = true;
+		if (containsObject(value)) {
+			worked = false;
+		}
 		//notify namedObjectsListeners
-		synchronized (colListeners) {
-			Iterator it = colListeners.iterator();
-			while (it.hasNext()) {
-				((POJOCollectionListener) it.next()).pojoRemoved(value, wrapper);
-			}
+		Iterator it = ReflectUtils.copyOf(colListeners).iterator();
+		while (it.hasNext()) {
+			POJOCollectionListener listener = ((POJOCollectionListener) it.next());
+			listener.pojoRemoved(value, wrapper, this);
+		}
+		//Remove it
+		//objectsToWrappers.remove(value);
+		objectList.remove(value);
+		boxList.remove(wrapper);
+		objectsToWrappers.remove(value);
+
+		//Update the name index			
+		nameIndex.remove(title);
+		String key = wrapper.getShortLabel();
+		nameIndex.remove(key);
+
+		if (containsObject(value)) {
+			return false;
 		}
 		return true;
 
@@ -901,5 +853,88 @@ public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChang
 
 	public BrowserPanelGUI getCurrentContext() {
 		return Utility.getCurrentContext();
+	}
+
+	@Override public Set getLiveCollection() {
+		return this;
+	}
+
+	@Override public int size() {
+		return getObjectCount();
+	}
+
+	@Override public boolean isEmpty() {
+		return size() == 0;
+	}
+
+	@Override public boolean contains(Object o) {
+		return objectList.contains(o);
+	}
+
+	@Override public Iterator iterator() {
+		return objectList.iterator();
+	}
+
+	@Override public Object[] toArray() {
+		return objectList.toArray();
+	}
+
+	@Override public Object[] toArray(Object[] a) {
+		return objectList.toArray(a);
+	}
+
+	@Override public boolean add(Object e) {
+		boolean was = contains(e);
+		findOrCreateBox(e);
+		return !was;
+	}
+
+	@Override public boolean remove(Object o) {
+		boolean was = contains(o);
+		removeObject(o);
+		return was;
+	}
+
+	@Override public boolean containsAll(Collection c) {
+		for (Object o : c) {
+			if (!contains(c))
+				return false;
+		}
+		return true;
+	}
+
+	@Override public boolean addAll(Collection c) {
+		boolean changed = false;
+		for (Object o : c) {
+			if (add(o))
+				changed = true;
+		}
+		return changed;
+	}
+
+	@Override public boolean retainAll(Collection c) {
+		boolean changed = false;
+		for (Object o : toArray()) {
+			if (!c.contains(o)) {
+				remove(o);
+				changed = true;
+			}
+		}
+		return changed;
+	}
+
+	@Override public boolean removeAll(Collection c) {
+		boolean changed = false;
+		for (Object o : c) {
+			if (remove(o))
+				changed = true;
+		}
+		return changed;
+	}
+
+	@Override public void clear() {
+		for (Object o : toArray()) {
+			remove(o);
+		}
 	}
 }
