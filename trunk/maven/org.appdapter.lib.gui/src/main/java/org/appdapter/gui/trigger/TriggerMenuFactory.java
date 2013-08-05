@@ -208,7 +208,7 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 				try {
 					addFMethodTrigWF(ctx, cls, m, tgs, poj, rulesOfAdd, menuFmt, PropertyDescriptorForField.findOrCreate(m), true);
 				} catch (Throwable e) {
-					Utility.theLogger.warn("" + cls + ": " + e);
+				//	Utility.theLogger.warn("" + cls + ": " + e);
 				}
 			}
 		}

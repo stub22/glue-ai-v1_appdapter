@@ -85,8 +85,7 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 					}
 				}
 			}
-			if (isSideEffectSafe)
-				theLogger.warn("isSideEffectSafe " + fd);
+			// if (isSideEffectSafe) theLogger.warn("isSideEffectSafe " + fd);
 		}
 	}
 
