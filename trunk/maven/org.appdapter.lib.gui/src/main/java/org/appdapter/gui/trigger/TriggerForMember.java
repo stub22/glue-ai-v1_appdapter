@@ -5,6 +5,7 @@ import static org.appdapter.gui.trigger.TriggerMenuFactory.describeMethod;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.beans.FeatureDescriptor;
 import java.beans.PropertyVetoException;
@@ -17,6 +18,7 @@ import java.util.concurrent.Callable;
 
 import javax.swing.AbstractButton;
 import javax.swing.JMenu;
+import javax.swing.JPopupMenu;
 
 import org.appdapter.api.trigger.AnyOper.AskIfEqual;
 import org.appdapter.api.trigger.AnyOper.UISalient;
@@ -33,6 +35,7 @@ import org.appdapter.gui.api.UIAware;
 import org.appdapter.gui.browse.PropertyDescriptorForField;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.swing.SafeJCheckBoxMenuItem;
+import org.appdapter.gui.swing.SafeJMenu;
 import org.appdapter.gui.swing.SafeJMenuItem;
 
 import com.hp.hpl.jena.rdf.model.Container;
@@ -680,6 +683,10 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 	MouseEvent lastEvent = null;
 
 	@Override public void onMouseEvent(MouseEvent event) {
+		Object src = event.getSource();
+		if (src instanceof AbstractButton && src != jmi) {
+			jmi = (AbstractButton) src;
+		}
 		lastEvent = event;
 		boolean popOutAndNotUp = event.getButton() != 3;
 		// handling a right click
@@ -694,7 +701,8 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 				if (jmi == null) {
 					return;
 				}
-				synchronized (jmi) {
+				//synchronized (jmi) 
+				{
 					//event.consume();
 					if (eventHandled)
 						return;
@@ -703,16 +711,44 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 				if (valueAtTip == null) {
 					valueAtTip = type;
 				}
-				TriggerPopupMenu tpm = tmf.buildPopupMenu(valueAtTip);
-				jmi.add(Utility.getUniqueName(valueAtTip), tpm);
-				tpm.show(jmi, event.getX(), event.getY());
+				Container from = null;
+				if (jmi instanceof Container) {
+					from = (Container) jmi;
+				}
+				if (src instanceof Container) {
+					from = (Container) src;
+				}
+				// this mouse event handler handles it now
+				for (ActionListener al : jmi.getActionListeners()) {
+					jmi.removeActionListener(al);
+				}
+				if (popOutAndNotUp && from != null) {
+					showSubMenuExtend(event, valueAtTip, from);
+				} else {
+					showSubMenuPopup(event, valueAtTip, from);
+				}
 				eventHandled = true;
+
 			} catch (Throwable e) {
 				e.printStackTrace();
 			}
 
 		}
 
+	}
+
+	private void showSubMenuPopup(MouseEvent event, Object valueAtTip, Container from) {
+		JPopupMenu tpm = TriggerMenuFactory.buildPopupMenu(valueAtTip);
+		tpm.setLocation((int) event.getLocationOnScreen().getX(), (int) event.getLocationOnScreen().getY());
+		tpm.show();
+	}
+
+	private void showSubMenuExtend(MouseEvent event, Object valueAtTip, Container from) {
+		String submenuName = Utility.getUniqueName(valueAtTip);
+		JMenu tpm = new SafeJMenu(true, submenuName, valueAtTip);
+		TriggerMenuFactory.addTriggersToPopup(valueAtTip, tpm);
+		from.add(tpm);
+		tpm.show();
 	}
 
 	private Object valueOfImpl(Box targetBox, ActionEvent actevt, boolean wantSideEffect, boolean isPaste) throws InvocationTargetException {

@@ -6,7 +6,7 @@ import java.lang.reflect.Modifier;
 
 import org.appdapter.core.log.Debuggable;
 
-public class TriggerFilter {
+public class TriggerFilter implements Cloneable {
 
 	@Override public String toString() {
 		return Debuggable.toInfoStringF(this);
