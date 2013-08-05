@@ -1,7 +1,7 @@
 package org.appdapter.gui.trigger;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.lang.reflect.Method;
 
 import javax.swing.AbstractButton;
@@ -12,7 +12,6 @@ import org.appdapter.api.trigger.TriggerImpl;
 import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.UIAware;
-import org.appdapter.gui.api.WrapperValue;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.swing.SafeJMenuItem;
 
@@ -20,7 +19,7 @@ public class ShowPanelTrigger<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 
 	final Class panelClass;
 
-	public ShowPanelTrigger(DisplayContext ctx, Class cls, WrapperValue obj, Class fd) {
+	public ShowPanelTrigger(DisplayContext ctx, Class cls, Object obj, Class fd) {
 		arg0Clazz = cls;
 		_object = obj;
 		panelClass = fd;
@@ -70,21 +69,31 @@ public class ShowPanelTrigger<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 		}
 	}
 
-	@Override Object getIdentityObject() {
+	@Override public Object getIdentityObject() {
 		return panelClass;
 	}
 
-	@Override public int hashCode() {
-		return getIdentityObject().hashCode();
+	@Override public boolean equals(Object obj) {
+		if (!(obj instanceof TriggerForType))
+			return false;
+		return getIdentityObject() == ((TriggerForType) obj).getIdentityObject();
 	}
 
 	@Override public void applySalience(UISalient isSalient) {
 		// TODO Auto-generated method stub
 	}
 
-	@Override public AbstractButton makeMenuItem(final Box b) {
+	@Override public void onMouseEvent(MouseEvent event) {
+		// TODO Auto-generated method stub		
+	}
+
+	@Override public AbstractButton makeMenuItem(String menuName, final Object b) {
 		final ShowPanelTrigger trig = this;
-		AbstractButton jmi = new SafeJMenuItem(b, true, getMenuName());
+
+		AbstractButton jmi = null;
+		if (menuName == null)
+			menuName = getMenuName();
+		jmi = new SafeJMenuItem(b, true, menuName);
 		if (this instanceof UIAware) {
 			jmi = (AbstractButton) ((UIAware) this).visitComponent(jmi);
 		}
@@ -93,5 +102,9 @@ public class ShowPanelTrigger<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 	}
 
 	@Override void setMenuInfo() {
+	}
+
+	@Override public Class getDeclaringClass() {
+		return arg0Clazz;
 	}
 }

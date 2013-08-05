@@ -25,7 +25,7 @@ abstract class CantankerousJob implements Runnable {
 			public void run() {
 				while (skipped > 0) {
 					skipped = 0;
-					run();
+					CantankerousJob.this.run();
 					try {
 						Thread.sleep(2000);
 					} catch (InterruptedException e) {

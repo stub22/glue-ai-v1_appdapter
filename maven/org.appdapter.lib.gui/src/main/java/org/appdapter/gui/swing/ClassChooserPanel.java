@@ -4,8 +4,10 @@ import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyEditor;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -18,13 +20,15 @@ import javax.swing.text.JTextComponent;
 
 import org.appdapter.gui.api.BT;
 import org.appdapter.gui.api.DisplayContext;
-import org.appdapter.gui.api.GetSetObject;
 import org.appdapter.gui.api.POJOCollectionListener;
 import org.appdapter.gui.browse.Utility;
+import org.appdapter.gui.util.ClassFinder;
 import org.appdapter.gui.util.PromiscuousClassUtilsA;
 
+import com.jidesoft.swing.AutoCompletion;
+
 public class ClassChooserPanel extends JPanel implements ActionListener, DocumentListener, POJOCollectionListener {
-	Class selectedClass = null;
+	Class selectedClass = String.class;
 
 	//JLayeredPane desk;
 	//JSplitPane split;
@@ -32,6 +36,7 @@ public class ClassChooserPanel extends JPanel implements ActionListener, Documen
 	JComboBox classField;
 	DisplayContext context;
 	HashSet<String> classesSaved = new HashSet<String>();
+	HashSet<String> classesShown = new HashSet<String>();
 	Thread classGroveler;
 
 	public ClassChooserPanel(DisplayContext context0) {
@@ -39,24 +44,36 @@ public class ClassChooserPanel extends JPanel implements ActionListener, Documen
 		this.context = context0;
 		Utility.registerEditors();
 		Utility.setBeanInfoSearchPath();
-
 		initGUI();
-		//startClassGroveler();
+		synchronized (classesSaved) {
+			classesSaved.add(String.class.getName());
+			classesSaved.add(Boolean.class.getName());
+			classesSaved.add(Integer.class.getName());
+			classesSaved.add(Float.class.getName());
+		}
+		startClassGroveler();
 	}
 
 	private void startClassGroveler() {
 		if (classGroveler == null) {
 			classGroveler = new Thread("Class groveler") {
 				public void run() {
+					try {
+						Set set = ClassFinder.getClassNames("java.");
+						synchronized (classesSaved) {
+							for (Object s : set) {
+								classesSaved.add("" + s);
+							}
+						}
+					} catch (Throwable t) {
+
+					}
+					Utility.uiObjects.addListener(ClassChooserPanel.this, true);
 					while (true) {
-						PromiscuousClassUtilsA.getImplementingClasses(PropertyEditor.class);
-						PromiscuousClassUtilsA.getImplementingClasses(GetSetObject.class);
 						resetAutoComplete();
 						try {
 							Thread.sleep(30000);
 						} catch (InterruptedException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
 						}
 					}
 				}
@@ -65,25 +82,57 @@ public class ClassChooserPanel extends JPanel implements ActionListener, Documen
 		classGroveler.start();
 	}
 
+	AutoCompletion autoCompletion;
+
 	private void resetAutoComplete() {
 		/*  JIDESOFT
-		 
-		 leaving it off as it requires large PermGen to hold all the class
-		 
-		   AutoCompletion autoCompletion;
-		autoCompletion = new AutoCompletion(classField);
-		autoCompletion.setStrict(false);
-		autoCompletion.setStrictCompletion(false);
-		for (Class c : PromiscuousClassUtils.getInstalledClasses()) {
-			String n = c.getName();
-			if (!classesSaved.contains(n))
-				classField.addItem(n);
-		}*/
+		 		 */
+		if (autoCompletion == null) {
+			autoCompletion = new AutoCompletion(classField);
+			autoCompletion.setStrict(false);
+			autoCompletion.setStrictCompletion(false);
+		}
+		synchronized (classesSaved) {
+			for (Class c : PromiscuousClassUtilsA.getInstalledClasses()) {
+				classAdd0(c);
+			}
+		}
+		try {
+			synchronized (classesShown) {
+				List<String> copy;
+				synchronized (classesSaved) {
+					if (classesSaved.size() == classesShown.size())
+						return;
+					copy = new ArrayList<String>(classesSaved);
+				}
+				classField.setEnabled(false);
+				for (String c : copy) {
+					if (!classesShown.add(c)) {
+						classField.addItem(c);
+					}
+				}
+			}
+		} finally {
+			classField.setEnabled(true);
+			classField.invalidate();
+		}
+
 	}
 
 	@Override public void actionPerformed(ActionEvent evt) {
-		if (evt.getSource() == classField || evt.getSource() == classBrowserButton) {
-			openClassBrowser();
+		Object evtsrc = evt.getSource(); 
+		classBrowserButton.setEnabled(true);
+		if (evtsrc == classField) {
+			String className = "" + classField.getSelectedItem();
+			try {
+				selectedClass = PromiscuousClassUtilsA.forName(className);
+			} catch (Throwable e) {
+			}
+			classBrowserButton.setEnabled(selectedClass != null);
+		} else {
+			if (evtsrc == classBrowserButton) {
+				openClassBrowser();
+			}
 		}
 	}
 
@@ -108,10 +157,38 @@ public class ClassChooserPanel extends JPanel implements ActionListener, Documen
 		classBrowserButton.setEnabled(false);
 		//classBrowserButton.setActionCommand(COMMAND_CREATE_BEAN);
 
-		classField = new JComboBox();
+		classField = new JComboBox() {
+			@Override public void addItem(Object obj) {
+				int count = getItemCount();
+				String toAdd = (String) obj;
+
+				List<String> items = new ArrayList<String>();
+				for (int i = 0; i < count; i++) {
+					items.add((String) getItemAt(i));
+				}
+
+				if (items.size() == 0) {
+					super.addItem(toAdd);
+					return;
+				} else {
+					if (toAdd.compareTo(items.get(0)) <= 0) {
+						insertItemAt(toAdd, 0);
+					} else {
+						int lastIndexOfHigherNum = 0;
+						for (int i = 0; i < count; i++) {
+							if (toAdd.compareTo(items.get(i)) > 0) {
+								lastIndexOfHigherNum = i;
+							}
+						}
+						insertItemAt(toAdd, lastIndexOfHigherNum + 1);
+					}
+				}
+			}
+		};
 		classField.setSize(400, (int) classField.getSize().getHeight());
 		classField.addActionListener(this);
 		classField.setEnabled(true);
+
 		final JTextComponent tc = (JTextComponent) classField.getEditor().getEditorComponent();
 		tc.getDocument().addDocumentListener(this);
 
@@ -155,19 +232,43 @@ public class ClassChooserPanel extends JPanel implements ActionListener, Documen
 		return selectedClass;
 	}
 
-	@Override public void pojoAdded(Object obj, BT box) {
-		if (obj instanceof Class) {
-			Class clz = (Class) obj;
-			if (!classesSaved.add(clz.getCanonicalName()))
-				return;
-			for (Class c : clz.getInterfaces()) {
-				pojoAdded(c, null);
+	@Override public void pojoAdded(Object obj, BT box, Object senderCollection) {
+		synchronized (classesSaved) {
+			if (obj instanceof Class) {
+				classAdded((Class) obj);
+			} else {
+				if (obj != null)
+					classAdded(obj.getClass());
 			}
-			pojoAdded(clz.getSuperclass(), null);
 		}
+		//invalidate();
 	}
 
-	@Override public void pojoRemoved(Object obj, BT box) {
+	public void classAdded(Class clz) {
+		if (clz == null)
+			return;
+		if (!classAdd0(clz))
+			return;
+		for (Class c : clz.getInterfaces()) {
+			classAdd0(c);
+		}
+		classAdded(clz.getSuperclass());
+
+	}
+
+	private boolean classAdd0(Class clz) {
+		String clzname = clz.getCanonicalName();
+		if (clzname == null) {
+			clzname = clz.getName();
+		}
+		synchronized (classesSaved) {
+			if (!classesSaved.add(clzname))
+				return false;
+		}
+		return true;
+	}
+
+	@Override public void pojoRemoved(Object obj, BT box, Object senderCollection) {
 		// TODO Auto-generated method stub
 
 	}

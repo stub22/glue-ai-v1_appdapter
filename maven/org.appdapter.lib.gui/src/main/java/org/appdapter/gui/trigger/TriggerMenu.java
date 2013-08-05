@@ -1,6 +1,5 @@
 package org.appdapter.gui.trigger;
 
-import org.appdapter.gui.api.BT;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.NamedObjectCollection;
 import org.appdapter.gui.swing.SafeJMenu;
@@ -14,8 +13,8 @@ import org.appdapter.gui.swing.SafeJMenu;
 public class TriggerMenu extends SafeJMenu {
 	TriggerMenuController controller;
 
-	public TriggerMenu(String title, DisplayContext context, NamedObjectCollection noc, BT box, Object object) {
+	public TriggerMenu(String title, DisplayContext context, NamedObjectCollection noc, Object box) {
 		super(true, title, box);
-		controller = new TriggerMenuController(context, noc, object, box, this);
+		controller = new TriggerMenuController(context, noc, box, this);
 	}
 }

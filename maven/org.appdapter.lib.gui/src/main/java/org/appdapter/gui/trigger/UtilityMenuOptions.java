@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
+import org.appdapter.api.trigger.AnyOper.Autoload;
 import org.appdapter.api.trigger.AnyOper.UISalient;
 import org.appdapter.api.trigger.AnyOper.UtilClass;
 import org.appdapter.api.trigger.Box;
@@ -26,7 +27,6 @@ import org.appdapter.core.convert.TypeAssignable;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.ScreenBox;
-import org.appdapter.gui.api.WrapperValue;
 import org.appdapter.gui.box.BoxImpl;
 import org.appdapter.gui.box.ScreenBoxImpl;
 import org.appdapter.gui.browse.KMCTrigger;
@@ -41,29 +41,30 @@ abstract public class UtilityMenuOptions implements UtilClass {
 
 	protected static Logger theLogger = LoggerFactory.getLogger(UtilityMenuOptions.class);
 
-	public static boolean addPanelClasses = false;
+	public static boolean addPanelClasses = true;
 	public static boolean addGlobalStatics = true;
 	public static boolean useBeanIcons = false;
-	public static boolean usePropertyEditorManager = false;
-	public static boolean useSeperateSlowThreads = false;
+	public static boolean usePropertyEditorManager = true;
+	public static boolean separateSlowThreads = false;
 
 	interface VoidFunc<A> {
 		void call(A r);
 	}
 
 	public static void findAndloadMissingUtilityClasses() throws IOException {
-		Utility.addClassStaticMethods(JenaModelUtils.class);
+		Utility.addClassMethods(JenaModelUtils.class);
 		VoidFunc fw = new VoidFunc<Class>() {
 			@Override public void call(Class utilClass) {
 				if (!utilClass.isInterface())
-					Utility.addClassStaticMethods(utilClass);
+					Utility.addClassMethods(utilClass);
 			}
 		};
 		withSubclasses(ObjectPanel.class, fw);
 		withSubclasses(UtilClass.class, fw);
 		withSubclasses(Customizer.class, fw);
 		withSubclasses(PropertyEditor.class, fw);
-		Utility.addClassStaticMethods(RepoManagerPanel.class);
+		loadAutoloads();
+		Utility.addClassMethods(RepoManagerPanel.class);
 	}
 
 	private static <T> void withSubclasses(Class<T> sc, VoidFunc<Class<? extends T>> func) {
@@ -76,11 +77,21 @@ abstract public class UtilityMenuOptions implements UtilClass {
 		}
 	}
 
+	static @UISalient() public void loadAutoloads() {
+		VoidFunc fw = new VoidFunc<Class>() {
+			@Override public void call(Class utilClass) {
+				if (!utilClass.isInterface())
+					Utility.addClassMethods(utilClass);
+			}
+		};
+		withSubclasses(Autoload.class, fw);
+	}
+
 	public static void findAndloadMissingTriggers() throws IOException {
 		VoidFunc fw = new VoidFunc<Class>() {
 			@Override public void call(Class utilClass) {
 				if (!utilClass.isInterface())
-					Utility.addClassStaticMethods(utilClass);
+					Utility.addClassMethods(utilClass);
 			}
 		};
 		withSubclasses(Trigger.class, fw);
@@ -218,14 +229,22 @@ abstract public class UtilityMenuOptions implements UtilClass {
 
 		Utility.addTriggerForClassInst(new TriggerForClass() {
 
+			@Override public Object getIdentityObject() {
+				return member;
+			}
+
 			@Override public String toString() {
 				return Debuggable.toInfoStringF(this);
 			}
 
-			@Override public KMCTrigger createTrigger(String menuFmt, DisplayContext ctx, WrapperValue poj) {
+			@Override public KMCTrigger createTrigger(String menuFmt, DisplayContext ctx, Object poj) {
 				return new KMCTriggerImpl(menuName, ctx, classOfBox, poj, member, isDeclNonStatic0, null, hasNoSideEffects) {
 					@Override public void fire(Box targetBox) {
 						super.fire(targetBox);
+					}
+
+					@Override public Object getIdentityObject() {
+						return member;
 					}
 
 					@Override public Object valueOf(Box targetBox, ActionEvent actevt, boolean wantSideEffect, boolean isPaste) throws InvocationTargetException {
@@ -246,6 +265,7 @@ abstract public class UtilityMenuOptions implements UtilClass {
 			@Override public boolean appliesTarget(Class cls, Object anyObject) {
 				return ReflectUtils.convertsTo(anyObject, cls, classOfBox);
 			}
+
 		});
 	}
 }

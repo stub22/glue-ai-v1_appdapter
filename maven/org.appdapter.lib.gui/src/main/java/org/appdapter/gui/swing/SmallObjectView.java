@@ -167,11 +167,12 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 	}
 
 	public void actionRemove() {
+		Object v = getValue();
 		if (parent != null) {
-			parent.remove(getValue());
+			parent.remove(v);
 		}
 		if (objectCollectionRemoveListener != null) {
-			objectCollectionRemoveListener.objectRemoved(getValue(), parent);
+			objectCollectionRemoveListener.objectRemoved(v, parent);
 		}
 	}
 
@@ -296,7 +297,7 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 				//add(iconView);
 			}
 			if (showLabel) {
-				String title = Utility.getUniqueName(object, null, maybeCoupled);
+				String title = Utility.getUniqueName(object, maybeCoupled);
 				if ((title == null || title.equals("<null>")) && object != null && !(object instanceof String)) {
 					Debuggable.notImplemented("title for", object);
 				}
@@ -374,7 +375,7 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 
 	@Override public void propertyChange(PropertyChangeEvent evt) {
 		if (label != null) {
-			label.setText(Utility.getUniqueName(getValue(), null, maybeCoupled));
+			label.setText(Utility.getUniqueName(getValue(), maybeCoupled));
 		}
 		checkColor();
 	}
@@ -397,7 +398,7 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 			object = this;
 		}
 		if (true || !object.getClass().isPrimitive()) {
-			TriggerPopupMenu menu = new TriggerPopupMenu(context, maybeCoupled, null, object);
+			TriggerPopupMenu menu = new TriggerPopupMenu(context, maybeCoupled, object);
 			frontGlass.add(menu);
 			menu.show(frontGlass, x, y);
 		}

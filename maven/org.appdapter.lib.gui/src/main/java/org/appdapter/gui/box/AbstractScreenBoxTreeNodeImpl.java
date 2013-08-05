@@ -16,12 +16,10 @@
 package org.appdapter.gui.box;
 
 import java.awt.event.ActionEvent;
-import java.beans.IntrospectionException;
-import java.beans.PropertyDescriptor;
 import java.lang.reflect.Array;
-import java.lang.reflect.Method;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Map;
 
 import javax.swing.AbstractAction;
@@ -34,7 +32,6 @@ import org.appdapter.api.trigger.AnyOper.UIProvider;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContext;
 import org.appdapter.api.trigger.UserResult;
-import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.BT;
 import org.appdapter.gui.api.BoxPanelSwitchableView;
@@ -44,7 +41,6 @@ import org.appdapter.gui.api.DisplayContextProvider;
 import org.appdapter.gui.api.GetSetObject;
 import org.appdapter.gui.api.NamedObjectCollection;
 import org.appdapter.gui.api.ScreenBoxTreeNode;
-import org.appdapter.gui.browse.PropertyDescriptorForField;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.trigger.TriggerPopupMenu;
 
@@ -116,6 +112,25 @@ abstract public class AbstractScreenBoxTreeNodeImpl extends DefaultMutableTreeNo
 		return null;
 	}
 
+	/**
+	 * Returns the child at the specified index in this node's child array.
+	 *
+	 * @param	index	an index into this node's child array
+	 * @exception	ArrayIndexOutOfBoundsException	if <code>index</code>
+	 *						is out of bounds
+	 * @return	the TreeNode in this node's child array at  the specified index
+	 */
+	public TreeNode getChildAt(int index) {
+		if (children == null) {
+			throw new ArrayIndexOutOfBoundsException("node has no children");
+		}
+		try {
+			return (TreeNode) children.elementAt(index);
+		} catch (ArrayIndexOutOfBoundsException aiobe) {
+			return null;
+		}
+	}
+
 	final @Override public void add(MutableTreeNode childNode) {
 		super.add((MutableTreeNode) childNode);
 
@@ -157,9 +172,9 @@ abstract public class AbstractScreenBoxTreeNodeImpl extends DefaultMutableTreeNo
 		return Utility.getTreeBoxCollection();
 	}
 
-	@Override public Collection getTriggersFromUI(BT box, Object object) {
+	@Override public Collection getTriggersFromUI(Object object) {
 		DisplayContext displayContext = getDisplayContext();
-		return displayContext.getTriggersFromUI(box, object);
+		return displayContext.getTriggersFromUI(object);
 	}
 
 	/*
@@ -222,6 +237,22 @@ abstract public class AbstractScreenBoxTreeNodeImpl extends DefaultMutableTreeNo
 		return null;
 	}
 
+	public void insert(MutableTreeNode newChild, int childIndex) {
+		super.insert(newChild, childIndex);
+		Collections.sort(this.children, nodeComparator);
+	}
+
+	//It also looks better if you're ignoring case sensitivity:
+	protected static Comparator nodeComparator = new Comparator() {
+		public int compare(Object o1, Object o2) {
+			return o1.toString().compareToIgnoreCase(o2.toString());
+		}
+
+		public boolean equals(Object obj) {
+			return false;
+		}
+	};
+
 	public AbstractScreenBoxTreeNodeImpl attachChildObject(String title, Object value) {
 		AbstractScreenBoxTreeNodeImpl before = findChildObject(title, value);
 		if (before != null)
@@ -230,7 +261,7 @@ abstract public class AbstractScreenBoxTreeNodeImpl extends DefaultMutableTreeNo
 		BT b;
 		try {
 			b = col.findOrCreateBox(title, value);
-			return (AbstractScreenBoxTreeNodeImpl) attachChildBoxNode((ScreenBoxTreeNodeImpl) this, b.asBox());
+			return (AbstractScreenBoxTreeNodeImpl) attachChildBoxNode((ScreenBoxTreeNodeImpl) this, Utility.asBoxed(b));
 
 		} catch (Exception e) {
 			throw Debuggable.reThrowable(e);
@@ -251,7 +282,7 @@ abstract public class AbstractScreenBoxTreeNodeImpl extends DefaultMutableTreeNo
 		if (b2 == null) {
 			b2 = b1;
 		}
-		Box box = b2.asBox();
+		Box box = Utility.asBoxed(b2);
 		AbstractScreenBoxTreeNodeImpl before = findTreeNodeDisplayContext(box);
 		return before;
 	}

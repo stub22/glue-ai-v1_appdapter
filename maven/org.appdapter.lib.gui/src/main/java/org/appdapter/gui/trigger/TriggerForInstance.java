@@ -2,6 +2,9 @@ package org.appdapter.gui.trigger;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.InvocationTargetException;
@@ -10,35 +13,27 @@ import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.JComponent;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.text.DefaultEditorKit.PasteAction;
 
 import org.appdapter.api.trigger.AnyOper.AskIfEqual;
-import org.appdapter.api.trigger.AnyOper.UIHidden;
 import org.appdapter.api.trigger.AnyOper.UISalient;
 import org.appdapter.api.trigger.Box;
-import org.appdapter.api.trigger.BoxContext;
-import org.appdapter.api.trigger.MutableBox;
 import org.appdapter.api.trigger.MutableTrigger;
 import org.appdapter.api.trigger.TriggerImpl;
-import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.core.name.Ident;
-import org.appdapter.gui.api.BT;
-import org.appdapter.gui.api.BoxPanelSwitchableView;
 import org.appdapter.gui.api.DisplayContext;
-import org.appdapter.gui.api.DisplayType;
 import org.appdapter.gui.api.GetDisplayContext;
 import org.appdapter.gui.api.UIAware;
-import org.appdapter.gui.api.WrapperValue;
 import org.appdapter.gui.browse.KMCTrigger;
 import org.appdapter.gui.browse.Utility;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 abstract public class TriggerForInstance<BoxType extends Box<? extends MutableTrigger<BoxType>>> extends TriggerImpl implements
 
 ButtonFactory, AskIfEqual, UIAware, Action, ActionListener, KMCTrigger, GetDisplayContext {
 
+	static protected Logger theLogger = LoggerFactory.getLogger(TriggerForInstance.class);
 	/**
 	 *  the Class that this menu item is placed on (using the Box)
 	 */
@@ -46,9 +41,12 @@ ButtonFactory, AskIfEqual, UIAware, Action, ActionListener, KMCTrigger, GetDispl
 	/**
 	 *  the object that this menu item is placed on (using the Box)
 	 */
-	WrapperValue _object;
+	Object _object;
 	DisplayContext displayContext;
 	AbstractButton jmi;
+	Object retvalCache;
+
+	abstract public Class getDeclaringClass();
 
 	//abstract protected void fireIT(Box b, ActionEvent e) throws InvocationTargetException;
 
@@ -83,7 +81,7 @@ ButtonFactory, AskIfEqual, UIAware, Action, ActionListener, KMCTrigger, GetDispl
 
 	final @Override public void actionPerformed(ActionEvent e) {
 		try {
-			fireIT(Utility.asWrapped(e.getSource()).asBox(), e);
+			fireIT(Utility.asBoxed(e.getSource()), e);
 		} catch (InvocationTargetException e1) {
 			Debuggable.printStackTrace(e1);
 			throw Debuggable.reThrowable(e1);
@@ -125,7 +123,7 @@ ButtonFactory, AskIfEqual, UIAware, Action, ActionListener, KMCTrigger, GetDispl
 		return super.getIdent();
 	}
 
-	abstract Object getIdentityObject();
+	public abstract Object getIdentityObject();
 
 	final public String getMenuName() {
 		String path = getMenuPath().trim();
@@ -150,7 +148,9 @@ ButtonFactory, AskIfEqual, UIAware, Action, ActionListener, KMCTrigger, GetDispl
 		return Utility.dref(targetBox);
 	}
 
-	abstract public int hashCode();
+	final public int hashCode() {
+		return getIdentityObject().hashCode();
+	}
 
 	@Override public boolean isEnabled() {
 		return actionImpl.isEnabled();
@@ -172,6 +172,10 @@ ButtonFactory, AskIfEqual, UIAware, Action, ActionListener, KMCTrigger, GetDispl
 			return false;
 		if (obj == this)
 			return true;
+		if (!(obj instanceof TriggerForType))
+			return false;
+		if (true)
+			return getIdentityObject() == ((TriggerForType) obj).getIdentityObject();
 		return toString().equals(obj.toString());
 	}
 
@@ -200,20 +204,40 @@ ButtonFactory, AskIfEqual, UIAware, Action, ActionListener, KMCTrigger, GetDispl
 	}
 
 	@Override public JComponent visitComponent(JComponent comp) {
-		if (comp instanceof JMenuItem) {
-			jmi = (JMenuItem) comp;
-			jmi.setName(getShortLabel());
-
+		retvalCache = null;
+		if (comp instanceof AbstractButton) {
+			jmi = (AbstractButton) comp;
 			String str = getMenuName();
 			if (str.trim().length() == 0) {
 				jmi.setText(str);
 			}
 			jmi.setText(str);
-			jmi.setToolTipText(getDescription());
 			setMenuInfo();
 		}
-		return jmi;
+		MouseListener myMouseListener = new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				if (e.getButton() == 3)
+					return;
+				onMouseEvent(e);
+			}
+
+			public void mouseReleased(MouseEvent e) {
+				onMouseEvent(e);
+			}
+
+			public void mousePressed(MouseEvent e) {
+				//onMouseEvent(e);
+			}
+		};
+		comp.addMouseListener(myMouseListener);
+		comp.setName(getShortLabel());
+		comp.setToolTipText(getDescription());
+		if (jmi != null)
+			return jmi;
+		return comp;
 	}
+
+	abstract public void onMouseEvent(MouseEvent event);
 
 	abstract public void applySalience(UISalient isSalient);
 

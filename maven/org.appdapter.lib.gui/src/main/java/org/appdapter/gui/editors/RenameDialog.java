@@ -36,9 +36,9 @@ public class RenameDialog extends JFrame {
 		this.value = value;
 
 		JPanel top = new JPanel(new FlowLayout());
-		top.add(new JLabel("Rename " + value.getUniqueName() + " to: "));
+		top.add(new JLabel("Rename " + value.getShortLabel() + " to: "));
 		top.add(nameField);
-		nameField.setText(value.getUniqueName());
+		nameField.setText(value.getShortLabel());
 		nameField.selectAll();
 
 		JPanel bottom = new JPanel(new FlowLayout());
@@ -92,7 +92,7 @@ public class RenameDialog extends JFrame {
 
 	private void okPressed() {
 
-		String prevName = value.getUniqueName();
+		String prevName = value.getShortLabel();
 		String name = nameField.getText();
 		if (isNameValid(name)) {
 			try {

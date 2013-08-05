@@ -2,8 +2,10 @@ package org.appdapter.gui.swing;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
 
 import javax.swing.border.TitledBorder;
 
@@ -17,36 +19,48 @@ import org.appdapter.gui.util.PromiscuousClassUtilsA;
 
 public class NamedItemChooserPanel extends JJPanel implements GetSetObject, FocusOnBox<Box> {
 
+	/** 
+	 * @deprecated As of JDK version 1.1,
+	 * replaced by <code>getPreferredSize()</code>.
+	 */
+	@Deprecated public Dimension preferredSize() {
+		Dimension dim = getSize();
+		if (dim != null) {
+			return new Dimension(dim);
+		} else {
+			return dim;
+		}
+	}
+
 	//JLayeredPane desk;
 	//JSplitPane split;
 	ClassChooserPanel classChooserPanel;
-	LargeObjectChooser namedObjectListPanel;
+	//LargeObjectChooser 
+
+	CollectionContentsPanel namedObjectListPanel;
 	NamedObjectCollection namedObjects;
 	DisplayContext context;
 
-	public NamedItemChooserPanel(DisplayContext context0) {
+	public NamedItemChooserPanel(DisplayContext context0, NamedObjectCollection named) {
 		super(true);
-		Utility.namedItemChooserPanel = this;
 		this.context = context0;
-		namedObjects = context0.getLocalBoxedChildren();
-		PromiscuousClassUtilsA.ensureInstalled();
-		Utility.registerEditors();
-		Utility.setBeanInfoSearchPath();
+		namedObjects = named;
+		Utility.setup();
 		initGUI();
 	}
 
 	void initGUI() {
 		removeAll();
-
 		adjustSize();
-		namedObjects = context.getLocalBoxedChildren();
-		namedObjectListPanel = new LargeObjectChooser(null, namedObjects);
+		//namedObjects = context.getLocalBoxedChildren();
+		namedObjectListPanel = new CollectionContentsPanel(context, namedObjects.getName(), (Collection) namedObjects.getLiveCollection(), null, namedObjects, null, true);
+		//new LargeObjectChooser(null, namedObjects);
 		classChooserPanel = new ClassChooserPanel(context);
-		namedObjects.addListener(classChooserPanel);
 		setLayout(new BorderLayout());
-		namedObjectListPanel.setBorder(new TitledBorder("Object browser"));
+		namedObjectListPanel.setBorder(new TitledBorder(namedObjects.getName()));
 		add("North", classChooserPanel);
 		add("Center", namedObjectListPanel);
+		namedObjects.addListener(classChooserPanel, true);
 	}
 
 	private void adjustSize() {
@@ -61,7 +75,7 @@ public class NamedItemChooserPanel extends JJPanel implements GetSetObject, Focu
 	}
 
 	@Override public Object getValue() {
-		return namedObjectListPanel.getObject();
+		return namedObjectListPanel.getSelectedObject();
 	}
 
 	@Override public void setObject(Object object) throws InvocationTargetException {
@@ -73,6 +87,7 @@ public class NamedItemChooserPanel extends JJPanel implements GetSetObject, Focu
 		}
 
 	}
+
 	@Override public Class<Box> getClassOfBox() {
 		return Box.class;
 	}

@@ -1,21 +1,8 @@
 package org.appdapter.gui.swing;
 
-import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
-import javax.swing.JButton;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-
-import org.appdapter.gui.api.DisplayContext;
-import org.appdapter.gui.browse.Utility;
 
 /**
  * A GUI component showing all the static methods of a given class and controls
@@ -23,79 +10,9 @@ import org.appdapter.gui.browse.Utility;
  *
  * 
  */
-public class StaticMethodsPanel extends JJPanelList implements ActionListener, ListSelectionListener {
-	DisplayContext context;
-	Class cls;
-
-	StaticMethodList methodList;
-	MethodParametersPanel paramPanel;
-	JButton executeButton;
-	JSplitPane splitter;
-	MethodResultPanel resultPanel;
+public class StaticMethodsPanel extends MethodsPanel implements ActionListener, ListSelectionListener {
 
 	public StaticMethodsPanel(Class cls) throws Exception {
-		this(Utility.getCurrentContext(), cls);
-	}
-
-	public StaticMethodsPanel(DisplayContext context, Class cls) throws Exception {
-		this.context = context;
-		this.cls = cls;
-		initGUI();
-	}
-
-	@Override public void valueChanged(ListSelectionEvent e) {
-		Method current = methodList.getSelectedMethod();
-
-		paramPanel.setMethod(current);
-		resultPanel.setVisible(current != null);
-		if (current != null)
-			resultPanel.setResultType(current.getReturnType());
-	}
-
-	private void executeMethod(Method method) throws Exception {
-		if (method != null) {
-			Object[] params = paramPanel.getValues();
-			Object returnValue = method.invoke(cls, params);
-			resultPanel.setResultValue(returnValue);
-		}
-	}
-
-	private void initGUI() throws Exception {
-		paramPanel = new MethodParametersPanel();
-		methodList = new StaticMethodList(cls);
-		resultPanel = new MethodResultPanel();
-
-		executeButton = new JButton("Execute method");
-		executeButton.addActionListener(this);
-
-		JPanel bottomPanel = new JPanel();
-		bottomPanel.setLayout(new BorderLayout(10, 10));
-		bottomPanel.add("West", executeButton);
-		bottomPanel.add("Center", resultPanel);
-
-		JScrollPane scroller = new JScrollPane(methodList);
-		scroller.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-
-		splitter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, scroller, paramPanel);
-
-		setLayout(new BorderLayout());
-		add("Center", splitter);
-		add("South", bottomPanel);
-		methodList.addListSelectionListener(this);
-	}
-
-	@Override public void actionPerformed(ActionEvent evt) {
-		if (evt.getSource() == executeButton) {
-			Method method = methodList.getSelectedMethod();
-			if (method != null) {
-				try {
-					executeMethod(method);
-				} catch (InvocationTargetException err) {
-					Utility.showError(context, null, err.getTargetException());
-				} catch (Throwable err) {
-					Utility.showError(context, null, err);
-				}
-			}
-		}
+		super(cls, true);
 	}
 }

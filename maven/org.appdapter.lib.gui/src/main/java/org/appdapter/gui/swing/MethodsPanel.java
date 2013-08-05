@@ -40,7 +40,11 @@ public class MethodsPanel extends JJPanel implements ActionListener, ListSelecti
 	MethodResultPanel resultPanel;
 
 	public MethodsPanel(Object object) throws Exception {
-		this(Utility.getCurrentContext(), object, object.getClass());
+		this(object, false);
+	}
+
+	public MethodsPanel(Object object, boolean asClass) throws Exception {
+		this(Utility.getCurrentContext(), object, asClass ? (Class) object : null);
 	}
 
 	public MethodsPanel(DisplayContext context, Object object, Class objClass) throws Exception {
@@ -49,6 +53,7 @@ public class MethodsPanel extends JJPanel implements ActionListener, ListSelecti
 		this.objectClass = objClass;
 		if (object instanceof Class) {
 			objectClass = (Class) object;
+			object = null;
 		}
 		initGUI();
 	}

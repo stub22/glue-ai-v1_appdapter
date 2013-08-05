@@ -19,9 +19,14 @@ public class AggregateConverter implements Converter {
 	}
 
 	public <T> T recast(Object obj, Class<T> objNeedsToBe, int maxConverts, Object exceptFor) throws NoSuchConversionException {
+		if (maxConverts < 0) {
+			return ReflectUtils.noSuchConversion(obj, objNeedsToBe, null);
+		}
+		maxConverts--;
+		if (obj == null)
+			return null;
 		NoSuchConversionException issue0 = null;
 		Object made = obj;
-		Class from = obj.getClass();
 		if (objNeedsToBe.isPrimitive()) {
 			objNeedsToBe = ReflectUtils.nonPrimitiveTypeFor(objNeedsToBe);
 		}
@@ -31,6 +36,7 @@ public class AggregateConverter implements Converter {
 		synchronized (cnverters) {
 			cnverters = new ArrayList<Converter>(cnverters);
 		}
+		Class from = obj.getClass();
 		Collections.sort(cnverters, new ConverterSorter(obj, from, objNeedsToBe));
 		for (Converter converter : cnverters) {
 			if (exceptFor == converter) {

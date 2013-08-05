@@ -20,13 +20,13 @@ import org.appdapter.gui.util.PromiscuousClassUtilsA;
 
 import com.jidesoft.plaf.LookAndFeelFactory;
 
-public class LookAndFeelMenuItems extends JMenu {
+public class LookAndFeelMenuItems extends SafeJMenu {
 
 	private Thread findMoreLaf;
 	public static boolean scanMoreClasses = false;
 
 	public LookAndFeelMenuItems(String title) {
-		super(title);
+		super(true, title, (Object) null);
 		boolean isOSGi = Utility.isOSGi();
 		try {
 			initGUI(isOSGi);

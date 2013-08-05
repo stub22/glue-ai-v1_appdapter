@@ -2,11 +2,13 @@ package org.appdapter.gui.swing;
 
 import java.awt.BorderLayout;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.browse.Utility;
 
@@ -20,14 +22,14 @@ import org.appdapter.gui.browse.Utility;
  */
 public class MethodParametersPanel extends JJPanel {
 	DisplayContext context;
-	Method currentMethod = null;
-	Constructor currentConstructor = null;
+	Member currentMethod = null;
+	//Constructor currentConstructor = null;
 	PropertyValueControl[] paramViews = null;
 	JPanel childPanel;
 
 	public Object getValue() {
-		if (currentConstructor != null)
-			return currentConstructor;
+		//if (currentConstructor != null)
+		//	return currentConstructor;
 		return currentMethod;
 	}
 
@@ -44,7 +46,7 @@ public class MethodParametersPanel extends JJPanel {
 
 	public MethodParametersPanel(DisplayContext context, Constructor c) {
 		this(context);
-		setConstructor(c);
+		setMethod(c);
 	}
 
 	public MethodParametersPanel(DisplayContext context, Method m) {
@@ -63,11 +65,11 @@ public class MethodParametersPanel extends JJPanel {
 		return params;
 	}
 
-	public Method getMethod() {
+	public Member getMethod() {
 		return currentMethod;
 	}
 
-	private void setParameters(Class[] params) {
+	public void setParameters(Class[] params) {
 		paramViews = new PropertyValueControl[params.length];
 		for (int i = 0; i < params.length; ++i) {
 			JPanel row = new JPanel();
@@ -83,16 +85,17 @@ public class MethodParametersPanel extends JJPanel {
 		}
 	}
 
-	public synchronized void setMethod(Method method) {
+	public synchronized void setMethod(Member method) {
 		if (currentMethod != method) {
 			if (childPanel != null) {
 				childPanel.removeAll();
 			}
 			childPanel = new JPanel();
 			childPanel.setLayout(new VerticalLayout(VerticalLayout.LEFT, true));
+
 			currentMethod = method;
 			if (method != null) {
-				Class[] params = method.getParameterTypes();
+				Class[] params = ReflectUtils.getParameterTypes(method);
 				setParameters(params);
 			}
 			removeAll();
@@ -102,24 +105,6 @@ public class MethodParametersPanel extends JJPanel {
 			repaint();
 		}
 
-	}
-
-	public synchronized void setConstructor(Constructor constructor) {
-		if (currentConstructor != constructor) {
-			if (childPanel != null)
-				childPanel.removeAll();
-			childPanel = new JPanel();
-			childPanel.setLayout(new VerticalLayout(VerticalLayout.LEFT, true));
-			currentConstructor = constructor;
-			if (constructor != null) {
-				setParameters(constructor.getParameterTypes());
-			}
-			removeAll();
-			add("Center", childPanel);
-			invalidate();
-			validate();
-			repaint();
-		}
 	}
 
 }

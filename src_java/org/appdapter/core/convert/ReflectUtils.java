@@ -1,5 +1,6 @@
 package org.appdapter.core.convert;
 
+import java.awt.Component;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Array;
@@ -38,6 +39,7 @@ import org.appdapter.core.log.Debuggable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.sdb.util.Pair;
 
 public class ReflectUtils {
@@ -281,7 +283,7 @@ public class ReflectUtils {
 		if (converter == null)
 			converter = DEFAULT_CONVERTER;
 
-		final OptionalArg optionalArgZ = new AggregateOptionalArgs(asList(optionalArgs, new OptionalArgFromCollectionAndConvertor(args, converter, false)));
+		final OptionalArg optionalArgZ = new AggregateOptionalArgs(asList(new OptionalArgFromCollectionAndConvertor(args, converter, false), optionalArgs));
 
 		if (l == 1) {
 			return invokeAVConstructors(converter, cons[0], args, optionalArgZ);
@@ -290,8 +292,13 @@ public class ReflectUtils {
 		List<Pair<Constructor, Object[]>> constructors = new ArrayList<Pair<Constructor, Object[]>>();
 
 		for (Constructor con : cons) {
-			Object[] c = evaluateAbility(converter, getAllParameters(con), con.isVarArgs(), args, optionalArgZ);
-			constructors.add(new Pair<Constructor, Object[]>(con, c));
+			try {
+				Object[] c = makeParams_canThrow(converter, getAllParameters(con), con.isVarArgs(), args, optionalArgZ);
+				if (c != null)
+					constructors.add(new Pair<Constructor, Object[]>(con, c));
+			} catch (Throwable t) {
+
+			}
 		}
 		Collections.sort(constructors, new Comparator<Pair<Constructor, Object[]>>() {
 			@Override public int compare(Pair<Constructor, Object[]> o1, Pair<Constructor, Object[]> o2) {
@@ -333,17 +340,17 @@ public class ReflectUtils {
 		return con.getParameterTypes();
 	}
 
-	static Object[] evaluateAbility(Converter converter, Class[] ts, boolean isVarArgs, Object[] params, OptionalArg optionalArg) {
+	static Object[] makeParams(Converter converter, Class[] mts, boolean isVarArgs, Object[] params, OptionalArg optionalArg) {
 		try {
-			return evaluateAbility0(converter, ts, isVarArgs, params, optionalArg);
+			return makeParams_canThrow(converter, mts, isVarArgs, params, optionalArg);
 		} catch (Throwable t) {
-			return new Object[ts.length];
+			return new Object[mts.length];
 		}
 	}
 
-	static Object[] evaluateAbility0(Converter converter, Class[] ts, boolean isVarArgs, Object[] params, OptionalArg optionalArg) {
+	static Object[] makeParams_canThrow(Converter converter, Class[] mts, boolean isVarArgs, Object[] params, OptionalArg optionalArg) {
 		optionalArg.reset();
-		int ml = ts.length;
+		int ml = mts.length;
 		if (params == null) {
 			params = new Object[0];
 		}
@@ -353,58 +360,71 @@ public class ReflectUtils {
 			return new Object[0];
 		}
 
-		float penalityORBonus = 0;
-
 		// we have one Object[] params
 		if (!isVarArgs && params.length == 1 && params[0] instanceof Object[]) {
-			if (!ts[0].isArray()) {
-				return evaluateAbility(converter, ts, isVarArgs, (Object[]) params[0], optionalArg);
+			if (!mts[0].isArray()) {
+				return makeParams_canThrow(converter, mts, isVarArgs, (Object[]) params[0], optionalArg);
 			}
 		}
 
-		Object[] nps = new Object[ml];
-		int lastParamNum = ts.length;
-		if (isVarArgs)
-			lastParamNum--;
+		Object[] mps = new Object[ml];
+		int lastParamNum = mts.length - 1;
+		int neededArgs = mts.length;
+		if (isVarArgs) {
+			neededArgs--;
+		}
 
-		int neededArgs = lastParamNum - pl;
-
-		lastParamNum--;
-
-		if (neededArgs > 0) {
+		int filledIn = 0;
+		int failures = 0;
+		if (neededArgs > pl) {
 			if (optionalArg == null) {
 				Debuggable.warn("Not enough arguments ! neededArgs = " + neededArgs);
-			} else {
-				for (int i = 0; i < neededArgs; i++) {
-					int workingOn = i + lastParamNum;
-					try {
-						Class pt = ts[workingOn];
-						nps[workingOn] = optionalArg.getArg(pt);
-					} catch (Throwable tt) {
-						Debuggable.expectedToIgnore(tt, NoSuchConversionException.class);
+				failures = neededArgs;
+				return mps;
+			}
+			for (int i = 0; i < ml; i++) {
+				Class pt = mts[i];
+				try {
+					Object b = optionalArg.getArg(pt);
+					Object p = recast(converter, b, pt);
+					if (pt.isInstance(p)) {
+						mps[i] = p;
+						filledIn++;
+					} else {
+						failures++;
 					}
+				} catch (Throwable tt) {
+					Debuggable.expectedToIgnore(tt, NoSuchConversionException.class);
+					failures++;
+				}
+
+			}
+		} else {
+			boolean anyChange = false;
+			for (int i = 0; i < neededArgs; i++) {
+				Object b = params[i];
+				Class pt = mts[i];
+				try {
+					Object p = recast(converter, b, pt);
+					if (pt.isInstance(p)) {
+						mps[i] = p;
+						filledIn++;
+					} else {
+						failures++;
+					}
+				} catch (Throwable tt) {
+					Debuggable.expectedToIgnore(tt, NoSuchConversionException.class);
+					failures++;
 				}
 			}
 		}
-		boolean anyChange = false;
-		for (int i = 0; i < lastParamNum; i++) {
-			Object p = params[i];
-			Class pt = ts[i];
-			try {
-				nps[i] = recast(converter, p, pt);
-				if (nps[i] != p) {
-					anyChange = true;
-				}
-			} catch (Throwable tt) {
-				Debuggable.expectedToIgnore(tt, NoSuchConversionException.class);
-			}
-		}
+
 		if (!isVarArgs) {
 			// this is ideal
 			if (pl == ml) {
-				return nps;
+				return mps;
 			} else {
-
+				return mps;
 			}
 		}
 
@@ -413,21 +433,21 @@ public class ReflectUtils {
 			if (params[lastParamNum].getClass().isArray()) {
 				lpv = params[lastParamNum];
 			} else {
-				Class pt = ts[lastParamNum].getComponentType();
+				Class pt = mts[lastParamNum].getComponentType();
 				ArrayList xp = new ArrayList();
 				for (int i = lastParamNum; i < pl; i++) {
 					Object p = params[i];
 					Object o = recastOrNull(converter, p, pt);
 					if (o == null)
-						return nps;
+						return mps;
 					xp.add(o);
 				}
 				lpv = xp.toArray();
 			}
-			nps[lastParamNum] = recastOrNull(converter, lpv, ts[lastParamNum]);
-			return evaluateAbility(converter, ts, isVarArgs, nps, optionalArg);
+			mps[lastParamNum] = recastOrNull(converter, lpv, mts[lastParamNum]);
+			return makeParams_canThrow(converter, mts, isVarArgs, mps, optionalArg);
 		}
-		return nps;
+		return mps;
 
 	}
 
@@ -445,9 +465,9 @@ public class ReflectUtils {
 
 		optionalArg.reset();
 		boolean isStatic = isStatic(method);
-		Class[] ts = method.getParameterTypes();
+		Class[] mts = method.getParameterTypes();
 
-		int ml = ts.length;
+		int ml = mts.length;
 		if (params == null) {
 			params = new Object[0];
 		}
@@ -461,17 +481,17 @@ public class ReflectUtils {
 
 		// we have one Object[] params
 		if (!isVarArgs && params.length == 1 && params[0] instanceof Object[]) {
-			if (!ts[0].isArray()) {
+			if (!mts[0].isArray()) {
 				return invokeAVConstructors(converter, method, (Object[]) params[0], optionalArg);
 			}
 		}
 
-		Object[] nps = new Object[ml];
-		int lastParamNum = ts.length;
-		if (isVarArgs)
-			lastParamNum--;
+		Object[] mps = new Object[ml];
+		int lastParamNum = mts.length - 1;
 
-		int neededArgs = lastParamNum - pl;
+		int neededArgs = ml - pl;
+		if (isVarArgs)
+			neededArgs--;
 
 		if (neededArgs > 0) {
 			if (optionalArg == null) {
@@ -479,24 +499,24 @@ public class ReflectUtils {
 			} else {
 				for (int i = 0; i < neededArgs; i++) {
 					int workingOn = i + lastParamNum;
-					Class pt = ts[workingOn];
-					nps[workingOn] = optionalArg.getArg(pt);
+					Class pt = mts[workingOn];
+					mps[workingOn] = optionalArg.getArg(pt);
 				}
 			}
 		}
 		boolean anyChange = false;
 		for (int i = 0; i < lastParamNum; i++) {
 			Object p = params[i];
-			Class pt = ts[i];
-			nps[i] = recast(converter, p, pt);
-			if (nps[i] != p) {
+			Class pt = mts[i];
+			mps[i] = recast(converter, p, pt);
+			if (mps[i] != p) {
 				anyChange = true;
 			}
 		}
 		if (!isVarArgs) {
 			// this is ideal
 			if (pl == ml) {
-				return invokeRealConstructor(method, nps);
+				return invokeRealConstructor(method, mps);
 			} else {
 
 			}
@@ -507,18 +527,22 @@ public class ReflectUtils {
 			if (params[lastParamNum].getClass().isArray()) {
 				lpv = params[lastParamNum];
 			} else {
-				Class pt = ts[lastParamNum].getComponentType();
+				Class pt = mts[lastParamNum].getComponentType();
 				ArrayList xp = new ArrayList();
 				for (int i = lastParamNum; i < pl; i++) {
 					Object p = params[i];
-					xp.add(recast(converter, p, pt));
+					Object o = recastOrNull(converter, p, pt);
+					if (o == null)
+						return noSuchConversion(p, pt, null);
+					xp.add(o);
 				}
 				lpv = xp.toArray();
 			}
-			nps[lastParamNum] = recast(converter, lpv, ts[lastParamNum]);
-			return invokeAVConstructors(converter, method, nps, optionalArg);
+			mps[lastParamNum] = recastOrNull(converter, lpv, mts[lastParamNum]);
+			return invokeAVConstructors(converter, method, mps, optionalArg);
 		}
-		return invokeRealConstructor(method, nps);
+
+		return invokeRealConstructor(method, mps);
 
 	}
 
@@ -529,44 +553,26 @@ public class ReflectUtils {
 
 		Object obj0 = obj;
 		boolean isStatic = isStatic(method);
-		Class[] ts = method.getParameterTypes();
+		Class[] mts = method.getParameterTypes();
 
-		int ml = ts.length;
+		int ml = mts.length;
 		if (params == null) {
 			params = new Object[0];
 		}
 		int pl = params.length;
 
 		if (isStatic) {
-			ArrayList alparams = new ArrayList();
-			if (ml > pl) {
-				if (obj0 != null) {
-					alparams.add(obj0);
-					obj0 = null;
-					for (Object p : params) {
-						alparams.add(p);
-					}
-					params = alparams.toArray();
-					return invokeAV(null, converter, method, params, optionalArg);
-				}
+			if (ml > pl && obj0 != null) {
+				params = insertToArray(params, 0, obj);
+				return invokeAV(null, converter, method, params, optionalArg);
 			}
-
 		}
 
 		if (!isStatic && ml < pl && obj0 == null) {
-			ArrayList alparams = new ArrayList();
 			if (obj0 == null) {
 				obj0 = params[0];
 			}
-			boolean removeOne = true;
-			for (Object p : params) {
-				if (removeOne) {
-					removeOne = false;
-					continue;
-				}
-				alparams.add(p);
-			}
-			params = alparams.toArray();
+			params = removeElement(params, 0);
 			return invokeAV(obj0, converter, method, params, optionalArg);
 		}
 
@@ -580,7 +586,7 @@ public class ReflectUtils {
 				}
 				if (objNeedsToBe != null && !objNeedsToBe.isInstance(obj0)) {
 					Class searchMethods = obj0.getClass();
-					Method method2 = getDeclaredMethod(searchMethods, method.getName(), ts);
+					Method method2 = getDeclaredMethod(searchMethods, method.getName(), mts);
 					if (method2 != null && method2 != method) {
 						return invokeAV(obj0, converter, method, params, optionalArg);
 					}
@@ -602,65 +608,116 @@ public class ReflectUtils {
 
 		// we have one Object[] params
 		if (!isVarArgs && params.length == 1 && params[0] instanceof Object[]) {
-			if (!ts[0].isArray()) {
+			if (!mts[0].isArray()) {
 				return invokeA(obj0, converter, method, (Object[]) params[0]);
 			}
 		}
 
-		Object[] nps = new Object[ml];
-		int lastParamNum = ts.length;
-		if (isVarArgs)
-			lastParamNum--;
+		Object[] mps = null;
 
-		int neededArgs = lastParamNum - pl;
+		int lastNonVarArg = ml - 1;
+		if (isVarArgs) {
+			lastNonVarArg--;
+		}
 
-		if (neededArgs > 0) {
-			if (optionalArg == null) {
-				Debuggable.warn("Not enough arguments ! neededArgs = " + neededArgs);
-			} else {
-				for (int i = 0; i < neededArgs; i++) {
-					int workingOn = i + lastParamNum;
-					Class pt = ts[workingOn];
-					nps[workingOn] = optionalArg.getArg(pt);
-				}
-			}
+		int missingArgs = lastNonVarArg - pl + 1;
+
+		if (missingArgs > 0) {
+			mps = makeParams_canThrow(converter, mts, isVarArgs, params, optionalArg);
+		}
+		if (mps == null) {
+			mps = new Object[ml];
 		}
 		boolean anyChange = false;
-		for (int i = 0; i < lastParamNum; i++) {
+		for (int i = 0; i <= lastNonVarArg; i++) {
+			Class pt = mts[i];
+			Object was = mps[i];
+			if (pt.isInstance(was))
+				continue;
 			Object p = params[i];
-			Class pt = ts[i];
-			nps[i] = recast(converter, p, pt);
-			if (nps[i] != p) {
+			mps[i] = recast(converter, p, pt);
+			if (mps[i] != p) {
 				anyChange = true;
 			}
 		}
+
 		if (!isVarArgs) {
+			int nullCount = countOfNulls(mps);
 			// this is ideal
-			if (pl == ml) {
-				return invokeReal(method, obj0, nps);
+			if (nullCount == 0) {
+				return invokeReal(method, obj0, mps);
 			} else {
 
 			}
 		}
 
 		if (isVarArgs) {
+			int lastParamNum = ml - 1;
 			Object lpv = null;
 			if (params[lastParamNum].getClass().isArray()) {
 				lpv = params[lastParamNum];
 			} else {
-				Class pt = ts[lastParamNum].getComponentType();
+				Class pt = mts[lastParamNum].getComponentType();
 				ArrayList xp = new ArrayList();
 				for (int i = lastParamNum; i < pl; i++) {
 					Object p = params[i];
-					xp.add(recast(converter, p, pt));
+					Object o = recastOrNull(converter, p, pt);
+					if (o == null)
+						return mps;
+					xp.add(o);
 				}
 				lpv = xp.toArray();
 			}
-			nps[lastParamNum] = recast(converter, lpv, ts[lastParamNum]);
-			return invokeA(obj0, converter, method, nps);
+			mps[lastParamNum] = recastOrNull(converter, lpv, mts[lastParamNum]);
+			return invokeA(obj0, converter, method, mps);
 		}
-		return invokeReal(method, obj0, nps);
+		return invokeReal(method, obj0, mps);
 
+	}
+
+	public static int countOfNulls(Object... mps) {
+		int nullz = 0;
+		for (Object n : mps) {
+			if (n == null)
+				nullz++;
+		}
+		return nullz;
+	}
+
+	public static int mismatchCount(Class[] mts, Object... mps) {
+		int nullz = 0;
+		int mpl = mps.length;
+		for (int i = 0; i < mts.length; i++) {
+			Class ts = mts[i];
+			if (i < mpl) {
+				Object mp = mps[i];
+				if (!ts.isInstance(mp)) {
+					nullz++;
+				}
+			} else {
+				//nullz++;
+				break;
+			}
+
+		}
+		return nullz;
+	}
+
+	public static <T> T[] insertToArray(T[] elementData, int pos, T e) {
+		int oldLen = elementData.length;
+		T[] elementData0 = Arrays.copyOf(elementData, oldLen + 1);
+		System.arraycopy(elementData0, pos, elementData0, pos + 1, oldLen - pos);
+		elementData0[pos] = e;
+		return elementData0;
+	}
+
+	public static <T> T[] removeElement(T[] elementData, int pos) {
+		int oldLen = elementData.length;
+		int newLen = oldLen - 1;
+		T[] elementData0 = Arrays.copyOf(elementData, oldLen);
+		System.arraycopy(elementData, pos + 1, elementData0, pos, newLen - pos);
+		T[] elementData1 = Arrays.copyOf(elementData0, newLen);
+		return elementData1;
 	}
 
 	private static Object invokeRealConstructor(Constructor method, Object... args) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, InstantiationException {
@@ -694,8 +751,16 @@ public class ReflectUtils {
 			}
 		}
 
+		Object neededLock = getLock(obj);
+
 		try {
+			if (neededLock != null) {
+				synchronized (neededLock) {
+					return method.invoke(obj, (Object[]) args);
+				}
+			}
 			return method.invoke(obj, (Object[]) args);
+
 		} catch (IllegalAccessException e) {
 			Debuggable.warn(e);
 			throw e;
@@ -703,10 +768,26 @@ public class ReflectUtils {
 			Debuggable.warn(e);
 			throw e;
 		} catch (InvocationTargetException e) {
-			e.printStackTrace();
 			Debuggable.warn(e);
 			throw e;
+		} finally {
+			if (neededLock != null) {
+
+			}
 		}
+	}
+
+	private static Object getLock(Object obj) {
+		if (obj == null)
+			return null;
+		if (obj instanceof Component) {
+			return ((Component) obj).getTreeLock();
+		}
+		if (obj instanceof Model) {
+			// this is incorrect but is an exmple
+			return ((Model) obj).getLock();
+		}
+		return null;
 	}
 
 	public static Object recast(Object obj, Class objNeedsToBe, int maxCvt) throws NoSuchConversionException {
@@ -812,8 +893,13 @@ public class ReflectUtils {
 		field.setAccessible(true);
 		if (isStatic(field))
 			val0 = null;
-		else
-			val0 = recast(val, field.getDeclaringClass());
+		else {
+			if (val == null)
+				return null;
+			val0 = recastOrNull(val, field.getDeclaringClass(), null);
+			if (val0 == null)
+				return null;
+		}
 		return field.get(val0);
 
 	}

@@ -7,7 +7,6 @@ import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 
-import org.appdapter.api.trigger.Box;
 import org.appdapter.gui.api.BT;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.NamedObjectCollection;
@@ -31,13 +30,12 @@ public class TriggerMenuController implements POJOCollectionListener {
 	final TriggerMenuFactory triggerFactory;
 
 	Object object;
-	BT boxed;
 
 	JPopupMenu popup = null;
 	JMenu menu = null;
 
-	private TriggerMenuController(DisplayContext context0, NamedObjectCollection noc, Object object0, BT box) {
-		this.boxed = box;
+	private TriggerMenuController(DisplayContext context0, NamedObjectCollection noc, Object object0) {
+
 		this.object = object0;
 		if (context0 == null)
 			context0 = Utility.getCurrentContext();
@@ -49,18 +47,18 @@ public class TriggerMenuController implements POJOCollectionListener {
 
 		triggerFactory = TriggerMenuFactory.getInstance(context);
 		if (localCollection != null) {
-			localCollection.addListener(this);
+		//	localCollection.addListener(this, false);
 		}
 	}
 
-	public TriggerMenuController(DisplayContext context0, NamedObjectCollection noc, Object object0, BT box, JPopupMenu popup0) {
-		this(context0, noc, object0, box);
+	public TriggerMenuController(DisplayContext context0, NamedObjectCollection noc, Object object0, JPopupMenu popup0) {
+		this(context0, noc, object0);
 		this.popup = popup0;
 		initMenu();
 	}
 
-	public TriggerMenuController(DisplayContext context0, NamedObjectCollection noc, Object object0, BT box, JMenu menu0) {
-		this(context0, noc, object0, box);
+	public TriggerMenuController(DisplayContext context0, NamedObjectCollection noc, Object object0, JMenu menu0) {
+		this(context0, noc, object0);
 		this.menu = menu0;
 		initMenu();
 	}
@@ -76,7 +74,7 @@ public class TriggerMenuController implements POJOCollectionListener {
 	private void initMenu() {
 		initLabelText();
 		if (context != null) {
-			Collection actions = context.getTriggersFromUI((BT) boxed, object);
+			Collection actions = context.getTriggersFromUI(object);
 			Iterator it = actions.iterator();
 			while (it.hasNext()) {
 				Action action = (Action) it.next();
@@ -90,29 +88,16 @@ public class TriggerMenuController implements POJOCollectionListener {
 
 	}
 
-	private void syncBoxedObject() {
-		if (boxed == null && object != null) {
-			if (object instanceof BT) {
-				boxed = (BT) object;
-				object = boxed.getValueOrThis();
-			} else {
-				if (localCollection != null) {
-					boxed = localCollection.findOrCreateBox(object);
-				} else {
-					boxed = Utility.asWrapped(object);
-				}
-			}
-		}
-		if (object == null && this.boxed != null)
-			object = boxed.getValueOrThis();
+	private Object asBox() {
+		return object;
+	}
 
-		if (object == null) {
-			object = Utility.dref(boxed);
-		}
+	private void syncBoxedObject() {
+
 	}
 
 	private void initLabelText() {
-		final String label = Utility.getUniqueName(object, asBox(), localCollection);
+		final String label = Utility.getUniqueName(object, localCollection);
 		if (menu != null) {
 			menu.setText(label);
 		} else {
@@ -120,9 +105,9 @@ public class TriggerMenuController implements POJOCollectionListener {
 		}
 	}
 
-	Box asBox() {
+	/*Box asBox() {
 		return boxed.asBox();
-	}
+	}*/
 
 	void addAction(Action a) {
 		if (popup != null) {
@@ -141,13 +126,13 @@ public class TriggerMenuController implements POJOCollectionListener {
 	  }
 	*/
 
-	@Override public void pojoAdded(Object obj, BT box) {
+	@Override public void pojoAdded(Object obj, BT wrapper, Object senderCollection) {
 		if (obj == object) {
 			updateMenu();
 		}
 	}
 
-	@Override public void pojoRemoved(Object obj, BT box) {
+	@Override public void pojoRemoved(Object obj, BT wrapper, Object senderCollection) {
 		if (obj == object) {
 			updateMenu();
 		}
