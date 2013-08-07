@@ -177,7 +177,9 @@ public interface NamedObjectCollection //
 	String getName();
 
 	BT asWrapped(Object d);
-	
+
 	Set getLiveCollection();
+
+	Map<String, Object> getLiveMap();
 
 }

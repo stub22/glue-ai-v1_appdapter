@@ -182,6 +182,8 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 	}
 
 	public static <TrigType> void addClassLevelTriggersPerClass(DisplayContext ctx, Class cls, List<TrigType> tgs, Object poj, TriggerFilter rulesOfAdd, String menuFmt, boolean isDeclNonStatic) {
+		if (Utility.skipMethodsOFClass(cls))
+			return;
 		boolean allowStatic = poj == null || isDeclNonStatic;
 		boolean allowNonStatic = poj != null;
 		for (Method m : cls.getDeclaredMethods()) {
@@ -208,7 +210,7 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 				try {
 					addFMethodTrigWF(ctx, cls, m, tgs, poj, rulesOfAdd, menuFmt, PropertyDescriptorForField.findOrCreate(m), true);
 				} catch (Throwable e) {
-				//	Utility.theLogger.warn("" + cls + ": " + e);
+					//	Utility.theLogger.warn("" + cls + ": " + e);
 				}
 			}
 		}
@@ -288,8 +290,7 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 		if (!rulesOfAdd.accepts((Member) method))
 			return;
 
-		Class cls00 = method.getDeclaringClass();
-		TriggerForMember tfi = new TriggerForMember(menuFmt, ctx, cls00, poj, method, isDeclNonStatic, featureDesc, isSafe);
+		TriggerForMember tfi = new TriggerForMember(menuFmt, ctx, cls, poj, method, isDeclNonStatic, featureDesc, isSafe);
 		tfi.applySalience(isSalientMethod);
 		if (!tgs.contains(tfi))
 			tgs.add((TrigType) tfi);
@@ -345,11 +346,28 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 		}
 		if (child == null) {
 			JMenuWithPath item = new JMenuWithPath(lbl, box);
-			popup.add(item, 0);
+			int countOfNonItems = countOfNonItems(popup);
+			int at = countOfNonItems + 1;
+			int cc = popup.getComponentCount();
+			if (at >= cc) {
+				popup.add(item);
+			} else {
+				popup.add(item, at);
+			}
 			//addSeparatorIfNeeded(popup, 1);
 			child = item;
 		}
 		addTriggerToPoppup((Container) child, box, path, idx + 1, trig);
+	}
+
+	private static int countOfNonItems(Container popup) {
+		int count = 0;
+		for (Component c : popup.getComponents()) {
+			if (c instanceof JMenuItem)
+				continue;
+			count++;
+		}
+		return count;
 	}
 
 	public static void addTriggerToPoppup(Container popup, Object box, Trigger trig) {
@@ -584,6 +602,8 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 	}
 
 	public static String getTriggerSortName(Trigger t) {
+		if (true)
+			return getShortLabel(t);
 		String[] tn = getTriggerPath(t);
 		return tn[tn.length - 1];
 	}

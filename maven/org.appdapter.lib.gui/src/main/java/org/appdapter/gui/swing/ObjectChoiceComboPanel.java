@@ -1,5 +1,7 @@
 package org.appdapter.gui.swing;
 
+import static org.appdapter.gui.browse.Utility.*;
+import static org.appdapter.core.log.Debuggable.*;
 import java.awt.BorderLayout;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -8,6 +10,7 @@ import java.beans.PropertyChangeSupport;
 import java.beans.PropertyEditorSupport;
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.Map;
 
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
@@ -17,6 +20,7 @@ import org.appdapter.core.convert.NoSuchConversionException;
 import org.appdapter.gui.api.BT;
 import org.appdapter.gui.api.NamedObjectCollection;
 import org.appdapter.gui.api.POJOCollectionListener;
+import org.appdapter.gui.browse.ToFromKeyConverter;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.trigger.TriggerPopupMenu;
 
@@ -35,13 +39,15 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 	Class type;
 	JComboBox combo;
 	Model model;
+	ToFromKeyConverter converter;
 
 	public ObjectChoiceComboPanel(Class type, Object value) {
-		this(null, type, value);
+		this(null, type, value, Utility.getToFromStringConverter(type));
 	}
 
-	public ObjectChoiceComboPanel(NamedObjectCollection context0, Class type0, Object value) {
+	public ObjectChoiceComboPanel(NamedObjectCollection context0, Class type0, Object value, ToFromKeyConverter conv) {
 		super(false);
+		this.converter = conv;
 		this.type = type0;
 		if (context0 == null)
 			context0 = Utility.getTreeBoxCollection();
@@ -49,9 +55,9 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 		if (type == null)
 			type = Object.class;
 		initGUI();
-		combo.setSelectedItem(value);
 		if (context != null)
 			context.addListener(this, true);
+		combo.setSelectedItem(value);
 	}
 
 	@Override public void addPropertyChangeListener(PropertyChangeListener p) {
@@ -133,6 +139,16 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 	}
 
 	public String objectToString(Object object) {
+		if (object == null)
+			return "<null>";
+		if (object instanceof String)
+			return (String) object;
+		try {
+			if (converter != null)
+				return "" + converter.toKey(object);
+		} catch (Throwable t) {
+
+		}
 		return Utility.getUniqueName(object, context);
 	}
 
@@ -141,6 +157,9 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 			return null;
 		if (type == String.class)
 			return title;
+
+		if (converter != null)
+			return converter.fromKey(title, type);
 		Object obj = context.findObjectByName(title);
 		if (obj != null)
 			return obj;
@@ -148,7 +167,7 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 			try {
 				return Utility.fromString(title, type);
 			} catch (NoSuchConversionException e) {
-				e.printStackTrace();
+				printStackTrace(e);
 			}
 		}
 		return null;

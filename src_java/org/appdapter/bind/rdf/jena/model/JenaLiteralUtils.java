@@ -16,30 +16,27 @@
 
 package org.appdapter.bind.rdf.jena.model;
 
-import java.lang.reflect.Array;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 
+import org.appdapter.api.trigger.AnyOper.HasIdent;
 import org.appdapter.bind.rdf.jena.assembly.AssemblerUtils;
 import org.appdapter.core.component.ComponentCache;
 import org.appdapter.core.component.IdentToObjectListener;
-import org.appdapter.core.convert.Converter;
-import org.appdapter.core.convert.NoSuchConversionException;
+import org.appdapter.core.component.KnownComponent;
 import org.appdapter.core.convert.ReflectUtils;
+import org.appdapter.core.log.Debuggable;
 import org.appdapter.core.name.FreeIdent;
 import org.appdapter.core.name.Ident;
+import org.appdapter.core.name.ModelIdent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.hp.hpl.jena.graph.FrontsNode;
+import com.hp.hpl.jena.graph.Node_URI;
+import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.RDFNode;
+import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.shared.PrefixMapping;
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -98,12 +95,32 @@ public class JenaLiteralUtils {
 		return null;
 	}
 
-	public static <T> T convertRDFNodeStatic(Object e0, Class<T> type) throws Throwable {
-		if (!(e0 instanceof RDFNode)) {
-			throw new NoSuchConversionException(e0, type);
+	static public <T> Object convertOrNull(Object obj, Class<T> objNeedsToBe, int maxCvt) {
+		Object eval = obj;
+		boolean findComponent = KnownComponent.class.isAssignableFrom(objNeedsToBe);
+		if (obj instanceof ModelIdent) {
+			obj = ((ModelIdent) obj).getJenaResource();
 		}
+		if (obj instanceof RDFNode) {
+			eval = JenaLiteralUtils.convertRDFNodeStatic((RDFNode) obj, objNeedsToBe, findComponent);
+			if (objNeedsToBe.isInstance(eval))
+				return eval;
+			if (eval != null) {
+				obj = eval;
+			}
+		}
+		if (obj instanceof HasIdent) {
+			eval = JenaLiteralUtils.convertIdentNodeStatic(((HasIdent) obj).getIdent(), objNeedsToBe, findComponent);
+			if (objNeedsToBe.isInstance(eval))
+				return eval;
+			if (eval != null) {
+				obj = eval;
+			}
+		}
+		return eval;
+	}
 
-		RDFNode e = (RDFNode) e0;
+	public static <T> T convertRDFNodeStatic(RDFNode e, Class<T> type, boolean findComponent) {
 		type = ReflectUtils.nonPrimitiveTypeFor(type);
 		if (Number.class.isAssignableFrom(type)) {
 			return (T) e.asLiteral().getValue();
@@ -129,12 +146,15 @@ public class JenaLiteralUtils {
 				lv = unquote(lv);
 				return (T) lv;
 			} catch (Exception ex) {
-				ex.printStackTrace();
+				Debuggable.printStackTrace(ex);
 			}
 		}
 		Object eval = e;
 		if (e.isLiteral()) {
 			eval = e.asLiteral().getValue();
+			if (eval instanceof String) {
+				eval = e.asLiteral();
+			}
 		} else if (e.isURIResource()) {
 			String uri = e.asNode().getURI();
 			Ident id = new FreeIdent(uri);
@@ -143,9 +163,16 @@ public class JenaLiteralUtils {
 				eval = e.asNode();
 			}
 		}
+		return (T) eval;
+	}
 
-		if (!type.isInstance(eval)) {
-			throw new NoSuchConversionException(e0, type);
+	public static <T> T convertIdentNodeStatic(Ident id, Class<T> type, boolean findComponent) {
+		Object eval = id;
+		if (findComponent) {
+			eval = findComponent(id, type);
+			if (eval == null) {
+				eval = id;
+			}
 		}
 		return (T) eval;
 	}
@@ -223,6 +250,35 @@ public class JenaLiteralUtils {
 				listener.deregisterURI(id, value);
 			}
 		}
+	}
+
+	public static Object cvtToString(Object value, PrefixMapping mapping) {
+		if (value == null)
+			return null;
+		Object val = JenaLiteralUtils.convertOrNull(value, Object.class, 3);
+		if (val instanceof Node_URI) {
+			if (mapping == null) {
+				if (value instanceof PrefixMapping) {
+					mapping = (PrefixMapping) value;
+				} else {
+					if (value instanceof ModelIdent) {
+						value = ((ModelIdent) value).getJenaResource();
+					}
+					if (value instanceof Resource) {
+						mapping = ((Resource) value).getModel();
+					}
+				}
+			}
+			if (mapping != null) {
+				return ((Node_URI) val).toString(mapping, true);
+			} else {
+				return ((Node_URI) val).toString(true);
+			}
+		}
+		if (val instanceof Literal) {
+			return val;
+		}
+		return val;
 	}
 
 }

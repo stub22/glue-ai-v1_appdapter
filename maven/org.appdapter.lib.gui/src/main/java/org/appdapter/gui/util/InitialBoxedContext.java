@@ -401,6 +401,7 @@ public class InitialBoxedContext extends InitialContext implements Context, HRKR
 		addIfNew(namingResolvers, resolver);
 	}
 
+	@UIHidden
 	public static void register(Object obj) {
 		saveSomewhere(null, null, obj);
 	}

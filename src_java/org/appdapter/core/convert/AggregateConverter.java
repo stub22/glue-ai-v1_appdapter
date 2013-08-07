@@ -37,7 +37,8 @@ public class AggregateConverter implements Converter {
 			cnverters = new ArrayList<Converter>(cnverters);
 		}
 		Class from = obj.getClass();
-		Collections.sort(cnverters, new ConverterSorter(obj, from, objNeedsToBe));
+		ConverterSorter sorter = new ConverterSorter(obj, from, objNeedsToBe);
+		cnverters = sorter.sort(cnverters);
 		for (Converter converter : cnverters) {
 			if (exceptFor == converter) {
 				continue;

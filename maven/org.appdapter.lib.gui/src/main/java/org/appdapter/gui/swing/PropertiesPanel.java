@@ -42,21 +42,6 @@ public class PropertiesPanel<BoxType extends Box> extends ScreenBoxPanel<BoxType
 		return objectValue;
 	}
 
-	public void setObject(Object val) {
-		if (val == this) {
-			return;
-		}
-		if (objClass == null) {
-			objClass = val.getClass();
-		}
-		if (objClass == val) {
-			reloadObjectGUI(null);
-		} else {
-			reloadObjectGUI(val);
-		}
-		this.objectValue = val;
-	}
-
 	@Override public Class<? extends Object> getClassOfBox() {
 		return Object.class;
 	}
@@ -101,8 +86,7 @@ public class PropertiesPanel<BoxType extends Box> extends ScreenBoxPanel<BoxType
 	}
 
 	@Override protected void completeSubClassGUI() {
-		removeAll();
-		setLayout(new BorderLayout());
+		initSubclassGUI();
 
 		Object source = getValue();
 		if (source != null) {
@@ -134,10 +118,13 @@ public class PropertiesPanel<BoxType extends Box> extends ScreenBoxPanel<BoxType
 	}
 
 	@Override protected boolean reloadObjectGUI(Object val) {
-		if (super.showingInGUI == val)
-			return false;
-		showingInGUI = val;
+		if (val == this) {
+			return true;
+		}
 		objectValue = val;
+		if (objClass == null) {
+			objClass = val.getClass();
+		}
 
 		Utility.replaceRunnable(this, new Runnable() {
 			public void run() {

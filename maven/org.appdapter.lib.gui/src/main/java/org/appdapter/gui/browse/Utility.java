@@ -20,6 +20,8 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.BeanInfo;
 import java.beans.Customizer;
 import java.beans.IntrospectionException;
@@ -38,13 +40,16 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -56,6 +61,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
@@ -68,7 +74,9 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JSpinner.DateEditor;
+import javax.swing.JTable;
 import javax.swing.ToolTipManager;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
@@ -76,6 +84,7 @@ import javax.tools.FileObject;
 
 import org.appdapter.api.trigger.AnyOper.Autoload;
 import org.appdapter.api.trigger.AnyOper.Singleton;
+import org.appdapter.api.trigger.AnyOper.UIHidden;
 import org.appdapter.api.trigger.AnyOper.UtilClass;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContext;
@@ -144,14 +153,34 @@ import org.appdapter.gui.trigger.TriggerMenuFactory.TriggerSorter;
 import org.appdapter.gui.trigger.UtilityMenuOptions;
 import org.appdapter.gui.util.ClassFinder;
 import org.appdapter.gui.util.PromiscuousClassUtilsA;
+import org.openjena.riot.SysRIOT;
 import org.slf4j.Logger;
 
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.sdb.util.Pair;
 //import sun.beans.editors.ColorEditor;
 //import sun.beans.editors.IntEditor;
 
+@UIHidden
 public class Utility extends UtilityMenuOptions {
+
+	static public class ToFromStringNoSpecialized extends ToFromKeyConverter {
+
+		public ToFromStringNoSpecialized() {
+			super(Object.class, String.class);
+		}
+
+		@Override public Object fromKey(Object title, Class specializedMaybe) {
+			return recastCC(uiObjects.findObjectByName("" + title), specializedMaybe);
+		}
+
+		@Override public Object toKey(Object toBecomeAKey) {
+
+			return Utility.getUniqueName(toBecomeAKey);
+		}
+
+	}
 
 	public static Logger theLogger = org.slf4j.LoggerFactory.getLogger(Utility.class);
 
@@ -410,7 +439,7 @@ public class Utility extends UtilityMenuOptions {
 					constructor.setAccessible(true);
 					object = constructor.newInstance();
 				} else {
-					object = first(objs);
+					object = firstItem(objs);
 				}
 			} catch (Throwable e) {
 				printStackTrace(e);
@@ -428,6 +457,9 @@ public class Utility extends UtilityMenuOptions {
 				if (clz == Object.class) {
 					break;
 				}
+				if (Utility.skipMethodsOFClass(clz)) {
+					continue;
+				}
 				synchronized (loadedClassMethods) {
 					if (!loadedClassMethods.add(clz)) {
 						clz = clz.getSuperclass();
@@ -441,6 +473,7 @@ public class Utility extends UtilityMenuOptions {
 						m.setAccessible(true);
 
 						boolean isStatic = ReflectUtils.isStatic(m);
+
 						Class mustBe = clz;
 						Object wrap = null;
 
@@ -482,12 +515,9 @@ public class Utility extends UtilityMenuOptions {
 							}
 						}
 
-						// skip specialized methods (the base class will call teh specialize one anyhow)
-
 						if (rlen == 0) {
 							TriggerMenuFactory.addMethodAsTrig(ctx, clz, m, appMenuGlobalTrigs, null, ADD_ALL, "%d|%m", true, false);
 							continue;
-						} else if (plen < 3) {
 						}
 
 						if (rlen == 1 && wrap != null) {
@@ -501,12 +531,12 @@ public class Utility extends UtilityMenuOptions {
 						if (Component.class.isAssignableFrom(returnType)) {
 							if (rlen == 1) {
 								// might be a panel method
-								TriggerMenuFactory.addMethodAsTrig(ctx, clz, m, objectContextMenuTriggers, null, ADD_ALL, "%d|%m", ReflectUtils.isStatic(m), false);
+								TriggerMenuFactory.addMethodAsTrig(ctx, clz, m, objectContextMenuTriggers, null, ADD_ALL, "%d|%m", isStatic, false);
 								continue;
 							}
 						}
 
-						TriggerMenuFactory.addMethodAsTrig(ctx, clz, m, objectContextMenuTriggers, null, ADD_ALL, "%d|%m", ReflectUtils.isStatic(m), false);
+						TriggerMenuFactory.addMethodAsTrig(ctx, clz, m, objectContextMenuTriggers, null, ADD_ALL, "%d|%m", isStatic, false);
 					}
 				}
 				for (Field m : clz.getDeclaredFields()) {
@@ -544,11 +574,23 @@ public class Utility extends UtilityMenuOptions {
 			}
 			int ps2 = appMenuGlobalTrigs.size();
 			if (ps1 != ps2) {
-				Collections.sort(appMenuGlobalTrigs, new TriggerSorter());
 				updateToolsMenu();
 			}
 		}
 
+	}
+
+	public static boolean skipMethodsOFClass(Class clz) {
+		if (clz==null) return true;
+		Package pk = clz.getPackage();
+		if (pk != null) {
+			String pkn = pk.getName();
+			if (pkn.startsWith("java.awt."))
+				return true;
+			if (pkn.startsWith("javax.swing."))
+				return true;
+		} 
+		return false;
 	}
 
 	public static void updateToolsMenu() {
@@ -615,6 +657,7 @@ public class Utility extends UtilityMenuOptions {
 				return new FreeIdent(title);
 			}
 		});
+		toFrmKeyCnv.put(Resource.class, new ResourceToFromString(null));
 	}
 
 	private static Map<Class, ToFromKeyConverter> getKeyConvMap(Class keyType, boolean createIfMissing) {
@@ -1080,12 +1123,15 @@ public class Utility extends UtilityMenuOptions {
 		}
 	}
 
-	public static boolean isEqual(Object o1, Object o2) {
-		if (o1 == o2)
+	public static boolean isEqual(Object newValue, Object stronglyType) {
+		if (newValue == stronglyType)
 			return true;
-		if (o1 == null || o2 == null)
+		if (newValue == null || null == stronglyType)
 			return false;
-		return (o1.equals(o2));
+		if (!stronglyType.getClass().isAssignableFrom(newValue.getClass())) {
+			return newValue.equals(stronglyType);
+		}
+		return newValue.equals(stronglyType);
 	}
 
 	/**
@@ -1846,10 +1892,14 @@ public class Utility extends UtilityMenuOptions {
 	}
 
 	public static String makeToString(Object object) {
-		ToFromKeyConverter<?, String> conv = getToFromConverter(object.getClass(), String.class);
+		ToFromKeyConverter<?, String> conv = getToFromStringConverter(object.getClass());
 		if (conv != null)
 			return conv.toKeyFromObject(object);
 		return "" + object;
+	}
+
+	public static ToFromKeyConverter getToFromStringConverter(Class valueClazz) {
+		return getToFromConverter(valueClazz, String.class);
 	}
 
 	static public <T, K> ToFromKeyConverter<T, K> getToFromConverter(Class<T> valueClazz, Class<K> key) {
@@ -1921,7 +1971,7 @@ public class Utility extends UtilityMenuOptions {
 		if (expected == Boolean.class) {
 			return DisplayType.TOSTRING;
 		}
-		ToFromKeyConverter cvt = getToFromConverter(expected, String.class);
+		ToFromKeyConverter cvt = getToFromStringConverter(expected);
 		if (cvt != null) {
 			return DisplayType.TOSTRING;
 		}
@@ -2501,8 +2551,46 @@ public class Utility extends UtilityMenuOptions {
 		return ReflectUtils.recast(obj, objNeedsToBe);
 	}
 
-	public static Box asBox(Object b, ActionEvent e) {
-		// TODO Auto-generated method stub
-		return null;
+	public static <T> T recastCC(Object obj, Class<T> objNeedsToBe) throws ClassCastException {
+		try {
+			return ReflectUtils.recast(obj, objNeedsToBe);
+		} catch (NoSuchConversionException e) {
+			throw new ClassCastException(e.getMessage());
+		}
 	}
+
+	public static Box asBox(Object b, ActionEvent e) {
+		return asBoxed(b);
+	}
+
+	static public void makeTablePopupHandler(final JTable jTable) {
+		jTable.addMouseListener(new MouseAdapter() {
+
+			public void mouseReleased(MouseEvent e) {
+				if (e.isPopupTrigger()) {
+					JTable source = (JTable) e.getSource();
+					int row = source.rowAtPoint(e.getPoint());
+					int column = source.columnAtPoint(e.getPoint());
+
+					if (!source.isRowSelected(row)) {
+						source.changeSelection(row, column, false, false);
+					}
+
+					Object cellSubBox = source.getModel().getValueAt(row, column);
+					showPopup(e, cellSubBox);
+
+				}
+			}
+
+			private void showPopup(MouseEvent e, Object cellSubBox) {
+				if (cellSubBox != null) {
+					JPopupMenu cellPopMenu = TriggerMenuFactory.buildPopupMenu(cellSubBox);
+					if (cellPopMenu != null) {
+						cellPopMenu.show(e.getComponent(), e.getX(), e.getY());
+					}
+				}
+			}
+		});
+	}
+
 }
