@@ -65,7 +65,7 @@ import org.appdapter.gui.api.WrapperValue;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.editors.UseEditor;
 import org.appdapter.gui.repo.DatabaseManagerPanel;
-import org.appdapter.gui.repo.ModelMatrixPanel;
+import org.appdapter.gui.repo.GenericMatrixPanel;
 import org.appdapter.gui.repo.RepoManagerPanel;
 import org.appdapter.gui.swing.ComponentHost;
 import org.appdapter.gui.trigger.TriggerMenuFactory;
@@ -494,7 +494,7 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 
 	public List<TrigType> getTriggers() {
 		List<TrigType> tgs = super.getTriggers();
-		DisplayContext dc =  getDisplayContext();
+		DisplayContext dc = getDisplayContext();
 		for (Class cls : getTypes()) {
 			TriggerMenuFactory.addTriggersForInstance(dc, cls, tgs, this);
 		}
@@ -765,7 +765,7 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 
 	protected JPanel makeBoxPanelForKind(Kind kind) {
 		if (kind == Kind.MATRIX)
-			return new ModelMatrixPanel();
+			return new GenericMatrixPanel(getWrapperValue());
 		if (kind == Kind.REPO_MANAGER)
 			return new RepoManagerPanel();
 		if (kind == Kind.DB_MANAGER)

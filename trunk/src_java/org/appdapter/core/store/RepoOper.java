@@ -21,6 +21,7 @@ import java.util.Iterator;
 
 import org.appdapter.api.trigger.AnyOper;
 import org.appdapter.api.trigger.AnyOper.UIHidden;
+import org.appdapter.api.trigger.AnyOper.UtilClass;
 import org.appdapter.api.trigger.TriggerImpl;
 import org.appdapter.demo.DemoResources;
 import org.slf4j.Logger;
@@ -38,7 +39,7 @@ import com.hp.hpl.jena.shared.Lock;
  */
 // / Dmiles needed something in java to cover Dmiles's Scala blindspots
 @UIHidden
-public class RepoOper implements AnyOper {
+public class RepoOper implements AnyOper, UtilClass {
 
 	@UISalient
 	static public interface ISeeToString {
@@ -107,6 +108,7 @@ public class RepoOper implements AnyOper {
 	@UISalient
 	private static boolean inPlaceReplacements;
 
+	@UISalient
 	public static void replaceModelElements(Model dest, Model src) {
 		if (src == dest) {
 			return;

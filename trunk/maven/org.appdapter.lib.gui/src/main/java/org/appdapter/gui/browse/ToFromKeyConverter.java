@@ -74,4 +74,5 @@ abstract public class ToFromKeyConverter<VALUECLASS, KEYCLASS> implements Conver
 		throw new ClassCastException(valueClass + " fromKey " + title);
 	}
 
+
 }

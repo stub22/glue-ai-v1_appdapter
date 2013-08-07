@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
+import org.appdapter.api.trigger.AnyOper;
 import org.appdapter.api.trigger.AnyOper.Autoload;
 import org.appdapter.api.trigger.AnyOper.UISalient;
 import org.appdapter.api.trigger.AnyOper.UtilClass;
@@ -61,6 +62,7 @@ abstract public class UtilityMenuOptions implements UtilClass {
 		};
 		withSubclasses(ObjectPanel.class, fw);
 		withSubclasses(UtilClass.class, fw);
+		withSubclasses(AnyOper.class, fw);
 		withSubclasses(Customizer.class, fw);
 		withSubclasses(PropertyEditor.class, fw);
 		loadAutoloads();

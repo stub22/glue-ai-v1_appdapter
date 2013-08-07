@@ -16,33 +16,46 @@
 
 package org.appdapter.gui.repo;
 
-import java.awt.event.ActionEvent;
-import java.lang.reflect.InvocationTargetException;
-import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.*;
 import java.util.Set;
 
+import org.appdapter.api.trigger.AnyOper.UISalient;
+import org.appdapter.api.trigger.AnyOper.UtilClass;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContext;
 import org.appdapter.api.trigger.MutableBox;
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.api.trigger.TriggerImpl;
-import org.appdapter.api.trigger.AnyOper.UISalient;
 import org.appdapter.bind.rdf.jena.assembly.AssemblerUtils;
 import org.appdapter.bind.rdf.jena.model.JenaFileManagerUtils;
 import org.appdapter.core.convert.NoSuchConversionException;
 import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.core.log.Debuggable;
+import org.appdapter.core.store.Repo;
 import org.appdapter.demo.DemoResources;
 import org.appdapter.gui.api.DisplayContext;
-import org.appdapter.gui.api.WrapperValue;
-import org.appdapter.gui.trigger.KMCTriggerImpl;
 import org.appdapter.gui.trigger.TriggerForClass;
+
+import com.hp.hpl.jena.query.Dataset;
+import com.hp.hpl.jena.rdf.model.Model;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public class BridgeTriggers {
+public class BridgeTriggers implements UtilClass {
+
+	@UISalient public static List<Model> getModelsFoundIn(Repo repo) {
+		return getModelsFoundIn(repo.getMainQueryDataset());
+	}
+
+	@UISalient public static List<Model> getModelsFoundIn(Dataset mainQueryDataset) {
+		ArrayList<Model> models = new ArrayList<Model>();
+		for (String s : ReflectUtils.toList(mainQueryDataset.listNames())) {
+			models.add(mainQueryDataset.getNamedModel(s));
+		}
+		return models;
+	}
 
 	public static class MountSubmenuFromTriplesTrigger<BT extends Box<TriggerImpl<BT>>> extends TriggerImpl<BT> implements TriggerForClass {
 

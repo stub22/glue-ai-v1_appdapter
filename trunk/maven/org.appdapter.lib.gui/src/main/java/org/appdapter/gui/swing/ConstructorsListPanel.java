@@ -65,9 +65,7 @@ public class ConstructorsListPanel<BoxType extends Box> extends ScreenBoxPanel<B
 	private void executeConstructor(Constructor constructor, Object[] params) throws Exception {
 		if (constructor != null) {
 			Object newObject = constructor.newInstance(params);
-			if (context != null) {
-				context.getLocalBoxedChildren().findOrCreateBox(newObject);
-			}
+			Utility.addSubResult(this, null, null, newObject, constructor.getDeclaringClass());
 		}
 	}
 

@@ -2,7 +2,10 @@ package org.appdapter.core.convert;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 
 public interface Converter extends TypeAssignable {
 
@@ -35,6 +38,31 @@ public interface Converter extends TypeAssignable {
 
 		@Override public int compare(Converter o1, Converter o2) {
 			return o1.declaresConverts(value, from, to, MCVT).compareTo(o2.declaresConverts(value, from, to, MCVT));
+		}
+
+		public List<Converter> sort(List<Converter> cnverters) {
+			List<Converter> newConvs = new ArrayList<Converter>();
+			for (Converter o1 : cnverters) {
+				switch (o1.declaresConverts(value, from, to, MCVT)) {
+				case WONT: {
+					continue;
+				}
+				case WILL: {
+					newConvs.add(0, o1);
+					continue;
+				}
+				case MIGHT: {
+					newConvs.add(o1);
+					continue;
+				}
+				}
+			}
+			return newConvs;
+		}
+
+		public List<Converter> sortOld(List<Converter> cnverters) {
+			Collections.sort(cnverters, this);
+			return cnverters;
 		}
 
 	}

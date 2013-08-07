@@ -30,6 +30,7 @@ import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
+import javax.swing.table.TableModel;
 
 import org.appdapter.api.trigger.AnyOper.UISalient;
 import org.appdapter.api.trigger.AnyOper.UtilClass;
@@ -79,9 +80,10 @@ public class RepoManagerPanel extends ScreenBoxPanel<MutableRepoBox> implements 
 		if (!java.beans.Beans.isDesignTime()) {
 			myRGTM = new RepoGraphTableModel();
 			myGraphTable.setModel(myRGTM);
-			makeTablePopupHandler(myGraphTable);
+			Utility.makeTablePopupHandler(myGraphTable);
 		}
 	}
+
 
 	/** This method is called from within the constructor to
 	 * initialize the form.
@@ -161,48 +163,6 @@ public class RepoManagerPanel extends ScreenBoxPanel<MutableRepoBox> implements 
 		add(myVerticalSplit, java.awt.BorderLayout.CENTER);
 	}// </editor-fold>//GEN-END:initComponents
 
-	private TriggerMenuFactory myTMF;
-
-	private void makeTablePopupHandler(JTable jTable) {
-		jTable.addMouseListener(new MouseAdapter() {
-
-			public void mouseReleased(MouseEvent e) {
-				if (e.isPopupTrigger()) {
-					JTable source = (JTable) e.getSource();
-					int row = source.rowAtPoint(e.getPoint());
-					int column = source.columnAtPoint(e.getPoint());
-
-					if (!source.isRowSelected(row)) {
-						source.changeSelection(row, column, false, false);
-					}
-					JPopupMenu cellPopMenu = fetchMenuForFocusCell(row, column);
-					if (cellPopMenu != null) {
-						cellPopMenu.show(e.getComponent(), e.getX(), e.getY());
-					}
-				}
-			}
-		});
-	}
-
-	private JPopupMenu fetchMenuForFocusCell(int row, int col) {
-		JPopupMenu popMenu = null;
-		Box cellSubBox = myRGTM.findSubBox(row, col);
-		Object bv = cellSubBox.getValue();
-		if (bv != null) {
-			Box val = Utility.asBoxed(bv);
-			if (val != cellSubBox && val != null) {
-				cellSubBox = val;
-			}
-		}
-		if (cellSubBox != null) {
-			if (myTMF == null) {
-				myTMF = TriggerMenuFactory.getInstance(this); // TODO: Needs type params
-			}
-			popMenu = myTMF.buildPopupMenu(cellSubBox);
-		}
-		return popMenu;
-	}
-
 	private void myTF_graphNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_myTF_graphNameActionPerformed
 		// TODO add your handling code here:
 	}//GEN-LAST:event_myTF_graphNameActionPerformed
@@ -264,7 +224,7 @@ public class RepoManagerPanel extends ScreenBoxPanel<MutableRepoBox> implements 
 		if (newValue instanceof MutableRepoBox) {
 			mrb = (MutableRepoBox) newValue;
 		} else {
-			mrb = new DefaultMutableRepoBoxImpl(Utility.getUniqueName(newValue), (Repo.WithDirectory) newValue);
+			mrb = new DefaultMutableRepoBoxImpl(Utility.getUniqueName(newValue), Utility.recastCC(newValue, Repo.WithDirectory.class));
 		}
 		focusOnBox((MutableRepoBox) mrb);
 		return true;

@@ -452,7 +452,7 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 		});
 		// make text area scrollable
 		JScrollPane scroller = new JScrollPane(this.turtleTextArea, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		scroller.setPreferredSize(new Dimension(400, 300));
+		scroller.setPreferredSize(new Dimension(600, 400));
 
 		// set up the right-side panel with the buttons
 		this.buttons = new JJPanel();

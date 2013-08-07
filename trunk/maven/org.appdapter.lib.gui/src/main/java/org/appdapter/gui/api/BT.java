@@ -28,7 +28,7 @@ import org.appdapter.api.trigger.UserResult;
 @UIHidden
 public interface BT<TT extends Trigger<? extends ScreenBox<TT>>> //
 		extends ScreenBox<TT>, GetSetObject, UserResult, IGetBox, Convertable, DisplayContextProvider, //
-		java.io.Serializable //, GetDisplayContext, UIProvider, WrapperValue //
+		java.io.Serializable, java.util.Map.Entry<String, Object> //, GetDisplayContext, UIProvider, WrapperValue //
 //Map.Entry
 
 /*<TrigType extends Trigger<? extends POJOBoxImpl<TrigType>>> extends MutableBox<TrigType>*//*extends org.appdapter.gui.api.IGetBox, GetObject, Convertable, *//*, Box<? extends Trigger<? extends Box<BT>>>*/

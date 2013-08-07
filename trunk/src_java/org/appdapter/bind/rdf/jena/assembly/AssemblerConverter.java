@@ -9,7 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.appdapter.api.trigger.AnyOper.HasIdent;
 import org.appdapter.bind.rdf.jena.model.JenaLiteralUtils;
+import org.appdapter.core.component.KnownComponent;
 import org.appdapter.core.convert.Converter;
 import org.appdapter.core.convert.NoSuchConversionException;
 import org.appdapter.core.convert.ReflectUtils;
@@ -18,6 +20,7 @@ import org.appdapter.core.item.JenaResourceItem;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.core.name.FreeIdent;
 import org.appdapter.core.name.Ident;
+import org.appdapter.core.name.ModelIdent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +28,7 @@ import com.hp.hpl.jena.assembler.Assembler;
 import com.hp.hpl.jena.assembler.Mode;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.RDFNode;
+import com.hp.hpl.jena.rdf.model.Resource;
 
 public class AssemblerConverter implements Converter {
 	static Logger theLogger = LoggerFactory.getLogger(AssemblerConverter.class);
@@ -35,7 +39,10 @@ public class AssemblerConverter implements Converter {
 
 	@Override public <T> T convert(Object obj, Class<T> objNeedsToBe, int maxCvt) throws NoSuchConversionException {
 		try {
-			return JenaLiteralUtils.convertRDFNodeStatic(obj, objNeedsToBe);
+			Object eval = JenaLiteralUtils.convertOrNull(obj, objNeedsToBe, maxCvt);
+			if (objNeedsToBe.isInstance(eval))
+				return (T) eval;
+			throw new NoSuchConversionException(obj, objNeedsToBe, null);
 		} catch (Throwable e) {
 			throw new NoSuchConversionException(obj, objNeedsToBe, e);
 		}
@@ -117,6 +124,8 @@ public class AssemblerConverter implements Converter {
 	}
 
 	@Override public Integer declaresConverts(Object obj, Class objClass, Class objNeedsToBe, int maxCvt) {
-		return MIGHT;
+		if (obj instanceof RDFNode || obj instanceof HasIdent)
+			return MIGHT;
+		return WONT;
 	}
 }

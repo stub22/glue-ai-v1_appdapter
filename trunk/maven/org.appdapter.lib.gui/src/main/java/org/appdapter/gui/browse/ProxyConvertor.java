@@ -15,6 +15,8 @@ public class ProxyConvertor implements Converter {
 	@Override public <T> T convert(Object obj, Class<T> objNeedsToBe, int maxCvt) throws NoSuchConversionException {
 		PropertyDescriptorForField f = PropertyDescriptorForField.proxyToField.get(objNeedsToBe);
 		if (f == null)
+			return null;
+		if (f == null)
 			throw new NoSuchConversionException(obj, objNeedsToBe);
 		return f.convert(obj, objNeedsToBe, maxCvt);
 	}

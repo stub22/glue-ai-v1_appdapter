@@ -12,9 +12,10 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.*;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -58,7 +59,76 @@ import org.slf4j.LoggerFactory;
  * 
  */
 @SuppressWarnings("serial")
-public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChangeListener, PropertyChangeListener, Serializable, Set {
+public class BoxedCollectionImpl implements NamedObjectCollection,
+
+VetoableChangeListener, PropertyChangeListener, Serializable, Set {
+
+	public class BoxMap extends AbstractMap<String, Object> {
+
+		@Override public boolean containsKey(Object key) {
+			String name = toStringKey(key);
+			return findBoxByName(name) != null;
+		}
+
+		private String toStringKey(Object key) {
+			return "" + key;
+		}
+
+		@Override public boolean containsValue(Object value) {
+			return contains(value);
+		}
+
+		@Override public Object get(Object key) {
+			String name = toStringKey(key);
+			return findObjectByName(name);
+		}
+
+		@Override public Object put(String key, Object value) {
+			String name = toStringKey(key);
+			Object old = findObjectByName(name);
+			removeObject(old);
+			try {
+				findOrCreateBox(name, value);
+			} catch (PropertyVetoException e) {
+				Debuggable.printStackTrace(e);
+			}
+			return old;
+		}
+
+		@Override public Set<String> keySet() {
+			return nameIndex.keySet();
+		}
+
+		@Override public Collection<Object> values() {
+			return objectList;
+		}
+
+		@Override public Set<java.util.Map.Entry<String, Object>> entrySet() {
+			return new HashSet(boxList);
+		}
+
+		@Override public int size() {
+			return nameIndex.size();
+		}
+
+		@Override public boolean isEmpty() {
+			// TODO Auto-generated method stub
+			return size() == 0;
+		}
+
+		@Override public Object remove(Object key) {
+			String name = toStringKey(key);
+			Object old = findObjectByName(name);
+			removeObject(old);
+			return old;
+		}
+
+		@Override public void clear() {
+			BoxedCollectionImpl.this.removeAll(new ArrayList(objectList));
+		}
+
+	}
+
 	// ==== Static variables ===================
 	private static Logger theLogger = LoggerFactory.getLogger(BoxedCollectionImpl.class);
 
@@ -195,7 +265,7 @@ public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChang
 				title = generateUniqueName(value);
 			}
 			if (wrapper == null)
-				wrapper = (BT)new ScreenBoxImpl(this, title, value);
+				wrapper = (BT) new ScreenBoxImpl(this, title, value);
 			return wrapper;
 		}
 
@@ -603,7 +673,7 @@ public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChang
 	}
 
 	private BT makeWrapper(Object value) throws PropertyVetoException {
-		BT wrapper = (BT)new ScreenBoxImpl(this, generateUniqueName(value), value);
+		BT wrapper = (BT) new ScreenBoxImpl(this, generateUniqueName(value), value);
 		return wrapper;
 	}
 
@@ -937,4 +1007,11 @@ public class BoxedCollectionImpl implements NamedObjectCollection, VetoableChang
 			remove(o);
 		}
 	}
+
+	BoxMap boxMap = new BoxMap();
+
+	public Map<String, Object> getLiveMap() {
+		return boxMap;
+	}
+
 }

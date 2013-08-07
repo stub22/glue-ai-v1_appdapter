@@ -439,17 +439,18 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 			} else {
 				actions.add(new AddAction(object, col));
 			}
-			actions.add(new AbstractTriggerAction("Global", "Show " + col.getName()) {
+			if (false)
+				actions.add(new AbstractTriggerAction("Global", "Show " + col.getName()) {
 
-				@Override public void actionPerformed(ActionEvent e) {
-					try {
-						getDisplayContext().showScreenBox(new LargeObjectChooser(null, col));
-					} catch (Exception e1) {
-						Debuggable.reThrowable(e1);
+					@Override public void actionPerformed(ActionEvent e) {
+						try {
+							getDisplayContext().showScreenBox(new LargeObjectChooser(null, col));
+						} catch (Exception e1) {
+							Debuggable.reThrowable(e1);
+						}
+
 					}
-
-				}
-			});
+				});
 		}
 	}
 
