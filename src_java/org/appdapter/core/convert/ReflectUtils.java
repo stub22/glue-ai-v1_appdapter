@@ -29,7 +29,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.appdapter.api.trigger.AnyOper.AskIfEqual;
 import org.appdapter.api.trigger.AnyOper.DontAdd;
@@ -1002,6 +1005,73 @@ public class ReflectUtils {
 		}
 	}
 
+	public static Object getObjectPropertyValue(Object object, Class c, String localName, Converter converter, boolean okIfFieldNotFound) throws NoSuchConversionException, NoSuchFieldException,
+			SecurityException {
+
+		Class cvtTo = null;
+		try {
+			Method m = getDeclaredMethod(c, localName, true, true, converter, 0, ANY_PublicPrivatePackageProtected);
+			if (m == null)
+				m = getDeclaredMethod(c, "get" + localName, true, true, converter, 0, PUBLIC_ONLY);
+			if (m == null)
+				m = getDeclaredMethod(c, "is" + localName, true, true, converter, 0, PUBLIC_ONLY);
+			if (m != null) {
+				m.setAccessible(true);
+				return invokeReal(m, object);
+			}
+		} catch (Throwable e1) {
+			e1.printStackTrace();
+		}
+
+		try {
+			Field f = getDeclaredField(c, localName);
+			cvtTo = f.getType();
+			return getFieldValue(object, f);
+		} catch (NoSuchFieldException nsf) {
+			if (okIfFieldNotFound)
+				return false;
+			throw nsf;
+		} catch (Throwable t) {
+			throw Debuggable.reThrowable(t);
+		}
+	}
+
+	public static boolean setObjectPropertyValue(Object object, Class c, String localName, Converter converter, boolean okIfFieldNotFound, Object value) throws NoSuchConversionException,
+			NoSuchFieldException, SecurityException {
+
+		Class cvtTo = null;
+		try {
+			Method m = getDeclaredMethod(c, localName, true, true, converter, 1, ANY_PublicPrivatePackageProtected);
+			if (m == null)
+				m = getDeclaredMethod(c, "set" + localName, true, true, converter, 1, PUBLIC_ONLY);
+			if (m == null)
+				m = getDeclaredMethod(c, "is" + localName, true, true, converter, 1, PUBLIC_ONLY);
+			if (m != null) {
+				cvtTo = m.getParameterTypes()[0];
+				m.setAccessible(true);
+				m.invoke(object, value);
+				return true;
+			}
+		} catch (SecurityException e1) {
+		} catch (NoSuchConversionException nsf) {
+			//			throw nsf;			
+		} catch (Throwable e1) {
+		}
+
+		try {
+			Field f = getDeclaredField(c, localName);
+			cvtTo = f.getType();
+			setFieldValue(f, object, value);
+			return true;
+		} catch (NoSuchFieldException nsf) {
+			if (okIfFieldNotFound)
+				return false;
+			throw nsf;
+		} catch (Throwable t) {
+			throw Debuggable.reThrowable(t);
+		}
+	}
+
 	public static Field getDeclaredField(Class c, String name) throws SecurityException, NoSuchFieldException {
 		NoSuchFieldException nsf = null;
 		try {
@@ -1010,17 +1080,36 @@ public class ReflectUtils {
 		} catch (NoSuchFieldException e) {
 			nsf = e;
 		}
+		Pattern p = makePattern(name);
 		while (c != null) {
 			try {
-				return c.getDeclaredField(name);
+				for (Field f : c.getDeclaredFields()) {
+					if (matchesName(p, f.getName()))
+						return f;
+				}
 			} catch (SecurityException se) {
 				throw se;
-			} catch (NoSuchFieldException nsf2) {
-				c = c.getSuperclass();
-				continue;
+			} catch (Exception nsf2) {
 			}
+			c = c.getSuperclass();
+			continue;
 		}
 		throw nsf;
+	}
+
+	private static boolean matchesName(Pattern p, String name) {
+		Matcher m = p.matcher(name);
+		return m.matches();
+	}
+
+	public static boolean matchesName(String regex, String name) {
+		return matchesName(makePattern(regex), name);
+	}
+
+	private static Pattern makePattern(String regex) {
+		if (regex.toUpperCase().equals(regex))
+			return Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+		return Pattern.compile(regex);
 	}
 
 	//PublicPrivatePackageProtected
@@ -1164,6 +1253,9 @@ public class ReflectUtils {
 
 	private static boolean methodMatches(String m, String name, boolean caseInsensitive, boolean endsWith) {
 		if (name != null) {
+
+			if (matchesName(name, m))
+				return true;
 
 			if (endsWith) {
 				if (caseInsensitive) {
@@ -1592,6 +1684,22 @@ public class ReflectUtils {
 
 	public static <T> T[] arrayOf(T... args) {
 		return args;
+	}
+
+	public static <T> List<T> toList(Iterator<T> args) {
+		ArrayList al = new ArrayList();
+		while (args.hasNext()) {
+			al.add(args.next());
+		}
+		return al;
+	}
+
+	public static <T> List<T> toList(Set<T> args) {
+		ArrayList al = new ArrayList();
+		for (Object n : args) {
+			al.add(n);
+		}
+		return al;
 	}
 
 	public static <T> List<T> asList(T... args) {

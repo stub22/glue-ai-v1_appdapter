@@ -43,8 +43,11 @@ import com.hp.hpl.jena.rdf.model.Container;
 public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerForInstance<BT> implements Comparable<Trigger>, AskIfEqual, TriggerForClass {
 	//extends TriggerForInstance implements Comparable<Trigger>, AskIfEqual {
 
-	@UISalient
-	static public boolean PrefixWithIndirectyWhenIndirect = false;
+	@UISalient(MenuName = "%m")
+	static public boolean PrefixWithIndirectyWhenIndirect = true;
+	
+	@UISalient(MenuName = "%m")
+	static public boolean UseShowForGetInButtonNames = false;
 
 	/**
 	 * 
@@ -314,19 +317,30 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 	static public String getMenuPath(String menuFormat, boolean isStatic, Object o1, Class tdc, Class mdc, Class getReturnType,
 
 	Callable valueOf, String memberName, int missingParamsTotal, OptionalArg optionals, TriggerForMember memb) {
+		String prefix = "";
+		String suffix = "";
+
 		String s = menuFormat;
 		if (s == null || s.length() == 0) {
 			s = "%c|%m";
+			if (memb.isDeclNonStatic) {
+				s = "%m";
+			}
 		}
+
 		if (isStatic) {
-			s = "Static|" + s;
+			prefix = "Static|";
 		}
-		Class fi = mdc;
+		Class fi = tdc;
+		boolean isIndirect = false;
 		if (s.contains("%c")) {
+			fi = tdc;
 			String strval = Utility.getShortClassName(fi);
-			//	if (true || ((o1 != null && o1.getClass() != _clazz) || _clazz.getDeclaredMethods().length > 6)) {
-			if (o1 != null && fi != o1.getClass()) {
-				//strval = "Indirectly|" + strval;
+			if (o1 != null && !fi.isInstance(o1)) {
+				if (PrefixWithIndirectyWhenIndirect) {
+					suffix = " (" + strval + ")";
+					strval = "Indirectly";
+				}
 			}
 			s = replace(s, "%c", strval);
 		}
@@ -334,8 +348,10 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 			fi = mdc;
 			String strval = Utility.getShortClassName(fi);
 			if (o1 != null && !fi.isInstance(o1)) {
-				if (PrefixWithIndirectyWhenIndirect)
-					strval = "Indirectly|" + strval;
+				if (PrefixWithIndirectyWhenIndirect) {
+					suffix = " (" + strval + ")";
+					strval = "Indirectly";
+				}
 			}
 			s = replace(s, "%d", strval);
 		}
@@ -377,8 +393,10 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 			}
 			String strval = Utility.getShortClassName(fi);
 			if (o1 != null && !fi.isInstance(o1)) {
-				if (PrefixWithIndirectyWhenIndirect)
-					strval = "Indirectly|" + strval;
+				if (PrefixWithIndirectyWhenIndirect) {
+					suffix = " (" + strval + ")";
+					strval = "Indirectly";
+				}
 			}
 			s = replace(s, "%i", strval);
 		}
@@ -401,7 +419,7 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 		}
 		if (s.contains("%m")) {
 			String strval = memberName;
-			if (false && strval.length() > 4) {
+			if (UseShowForGetInButtonNames && strval.length() > 4) {
 				if (Character.isUpperCase(strval.charAt(3))) {
 					strval = replace(strval, "get", "Show");
 					strval = replace(strval, "set", "Replace");
@@ -409,7 +427,7 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 					strval = replace(strval, "is", "Show");
 				}
 			}
-			boolean mayUseMAN = true;
+			boolean showMoreParamsNeeded = true;
 			Class[] params = memb.getParameters();
 			Object[] filledInParams = memb.filledInParams;
 			int plen = params.length;
@@ -427,8 +445,8 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 							filledInParams[last] = paste;
 						}
 
-						strval = "Paste|'" + Utility.getUniqueName(paste) + "' to " + strval;
-						mayUseMAN = false;
+						strval = "Paste|" + strval + " with '" + Utility.getUniqueName(paste) + "'";
+						showMoreParamsNeeded = false;
 					}
 				} catch (NoSuchConversionException e) {
 				}
@@ -439,6 +457,7 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 				if (filledInParams != null) {
 					int tryForMore = getNullCount(filledInParams);
 					if (optionals != null) {
+						optionals.reset();
 						for (int i = 0; i < plen; i++) {
 							Class needed = params[i];
 							Object have = filledInParams[i];
@@ -448,7 +467,7 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 									if (needed.isInstance(have)) {
 										filledInParams[i] = have;
 										tryForMore--;
-										strval = "arg" + i + "='" + Utility.getUniqueName(have) + "' " + strval;
+										suffix += " (arg" + i + "='" + Utility.getUniqueName(have) + "')";
 									}
 								} catch (NoSuchConversionException e) {
 									//		break;
@@ -458,20 +477,22 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 					}
 					if (tryForMore == 0) {
 						missingParamsTotal = 0;
-						mayUseMAN = false;
+						showMoreParamsNeeded = false;
 						strval = "With Param Context|" + strval;
 					}
 				}
-				if (mayUseMAN) {
+				if (showMoreParamsNeeded) {
 					strval = "More Params Needed|" + strval;
 				}
 			}
 			s = replace(s, "%m", strval);
 		}
-		return s;
+		return prefix + s + suffix;
 	}
 
 	private static String replace(String s, String f, String r) {
+		if (r == null || r.length() == 0)
+			return s;
 		return s.replace(f, r);
 	}
 
@@ -559,6 +580,10 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 			theLogger.warn("isDeclNonStatic to non static " + member);
 		}
 		String desc = describeMethod(fd);
+		Class[] ps = getParameters();
+		if (ps.length > 0) {
+			arg0Clazz = getParameters()[0];
+		}
 		if (featureDesc instanceof PropertyDescriptorForField) {
 			isSideEffectSafe = true;
 			propDesc = (PropertyDescriptorForField) feature;

@@ -94,6 +94,8 @@ public class MethodList extends JJList {
 				return;
 			if (!showNonStatic && !isStatic)
 				return;
+			if (methods.contains(method))
+				return;
 			methods.add(method);
 		}
 

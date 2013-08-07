@@ -53,7 +53,11 @@ extends JJPanel implements GetSetObject {
 	 */
 	final protected void objectChanged(Object oldValue, Object newValue) {
 		synchronized (valueLock) {
+			Object pobjectValue = objectValue;
 			objectValueChanged(oldValue, newValue);
+			if (pobjectValue == objectValue) {
+
+			}
 			if (objectValue != newValue) {
 				objectValue = newValue;
 				super.firePropertyChange("value", oldValue, newValue);
