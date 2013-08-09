@@ -346,6 +346,7 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 		}
 		if (s.contains("%d")) {
 			fi = mdc;
+			fi = tdc;
 			String strval = Utility.getShortClassName(fi);
 			if (o1 != null && !fi.isInstance(o1)) {
 				if (PrefixWithIndirectyWhenIndirect) {

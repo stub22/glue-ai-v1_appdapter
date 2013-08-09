@@ -5,8 +5,10 @@ import javax.swing.JPopupMenu;
 public class SafeJPopupMenu extends JPopupMenu implements UISwingReplacement {
 
 	@Override public void addSeparator() {
-		// TODO Auto-generated method stub
-		super.addSeparator();
+		try {
+			super.addSeparator();
+		} catch (Throwable t) {
+		}
 	}
 
 	@UISalient

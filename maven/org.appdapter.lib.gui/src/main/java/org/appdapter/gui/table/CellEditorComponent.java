@@ -1,4 +1,4 @@
-package org.appdapter.gui.swing;
+package org.appdapter.gui.table;
 
 import java.awt.Component;
 

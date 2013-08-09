@@ -40,16 +40,13 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.io.Writer;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -61,7 +58,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
@@ -78,6 +74,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JSpinner.DateEditor;
 import javax.swing.JTable;
 import javax.swing.ToolTipManager;
+import javax.swing.table.TableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.tools.FileObject;
@@ -144,6 +141,7 @@ import org.appdapter.gui.swing.DisplayContextUIImpl.UnknownIcon;
 import org.appdapter.gui.swing.ErrorDialog;
 import org.appdapter.gui.swing.ObjectChoiceComboPanel;
 import org.appdapter.gui.swing.ScreenBoxPanel;
+import org.appdapter.gui.table.SafeJTable;
 import org.appdapter.gui.trigger.TriggerAdder;
 import org.appdapter.gui.trigger.TriggerFilter;
 import org.appdapter.gui.trigger.TriggerForClass;
@@ -153,10 +151,13 @@ import org.appdapter.gui.trigger.TriggerMenuFactory.TriggerSorter;
 import org.appdapter.gui.trigger.UtilityMenuOptions;
 import org.appdapter.gui.util.ClassFinder;
 import org.appdapter.gui.util.PromiscuousClassUtilsA;
-import org.openjena.riot.SysRIOT;
 import org.slf4j.Logger;
 
+import com.hp.hpl.jena.graph.FrontsNode;
+import com.hp.hpl.jena.graph.Node;
+import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.sdb.util.Pair;
 //import sun.beans.editors.ColorEditor;
@@ -165,17 +166,19 @@ import com.hp.hpl.jena.sdb.util.Pair;
 @UIHidden
 public class Utility extends UtilityMenuOptions {
 
-	static public class ToFromStringNoSpecialized extends ToFromKeyConverter {
+	public final static ToFromStringNotSpecialized FROM_STRING_NOT_SPECIALIZED = new ToFromStringNotSpecialized();
 
-		public ToFromStringNoSpecialized() {
+	static public class ToFromStringNotSpecialized extends ToFromKeyConverter<Object, String> {
+
+		public ToFromStringNotSpecialized() {
 			super(Object.class, String.class);
 		}
 
-		@Override public Object fromKey(Object title, Class specializedMaybe) {
-			return recastCC(uiObjects.findObjectByName("" + title), specializedMaybe);
+		@Override public Object fromKey(String title, Class specializedMaybe) {
+			return recastCC(title, specializedMaybe);
 		}
 
-		@Override public Object toKey(Object toBecomeAKey) {
+		@Override public String toKey(Object toBecomeAKey) {
 
 			return Utility.getUniqueName(toBecomeAKey);
 		}
@@ -379,7 +382,7 @@ public class Utility extends UtilityMenuOptions {
 		addSingletonMethods00(object, clz);
 	}
 
-	private static HashSet<Class> loadedClassMethods = new HashSet<Class>(1000);
+	private static HashSet<java.lang.reflect.AnnotatedElement> loadedClassMethods = new HashSet<java.lang.reflect.AnnotatedElement>(1000);
 
 	public static void addSingletonMethods00(Object object, Class clz) {
 		if (clz == null) {
@@ -457,27 +460,31 @@ public class Utility extends UtilityMenuOptions {
 				if (clz == Object.class) {
 					break;
 				}
-				if (Utility.skipMethodsOFClass(clz)) {
-					continue;
-				}
+
 				synchronized (loadedClassMethods) {
 					if (!loadedClassMethods.add(clz)) {
-						clz = clz.getSuperclass();
-						continue;
+						break;
 					}
+				}
+				if (Utility.skipMethodsOFClass(clz)) {
+					break;
 				}
 				synchronized (objectContextMenuTriggers) {
 
-					for (Method m : clz.getDeclaredMethods()) {
+					for (Method m : ReflectUtils.getAllMethods(clz)) {
+
+						if (!loadedClassMethods.add(m)) {
+							continue;
+						}
 
 						m.setAccessible(true);
 
 						boolean isStatic = ReflectUtils.isStatic(m);
 
 						Class mustBe = clz;
-						Object wrap = null;
+						Object wrap = isStatic ? null : object;
 
-						if (m.isSynthetic())
+						if (ReflectUtils.isSynthetic(m))
 							continue;
 
 						int plen = m.getParameterTypes().length;
@@ -489,7 +496,7 @@ public class Utility extends UtilityMenuOptions {
 						if (!isStatic) {
 							rlen++;
 							mlen++;
-							if (mustBe.isInstance(object)) {
+							if (object != null) {
 								wrap = object;
 								mlen--;
 							}
@@ -497,8 +504,7 @@ public class Utility extends UtilityMenuOptions {
 							if (rlen > 0) {
 								mustBe = m.getParameterTypes()[0];
 							}
-							wrap = null;
-							if (mustBe.isInstance(object)) {
+							if (object != null) {
 								wrap = object;
 								mlen--;
 							}
@@ -512,6 +518,24 @@ public class Utility extends UtilityMenuOptions {
 							if (cmi != null) {
 								ReflectUtils.registerConverterMethod(m, cmi);
 								// maybe loop here?
+							} else {
+								String mname = m.getName();
+								if (mname.contains("_")) {
+									mname = properCase(mname);
+								}
+								if (!mname.equals("toString")) {
+									String returnName = properCase(ReflectUtils.getCanonicalSimpleName(returnType));
+									mname = mname.replace(returnName, "^");
+									if ("to^".equals(mname) //
+											|| "as^".equals(mname) // 
+											|| "getAs^".equals(mname) // 
+											|| "convertTo^".equals(mname) // 
+											|| "coerce^".equals(mname) // 
+											|| "from^".equals(mname)) {
+										ReflectUtils.registerConverterMethod(m, cmi);
+									}
+
+								}
 							}
 						}
 
@@ -519,14 +543,9 @@ public class Utility extends UtilityMenuOptions {
 							TriggerMenuFactory.addMethodAsTrig(ctx, clz, m, appMenuGlobalTrigs, null, ADD_ALL, "%d|%m", true, false);
 							continue;
 						}
-
 						if (rlen == 1 && wrap != null) {
-							addMethodAsTrig(ctx, clz, m, appMenuGlobalTrigs, wrap, ADD_ALL, "%c|%m", false, false);
+							addMethodAsTrig(ctx, clz, m, appMenuGlobalTrigs, wrap, ADD_ALL, "%c|%m", isStatic, false);
 						}
-
-						// skip specialized methods (the base class will call the specialize one anyhow)
-						if (ReflectUtils.isOverride(m))
-							continue;
 
 						if (Component.class.isAssignableFrom(returnType)) {
 							if (rlen == 1) {
@@ -540,22 +559,40 @@ public class Utility extends UtilityMenuOptions {
 					}
 				}
 				for (Field m : clz.getDeclaredFields()) {
-					if (ReflectUtils.isStatic(m)) {
-						if (m.isSynthetic())
-							continue;
-						if (m.getType() == boolean.class) {
-							TriggerMenuFactory.addMethodAsTrig(ctx, clz, m, appMenuGlobalTrigs, null, ADD_ALL, "%d|%m", true, true);
-						} else {
 
-						}
+					if (!loadedClassMethods.add(m)) {
+						continue;
+					}
+					m.setAccessible(true);
+
+					if (ReflectUtils.isSynthetic(m))
+						continue;
+
+					boolean isStatic = ReflectUtils.isStatic(m);
+
+					Class mustBe = clz;
+					Object wrap = object;
+					boolean canBeGlobal = true;
+					if (isStatic) {
+						wrap = null;
 					} else {
-						if (m.getType() == boolean.class) {
-							TriggerMenuFactory.addMethodAsTrig(ctx, clz, m, appMenuGlobalTrigs, object, ADD_ALL, "%c|%m", false, true);
-						} else {
-
+						if (object == null) {
+							// cant be registered globally
+							canBeGlobal = false;
 						}
 					}
+					Class returnType = ReflectUtils.nonPrimitiveTypeFor(m.getType());
+					boolean isForCheckbox = returnType == Boolean.class;
+
+					if (isForCheckbox && canBeGlobal) {
+						TriggerMenuFactory.addMethodAsTrig(ctx, clz, m, appMenuGlobalTrigs, wrap, ADD_ALL, "%d|%m", isStatic, true);
+					}
+					if (!isStatic) {
+						TriggerMenuFactory.addMethodAsTrig(ctx, clz, m, objectContextMenuTriggers, null, ADD_ALL, "%d|%m", isStatic, true);
+					}
 				}
+				if (true)
+					break;
 				clz = clz.getSuperclass();
 			}
 
@@ -581,7 +618,8 @@ public class Utility extends UtilityMenuOptions {
 	}
 
 	public static boolean skipMethodsOFClass(Class clz) {
-		if (clz==null) return true;
+		if (clz == null)
+			return true;
 		Package pk = clz.getPackage();
 		if (pk != null) {
 			String pkn = pk.getName();
@@ -589,7 +627,7 @@ public class Utility extends UtilityMenuOptions {
 				return true;
 			if (pkn.startsWith("javax.swing."))
 				return true;
-		} 
+		}
 		return false;
 	}
 
@@ -629,6 +667,7 @@ public class Utility extends UtilityMenuOptions {
 	}
 
 	static AssemblerCacheGrabber singletAssemblerCacheGrabber = new AssemblerCacheGrabber();
+	final public static ResourceToFromString RESOURCE_TO_FROM_STRING = new ResourceToFromString(null);
 	static {
 		addObjectFeatures(singletAssemblerCacheGrabber);
 		JenaLiteralUtils.addIdListener(new IdentToObjectListener() {
@@ -657,7 +696,11 @@ public class Utility extends UtilityMenuOptions {
 				return new FreeIdent(title);
 			}
 		});
-		toFrmKeyCnv.put(Resource.class, new ResourceToFromString(null));
+		toFrmKeyCnv.put(Resource.class, RESOURCE_TO_FROM_STRING);
+		toFrmKeyCnv.put(FrontsNode.class, RESOURCE_TO_FROM_STRING);
+		toFrmKeyCnv.put(Literal.class, RESOURCE_TO_FROM_STRING);
+		toFrmKeyCnv.put(RDFNode.class, RESOURCE_TO_FROM_STRING);
+		toFrmKeyCnv.put(Node.class, RESOURCE_TO_FROM_STRING);
 	}
 
 	private static Map<Class, ToFromKeyConverter> getKeyConvMap(Class keyType, boolean createIfMissing) {
@@ -956,11 +999,7 @@ public class Utility extends UtilityMenuOptions {
 			}
 		}
 		if (objNeedsToBe.isInstance(obj)) {
-			try {
-				return (T) obj;
-			} catch (Exception e) {
-				throw reThrowable(e);
-			}
+			return (T) obj;
 		}
 		obj = dref(val);
 		if (obj != val) {
@@ -2564,33 +2603,55 @@ public class Utility extends UtilityMenuOptions {
 	}
 
 	static public void makeTablePopupHandler(final JTable jTable) {
-		jTable.addMouseListener(new MouseAdapter() {
+		jTable.setAutoCreateRowSorter(true);
+		jTable.setFillsViewportHeight(true);
+		jTable.removeMouseListener(POPUP_FOR_CELL);
+		jTable.addMouseListener(POPUP_FOR_CELL);
+		jTable.setColumnSelectionAllowed(false);
+		TableModel tm = jTable.getModel();
+		SafeJTable.setComponentRenderers(jTable, tm);
+	}
 
-			public void mouseReleased(MouseEvent e) {
-				if (e.isPopupTrigger()) {
-					JTable source = (JTable) e.getSource();
-					int row = source.rowAtPoint(e.getPoint());
-					int column = source.columnAtPoint(e.getPoint());
+	final static PopupForCell POPUP_FOR_CELL = new PopupForCell();
 
-					if (!source.isRowSelected(row)) {
-						source.changeSelection(row, column, false, false);
-					}
+	public static final class PopupForCell extends MouseAdapter {
+		public void mouseClicked(MouseEvent e) {
+			mouseEvent(e);
+		}
 
-					Object cellSubBox = source.getModel().getValueAt(row, column);
-					showPopup(e, cellSubBox);
+		public void mouseReleased(MouseEvent e) {
+			mouseEvent(e);
+		}
 
-				}
+		private void mouseEvent(MouseEvent e) {
+			JTable source = (JTable) e.getSource();
+			int row = source.rowAtPoint(e.getPoint());
+			int column = source.columnAtPoint(e.getPoint());
+
+			mouseEvent(e, source, row, column);
+		}
+
+		private void mouseEvent(MouseEvent e, JTable source, int row, int column) {
+			Object cellSubBox = source.getModel().getValueAt(row, column);
+
+			if (!source.isRowSelected(row)) {
+				source.changeSelection(row, column, false, false);
 			}
 
-			private void showPopup(MouseEvent e, Object cellSubBox) {
-				if (cellSubBox != null) {
-					JPopupMenu cellPopMenu = TriggerMenuFactory.buildPopupMenu(cellSubBox);
-					if (cellPopMenu != null) {
-						cellPopMenu.show(e.getComponent(), e.getX(), e.getY());
-					}
+			if (e.isPopupTrigger()) {
+				showPopup(e, cellSubBox);
+
+			}
+		}
+
+		private void showPopup(MouseEvent e, Object cellSubBox) {
+			if (cellSubBox != null) {
+				JPopupMenu cellPopMenu = TriggerMenuFactory.buildPopupMenu(cellSubBox);
+				if (cellPopMenu != null) {
+					cellPopMenu.show(e.getComponent(), e.getX(), e.getY());
 				}
 			}
-		});
+		}
 	}
 
 }

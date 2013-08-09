@@ -47,7 +47,7 @@ import com.hp.hpl.jena.sdb.util.Pair;
 
 public class ReflectUtils {
 
-	static List<Converter> registeredConverters = new ArrayList<Converter>();
+	final static List<Converter> registeredConverters = new ArrayList<Converter>();
 	final public static AggregateConverter DEFAULT_CONVERTER = new AggregateConverter(registeredConverters);
 
 	public static void registerConverter(Converter utilityConverter) {
@@ -224,6 +224,25 @@ public class ReflectUtils {
 		if (wrapper == Void.TYPE)
 			return Void.class;
 		throw new ClassCastException("cant make non primitive from :" + wrapper);
+	}
+
+	private static Map<Class, Class> primitives = new HashMap<Class, Class>(10);
+
+	static {
+		primitives.put(Boolean.TYPE, Boolean.class);
+		primitives.put(Byte.TYPE, Byte.class);
+		primitives.put(Character.TYPE, Character.class);
+		primitives.put(Double.TYPE, Double.class);
+		primitives.put(Float.TYPE, Float.class);
+		primitives.put(Integer.TYPE, Integer.class);
+		primitives.put(Long.TYPE, Long.class);
+		primitives.put(Short.TYPE, Short.class);
+	}
+
+	public static Class wrapperTypeFor(Class cls) {
+		if (cls.isPrimitive())
+			cls = nonPrimitiveTypeFor(cls);
+		return cls;
 	}
 
 	static public boolean isStatic(Member f) {
@@ -1318,14 +1337,37 @@ public class ReflectUtils {
 	}
 
 	public static Collection<Method> getAllMethods(Class clz) {
-		List<Method> methods = new ArrayList<Method>();
+		Map<String, Method> methods = new HashMap<String, Method>();
 		while (clz != null) {
 			for (Method m : clz.getDeclaredMethods()) {
-				methods.add(m);
+				String key = methodString(m);
+				if (!methods.containsKey(key)) {
+					if (isSynthetic(m)) {
+						continue;
+					}
+					methods.put(key, m);
+				}
 			}
 			clz = clz.getSuperclass();
 		}
-		return methods;
+		return methods.values();
+	}
+
+	public static String methodString(Method m) {
+		StringBuffer sb = new StringBuffer();
+		if (isStatic(m))
+			sb.append("static ");
+		sb.append(m.getName() + "(");
+		Class[] params = m.getParameterTypes(); // avoid clone
+		int pl = params.length;
+
+		for (int j = 0; j < pl; j++) {
+			if (j > 0)
+				sb.append(",");
+			sb.append(params[j].getName());
+		}
+		sb.append(")");
+		return sb.toString();
 	}
 
 	public static Collection<Field> getAllFields(Class clz) {
@@ -1798,7 +1840,7 @@ public class ReflectUtils {
 					try {
 						Class sc = dec.getSuperclass();
 						if (sc != null && sc != dec) {
-							method = sc.getMethod(((Member) m).getName(), method.getParameterTypes());
+							method = sc.getDeclaredMethod(((Member) m).getName(), method.getParameterTypes());
 							on = getAnnotationOn(method, annotationClass);
 							if (on != null)
 								return on;
@@ -1836,6 +1878,12 @@ public class ReflectUtils {
 			if (!isAssignableFrom(c, clz))
 				return false;
 		}
+		return true;
+	}
+
+	public static boolean isSynthetic(Member theMethod) {
+		if (!theMethod.isSynthetic())
+			return false;
 		return true;
 	}
 }
