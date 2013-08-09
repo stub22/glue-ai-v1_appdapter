@@ -32,7 +32,10 @@ import org.appdapter.core.name.ModelIdent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.hp.hpl.jena.datatypes.RDFDatatype;
+import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.graph.Node_URI;
+import com.hp.hpl.jena.graph.impl.LiteralLabel;
 import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
@@ -121,15 +124,30 @@ public class JenaLiteralUtils {
 	}
 
 	public static <T> T convertRDFNodeStatic(RDFNode e, Class<T> type, boolean findComponent) {
+		Node node = e.asNode();
 		type = ReflectUtils.nonPrimitiveTypeFor(type);
-		if (Number.class.isAssignableFrom(type)) {
-			return (T) e.asLiteral().getValue();
+		if (Number.class.isAssignableFrom(type) || java.math.BigInteger.class.isAssignableFrom(type)) {
+			return (T) node.getLiteral().getValue();
 		}
 		if (Boolean.class.isAssignableFrom(type)) {
-			return (T) (Boolean) (e.asLiteral().getBoolean());
+			return (T) node.getLiteral().getValue();
 		}
 		if (Character.class.isAssignableFrom(type)) {
-			return (T) (Character) e.asLiteral().getChar();
+			return (T) node.getLiteral().getValue();
+		}
+		if (false) {
+			if (Integer.class.isAssignableFrom(type)) {
+				return (T) (Integer) node.getLiteral().getValue();
+			}
+			if (Double.class.isAssignableFrom(type)) {
+				return (T) (Double) e.asLiteral().getDouble();
+			}
+			if (Byte.class.isAssignableFrom(type)) {
+				return (T) (Byte) e.asLiteral().getByte();
+			}
+			if (Character.class.isAssignableFrom(type)) {
+				return (T) (Character) e.asLiteral().getChar();
+			}
 		}
 		if (RDFNode.class.isAssignableFrom(type)) {
 			Class<? extends RDFNode> rtype = (Class<? extends RDFNode>) type;
@@ -142,26 +160,40 @@ public class JenaLiteralUtils {
 		}
 		if (String.class.isAssignableFrom(type)) {
 			try {
-				String lv = e.asLiteral().getString();
+				String lv = node.toString(false);
 				lv = unquote(lv);
 				return (T) lv;
 			} catch (Exception ex) {
 				Debuggable.printStackTrace(ex);
 			}
 		}
-		Object eval = e;
+		Object eval =  node;
 		if (e.isLiteral()) {
-			eval = e.asLiteral().getValue();
-			if (eval instanceof String) {
-				eval = e.asLiteral();
+			LiteralLabel lit = node.getLiteral();
+			RDFDatatype dt = lit.getDatatype();
+			if (dt != null) {
+				Class clz = dt.getJavaClass();
+				if (clz != null) {
+					return (T) convertRDFNodeStatic(e, clz, findComponent);
+				}
 			}
+			eval = lit.getValue();
+			if (!(eval instanceof String)) {
+				return (T) eval;
+			}
+			return (T) lit;
 		} else if (e.isURIResource()) {
-			String uri = e.asNode().getURI();
-			Ident id = new FreeIdent(uri);
-			eval = findComponent(new FreeIdent(uri), type);
-			if (eval == null) {
-				eval = e.asNode();
+			if (findComponent) {
+				String uri = node.getURI();
+				Ident id = new FreeIdent(uri);
+				eval = findComponent(id, type);
+				if (eval == null) {
+					eval = node;
+				}
 			}
+		}
+		if (e == eval) {
+			return (T) e;
 		}
 		return (T) eval;
 	}

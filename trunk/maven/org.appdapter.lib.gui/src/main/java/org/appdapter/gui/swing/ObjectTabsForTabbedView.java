@@ -22,15 +22,15 @@ public class ObjectTabsForTabbedView implements BoxPanelSwitchableView {
 	final JideTabbedPane tabs;
 	final Object lock;
 
-	public ObjectTabsForTabbedView(JideTabbedPane tbs) {
+	public ObjectTabsForTabbedView(JideTabbedPane tbs, boolean closableTabs) {
 		lock = tbs;
 		synchronized (lock) {
 			tabs = (JideTabbedPane) tbs;
-			tabs.setCloseTabOnMouseMiddleButton(true);
+			tabs.setCloseTabOnMouseMiddleButton(closableTabs);
 			tabs.setScrollSelectedTabOnWheel(true);
-			tabs.setShowCloseButton(true);
-			tabs.setUseDefaultShowCloseButtonOnTab(true);
-			tabs.setShowCloseButtonOnTab(true);
+			tabs.setShowCloseButton(closableTabs);
+			tabs.setUseDefaultShowCloseButtonOnTab(closableTabs);
+			tabs.setShowCloseButtonOnTab(closableTabs);
 		}
 	}
 

@@ -22,6 +22,7 @@
 
 package org.appdapter.gui.repo;
 
+import java.awt.Component;
 import java.util.List;
 
 import org.appdapter.api.trigger.Box;
@@ -29,12 +30,11 @@ import org.appdapter.bind.rdf.jena.model.JenaLiteralUtils;
 import org.appdapter.gui.browse.ResourceToFromString;
 import org.appdapter.gui.browse.ToFromKeyConverter;
 import org.appdapter.gui.browse.Utility;
-import org.appdapter.gui.swing.PropertyValueControl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.shared.PrefixMapping;
 
@@ -52,47 +52,14 @@ public class ModelMatrixPanel<BoxType extends Box> extends GenericMatrixPanel {
 		};
 	}
 
-	public ToFromKeyConverter getCellConverter(Class valueClazz) {
-		if (valueClazz.isAssignableFrom(Resource.class))
-			return new ResourceToFromString(getJenaModel());
-		return super.getCellConverter(valueClazz);
-	}
-
-	public Object convertWas(Object was, Object aValue, Class objNeedsToBe) {
-		if (objNeedsToBe.isInstance(aValue))
-			return aValue;
-		Resource wasr = null;
-		if (was instanceof Resource) {
-
-		}
-		return Utility.recastCC(aValue, objNeedsToBe);
-	}
-
 	static String[] columnNames = new String[] { "Subject", "Predicate", "Object" };//, "Model" };
 
 	public ModelMatrixPanel() {
 		super(Model.class, Statement.class, null, columnNames);
-		cellClass = Resource.class;
 	}
+	
 
-	@Override public String getTextName(Object value, int edit_row, int edit_col) {
-		if (value == null)
-			return "(Resource)null";
-		Object val = JenaLiteralUtils.cvtToString(value, getPrefixMapping());
-		return "" + val;
-	}
-
-	PrefixMapping mapping = null;
-
-	private PrefixMapping getPrefixMapping() {
-		if (mapping == null) {
-			Model jm = getJenaModel();
-			if (jm instanceof PrefixMapping) {
-				mapping = (PrefixMapping) jm;
-			}
-		}
-		return mapping;
-	}
+	ToFromKeyConverter mapping;
 
 	private Model getJenaModel() {
 		Object o = getValue();
@@ -101,11 +68,20 @@ public class ModelMatrixPanel<BoxType extends Box> extends GenericMatrixPanel {
 		return Utility.recastCC(o, Model.class);
 	}
 
-	protected List listFromHolder(Object o) {
+	public List listFromHolder(Object o) {
 		if (o == null)
 			return null;
 		Model model = Utility.recastCC(o, Model.class);
 		return model.listStatements().toList();
 	}
 
+	public ToFromKeyConverter getCellConverter(Class valueClazz) {
+		if (RDFNode.class.isAssignableFrom(valueClazz)) {
+			if (mapping == null) {
+				mapping = new ResourceToFromString(getJenaModel());
+			}
+			return mapping;
+		}
+		return Utility.getToFromStringConverter(valueClazz);
+	}
 }

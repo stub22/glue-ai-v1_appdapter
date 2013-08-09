@@ -1,7 +1,6 @@
 package org.appdapter.gui.swing;
 
 import java.awt.BorderLayout;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.datatransfer.DataFlavor;
@@ -17,6 +16,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyVetoException;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -27,7 +27,6 @@ import javax.swing.OverlayLayout;
 import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.table.TableModel;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.core.convert.ReflectUtils;
@@ -39,9 +38,8 @@ import org.appdapter.gui.api.NamedObjectCollection;
 import org.appdapter.gui.api.ObjectCollectionRemoveListener;
 import org.appdapter.gui.api.POJOCollectionListener;
 import org.appdapter.gui.browse.Utility;
-import org.appdapter.gui.repo.BeanTableModel;
-import org.appdapter.gui.repo.GenericMatrixPanel;
-import org.appdapter.gui.repo.GenericMatrixPanel.TableWithCustomRenderer;
+import org.appdapter.gui.table.BeanTableModel;
+import org.appdapter.gui.table.SafeJTable;
 
 /**
  * A GUI component that shows what a Collection contains,
@@ -104,12 +102,12 @@ extends ScreenBoxPanel<BoxType> implements ObjectCollectionRemoveListener, DropT
 	public Object getSelectedObject() {
 		if (!valueIsOneSelectedItem)
 			return super.getValue();
-		return localCollection.getSelectedObject();
+		return localNOC.getSelectedObject();
 	}
 
 	public void setSelectedObject(Object object) throws PropertyVetoException {
 
-		localCollection.setSelectedObject(object);
+		localNOC.setSelectedObject(object);
 
 	}
 
@@ -138,7 +136,7 @@ extends ScreenBoxPanel<BoxType> implements ObjectCollectionRemoveListener, DropT
 	//An invisible panel in front of the list of contents, which
 	//captures drag/drop operations
 	JPanel dropGlass;
-	NamedObjectCollection localCollection;
+	NamedObjectCollection localNOC;
 	Class filter;
 	boolean valueIsOneSelectedItem = false;
 	private String titleString;
@@ -146,7 +144,7 @@ extends ScreenBoxPanel<BoxType> implements ObjectCollectionRemoveListener, DropT
 	@Override public String getName() {
 		if (titleString != null)
 			return titleString;
-		String named = localCollection.toString();
+		String named = localNOC.toString();
 		if (filter != null) {
 			named = Utility.getShortClassName(filter) + " of " + named;
 		}
@@ -155,11 +153,7 @@ extends ScreenBoxPanel<BoxType> implements ObjectCollectionRemoveListener, DropT
 
 	public Collection getCollection() {
 		Object v = super.getValue();
-		if (v instanceof Collection)
-			return (Collection) v;
-		if (localCollection == null)
-			return null;
-		return localCollection.getLiveCollection();
+		return (Collection) v;
 	}
 
 	public void setTitle(String title) {
@@ -175,12 +169,17 @@ extends ScreenBoxPanel<BoxType> implements ObjectCollectionRemoveListener, DropT
 		this.context = context;
 		this.filter = filterc;
 		this.parentTabs = tabs;
-		this.localCollection = noc;
-		if (collection == null && noc != null)
-			collection = noc.getLiveCollection();
+		if (noc == null) {
+			if (collection instanceof NamedObjectCollection) {
+				noc = (NamedObjectCollection) collection;
+			} else {
+				noc = Utility.uiObjects;
+			}
+		}
+		this.localNOC = noc;
 		this.objectValue = collection;
-		if (localCollection != null)
-			localCollection.addListener(this, true);
+		if (localNOC != null)
+			localNOC.addListener(this, false);
 	}
 
 	public CollectionContentsPanelUsingTable(DisplayContext context, String titleStr, Collection collection, BoxPanelSwitchableView tabs) {
@@ -188,7 +187,8 @@ extends ScreenBoxPanel<BoxType> implements ObjectCollectionRemoveListener, DropT
 	}
 
 	@Override protected void initSubclassGUI() throws Throwable {
-		panel = new JTable(new BeanTableModel(Object.class));
+		tableModel = new BeanTableModel(Map.Entry.class);
+		panel = new SafeJTable(tableModel);
 		panel.setLayout(new VerticalLayout());
 
 		dropGlass = new JJPanel();
@@ -215,20 +215,14 @@ extends ScreenBoxPanel<BoxType> implements ObjectCollectionRemoveListener, DropT
 		setLayout(new BorderLayout());
 		add("North", buttonPanel);
 		add("Center", stack);
+		
 	}
 
 	public void reloadContents00() {
 
 		final Collection collection = getCollection();
 		panel.removeAll();
-		Iterator it;
-		if (collection != null) {
-			it = collection.iterator();
-		} else {
-			it = localCollection.getObjects();
-		}
-		while (it.hasNext()) {
-			Object value = it.next();
+		for (Object value : collection) {
 			if (filter != null) {
 				if (!filter.isInstance(value))
 					continue;
@@ -240,25 +234,39 @@ extends ScreenBoxPanel<BoxType> implements ObjectCollectionRemoveListener, DropT
 		repaint();
 	}
 
-	private void addRow(final Collection collection, Object value) {
-		if (true) {
-			tableModel.addRow(value);
-			return;
-		}
-		SmallObjectView view = new SmallObjectView(context, localCollection, value, collection) {
+	private void addRow(final Collection collection, final Object value) {
+
+		final SmallObjectView view = new SmallObjectView(context, localNOC, value, collection) {
 			@Override public void valueChanged(Object oldValue, Object newValue) {
-				replaceInContext(localCollection, oldValue, newValue);
+				replaceInContext(localNOC, oldValue, newValue);
 				replace(collection, oldValue, newValue);
 				super.valueChanged(oldValue, newValue);
 			}
 		};
 		view.setRemoveListener(new ObjectCollectionRemoveListener() {
 			@Override public void objectRemoved(Object oldValue, Collection parent) {
-				replaceInContext(localCollection, oldValue, null);
+				replaceInContext(localNOC, oldValue, null);
 			}
 		});
 		view.setRemoveListener(this);
-		tableModel.addRow(view);
+		if (true) {
+			tableModel.addRow(new Map.Entry() {
+
+				@Override public String getKey() {
+					return localNOC.getTitleOf(value);
+				}
+
+				@Override public Object getValue() {
+					return view;
+				}
+
+				@Override public Object setValue(Object value) {
+					view.setObject(value);
+					return view;
+				}
+			});
+			return;
+		}
 	}
 
 	public void completeSubClassGUI() {

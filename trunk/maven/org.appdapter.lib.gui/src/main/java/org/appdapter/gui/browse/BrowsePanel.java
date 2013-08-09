@@ -114,7 +114,7 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 		Utility.browserPanel = this;
 		myTreeModel = tm;
 		initComponents();
-		Utility.theBoxPanelDisplayContext = myBoxPanelSwitchableViewImpl = new ObjectTabsForTabbedView(myBoxPanelTabPane);
+		Utility.theBoxPanelDisplayContext = myBoxPanelSwitchableViewImpl = new ObjectTabsForTabbedView(myBoxPanelTabPane, true);
 		setTabbedPaneOptions();
 		Utility.controlApp = app = new DisplayContextUIImpl(myBoxPanelSwitchableViewImpl, this, ctx);
 		Utility.clipBoardUtil = new CollectionEditorUtil(clipboard.getName(), app, clipboard);

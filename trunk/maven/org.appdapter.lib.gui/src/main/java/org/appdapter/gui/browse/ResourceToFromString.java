@@ -1,7 +1,5 @@
 package org.appdapter.gui.browse;
 
-import static org.appdapter.core.log.Debuggable.printStackTrace;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -14,48 +12,88 @@ import java.util.Map;
 import java.util.Queue;
 
 import org.appdapter.bind.rdf.jena.model.JenaLiteralUtils;
+import org.appdapter.bind.rdf.jena.model.ModelStuff;
 
+import com.hp.hpl.jena.enhanced.EnhGraph;
+import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.RDFReader;
-import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.rdf.model.impl.ResourceImpl;
 
-public class ResourceToFromString extends ToFromKeyConverter<Resource, String> {
+public class ResourceToFromString extends ToFromKeyConverter<Object, String> {
 
-	private Map<String, String> map1 = new HashMap();
+	private static Map<String, String> knownNamespaces = new HashMap();
+	static Model oenhmodel;
+	Model enhmodel;
 
 	public ResourceToFromString(Model model) {
-		super(Resource.class, String.class);
+		super(Object.class, String.class);
+		enhmodel = model;
 		offerModel(model);
 	}
 
 	private void offerModel(Model model2) {
 		if (model2 == null)
 			return;
+		oenhmodel = model2;
 		Map map2 = model2.getNsPrefixMap();
 
-		map1.putAll(map2);
+		knownNamespaces.putAll(map2);
 
 	}
 
-	@Override public String toKey(Resource toBecomeAString) {
-		offerModel(toBecomeAString.getModel());
-		String str = "" + JenaLiteralUtils.cvtToString(toBecomeAString, toBecomeAString.getModel());
-		Object r = fromKey(str, valueClass);
-		return "" + str;
+	@Override public String toKey(Object toBecomeAString) {
+		RDFNode rdfnode = null;
+		Model model = getModel(toBecomeAString);
+		offerModel(model);
+		Object literalOrNode_URI = JenaLiteralUtils.cvtToString(toBecomeAString, model);
+		String str = "" + literalOrNode_URI;
+		if (false) {
+			Object r = fromKey(str, RDFNode.class);
+			if (!(r instanceof RDFNode)) {
+				str = "" + literalOrNode_URI;
+			}
+		}
+		return str;
 	}
 
-	@Override public Resource fromKey(String title, Class further) {
+	public Model getModel(Object toBecomeAString) {
+		if (toBecomeAString instanceof RDFNode) {
+			return (((RDFNode) toBecomeAString).getModel());
+		}
+		Model model = enhmodel;
+		if (model == null) {
+			model = oenhmodel;
+		}
+		return model;
+	}
+
+	@Override public Object fromKey(String title, Class further) {
 
 		try {
-			final Model model = ModelFactory.createDefaultModel();
-			model.setNsPrefixes(map1);
-			RDFReader reader = model.getReader("N3");
-			reader.read(model, new StringInputStream("<#pat> <#knows> " + title + " .", Charset.defaultCharset()), "");
+			Model model = enhmodel;
+			if (model == null) {
+				model = oenhmodel;
+			}
+			if (model == null) {
+				model = ModelFactory.createDefaultModel();
+				model.setNsPrefixes(knownNamespaces);
+			}
 
-			return (Resource) model.listStatements().next().getObject();
+			if (true) {
+				Node node = ModelStuff.create(model, title);
+				if (further.isInstance(node))
+					return node;
+				return new ResourceImpl(node, (EnhGraph) model);
+			}
+			RDFReader reader = model.getReader("N3");
+			reader.read(model, new StringInputStream("<#pat> <#knows> " + title + " .", Charset.defaultCharset()), "http://noprefix.com/noprefix#");
+
+			return model.listStatements().next().getObject();
 		} catch (Throwable t) {
-			printStackTrace(t, System.err, 3);
+			//	printStackTrace(t, System.err, 3);
 			return null;
 		}
 	}

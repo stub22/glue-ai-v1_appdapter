@@ -43,6 +43,8 @@ import org.appdapter.gui.api.NamedObjectCollection;
 import org.appdapter.gui.browse.ToFromKeyConverter;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.editors.ValueEditor;
+import org.appdapter.gui.table.CellEditorComponent;
+import org.appdapter.gui.table.PropertyEditorToCellEditor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -91,7 +93,7 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 		}
 
 		public String getSelectedItem() {
-			return (String) converter.toKeyFromObject(getValue());
+			return (String) getToFromConv().toKeyFromObject(getValue());
 		}
 
 		private void writeValue() {
@@ -461,10 +463,9 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 
 	public ToFromKeyConverter getToFromConv() {
 		if (converter == null) {
-			converter = getToFromStringConverter(getReturnType());
-			if (converter == null) {
-				return new Utility.ToFromStringNoSpecialized();
-			}
+			converter = Utility.getToFromStringConverter(type);
+			if (converter == null)
+				return Utility.FROM_STRING_NOT_SPECIALIZED;
 		}
 		return converter;
 	}
