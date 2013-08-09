@@ -7,6 +7,7 @@ import java.beans.Customizer;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
 import java.util.Collection;
+import java.util.Map;
 
 import javax.swing.JLabel;
 
@@ -19,10 +20,12 @@ import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.GetSetObject;
 import org.appdapter.gui.api.SetObject;
 import org.appdapter.gui.browse.Utility;
-import org.appdapter.gui.swing.ConstructorsListPanel;
 import org.appdapter.gui.swing.CollectionContentsPanel;
+import org.appdapter.gui.swing.CollectionContentsPanelUsingTable;
+import org.appdapter.gui.swing.ConstructorsListPanel;
 import org.appdapter.gui.swing.ErrorPanel;
-import org.appdapter.gui.swing.*;
+import org.appdapter.gui.swing.LargeObjectChooser;
+import org.appdapter.gui.swing.MapContentsPanel;
 import org.appdapter.gui.swing.MethodsPanel;
 import org.appdapter.gui.swing.ObjectTabsForTabbedView;
 import org.appdapter.gui.swing.ObjectView;
@@ -169,7 +172,7 @@ extends ObjectView<BoxType> implements Customizer, GetSetObject, ObjectPanelHost
 		setLayout(new BorderLayout());
 		tabs = new JideTabbedPane();
 		add("Center", tabs);
-		objTabs = new ObjectTabsForTabbedView(tabs);
+		objTabs = new ObjectTabsForTabbedView(tabs, false);
 	}
 
 	@Override public Dimension getPreferredSize() {
@@ -313,6 +316,33 @@ extends ObjectView<BoxType> implements Customizer, GetSetObject, ObjectPanelHost
 				tabs.addChangeListener(cc);
 			} catch (Exception err) {
 				tabs.insertTab("Contents", null, new ErrorPanel(title + " could not be shown", err), null, 0);
+			}
+
+			try {
+				CollectionContentsPanelUsingTable cc = new CollectionContentsPanelUsingTable(context, title, (Collection) object, tabs);
+				tabs.insertTab("Contents using JTable", null, cc, null, 0);
+				tabs.addChangeListener(cc);
+			} catch (Exception err) {
+				tabs.insertTab("Contents using JTable", null, new ErrorPanel(title + " could not be shown", err), null, 0);
+			}
+		}
+	}
+
+	static public class MapCustomizer extends TabPanelMaker {
+
+		@Override public void setTabs(BoxPanelSwitchableView tabs, DisplayContext context, Object object, Class objClass, SetTabTo cmds) {
+			if (!(object instanceof Map)) {
+				return;
+			}
+			String title = "The contents of " + object;
+			if (cmds != SetTabTo.ADD)
+				return;
+			try {
+				MapContentsPanel cc = new MapContentsPanel(context, title, (Map) object, tabs);
+				tabs.insertTab("Map Contents", null, cc, null, 0);
+				tabs.addChangeListener(cc);
+			} catch (Exception err) {
+				tabs.insertTab("Map Contents", null, new ErrorPanel(title + " could not be shown", err), null, 0);
 			}
 		}
 	}

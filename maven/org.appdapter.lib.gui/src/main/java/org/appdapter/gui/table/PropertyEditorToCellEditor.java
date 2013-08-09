@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.appdapter.gui.swing;
+package org.appdapter.gui.table;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -39,6 +39,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.table.TableCellEditor;
 import javax.swing.text.JTextComponent;
 import javax.swing.tree.TreeCellEditor;
+
 
 /**
  * Allows to use any PropertyEditor as a Table or Tree cell editor. <br>

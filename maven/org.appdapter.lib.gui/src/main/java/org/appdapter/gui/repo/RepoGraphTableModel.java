@@ -16,14 +16,18 @@
 
 package org.appdapter.gui.repo;
 
+import java.awt.Component;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JTable;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.core.store.Repo.GraphStat;
 import org.appdapter.core.store.RepoBox;
+import org.appdapter.gui.table.SafeJTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,12 +36,23 @@ import org.slf4j.LoggerFactory;
  */
 public class RepoGraphTableModel extends AbstractTableModel {
 	static Logger theLogger = LoggerFactory.getLogger(RepoGraphTableModel.class);
-	static String theColNames[] = { "name", "size", "age-update", "strength/status", "content summary" };
-	static Class theColClasses[] = { String.class, Long.class, Double.class, String.class, String.class };
+	static String theColNames[] = { "x", "name", "size", "age-update", "strength/status", "content summary" };
+	static Class theColClasses[] = { Component.class, String.class, Long.class, Double.class, String.class, String.class };
 
 	private List<GraphStat> myCachedStats = new ArrayList<GraphStat>();
 
 	private RepoBox myFocusRB;
+	private JTable myTable;
+
+	@Override public void addTableModelListener(TableModelListener l) {
+		if (l instanceof JTable) {
+			if (myTable == null) {
+				this.myTable = (JTable) l;
+				SafeJTable.setComponentRenderers(myTable, this);
+			}
+		}
+		super.addTableModelListener(l);
+	}
 
 	protected void refreshStats(RepoBox repoBox) {
 		myCachedStats = repoBox.getAllGraphStats();
@@ -63,15 +78,23 @@ public class RepoGraphTableModel extends AbstractTableModel {
 	}
 
 	@Override public int getColumnCount() {
-		return 5;
+		return theColNames.length;
 	}
 
 	@Override public Object getValueAt(int rowIndex, int columnIndex) {
 		GraphStat stat = myCachedStats.get(rowIndex);
 		switch (columnIndex) {
-		case 0:
-			return stat.graphURI;
+		case 0: {
+			if (myFocusRB != null) {
+				Box subBox = myFocusRB.findGraphBox(stat.graphURI);
+				if (subBox != null)
+					return subBox;
+			}
+			return null;//stat.graphURI;
+		}
 		case 1:
+			return stat.graphURI;
+		case 2:
 			return new Long(stat.statementCount);
 		default:
 			return new Double(-1.0);

@@ -17,7 +17,7 @@ import org.appdapter.api.trigger.AnyOper.UISalient;
 import org.appdapter.core.convert.ReflectUtils;
 
 @UIHidden
-public abstract class Debuggable {
+public abstract class Debuggable extends BasicDebugger {
 
 	@UISalient
 	public static boolean QuitelyDoNotShowExceptions = false;
@@ -191,7 +191,10 @@ public abstract class Debuggable {
 			return new HashSet<String>();
 		}
 	};
+	
+	@UISalient
 	public static boolean useDebuggableToString = true;
+	@UISalient
 	public static boolean useSystemConsoleBreaks = false;
 
 	public static String toInfoStringF(Object o) {
@@ -508,5 +511,5 @@ public abstract class Debuggable {
 		printStackTrace(e);
 
 	}
-
+	
 }

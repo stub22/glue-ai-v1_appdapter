@@ -1,8 +1,12 @@
-package org.appdapter.gui.repo;
+package org.appdapter.gui.table;
 
-import java.lang.reflect.*;
-import java.util.*;
-import javax.swing.table.*;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.JTable;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.AbstractTableModel;
 
 /**
  *  A TableModel that better supports the processing of rows of data. That
@@ -26,6 +30,7 @@ abstract class RowTableModel<T> extends AbstractTableModel {
 	protected Boolean[] isColumnEditable;
 	private Class rowClass = Object.class;
 	private boolean isModelEditable = true;
+	protected JTable myTable;
 
 	/**
 	 *  Constructs a <code>RowTableModel</code> with the row class.
@@ -494,5 +499,15 @@ abstract class RowTableModel<T> extends AbstractTableModel {
 		}
 
 		return buffer.toString().replaceAll("_", " ");
+	}
+
+	@Override public void addTableModelListener(TableModelListener l) {
+		if (l instanceof JTable) {
+			if (myTable == null) {
+				this.myTable = (JTable) l;
+				SafeJTable.setComponentRenderers(myTable, this);
+			}
+		}
+		super.addTableModelListener(l);
 	}
 }

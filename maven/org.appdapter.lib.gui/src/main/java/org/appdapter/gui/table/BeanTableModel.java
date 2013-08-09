@@ -1,7 +1,15 @@
-package org.appdapter.gui.repo;
+package org.appdapter.gui.table;
 
-import java.lang.reflect.*;
-import java.util.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
+import org.appdapter.core.convert.ReflectUtils;
+import org.appdapter.core.log.Debuggable;
 
 /**
  *  The BeanTableModel will use reflection to determine the columns of
@@ -26,23 +34,11 @@ import java.util.*;
 public class BeanTableModel<T> extends RowTableModel<T> {
 	//  Map "type" to "class". Class is needed for the getColumnClass() method.
 
-	private static Map<Class, Class> primitives = new HashMap<Class, Class>(10);
-
-	static {
-		primitives.put(Boolean.TYPE, Boolean.class);
-		primitives.put(Byte.TYPE, Byte.class);
-		primitives.put(Character.TYPE, Character.class);
-		primitives.put(Double.TYPE, Double.class);
-		primitives.put(Float.TYPE, Float.class);
-		primitives.put(Integer.TYPE, Integer.class);
-		primitives.put(Long.TYPE, Long.class);
-		primitives.put(Short.TYPE, Short.class);
-	}
-
 	private Class beanClass;
 	private Class ancestorClass;
 
 	private List<ColumnInformation> columns = new ArrayList<ColumnInformation>();
+	private List<String> onlyColumns;
 
 	/**
 	 *  Constructs an empty <code>BeanTableModel</code> for the specified bean.
@@ -84,20 +80,31 @@ public class BeanTableModel<T> extends RowTableModel<T> {
 	 *						 to the bean class can be included in the model.
 	 *  @param modelData      the data of the table
 	 */
-	public BeanTableModel(Class beanClass, Class ancestorClass, List<T> modelData) {
+	public BeanTableModel(Class beanClass, Class ancestorClass, List<T> modelData, String... colNames) {
 		super(beanClass);
 		this.beanClass = beanClass;
 		this.ancestorClass = ancestorClass;
+		this.modelData = modelData;
+		//  Initialize the column name List to the proper size. The actual
+		//  column names will be reset in the resetModelDefaults() method.
+		setOnlyColumns(colNames);
+	}
 
+	public void setOnlyColumns(String... colNames) {
+		this.onlyColumns = null;
+		if (colNames != null && colNames.length > 0) {
+			onlyColumns = Collections.unmodifiableList(Arrays.asList(colNames));
+		}
+		buildReflectionInfoRetainColNames();
+	}
+
+	private void buildReflectionInfoRetainColNames() {
 		//  Use reflection on the beanClass and ancestorClass to find properties
 		//  to add to the TableModel
 
-		createColumnInformation();
-
-		//  Initialize the column name List to the proper size. The actual
-		//  column names will be reset in the resetModelDefaults() method.
-
 		List<String> columnNames = new ArrayList<String>();
+
+		createColumnInformation();
 
 		for (ColumnInformation info : columns) {
 			columnNames.add(info.getName());
@@ -107,37 +114,66 @@ public class BeanTableModel<T> extends RowTableModel<T> {
 
 		super.setDataAndColumnNames(modelData, columnNames);
 		resetModelDefaults();
+
 	}
 
 	/*
 	 *  Use reflection to find all the methods that should be included in the
 	 *  model.
 	 */
-	@SuppressWarnings("unchecked") private void createColumnInformation() {
-		Method[] theMethods = beanClass.getMethods();
+	@SuppressWarnings("unchecked") protected void createColumnInformation() {
+		Collection<Method> theMethods;
 
+		if (usesColumnFilter()) {
+
+			for (String thePropName : onlyColumns) {
+				buildColumnInformation(thePropName);
+			}
+			if (columns.size() == onlyColumns.size()) {
+				// we did good!
+				return;
+			}
+			theMethods = ReflectUtils.getAllMethods(beanClass);
+		} else {
+			theMethods = Arrays.asList(beanClass.getMethods());
+		}
 		//  Check each method to make sure it should be used in the model
 
-		for (int i = 0; i < theMethods.length; i++) {
-			Method theMethod = theMethods[i];
+		for (Method theMethod : theMethods) {
 
-			if (theMethod.getParameterTypes().length == 0 && ancestorClass.isAssignableFrom(theMethod.getDeclaringClass())) {
+			if (ReflectUtils.isSynthetic(theMethod))
+				continue;
+			if (ReflectUtils.isStatic(theMethod))
+				continue;
+			if (theMethod.getParameterTypes().length == 0) {
+				if (ancestorClass != null) {
+					if (!ancestorClass.isAssignableFrom(theMethod.getDeclaringClass()))
+						continue;
+				}
 				String methodName = theMethod.getName();
 
-				if (theMethod.getName().startsWith("get"))
+				if (methodName.startsWith("get")) {
 					buildColumnInformation(theMethod, methodName.substring(3));
+					continue;
+				}
 
-				if (theMethod.getName().startsWith("is"))
+				if (methodName.startsWith("is")) {
 					buildColumnInformation(theMethod, methodName.substring(2));
+					continue;
+				}
 			}
 		}
+	}
+
+	public boolean usesColumnFilter() {
+		return onlyColumns != null && onlyColumns.size() > 0;
 	}
 
 	/*
 	 *	We found a method candidate so gather the information needed to fully
 	 *  implemennt the table model.
 	 */
-	@SuppressWarnings("unchecked") private void buildColumnInformation(Method theMethod, String theMethodName) {
+	@SuppressWarnings("unchecked") private void buildColumnInformation(Method theMethod, String thePropName) {
 		//  Make sure the method returns an appropriate type
 
 		Class returnType = getReturnType(theMethod);
@@ -145,17 +181,23 @@ public class BeanTableModel<T> extends RowTableModel<T> {
 		if (returnType == null)
 			return;
 
+		if (!onlyColumnsAllow(thePropName))
+			return;
+
 		//  Convert the method name to a display name for each column and
 		//  then check for a related "set" method.
 
-		String headerName = formatColumnName(theMethodName);
+		String headerName = formatColumnName(thePropName);
 
 		Method setMethod = null;
+		setMethod = ReflectUtils.getDeclaredMethod(beanClass, "set" + thePropName, theMethod.getReturnType());
 
-		try {
-			String setMethodName = "set" + theMethodName;
-			setMethod = beanClass.getMethod(setMethodName, theMethod.getReturnType());
-		} catch (NoSuchMethodException e) {
+		if (setMethod == null) {
+			setMethod = ReflectUtils.getDeclaredMethod(beanClass, "is" + thePropName, theMethod.getReturnType());
+		}
+
+		if (setMethod == null) {
+			setMethod = ReflectUtils.getDeclaredMethod(beanClass, "change" + thePropName, theMethod.getReturnType());
 		}
 
 		//  We have all the information we need, so save it for later use
@@ -165,20 +207,42 @@ public class BeanTableModel<T> extends RowTableModel<T> {
 		columns.add(ci);
 	}
 
+	@SuppressWarnings("unchecked") private void buildColumnInformation(String thePropName) {
+		//  Make sure the method returns an appropriate type
+
+		if (!onlyColumnsAllow(thePropName))
+			return;
+
+		//  Convert the method name to a display name for each column and
+		//  then check for a related "set" method.
+
+		String headerName = formatColumnName(thePropName);
+
+		Method getMethod = null;
+		getMethod = ReflectUtils.getDeclaredMethod(beanClass, "get" + thePropName);
+
+		if (getMethod == null) {
+			getMethod = ReflectUtils.getDeclaredMethod(beanClass, "is" + thePropName);
+		}
+		buildColumnInformation(getMethod, thePropName);
+	}
+
 	/*
 	 *  Make sure the return type of the method is something we can use
 	 */
 	private Class getReturnType(Method theMethod) {
-		Class returnType = theMethod.getReturnType();
+		Class returnType = ReflectUtils.getReturnType(theMethod);
 
-		if (returnType.isInterface() || returnType.isArray())
-			return null;
+		//if (returnType.isInterface() || returnType.isArray()) return null;
 
 		//  The primitive class type is different then the wrapper class of the
 		//  primitive. We need the wrapper class.
 
-		if (returnType.isPrimitive())
-			returnType = primitives.get(returnType);
+		if (returnType.isPrimitive()) {
+			returnType = ReflectUtils.nonPrimitiveTypeFor(returnType);
+		}
+		if (returnType == Void.class)
+			return null;
 
 		return returnType;
 	}
@@ -186,15 +250,56 @@ public class BeanTableModel<T> extends RowTableModel<T> {
 	/*
 	 *  Use information collected from the bean to set model default values.
 	 */
-	private void resetModelDefaults() {
+	protected void resetModelDefaults() {
 		columnNames.clear();
+		int skipped = 0;
+		int cs = columns.size();
+		if (cs == 0) {
+			createColumnInformation();
+			cs = columns.size();
+			if (cs == 0) {
 
-		for (int i = 0; i < columns.size(); i++) {
-			ColumnInformation info = columns.get(i);
-			columnNames.add(info.getName());
-			super.setColumnClass(i, info.getReturnType());
-			super.setColumnEditable(i, info.getSetter() == null ? false : true);
+			}
 		}
+		List<ColumnInformation> removeThese = new ArrayList<ColumnInformation>();
+		for (int i = 0; i < cs; i++) {
+			ColumnInformation info = columns.get(i);
+			String name = info.getName();
+			if (!onlyColumnsAllow(name)) {
+				skipped++;
+				removeThese.add(info);
+			}
+		}
+
+		if (skipped > 0) {
+			columns.removeAll(removeThese);
+		}
+
+		for (int i = 0; i < cs; i++) {
+			ColumnInformation info = columns.get(i);
+			String name = info.getName();
+			columnNames.add(name);
+			setColumnInfo(i, info);
+		}
+
+		if (skipped > 0) {
+			if (columnNames.size() == 0) {
+				onlyColumns = null;
+				resetModelDefaults();
+			}
+		}
+	}
+
+	private void setColumnInfo(int i, ColumnInformation info) {
+		super.setColumnClass(i, info.getReturnType());
+		super.setColumnEditable(i, info.getSetter() == null ? false : true);
+	}
+
+	protected boolean onlyColumnsAllow(String name) {
+		if (onlyColumns != null && onlyColumns.size() > 0) {
+			return onlyColumns.contains(name);
+		}
+		return true;
 	}
 
 	/**
@@ -302,7 +407,7 @@ public class BeanTableModel<T> extends RowTableModel<T> {
 	/*
 	 *  Class to hold data required to implement the TableModel interface
 	 */
-	private class ColumnInformation implements Comparable<ColumnInformation> {
+	static private class ColumnInformation extends Debuggable implements Comparable<ColumnInformation> {
 		private String name;
 		private Class returnType;
 		private Method getter;
