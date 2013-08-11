@@ -1,6 +1,8 @@
 package org.appdapter.gui.trigger;
 
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Collection;
 
 import javax.swing.Action;
 import javax.swing.JButton;
@@ -18,8 +20,8 @@ import org.appdapter.gui.swing.SafeJMenuItem;
 public class TriggerPopupMenu extends JPopupMenu {
 	final TriggerMenuController controller;
 
-	public TriggerPopupMenu(DisplayContext context, NamedObjectCollection noc, Object object) {
-		controller = new TriggerMenuController(context, noc, object, this);
+	public TriggerPopupMenu(DisplayContext context, MouseEvent e, NamedObjectCollection noc, Collection object) {
+		controller = new TriggerMenuController(context, e, noc, object, this);
 	}
 
 	/**
@@ -63,6 +65,11 @@ public class TriggerPopupMenu extends JPopupMenu {
 		mi.setHorizontalTextPosition(JButton.TRAILING);
 		mi.setVerticalTextPosition(JButton.CENTER);
 		return mi;
+	}
+
+	public void addObjectMenu(Object o) {
+		controller.addObjectMenu(o);
+		
 	}
 
 }

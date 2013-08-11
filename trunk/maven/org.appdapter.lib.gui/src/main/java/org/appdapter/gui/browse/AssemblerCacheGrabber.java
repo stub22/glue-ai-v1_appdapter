@@ -20,7 +20,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JTree;
 
+import org.appdapter.api.trigger.ABoxImpl;
 import org.appdapter.api.trigger.AnyOper;
+import org.appdapter.api.trigger.AnyOper.UIHidden;
 import org.appdapter.api.trigger.AnyOper.UISalient;
 import org.appdapter.bind.rdf.jena.assembly.AssemblerUtils;
 import org.appdapter.core.component.ComponentCache;
@@ -30,6 +32,8 @@ import org.appdapter.core.log.Debuggable;
 import org.appdapter.core.name.Ident;
 import org.appdapter.gui.api.BT;
 import org.appdapter.gui.api.NamedObjectCollection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.jidesoft.swing.AutoCompletion;
 import com.jidesoft.swing.AutoCompletionComboBox;
@@ -43,17 +47,21 @@ import com.jidesoft.swing.TreeSearchable;
 
 public class AssemblerCacheGrabber extends BasicDebugger implements AnyOper.Singleton, AnyOper.Autoload {
 
+	static Logger theLogger = LoggerFactory.getLogger(AssemblerCacheGrabber.class);
+	static int instances = 0;
+
+	public AssemblerCacheGrabber() {
+		instances++;
+		theLogger.warn("Made this " + instances);
+	}
+
+	@UISalient(ResultIsSingleton = true)//
 	public Map<Class, ComponentCache> getCacheMap() {
 		return AssemblerUtils.getComponentCacheMap(AssemblerUtils.getDefaultSession());
 	}
 
 	public static String anyToString(Object any) {
 		return "" + any;
-	}
-
-	@Override public String toString() {
-		// TODO Auto-generated method stub
-		return super.toString();
 	}
 
 	public boolean longThreadQuit = false;
@@ -104,17 +112,16 @@ public class AssemblerCacheGrabber extends BasicDebugger implements AnyOper.Sing
 			}
 		});
 	}
-	
 
-	protected String[] _fontNames;
-	protected List<String> _fontList;
+	static protected String[] _fontNames;
+	static protected List<String> _fontList;
 
-	public Component getDemoPanel() {
+	@UISalient public Component getDemoPanel() {
 		_fontNames = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
 		_fontList = Arrays.asList(_fontNames);
 
 		JPanel panel1 = createPanel1();
-		JPanel panel2 = createAutoCompleteForTree();
+		JPanel panel2 = createAutoCompleteForTree(Utility.browserPanel.getTree());
 
 		JPanel panel = new JPanel(new BorderLayout(6, 6));
 		panel.add(panel1, BorderLayout.BEFORE_FIRST_LINE);
@@ -122,7 +129,7 @@ public class AssemblerCacheGrabber extends BasicDebugger implements AnyOper.Sing
 		return panel;
 	}
 
-	private JPanel createPanel1() {
+	@UIHidden private JPanel createPanel1() {
 		JPanel panel = new JPanel();
 		panel.setLayout(new JideBoxLayout(panel, JideBoxLayout.Y_AXIS));
 		panel.setBorder(BorderFactory.createCompoundBorder(new JideTitledBorder(new PartialEtchedBorder(PartialEtchedBorder.LOWERED, PartialSide.NORTH), "AutoCompletion combo box and text field",
@@ -179,17 +186,16 @@ public class AssemblerCacheGrabber extends BasicDebugger implements AnyOper.Sing
 		return panel;
 	}
 
-	public JPanel createAutoCompleteForTree() {
+	static public JPanel createAutoCompleteForTree(JTree tree) {
 		JPanel panel = new JPanel();
 		panel.setLayout(new JideBoxLayout(panel, JideBoxLayout.Y_AXIS));
-		panel.setBorder(BorderFactory.createCompoundBorder(new JideTitledBorder(new PartialEtchedBorder(PartialEtchedBorder.LOWERED, PartialSide.NORTH), "AutoCompletion with list and tree",
+		/*panel.setBorder(BorderFactory.createCompoundBorder(new JideTitledBorder(new PartialEtchedBorder(PartialEtchedBorder.LOWERED, PartialSide.NORTH), "AutoCompletion with list and tree",
 				JideTitledBorder.LEADING, JideTitledBorder.ABOVE_TOP), BorderFactory.createEmptyBorder(0, 0, 0, 0)));
-
+		*/
 		// create tree combobox
 		final JTextField treeTextField = new JTextField();
 		treeTextField.setName("AutoCompletion JTextField with JTree");
 		SelectAllUtils.install(treeTextField);
-		final JTree tree = Utility.browserPanel.getTree();
 		tree.setVisibleRowCount(10);
 		final TreeSearchable searchable = new TreeSearchable(tree);
 		searchable.setRecursive(true);
@@ -201,6 +207,8 @@ public class AssemblerCacheGrabber extends BasicDebugger implements AnyOper.Sing
 		panel.add(new JScrollPane(tree));
 		panel.add(Box.createVerticalStrut(12), JideBoxLayout.FIX);
 
+		if (true)
+			return panel;
 		_fontNames = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
 		_fontList = Arrays.asList(_fontNames);
 

@@ -17,6 +17,7 @@
 package org.appdapter.bind.rdf.jena.model;
 
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import org.appdapter.api.trigger.AnyOper.HasIdent;
@@ -24,6 +25,7 @@ import org.appdapter.bind.rdf.jena.assembly.AssemblerUtils;
 import org.appdapter.core.component.ComponentCache;
 import org.appdapter.core.component.IdentToObjectListener;
 import org.appdapter.core.component.KnownComponent;
+import org.appdapter.core.convert.Converter;
 import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.core.name.FreeIdent;
@@ -98,7 +100,7 @@ public class JenaLiteralUtils {
 		return null;
 	}
 
-	static public <T> Object convertOrNull(Object obj, Class<T> objNeedsToBe, int maxCvt) {
+	static public <T> Object convertOrNull(Object obj, Class<T> objNeedsToBe) {
 		Object eval = obj;
 		boolean findComponent = KnownComponent.class.isAssignableFrom(objNeedsToBe);
 		if (obj instanceof ModelIdent) {
@@ -167,7 +169,7 @@ public class JenaLiteralUtils {
 				Debuggable.printStackTrace(ex);
 			}
 		}
-		Object eval =  node;
+		Object eval = node;
 		if (e.isLiteral()) {
 			LiteralLabel lit = node.getLiteral();
 			RDFDatatype dt = lit.getDatatype();
@@ -287,7 +289,7 @@ public class JenaLiteralUtils {
 	public static Object cvtToString(Object value, PrefixMapping mapping) {
 		if (value == null)
 			return null;
-		Object val = JenaLiteralUtils.convertOrNull(value, Object.class, 3);
+		Object val = JenaLiteralUtils.convertOrNull(value, Object.class);
 		if (val instanceof Node_URI) {
 			if (mapping == null) {
 				if (value instanceof PrefixMapping) {

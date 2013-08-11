@@ -78,6 +78,7 @@ ButtonFactory, AskIfEqual, UIAware, Action, ActionListener, KMCTrigger, GetDispl
 		}
 
 	};
+	protected String menuPath_cache;
 
 	final @Override public void actionPerformed(ActionEvent e) {
 		try {
@@ -135,7 +136,20 @@ ButtonFactory, AskIfEqual, UIAware, Action, ActionListener, KMCTrigger, GetDispl
 		return nym;
 	}
 
-	abstract public String getMenuPath();
+	public String getMenuPath() {
+		boolean was = Debuggable.isNotShowingExceptions();
+		Debuggable.setDoNotShowExceptions(true);
+		try {
+			if (this.menuPath_cache == null) {
+				menuPath_cache = makeMenuPath();
+			}
+			return this.menuPath_cache;
+		} finally {
+			Debuggable.setDoNotShowExceptions(was);
+		}
+	}
+
+	abstract public String makeMenuPath();
 
 	@Override public Object getValue(String key) {
 		return actionImpl.getValue(key);

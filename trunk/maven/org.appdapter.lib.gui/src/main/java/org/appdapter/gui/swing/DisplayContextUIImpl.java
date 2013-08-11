@@ -40,8 +40,8 @@ import org.appdapter.gui.api.POJOCollection;
 import org.appdapter.gui.api.POJOCollectionListener;
 import org.appdapter.gui.api.WrapperValue;
 import org.appdapter.gui.browse.Utility;
+import org.appdapter.gui.editors.Icons;
 import org.appdapter.gui.editors.RenameDialog;
-import org.appdapter.gui.repo.Icons;
 import org.appdapter.gui.trigger.AbstractTriggerAction;
 import org.appdapter.gui.trigger.TriggerMenuFactory;
 import org.appdapter.gui.util.PairTable;
@@ -113,7 +113,7 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 	class AddAction extends AbstractTriggerAction {
 
 		AddAction(Object val, NamedObjectCollection noc) {
-			super("Copy to " + noc.getName(), Icons.addToCollection);
+			super("Copy %o to %n", Icons.addToCollection);
 
 			super.currentCollection = noc;
 			this.setValue(val);
@@ -131,7 +131,7 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 	class PropertiesAction extends AbstractTriggerAction {
 
 		PropertiesAction(Object object) {
-			super("Properties", Utility.getIcon("properties"));
+			super("Properties of %o", Utility.getIcon("properties"));
 
 			this.setValue(object);
 		}
@@ -148,7 +148,7 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 	class RemoveAction extends AbstractTriggerAction {
 
 		RemoveAction(Object object, NamedObjectCollection noc) {
-			super("Remove from " + noc.getName(), Utility.getIcon("removeFromCollection"));
+			super("Remove %o from %n", Utility.getIcon("removeFromCollection"));
 			this.setValue(object);
 
 			this.currentCollection = noc;
@@ -163,7 +163,7 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 	class RenameAction extends AbstractTriggerAction {
 
 		RenameAction(Object object, NamedObjectCollection noc) {
-			super("Change label in " + noc.getName());
+			super("Change %o label in %n");
 
 			this.setValue(object);
 			currentCollection = noc;
@@ -205,7 +205,7 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 	class ViewAction extends AbstractTriggerAction {
 
 		ViewAction(Component value) {
-			super("View", Icons.viewObject);
+			super("View %o", Icons.viewObject);
 
 			this.setValue(value);
 		}
@@ -432,6 +432,7 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 	}
 
 	private void addCollectionActions(Object object, List actions, final NamedObjectCollection col) {
+		object = Utility.dref(object);
 		if (col != null) {
 			if (col.containsObject(object)) {
 				actions.add(new RenameAction(object, col));
@@ -555,6 +556,7 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 	}
 
 	public UserResult showScreenBox(Object object) {
+
 		return showScreenBox(null, object);
 	}
 

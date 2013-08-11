@@ -1,6 +1,8 @@
 package org.appdapter.gui.trigger;
 
-public interface TriggerForType {
+import org.appdapter.api.trigger.MenuName;
+
+public interface TriggerForType extends MenuName {
 
 	public Object getIdentityObject();
 

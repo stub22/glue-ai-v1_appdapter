@@ -21,8 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JTable;
+import javax.swing.ListModel;
 import javax.swing.event.TableModelListener;
-import javax.swing.table.AbstractTableModel;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.core.store.Repo.GraphStat;
@@ -30,16 +30,21 @@ import org.appdapter.core.store.RepoBox;
 import org.appdapter.gui.table.SafeJTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.appdapter.gui.table.RowTableModel;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public class RepoGraphTableModel extends AbstractTableModel {
+public class RepoGraphTableModel extends RowTableModel {
+	protected RepoGraphTableModel() {
+		super(GraphStat.class);
+	}
+
 	static Logger theLogger = LoggerFactory.getLogger(RepoGraphTableModel.class);
 	static String theColNames[] = { "x", "name", "size", "age-update", "strength/status", "content summary" };
 	static Class theColClasses[] = { Component.class, String.class, Long.class, Double.class, String.class, String.class };
 
-	private List<GraphStat> myCachedStats = new ArrayList<GraphStat>();
+	//private List<GraphStat> modelData = new ArrayList<GraphStat>();
 
 	private RepoBox myFocusRB;
 	private JTable myTable;
@@ -55,7 +60,7 @@ public class RepoGraphTableModel extends AbstractTableModel {
 	}
 
 	protected void refreshStats(RepoBox repoBox) {
-		myCachedStats = repoBox.getAllGraphStats();
+		modelData = repoBox.getAllGraphStats();
 		fireTableDataChanged();
 	}
 
@@ -74,16 +79,23 @@ public class RepoGraphTableModel extends AbstractTableModel {
 	}
 
 	@Override public int getRowCount() {
-		return myCachedStats.size();
+		if (modelData == null)
+			return 0;
+		return modelData.size();
 	}
 
 	@Override public int getColumnCount() {
 		return theColNames.length;
 	}
 
+	@Override public Object getElementAt(int row) {
+		return getValueAt(row, -1);
+	}
+
 	@Override public Object getValueAt(int rowIndex, int columnIndex) {
-		GraphStat stat = myCachedStats.get(rowIndex);
+		GraphStat stat = (GraphStat) modelData.get(rowIndex);
 		switch (columnIndex) {
+		case -1:
 		case 0: {
 			if (myFocusRB != null) {
 				Box subBox = myFocusRB.findGraphBox(stat.graphURI);
@@ -105,7 +117,7 @@ public class RepoGraphTableModel extends AbstractTableModel {
 	// Currently it is only the row that matters (column is ignored).
 	public Box findSubBox(int rowIndex, int columnIndex) {
 		Box subBox = null;
-		GraphStat stat = myCachedStats.get(rowIndex);
+		GraphStat stat = (GraphStat) modelData.get(rowIndex);
 		if (stat != null) {
 			String graphURI = stat.graphURI;
 			if (myFocusRB != null) {

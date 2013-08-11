@@ -65,7 +65,7 @@ public class OptionalArgFromCollectionAndConvertor implements OptionalArg {
 			if (a == null)
 				continue;
 			try {
-				a = converter.convert(a, pt, converter.MCVT);
+				a = converter.convert(a, pt, AggregateConverter.newMcvt());
 				if (pt.isInstance(a)) {
 					if (del)
 						alP[i] = null;

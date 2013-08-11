@@ -1,16 +1,16 @@
 package org.appdapter.gui.swing;
 
-import static org.appdapter.gui.browse.Utility.*;
-import static org.appdapter.core.log.Debuggable.*;
+import static org.appdapter.core.log.Debuggable.printStackTrace;
+
 import java.awt.BorderLayout;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyEditorSupport;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
-import java.util.Map;
 
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
@@ -100,19 +100,19 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 
 	@Override public void mouseClicked(MouseEvent e) {
 		if (e.isPopupTrigger()) {
-			showMenu(e.getX() + 5, e.getY() + 5);
+			showMenu(e.getX() + 5, e.getY() + 5, e);
 		}
 	}
 
 	@Override public void mousePressed(MouseEvent e) {
 		if (e.isPopupTrigger()) {
-			showMenu(e.getX() + 5, e.getY() + 5);
+			showMenu(e.getX() + 5, e.getY() + 5, e);
 		}
 	}
 
 	@Override public void mouseReleased(MouseEvent e) {
 		if (e.isPopupTrigger()) {
-			showMenu(e.getX() + 5, e.getY() + 5);
+			showMenu(e.getX() + 5, e.getY() + 5, e);
 		}
 	}
 
@@ -129,10 +129,10 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 		return model.getSelectedItem();
 	}
 
-	private void showMenu(int x, int y) {
+	private void showMenu(int x, int y, MouseEvent e) {
 		Object object = model.getSelectedBean();
 		if (object != null) {
-			TriggerPopupMenu menu = new TriggerPopupMenu(null, null, object);
+			TriggerPopupMenu menu = new TriggerPopupMenu(null, e, null, Arrays.asList(object));
 			add(menu);
 			menu.show(this, x, y);
 		}

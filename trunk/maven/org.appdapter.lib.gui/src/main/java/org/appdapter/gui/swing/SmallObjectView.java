@@ -24,6 +24,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Arrays;
 import java.util.Collection;
 
 import javax.swing.Icon;
@@ -333,7 +334,7 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 
 	@Override public void mouseClicked(MouseEvent e) {
 		if (e.isPopupTrigger()) {
-			showMenu(e.getX() + 5, e.getY() + 5);
+			showMenu(e);
 		} else {
 			/* try {
 			   collection.setSelected(getPOJO());
@@ -354,14 +355,14 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 
 	@Override public void mousePressed(MouseEvent e) {
 		if (e.isPopupTrigger()) {
-			showMenu(e.getX() + 5, e.getY() + 5);
+			showMenu(e);
 		} else {
 		}
 	}
 
 	@Override public void mouseReleased(MouseEvent e) {
 		if (e.isPopupTrigger()) {
-			showMenu(e.getX() + 5, e.getY() + 5);
+			showMenu(e);
 		}
 		//setFont(new Font("Serif", Font.PLAIN, 8));
 		//setToolTipText("Removes this object from its parent collection");
@@ -392,13 +393,17 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 		this.objectCollectionRemoveListener = l;
 	}
 
-	private void showMenu(int x, int y) {
+	private void showMenu(MouseEvent e) {
+		showMenu(e.getX() + 5, e.getY() + 5, e);
+	}
+
+	private void showMenu(int x, int y, MouseEvent e) {
 		Object object = getValue();
 		if (object == null) {
 			object = this;
 		}
 		if (true || !object.getClass().isPrimitive()) {
-			TriggerPopupMenu menu = new TriggerPopupMenu(context, maybeCoupled, object);
+			TriggerPopupMenu menu = new TriggerPopupMenu(context, e, maybeCoupled, Arrays.asList(object));
 			frontGlass.add(menu);
 			menu.show(frontGlass, x, y);
 		}

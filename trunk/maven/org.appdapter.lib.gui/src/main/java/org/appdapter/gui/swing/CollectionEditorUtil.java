@@ -9,6 +9,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.NotSerializableException;
+import java.util.Arrays;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -24,7 +25,7 @@ import org.appdapter.gui.api.NamedObjectCollection;
 import org.appdapter.gui.box.BoxedCollectionImpl;
 import org.appdapter.gui.browse.Settings;
 import org.appdapter.gui.browse.Utility;
-import org.appdapter.gui.repo.Icons;
+import org.appdapter.gui.editors.Icons;
 import org.appdapter.gui.trigger.TriggerMenu;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -255,7 +256,7 @@ public class CollectionEditorUtil implements PropertyChangeListener {
 
 		Object selected = collection.getSelectedObject();
 		if (selected != null) {
-			selectedMenu = new TriggerMenu("With Selected", null, collection, selected);
+			selectedMenu = new TriggerMenu("With Selected", null, null, collection, Arrays.asList(selected));
 			menuBar.add(selectedMenu);
 		}
 		nameItemChooserPanel.invalidate();

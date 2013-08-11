@@ -2,6 +2,7 @@ package org.appdapter.gui.browse;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.List;
 
 import org.appdapter.core.convert.Converter;
 import org.appdapter.core.convert.NoSuchConversionException;
@@ -11,7 +12,7 @@ abstract public class ToFromKeyConverter<VALUECLASS, KEYCLASS> implements Conver
 	protected Class<VALUECLASS> valueClass;
 	protected Class<KEYCLASS> keyClass;
 
-	@Override public Integer declaresConverts(Object val, Class valClass, Class objNeedsToBe, int maxCvt) {
+	@Override public Integer declaresConverts(Object val, Class valClass, Class objNeedsToBe, List maxCvt) {
 		if (valClass != keyClass)
 			return WONT;
 		return CASTING_ONLY.declaresConverts(val, valueClass, objNeedsToBe, maxCvt);
@@ -26,7 +27,7 @@ abstract public class ToFromKeyConverter<VALUECLASS, KEYCLASS> implements Conver
 		valueClass = null;
 	}
 
-	@Override public <T> T convert(Object obj, Class<T> objNeedsToBe, int maxCvt) throws NoSuchConversionException {
+	@Override public <T> T convert(Object obj, Class<T> objNeedsToBe, List maxCvt) throws NoSuchConversionException {
 		if (obj == null)
 			throw new NoSuchConversionException(obj, objNeedsToBe);
 		Class objClass = obj.getClass();
@@ -42,7 +43,7 @@ abstract public class ToFromKeyConverter<VALUECLASS, KEYCLASS> implements Conver
 	public abstract VALUECLASS fromKey(KEYCLASS title, Class specializedMaybe);
 
 	public KEYCLASS toKeyFromObject(Object toBecomeAKey) {
-		return toKey((VALUECLASS) valueClass.cast(toBecomeAKey));
+		return toKey((VALUECLASS) toBecomeAKey);
 	}
 
 	public abstract KEYCLASS toKey(VALUECLASS toBecomeAKey);
@@ -73,6 +74,5 @@ abstract public class ToFromKeyConverter<VALUECLASS, KEYCLASS> implements Conver
 			throw cce;
 		throw new ClassCastException(valueClass + " fromKey " + title);
 	}
-
 
 }

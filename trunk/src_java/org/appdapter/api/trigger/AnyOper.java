@@ -19,6 +19,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 import org.appdapter.core.component.KnownComponent;
+import org.appdapter.core.convert.OptionalArg;
 import org.appdapter.core.name.Ident;
 
 /**
@@ -34,9 +35,11 @@ public interface AnyOper {
 	public interface Singleton {
 
 	}
+
 	public interface Autoload {
 
 	}
+
 	/**
 		 * @author Administrator
 		 *
@@ -79,6 +82,19 @@ public interface AnyOper {
 		 */
 		public boolean PasteDropTarget() default false;
 
+		/**
+		 *  How the missing (rest of the) arguments (beyond the first) is pulled from App's optional Arg space 
+		 * @return 
+		 */
+		public short UseOptionalArgs() default OptionalArg.OPTIONAL_FROM_DEFAULTS;
+
+		/**
+		 *  true if member when called produces an App Singleton (as well as a Result) 
+		 * @return 
+		 */
+		public boolean ResultIsSingleton() default false;
+		
+		
 		/**
 		 *  "" = use the splitted of camelcase for methodname
 		 * @return 

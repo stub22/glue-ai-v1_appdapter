@@ -53,6 +53,9 @@ public interface NamedObjectCollection //
 	//POJOBox findOrCreateBox(Object object);
 
 	boolean addBoxed(String named, BT screenBoxImpl);
+	
+	boolean addValueBoxed(Object named, BT screenBoxImpl);
+	
 
 	/**
 	 * Checks if this collection contains the given object

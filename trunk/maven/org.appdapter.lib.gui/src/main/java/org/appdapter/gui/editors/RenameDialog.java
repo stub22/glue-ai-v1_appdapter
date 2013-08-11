@@ -20,7 +20,6 @@ import javax.swing.event.DocumentListener;
 import org.appdapter.gui.api.BT;
 import org.appdapter.gui.api.BrowserPanelGUI;
 import org.appdapter.gui.browse.Utility;
-import org.appdapter.gui.repo.Icons;
 
 public class RenameDialog extends JFrame {
 	public JTextField nameField = new JTextField(10);
