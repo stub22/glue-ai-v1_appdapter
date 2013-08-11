@@ -398,7 +398,8 @@ public class Utility extends UtilityMenuOptions {
 		if (c.size() > 0) {
 			return (c);
 		}
-		return noSuchConversion(OptionalArg.class, type, null);
+		// noSuchConversion throws NoSuchConversionException or returns 'null' so it's castable to collection
+		return (Collection)noSuchConversion(OptionalArg.class, type, null);
 	}
 
 	private static boolean isCollection(Class type) {
