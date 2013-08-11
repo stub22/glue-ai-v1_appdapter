@@ -2,11 +2,11 @@ package org.appdapter.gui.browse;
 
 import java.awt.Container;
 import java.beans.PropertyVetoException;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.RandomAccess;
-
-import javax.swing.JTree;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContext;
@@ -14,7 +14,6 @@ import org.appdapter.api.trigger.MutableBox;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.BT;
 import org.appdapter.gui.api.NamedObjectCollection;
-import org.appdapter.gui.api.POJOCollection;
 import org.appdapter.gui.api.POJOCollectionListener;
 
 public class AddToTreeListener implements POJOCollectionListener {
@@ -103,15 +102,23 @@ public class AddToTreeListener implements POJOCollectionListener {
 
 		Class oc = obj.getClass();
 
-		if (oc.isArray())
+		if (oc.isArray()) {
+			Class compType = oc.getComponentType();
+			if (Utility.isSystemPrimitive(compType))
+				return;
+			for (Object o : (Object[]) obj) {
+				Utility.addObjectFeatures(o);
+			}
 			return;
-		if (Utility.isToStringType(oc))
-			return;
+		}
 		if (obj instanceof RandomAccess)
 			return;
 
+		if (Utility.isSystemPrimitive(oc))
+			return;
+
 		if (!isRemoval) {
-			// Utility.addObjectFeatures(obj);
+			//	Utility.addObjectFeatures(obj);
 		}
 
 		MutableBox objectBox = (MutableBox) box;
@@ -146,7 +153,7 @@ public class AddToTreeListener implements POJOCollectionListener {
 	}
 
 	private void saveInTreeWC(Box belowBox, Class oc, MutableBox objectBox, boolean isRemoval) {
-		String cn = Utility.getShortClassName(oc);
+		String cn = Utility.getSpecialClassName(oc);
 		MutableBox objectClassBox = (MutableBox) findOrCreateBox(cn, oc);
 		if (!isRemoval) {
 			mybctx.contextualizeAndAttachChildBox(belowBox, objectClassBox);

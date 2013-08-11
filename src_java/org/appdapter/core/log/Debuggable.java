@@ -19,8 +19,6 @@ import org.appdapter.core.convert.ReflectUtils;
 @UIHidden
 public abstract class Debuggable extends BasicDebugger {
 
-	@UISalient
-	public static boolean QuitelyDoNotShowExceptions = false;
 	public static int PRINT_DEPTH = 3;
 	public static LinkedList<Object> allObjectsForDebug = new LinkedList<Object>();
 
@@ -66,8 +64,10 @@ public abstract class Debuggable extends BasicDebugger {
 	public static RuntimeException warn(Object... objects) {
 		String dstr = Debuggable.toInfoStringA(objects, " : ", PRINT_DEPTH);
 		RuntimeException rte = new RuntimeException(dstr);
-		if (!QuitelyDoNotShowExceptions)
-			rte.printStackTrace();
+		if (isNotShowingExceptions()) {
+			return rte;
+		}
+		rte.printStackTrace();
 		return rte;
 	}
 
@@ -191,7 +191,7 @@ public abstract class Debuggable extends BasicDebugger {
 			return new HashSet<String>();
 		}
 	};
-	
+
 	@UISalient
 	public static boolean useDebuggableToString = true;
 	@UISalient
@@ -314,7 +314,7 @@ public abstract class Debuggable extends BasicDebugger {
 	public static <T> T notImplemented(Object... params) {
 		String msg = "notImplemented: " + toInfoStringA(params, ",", PRINT_DEPTH);
 		warn(msg);
-		if (true)
+		if (false)
 			throw new AbstractMethodError(msg);
 		return (T) null;
 	}
@@ -447,7 +447,7 @@ public abstract class Debuggable extends BasicDebugger {
 
 	public static void printStackTrace(final Throwable ex, PrintStream ps, int maxLines) {
 		Throwable e = ex;
-		if (QuitelyDoNotShowExceptions)
+		if (isNotShowingExceptions())
 			return;
 		while (e != null) {
 			printStackTraceLocal(e, ps, 100);
@@ -511,5 +511,15 @@ public abstract class Debuggable extends BasicDebugger {
 		printStackTrace(e);
 
 	}
-	
+
+	static InheritableThreadLocal<Boolean> QUITELY = new InheritableThreadLocal<Boolean>();
+
+	public static boolean isNotShowingExceptions() {
+		return QUITELY.get() == Boolean.TRUE;
+	}
+
+	public static void setDoNotShowExceptions(boolean quietlyDoNotShowExceptions) {
+		QUITELY.set(quietlyDoNotShowExceptions);
+	}
+
 }

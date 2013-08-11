@@ -20,6 +20,7 @@ import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 import org.appdapter.api.trigger.AnyOper.UIHidden;
@@ -399,11 +400,11 @@ public class PropertyDescriptorForField extends PropertyDescriptor implements Co
 		return "method " + method + " is not for " + getShortDescription();
 	}
 
-	@Override public Integer declaresConverts(Object val, Class valClass, Class objNeedsToBe, int maxCvt) {
+	@Override public Integer declaresConverts(Object val, Class valClass, Class objNeedsToBe, List maxCvt) {
 		return objNeedsToBe == proxyClass ? WILL : WONT;
 	}
 
-	@Override public <T> T convert(Object obj, Class<T> objNeedsToBe, int maxCvt) throws NoSuchConversionException {
+	@Override public <T> T convert(Object obj, Class<T> objNeedsToBe, List maxCvt) throws NoSuchConversionException {
 		if (objNeedsToBe.isInstance(obj))
 			return (T) obj;
 		if (objNeedsToBe.isAssignableFrom(proxyClass)) {

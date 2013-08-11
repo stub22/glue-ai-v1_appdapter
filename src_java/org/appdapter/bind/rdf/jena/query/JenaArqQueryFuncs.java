@@ -15,6 +15,7 @@
  */
 
 package org.appdapter.bind.rdf.jena.query;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,11 +34,13 @@ import com.hp.hpl.jena.query.ResultSetFormatter;
 import com.hp.hpl.jena.query.ResultSetRewindable;
 import com.hp.hpl.jena.query.Syntax;
 import com.hp.hpl.jena.shared.PrefixMapping;
+
 /**
  * @author Stu B. <www.texpedient.com>
  */
 public class JenaArqQueryFuncs {
-	public static BasicDebugger	theDbg = new BasicDebugger();
+	public static BasicDebugger theDbg = new BasicDebugger();
+
 	/**
 	 * 
 	 * @param inlineQueryText - query text to be parsed
@@ -45,14 +48,20 @@ public class JenaArqQueryFuncs {
 	 *			Jena Model can be used as a PrefixMapping)
 	 * @return - a parsed Jena ARQ query, ready for execution.
 	 */
-	public static Query parseQueryText(String inlineQueryText, PrefixMapping pmap) { 
+	public static Query parseQueryText(String inlineQueryText, PrefixMapping pmap) {
 		String qBaseURI = null;
 		Query query = new Query();
 		// Query prefixes must be applied before the query is parsed.
 		query.setPrefixMapping(pmap);
-		QueryFactory.parse(query, inlineQueryText, qBaseURI, Syntax.syntaxSPARQL); 
-		return query;
+		try {
+			QueryFactory.parse(query, inlineQueryText, qBaseURI, Syntax.syntaxSPARQL);
+			return query;
+		} catch (Throwable t) {
+			t.printStackTrace();
+			return query;
+		}
 	}
+
 	/**
 	 * 
 	 * @param resolvedQueryURL - URL to the query text
@@ -65,7 +74,7 @@ public class JenaArqQueryFuncs {
 			// DemoResources.resolveResourcePathToURL_WhichJenaCantUseInCaseOfJarFileRes(DemoResources.QUERY_PATH);
 			//   JenaArqQueryFuncs.class.getClassLoader()
 			if (optResourceCL != null) {
-				theDbg.logInfo("Registering classLoader for this package with JenaFM"); 
+				theDbg.logInfo("Registering classLoader for this package with JenaFM");
 				JenaFileManagerUtils.ensureClassLoaderRegisteredWithDefaultJenaFM(optResourceCL);
 			}
 			parsedQuery = QueryFactory.read(resolvedQueryURL);
@@ -74,6 +83,7 @@ public class JenaArqQueryFuncs {
 		}
 		return parsedQuery;
 	}
+
 	public static <ResType> ResType processQueryExecution(QueryExecution qe, JenaArqResultSetProcessor<ResType> resProc) {
 		ResType result = null;
 		try {
@@ -89,11 +99,12 @@ public class JenaArqQueryFuncs {
 		}
 		return result;
 	}
-	public static <ResType> ResType processDatasetQuery(Dataset ds, Query parsedQuery, QuerySolution initBinding, 
-					JenaArqResultSetProcessor<ResType> resProc) {
+
+	public static <ResType> ResType processDatasetQuery(Dataset ds, Query parsedQuery, QuerySolution initBinding, JenaArqResultSetProcessor<ResType> resProc) {
 		QueryExecution qe = QueryExecutionFactory.create(parsedQuery, ds, initBinding);
 		return processQueryExecution(qe, resProc);
 	}
+
 	public static List<QuerySolution> findAllSolutions(Dataset ds, Query parsedQuery, QuerySolution initBinding) {
 		JenaArqResultSetProcessor<List<QuerySolution>> resProc = new JenaArqResultSetProcessor<List<QuerySolution>>() {
 			@Override public List<QuerySolution> processResultSet(ResultSet rset) {
@@ -106,7 +117,8 @@ public class JenaArqQueryFuncs {
 			}
 		};
 		return processDatasetQuery(ds, parsedQuery, initBinding, resProc);
-	}	
+	}
+
 	public static String dumpResultSetToXML(ResultSet rs) {
 		ResultSetRewindable rsr = ResultSetFactory.makeRewindable(rs);
 		// Does this print to console in table format? 
@@ -114,6 +126,5 @@ public class JenaArqQueryFuncs {
 		rsr.reset();
 		String resultXML = ResultSetFormatter.asXMLString(rsr);
 		return resultXML;
-	}	
+	}
 }
-

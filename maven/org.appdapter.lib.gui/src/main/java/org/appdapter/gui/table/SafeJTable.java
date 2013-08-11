@@ -54,9 +54,13 @@ import javax.swing.text.JTextComponent;
 
 import org.appdapter.core.convert.NoSuchConversionException;
 import org.appdapter.gui.api.GetSetObject;
+import org.appdapter.gui.browse.SearchableDemo;
 import org.appdapter.gui.browse.Utility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jidesoft.swing.SearchableUtils;
+import com.jidesoft.swing.TableSearchable;
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -141,7 +145,7 @@ public class SafeJTable extends JTable implements GetSetObject {
 		TableCellEditor render = null;//super.getCellEditor(row, column);
 		if (render == null) {
 			Class cclz = getColumnClass(column);
-	
+
 			render = new CustomCellEditor(this, column, cclz, "getCellEditor row=" + row, listFromH);
 		}
 		if (render instanceof CustomCellEditor) {
@@ -426,6 +430,9 @@ public class SafeJTable extends JTable implements GetSetObject {
 
 		table.setSelectionBackground(table.getForeground());
 		table.setSelectionForeground(table.getBackground());
+
+		SearchableDemo.installSearchable(table);
+
 		int mwidth = tm.getColumnCount();
 		int twidth = table.getColumnCount();
 		TableModel prev = table.getModel();
@@ -502,10 +509,16 @@ public class SafeJTable extends JTable implements GetSetObject {
 				}
 
 			}
+			boolean wantSearchArea = true;
+			if (wantSearchArea && sp != null) {
+				Container spParent = sp.getParent();
+				spParent.remove(sp);
+				spParent.add(SearchableDemo.createTitledPanel("searchable", 'S', sp));
+			}
 			table.setBounds(25, 50, 950, 600);
 			table.setRowHeight((int) colmin.getHeight());
 			table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-			if (sp != null) {
+			if (false && sp != null) {
 				JViewport jvp = sp.getColumnHeader();
 				if (jvp != null) {
 					jvp.setMinimumSize(colmin);
@@ -525,6 +538,7 @@ public class SafeJTable extends JTable implements GetSetObject {
 		}
 
 	}
+
 
 	static public void setupRenderAndEditors(JTable table, int i, Class clz, TableColumn objColumn, CellConversions conv) {
 		TableCellRenderer renderer = objColumn.getCellRenderer();

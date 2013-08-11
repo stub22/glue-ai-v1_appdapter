@@ -1,5 +1,11 @@
 package org.appdapter.core.convert;
 
+import static org.appdapter.core.log.Debuggable.expectedToIgnore;
+import static org.appdapter.core.log.Debuggable.isNotShowingExceptions;
+import static org.appdapter.core.log.Debuggable.printStackTrace;
+import static org.appdapter.core.log.Debuggable.reThrowable;
+import static org.appdapter.core.log.Debuggable.warn;
+
 import java.awt.Component;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
@@ -37,26 +43,98 @@ import java.util.regex.Pattern;
 import org.appdapter.api.trigger.AnyOper.AskIfEqual;
 import org.appdapter.api.trigger.AnyOper.DontAdd;
 import org.appdapter.api.trigger.AnyOper.HRKRefinement;
+import org.appdapter.api.trigger.AnyOper.UIHidden;
+import org.appdapter.api.trigger.AnyOper.UISalient;
+import org.appdapter.api.trigger.AnyOper.UtilClass;
 import org.appdapter.core.convert.Converter.ConverterMethod;
-import org.appdapter.core.log.Debuggable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.sdb.util.Pair;
 
-public class ReflectUtils {
+@UIHidden
+abstract public class ReflectUtils implements UtilClass {
 
 	final static List<Converter> registeredConverters = new ArrayList<Converter>();
 	final public static AggregateConverter DEFAULT_CONVERTER = new AggregateConverter(registeredConverters);
+	private static final Class[] CLASS0 = new Class[0];
 
 	public static void registerConverter(Converter utilityConverter) {
 		if (utilityConverter == DEFAULT_CONVERTER)
 			return;
 		synchronized (registeredConverters) {
 			registeredConverters.remove(utilityConverter);
-			registeredConverters.add(utilityConverter);
+			registeredConverters.add(0, utilityConverter);
 		}
+	}
+
+	@ConverterMethod//
+	public static Object[] collectionToArray(Collection col) {
+		return col.toArray();
+	}
+
+	@ConverterMethod//
+	public static List arrayToList(Object[] col) {
+		return new ArrayList(Arrays.asList(col));
+	}
+
+	@ConverterMethod//
+	public static List colToList(Collection col) {
+		if (col instanceof List)
+			return (List) col;
+		return new ArrayList(col);
+	}
+
+	@ConverterMethod//
+	public static Set colToSet(Collection col) {
+		if (col instanceof Set)
+			return (Set) col;
+		return new HashSet(col);
+	}
+
+	static public <T> T convertTo(Class<T> c, Iterable objs) throws ClassCastException {
+		for (Object o : objs) {
+			if (o == null) {
+				continue;
+			}
+			if (!c.isInstance(o)) {
+				continue;
+			}
+			try {
+				return c.cast(o);
+			} catch (Exception e) {
+				theLogger.error("JVM Issue (canConvert)", e);
+				return (T) o;
+			}
+		}
+		return null;
+	}
+
+	static public <T> boolean canConvert(Class<T> c, Iterable objs) {
+		try {
+			for (Object o : objs) {
+				if (o == null) {
+					continue;
+				}
+				if (!c.isInstance(o)) {
+					continue;
+				}
+				try {
+					final T madeIT = (T) o;
+					if (madeIT != null) {
+						return true;
+					}
+				} catch (Exception e) {
+					theLogger.error("JVM Issue (canConvert)", e);
+				}
+				return true;
+			}
+		} catch (Throwable t) {
+			theLogger.error("JVM Issue (canConvert)", t);
+			return false;
+		}
+		return false;
 	}
 
 	public static void registerConverterMethod(final Method m, ConverterMethod cmi) {
@@ -84,7 +162,7 @@ public class ReflectUtils {
 			cnverters = new ArrayList<Converter>(cnverters);
 		}
 		for (Converter c : cnverters) {
-			int r = c.declaresConverts(val, objClass, objNeedsToBe, c.MCVT);
+			int r = c.declaresConverts(val, objClass, objNeedsToBe, AggregateConverter.newMcvt());
 			for (int w : which) {
 				if (r == w)
 					matched.add(c);
@@ -112,7 +190,6 @@ public class ReflectUtils {
 	public static Logger theLogger = LoggerFactory.getLogger(ReflectUtils.class);
 
 	public static <T> T convertList(List e, Converter converter, Class<T> type) throws NoSuchConversionException, Throwable {
-		int maxCvt = converter.MCVT;
 		T result = null;
 		if (e == null || e.size() == 0)
 			return result;
@@ -122,7 +199,7 @@ public class ReflectUtils {
 			result = (T) Array.newInstance(ctype, e.size());
 			for (int i = 0; i < len; i++) {
 				Object using = e.get(i);
-				Array.set(result, i, converter.convert(using, ctype, maxCvt));
+				Array.set(result, i, converter.convert(using, ctype, AggregateConverter.newMcvt()));
 			}
 			return result;
 		}
@@ -131,7 +208,7 @@ public class ReflectUtils {
 			if (len != 1) {
 				theLogger.warn("Can only use one result from " + e + " only using " + using);
 			}
-			return converter.convert(using, type, maxCvt);
+			return converter.convert(using, type, AggregateConverter.newMcvt());
 		}
 		Class<T> concrete = null;
 		if (Modifier.isAbstract(type.getModifiers()) || type.isInterface()) {
@@ -150,7 +227,7 @@ public class ReflectUtils {
 		Iterator its = e.listIterator();
 		Class<Object> compType = Object.class;
 		while (its.hasNext()) {
-			cresult.add(converter.convert(its.next(), compType, maxCvt));
+			cresult.add(converter.convert(its.next(), compType, AggregateConverter.newMcvt()));
 		}
 		return result;
 	}
@@ -202,31 +279,18 @@ public class ReflectUtils {
 		}
 	*/
 
-	public static Class nonPrimitiveTypeFor(Class wrapper) {
-		if (!wrapper.isPrimitive())
+	public static Class nonPrimitiveTypeFor(Class prim) {
+		Class wrapper = primitives.get(prim);
+		if (wrapper != null)
 			return wrapper;
-		if (wrapper == Boolean.TYPE)
-			return Boolean.class;
-		if (wrapper == Byte.TYPE)
-			return Byte.class;
-		if (wrapper == Character.TYPE)
-			return Character.class;
-		if (wrapper == Short.TYPE)
-			return Short.class;
-		if (wrapper == Integer.TYPE)
-			return Integer.class;
-		if (wrapper == Long.TYPE)
-			return Long.class;
-		if (wrapper == Float.TYPE)
-			return Float.class;
-		if (wrapper == Double.TYPE)
-			return Double.class;
-		if (wrapper == Void.TYPE)
-			return Void.class;
-		throw new ClassCastException("cant make non primitive from :" + wrapper);
+		return prim;
 	}
 
-	private static Map<Class, Class> primitives = new HashMap<Class, Class>(10);
+	public static boolean isPrimitiveBox(Class prim) {
+		return primitives.containsValue(prim);
+	}
+
+	public static Map<Class, Class> primitives = new HashMap<Class, Class>(10);
 
 	static {
 		primitives.put(Boolean.TYPE, Boolean.class);
@@ -237,6 +301,7 @@ public class ReflectUtils {
 		primitives.put(Integer.TYPE, Integer.class);
 		primitives.put(Long.TYPE, Long.class);
 		primitives.put(Short.TYPE, Short.class);
+		primitives.put(Void.TYPE, Void.class);
 	}
 
 	public static Class wrapperTypeFor(Class cls) {
@@ -277,9 +342,9 @@ public class ReflectUtils {
 		} catch (NoSuchMethodException e) {
 			why = e;
 		}
-		Debuggable.printStackTrace(why);
+		printStackTrace(why);
 		if (true)
-			throw Debuggable.reThrowable(why);
+			throw reThrowable(why);
 		return why;
 
 	}
@@ -289,9 +354,10 @@ public class ReflectUtils {
 		return invokeAV(obj, converter, method, params, OptionalArg.NONE);
 	}
 
-	public static Object invokeOptional(Object obj, Method method, OptionalArg optionalArgs) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException {
+	public static Object invokeOptional(Object obj, Method method, OptionalArg optionalArgs, Object... args) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException,
+			NoSuchMethodException {
 		// TODO Auto-generated method stub
-		return invokeAV(obj, DEFAULT_CONVERTER, method, new Object[0], optionalArgs);
+		return invokeAV(obj, DEFAULT_CONVERTER, method, args, optionalArgs);
 	}
 
 	public static Object invokeConstructorOptional(Converter converter, OptionalArg optionalArgs, Class clz, final Object... args) throws IllegalAccessException, IllegalArgumentException,
@@ -400,7 +466,7 @@ public class ReflectUtils {
 		int failures = 0;
 		if (neededArgs > pl) {
 			if (optionalArg == null) {
-				Debuggable.warn("Not enough arguments ! neededArgs = " + neededArgs);
+				warn("Not enough arguments ! neededArgs = " + neededArgs);
 				failures = neededArgs;
 				return mps;
 			}
@@ -416,7 +482,7 @@ public class ReflectUtils {
 						failures++;
 					}
 				} catch (Throwable tt) {
-					Debuggable.expectedToIgnore(tt, NoSuchConversionException.class);
+					expectedToIgnore(tt, NoSuchConversionException.class);
 					failures++;
 				}
 
@@ -435,7 +501,7 @@ public class ReflectUtils {
 						failures++;
 					}
 				} catch (Throwable tt) {
-					Debuggable.expectedToIgnore(tt, NoSuchConversionException.class);
+					expectedToIgnore(tt, NoSuchConversionException.class);
 					failures++;
 				}
 			}
@@ -477,7 +543,7 @@ public class ReflectUtils {
 		try {
 			return recast(converter, p, pt);
 		} catch (Throwable e) {
-			Debuggable.expectedToIgnore(e, NoSuchConversionException.class);
+			expectedToIgnore(e, NoSuchConversionException.class);
 			return null;
 		}
 	}
@@ -517,7 +583,7 @@ public class ReflectUtils {
 
 		if (neededArgs > 0) {
 			if (optionalArg == null) {
-				Debuggable.warn("Not enough arguments ! neededArgs = " + neededArgs);
+				warn("Not enough arguments ! neededArgs = " + neededArgs);
 			} else {
 				for (int i = 0; i < neededArgs; i++) {
 					int workingOn = i + lastParamNum;
@@ -746,14 +812,14 @@ public class ReflectUtils {
 		try {
 			return method.newInstance((Object[]) args);
 		} catch (IllegalAccessException e) {
-			Debuggable.warn(e);
+			warn(e);
 			throw e;
 		} catch (IllegalArgumentException e) {
-			Debuggable.warn(e);
+			warn(e);
 			throw e;
 		} catch (InvocationTargetException e) {
 			e.printStackTrace();
-			Debuggable.warn(e);
+			warn(e);
 			throw e;
 		}
 	}
@@ -784,13 +850,14 @@ public class ReflectUtils {
 			return method.invoke(obj, (Object[]) args);
 
 		} catch (IllegalAccessException e) {
-			Debuggable.warn(e);
+			warn(e);
 			throw e;
 		} catch (IllegalArgumentException e) {
-			Debuggable.warn(e);
+			warn(e);
 			throw e;
 		} catch (InvocationTargetException e) {
-			Debuggable.warn(e);
+			if (!isNotShowingExceptions())
+				warn(e);
 			throw e;
 		} finally {
 			if (neededLock != null) {
@@ -812,38 +879,55 @@ public class ReflectUtils {
 		return null;
 	}
 
-	public static Object recast(Object obj, Class objNeedsToBe, int maxCvt) throws NoSuchConversionException {
-		return recast(DEFAULT_CONVERTER, obj, objNeedsToBe, maxCvt);
+	public static Object recast(Object obj, Class objNeedsToBe, List maxConverts) throws NoSuchConversionException {
+		return recast(DEFAULT_CONVERTER, obj, objNeedsToBe, maxConverts);
 	}
 
 	private static Object recast(Converter converter, Object p, Class pt) throws NoSuchConversionException {
-		int maxCvt = converter.MCVT;
-		return recast(converter, p, pt, maxCvt);
+		List maxConverts = AggregateConverter.getMcvt();
+		List was = new ArrayList(maxConverts);
+		try {
+			return recast(converter, p, pt, maxConverts);
+		} finally {
+			AggregateConverter.setMcvt(was);
+		}
 	}
 
-	public static <T> T recast(Converter converter, Object obj0, Class<T> objNeedsToBe, int maxCvt) throws NoSuchConversionException {
+	public static <T> T recast(Converter converter, Object obj0, Class<T> objNeedsToBe, List maxConverts) throws NoSuchConversionException {
 		if (objNeedsToBe == null)
 			return null;
 		if (converter == null)
 			return (T) obj0;
 		try {
-			return converter.convert(obj0, objNeedsToBe, maxCvt);
+			return converter.convert(obj0, objNeedsToBe, maxConverts);
 		} catch (NoSuchConversionException e) {
-			Debuggable.printStackTrace(e);
+			printStackTrace(e);
 			return (T) obj0;
 		}
 	}
 
 	public static <T> T recast(Object obj0, Class<T> objNeedsToBe) throws NoSuchConversionException {
-		return recast(DEFAULT_CONVERTER, obj0, objNeedsToBe, Converter.MCVT);
+		List maxConverts = AggregateConverter.getMcvt();
+		List was = new ArrayList(maxConverts);
+		try {
+			return recast(DEFAULT_CONVERTER, obj0, objNeedsToBe, maxConverts);
+		} finally {
+			AggregateConverter.setMcvt(was);
+		}
 	}
 
 	public static Object recastOrNull(Object obj0, Class objNeedsToBe, Object otherwise) {
+		List maxConverts = AggregateConverter.getMcvt();
+		List was = new ArrayList(maxConverts);
 		try {
-			return recast(DEFAULT_CONVERTER, obj0, objNeedsToBe, Converter.MCVT);
-		} catch (NoSuchConversionException e) {
-			Debuggable.printStackTrace(e);
-			return otherwise;
+			try {
+				return recast(DEFAULT_CONVERTER, obj0, objNeedsToBe, maxConverts);
+			} catch (NoSuchConversionException e) {
+				printStackTrace(e);
+				return otherwise;
+			}
+		} finally {
+			AggregateConverter.setMcvt(was);
 		}
 	}
 
@@ -1020,7 +1104,7 @@ public class ReflectUtils {
 				return false;
 			throw nsf;
 		} catch (Throwable t) {
-			throw Debuggable.reThrowable(t);
+			throw reThrowable(t);
 		}
 	}
 
@@ -1051,7 +1135,7 @@ public class ReflectUtils {
 				return false;
 			throw nsf;
 		} catch (Throwable t) {
-			throw Debuggable.reThrowable(t);
+			throw reThrowable(t);
 		}
 	}
 
@@ -1087,7 +1171,7 @@ public class ReflectUtils {
 				return false;
 			throw nsf;
 		} catch (Throwable t) {
-			throw Debuggable.reThrowable(t);
+			throw reThrowable(t);
 		}
 	}
 
@@ -1296,7 +1380,7 @@ public class ReflectUtils {
 		return true;
 	}
 
-	private static boolean methodMatches(Class[] mp, TypeAssignable useTypeAssignable, int paramCount, Class... parameterTypes) {
+	private static boolean methodMatches(Class[] mp, TypeAssignable typeAssign, int paramCount, Class... parameterTypes) {
 
 		int mplength = mp.length;
 		if (paramCount != -1) {
@@ -1314,7 +1398,7 @@ public class ReflectUtils {
 			Class have = parameterTypes[i];
 			if (must == null || have == null)
 				continue;
-			if (useTypeAssignable.declaresConverts(null, have, must, TypeAssignable.MCVT) == TypeAssignable.WONT)
+			if (typeAssign.declaresConverts(null, have, must, AggregateConverter.newMcvt()) == TypeAssignable.WONT)
 				return false;
 		}
 		return true;
@@ -1337,20 +1421,68 @@ public class ReflectUtils {
 	}
 
 	public static Collection<Method> getAllMethods(Class clz) {
+		return getAllMethods(clz, false);
+	}
+
+	public static Collection<Method> getAllMethods(Class clz, boolean preferSuperclass) {
+		final Class gi = clz;
 		Map<String, Method> methods = new HashMap<String, Method>();
 		while (clz != null) {
-			for (Method m : clz.getDeclaredMethods()) {
-				String key = methodString(m);
-				if (!methods.containsKey(key)) {
-					if (isSynthetic(m)) {
-						continue;
-					}
-					methods.put(key, m);
+			addMethods(clz, preferSuperclass, methods);
+			clz = clz.getSuperclass();
+		}
+		if (preferSuperclass) {
+			for (Class c : gi.getInterfaces()) {
+				addMethods(c, true, methods);
+			}
+		}
+		return methods.values();
+	}
+
+	private static void addMethods(Class clz, boolean preferSuperclass, Map<String, Method> methods) {
+		for (Method m : clz.getDeclaredMethods()) {
+			String key = methodString(m);
+			if (preferSuperclass || !methods.containsKey(key)) {
+				if (isSynthetic(m)) {
+					continue;
 				}
+				methods.put(key, m);
+			}
+		}
+	}
+
+	public static Method getInterfaceMethod(Class clz, Method from) {
+		String name = from.getName();
+		Class[] params = from.getParameterTypes();
+		Method sc = getSuperClassiestMethod(clz, name, params);
+		if (sc != null && sc.getDeclaringClass().isInterface())
+			return sc;
+		for (Class ifc : clz.getInterfaces()) {
+			Method m = getSuperClassiestMethod(ifc, name, params);
+			if (m != null && m.getDeclaringClass().isInterface())
+				return m;
+		}
+		return sc;
+	}
+
+	public static Method getSuperClassiestMethod(Class clz, String name, Class[] params) {
+		Method lastm = null;
+		while (clz != null) {
+			Method m;
+			try {
+				m = clz.getDeclaredMethod(name, params);
+				// ikvm can return null
+				if (m != null) {
+					//Class dc = m.getDeclaringClass();
+					//	if (dc.isInterface())
+					lastm = m;
+				}
+			} catch (SecurityException e) {
+			} catch (NoSuchMethodException e) {
 			}
 			clz = clz.getSuperclass();
 		}
-		return methods.values();
+		return lastm;
 	}
 
 	public static String methodString(Method m) {
@@ -1419,7 +1551,7 @@ public class ReflectUtils {
 
 	public static boolean isOverride(Method m, Class dc) {
 		if (dc.isInterface()) {
-			Debuggable.warn("isOverride to " + dc);
+			warn("isOverride to " + dc);
 			return false;
 		}
 		if (dc == null)
@@ -1486,18 +1618,38 @@ public class ReflectUtils {
 		return getConverters(anyObject, objClassMaybe, objNeedsToBe, Converter.WILL).size() > 0;
 	}
 
-	public static Class getTypeClass(Object typeVariable, Collection exceptFor) {
+	public static Class getTypeClass(Object typeVariable, Class rawType) {
+		return getTypeClass(typeVariable, rawType, new ArrayList() {
+			{
+				add(Object.class);
+			}
+		});
+	}
+
+	public static Class getTypeClass(Object typeVariable, Class rawType, Collection exceptFor) {
 		if (typeVariable == null || exceptFor.contains(typeVariable)) {
 			return null;
 		}
 		exceptFor.add(typeVariable);
-		if (typeVariable instanceof Class)
-			return (Class) typeVariable;
-		Class c = typeVariable.getClass();
+		Class c = null;
+		if (typeVariable instanceof Class) {
+			Class c1 = null;
+			c = (Class) typeVariable;
+			if (isGeneric(c)) {
+				c1 = getTypeClass(c.getTypeParameters(), rawType, exceptFor);
+				if (c1 != null)
+					return c1;
+			}
+			c1 = getTypeClass(c.getGenericSuperclass(), rawType, exceptFor);
+			if (c1 != null)
+				return c1;
+			return c;
+		}
+		c = typeVariable.getClass();
 		if (c.isArray()) {
 			int len = Array.getLength(typeVariable);
 			for (int i = 0; i < len; i++) {
-				c = getTypeClass(Array.get(typeVariable, i), exceptFor);
+				c = getTypeClass(Array.get(typeVariable, i), rawType, exceptFor);
 				if (c != null)
 					return c;
 			}
@@ -1505,25 +1657,25 @@ public class ReflectUtils {
 		}
 		if (typeVariable instanceof GenericArrayType) {
 			GenericArrayType pt = (GenericArrayType) typeVariable;
-			c = getTypeClass(pt.getGenericComponentType(), exceptFor);
+			c = getTypeClass(pt.getGenericComponentType(), rawType, exceptFor);
 			if (c != null)
 				return Array.newInstance(c, 0).getClass();
 		}
 		if (typeVariable instanceof GenericDeclaration) {
 			GenericDeclaration pt = (GenericDeclaration) typeVariable;
-			c = getTypeClass(pt.getTypeParameters(), exceptFor);
+			c = getTypeClass(pt.getTypeParameters(), rawType, exceptFor);
 			if (c != null)
 				return c;
 		}
 		if (typeVariable instanceof WildcardType) {
 			WildcardType pt = (WildcardType) typeVariable;
 			for (Type t : pt.getUpperBounds()) {
-				c = getTypeClass(t, exceptFor);
+				c = getTypeClass(t, rawType, exceptFor);
 				if (c != null)
 					return c;
 			}
 			for (Type t : pt.getLowerBounds()) {
-				c = getTypeClass(t, exceptFor);
+				c = getTypeClass(t, rawType, exceptFor);
 				if (c != null)
 					return c;
 			}
@@ -1532,26 +1684,26 @@ public class ReflectUtils {
 			TypeVariable pt = (TypeVariable) typeVariable;
 			for (Type t : pt.getBounds()) {
 				if (t != typeVariable) {
-					c = getTypeClass(t, exceptFor);
+					c = getTypeClass(t, rawType, exceptFor);
 					if (c != null)
 						return c;
 				}
 			}
-			c = getTypeClass(pt.getGenericDeclaration(), exceptFor);
+			c = getTypeClass(pt.getGenericDeclaration(), rawType, exceptFor);
 			if (c != null)
 				return c;
 		}
 		if (typeVariable instanceof ParameterizedType) {
 			ParameterizedType pt = (ParameterizedType) typeVariable;
-			c = getTypeClass(pt.getRawType(), exceptFor);
-			if (c != null)
-				return c;
+			if (rawType != null && pt.getRawType() != rawType) {
+				return null;
+			}
 			for (Type t : pt.getActualTypeArguments()) {
-				c = getTypeClass(t, exceptFor);
+				c = getTypeClass(t, rawType, exceptFor);
 				if (c != null)
 					return c;
 			}
-			c = getTypeClass(pt.getOwnerType(), exceptFor);
+			c = getTypeClass(pt.getOwnerType(), rawType, exceptFor);
 			if (c != null)
 				return c;
 		}
@@ -1569,6 +1721,9 @@ public class ReflectUtils {
 			return getCanonicalSimpleName(clz.getComponentType(), includePackaging) + "[]";
 		}
 		String c = clz.getSimpleName();
+		if (includePackaging && c != null) {
+			c = clz.getPackage().getName() + "." + c;
+		}
 		if (c == null || c.length() == 0) {
 			c = clz.getCanonicalName();
 			if (c != null & !includePackaging) {
@@ -1779,6 +1934,9 @@ public class ReflectUtils {
 			if (o == null)
 				continue;
 			try {
+				if (o.getClass().isArray()) {
+					throw new UnsupportedOperationException("first of an array of arrays " + args);
+				}
 				T t = (T) o;
 				return t;
 			} catch (ClassCastException cce) {
@@ -1790,9 +1948,7 @@ public class ReflectUtils {
 	}
 
 	public static boolean isAssignableFrom(Class objNeedsToBe, Class from) {
-		if (objNeedsToBe.isAssignableFrom(from))
-			return true;
-		if (DEFAULT_CONVERTER.declaresConverts(null, from, objNeedsToBe, Converter.MCVT) == Converter.WILL) {
+		if (isAssignableFromW(objNeedsToBe, from) == Converter.WILL) {
 			return true;
 		}
 		return false;
@@ -1801,7 +1957,7 @@ public class ReflectUtils {
 	public static int isAssignableFromW(Class objNeedsToBe, Class from) {
 		if (objNeedsToBe.isAssignableFrom(from))
 			return Converter.WILL;
-		return DEFAULT_CONVERTER.declaresConverts(null, from, objNeedsToBe, Converter.MCVT);
+		return DEFAULT_CONVERTER.declaresConverts(null, from, objNeedsToBe, AggregateConverter.newMcvt());
 	}
 
 	static Map<Class<? extends Annotation>, Map<AnnotatedElement, ? extends Annotation>> cachedAnonationsByAC = new HashMap<Class<? extends Annotation>, Map<AnnotatedElement, ? extends Annotation>>();
@@ -1886,4 +2042,23 @@ public class ReflectUtils {
 			return false;
 		return true;
 	}
+
+	public static Class getComponentType(final Class type) {
+		if (isGeneric(type)) {
+
+		}
+		if (Iterable.class.isAssignableFrom(type))
+			return getTypeClass(type, Iterable.class);
+
+		if (type.isArray())
+			return type.getComponentType();
+		return null;
+	}
+
+	@UISalient public static boolean isGeneric(Class type) {
+		if (type.getTypeParameters().length == 0)
+			return false;
+		return true;
+	}
+
 }

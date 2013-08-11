@@ -30,6 +30,7 @@ import org.appdapter.bind.rdf.jena.model.JenaLiteralUtils;
 import org.appdapter.gui.browse.ResourceToFromString;
 import org.appdapter.gui.browse.ToFromKeyConverter;
 import org.appdapter.gui.browse.Utility;
+import org.appdapter.gui.table.GenericBeansPanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +42,7 @@ import com.hp.hpl.jena.shared.PrefixMapping;
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public class ModelMatrixPanel<BoxType extends Box> extends GenericMatrixPanel {
+public class ModelMatrixPanel<BoxType extends Box> extends GenericBeansPanel {
 	static Logger theLogger = LoggerFactory.getLogger(ModelMatrixPanel.class);
 
 	@UISalient static public ModelMatrixPanel showModelMatrixPanel(final Model obj) {

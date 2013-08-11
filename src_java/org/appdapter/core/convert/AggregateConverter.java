@@ -1,12 +1,46 @@
 package org.appdapter.core.convert;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.ConcurrentModificationException;
 import java.util.List;
 
-import org.appdapter.core.convert.Converter.ConverterSorter;
+import org.apache.jena.atlas.lib.Lib;
 
 public class AggregateConverter implements Converter {
+
+	static ThreadLocal<List> curretnConversions = new ThreadLocal<List>() {
+		protected List initialValue() {
+			return null;
+		};
+	};
+
+	public static List newMcvt() {
+		return new ArrayList();
+	}
+
+	public static void setMcvt(List cc) {
+		List cc0 = curretnConversions.get();
+		if (cc == cc0)
+			return;
+		if (cc != null) {
+			///throw new ConcurrentModificationException("converns errors" + cc);
+		}
+		curretnConversions.set(cc);
+
+	}
+
+	public static List getMcvt() {
+		List cc = curretnConversions.get();
+		if (cc == null) {
+			cc = new ArrayList();
+			curretnConversions.set(cc);
+			return cc;
+		}
+		if (cc.size() > 0) {
+			throw new ConcurrentModificationException("converns errors" + cc);
+		}
+		return cc;
+	}
 
 	List<Converter> cnverters;
 
@@ -14,15 +48,8 @@ public class AggregateConverter implements Converter {
 		cnverters = registeredConverters;
 	}
 
-	@Override public <T> T convert(Object obj, Class<T> objNeedsToBe, int maxConverts) throws NoSuchConversionException {
-		return recast(obj, objNeedsToBe, maxConverts, this);
-	}
+	@Override public <T> T convert(Object obj, Class<T> objNeedsToBe, List maxConverts) throws NoSuchConversionException {
 
-	public <T> T recast(Object obj, Class<T> objNeedsToBe, int maxConverts, Object exceptFor) throws NoSuchConversionException {
-		if (maxConverts < 0) {
-			return ReflectUtils.noSuchConversion(obj, objNeedsToBe, null);
-		}
-		maxConverts--;
 		if (obj == null)
 			return null;
 		NoSuchConversionException issue0 = null;
@@ -32,6 +59,7 @@ public class AggregateConverter implements Converter {
 		}
 		if (objNeedsToBe.isInstance(obj))
 			return objNeedsToBe.cast(obj);
+
 		List<Converter> cnverters = this.cnverters;
 		synchronized (cnverters) {
 			cnverters = new ArrayList<Converter>(cnverters);
@@ -40,7 +68,7 @@ public class AggregateConverter implements Converter {
 		ConverterSorter sorter = new ConverterSorter(obj, from, objNeedsToBe);
 		cnverters = sorter.sort(cnverters);
 		for (Converter converter : cnverters) {
-			if (exceptFor == converter) {
+			if (!AggregateConverter.registerNewly(obj, objNeedsToBe, converter, maxConverts)) {
 				continue;
 			}
 			try {
@@ -74,27 +102,90 @@ public class AggregateConverter implements Converter {
 		throw issue0;
 	}
 
-	@Override public Integer declaresConverts(Object val, Class from, Class objNeedsToBe, int maxCvt) {
-		return declaresConverts(val, from, objNeedsToBe, maxCvt, this);
-	}
-
-	public Integer declaresConverts(Object val, Class from, Class objNeedsToBe, int maxCvt, Object exceptFor) {
+	@Override public Integer declaresConverts(Object val, Class from, Class objNeedsToBe, List maxConverts) {
 		List<Converter> cnverters = this.cnverters;
 		synchronized (cnverters) {
 			cnverters = new ArrayList<Converter>(cnverters);
 		}
 		boolean maybe = false;
 		for (Converter converter : cnverters) {
-			if (exceptFor == converter) {
+			if (!AggregateConverter.registerNewly(from, objNeedsToBe, converter, maxConverts)) {
 				continue;
 			}
-			if (converter.declaresConverts(val, from, objNeedsToBe, maxCvt) == WILL)
+			if (converter.declaresConverts(val, from, objNeedsToBe, maxConverts) == WILL)
 				return WILL;
-			if (converter.declaresConverts(val, from, objNeedsToBe, maxCvt) == MIGHT)
+			if (converter.declaresConverts(val, from, objNeedsToBe, maxConverts) == MIGHT)
 				maybe = true;
 		}
 		if (maybe)
 			return MIGHT;
 		return WONT;
 	}
+
+	public static boolean registerNewly(Object val, Class objNeedsToBe, Converter conv, List maxConverts) {
+		CPair work = createWork(val, objNeedsToBe, conv);
+		boolean contained = maxConverts.contains(work);
+		if (!contained) {
+			maxConverts.add(work);
+		}
+		return !contained;
+	}
+
+	private static CPair createWork(Object val, Class objNeedsToBe, Converter conv) {
+		CPair work = new CPair(conv, new CPair(objNeedsToBe, val));
+		return work;
+	}
+
+	static public class CPair<A, B> {
+		A a;
+		B b;
+
+		public CPair(A a, B b) {
+			super();
+			this.a = a;
+			this.b = b;
+		}
+
+		public A getLeft() {
+			return this.a;
+		}
+
+		public B getRight() {
+			return this.b;
+		}
+
+		public A car() {
+			return this.a;
+		}
+
+		public B cdr() {
+			return this.b;
+		}
+
+		public int hashCode() {
+			return Lib.hashCodeObject(car()) ^ Lib.hashCodeObject(cdr()) << 1;
+		}
+
+		public boolean equals(Object other) {
+			if (this == other)
+				return true;
+			if (!(other instanceof CPair))
+				return false;
+			CPair p2 = (CPair) other;
+			return CPair.equal(car(), p2.car()) && CPair.equal(cdr(), p2.cdr());
+		}
+
+		private static boolean equal(Object l, Object r) {
+			if (l == r)
+				return true;
+			if (l == null || r == null)
+				return false;
+			return l.equals(r);
+		}
+
+		public String toString() {
+			return new StringBuilder().append("(").append(org.apache.jena.atlas.lib.StrUtils.str(this.a)).append(", ").append(org.apache.jena.atlas.lib.StrUtils.str(this.b)).append(")").toString();
+		}
+	}
+
 }

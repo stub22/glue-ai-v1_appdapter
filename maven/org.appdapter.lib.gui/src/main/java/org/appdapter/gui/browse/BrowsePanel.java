@@ -22,33 +22,26 @@
 package org.appdapter.gui.browse;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
 import java.util.LinkedList;
 
-import javax.swing.ButtonGroup;
-import javax.swing.ImageIcon;
-import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JDesktopPane;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JPanel;
-import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.JTree;
-import javax.swing.KeyStroke;
 import javax.swing.ToolTipManager;
-import javax.swing.tree.MutableTreeNode;
+import javax.swing.UIManager;
+import javax.swing.plaf.ColorUIResource;
 import javax.swing.tree.TreeModel;
 
 import org.appdapter.api.trigger.AnyOper.Singleton;
@@ -66,6 +59,7 @@ import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.DisplayType;
 import org.appdapter.gui.api.IShowObjectMessageAndErrors;
 import org.appdapter.gui.api.NamedObjectCollection;
+import org.appdapter.gui.box.AbstractScreenBoxTreeNodeImpl;
 import org.appdapter.gui.box.ScreenBoxContextImpl;
 import org.appdapter.gui.box.ScreenBoxImpl;
 import org.appdapter.gui.swing.CollectionEditorUtil;
@@ -73,7 +67,6 @@ import org.appdapter.gui.swing.DisplayContextUIImpl;
 import org.appdapter.gui.swing.LookAndFeelMenuItems;
 import org.appdapter.gui.swing.ObjectTabsForTabbedView;
 import org.appdapter.gui.swing.SafeJMenu;
-import org.appdapter.gui.swing.SafeJMenuItem;
 
 import com.jidesoft.swing.JideScrollPane;
 import com.jidesoft.swing.JideSplitPane;
@@ -114,24 +107,19 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 		Utility.browserPanel = this;
 		myTreeModel = tm;
 		initComponents();
+		JTree tree = myTree;
 		Utility.theBoxPanelDisplayContext = myBoxPanelSwitchableViewImpl = new ObjectTabsForTabbedView(myBoxPanelTabPane, true);
 		setTabbedPaneOptions();
 		Utility.controlApp = app = new DisplayContextUIImpl(myBoxPanelSwitchableViewImpl, this, ctx);
 		Utility.clipBoardUtil = new CollectionEditorUtil(clipboard.getName(), app, clipboard);
 		myBoxPanelTabPane.add("Clipboard", Utility.clipBoardUtil.getGUIPanel());
+		myBoxPanelTabPane.setBackground(Color.LIGHT_GRAY);
+		UIManager.put("nimbusBase", new ColorUIResource(128, 128, 128));
 		myBoxContext = bctx0;
 		hookTree();
 		this.addToTreeListener = new AddToTreeListener(myTree, ctx, bctx0, (MutableBox) bctx0.getRootBox(), true);
 		//addClipboard(clipboard);
 
-		synchronized (Utility.featureQueueLock) {
-			LinkedList<Object> todoList = Utility.featureQueueUp;
-			Utility.featureQueueUp = null;
-			for (Iterator iterator = todoList.iterator(); iterator.hasNext();) {
-				Object object = (Object) iterator.next();
-				Utility.addObjectFeatures(object);
-			}
-		}
 		Utility.addObjectFeatures(this);
 		invalidate();
 	}
@@ -161,11 +149,19 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 	private void hookTree() {
 		ToolTipManager.sharedInstance().registerComponent(myTree);
 		/**JIDESOFT */
+		SearchableDemo.installSearchable(myTree);
 		myTree.setCellRenderer(new StyledTreeCellRenderer() {
 
 			protected void customizeStyledLabel(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hazFocus) {
 				try {
-					super.customizeStyledLabel(tree, value, sel, expanded, leaf, row, hazFocus);
+					if (value instanceof AbstractScreenBoxTreeNodeImpl) {
+						Box box = ((AbstractScreenBoxTreeNodeImpl) value).getBox();
+						if (box != null)
+							value = box;
+					}
+					String valueStr = Utility.getUniqueName(value);
+					super.customizeStyledLabel(tree, valueStr, sel, expanded, leaf, row, hazFocus);
+					setText(valueStr);
 					if (OnTreeFocusShowObject && hazFocus && sel) {
 						Object deref = Utility.dref(value);
 						if (deref != null && deref != value) {
@@ -331,7 +327,7 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 
 		myBrowserSplitPane.add(myTreeScrollPane);
 
-		myContentPanel.setBackground(new java.awt.Color(51, 0, 51));
+		myContentPanel.setBackground(new java.awt.Color(214,217,223));
 		myContentPanel.setLayout(new java.awt.BorderLayout());
 
 		myBoxPanelStatus.setText("Extra text field - used for status display and special console input .   This screen shows a box navigation system.");

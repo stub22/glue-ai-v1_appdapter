@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.appdapter.gui.editors;
+package org.appdapter.gui.repo;
 
 import java.util.List;
 
@@ -23,7 +23,6 @@ import org.appdapter.core.store.Repo.GraphStat;
 import org.appdapter.core.store.RepoBox;
 import org.appdapter.demo.DemoResources;
 import org.appdapter.gui.browse.Utility;
-import org.appdapter.gui.repo.MutableRepoBox;
 
 /**
  * @author Stu B. <www.texpedient.com>
