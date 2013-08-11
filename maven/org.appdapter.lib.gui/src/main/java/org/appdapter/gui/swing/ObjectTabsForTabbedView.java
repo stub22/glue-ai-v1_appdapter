@@ -222,7 +222,7 @@ public class ObjectTabsForTabbedView implements BoxPanelSwitchableView {
 			}
 			if (title.length() <= 0)
 				return "???0";
-			return Utility.getShortClassName(view.getClass());
+			return Utility.getSpecialClassName(view.getClass());
 		}
 	}
 

@@ -8,6 +8,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import javax.swing.event.ListDataListener;
+
 import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.core.log.Debuggable;
 
@@ -33,6 +35,7 @@ import org.appdapter.core.log.Debuggable;
  */
 public class BeanTableModel<T> extends RowTableModel<T> {
 	//  Map "type" to "class". Class is needed for the getColumnClass() method.
+
 
 	private Class beanClass;
 	private Class ancestorClass;

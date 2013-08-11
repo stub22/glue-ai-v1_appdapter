@@ -1,9 +1,26 @@
 package org.appdapter.gui.browse;
 
+import static org.appdapter.core.convert.ReflectUtils.addAllNew;
 import static org.appdapter.core.convert.ReflectUtils.addIfNew;
 import static org.appdapter.core.convert.ReflectUtils.arrayOf;
 import static org.appdapter.core.convert.ReflectUtils.copyOf;
+import static org.appdapter.core.convert.ReflectUtils.getAllFields;
+import static org.appdapter.core.convert.ReflectUtils.getAllMethods;
+import static org.appdapter.core.convert.ReflectUtils.getAnnotationOn;
+import static org.appdapter.core.convert.ReflectUtils.getCanonicalSimpleName;
+import static org.appdapter.core.convert.ReflectUtils.getComponentType;
+import static org.appdapter.core.convert.ReflectUtils.getTypeClass;
+import static org.appdapter.core.convert.ReflectUtils.implementsAllClasses;
+import static org.appdapter.core.convert.ReflectUtils.invokeOptional;
 import static org.appdapter.core.convert.ReflectUtils.isAssignableFrom;
+import static org.appdapter.core.convert.ReflectUtils.isCreatable;
+import static org.appdapter.core.convert.ReflectUtils.isSameType;
+import static org.appdapter.core.convert.ReflectUtils.isStatic;
+import static org.appdapter.core.convert.ReflectUtils.isSynthetic;
+import static org.appdapter.core.convert.ReflectUtils.noSuchConversion;
+import static org.appdapter.core.convert.ReflectUtils.nonPrimitiveTypeFor;
+import static org.appdapter.core.convert.ReflectUtils.registerConverter;
+import static org.appdapter.core.convert.ReflectUtils.registerConverterMethod;
 import static org.appdapter.core.log.Debuggable.notImplemented;
 import static org.appdapter.core.log.Debuggable.printStackTrace;
 import static org.appdapter.core.log.Debuggable.reThrowable;
@@ -41,6 +58,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -48,16 +66,17 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
@@ -73,6 +92,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JSpinner.DateEditor;
 import javax.swing.JTable;
+import javax.swing.ListModel;
 import javax.swing.ToolTipManager;
 import javax.swing.table.TableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -82,6 +102,7 @@ import javax.tools.FileObject;
 import org.appdapter.api.trigger.AnyOper.Autoload;
 import org.appdapter.api.trigger.AnyOper.Singleton;
 import org.appdapter.api.trigger.AnyOper.UIHidden;
+import org.appdapter.api.trigger.AnyOper.UISalient;
 import org.appdapter.api.trigger.AnyOper.UtilClass;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContext;
@@ -93,10 +114,12 @@ import org.appdapter.bind.rdf.jena.model.JenaLiteralUtils;
 import org.appdapter.core.boot.ClassLoaderUtils;
 import org.appdapter.core.component.IdentToObjectListener;
 import org.appdapter.core.component.KnownComponent;
+import org.appdapter.core.convert.AggregateConverter;
 import org.appdapter.core.convert.Converter;
 import org.appdapter.core.convert.Converter.ConverterMethod;
 import org.appdapter.core.convert.NoSuchConversionException;
 import org.appdapter.core.convert.OptionalArg;
+import org.appdapter.core.convert.OptionalArgFromCollectionAndConvertor;
 import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.core.convert.TypeAssignable;
 import org.appdapter.core.name.FreeIdent;
@@ -113,7 +136,6 @@ import org.appdapter.gui.api.GetDisplayContext;
 import org.appdapter.gui.api.GetSetObject;
 import org.appdapter.gui.api.IGetBox;
 import org.appdapter.gui.api.NamedObjectCollection;
-import org.appdapter.gui.api.SetObject;
 import org.appdapter.gui.api.WrapperValue;
 import org.appdapter.gui.box.BoxedCollectionImpl;
 import org.appdapter.gui.demo.DemoBrowser;
@@ -124,14 +146,13 @@ import org.appdapter.gui.editors.BooleanEditor;
 import org.appdapter.gui.editors.ColorEditor;
 import org.appdapter.gui.editors.IntEditor;
 import org.appdapter.gui.editors.LargeObjectView;
-import org.appdapter.gui.editors.LargeObjectView.BasicObjectCustomizer;
-import org.appdapter.gui.editors.LargeObjectView.ClassCustomizer;
-import org.appdapter.gui.editors.LargeObjectView.CollectionCustomizer;
-import org.appdapter.gui.editors.LargeObjectView.TabPanelMaker;
-import org.appdapter.gui.editors.LargeObjectView.ThrowableCustomizer;
 import org.appdapter.gui.editors.ObjectPanel;
-import org.appdapter.gui.editors.ObjectPanelHost;
 import org.appdapter.gui.editors.SimplePOJOInfo;
+import org.appdapter.gui.editors.SpecificObjectCustomizers;
+import org.appdapter.gui.editors.SpecificObjectCustomizers.BasicObjectCustomizer;
+import org.appdapter.gui.editors.SpecificObjectCustomizers.ClassCustomizer;
+import org.appdapter.gui.editors.SpecificObjectCustomizers.CollectionCustomizer;
+import org.appdapter.gui.editors.SpecificObjectCustomizers.ThrowableCustomizer;
 import org.appdapter.gui.editors.UseEditor;
 import org.appdapter.gui.repo.ModelAsTurtleEditor;
 import org.appdapter.gui.repo.ModelMatrixPanel;
@@ -140,18 +161,18 @@ import org.appdapter.gui.swing.CollectionEditorUtil;
 import org.appdapter.gui.swing.DisplayContextUIImpl.UnknownIcon;
 import org.appdapter.gui.swing.ErrorDialog;
 import org.appdapter.gui.swing.ObjectChoiceComboPanel;
-import org.appdapter.gui.swing.ScreenBoxPanel;
 import org.appdapter.gui.table.SafeJTable;
 import org.appdapter.gui.trigger.TriggerAdder;
 import org.appdapter.gui.trigger.TriggerFilter;
 import org.appdapter.gui.trigger.TriggerForClass;
-import org.appdapter.gui.trigger.TriggerForInstance;
 import org.appdapter.gui.trigger.TriggerMenuFactory;
-import org.appdapter.gui.trigger.TriggerMenuFactory.TriggerSorter;
 import org.appdapter.gui.trigger.UtilityMenuOptions;
 import org.appdapter.gui.util.ClassFinder;
 import org.appdapter.gui.util.PromiscuousClassUtilsA;
 import org.slf4j.Logger;
+
+import sun.misc.Compare;
+import sun.misc.Sort;
 
 import com.hp.hpl.jena.graph.FrontsNode;
 import com.hp.hpl.jena.graph.Node;
@@ -180,7 +201,7 @@ public class Utility extends UtilityMenuOptions {
 
 		@Override public String toKey(Object toBecomeAKey) {
 
-			return Utility.getUniqueName(toBecomeAKey);
+			return getUniqueName(toBecomeAKey);
 		}
 
 	}
@@ -189,11 +210,11 @@ public class Utility extends UtilityMenuOptions {
 
 	static public class UtilityConverter implements Converter {
 
-		@Override public <T> T convert(Object obj, Class<T> objNeedsToBe, int maxCvt) throws NoSuchConversionException {
-			return Utility.recastUtil(obj, objNeedsToBe, maxCvt);
+		@Override public <T> T convert(Object obj, Class<T> objNeedsToBe, List maxCvt) throws NoSuchConversionException {
+			return recastUtil(obj, objNeedsToBe, maxCvt);
 		}
 
-		@Override public Integer declaresConverts(Object val, Class objClass, Class objNeedsToBe, int maxCvt) {
+		@Override public Integer declaresConverts(Object val, Class objClass, Class objNeedsToBe, List maxCvt) {
 			if (objClass != null) {
 				if (getToFromConverter(objNeedsToBe, objClass) != null)
 					return WILL;
@@ -205,14 +226,14 @@ public class Utility extends UtilityMenuOptions {
 
 	static public class UtilityToFromConverterOnly implements Converter {
 
-		@Override public <T> T convert(Object obj, Class<T> objNeedsToBe, int maxCvt) throws NoSuchConversionException {
+		@Override public <T> T convert(Object obj, Class<T> objNeedsToBe, List maxCvt) throws NoSuchConversionException {
 			Converter converter = getToFromConverter(objNeedsToBe, obj.getClass());
 			if (converter == null)
-				return ReflectUtils.noSuchConversion(obj, objNeedsToBe, null);
+				return noSuchConversion(obj, objNeedsToBe, null);
 			return converter.convert(obj, objNeedsToBe, maxCvt);
 		}
 
-		@Override public Integer declaresConverts(Object val, Class objClass, Class objNeedsToBe, int maxCvt) {
+		@Override public Integer declaresConverts(Object val, Class objClass, Class objNeedsToBe, List maxCvt) {
 			if (objClass != null) {
 				if (getToFromConverter(objNeedsToBe, objClass) != null)
 					return WILL;
@@ -224,11 +245,11 @@ public class Utility extends UtilityMenuOptions {
 
 	static public class UtilityUnboxingConverterOnly implements Converter {
 
-		@Override public <T> T convert(Object obj, Class<T> objNeedsToBe, int maxCvt) throws NoSuchConversionException {
-			return Utility.recastUtil(obj, objNeedsToBe, maxCvt);
+		@Override public <T> T convert(Object obj, Class<T> objNeedsToBe, List maxCvt) throws NoSuchConversionException {
+			return recastUtil(obj, objNeedsToBe, maxCvt);
 		}
 
-		@Override public Integer declaresConverts(Object val, Class objClass, Class objNeedsToBe, int maxCvt) {
+		@Override public Integer declaresConverts(Object val, Class objClass, Class objNeedsToBe, List maxCvt) {
 			if (objClass != null && GetObject.class.isAssignableFrom(objClass)) {
 				return MIGHT;
 			}
@@ -241,15 +262,15 @@ public class Utility extends UtilityMenuOptions {
 
 	static public class UtilityConvertableConverterOnly implements Converter {
 
-		@Override public <T> T convert(Object val, Class<T> objNeedsToBe, int maxCvt) throws NoSuchConversionException {
+		@Override public <T> T convert(Object val, Class<T> objNeedsToBe, List maxCvt) throws NoSuchConversionException {
 			if (val instanceof Convertable) {
 				Convertable convertable = (Convertable) val;
 				return convertable.convertTo(objNeedsToBe);
 			}
-			return Utility.recastUtil(val, objNeedsToBe, maxCvt);
+			return recastUtil(val, objNeedsToBe, maxCvt);
 		}
 
-		@Override public Integer declaresConverts(Object val, Class objClass, Class objNeedsToBe, int maxCvt) {
+		@Override public Integer declaresConverts(Object val, Class objClass, Class objNeedsToBe, List maxCvt) {
 			if (objClass != null && Convertable.class.isAssignableFrom(objClass)) {
 				return MIGHT;
 			}
@@ -265,14 +286,22 @@ public class Utility extends UtilityMenuOptions {
 
 	static public class UtilityOptionalArgs implements OptionalArg {
 
+		private short filterSpec;
+
+		public UtilityOptionalArgs(short optionalArgSpecs) {
+			this.filterSpec = optionalArgSpecs;
+		}
+
 		@Override public Object getArg(Class type) throws NoSuchConversionException {
-			return Utility.getOptionalArg(type);
+			return getOptionalArg(type, filterSpec, true);
 		}
 
 		@Override public void reset() {
 		}
 	}
 
+	public static HashMap<Class, Object> lastResults = new HashMap<Class, Object>();
+	public static HashMap<Class, Callable<Object>> singletons = new HashMap<Class, Callable<Object>>();
 	private static Collection EMPTY_COLLECTION = Collections.EMPTY_LIST;
 	private static ThreadLocal<Boolean> inClassLoadingPing = new ThreadLocal<Boolean>();
 	public static Collection<AddTabFrames> addTabFramers = new HashSet<AddTabFrames>();
@@ -288,11 +317,13 @@ public class Utility extends UtilityMenuOptions {
 	public static BrowsePanel browserPanel;
 	public static NamedObjectCollection uiObjects = new BoxedCollectionImpl("All UI Objects", null);
 	public static NamedObjectCollection clipboardCollection = new BoxedCollectionImpl("Clipboard", null);
+	@UISalient(ResultIsSingleton = true)
+	//
 	private static Collection<TriggerAdder> triggerAdders = new LinkedList<TriggerAdder>();
 
-	static ArrayList<TriggerForInstance> appMenuGlobalTriggers = new ArrayList<TriggerForInstance>();
-	static ArrayList<TriggerForClass> objectContextMenuTriggers = new ArrayList<TriggerForClass>();
-	static public LinkedList<Object> featureQueueUp = new LinkedList<Object>();
+	static ArrayList<Trigger> appMenuGlobalTriggers0 = new ArrayList<Trigger>();
+	static ArrayList<TriggerForClass> objectContextMenuTriggers0 = new ArrayList<TriggerForClass>();
+	static public Set<Object> featureQueueUp = new HashSet<Object>();
 	final static public Object featureQueueLock = new Object();
 
 	public static JMenu toolsMenu;
@@ -302,31 +333,144 @@ public class Utility extends UtilityMenuOptions {
 			return false;
 		};
 	};
+	public static ThreadLocal<Boolean> canMakeInstanceTriggers = new ThreadLocal<Boolean>() {
+		protected Boolean initialValue() {
+			return false;
+		};
+	};
 
-	public static Object getOptionalArg(Class type) throws NoSuchConversionException {
-		Boolean was = Utility.disableOptionalArgs.get() == Boolean.TRUE;
-		if (was)
-			return null;
+	public static Object getOptionalArg(Class type, short optionalArgSpecs, boolean onlyFirstGroup) throws NoSuchConversionException {
+		NoSuchConversionException nsce = null;
+		if (type.isArray()) {
+			Object fnd;
+			try {
+				fnd = getOptionalArgSingle(type, optionalArgSpecs, onlyFirstGroup);
+				if (type.isInstance(fnd))
+					return fnd;
+			} catch (NoSuchConversionException e) {
+				nsce = e;
+			}
+			try {
+				Class componentType = type.getComponentType();
+				Collection c = getOptionalArgCollection(componentType, optionalArgSpecs, onlyFirstGroup);
+				if (c.size() == 0)
+					noSuchConversion(componentType, type, nsce);
+				return c.toArray((Object[]) Array.newInstance(componentType, c.size()));
+			} catch (NoSuchConversionException e) {
+				throw e;
+			}
+		} else if (isCollection(type)) {
+			Object fnd;
+			try {
+				fnd = getOptionalArgSingle(type, optionalArgSpecs, onlyFirstGroup);
+				if (type.isInstance(fnd))
+					return fnd;
+			} catch (NoSuchConversionException e) {
+				nsce = e;
+			}
+			try {
+				Class componentType = getComponentType(type);
+				if (componentType == null)
+					throw nsce;
+				Collection c = getOptionalArgCollection(componentType, optionalArgSpecs, onlyFirstGroup);
+				if (c.size() == 0)
+					noSuchConversion(componentType, type, nsce);
+				return c;
+			} catch (NoSuchConversionException e) {
+				throw e;
+			}
+		}
+		return getOptionalArgSingle(type, optionalArgSpecs, onlyFirstGroup);
+	}
 
-		Collection c = getClipboard().findObjectsByType(type);
+	public static Object getOptionalArgSingle(Class type, short optionalArgSpecs, boolean onlyFirstGroup) throws NoSuchConversionException {
+		Collection c;
+		c = getOptionalArgCandidates(type, optionalArgSpecs, onlyFirstGroup, true);
 		if (c.size() == 1) {
 			return firstItem(c);
 		}
+		return noSuchConversion(OptionalArg.class, type, null);
+	}
 
-		synchronized (lastResults) {
-			Object o = lastResults.get(type);
-			if (o != null)
-				return o;
-			if (lastResults.containsKey(type)) {
-				return null;
+	public static Collection getOptionalArgCollection(Class type, short optionalArgSpecs, boolean onlyFirstGroup) throws NoSuchConversionException {
+		Collection c;
+		c = getOptionalArgCandidates(type, optionalArgSpecs, onlyFirstGroup, false);
+		if (c.size() > 0) {
+			return (c);
+		}
+		return noSuchConversion(OptionalArg.class, type, null);
+	}
+
+	private static boolean isCollection(Class type) {
+		return Iterable.class.isAssignableFrom(type) || type.isArray();
+	}
+
+	public static Collection getOptionalArgCandidates(Class type, short optionalArgSpecs, boolean returnOnFirstLargerThanZero, boolean returnIfExactlyOneItem) {
+		Boolean was = disableOptionalArgs.get() == Boolean.TRUE;
+		if (was)
+			return EMPTY_COLLECTION;
+
+		Collection total = new ArrayList<Object>();
+		if ((optionalArgSpecs & OptionalArg.OPTIONAL_FROM_CLIPBOARD) != 0) {
+			Collection c = getClipboard().findObjectsByType(type);
+			if (c.size() == 1 && returnIfExactlyOneItem) {
+				return (c);
+			}
+			if (c.size() > 0) {
+				if (returnOnFirstLargerThanZero)
+					return c;
+				total.addAll(c);
 			}
 		}
 
-		c = findUIObjectsByType(type, false, true, true);
-		if (c.size() == 1) {
-			return firstItem(c);
+		if ((optionalArgSpecs & OptionalArg.OPTIONAL_FROM_RESULTS) != 0) {
+			synchronized (lastResults) {
+				Object o = lastResults.get(type);
+				if (o != null && returnOnFirstLargerThanZero)
+					return Collections.singleton(o);
+				if (lastResults.containsKey(type) && returnOnFirstLargerThanZero) {
+					return EMPTY_COLLECTION;
+				}
+			}
 		}
-		return null;//ReflectUtils.noSuchConversion(OptionalArg.class, type, null);
+		if ((optionalArgSpecs & OptionalArg.OPTIONAL_FROM_SINGLETON) != 0) {
+			synchronized (singletons) {
+				Callable<Object> o = singletons.get(type);
+				if (o != null && returnOnFirstLargerThanZero) {
+					try {
+						Object r = o.call();
+						return Collections.singleton(r);
+					} catch (Exception e) {
+						printStackTrace(e);
+					}
+				}
+				if (lastResults.containsKey(type) && returnOnFirstLargerThanZero) {
+					return EMPTY_COLLECTION;
+				}
+			}
+		}
+
+		if ((optionalArgSpecs & OptionalArg.OPTIONAL_FROM_LOADED) != 0) {
+			Collection c = getTreeBoxCollection().findObjectsByType(type);
+			if (c.size() == 1 && returnIfExactlyOneItem) {
+				return (c);
+			}
+			if (c.size() > 0) {
+				if (returnOnFirstLargerThanZero)
+					return c;
+				total.addAll(c);
+			}
+		}
+		if (returnIfExactlyOneItem) {
+			Collection c = total;
+			if (c.size() == 1) {
+				return (c);
+			}
+			//return noSuchConversion(OptionalArg.class, type, null);
+		}
+		if (total.size() > 0)
+			return total;
+		return EMPTY_COLLECTION;
 	}
 
 	private static Object firstItem(Collection c) {
@@ -337,310 +481,363 @@ public class Utility extends UtilityMenuOptions {
 		return null;
 	}
 
-	public static Collection<Object> findUIObjectsByType(Class type, boolean useClipboard, boolean useLastResults, boolean useEverything) {
-		Collection c = null;
-		if (useClipboard) {
-			c = getClipboard().findObjectsByType(type);
-			if (c.size() > 0) {
-				return c;
-			}
-		}
-		if (useLastResults) {
-			c = new HashSet<Object>();
-			synchronized (lastResults) {
-				for (Entry<Class, Object> es : lastResults.entrySet()) {
-					Object lr = es.getValue();
-					if (type.isInstance(lr)) {
-						c.add(lr);
-						continue;
-					}
-					Class ky = es.getKey();
-					if (ReflectUtils.isAssignableFrom(type, ky)) {
-						c.add(lr);
-						continue;
-					}
-				}
-			}
-			if (c.size() > 0) {
-				return c;
-			}
-		}
-		if (useEverything) {
-			c = getTreeBoxCollection().findObjectsByType(type);
-			if (c.size() > 0) {
-				return c;
-			}
-		}
-		return EMPTY_COLLECTION;
-	}
-
 	public static void addSingletonDefault(Object object) {
-		addSingletonDefault(object, null);
-	}
-
-	public static void addSingletonDefault(Object object, Class clz) {
-		addSingletonMethods00(object, clz);
+		Boolean was = canMakeInstanceTriggers.get();
+		try {
+			canMakeInstanceTriggers.set(true);
+			addMethods(object, null, true);
+		} finally {
+			canMakeInstanceTriggers.set(was);
+		}
 	}
 
 	private static HashSet<java.lang.reflect.AnnotatedElement> loadedClassMethods = new HashSet<java.lang.reflect.AnnotatedElement>(1000);
 
-	public static void addSingletonMethods00(Object object, Class clz) {
-		if (clz == null) {
-			if (object == null)
-				return;
-			clz = object.getClass();
-		}
-		Boolean was = Utility.disableOptionalArgs.get();
-		try {
-			Utility.disableOptionalArgs.set(true);
-			addSingletonMethods000(object, clz);
-		} finally {
-			Utility.disableOptionalArgs.set(was);
-		}
-	}
-
-	public static void addClassMethods(Class clz) {
-		if (clz == null)
+	public static void addClassMethods(Class cls) {
+		if (cls == null)
 			return;
 		synchronized (featureQueueLock) {
 			synchronized (loadedClassMethods) {
-				if (loadedClassMethods.contains(clz))
+				if (loadedClassMethods.contains(cls))
 					return;
 			}
-			addSingletonMethods000(null, clz);
+			Boolean was = canMakeInstanceTriggers.get();
+			try {
+				canMakeInstanceTriggers.set(false);
+				addMethods(null, cls, false);
+			} finally {
+				canMakeInstanceTriggers.set(was);
+			}
 		}
 	}
 
-	public static void addSingletonMethods000(Object object, Class clz) {
+	public static void addMethods(Object object, Class cls, boolean reallySingleton) {
+		if (cls == null) {
+			if (object == null)
+				return;
+			cls = object.getClass();
+		}
+		Boolean was = disableOptionalArgs.get();
+		try {
+			disableOptionalArgs.set(true);
+			addMethods0000(object, cls, reallySingleton);
+		} finally {
+			disableOptionalArgs.set(was);
+		}
+	}
 
-		if (clz.isArray()) {
-			addClassMethods(clz.getComponentType());
+	private static void addMethods0000(Object object, Class cls, boolean reallySingleton) {
+
+		if (object != null && cls != null) {
+			addLastResultType(object, cls);
+		}
+		if (cls.isArray()) {
+			addClassMethods(cls.getComponentType());
 			return;
 		}
-		if (clz.isAnonymousClass()) {
-			Class dc = clz.getDeclaringClass();
-			if (dc != null && dc != clz) {
+		if (cls.isAnonymousClass()) {
+			Class dc = cls.getDeclaringClass();
+			if (dc != null && dc != cls) {
 				addClassMethods(dc);
 			}
 		}
 		boolean autoLoad = false;
 		/// load autoloads
-		if (Autoload.class.isAssignableFrom(clz)) {
+		if (Autoload.class.isAssignableFrom(cls)) {
 			try {
 				autoLoad = true;
-				///Class.forName(clz.getName(), true, null);
+				///Class.forName(cls.getName(), true, null);
 			} catch (Throwable e) {
 				printStackTrace(e);
 			}
 		}
 		/// instance singletons
-		if (Singleton.class.isAssignableFrom(clz) && object == null) {
-			try {
-				Collection objs = findUIObjectsByType(clz, true, true, true);
-				if (objs.size() == 0) {
-					Constructor constructor = clz.getDeclaredConstructor();
-					constructor.setAccessible(true);
-					object = constructor.newInstance();
-				} else {
-					object = firstItem(objs);
+		if (Singleton.class.isAssignableFrom(cls) || reallySingleton) {
+			reallySingleton = true;
+			object = makeSingleton(object, cls);
+			setSingletonValue(object, cls);
+		} else {
+			object = null;
+		}
+
+		List<Trigger> appMenuGlobalTriggers = new ArrayList<Trigger>();
+		List<Trigger> objectContextMenuTriggers = new ArrayList<Trigger>();
+
+		DisplayContext ctx = null;
+		while (cls != null) {
+			if (cls == Object.class) {
+				break;
+			}
+
+			synchronized (loadedClassMethods) {
+				if (!loadedClassMethods.add(cls)) {
+					break;
 				}
-			} catch (Throwable e) {
-				printStackTrace(e);
-			} finally {
+			}
+			if (isSystemPrimitive(cls)) {
+				break;
+			}
+
+			for (Method m : getAllMethods(cls, true)) {
+
+				if (!loadedClassMethods.add(m)) {
+					continue;
+				}
+
+				if (isSynthetic(m))
+					continue;
+
+				addMethod(m, cls, object, objectContextMenuTriggers, appMenuGlobalTriggers, ctx);
+			}
+
+			for (Field m : cls.getDeclaredFields()) {
+
+				if (!loadedClassMethods.add(m)) {
+					continue;
+				}
+
+				if (isSynthetic(m))
+					continue;
+
+				addField(m, cls, object, objectContextMenuTriggers, appMenuGlobalTriggers, ctx);
+
+			}
+			if (true)
+				break;
+			cls = cls.getSuperclass();
+		}
+
+		if (implementsAllClasses(cls, ObjectPanel.class, Component.class)) {
+			if (isCreatable(cls)) {
+				try {
+					Class panelFor = getTypeClass(cls.getMethod("getClassOfBox").getGenericReturnType(), Class.class);
+					if (panelFor != null) {
+						registerPanel(cls, panelFor);
+					}
+				} catch (SecurityException e) {
+				} catch (NoSuchMethodException e) {
+				}
+
 			}
 		}
-		if (object != null) {
-			addLastResultType(object, clz);
-		}
-		synchronized (appMenuGlobalTriggers) {
-			List<TriggerForInstance> appMenuGlobalTrigs = appMenuGlobalTriggers;
-			DisplayContext ctx = getDisplayContext();
-			int ps1 = appMenuGlobalTrigs.size();
-			while (clz != null) {
-				if (clz == Object.class) {
-					break;
-				}
+		int ps1 = 0;
+		int ps2 = 0;
 
-				synchronized (loadedClassMethods) {
-					if (!loadedClassMethods.add(clz)) {
-						break;
-					}
-				}
-				if (Utility.skipMethodsOFClass(clz)) {
-					break;
-				}
-				synchronized (objectContextMenuTriggers) {
-
-					for (Method m : ReflectUtils.getAllMethods(clz)) {
-
-						if (!loadedClassMethods.add(m)) {
-							continue;
-						}
-
-						m.setAccessible(true);
-
-						boolean isStatic = ReflectUtils.isStatic(m);
-
-						Class mustBe = clz;
-						Object wrap = isStatic ? null : object;
-
-						if (ReflectUtils.isSynthetic(m))
-							continue;
-
-						int plen = m.getParameterTypes().length;
-
-						// rlen = how many objects required to call a method
-						int rlen = plen;
-						int mlen = rlen;
-
-						if (!isStatic) {
-							rlen++;
-							mlen++;
-							if (object != null) {
-								wrap = object;
-								mlen--;
-							}
-						} else {
-							if (rlen > 0) {
-								mustBe = m.getParameterTypes()[0];
-							}
-							if (object != null) {
-								wrap = object;
-								mlen--;
-							}
-						}
-
-						Class returnType = m.getReturnType();
-
-						/// load ConverterMethods
-						if (returnType != void.class) {
-							ConverterMethod cmi = ReflectUtils.getAnnotationOn(m, ConverterMethod.class);
-							if (cmi != null) {
-								ReflectUtils.registerConverterMethod(m, cmi);
-								// maybe loop here?
-							} else {
-								String mname = m.getName();
-								if (mname.contains("_")) {
-									mname = properCase(mname);
-								}
-								if (!mname.equals("toString")) {
-									String returnName = properCase(ReflectUtils.getCanonicalSimpleName(returnType));
-									mname = mname.replace(returnName, "^");
-									if ("to^".equals(mname) //
-											|| "as^".equals(mname) // 
-											|| "getAs^".equals(mname) // 
-											|| "convertTo^".equals(mname) // 
-											|| "coerce^".equals(mname) // 
-											|| "from^".equals(mname)) {
-										ReflectUtils.registerConverterMethod(m, cmi);
-									}
-
-								}
-							}
-						}
-
-						if (rlen == 0) {
-							TriggerMenuFactory.addMethodAsTrig(ctx, clz, m, appMenuGlobalTrigs, null, ADD_ALL, "%d|%m", true, false);
-							continue;
-						}
-						if (rlen == 1 && wrap != null) {
-							addMethodAsTrig(ctx, clz, m, appMenuGlobalTrigs, wrap, ADD_ALL, "%c|%m", isStatic, false);
-						}
-
-						if (Component.class.isAssignableFrom(returnType)) {
-							if (rlen == 1) {
-								// might be a panel method
-								TriggerMenuFactory.addMethodAsTrig(ctx, clz, m, objectContextMenuTriggers, null, ADD_ALL, "%d|%m", isStatic, false);
-								continue;
-							}
-						}
-
-						TriggerMenuFactory.addMethodAsTrig(ctx, clz, m, objectContextMenuTriggers, null, ADD_ALL, "%d|%m", isStatic, false);
-					}
-				}
-				for (Field m : clz.getDeclaredFields()) {
-
-					if (!loadedClassMethods.add(m)) {
-						continue;
-					}
-					m.setAccessible(true);
-
-					if (ReflectUtils.isSynthetic(m))
-						continue;
-
-					boolean isStatic = ReflectUtils.isStatic(m);
-
-					Class mustBe = clz;
-					Object wrap = object;
-					boolean canBeGlobal = true;
-					if (isStatic) {
-						wrap = null;
-					} else {
-						if (object == null) {
-							// cant be registered globally
-							canBeGlobal = false;
-						}
-					}
-					Class returnType = ReflectUtils.nonPrimitiveTypeFor(m.getType());
-					boolean isForCheckbox = returnType == Boolean.class;
-
-					if (isForCheckbox && canBeGlobal) {
-						TriggerMenuFactory.addMethodAsTrig(ctx, clz, m, appMenuGlobalTrigs, wrap, ADD_ALL, "%d|%m", isStatic, true);
-					}
-					if (!isStatic) {
-						TriggerMenuFactory.addMethodAsTrig(ctx, clz, m, objectContextMenuTriggers, null, ADD_ALL, "%d|%m", isStatic, true);
-					}
-				}
-				if (true)
-					break;
-				clz = clz.getSuperclass();
+		if (appMenuGlobalTriggers.size() > 0) {
+			synchronized (appMenuGlobalTriggers0) {
+				ps1 = appMenuGlobalTriggers0.size();
+				addAllNew(appMenuGlobalTriggers0, appMenuGlobalTriggers);
+				ps2 = appMenuGlobalTriggers0.size();
 			}
-
-			if (ReflectUtils.implementsAllClasses(clz, ObjectPanel.class, Component.class)) {
-				if (ReflectUtils.isCreatable(clz)) {
-					try {
-						Class panelFor = ReflectUtils.getTypeClass(clz.getMethod("getClassOfBox").getReturnType(), new LinkedList());
-						if (panelFor != null) {
-							registerPanel(clz, panelFor);
-						}
-					} catch (SecurityException e) {
-					} catch (NoSuchMethodException e) {
-					}
-
-				}
-			}
-			int ps2 = appMenuGlobalTrigs.size();
-			if (ps1 != ps2) {
+			if (ps1 != ps2)
 				updateToolsMenu();
+		}
+		if (objectContextMenuTriggers.size() > 0) {
+			synchronized (objectContextMenuTriggers0) {
+				addAllNew(objectContextMenuTriggers0, objectContextMenuTriggers);
 			}
+		}
+	}
+
+	private static void addField(Field m, Class cls, Object object, List objectContextMenuTriggers, List appMenuGlobalTriggers, DisplayContext ctx) {
+
+		m.setAccessible(true);
+
+		boolean isStatic = isStatic(m);
+
+		Class mustBe = cls;
+		Object wrap = object;
+		boolean canBeGlobal = true;
+		if (isStatic) {
+			wrap = null;
+		} else {
+			if (object == null) {
+				// cant be registered globally
+				canBeGlobal = false;
+			}
+		}
+		Class returnType = nonPrimitiveTypeFor(m.getType());
+		boolean isForCheckbox = returnType == Boolean.class;
+		if (canBeGlobal) {
+			UISalient cmi = getAnnotationOn(m, UISalient.class);
+			if (cmi != null && cmi.ResultIsSingleton()) {
+				final Object raw0 = wrap;
+				final Field m0 = m;
+				singletons.put(returnType, new java.util.concurrent.Callable() {
+					@Override public Object call() throws Exception {
+						return m0.get(raw0);
+					}
+				});
+			}
+		}
+		if (isForCheckbox && canBeGlobal) {
+			TriggerMenuFactory.addMethodAsTrig(ctx, cls, m, appMenuGlobalTriggers, wrap, ADD_ALL, "%d|%m", isStatic, true);
+		}
+		if (!isStatic) {
+			TriggerMenuFactory.addMethodAsTrig(ctx, cls, m, objectContextMenuTriggers, null, ADD_ALL, "%c|%m", isStatic, true);
 		}
 
 	}
 
-	public static boolean skipMethodsOFClass(Class clz) {
-		if (clz == null)
+	private static void addMethod(Method m, Class cls, Object object, List objectContextMenuTriggers, List appMenuGlobalTriggers, DisplayContext ctx) {
+		m.setAccessible(true);
+
+		boolean isStatic = isStatic(m);
+
+		Class mustBe = cls;
+		final Object wrap = isStatic ? null : object;
+
+		int plen = m.getParameterTypes().length;
+
+		// rlen = how many objects required to call a method
+		int totalLen = plen;
+		int missingLen = totalLen;
+
+		if (!isStatic) {
+			totalLen++;
+			missingLen++;
+			if (wrap != null) {
+				missingLen--;
+			}
+		} else {
+			if (totalLen > 0) {
+				mustBe = m.getParameterTypes()[0];
+			}
+			if (object != null) {
+				missingLen--;
+			}
+		}
+
+		Class returnType = m.getReturnType();
+
+		/// load ConverterMethods
+		if (returnType != void.class) {
+			ConverterMethod cmi = getAnnotationOn(m, ConverterMethod.class);
+			if (cmi != null) {
+				registerConverterMethod(m, cmi);
+				// maybe loop here?
+			} else {
+				String mname = m.getName();
+				if (mname.contains("_")) {
+					mname = properCase(mname);
+				}
+				if (!mname.equals("toString")) {
+					String returnName = properCase(getCanonicalSimpleName(returnType));
+					mname = mname.replace(returnName, "^");
+					if ("to^".equals(mname) //
+							|| "as^".equals(mname) // 
+							|| "getAs^".equals(mname) // 
+							|| "convertTo^".equals(mname) // 
+							|| "coerce^".equals(mname) // 
+							|| "from^".equals(mname)) {
+						registerConverterMethod(m, cmi);
+					}
+
+				}
+			}
+		}
+
+		if (totalLen == 0 && missingLen == 0) {
+			TriggerMenuFactory.addMethodAsTrig(ctx, cls, m, appMenuGlobalTriggers, null, ADD_ALL, "%d|%m", true, false);
+			return;
+		}
+		if (missingLen == 0) {
+			UISalient cmi = getAnnotationOn(m, UISalient.class);
+			if (cmi != null && cmi.ResultIsSingleton()) {
+				final Object raw0 = wrap;
+				final Method m0 = m;
+				singletons.put(returnType, new java.util.concurrent.Callable() {
+					@Override public Object call() throws Exception {
+						return invokeFromUI(raw0, m0, OptionalArg.OPTIONAL_FROM_DEFAULTS);
+					}
+				});
+			}
+		}
+		if (totalLen == 1 && missingLen == 0) {
+			addMethodAsTrig(ctx, cls, m, appMenuGlobalTriggers, wrap, ADD_ALL, "%d|%m", isStatic, false);
+		}
+
+		if (Component.class.isAssignableFrom(returnType)) {
+			if (totalLen == 1) {
+				// might be a panel method
+				TriggerMenuFactory.addMethodAsTrig(ctx, cls, m, objectContextMenuTriggers, null, ADD_ALL, "%c|%m", isStatic, false);
+				return;
+			}
+		}
+
+		TriggerMenuFactory.addMethodAsTrig(ctx, cls, m, objectContextMenuTriggers, null, ADD_ALL, "%c|%m", isStatic, false);
+	}
+
+	private static <V extends Object> void setSingletonValue(V object, Class<V> cls) {
+		final V singleTon = object;
+		singletons.put(cls, new Callable<Object>() {
+			@Override public V call() throws Exception {
+				return singleTon;
+			}
+		});
+	}
+
+	private static Object makeSingleton(Object object, Class cls) {
+		if (object != null)
+			return object;
+		try {
+			Collection objs = getOptionalArgCandidates(cls, OptionalArg.OPTIONAL_FROM_EVERYYWHERE, true, true);
+			if (objs.size() == 0) {
+				Constructor constructor = cls.getDeclaredConstructor();
+				constructor.setAccessible(true);
+				object = constructor.newInstance();
+			} else {
+				object = firstItem(objs);
+			}
+		} catch (Throwable e) {
+			printStackTrace(e);
+		} finally {
+		}
+		return object;
+	}
+
+	public static boolean isSystemPrimitive(Class cls) {
+		if (cls == null)
 			return true;
-		Package pk = clz.getPackage();
+		if (cls.isPrimitive())
+			return true;
+		if (CharSequence.class.isAssignableFrom(cls))
+			return true;
+		if (Number.class.isAssignableFrom(cls))
+			return true;
+		if (Boolean.class.isAssignableFrom(cls))
+			return true;
+		if (false && java.lang.Class.class.isAssignableFrom(cls))
+			return true;
+		if (false && java.lang.reflect.Type.class.isAssignableFrom(cls))
+			return true;
+		Package pk = cls.getPackage();
 		if (pk != null) {
 			String pkn = pk.getName();
+			if (Comparable.class.isAssignableFrom(cls) && pkn.startsWith("java.lang."))
+				return true;
+
 			if (pkn.startsWith("java.awt."))
+				return true;
+			if (pkn.startsWith("sun."))
+				return true;
+			if (pkn.startsWith("com.sun."))
 				return true;
 			if (pkn.startsWith("javax.swing."))
 				return true;
+
 		}
 		return false;
 	}
 
 	public static void updateToolsMenu() {
-		List<TriggerForInstance> appMenuGlobalTrigs = appMenuGlobalTriggers;
-		synchronized (appMenuGlobalTrigs) {
-			if (toolsMenu == null)
-				return;
-			toolsMenu.removeAll();
-			Collections.sort(appMenuGlobalTrigs, new TriggerSorter());
-			for (TriggerForInstance tfi : appMenuGlobalTrigs) {
-				addTriggerToPoppup(toolsMenu, null, tfi);
-			}
+		List<Trigger> appMenuGlobalTriggers = getAppMenuGlobalMethods();
+		if (toolsMenu == null)
+			return;
+		toolsMenu.removeAll();
+		TriggerMenuFactory.sortTriggers(appMenuGlobalTriggers);
+		for (Trigger tfi : appMenuGlobalTriggers) {
+			addTriggerToPoppup(toolsMenu, null, tfi);
 		}
 	}
 
@@ -654,36 +851,36 @@ public class Utility extends UtilityMenuOptions {
 
 	}
 
-	public static List<TriggerForInstance> getAppMenuGlobalMethods() {
-		synchronized (appMenuGlobalTriggers) {
-			return new ArrayList<TriggerForInstance>(appMenuGlobalTriggers);
+	public static List<Trigger> getAppMenuGlobalMethods() {
+		synchronized (appMenuGlobalTriggers0) {
+			return new ArrayList<Trigger>(appMenuGlobalTriggers0);
 		}
 	}
 
 	public static List<TriggerForClass> getObjectGlobalMethods() {
-		synchronized (objectContextMenuTriggers) {
-			return new ArrayList<TriggerForClass>(objectContextMenuTriggers);
+		synchronized (objectContextMenuTriggers0) {
+			return new ArrayList<TriggerForClass>(objectContextMenuTriggers0);
 		}
 	}
 
-	static AssemblerCacheGrabber singletAssemblerCacheGrabber = new AssemblerCacheGrabber();
 	final public static ResourceToFromString RESOURCE_TO_FROM_STRING = new ResourceToFromString(null);
+	static AssemblerCacheGrabber singletAssemblerCacheGrabber = new AssemblerCacheGrabber();
 	static {
 		addObjectFeatures(singletAssemblerCacheGrabber);
 		JenaLiteralUtils.addIdListener(new IdentToObjectListener() {
 
 			@Override public void registerURI(Ident id, Object value) {
-				Utility.recordCreated(uiObjects, id, value);
+				recordCreated(uiObjects, id, value);
 			}
 
 			@Override public void deregisterURI(Ident id, Object value) {
-				Utility.recordCreated(uiObjects, id, null);
+				recordCreated(uiObjects, id, null);
 			}
 
 		});
-		addObjectFeatures(UtilityMenuOptions.class);
-		addObjectFeatures(Utility.class);
-		ReflectUtils.registerConverter(new UtilityConverter());
+		addClassMethods(UtilityMenuOptions.class);
+		addClassMethods(Utility.class);
+		registerConverter(new UtilityConverter());
 		Map<Class, ToFromKeyConverter> toFrmKeyCnv = getKeyConvMap(String.class, true);
 
 		toFrmKeyCnv.put(Ident.class, new ToFromKeyConverter<Ident, String>(Ident.class, String.class) {
@@ -701,6 +898,8 @@ public class Utility extends UtilityMenuOptions {
 		toFrmKeyCnv.put(Literal.class, RESOURCE_TO_FROM_STRING);
 		toFrmKeyCnv.put(RDFNode.class, RESOURCE_TO_FROM_STRING);
 		toFrmKeyCnv.put(Node.class, RESOURCE_TO_FROM_STRING);
+		//toFrmKeyCnv.put(JenaResourceItem.class, RESOURCE_TO_FROM_STRING);
+		//toFrmKeyCnv.put(KnownComponent.class, RESOURCE_TO_FROM_STRING);
 	}
 
 	private static Map<Class, ToFromKeyConverter> getKeyConvMap(Class keyType, boolean createIfMissing) {
@@ -738,33 +937,38 @@ public class Utility extends UtilityMenuOptions {
 		}
 	}
 
+	private static boolean isSingletonClass(Class cls) {
+		if (cls == null)
+			return false;
+		return Singleton.class.isAssignableFrom(cls);
+	}
+
 	public static void addObjectFeatures(Object obj) {
 		if (obj == null)
 			return;
-		addObjectFeatures0(obj);
-	}
 
-	private static void addObjectFeatures0(Object obj) {
+		Class oc = obj.getClass();
+
+		if (obj instanceof Singleton || isSingletonClass(oc)) {
+			addSingletonDefault(obj);
+			return;
+		}
+		if (obj instanceof Class) {
+			addClassMethods((Class) obj);
+			return;
+		}
+
+		if (!(obj instanceof UtilClass)) {
+			return;
+		}
+
 		synchronized (featureQueueLock) {
 			if (featureQueueUp != null) {
-				featureQueueUp.add(obj);
+				featureQueueUp.add(oc);
 				return;
 			}
 		}
-
-		if (obj instanceof Singleton) {
-			addSingletonDefault((Singleton) obj);
-		} else if (obj instanceof Class) {
-			Class clz = (Class) obj;
-			if (!clz.isInterface()) {
-				addClassMethods(clz);
-			}
-		} else {
-			if (obj instanceof UtilClass) {
-				Class oc = obj.getClass();
-				addClassMethods(oc);
-			}
-		}
+		addClassMethods(oc);
 	}
 
 	public static BrowserPanelGUI controlApp;
@@ -957,19 +1161,19 @@ public class Utility extends UtilityMenuOptions {
 		}
 	}
 
-	private static void registerCustomizer(Class<? extends Customizer> customizer, Class<?>... clz) {
-		addDelegateClass(Customizer.class, customizer, clz);
+	private static void registerCustomizer(Class<? extends Customizer> customizer, Class<?>... cls) {
+		addDelegateClass(Customizer.class, customizer, cls);
 	}
 
-	public static void addDelegateClass(Class ignored, Class customizer, Class<?>[] clz) {
-		for (Class c : clz) {
+	public static void addDelegateClass(Class ignored, Class customizer, Class<?>[] cls) {
+		for (Class c : cls) {
 			registerPair(customizer, c);
 		}
 
 	}
 
-	public static void registerPanel(Class customizer, Class<?>... clz) {
-		addDelegateClass(Component.class, customizer, clz);
+	public static void registerPanel(Class customizer, Class<?>... cls) {
+		addDelegateClass(Component.class, customizer, cls);
 	}
 
 	static {
@@ -980,15 +1184,11 @@ public class Utility extends UtilityMenuOptions {
 		Introspector.setBeanInfoSearchPath(new String[] { AbstractCollectionBeanInfo.class.getPackage().getName() });
 	}
 
-	public static Object invokeFromUI(Object obj0, Method method) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
-		return ReflectUtils.invokeOptional(obj0, method, new UtilityOptionalArgs());
+	public static Object invokeFromUI(Object obj0, Method method, short optionalArgSpecs) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+		return invokeOptional(obj0, method, new UtilityOptionalArgs(optionalArgSpecs));
 	}
 
-	public static <T> T recastUtil(Object obj, Class<T> objNeedsToBe, int maxCvt) throws NoSuchConversionException {
-		return recastUtil(obj, objNeedsToBe, maxCvt, null);
-	}
-
-	public static <T> T recastUtil(final Object val, Class<T> objNeedsToBe, int maxCvt, LinkedList<Object> except) throws NoSuchConversionException {
+	public static <T> T recastUtil(final Object val, Class<T> objNeedsToBe, List maxCvt) throws NoSuchConversionException {
 		Object obj = val;
 		if (obj == null)
 			return null;
@@ -1003,7 +1203,7 @@ public class Utility extends UtilityMenuOptions {
 		}
 		obj = dref(val);
 		if (obj != val) {
-			Object res = recastUtil(obj, objNeedsToBe, maxCvt, except);
+			Object res = recastUtil(obj, objNeedsToBe, maxCvt);
 			if (objNeedsToBe.isInstance(res))
 				return (T) res;
 			res = drefO(obj);
@@ -1022,8 +1222,12 @@ public class Utility extends UtilityMenuOptions {
 	}
 
 	public static Object fromString(Object title, Class type) throws NoSuchConversionException {
-		int maxCvt = Converter.MCVT;
+		//List maxCvt = Converter.MCVT;
 		Class keyClass = title.getClass();
+		if (keyClass != String.class) {
+			title = makeToString(title);
+			return fromString(title, type);
+		}
 		ToFromKeyConverter conv = getToFromConverter(type, keyClass);
 		if (conv != null)
 			return conv.fromKey(title, type);
@@ -1031,7 +1235,7 @@ public class Utility extends UtilityMenuOptions {
 		if (!isToStringType(type)) {
 			if (title instanceof String) {
 				String stitle = (String) title;
-				BT box = getTreeBoxCollection().findBoxByName(stitle);
+				Convertable box = getTreeBoxCollection().findBoxByName(stitle);
 				if (box == null) {
 					throw new NoSuchConversionException(type + " findBoxByName " + title);
 				}
@@ -1041,7 +1245,7 @@ public class Utility extends UtilityMenuOptions {
 
 		if (type == keyClass)
 			return title;
-		type = ReflectUtils.nonPrimitiveTypeFor(type);
+		type = nonPrimitiveTypeFor(type);
 
 		NoSuchConversionException cce = null;
 		Class searchType = type;
@@ -1051,7 +1255,7 @@ public class Utility extends UtilityMenuOptions {
 					Class[] pt = m.getParameterTypes();
 					if (pt != null && pt.length == 1 && Modifier.isStatic(m.getModifiers())) {
 						try {
-							if (TypeAssignable.CASTING_ONLY.declaresConverts(title, keyClass, pt[0], maxCvt) == TypeAssignable.WONT)
+							if (TypeAssignable.CASTING_ONLY.declaresConverts(title, keyClass, pt[0], null) == TypeAssignable.WONT)
 								continue;
 							m.setAccessible(true);
 							return m.invoke(null, title);
@@ -1210,12 +1414,30 @@ public class Utility extends UtilityMenuOptions {
 		if (c.isArray()) {
 			return getShortClassName(c.getComponentType()) + "Array";
 		}
-		String name = c.getName();
-		int i = name.lastIndexOf(".");
+		return getCanonicalSimpleName(c);
+	}
+
+	public static String getSpecialClassName(Class c) {
+		if (c.isArray()) {
+			return getSpecialClassName(c.getComponentType()) + "Array";
+		}
+		String name = getCanonicalSimpleName(c, true);
+		int i = name.indexOf(".");
 		if (i == -1)
 			return name;
-		else
-			return name.substring(i + 1);
+		String[] sname = name.split("\\.");
+		int last = sname.length - 1;
+		String sep = c.isInterface() ? "+" : "-";
+		if (i > 3 || last == 1) {
+			return sname[0] + sep + sname[last];
+		}
+		for (int n = 0; n < last; n++) {
+			String s = sname[n];
+			if (s.length() > 3) {
+				return s + sep + sname[last];
+			}
+		}
+		return sname[1] + sep + sname[last];
 	}
 
 	/**
@@ -1280,7 +1502,7 @@ public class Utility extends UtilityMenuOptions {
 		if (object == null)
 			return "<null>";
 		if (object instanceof Class) {
-			return ReflectUtils.getCanonicalSimpleName((Class) object);
+			return getSpecialClassName((Class) object);
 		}
 		if (object instanceof KnownComponent) {
 			String str = ((KnownComponent) object).getShortLabel();
@@ -1334,8 +1556,6 @@ public class Utility extends UtilityMenuOptions {
 		return System.identityHashCode(object);
 	}
 
-	public static HashMap<Class, Object> lastResults = new HashMap<Class, Object>();
-
 	public static void addLastResultType(Object obj, Class expected) {
 		if (obj == null)
 			return;
@@ -1347,13 +1567,13 @@ public class Utility extends UtilityMenuOptions {
 			if (tighter != expected) {
 				lastResults.put(tighter, obj);
 			}
-			Utility.updateLastResultsMenu();
+			updateLastResultsMenu();
 		}
 	}
 
 	public static void addSubResult(Object from, Box targetBox, ActionEvent evt, Object obj, Class expected) throws PropertyVetoException {
 		addLastResultType(obj, expected);
-		expected = ReflectUtils.nonPrimitiveTypeFor(expected);
+		expected = nonPrimitiveTypeFor(expected);
 		if (expected == Void.class)
 			return;
 
@@ -1456,9 +1676,9 @@ public class Utility extends UtilityMenuOptions {
 	}
 
 	private static <T> Collection<Class<? extends T>> findImplmentingForMatch(Class<T> mustBe, Class objClass) {
-		boolean useAssignable = true;
+		boolean useAssignable = false;
 		synchronized (classToClassRegistry) {
-			List<Class<? extends T>> list = new ArrayList<Class<? extends T>>();
+			HashSet<Class<? extends T>> list = new HashSet<Class<? extends T>>();
 			for (Pair<Class, Class> rl : classToClassRegistry) {
 				Class l = rl.getLeft();
 				if (l == ModelAsTurtleEditor.class) {
@@ -1467,7 +1687,7 @@ public class Utility extends UtilityMenuOptions {
 				if (!typesMatch(mustBe, l, useAssignable))
 					continue;
 				Class r = rl.getRight();
-				if (typesMatch(r, objClass, useAssignable)) {
+				if (r.isAssignableFrom(objClass)) {
 					list.add(l);
 				}
 			}
@@ -1477,7 +1697,10 @@ public class Utility extends UtilityMenuOptions {
 
 	private static <T> void registerPair(Class<T> mustBe, Class objClass) {
 		synchronized (classToClassRegistry) {
-			classToClassRegistry.add(new Pair(mustBe, objClass));
+			Pair pair = new Pair(mustBe, objClass);
+			if (!classToClassRegistry.remove(pair))
+				theLogger.warn("registering pair " + pair.getLeft() + "->" + pair.getRight());
+			classToClassRegistry.add(0, pair);
 		}
 
 	}
@@ -1672,76 +1895,19 @@ public class Utility extends UtilityMenuOptions {
 		try {
 			customizer = newInstance(customizerClass);
 		} catch (Throwable e) {
-			customizer = new LargeObjectView(getCurrentContext(), object);
+			customizer = new LargeObjectView(getCurrentContext());
 		}
 		customizer.setObject(object);
 		if (customizer instanceof JPanel)
 			view = (JPanel) customizer;
 		else {
 			theLogger.warn("customizer is not a Component " + customizer);
-			view = new LargeObjectView(getCurrentContext(), object);
+			LargeObjectView lov;
+			view = lov = new LargeObjectView(getCurrentContext());
+			lov.setObject(object);
 		}
 		gpp.put(object, view);
 		return view;
-	}
-
-	static public class SpecificObjectCustomizers extends TabPanelMaker {
-
-		@Override public void setTabs(BoxPanelSwitchableView tabs, DisplayContext context, Object object, Class objClass, SetTabTo cmd) {
-			setTabs0(tabs, context, object, objClass, cmd);
-		}
-
-		public void setTabs0(BoxPanelSwitchableView tabs, DisplayContext context, Object object, Class objClass, SetTabTo cmd) {
-
-			for (Class comp : Utility.findComponentClasses(objClass)) {
-				if (comp == null) {
-					return;
-				}
-				String prefix = ReflectUtils.getCanonicalSimpleName(comp);
-				if (!ReflectUtils.isCreatable(comp))
-					continue;
-
-				if (ObjectPanelHost.class.isAssignableFrom(comp))
-					continue;
-				boolean declaredGood = false;
-				if (ScreenBoxPanel.class.isAssignableFrom(comp) || ObjectPanel.class.isAssignableFrom(comp)) {
-					declaredGood = true;
-				}
-
-				if (tabs.containsComponentOfClass(comp).size() > 0)
-					continue;
-
-				if (cmd == SetTabTo.ADD) {
-					Component cp = null;
-					try {
-						try {
-							cp = (Component) comp.newInstance();
-						} catch (Throwable e1) {
-
-						}
-						if (cp == null) {
-							cp = (Component) ReflectUtils.invokeConstructorOptional(new UtilityConverter(), new UtilityOptionalArgs(), comp, object);
-						}
-						if (cp == null) {
-							theLogger.warn("Did not create " + comp);
-							continue;
-						}
-						if (cp instanceof SetObject) {
-							((SetObject) cp).setObject(object);
-						}
-						tabs.addTab(prefix, cp);
-
-					} catch (Throwable e) {
-						e.printStackTrace();
-						theLogger.error("Did not create " + comp, e);
-					}
-
-				}
-				if (cmd == SetTabTo.REMOVE) {
-					tabs.removeTab(prefix, null);
-				}
-			}
-		}
 	}
 
 	public static Class getCustomizerClassForClass(Class objClass) {
@@ -1872,10 +2038,29 @@ public class Utility extends UtilityMenuOptions {
 	}
 
 	public static String getUniqueName(Object object) {
+		return getUniqueName(object, false);
+	}
+
+	public static String getUniqueName(Object object, boolean mayCreate) {
 		String title = hasDefaultName(object);
-		if (title == null) {
-			BT newBox = getTreeBoxCollection().findOrCreateBox(object);
+		if (isTitled(title))
+			return title;
+		NamedObjectCollection noc = getTreeBoxCollection();
+		BT newBox;
+		if (mayCreate) {
+			newBox = noc.findOrCreateBox(object);
+		} else {
+			newBox = noc.findBoxByObject(object);
+		}
+		if (newBox != null) {
 			title = newBox.getShortLabel();
+			if (isTitled(title))
+				return title;
+		} else {
+			Map<String, BT> map = noc.getNameToBoxIndex();
+			title = generateUniqueName_sug(object, null, map);
+			if (isTitled(title))
+				return "'" + title + "'";
 		}
 		return title;
 	}
@@ -1931,10 +2116,33 @@ public class Utility extends UtilityMenuOptions {
 	}
 
 	public static String makeToString(Object object) {
-		ToFromKeyConverter<?, String> conv = getToFromStringConverter(object.getClass());
-		if (conv != null)
-			return conv.toKeyFromObject(object);
+		if (object == null) {
+			breakpoint();
+			return "<nULL>";
+		}
+		Class cls = nonPrimitiveTypeFor(object.getClass());
+		ToFromKeyConverter<?, String> conv = getToFromStringConverter(cls);
+		if (conv != null) {
+			String toKey = conv.toKeyFromObject(object);
+			if (toKey != null || toKey.trim().length() > 0) {
+				return toKey;
+			} else {
+				breakpoint();
+				return "" + object;
+			}
+		}
+		if (Enum.class.isAssignableFrom(cls))
+			return "" + getSpecialClassName(cls) + "." + object;
+		if (ReflectUtils.isPrimitiveBox(cls))
+			return "" + object;
+
+		breakpoint();
 		return "" + object;
+	}
+
+	private static void breakpoint() {
+		// TODO Auto-generated method stub
+
 	}
 
 	public static ToFromKeyConverter getToFromStringConverter(Class valueClazz) {
@@ -1960,16 +2168,21 @@ public class Utility extends UtilityMenuOptions {
 			return "<null>";
 		Class type = object.getClass();
 		if (type == Class.class)
-			return ((Class) object).getName();
+			return getSpecialClassName(((Class) object));
 		if (type == String.class)
 			return ((String) object);
-		if (isToStringType(type))
-			return makeToString(object);
 		if (object instanceof BT) {
 			return ((BT) object).getShortLabel();
 		}
+		String title;
+		if (isToStringType(type)) {
+			title = makeToString(object);
+			if (isTitled(title)) {
+				return title;
+			}
+		}
 		if (uiObjects.containsObject(object)) {
-			String title = uiObjects.getTitleOf(object);
+			title = uiObjects.getTitleOf(object);
 			if (isTitled(title)) {
 				return title;
 			}
@@ -1980,9 +2193,24 @@ public class Utility extends UtilityMenuOptions {
 			if (id != null) {
 				Object f = JenaLiteralUtils.findComponent(id, object.getClass());
 				if (f == object) {
-					return id.getLocalName();
+					title = id.getLocalName();
+					if (isTitled(title)) {
+						return title;
+					}
 				}
-				return id.getAbsUriString();
+				title = id.getAbsUriString();
+				if (isTitled(title)) {
+					return title;
+				}
+			}
+		}
+		if (object != null) {
+			Object object2 = dref(object);
+			if (object2 != null && object2 != object) {
+				title = hasDefaultName(object2);
+				if (isTitled(title)) {
+					return title;
+				}
 			}
 		}
 		return null;
@@ -2131,24 +2359,24 @@ public class Utility extends UtilityMenuOptions {
 		return false;
 	}
 
-	public static String properCase(String shortClassName) {
-		if (shortClassName.contains(" ")) {
+	public static String properCase(String text) {
+		if (text.contains(" ")) {
 			StringBuffer buffer = new StringBuffer();
-			for (String sp : shortClassName.split(" ")) {
+			for (String sp : text.split(" ")) {
 				buffer.append(properCase(sp));
 			}
 			return buffer.toString();
 		}
-		if (shortClassName.trim().length() < 3) {
-			return shortClassName;
+		if (text.trim().length() < 3) {
+			return text;
 		}
-		return shortClassName.substring(0, 1).toUpperCase() + shortClassName.substring(1);
+		return text.substring(0, 1).toUpperCase() + text.substring(1);
 	}
 
-	public static String spaceCase(String shortClassName) {
+	public static String spaceCase(String text) {
 		boolean wasUpper = true;
 		StringBuffer newName = new StringBuffer();
-		for (char c : shortClassName.toCharArray()) {
+		for (char c : text.toCharArray()) {
 			if (Character.isUpperCase(c)) {
 				if (!wasUpper) {
 					newName.append(" ");
@@ -2170,36 +2398,41 @@ public class Utility extends UtilityMenuOptions {
 			ToolTipManager man = ToolTipManager.sharedInstance();
 			man.setInitialDelay(100);
 			// man.setLightWeightPopupEnabled(!man.isLightWeightPopupEnabled());
-			final String oc;
+			String oc = null;
 			if (gv instanceof Class) {
-				oc = ((Class) gv).getCanonicalName();
+				oc = ((Class) gv).getName();
 			} else {
 				oc = toInfoStringO(gv);
 			}
-			gv = getShortClassName(gv.getClass()) + ".this.toString: " + oc;
+			if (oc == null) {
+				oc = getSpecialClassName(((Class) gv));
+			}
+			gv = getSpecialClassName(gv.getClass()) + ".this.toString: " + oc;
 		}
 		return "" + gv;
 	}
 
 	static {
-		triggerAdders.add(new TriggerAdder() {
-			@Override public String toString() {
-				// TODO Auto-generated method stub
-				return getClass().getSuperclass() + " addTriggersForObjectInstance";
-			}
+		synchronized (triggerAdders) {
+			triggerAdders.add(new TriggerAdder() {
+				@Override public String toString() {
+					// TODO Auto-generated method stub
+					return getClass().getSuperclass() + " addTriggersForObjectInstance";
+				}
 
-			@Override public <TrigType> void addTriggersForObjectInstance(DisplayContext ctx, Class cls, List<TrigType> tgs, Object poj, TriggerFilter rulesOfAdd, String menuFmt) {
-				//TriggerMenuFactory.addTriggersForObjectInstanceMaster(ctx, cls, tgs, poj, ADD_ALL, menuFmt, false);
-				Object also = dref(poj);
-				//if (also != null && also != poj) {
-				TriggerMenuFactory.addTriggersForObjectInstanceMaster(ctx, also.getClass(), tgs, also, ADD_ALL, menuFmt, false);
-				//}
-				//Object also2 = drefO(poj);
-				//if (also2 != null && also2 != poj && also2 != also) {
-				//TriggerMenuFactory.addTriggersForObjectInstanceMaster(ctx, also2.getClass(), tgs, also2, ADD_ALL, menuFmt, false);
-				//}
-			}
-		});
+				@Override public <TrigType> void addTriggersForObjectInstance(DisplayContext ctx, Class cls, List<TrigType> tgs, Object poj, TriggerFilter rulesOfAdd, String menuFmt) {
+					//TriggerMenuFactory.addTriggersForObjectInstanceMaster(ctx, cls, tgs, poj, ADD_ALL, menuFmt, false);
+					Object also = dref(poj);
+					//if (also != null && also != poj) {
+					TriggerMenuFactory.addTriggersForObjectInstanceMaster(ctx, also.getClass(), tgs, also, ADD_ALL, menuFmt, false);
+					//}
+					//Object also2 = drefO(poj);
+					//if (also2 != null && also2 != poj && also2 != also) {
+					//TriggerMenuFactory.addTriggersForObjectInstanceMaster(ctx, also2.getClass(), tgs, also2, ADD_ALL, menuFmt, false);
+					//}
+				}
+			});
+		}
 	}
 
 	public static NamedObjectCollection getClipboard() {
@@ -2209,11 +2442,11 @@ public class Utility extends UtilityMenuOptions {
 	public static boolean isOSGi() {
 		ClassLoader cl = PromiscuousClassUtilsA.getCallerClassLoader();
 		if (cl != null) {
-			Class clz = cl.getClass();
-			Class dc = clz.getDeclaringClass();
+			Class cls = cl.getClass();
+			Class dc = cls.getDeclaringClass();
 			if (dc == null) // there is an situation that can cause this on some
 							// JVMs
-				dc = clz;
+				dc = cls;
 			String cn = dc.getCanonicalName();
 			if (cn.contains("Bundle")) {
 				if (true)
@@ -2238,7 +2471,7 @@ public class Utility extends UtilityMenuOptions {
 			}
 		}
 		int fnum = -1;
-		for (final Field f : ReflectUtils.getAllFields(beanClass)) {
+		for (final Field f : getAllFields(beanClass)) {
 			fnum++;
 			String propName = PropertyDescriptorForField.clipPropertyNameMethod(f.getName(), "my").toLowerCase();
 			PropertyDescriptor pd = props.get(propName);
@@ -2251,7 +2484,7 @@ public class Utility extends UtilityMenuOptions {
 				}
 			}
 		}
-		Collection<Method> ml = ReflectUtils.getAllMethods(beanClass);
+		Collection<Method> ml = getAllMethods(beanClass);
 		for (Method m : ml) {
 			String propName = PropertyDescriptorForField.clipPropertyNameMethod(m.getName(), "is", "get", "set").toLowerCase();
 			PropertyDescriptor pd = props.get(propName);
@@ -2262,11 +2495,11 @@ public class Utility extends UtilityMenuOptions {
 				if (propType == null)
 					continue;
 				try {
-					if (ptsl == 0 && ReflectUtils.isSameType(m.getReturnType(), propType)) {
+					if (ptsl == 0 && isSameType(m.getReturnType(), propType)) {
 						pd.setReadMethod(m);
 						continue;
 					} else {
-						if (ptsl == 1 && m.getReturnType() == void.class && ReflectUtils.isSameType(pts[0], propType)) {
+						if (ptsl == 1 && m.getReturnType() == void.class && isSameType(pts[0], propType)) {
 							Method prm = pd.getReadMethod();
 							if (pts[0] != propType) {
 								//one is primtive;
@@ -2291,11 +2524,11 @@ public class Utility extends UtilityMenuOptions {
 		return props.values();
 	}
 
-	public static boolean instanceOf(Object value, Class clz) {
-		if (clz == Stringable) {
+	public static boolean instanceOf(Object value, Class cls) {
+		if (cls == Stringable) {
 			return value == null || isToStringType(value.getClass());
 		}
-		if (clz.isInstance(value))
+		if (cls.isInstance(value))
 			return true;
 		return false;
 	}
@@ -2485,8 +2718,8 @@ public class Utility extends UtilityMenuOptions {
 
 	public static void addTriggerForClassInst(TriggerForClass utilClass) {
 		theLogger.warn("Registering triggers from: " + utilClass);
-		synchronized (objectContextMenuTriggers) {
-			objectContextMenuTriggers.add(utilClass);
+		synchronized (objectContextMenuTriggers0) {
+			objectContextMenuTriggers0.add(utilClass);
 		}
 
 	}
@@ -2525,6 +2758,8 @@ public class Utility extends UtilityMenuOptions {
 					printStackTrace(e);
 				}
 				registerPanel(ModelAsTurtleEditor.class, Model.class);
+
+				unqueueFeatures();
 			}
 		}.start();
 
@@ -2538,24 +2773,31 @@ public class Utility extends UtilityMenuOptions {
 		localPackagePrefixs.add("org.robo");
 		localPackagePrefixs.add("org.rw");
 		localPackagePrefixs.add("com.hr");
+		localPackagePrefixs.add("java.util.");
 	}
 
 	public static <T> Set<Class<? extends T>> getCoreClasses(Class<T> ancestor) {
-		Set<Class<? extends T>> clz = new HashSet();
+		Set<Class<? extends T>> cls = new HashSet();
 		try {
 			for (String s : copyOf(localPackagePrefixs)) {
-				clz.addAll(ClassFinder.getClasses(s, ancestor));
+				cls.addAll(ClassFinder.getClasses(s, ancestor));
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
-		return clz;
+		return cls;
 
 	}
 
 	public static <T> T recastUtil(Object obj, Class<T> objNeedsToBe) throws NoSuchConversionException {
-		return recastUtil(obj, objNeedsToBe, Converter.MCVT);
+		List maxConverts = AggregateConverter.getMcvt();
+		List was = new ArrayList(maxConverts);
+		try {
+			return recastUtil(obj, objNeedsToBe, maxConverts);
+		} finally {
+			AggregateConverter.setMcvt(was);
+		}
 	}
 
 	public static void addShutdownHook(Runnable runnable) {
@@ -2564,6 +2806,13 @@ public class Utility extends UtilityMenuOptions {
 	}
 
 	public static HashSet<Class> localInterfaces = new HashSet<Class>();
+	static {
+		localInterfaces.add(Set.class);
+		localInterfaces.add(List.class);
+		localInterfaces.add(Collection.class);
+		localInterfaces.add(RDFNode.class);
+		localInterfaces.add(Repo.WithDirectory.class);
+	}
 
 	public static boolean isLocalInterface(Class ifc) {
 		if (ifc == null)
@@ -2582,17 +2831,23 @@ public class Utility extends UtilityMenuOptions {
 
 	public static void setup() {
 		PromiscuousClassUtilsA.ensureInstalled();
-		Utility.registerEditors();
-		Utility.setBeanInfoSearchPath();
+		registerEditors();
+		setBeanInfoSearchPath();
 	}
 
 	public static <T> T recast(Object obj, Class<T> objNeedsToBe) throws NoSuchConversionException {
-		return ReflectUtils.recast(obj, objNeedsToBe);
+		List maxConverts = AggregateConverter.getMcvt();
+		List was = new ArrayList(maxConverts);
+		try {
+			return recastUtil(obj, objNeedsToBe, maxConverts);
+		} finally {
+			AggregateConverter.setMcvt(was);
+		}
 	}
 
 	public static <T> T recastCC(Object obj, Class<T> objNeedsToBe) throws ClassCastException {
 		try {
-			return ReflectUtils.recast(obj, objNeedsToBe);
+			return recast(obj, objNeedsToBe);
 		} catch (NoSuchConversionException e) {
 			throw new ClassCastException(e.getMessage());
 		}
@@ -2610,6 +2865,21 @@ public class Utility extends UtilityMenuOptions {
 		jTable.setColumnSelectionAllowed(false);
 		TableModel tm = jTable.getModel();
 		SafeJTable.setComponentRenderers(jTable, tm);
+	}
+
+	static public void unqueueFeatures() {
+		Collection<Object> todoList = null;
+		synchronized (featureQueueLock) {
+			todoList = featureQueueUp;
+			featureQueueUp = null;
+		}
+		if (todoList != null) {
+			for (Iterator iterator = todoList.iterator(); iterator.hasNext();) {
+				Object object = (Object) iterator.next();
+				addObjectFeatures(object);
+			}
+		}
+
 	}
 
 	final static PopupForCell POPUP_FOR_CELL = new PopupForCell();
@@ -2632,26 +2902,138 @@ public class Utility extends UtilityMenuOptions {
 		}
 
 		private void mouseEvent(MouseEvent e, JTable source, int row, int column) {
-			Object cellSubBox = source.getModel().getValueAt(row, column);
 
 			if (!source.isRowSelected(row)) {
 				source.changeSelection(row, column, false, false);
 			}
 
 			if (e.isPopupTrigger()) {
-				showPopup(e, cellSubBox);
+				int columns = source.getColumnCount();
+				Object cellSubBox = source.getValueAt(row, column);
+				Object rowObject = null;
+				TableModel tm = source.getModel();
+				if (tm instanceof ListModel) {
+					ListModel lm = (ListModel) tm;
+					rowObject = lm.getElementAt(row);
+				}
+				if (e.isShiftDown() || columns < 2) {
+					rowObject = dref(cellSubBox);
+				}
 
+				if (rowObject == null) {
+					Object o0 = dref(source.getValueAt(row, 0));
+					Object oN = dref(source.getValueAt(row, columns - 1));
+					rowObject = bestCandidate(cellSubBox, o0, oN);
+				}
+				Utility.showPopup(e, cellSubBox, rowObject);
 			}
 		}
 
-		private void showPopup(MouseEvent e, Object cellSubBox) {
-			if (cellSubBox != null) {
-				JPopupMenu cellPopMenu = TriggerMenuFactory.buildPopupMenu(cellSubBox);
-				if (cellPopMenu != null) {
-					cellPopMenu.show(e.getComponent(), e.getX(), e.getY());
+	}
+
+	static public Object bestCandidate(final Object... objs) {
+		Object[] sorted = objs.clone();
+		Sort.quicksort(sorted, new Compare() {
+
+			@Override public int doCompare(Object arg0, Object arg1) {
+				if (arg0 == arg1) {
+					return 0;
 				}
+				if (arg0 == null) {
+					return 1;
+				}
+				if (arg1 == null) {
+					return -1;
+				}
+				Class c0 = arg0.getClass();
+				Class c1 = arg1.getClass();
+				if (c0 != c1) {
+					int r0 = rateClass(c0);
+					int r1 = rateClass(c1);
+					if (r0 != r1) {
+						return r1 - r0;
+					}
+				}
+				return indexOf(objs, arg0) - indexOf(objs, arg1);
+
+			}
+
+			protected int indexOf(Object[] objs, Object arg1) {
+				int index = 0;
+				for (Object o : objs) {
+					if (o == arg1)
+						return index;
+					index++;
+				}
+				return -1;
+			}
+
+			protected int rateClass(Class<? extends Object> class1) {
+				int rate = -1;
+				while (class1 != null) {
+					if (class1 == Object.class || class1 == Number.class)
+						break;
+					rate++;
+					if (class1.isAnonymousClass()) {
+						rate++;
+					}
+					class1 = class1.getSuperclass();
+				}
+				return rate;
+			}
+		});
+		Object o0 = objs[0];
+		Object o1 = sorted[0];
+		if (o1 != o0) {
+			return o1;
+		}
+		if (false)
+			return new OptionalArgFromCollectionAndConvertor(sorted, null, true);
+		return o0;
+	}
+
+	public static void showPopup(MouseEvent e, Object cellSubBox, Object rowObject) {
+
+		if (rowObject == null) {
+			rowObject = cellSubBox;
+		}
+		if (rowObject != null) {
+
+			JPopupMenu cellPopMenu = TriggerMenuFactory.buildPopupMenu(Arrays.asList(cellSubBox, rowObject), e);
+			if (cellPopMenu != null) {
+				cellPopMenu.show(e.getComponent(), e.getX(), e.getY());
 			}
 		}
 	}
 
+	@UISalient public static Class[] getCreatableSubclasses(Class ancestor) {
+		ArrayList<Class> clzs = new ArrayList<Class>();
+		try {
+			for (Object o : ClassFinder.getClasses(ancestor)) {
+				if (o instanceof Class) {
+					Class c = (Class) o;
+					if (!isCreatable(c))
+						continue;
+					clzs.add(c);
+				}
+			}
+		} catch (IOException e) {
+			printStackTrace(e);
+			return null;
+		}
+		return clzs.toArray(CLASS0);
+	}
+
+	@UISalient public static Class[] getImplementingClasses(Class ancestor) {
+		try {
+			return (Class[]) ClassFinder.getClasses(ancestor).toArray(CLASS0);
+		} catch (IOException e) {
+			printStackTrace(e);
+			return null;
+		}
+	}
+
+	static public Collection<AddTabFrames> getTabFrameAdders() {
+		return copyOf(Utility.addTabFramers);
+	}
 }

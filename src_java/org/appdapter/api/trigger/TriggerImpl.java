@@ -17,15 +17,23 @@
 package org.appdapter.api.trigger;
 
 import org.appdapter.core.component.KnownComponentImpl;
-
+import org.appdapter.core.convert.ReflectUtils;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public abstract class TriggerImpl<BoxType extends Box<? extends TriggerImpl<BoxType>>> extends KnownComponentImpl implements MutableTrigger<BoxType> {
+public abstract class TriggerImpl<BoxType extends Box<? extends TriggerImpl<BoxType>>> extends KnownComponentImpl implements MutableTrigger<BoxType>, MenuName {
 
 	@Override public String getFieldSummary() {
-		return super.getFieldSummary() +  ", trigger-field-summary-goes-here";
+		return super.getFieldSummary() + ", trigger-field-summary-goes-here";
+	}
+
+	@Override public String getMenuPath() {
+		String lbl = getShortLabel();
+		if (lbl != null && lbl.length() > 1) {
+			return lbl;
+		}
+		return ReflectUtils.getCanonicalSimpleName(getClass());
 	}
 
 }

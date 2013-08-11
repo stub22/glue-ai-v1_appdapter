@@ -37,13 +37,13 @@ public interface Converter extends TypeAssignable {
 		}
 
 		@Override public int compare(Converter o1, Converter o2) {
-			return o1.declaresConverts(value, from, to, MCVT).compareTo(o2.declaresConverts(value, from, to, MCVT));
+			return o1.declaresConverts(value, from, to, AggregateConverter.newMcvt()).compareTo(o2.declaresConverts(value, from, to, AggregateConverter.newMcvt()));
 		}
 
 		public List<Converter> sort(List<Converter> cnverters) {
 			List<Converter> newConvs = new ArrayList<Converter>();
 			for (Converter o1 : cnverters) {
-				switch (o1.declaresConverts(value, from, to, MCVT)) {
+				switch (o1.declaresConverts(value, from, to, AggregateConverter.newMcvt())) {
 				case WONT: {
 					continue;
 				}
@@ -67,6 +67,6 @@ public interface Converter extends TypeAssignable {
 
 	}
 
-	public <T> T convert(Object obj, Class<T> objNeedsToBe, int maxConverts) throws NoSuchConversionException;
+	public <T> T convert(Object obj, Class<T> objNeedsToBe, List maxConverts) throws NoSuchConversionException;
 
 }

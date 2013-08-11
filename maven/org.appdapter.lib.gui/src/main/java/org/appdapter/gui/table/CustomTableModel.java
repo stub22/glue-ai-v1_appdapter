@@ -5,16 +5,15 @@ import static org.appdapter.core.log.Debuggable.printStackTrace;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.JComponent;
 import javax.swing.table.TableModel;
 
 import org.appdapter.core.convert.NoSuchConversionException;
 import org.appdapter.core.convert.ReflectUtils;
+import org.appdapter.gui.browse.Utility;
 
 public class CustomTableModel extends BeanTableModel implements TableModel {
 
-	private List getRows() {
-		return modelData;
-	}
 
 	public CustomTableModel() {
 		this(Map.Entry.class);
@@ -83,10 +82,14 @@ public class CustomTableModel extends BeanTableModel implements TableModel {
 			return SafeJTable.WAS_NULL;
 		Object statement = getRowObject(rowIndex);
 		try {
-			return getNamedValue(statement, getColumnName(columnIndex));
+			Object ele = getNamedValue(statement, getColumnName(columnIndex));
+			if (ele instanceof JComponent) {
+				ele = Utility.dref(ele);
+			}
+			return ele;
 		} catch (Throwable e) {
 			printStackTrace(e);
-			return "" + e;
+			return statement;
 		}
 	}
 

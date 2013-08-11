@@ -1,5 +1,7 @@
 package org.appdapter.gui.trigger;
 
+import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -7,11 +9,15 @@ import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 
+import org.appdapter.api.trigger.GetObject;
+import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.gui.api.BT;
+import org.appdapter.gui.api.Convertable;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.NamedObjectCollection;
 import org.appdapter.gui.api.POJOCollectionListener;
 import org.appdapter.gui.browse.Utility;
+import static org.appdapter.core.convert.ReflectUtils.*;
 
 /**
  * The controller class for a object menu (JMenu or JPopupMenu), showing the list
@@ -24,43 +30,42 @@ import org.appdapter.gui.browse.Utility;
  *
  * 
  */
-public class TriggerMenuController implements POJOCollectionListener {
+public class TriggerMenuController implements POJOCollectionListener, Convertable {
 	NamedObjectCollection localCollection;
 	final DisplayContext context;
 	final TriggerMenuFactory triggerFactory;
 
-	Object object;
+	Collection objects;
 
 	JPopupMenu popup = null;
 	JMenu menu = null;
+	public MouseEvent originalMouseEvent;
 
-	private TriggerMenuController(DisplayContext context0, NamedObjectCollection noc, Object object0) {
-
-		this.object = object0;
+	private TriggerMenuController(DisplayContext context0, MouseEvent e, NamedObjectCollection noc, Collection object0) {
+		this.originalMouseEvent = e;
+		this.objects = object0;
 		if (context0 == null)
 			context0 = Utility.getCurrentContext();
 		this.context = context0;
 		if (noc == null)
 			noc = context0.getLocalBoxedChildren();
 		this.localCollection = noc;
-		syncBoxedObject();
-
 		triggerFactory = TriggerMenuFactory.getInstance(context);
 		if (localCollection != null) {
-		//	localCollection.addListener(this, false);
+			//	localCollection.addListener(this, false);
 		}
 	}
 
-	public TriggerMenuController(DisplayContext context0, NamedObjectCollection noc, Object object0, JPopupMenu popup0) {
-		this(context0, noc, object0);
+	public TriggerMenuController(DisplayContext context0, MouseEvent e, NamedObjectCollection noc, Collection object0, JPopupMenu popup0) {
+		this(context0, e, noc, object0);
 		this.popup = popup0;
-		initMenu();
+		addObjectsMenu();
 	}
 
-	public TriggerMenuController(DisplayContext context0, NamedObjectCollection noc, Object object0, JMenu menu0) {
-		this(context0, noc, object0);
+	public TriggerMenuController(DisplayContext context0, MouseEvent e, NamedObjectCollection noc, Collection object0, JMenu menu0) {
+		this(context0, e, noc, object0);
 		this.menu = menu0;
-		initMenu();
+		addObjectsMenu();
 	}
 
 	void updateMenu() {
@@ -68,13 +73,28 @@ public class TriggerMenuController implements POJOCollectionListener {
 			popup.removeAll();
 		else
 			menu.removeAll();
-		initMenu();
+		addObjectsMenu();
 	}
 
-	private void initMenu() {
-		initLabelText();
+	private void addObjectsMenu() {
+		if (objects == null) {
+			objects = new ArrayList();
+			return;
+		}
+		for (Object o : objects) {
+			addObjectMenu(o);
+		}
+
+	}
+
+	public void addObjectMenu(Object o) {
+		if (o == null)
+			return;
+		if (!objects.contains(o))
+			objects.add(o);
+		initLabelText(o);
 		if (context != null) {
-			Collection actions = context.getTriggersFromUI(object);
+			Collection actions = context.getTriggersFromUI(o);
 			Iterator it = actions.iterator();
 			while (it.hasNext()) {
 				Action action = (Action) it.next();
@@ -82,21 +102,21 @@ public class TriggerMenuController implements POJOCollectionListener {
 			}
 		}
 		if (popup != null)
-			triggerFactory.addTriggersToPopup(asBox(), popup);
+			triggerFactory.addTriggersToPopup(o, popup);
 		if (menu != null)
-			triggerFactory.addTriggersToPopup(asBox(), menu);
+			triggerFactory.addTriggersToPopup(o, menu);
 
 	}
 
 	private Object asBox() {
-		return object;
+		return this;
 	}
 
 	private void syncBoxedObject() {
 
 	}
 
-	private void initLabelText() {
+	private void initLabelText(Object object) {
 		final String label = Utility.getUniqueName(object, localCollection);
 		if (menu != null) {
 			menu.setText(label);
@@ -127,14 +147,27 @@ public class TriggerMenuController implements POJOCollectionListener {
 	*/
 
 	@Override public void pojoAdded(Object obj, BT wrapper, Object senderCollection) {
-		if (obj == object) {
+		if (objects.contains(obj)) {
 			updateMenu();
 		}
 	}
 
 	@Override public void pojoRemoved(Object obj, BT wrapper, Object senderCollection) {
-		if (obj == object) {
+		if (objects.contains(obj)) {
 			updateMenu();
 		}
 	}
+
+	@Override public <T> boolean canConvert(Class<T> c) {
+		return ReflectUtils.canConvert(c, getObjects());
+	}
+
+	@Override public <T> T convertTo(Class<T> c) {
+		return ReflectUtils.convertTo(c, getObjects());
+	}
+
+	private Iterable<?> getObjects() {
+		return objects;
+	}
+
 }

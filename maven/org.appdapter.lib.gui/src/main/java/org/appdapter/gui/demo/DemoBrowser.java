@@ -41,16 +41,17 @@ import org.appdapter.gui.box.ScreenBoxContextImpl;
 import org.appdapter.gui.box.ScreenBoxImpl;
 import org.appdapter.gui.box.ScreenBoxTreeNodeImpl;
 import org.appdapter.gui.browse.Utility;
-import org.appdapter.gui.editors.RepoTriggers;
 import org.appdapter.gui.repo.BridgeTriggers;
 import org.appdapter.gui.repo.DatabaseTriggers;
 import org.appdapter.gui.repo.DefaultMutableRepoBoxImpl;
 import org.appdapter.gui.repo.RepoBoxImpl;
 import org.appdapter.gui.repo.RepoModelBoxImpl;
+import org.appdapter.gui.repo.RepoTriggers;
 import org.appdapter.gui.trigger.BootstrapTriggerFactory;
 import org.appdapter.gui.trigger.SysTriggers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import static org.appdapter.core.log.Debuggable.*;
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -63,11 +64,10 @@ final public class DemoBrowser implements AnyOper.Singleton {
 	public static void showObject(String optionalName, Object any, boolean showASAP, boolean loadChildren) {
 		// This can take up to a few seconds, depending on log level.  
 		try {
-			if (mainControl == null) {
-				mainControl = DemoBrowser.makeDemoNavigatorCtrl(null);
-			}
+			ensureRunning(showASAP);
 			mainControl.addObject(optionalName, any, showASAP, loadChildren);
-			mainControl.show();
+			if (showASAP)
+				mainControl.show();
 
 		} catch (Throwable e1) {
 			Debuggable.printStackTrace(e1);
@@ -76,9 +76,10 @@ final public class DemoBrowser implements AnyOper.Singleton {
 
 	public static DemoNavigatorCtrl makeDemoNavigatorCtrl(String[] args) {
 		if (mainControl == null) {
-			mainControl = (DemoNavigatorCtrl) DemoBrowserUI.makeDemoNavigatorCtrl(args);
-			if (mainControl == null) {
-				mainControl = DemoBrowser.makeDemoNavigatorCtrlReal(args, false);
+			try {
+				main(args);
+			} catch (InterruptedException e) {
+				printStackTrace(e);
 			}
 		}
 		return mainControl;
@@ -101,7 +102,7 @@ final public class DemoBrowser implements AnyOper.Singleton {
 		try {
 			theLogger = LoggerFactory.getLogger(DemoBrowser.class);
 		} catch (Throwable t) {
-			t.printStackTrace();
+			printStackTrace(t);
 		}
 		return theLogger;
 	}
@@ -120,21 +121,33 @@ final public class DemoBrowser implements AnyOper.Singleton {
 	 * 
 	 * @throws Exception
 	 */
-	public static synchronized void ensureRunning(boolean bringToFront) throws Exception {
+	public static synchronized void ensureRunning(boolean bringToFront) throws InterruptedException {
 		if (mainControl == null) {
 			main(new String[0]);
-		}
-		try {
-			System.out.flush();
-			System.err.flush();
-		} catch (Throwable t) {
-
 		}
 		try {
 			if (bringToFront) {
 				mainControl.show();
 			}
 		} catch (Throwable t) {
+			printStackTrace(t);
+		}
+	}
+
+	private static void flushIO() {
+		try {
+			System.out.flush();
+			System.err.flush();
+		} catch (Throwable t) {
+
+		}
+	}
+
+	public static void show() {
+		try {
+			ensureRunning(true);
+		} catch (InterruptedException e) {
+			printStackTrace(e);
 		}
 	}
 
@@ -165,6 +178,7 @@ final public class DemoBrowser implements AnyOper.Singleton {
 			theLogger.error("ObjectNavigator could not be started", err);
 		}
 		theLogger.info("DemoBrowser.main()-END");
+		flushIO();
 	}
 
 	static public class AsApplet extends JApplet {

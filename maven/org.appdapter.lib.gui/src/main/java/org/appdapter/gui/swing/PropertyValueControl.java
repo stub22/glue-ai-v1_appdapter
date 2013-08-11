@@ -278,7 +278,7 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 			try {
 				val1 = this.getPropertyValueControl().getBoundValue();
 			} catch (Throwable e) {
-				Debuggable.printStackTrace(e);
+				//Debuggable.printStackTrace(e);
 			}
 			if (val1 != null)
 				return val1;
@@ -741,13 +741,13 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 	public Object getBoundValue() throws Throwable {
 		if (property == null)
 			return value;
-		boolean was = Debuggable.QuitelyDoNotShowExceptions;
-		Debuggable.QuitelyDoNotShowExceptions = true;
+		boolean was = Debuggable.isNotShowingExceptions();
+		Debuggable.setDoNotShowExceptions(true);
 		try {
 			Method readMethod = property.getReadMethod();
 			return getBoundValue(source, readMethod);
 		} finally {
-			Debuggable.QuitelyDoNotShowExceptions = was;
+			Debuggable.setDoNotShowExceptions(was);
 		}
 	}
 

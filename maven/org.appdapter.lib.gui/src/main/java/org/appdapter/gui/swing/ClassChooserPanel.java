@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -16,6 +17,8 @@ import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 import javax.swing.text.JTextComponent;
 
 import org.appdapter.gui.api.BT;
@@ -26,6 +29,8 @@ import org.appdapter.gui.util.ClassFinder;
 import org.appdapter.gui.util.PromiscuousClassUtilsA;
 
 import com.jidesoft.swing.AutoCompletion;
+import com.jidesoft.swing.ComboBoxSearchable;
+import com.jidesoft.swing.SearchableUtils;
 
 public class ClassChooserPanel extends JPanel implements ActionListener, DocumentListener, POJOCollectionListener {
 	Class selectedClass = String.class;
@@ -39,12 +44,23 @@ public class ClassChooserPanel extends JPanel implements ActionListener, Documen
 	HashSet<String> classesShown = new HashSet<String>();
 	Thread classGroveler;
 
+	private ComboBoxSearchable searchable;
+
 	public ClassChooserPanel(DisplayContext context0) {
 		super(true);
 		this.context = context0;
 		Utility.registerEditors();
 		Utility.setBeanInfoSearchPath();
 		initGUI();
+		if (autoCompletion == null) {
+			autoCompletion = new AutoCompletion(classField);
+			autoCompletion.setStrict(false);
+			autoCompletion.setStrictCompletion(false);
+			searchable = SearchableUtils.installSearchable(classField);
+			this.searchable.setCaseSensitive(false);
+			searchable.setWildcardEnabled(true);
+			searchable.setCountMatch(true);
+		}
 		synchronized (classesSaved) {
 			classesSaved.add(String.class.getName());
 			classesSaved.add(Boolean.class.getName());
@@ -87,11 +103,7 @@ public class ClassChooserPanel extends JPanel implements ActionListener, Documen
 	private void resetAutoComplete() {
 		/*  JIDESOFT
 		 		 */
-		if (autoCompletion == null) {
-			autoCompletion = new AutoCompletion(classField);
-			autoCompletion.setStrict(false);
-			autoCompletion.setStrictCompletion(false);
-		}
+
 		synchronized (classesSaved) {
 			for (Class c : PromiscuousClassUtilsA.getInstalledClasses()) {
 				classAdd0(c);
@@ -114,13 +126,12 @@ public class ClassChooserPanel extends JPanel implements ActionListener, Documen
 			}
 		} finally {
 			classField.setEnabled(true);
-			classField.invalidate();
 		}
 
 	}
 
 	@Override public void actionPerformed(ActionEvent evt) {
-		Object evtsrc = evt.getSource(); 
+		Object evtsrc = evt.getSource();
 		classBrowserButton.setEnabled(true);
 		if (evtsrc == classField) {
 			String className = "" + classField.getSelectedItem();
@@ -157,7 +168,25 @@ public class ClassChooserPanel extends JPanel implements ActionListener, Documen
 		classBrowserButton.setEnabled(false);
 		//classBrowserButton.setActionCommand(COMMAND_CREATE_BEAN);
 
-		classField = new JComboBox() {
+		DefaultComboBoxModel dcm = new DefaultComboBoxModel() {
+			// implements javax.swing.MutableComboBoxModel
+			protected void fireIntervalAdded(Object source, int index0, int index1) {
+				//if (true) return;
+				Object[] listeners = listenerList.getListenerList();
+				ListDataEvent e = null;
+
+				for (int i = listeners.length - 2; i >= 0; i -= 2) {
+					if (listeners[i] == ListDataListener.class) {
+						if (e == null) {
+							e = new ListDataEvent(source, ListDataEvent.INTERVAL_ADDED, index0, index1);
+						}
+						((ListDataListener) listeners[i + 1]).intervalAdded(e);
+					}
+				}
+			}
+		};
+		classField = new JComboBox(dcm) {
+
 			@Override public void addItem(Object obj) {
 				int count = getItemCount();
 				String toAdd = (String) obj;

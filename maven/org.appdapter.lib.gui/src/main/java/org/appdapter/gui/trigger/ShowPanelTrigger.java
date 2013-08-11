@@ -28,7 +28,7 @@ public class ShowPanelTrigger<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 		setShortLabel(getMenuName());
 	}
 
-	public String getMenuPath() {
+	public String makeMenuPath() {
 		return "Show " + Utility.spaceCase(Utility.getShortClassName(panelClass));
 	}
 

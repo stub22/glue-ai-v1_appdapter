@@ -34,7 +34,8 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -51,28 +52,31 @@ import org.appdapter.api.trigger.BoxContext;
 import org.appdapter.api.trigger.MutableBox;
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.core.component.MutableKnownComponent;
+import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.core.name.Ident;
 import org.appdapter.gui.api.BT;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.DisplayContextProvider;
 import org.appdapter.gui.api.DisplayType;
+import org.appdapter.gui.api.FocusOnBox;
 import org.appdapter.gui.api.GetDisplayContext;
 import org.appdapter.gui.api.NamedObjectCollection;
 import org.appdapter.gui.api.POJOCollectionListener;
 import org.appdapter.gui.api.ScreenBox;
+import org.appdapter.gui.api.SetObject;
 import org.appdapter.gui.api.WrapperValue;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.editors.UseEditor;
 import org.appdapter.gui.repo.DatabaseManagerPanel;
-import org.appdapter.gui.repo.GenericMatrixPanel;
+import org.appdapter.gui.repo.ModelMatrixPanel;
 import org.appdapter.gui.repo.RepoManagerPanel;
 import org.appdapter.gui.swing.ComponentHost;
 import org.appdapter.gui.trigger.TriggerMenuFactory;
 import org.appdapter.gui.util.PromiscuousClassUtilsA;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import static org.appdapter.core.convert.ReflectUtils.*;
 /**
 /**  Base implementation of our demo Swing Panel boxes. 
  * The default implementation can own one swing panel of each "Kind".
@@ -284,30 +288,12 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 		return this;
 	}
 
-	public <T> boolean canConvert(Class<T> c) {
-		try {
-			for (Object o : getObjects()) {
-				if (o == null) {
-					continue;
-				}
-				if (!c.isInstance(o)) {
-					continue;
-				}
-				try {
-					final T madeIT = (T) o;
-					if (madeIT != null) {
-						return true;
-					}
-				} catch (Exception e) {
-					getLogger().error("JVM Issue (canConvert)", e);
-				}
-				return true;
-			}
-		} catch (Throwable t) {
-			getLogger().error("JVM Issue (canConvert)", t);
-			return false;
-		}
-		return false;
+	@Override public <T> boolean canConvert(Class<T> c) {
+		return ReflectUtils.canConvert(c, getObjects());
+	}
+
+	@Override public <T> T convertTo(Class<T> c) {
+		return ReflectUtils.convertTo(c, getObjects());
 	}
 
 	/**
@@ -318,24 +304,6 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 			propSupport = new PropertyChangeSupport(this);
 			vetoSupport = new VetoableChangeSupport(this);
 		}
-	}
-
-	public <T> T convertTo(Class<T> c) throws ClassCastException {
-		for (Object o : getObjects()) {
-			if (o == null) {
-				continue;
-			}
-			if (!c.isInstance(o)) {
-				continue;
-			}
-			try {
-				return c.cast(o);
-			} catch (Exception e) {
-				getLogger().error("JVM Issue (canConvert)", e);
-				return (T) o;
-			}
-		}
-		throw new ClassCastException("Cannot convert " + this + " to " + c);
 	}
 
 	public void dump() {
@@ -458,12 +426,38 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	 * This returns the decomposed Mixins
 	 * @return
 	 */
+
 	public Iterable<Object> getObjects() {
-		Object o = getValue();
-		if (o != null && o != this) {
-			return Arrays.asList(new Object[] { o, this, getIdent(), getShortLabel() });
+		if (objects.size() == 0) {
+			addIfNew(objects, valueSetAs);
+			addIfNew(objects, getValue());
+			addIfNew(objects, this);
+			addIfNew(objects, getIdent());
+			addIfNew(objects, getShortLabel());
 		}
-		return Arrays.asList(new Object[] { this, getIdent(), getShortLabel(), });
+		return objects;
+	}
+
+	List<Object> objects = new ArrayList<Object>();
+
+	static <T> boolean addIfNew(List<T> objects2, T valueSetAs2) {
+		if (valueSetAs2 != null) {
+			if (!objects2.contains(valueSetAs2)) {
+				objects2.add(valueSetAs2);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	static <T> boolean removeIfOld(List<T> objects2, T valueSetAs2) {
+		if (valueSetAs2 != null) {
+			if (objects2.contains(valueSetAs2)) {
+				objects2.remove(valueSetAs2);
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public <T, E extends T> Iterable<E> getObjects(Class<T> type) {
@@ -496,7 +490,13 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 		List<TrigType> tgs = super.getTriggers();
 		DisplayContext dc = getDisplayContext();
 		for (Class cls : getTypes()) {
-			TriggerMenuFactory.addTriggersForInstance(dc, cls, tgs, this);
+			Boolean was = Utility.canMakeInstanceTriggers.get();
+			try {
+				Utility.canMakeInstanceTriggers.set(true);
+				TriggerMenuFactory.addTriggersForInstance(dc, cls, tgs, this);
+			} finally {
+				Utility.canMakeInstanceTriggers.set(was);
+			}
 		}
 		return tgs;
 	}
@@ -646,11 +646,10 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	}
 
 	public boolean isNamed(String test) {
-		if (Utility.stringsEqual(test, getShortLabel())) {
-			return true;
-		}
-		if (Utility.stringsEqual(test, super_getShortLabel())) {
-			return true;
+		for (String name : getNames()) {
+			if (Utility.stringsEqual(test, name)) {
+				return true;
+			}
 		}
 		return false;
 	}
@@ -660,6 +659,16 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	}*/
 
 	// ==== Event listener registration =============
+	List<String> names;
+
+	Collection<String> getNames() {
+		if (names == null) {
+			names = new ArrayList<String>();
+			names.add(getShortLabel());
+			names.add(super_getShortLabel());
+		}
+		return names;
+	}
 
 	public boolean isTypeOf(Class type) {
 		for (Class c : getTypes()) {
@@ -765,7 +774,7 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 
 	protected JPanel makeBoxPanelForKind(Kind kind) {
 		if (kind == Kind.MATRIX)
-			return new GenericMatrixPanel(getWrapperValue());
+			return new ModelMatrixPanel();
 		if (kind == Kind.REPO_MANAGER)
 			return new RepoManagerPanel();
 		if (kind == Kind.DB_MANAGER)
@@ -822,9 +831,30 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	protected void putBoxPanel(Object kind, JPanel bp) {
 		JPanel oldBP = findExistingBoxPanel(kind);
 		if (oldBP != null) {
-			//theLogger.warn("Replacing old ScreenBoxPanel link for " + getShortLabel() + " to {} with {} ", oldBP, bp);
+			theLogger.warn("Replacing old ScreenBoxPanel link for " + getShortLabel() + " to {} with {} ", oldBP, bp);
 		}
+		setPanelBox(bp);
 		myPanelMap.put(toKey(kind), bp);
+	}
+
+	private void setPanelBox(JPanel bp) {
+		boolean needSet = true;
+		if (needSet && bp instanceof FocusOnBox) {
+			try {
+				((FocusOnBox) bp).focusOnBox(this);
+				needSet = false;
+			} catch (Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		if (needSet && bp instanceof SetObject) {
+			try {
+				((SetObject) bp).setObject(this);
+				needSet = false;
+			} catch (Throwable e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	public Object reallyGetValue() {
@@ -832,7 +862,11 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	}
 
 	public void reallySetValue(Object newObject) {
+		if (removeIfOld(objects, valueSetAs)) {
+			noc.removeObject(valueSetAs);
+		}
 		valueSetAs = newObject;
+		addValue(valueSetAs);
 	}
 
 	/**
@@ -930,7 +964,7 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 		if (clz == null)
 			clz = value.getClass();
 
-		valueSetAs = value;
+		reallySetValue(value);
 		try {
 			valueChanged(oldObject, value);
 			getWrapperValue().reallySetValue(value);
@@ -1050,5 +1084,21 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
 		vetoSupport.fireVetoableChange(evt);
 
+	}
+
+	@Override public void addValue(Object val) {
+		BT prev = noc.findBoxByObject(val);
+		if (prev != null && prev != this) {
+			Debuggable.notImplemented("Already existing value: " + prev);
+		}
+
+		if (addIfNew(objects, val))
+			noc.addValueBoxed(val, this);
+
+	}
+
+	@Override public void addTitle(String nym) {
+		if (noc.addBoxed(nym, this))
+			getNames().add(nym);
 	}
 }

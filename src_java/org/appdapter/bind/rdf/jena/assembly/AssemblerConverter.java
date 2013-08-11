@@ -12,6 +12,7 @@ import java.util.Map;
 import org.appdapter.api.trigger.AnyOper.HasIdent;
 import org.appdapter.bind.rdf.jena.model.JenaLiteralUtils;
 import org.appdapter.core.component.KnownComponent;
+import org.appdapter.core.convert.AggregateConverter;
 import org.appdapter.core.convert.Converter;
 import org.appdapter.core.convert.NoSuchConversionException;
 import org.appdapter.core.convert.ReflectUtils;
@@ -37,9 +38,9 @@ public class AssemblerConverter implements Converter {
 		// TODO Auto-generated constructor stub
 	}
 
-	@Override public <T> T convert(Object obj, Class<T> objNeedsToBe, int maxCvt) throws NoSuchConversionException {
+	@Override public <T> T convert(Object obj, Class<T> objNeedsToBe, List maxConverts) throws NoSuchConversionException {
 		try {
-			Object eval = JenaLiteralUtils.convertOrNull(obj, objNeedsToBe, maxCvt);
+			Object eval = JenaLiteralUtils.convertOrNull(obj, objNeedsToBe);
 			if (objNeedsToBe.isInstance(eval))
 				return (T) eval;
 			throw new NoSuchConversionException(obj, objNeedsToBe, null);
@@ -123,7 +124,7 @@ public class AssemblerConverter implements Converter {
 		}
 	}
 
-	@Override public Integer declaresConverts(Object obj, Class objClass, Class objNeedsToBe, int maxCvt) {
+	@Override public Integer declaresConverts(Object obj, Class objClass, Class objNeedsToBe, List maxConverts) {
 		if (obj instanceof RDFNode || obj instanceof HasIdent)
 			return MIGHT;
 		return WONT;

@@ -22,10 +22,10 @@ public class TriggerFilter implements Cloneable {
 	boolean addPublic = true;
 	boolean addFields = true;
 	boolean addMethods = true;
-	boolean addNonMembers = true;
 	boolean addEvents = false;
-	boolean addGlobalStatics = UtilityMenuOptions.addGlobalStatics;
-
+	boolean addGlobalStatics = UtilityMenuOptions.addGlobalStatics || UtilityMenuOptions.allTriggersAreGlobal;
+	boolean addNonMembers = addGlobalStatics;
+	
 	public TriggerFilter clone() {
 		try {
 			return (TriggerFilter) super.clone();

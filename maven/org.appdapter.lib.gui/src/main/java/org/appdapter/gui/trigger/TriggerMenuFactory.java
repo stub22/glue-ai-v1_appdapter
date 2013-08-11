@@ -58,6 +58,7 @@ import javax.swing.tree.TreePath;
 import org.appdapter.api.trigger.AnyOper.UIHidden;
 import org.appdapter.api.trigger.AnyOper.UISalient;
 import org.appdapter.api.trigger.Box;
+import org.appdapter.api.trigger.MenuName;
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.core.component.KnownComponent;
 import org.appdapter.core.convert.ReflectUtils;
@@ -148,8 +149,10 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 	}
 
 	public static <TrigType> void addTriggersForObjectInstanceMaster(DisplayContext ctx, Class cls, List<TrigType> tgs, Object poj, TriggerFilter rulesOfAdd, String menuFmt, boolean isDeclNonStatic) {
-		addClassLevelTriggers00(ctx, cls, tgs, poj, rulesOfAdd, menuFmt, isDeclNonStatic);
-
+		addClassLevelTriggersOfLowestClass(ctx, cls, tgs, poj, rulesOfAdd, menuFmt, isDeclNonStatic);
+		if (UtilityMenuOptions.allTriggersAreGlobal) {
+			Utility.addClassMethods(cls);
+		}
 		if (rulesOfAdd.addPanelClasses)
 			addPanelClasses(ctx, cls, tgs, poj);
 
@@ -160,11 +163,15 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 		if (inst instanceof Class) {
 			TriggerFilter copy = (TriggerFilter) rulesOfAdd.clone();
 			copy.addInstance = false;
-			addClassLevelTriggers00(ctx, (Class) inst, tgs, null, copy, menuFmt, isDeclNonStatic);
+			addClassLevelTriggersOfLowestClass(ctx, (Class) inst, tgs, null, copy, menuFmt, isDeclNonStatic);
 		}
 	}
 
-	static <TrigType> void addClassLevelTriggers00(DisplayContext ctx, Class cls, List<TrigType> tgs, Object poj, TriggerFilter rulesOfAdd, String menuFmt, boolean isDeclNonStatic) {
+	static <TrigType> void addClassLevelTriggersOfLowestClass(DisplayContext ctx, Class cls, List<TrigType> tgs, Object poj, TriggerFilter rulesOfAdd, String menuFmt, boolean isDeclNonStatic) {
+		if (rulesOfAdd.addGlobalStatics && UtilityMenuOptions.allTriggersAreGlobal) {
+			//already added them
+			return;
+		}
 		HashSet<Class> skippedTriggersClasses = getSkippedTriggerClasses();
 		HashSet<Class> flat = new HashSet<Class>();
 		if (rulesOfAdd.addSuperClass) {
@@ -182,19 +189,18 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 	}
 
 	public static <TrigType> void addClassLevelTriggersPerClass(DisplayContext ctx, Class cls, List<TrigType> tgs, Object poj, TriggerFilter rulesOfAdd, String menuFmt, boolean isDeclNonStatic) {
-		if (Utility.skipMethodsOFClass(cls))
-			return;
+		boolean isSystemPrimitive = Utility.isSystemPrimitive(cls) || cls == Class.class;
 		boolean allowStatic = poj == null || isDeclNonStatic;
 		boolean allowNonStatic = poj != null;
-		for (Method m : cls.getDeclaredMethods()) {
+		for (Method m : ReflectUtils.getAllMethods(cls, true)) {
 			if (m.isSynthetic())
-				continue;
-			if (!cls.isInterface() && ReflectUtils.isOverride(m))
 				continue;
 			boolean isStatic = ReflectUtils.isStatic(m);
 			if (isStatic && !allowStatic)
 				continue;
 			if (!isStatic && !allowNonStatic)
+				continue;
+			if (isSystemPrimitive && !isStatic)
 				continue;
 			addFMethodTrigWF(ctx, cls, m, tgs, poj, rulesOfAdd, menuFmt, null, false);
 		}
@@ -272,6 +278,7 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 
 	private static <TrigType> void addMethodAsTrigWF0(DisplayContext ctx, Class cls, Member method, List<TrigType> tgs, Object poj, TriggerFilter rulesOfAdd, String menuFmt, boolean isDeclNonStatic,
 			FeatureDescriptor featureDesc, boolean isSafe) {
+
 		boolean clsHidden = hasAnotation(cls, UIHidden.class);
 		boolean clsSalient = hasAnotation(cls, UISalient.class);
 		UISalient isSalientCls = (UISalient) cls.getAnnotation(UISalient.class);
@@ -298,7 +305,7 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 	}
 
 	public static <TrigType> void addGlobalStatics(DisplayContext ctx, Class cls, List<TrigType> tgs, Object poj) {
-		if (!UtilityMenuOptions.addGlobalStatics)
+		if (!UtilityMenuOptions.addGlobalStatics && !UtilityMenuOptions.allTriggersAreGlobal)
 			return;
 		for (Trigger trig : Utility.getGlobalStaticTriggers(ctx, cls, poj)) {
 			CollectionSetUtils.addIfNew(tgs, (TrigType) trig);
@@ -559,16 +566,18 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 		return null;
 	}
 
-	public static String getShortLabel(Trigger t) {
+	public static String getMenuPath(Object t) {
 		if (t == null)
 			return "<null trigger>";
 		String shortLabel = null;
-		if (t instanceof KnownComponent) {
+		if (t instanceof MenuName) {
+			shortLabel = ((MenuName) t).getMenuPath();
+		} else if (t instanceof KnownComponent) {
 			shortLabel = ((KnownComponent) t).getShortLabel();
-		} else if (t instanceof TriggerForInstance) {
-			shortLabel = ((TriggerForInstance) t).getMenuPath();
 		} else if (t instanceof Component) {
 			shortLabel = getLabel((Component) t, 2);
+		} else if (t instanceof Action) {
+			shortLabel = "" + ((Action) t).getValue(Action.NAME);
 		}
 		if (shortLabel != null && isRealLabel(shortLabel))
 			return shortLabel;
@@ -589,12 +598,12 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 	public static String getTriggerName(Trigger trig) {
 		String[] path = getTriggerPath(trig);
 		if (path == null || path.length == 0)
-			return "" + getShortLabel(trig);
+			return "" + getMenuPath(trig);
 		return path[path.length - 1].trim();
 	}
 
 	public static String[] getTriggerPath(Trigger trig) {
-		return getTriggerPath(getShortLabel(trig));
+		return getTriggerPath(getMenuPath(trig));
 	}
 
 	private static String[] getTriggerPath(String shortLabel) {
@@ -603,7 +612,7 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 
 	public static String getTriggerSortName(Trigger t) {
 		if (true)
-			return getShortLabel(t);
+			return getMenuPath(t);
 		String[] tn = getTriggerPath(t);
 		return tn[tn.length - 1];
 	}
@@ -638,11 +647,16 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 	}
 
 	public static AbstractButton makeMenuItem(final Object/**/b, String lbl, final Trigger trig) {
+		AbstractButton jmi = null;
+		try {
+			if (trig instanceof ButtonFactory) {
+				jmi = ((ButtonFactory) trig).makeMenuItem(lbl, b);
+			}
+		} catch (Throwable t) {
 
-		if (trig instanceof ButtonFactory) {
-			return ((ButtonFactory) trig).makeMenuItem(lbl, b);
 		}
-		AbstractButton jmi = new SafeJMenuItem(b, true, getTriggerName(trig));
+		if (jmi == null)
+			jmi = new SafeJMenuItem(b, true, getTriggerName(trig));
 		if (trig instanceof UIAware) {
 			jmi = (AbstractButton) ((UIAware) trig).visitComponent(jmi);
 		}
@@ -686,10 +700,10 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 		}
 	}
 
-	private static List<Trigger> sortTriggers(List<Trigger> trigs) {
+	public static List<Trigger> sortTriggers(List<Trigger> trigs) {
 		HashMap<String, Trigger> map = new HashMap<String, Trigger>();
 		for (Trigger t : trigs) {
-			String shortLabel = getShortLabel(t);
+			String shortLabel = getMenuPath(t);
 			map.put(shortLabel.toLowerCase(), t);
 		}
 		trigs = new ArrayList(map.values());
@@ -705,8 +719,15 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 	}
 
 	static public TriggerPopupMenu buildPopupMenu(Object/**/box) {
-		TriggerPopupMenu popup = new TriggerPopupMenu(null, null, box);
-		addTriggersToPopup(box, popup);
+		return buildPopupMenu(Arrays.asList(box), null);
+	}
+
+	static public TriggerPopupMenu buildPopupMenu(Collection box, MouseEvent mouseEvent) {
+		TriggerPopupMenu popup = new TriggerPopupMenu(null, mouseEvent, null, box);
+		for (Object o : ReflectUtils.colToSet(box)) {
+			popup.addObjectMenu(o);
+			addTriggersToPopup(o, popup);
+		}
 		return popup;
 	}
 
@@ -755,7 +776,7 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 				//Object/**/box = (Object/**/) Utility.asBoxed(uo);
 
 				// String label = "popup: " + obj.toString(); // obj.getTreeLabel();
-				popup = buildPopupMenu(uo);
+				popup = buildPopupMenu(Collections.singleton(uo), e);
 				if (treeNode instanceof AbstractScreenBoxTreeNodeImpl) {
 					((AbstractScreenBoxTreeNodeImpl) treeNode).addExtraTriggers(popup);
 				}

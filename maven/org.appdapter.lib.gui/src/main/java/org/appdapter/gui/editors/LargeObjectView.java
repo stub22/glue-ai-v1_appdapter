@@ -12,6 +12,7 @@ import java.util.Map;
 import javax.swing.JLabel;
 
 import org.appdapter.api.trigger.Box;
+import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.AddTabFrames;
 import org.appdapter.gui.api.AddTabFrames.SetTabTo;
@@ -20,17 +21,8 @@ import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.GetSetObject;
 import org.appdapter.gui.api.SetObject;
 import org.appdapter.gui.browse.Utility;
-import org.appdapter.gui.swing.CollectionContentsPanel;
-import org.appdapter.gui.swing.CollectionContentsPanelUsingTable;
-import org.appdapter.gui.swing.ConstructorsListPanel;
-import org.appdapter.gui.swing.ErrorPanel;
-import org.appdapter.gui.swing.LargeObjectChooser;
-import org.appdapter.gui.swing.MapContentsPanel;
-import org.appdapter.gui.swing.MethodsPanel;
 import org.appdapter.gui.swing.ObjectTabsForTabbedView;
 import org.appdapter.gui.swing.ObjectView;
-import org.appdapter.gui.swing.PropertiesPanel;
-import org.appdapter.gui.swing.StaticMethodsPanel;
 import org.slf4j.LoggerFactory;
 
 import com.jidesoft.swing.JideTabbedPane;
@@ -66,19 +58,13 @@ extends ObjectView<BoxType> implements Customizer, GetSetObject, ObjectPanelHost
 	///protected abstract void initSubClassGUI() throws Throwable;
 
 	public LargeObjectView() {
-		this(null);
+		this(Utility.getDisplayContext());
 	}
 
-	public LargeObjectView(Object object) {
-		this(Utility.getCurrentContext(), object);
-	}
-
-	public LargeObjectView(DisplayContext context, Object object) {
+	public LargeObjectView(DisplayContext context) {
 		super(false);
-		this.objectValue = object;
 		this.context = context;
-		initGUISetupNewObject();
-		initGUI();
+		initGUISetupNewObjectClass();
 	}
 
 	@Override public String getName() {
@@ -90,32 +76,55 @@ extends ObjectView<BoxType> implements Customizer, GetSetObject, ObjectPanelHost
 		Object bean = getValue();
 		Class objClass = Utility.getClassNullOk(bean);
 		if (bean != null) {
-			for (AddTabFrames atf : getTabFrameAdders()) {
-				atf.setTabs(objTabs, context, bean, objClass, SetTabTo.ADD);
-			}
+			addTabFrames(bean, objClass);
 		} else {
 			add(new JLabel("ERROR object is null!? " + bean));
 		}
 
 		for (Component c : tabs.getComponents()) {
 			try {
+				String warn = ("instanceof " + c.getClass().getName() + " for (" + objClass.getName() + ")" + bean);
 				if (c instanceof SetObject) {
 					SetObject gso = (SetObject) c;
-					gso.setObject(bean);
-					continue;
+					try {
+						gso.setObject(bean);
+						continue;
+					} catch (Throwable e) {
+						Utility.theLogger.error("Did not SetObject.this.setObject " + warn, e);
+					}
 				}
 				if (c instanceof PropertyEditor) {
 					PropertyEditor gso = (PropertyEditor) c;
-					gso.setValue(bean);
+					try {
+						gso.setValue(bean);
+						continue;
+					} catch (Throwable e) {
+						Utility.theLogger.error("Did not PropertyEditor.this.setValue " + warn, e);
+					}
 					continue;
 				}
 				if (c instanceof Customizer) {
 					Customizer gso = (Customizer) c;
-					gso.setObject(bean);
+					try {
+						gso.setObject(bean);
+						continue;
+					} catch (Throwable e) {
+						Utility.theLogger.error("Did not Customizer.this.setObject " + warn, e);
+					}
+					continue;
+				}
+				if (c instanceof Map.Entry) {
+					Map.Entry gso = (Map.Entry) c;
+					try {
+						gso.setValue(bean);
+						continue;
+					} catch (Throwable e) {
+						Utility.theLogger.error("Did not Map.Entry.this.setValue (Customizer) " + warn, e);
+					}
 					continue;
 				}
 
-			} catch (Exception e) {
+			} catch (Throwable e) {
 				e.printStackTrace();
 				continue;
 			}
@@ -123,9 +132,10 @@ extends ObjectView<BoxType> implements Customizer, GetSetObject, ObjectPanelHost
 		}
 	}
 
-	private Collection<AddTabFrames> getTabFrameAdders() {
-		return Utility.addTabFramers;
-
+	private void addTabFrames(Object bean, Class objClass) {
+		for (AddTabFrames atf : Utility.getTabFrameAdders()) {
+			atf.setTabs(objTabs, context, bean, objClass, SetTabTo.ADD);
+		}
 	}
 
 	public boolean addTab(String title, Component view) {
@@ -142,7 +152,7 @@ extends ObjectView<BoxType> implements Customizer, GetSetObject, ObjectPanelHost
 	@Override public Object getValue() {
 		Object o = objectValue;
 		if (o == this || o == null) {
-			Debuggable.notImplemented("LargeObjectView " + getValue());
+			Debuggable.warn("LargeObjectView value=" + o);
 		}
 		return o;
 	}
@@ -167,12 +177,13 @@ extends ObjectView<BoxType> implements Customizer, GetSetObject, ObjectPanelHost
 		}
 	}
 
-	public void initGUISetupNewObject() {
+	public void initGUISetupNewObjectClass() {
 		removeAll();
 		setLayout(new BorderLayout());
 		tabs = new JideTabbedPane();
 		add("Center", tabs);
 		objTabs = new ObjectTabsForTabbedView(tabs, false);
+		initedGuiOnce = false;
 	}
 
 	@Override public Dimension getPreferredSize() {
@@ -225,156 +236,6 @@ extends ObjectView<BoxType> implements Customizer, GetSetObject, ObjectPanelHost
 	@Override public void focusOnBox(Box b) {
 		setObject(b);
 		LoggerFactory.getLogger(getClass().getName()).info("Focusing on box: " + b);
-	}
-
-	static public class BasicObjectCustomizer extends TabPanelMaker {
-
-		@Override public void setTabs(BoxPanelSwitchableView tabs, DisplayContext context, Object object, Class objClass, SetTabTo cmd) {
-			setTabs0(tabs, context, object, objClass, cmd);
-		}
-
-		public void setTabs0(BoxPanelSwitchableView tabs, DisplayContext context, Object object, Class objClass, SetTabTo cmd) {
-			String prefix = "";
-			if (object instanceof Class) {
-				prefix = "Class ";
-			}
-			if (cmd == SetTabTo.ADD) {
-				PropertiesPanel props = new PropertiesPanel(context, object, objClass, false);
-				tabs.addTab(prefix + "Properties", props);
-			}
-			if (cmd == SetTabTo.REMOVE) {
-				tabs.removeTab(prefix + "Properties", null);
-			}
-			String ms = prefix + "Methods";
-			try {
-				if (cmd == SetTabTo.ADD) {
-					MethodsPanel view = new MethodsPanel(context, object, objClass);
-					tabs.addTab(ms, view);
-				}
-				if (cmd == SetTabTo.REMOVE) {
-					tabs.removeTab(ms, null);
-				}
-			} catch (Exception err) {
-				if (cmd == SetTabTo.ADD)
-					tabs.addTab(ms, new ErrorPanel("Could not show view", err));
-				if (cmd == SetTabTo.REMOVE) {
-					tabs.removeTab(ms, null);
-				}
-			}
-		}
-
-	}
-
-	static public class ClassCustomizer extends TabPanelMaker {
-		@Override public void setTabs(BoxPanelSwitchableView tabs, DisplayContext context, Object object, Class objClass, SetTabTo cmds) {
-			if (!(object instanceof Class)) {
-				return;
-			}
-			Class clazz = (Class) object;
-			if (cmds != SetTabTo.ADD)
-				return;
-			try {
-				ConstructorsListPanel constructors = new ConstructorsListPanel(clazz);
-				tabs.insertTab("Constructors", null, constructors, null, 0);
-			} catch (Exception err) {
-				tabs.insertTab("Constructors", null, new ErrorPanel("Could not show constructors", err), null, 0);
-			}
-
-			try {
-				StaticMethodsPanel statics = new StaticMethodsPanel(clazz);
-				tabs.insertTab("Static methods", null, statics, null, 1);
-			} catch (Exception err) {
-				tabs.insertTab("Static methods", null, new ErrorPanel("Could not show static methods", err), null, 1);
-			}
-			try {
-				PropertiesPanel statics = new PropertiesPanel(context, null, clazz, true);
-				tabs.insertTab("Static Properties", null, statics, null, 1);
-			} catch (Exception err) {
-				tabs.insertTab("Static Properties", null, new ErrorPanel("Could not show static Properties", err), null, 1);
-			}
-			try {
-				LargeObjectChooser instances = new LargeObjectChooser(clazz, context.getLocalBoxedChildren());
-				tabs.insertTab("InstancesOf", null, instances, null, 0);
-			} catch (Exception err) {
-				tabs.insertTab("InstancesOf", null, new ErrorPanel("Could not show Instances", err), null, 0);
-			}
-		}
-	}
-
-	static public class CollectionCustomizer extends TabPanelMaker {
-
-		@Override public void setTabs(BoxPanelSwitchableView tabs, DisplayContext context, Object object, Class objClass, SetTabTo cmds) {
-			if (!(object instanceof Collection)) {
-				return;
-			}
-			String title = "The contents of " + object;
-			if (cmds != SetTabTo.ADD)
-				return;
-			try {
-				CollectionContentsPanel cc = new CollectionContentsPanel(context, title, (Collection) object, tabs);
-				tabs.insertTab("Contents", null, cc, null, 0);
-				tabs.addChangeListener(cc);
-			} catch (Exception err) {
-				tabs.insertTab("Contents", null, new ErrorPanel(title + " could not be shown", err), null, 0);
-			}
-
-			try {
-				CollectionContentsPanelUsingTable cc = new CollectionContentsPanelUsingTable(context, title, (Collection) object, tabs);
-				tabs.insertTab("Contents using JTable", null, cc, null, 0);
-				tabs.addChangeListener(cc);
-			} catch (Exception err) {
-				tabs.insertTab("Contents using JTable", null, new ErrorPanel(title + " could not be shown", err), null, 0);
-			}
-		}
-	}
-
-	static public class MapCustomizer extends TabPanelMaker {
-
-		@Override public void setTabs(BoxPanelSwitchableView tabs, DisplayContext context, Object object, Class objClass, SetTabTo cmds) {
-			if (!(object instanceof Map)) {
-				return;
-			}
-			String title = "The contents of " + object;
-			if (cmds != SetTabTo.ADD)
-				return;
-			try {
-				MapContentsPanel cc = new MapContentsPanel(context, title, (Map) object, tabs);
-				tabs.insertTab("Map Contents", null, cc, null, 0);
-				tabs.addChangeListener(cc);
-			} catch (Exception err) {
-				tabs.insertTab("Map Contents", null, new ErrorPanel(title + " could not be shown", err), null, 0);
-			}
-		}
-	}
-
-	static public class ThrowableCustomizer extends TabPanelMaker {
-
-		@Override public void setTabs(BoxPanelSwitchableView tabs, DisplayContext context, Object objct, Class objClass, SetTabTo cmds) {
-			if (!(objct instanceof Throwable)) {
-				return;
-			}
-			if (cmds != SetTabTo.ADD)
-				return;
-			Throwable object = (Throwable) objct;
-
-			String name;
-			if (object instanceof Error) {
-				name = "Error";
-			} else if (object instanceof RuntimeException) {
-				name = "RuntimeException";
-			} else if (object instanceof Exception) {
-				name = "Exception";
-			} else {
-				name = "Throwable";
-			}
-
-			try {
-				ErrorPanel errorPanel = new ErrorPanel(object);
-				tabs.insertTab(name, null, errorPanel, null, 0);
-			} catch (Exception err) {
-				tabs.insertTab(name, null, new ErrorPanel("Could not show error info for " + object, err), null, 0);
-			}
-		}
 	}
 
 	@Override protected void reallySetValue(Object bean) {

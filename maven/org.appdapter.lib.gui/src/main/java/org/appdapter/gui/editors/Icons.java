@@ -1,4 +1,4 @@
-package org.appdapter.gui.repo;
+package org.appdapter.gui.editors;
 
 import java.awt.Color;
 import java.awt.Component;

@@ -34,16 +34,18 @@ import org.appdapter.gui.browse.KMCTrigger;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.editors.ObjectPanel;
 import org.appdapter.gui.repo.RepoManagerPanel;
+import org.appdapter.gui.util.CollectionSetUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @UISalient(NonPublicMethods = false)
-abstract public class UtilityMenuOptions implements UtilClass {
+abstract public class UtilityMenuOptions extends CollectionSetUtils implements UtilClass {
 
 	protected static Logger theLogger = LoggerFactory.getLogger(UtilityMenuOptions.class);
 
 	public static boolean addPanelClasses = true;
 	public static boolean addGlobalStatics = true;
+	public static boolean allTriggersAreGlobal = true;
 	public static boolean useBeanIcons = false;
 	public static boolean usePropertyEditorManager = true;
 	public static boolean separateSlowThreads = false;
@@ -56,8 +58,8 @@ abstract public class UtilityMenuOptions implements UtilClass {
 		Utility.addClassMethods(JenaModelUtils.class);
 		VoidFunc fw = new VoidFunc<Class>() {
 			@Override public void call(Class utilClass) {
-				if (!utilClass.isInterface())
-					Utility.addClassMethods(utilClass);
+				//if (!utilClass.isInterface())
+				Utility.addClassMethods(utilClass);
 			}
 		};
 		withSubclasses(ObjectPanel.class, fw);
@@ -185,7 +187,7 @@ abstract public class UtilityMenuOptions implements UtilClass {
 			// checks for a fire(WhatNotBox box) and claims this will be good for it
 			Method method = ReflectUtils.getDeclaredMethod(utilClass, "fire", false, false, 1);
 			if (method != null) {
-				classOfBox = ReflectUtils.getTypeClass(method.getParameterTypes()[0], new ArrayList(skippedTypes));
+				classOfBox = ReflectUtils.getTypeClass(method.getGenericParameterTypes()[0], null, new ArrayList(skippedTypes));
 				if (classOfBox != null) {
 					member = method;
 					addTriggerForClass(menuName, classOfBox, member, howto, isDeclNonStatic0, hasNoSideEffects);
@@ -200,7 +202,7 @@ abstract public class UtilityMenuOptions implements UtilClass {
 			// checks for a SomeTrigger(WhatNot classOfBox) and claims this will be good for it
 			Constructor method = ReflectUtils.getDeclaredConstructor(utilClass, TypeAssignable.ANY, 1);
 			if (method != null) {
-				classOfBox = ReflectUtils.getTypeClass(method.getParameterTypes()[0], new ArrayList(skippedTypes));
+				classOfBox = ReflectUtils.getTypeClass(method.getGenericParameterTypes()[0], null, new ArrayList(skippedTypes));
 				if (classOfBox != null) {
 					member = method;
 					addTriggerForClass(menuName, classOfBox, member, howto, isDeclNonStatic0, hasNoSideEffects);
@@ -213,7 +215,7 @@ abstract public class UtilityMenuOptions implements UtilClass {
 
 		try {
 			// checks for some type and claims this will be good for it
-			classOfBox = ReflectUtils.getTypeClass(utilClass.getTypeParameters(), new ArrayList(skippedTypes));
+			classOfBox = ReflectUtils.getTypeClass(utilClass.getTypeParameters(), null, new ArrayList(skippedTypes));
 			if (classOfBox != null) {
 				member = classOfBox.getDeclaredConstructors()[0];
 				//@todo ?
@@ -266,6 +268,10 @@ abstract public class UtilityMenuOptions implements UtilClass {
 
 			@Override public boolean appliesTarget(Class cls, Object anyObject) {
 				return ReflectUtils.convertsTo(anyObject, cls, classOfBox);
+			}
+
+			@Override public String getMenuPath() {
+				return "" + member;
 			}
 
 		});

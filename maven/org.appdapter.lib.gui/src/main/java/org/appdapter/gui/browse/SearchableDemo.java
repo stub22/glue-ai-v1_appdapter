@@ -8,31 +8,48 @@ package org.appdapter.gui.browse;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
+import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTree;
+import javax.swing.JViewport;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.Position;
 import javax.swing.tree.TreePath;
 
 import org.appdapter.api.trigger.AnyOper;
 import org.appdapter.api.trigger.AnyOper.UISalient;
+import org.appdapter.gui.swing.VerticalLayout;
 
+import com.jidesoft.swing.AutoCompletion;
+import com.jidesoft.swing.ComboBoxSearchable;
 import com.jidesoft.swing.JideBoxLayout;
 import com.jidesoft.swing.JideSplitPane;
+import com.jidesoft.swing.JideTitledBorder;
+import com.jidesoft.swing.PartialEtchedBorder;
+import com.jidesoft.swing.PartialSide;
+import com.jidesoft.swing.Searchable;
 import com.jidesoft.swing.SearchableUtils;
+import com.jidesoft.swing.SelectAllUtils;
 import com.jidesoft.swing.TableSearchable;
 import com.jidesoft.swing.TreeSearchable;
 
@@ -62,8 +79,7 @@ public class SearchableDemo implements AnyOper.Singleton, AnyOper.Autoload {
 				+ "com.jidesoft.swing.TableSearchable\n" + "com.jidesoft.swing.TextComponentSearchable\n" + "com.jidesoft.swing.SearchableUtils\n" + "com.jidesoft.swing.Searchable";
 	}
 
-	@UISalient
-	public Component getDemoPanel() {
+	@UISalient public Component getDemoPanel() {
 		JTree tree = new JTree() {
 			@Override public TreePath getNextMatch(String prefix, int startingRow, Position.Bias bias) {
 				return null;
@@ -153,7 +169,11 @@ public class SearchableDemo implements AnyOper.Singleton, AnyOper.Autoload {
 		return panel;
 	}
 
-	private static JPanel createTitledPanel(JLabel label, char mnemonic, JComponent component) {
+	public static JPanel createTitledPanel(String text, char mnemonic, JComponent component) {
+		return createTitledPanel(new JLabel(text), mnemonic, component);
+	}
+
+	public static JPanel createTitledPanel(JLabel label, char mnemonic, JComponent component) {
 		JPanel panel = new JPanel(new BorderLayout(2, 2));
 		panel.add(label, BorderLayout.BEFORE_FIRST_LINE);
 		label.setDisplayedMnemonic(mnemonic);
@@ -218,5 +238,177 @@ public class SearchableDemo implements AnyOper.Singleton, AnyOper.Autoload {
 		@Override public boolean isCellEditable(int row, int column) {
 			return false;
 		}
+	}
+
+	public static void installSearchable(JTable table) {
+		table.setPreferredScrollableViewportSize(new Dimension(200, 24));
+		table.setColumnSelectionAllowed(false);
+		table.setRowSelectionAllowed(true);
+		TableSearchable tSearchable = SearchableUtils.installSearchable(table);
+		setSearchableParams(tSearchable);
+		tSearchable.setMainIndex(-1); // search for all columns 
+		//installTitledPanel("Search: ", 'T', table);
+	}
+
+	static public JPanel createAutoCompleteForTree(JTree tree, boolean addTree) {
+		JPanel panel = new JPanel();
+		if (true) {
+			panel.setLayout(new JideBoxLayout(panel, JideBoxLayout.Y_AXIS));
+			panel.setBorder(BorderFactory.createCompoundBorder(new JideTitledBorder(new PartialEtchedBorder(PartialEtchedBorder.LOWERED, PartialSide.NORTH), "Object List by Class",
+					JideTitledBorder.LEADING, JideTitledBorder.ABOVE_TOP), BorderFactory.createEmptyBorder(0, 0, 0, 0)));
+		} else {
+			panel.setLayout(new VerticalLayout(VerticalLayout.LEFT, true));
+		}
+
+		// create tree combobox
+		final JTextArea treeTextField = new JTextArea();
+		SelectAllUtils.install(treeTextField);
+		Dimension dim = treeTextField.getSize();
+		dim.height = 24;
+		treeTextField.setSize(dim);
+		treeTextField.setPreferredSize(dim);
+		treeTextField.setMinimumSize(dim);
+		treeTextField.setMaximumSize(new Dimension(Integer.MAX_VALUE, treeTextField.getPreferredSize().height));
+		//treeTextField.setName("AutoCompletion JTextField with JTree");
+
+		tree.setVisibleRowCount(25);
+		final TreeSearchable searchable = SearchableUtils.installSearchable(tree);
+		AutoCompletion autoCompletion = new AutoCompletion(treeTextField, searchable);
+		setSearchableParams(searchable);
+		autoCompletion.setStrict(false);
+		autoCompletion.setStrictCompletion(false);
+		searchable.setRecursive(true);
+		panel.add(Box.createVerticalStrut(1), JideBoxLayout.FIX);
+		if (true) {
+			Box box = Box.createVerticalBox();
+			box.add(Box.createVerticalGlue());
+			box.add(treeTextField);
+			box.add(Box.createVerticalGlue());
+			panel.add(Box.createVerticalGlue());
+			panel.add(box);
+			panel.add(Box.createVerticalGlue());
+		} else {
+			panel.add(treeTextField);
+		}
+		//panel.add(Box.createVerticalStrut(12), JideBoxLayout.FIX);
+		if (addTree)
+			panel.add(new JScrollPane(tree));
+		//panel.add(Box.createVerticalStrut(12), JideBoxLayout.FIX);
+		return panel;
+	}
+
+	public static void installSearchable(JTree tree) {
+		Container cont = getParentPanel(tree, false);
+		int index = getComponentIndex(cont, tree);
+		replaceComponent(cont, cont.getComponent(index), createAutoCompleteForTree(tree, true));
+		return;
+	}
+
+	private static Container getParentPanel(Component child, boolean remove) {
+		Container parent = child.getParent();
+		Container gparent = null;
+		if (parent != null) {
+			gparent = parent.getParent();
+		}
+		if (parent instanceof JPanel) {
+			remove = false;
+		}
+		if (parent instanceof JSplitPane) {
+			remove = false;
+		}
+		if (parent instanceof JFrame) {
+			remove = false;
+			parent = ((JFrame) parent).getContentPane();
+		}
+		boolean needRemove = (parent instanceof JViewport || parent instanceof JScrollPane);
+		if (needRemove) {
+			if (remove) {
+				replaceComponent(gparent, parent, child);
+				parent = gparent;
+			}
+			return getParentPanel(parent, remove);
+		}
+		if (remove) {
+			replaceComponent(gparent, parent, child);
+			parent = gparent;
+		}
+		return (Container) parent;
+	}
+
+	private static void replaceComponent(Container gparent, Component f, Component r) {
+		int i = getComponentIndex(gparent, f);
+		gparent.remove(i);
+		gparent.add(r, i);
+	}
+
+	private static int getComponentIndex(Container gparent, Component child) {
+		int len = gparent.getComponentCount();
+		for (int i = 0; i < len; i++) {
+			Component other = gparent.getComponent(i);
+			if (other == child)
+				return i;
+			if (other instanceof Container) {
+				int sc = getComponentIndex((Container) other, child);
+				if (sc != -1)
+					return i;
+			}
+		}
+		return -1;
+	}
+
+	public static void installSearchable(final JComboBox combo) {
+
+		combo.addActionListener(new ActionListener() {
+			boolean isSearchMode = false;
+			ComboBoxSearchable tSearchable = null;
+
+			@Override public void actionPerformed(ActionEvent e) {
+				if (true)
+					return;
+				if (tSearchable == null) {
+					combo.setEnabled(false);
+					tSearchable = SearchableUtils.installSearchable(combo);
+					setSearchableParams(tSearchable);
+					//installTitledPanel("Search: ", 'C', combo);
+				} else {
+					combo.setEnabled(true);
+					SearchableUtils.uninstallSearchable(tSearchable);
+				}
+			}
+		});
+	}
+
+	private static void setSearchableParams(Searchable searchable) {
+		searchable.setCaseSensitive(false);
+		searchable.setWildcardEnabled(true);
+		searchable.setRepeats(true);
+	}
+
+	public static void installTitledPanel(String text, char mnemonic, JComponent onto) {
+		Container parent = onto.getParent();
+		if (parent == null) {
+			return;
+		}
+		if (onto instanceof JScrollPane) {
+			parent.remove(onto);
+			parent.add(createTitledPanel(text, mnemonic, onto));
+			return;
+		}
+		if (onto instanceof JTree) {
+			parent.remove(onto);
+			parent.add(createTitledPanel(text, mnemonic, onto));
+			return;
+		}
+
+		if (parent instanceof JViewport) {
+			installTitledPanel(text, mnemonic, (JViewport) parent);
+			return;
+		}
+		if (parent instanceof JScrollPane) {
+			installTitledPanel(text, mnemonic, (JScrollPane) parent);
+			return;
+		}
+		parent.remove(onto);
+		parent.add(createTitledPanel(text, mnemonic, onto));
 	}
 }

@@ -18,18 +18,23 @@ package org.appdapter.bind.rdf.jena.model;
 
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.appdapter.api.trigger.AnyOper;
+import org.appdapter.api.trigger.AnyOper.UISalient;
 import org.appdapter.core.convert.Converter.ConverterMethod;
+import org.appdapter.core.convert.OptionalArg;
 import org.appdapter.core.item.JenaResourceItem;
 import org.appdapter.core.name.Ident;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.hp.hpl.jena.graph.Graph;
+import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.ontology.DatatypeProperty;
 import com.hp.hpl.jena.ontology.Individual;
 import com.hp.hpl.jena.ontology.ObjectProperty;
@@ -46,11 +51,12 @@ import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.util.PrintUtil;
 import com.hp.hpl.jena.util.iterator.ExtendedIterator;
+import com.hp.hpl.jena.util.iterator.Filter;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
-
+@UISalient
 public class JenaModelUtils implements AnyOper.UtilClass {
 	private static Logger theLogger = LoggerFactory.getLogger(JenaModelUtils.class);
 
@@ -170,6 +176,41 @@ public class JenaModelUtils implements AnyOper.UtilClass {
 		Model out = ModelFactory.createDefaultModel();
 		out.add(in);
 		return out;
+	}
+
+	@UISalient(UseOptionalArgs = OptionalArg.OPTIONAL_FROM_CLIPBOARD)//
+	public static List<Statement> findExentOfNodeInModels(Resource r, Collection<Model> searchThese) {
+		ArrayList<Statement> found = new ArrayList<Statement>();
+		Collection<Model> foundIn = findModelsWithNode(r, searchThese);
+		final Node n0 = r.asNode();
+		for (Model m : foundIn) {
+			for (Statement s : m.listStatements().filterKeep(new Filter<Statement>() {
+
+				@Override public boolean accept(Statement arg0) {
+					if (n0.equals(arg0.getSubject().asNode()))
+						return true;
+					if (n0.equals(arg0.getPredicate().asNode()))
+						return true;
+					if (n0.equals(arg0.getObject().asNode()))
+						return true;
+					return false;
+				}
+			}).toList()) {
+				found.add(s);
+			}
+		}
+		return found;
+
+	}
+
+	@UISalient() public static List<Model> findModelsWithNode(Resource r, Collection<Model> searchThese) {
+		ArrayList<Model> foundIn = new ArrayList<Model>();
+		for (Model m : searchThese) {
+			if (m.containsResource(r)) {
+				foundIn.add(m);
+			}
+		}
+		return foundIn;
 	}
 
 	@ConverterMethod public static Resource makeUnattachedResource(String uri) {

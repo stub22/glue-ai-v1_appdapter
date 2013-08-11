@@ -26,7 +26,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
@@ -46,7 +45,8 @@ import com.hp.hpl.jena.rdf.listeners.StatementListener;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Statement;
-import com.jidesoft.swing.JideBoxLayout;
+import com.jidesoft.swing.AutoResizingTextArea;
+import com.jidesoft.swing.SearchableUtils;
 
 //import com.hp.hpl.jena.n3.N3Exception;
 
@@ -143,7 +143,7 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 	private Model boundModel;
 
 	JFrame window;
-	JTextArea turtleTextArea;
+	AutoResizingTextArea turtleTextArea;
 	JLabel cursorPositionLabel;
 	JJPanel buttons;
 	StatementListener listener;
@@ -442,7 +442,7 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 		this.removeAll();
 
 		// set up Turtle text area
-		this.turtleTextArea = new JTextArea();
+		this.turtleTextArea = new AutoResizingTextArea();
 		this.turtleTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
 		this.turtleTextArea.addCaretListener(new CaretListener() {
 			public void caretUpdate(CaretEvent e) {
@@ -494,6 +494,8 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 		contentPane.add(Box.createRigidArea(new Dimension(16, 0)), BorderLayout.WEST);
 		contentPane.add(Box.createRigidArea(new Dimension(0, 12)), BorderLayout.NORTH);
 		contentPane.add(Box.createRigidArea(new Dimension(0, 12)), BorderLayout.SOUTH);
+
+		SearchableUtils.installSearchable(turtleTextArea);
 
 		if (Utility.getAppFrame() == window)
 			return;

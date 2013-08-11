@@ -20,7 +20,7 @@
  * Created on Oct 25, 2010, 8:12:03 PM
  */
 
-package org.appdapter.gui.repo;
+package org.appdapter.gui.table;
 
 import static org.appdapter.core.log.Debuggable.printStackTrace;
 
@@ -31,35 +31,24 @@ import org.appdapter.gui.api.WrapperValue;
 import org.appdapter.gui.browse.ToFromKeyConverter;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.swing.ScreenBoxPanel;
-import org.appdapter.gui.table.CellConversions;
-import org.appdapter.gui.table.SafeJTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
-public class GenericMatrixPanel extends ScreenBoxPanel implements CellConversions {
+abstract public class GenericBeansPanel extends ScreenBoxPanel implements CellConversions {
 
-	static Logger theLogger = LoggerFactory.getLogger(GenericMatrixPanel.class);
+	static Logger theLogger = LoggerFactory.getLogger(GenericBeansPanel.class);
 
 	public ToFromKeyConverter getCellConverter(Class valueClazz) {
 
 		return Utility.getToFromStringConverter(valueClazz);
 	}
 
-	@UISalient static public GenericMatrixPanel showGenericMatrixPanel(final Object obj) {
-		return new GenericMatrixPanel(obj.getClass()) {
-			{
-				setObject(obj);
-			}
-		};
-	}
-
 	protected String[] columnNamesPredefined;
 	protected CellConversions listFromH;
 	private List listOfRows;
-	public final Object[] longValues = { "Jane", "Kathy", "None of the above", new Integer(20), Boolean.TRUE };
 	protected Class rowClass;
 	protected Class matrixClass;
 
@@ -77,12 +66,12 @@ public class GenericMatrixPanel extends ScreenBoxPanel implements CellConversion
 
 	// End of variables declaration//GEN-END:variables
 
-	public GenericMatrixPanel(Class matrixClass) {
+	public GenericBeansPanel(Class matrixClass) {
 		this(matrixClass, null, null, null);
 	}
 
 	/** Creates new form ModelMatrixPanel */
-	public GenericMatrixPanel(Class matrixClass, Class listClass, CellConversions getList, String[] colNames) {
+	public GenericBeansPanel(Class matrixClass, Class listClass, CellConversions getList, String[] colNames) {
 		super();
 		this.matrixClass = matrixClass;
 		this.rowClass = listClass;
@@ -90,7 +79,7 @@ public class GenericMatrixPanel extends ScreenBoxPanel implements CellConversion
 		this.listFromH = getList == null ? this : getList;
 	}
 
-	public GenericMatrixPanel(WrapperValue wv) {
+	public GenericBeansPanel(WrapperValue wv) {
 		this(wv.getObjectClass());
 		setObject(wv.reallyGetValue());
 	}
