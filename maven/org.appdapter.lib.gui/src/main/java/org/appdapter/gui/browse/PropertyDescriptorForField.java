@@ -33,6 +33,8 @@ import org.appdapter.gui.trigger.TriggerMenuFactory;
 
 public class PropertyDescriptorForField extends PropertyDescriptor implements Converter {
 
+	public static final boolean DISABLE_PDescFF = false;
+	public static final boolean DISABLE_PROXY = true;
 	static Class[] STARTER_INTERFACES = new Class[] { FakeMethods.class, ProxyMethodClass.class, PropertyChangeListener.class, PropertyEditor.class, InvocationHandler.class };
 	static {
 		HashSet<Class> allInterfaces = new HashSet<Class>();
@@ -53,7 +55,7 @@ public class PropertyDescriptorForField extends PropertyDescriptor implements Co
 
 		@Override public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 			final Object origProx = proxy;
-			if (proxyClass.isInstance(proxy)) {
+			if (proxyClass_U != null && proxyClass_U.isInstance(proxy)) {
 				proxy = getSource();
 			}
 			String methodName = method.getName();
@@ -210,7 +212,7 @@ public class PropertyDescriptorForField extends PropertyDescriptor implements Co
 		if (isStatic()) {
 			return null;
 		} else {
-			obj = ReflectUtils.recast(obj, getDeclaringClass);
+			obj = Utility.recast(obj, getDeclaringClass);
 			if (getDeclaringClass.isInstance(obj))
 				return obj;
 		}
@@ -250,9 +252,10 @@ public class PropertyDescriptorForField extends PropertyDescriptor implements Co
 	Method writeMethodOr;
 	//private ObjectFieldEditor objectFieldEditor;
 	private ClassLoader classLoaderToRelease;
-	private Class<? extends FakeMethods> proxyClass;
+	private Class<? extends FakeMethods> proxyClass_U;
 	final Class getDeclaringClass;
 	private Class[] localInterfaces = TriggerMenuFactory.CLASS0;
+	private Class<?> proxyClass_F;
 	static Map<Class, PropertyDescriptorForField> proxyToField = new HashMap<Class, PropertyDescriptorForField>();
 	static Map<Field, PropertyDescriptorForField> fieldToDesc = new HashMap<Field, PropertyDescriptorForField>();
 
@@ -290,7 +293,10 @@ public class PropertyDescriptorForField extends PropertyDescriptor implements Co
 			classLoaderToRelease = used;
 		}
 		localInterfaces = getInterfaces(f.getDeclaringClass());
-		this.proxyClass = (Class<? extends FakeMethods>) Proxy.getProxyClass(classLoaderToRelease, localInterfaces);
+		proxyClass_F = f.getDeclaringClass();
+		if (DISABLE_PROXY)
+			return;
+		Class proxyClass = this.proxyClass_U = (Class<? extends FakeMethods>) Proxy.getProxyClass(classLoaderToRelease, localInterfaces);
 
 		proxyToField.put(proxyClass, this);
 		setPropertyEditorClass(proxyClass);
@@ -401,16 +407,16 @@ public class PropertyDescriptorForField extends PropertyDescriptor implements Co
 	}
 
 	@Override public Integer declaresConverts(Object val, Class valClass, Class objNeedsToBe, List maxCvt) {
-		return objNeedsToBe == proxyClass ? WILL : WONT;
+		return objNeedsToBe == proxyClass_F ? WILL : WONT;
 	}
 
 	@Override public <T> T convert(Object obj, Class<T> objNeedsToBe, List maxCvt) throws NoSuchConversionException {
 		if (objNeedsToBe.isInstance(obj))
 			return (T) obj;
-		if (objNeedsToBe.isAssignableFrom(proxyClass)) {
+		if (proxyClass_U != null && objNeedsToBe.isAssignableFrom(proxyClass_U)) {
 			return (T) newProxyInstance(obj);
 		}
-		Object object = ReflectUtils.recast(obj, getDeclaringClass, maxCvt);
+		Object object = ReflectUtils.recastRU(obj, getDeclaringClass, maxCvt);
 		T t = (T) newProxyInstance(obj);
 		return t;
 
@@ -420,7 +426,7 @@ public class PropertyDescriptorForField extends PropertyDescriptor implements Co
 		ObjectFieldEditor ofe = new ObjectFieldEditor(this, obj);
 		T t;
 		try {
-			Constructor[] cons = proxyClass.getDeclaredConstructors();
+			Constructor[] cons = proxyClass_U.getDeclaredConstructors();
 			if (cons.length > 0) {
 
 				for (Constructor c : cons) {

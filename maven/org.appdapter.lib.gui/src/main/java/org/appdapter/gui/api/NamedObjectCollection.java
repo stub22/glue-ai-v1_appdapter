@@ -52,7 +52,7 @@ public interface NamedObjectCollection //
 	 */
 	//POJOBox findOrCreateBox(Object object);
 
-	boolean addBoxed(String named, BT screenBoxImpl);
+	boolean addTitleBoxed(String named, BT screenBoxImpl);
 	
 	boolean addValueBoxed(Object named, BT screenBoxImpl);
 	

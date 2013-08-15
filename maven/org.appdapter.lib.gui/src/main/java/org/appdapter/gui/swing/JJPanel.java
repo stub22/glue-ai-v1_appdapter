@@ -11,7 +11,7 @@ import org.appdapter.core.convert.NoSuchConversionException;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.browse.Utility;
 
-public class JJPanel extends JPanel implements UISwingReplacement {
+public class JJPanel extends JPanel implements UISwingReplacement, IsReference {
 	public JJPanel() {
 		super();
 	}
@@ -46,7 +46,7 @@ public class JJPanel extends JPanel implements UISwingReplacement {
 
 	}
 
-	public Object getValue() throws Throwable {
+	public Object getValue() {
 		Debuggable.warn("getValue not Implemented (returning null)");
 		return null;
 	}

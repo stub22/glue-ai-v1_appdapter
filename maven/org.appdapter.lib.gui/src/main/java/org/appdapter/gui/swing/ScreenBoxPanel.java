@@ -3,6 +3,7 @@ package org.appdapter.gui.swing;
 import static org.appdapter.core.log.Debuggable.*;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.gui.api.BT;
+import org.appdapter.gui.api.BoxPanelSwitchableView;
 import org.appdapter.gui.api.FocusOnBox;
 import org.appdapter.gui.api.GetSetObject;
 import org.appdapter.gui.browse.Utility;
@@ -19,6 +20,12 @@ abstract public class ScreenBoxPanel<BoxType extends Box> extends ObjectView<Box
 	protected abstract void initSubclassGUI() throws Throwable;
 
 	protected abstract void completeSubClassGUI() throws Throwable;
+
+	public void setTabHost(BoxPanelSwitchableView objectTabsForTabbedView) {
+		parentTabs = objectTabsForTabbedView;
+	}
+
+	protected BoxPanelSwitchableView parentTabs;
 
 	public ScreenBoxPanel() {
 		this(null);

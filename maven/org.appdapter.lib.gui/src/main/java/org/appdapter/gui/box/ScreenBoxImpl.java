@@ -50,6 +50,7 @@ import org.appdapter.api.trigger.AnyOper.UIHidden;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContext;
 import org.appdapter.api.trigger.MutableBox;
+import org.appdapter.api.trigger.SetObject;
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.core.component.MutableKnownComponent;
 import org.appdapter.core.convert.ReflectUtils;
@@ -64,7 +65,6 @@ import org.appdapter.gui.api.GetDisplayContext;
 import org.appdapter.gui.api.NamedObjectCollection;
 import org.appdapter.gui.api.POJOCollectionListener;
 import org.appdapter.gui.api.ScreenBox;
-import org.appdapter.gui.api.SetObject;
 import org.appdapter.gui.api.WrapperValue;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.editors.UseEditor;
@@ -77,6 +77,7 @@ import org.appdapter.gui.util.PromiscuousClassUtilsA;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import static org.appdapter.core.convert.ReflectUtils.*;
+
 /**
 /**  Base implementation of our demo Swing Panel boxes. 
  * The default implementation can own one swing panel of each "Kind".
@@ -272,7 +273,7 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 			noc.addListener((POJOCollectionListener) this, true);
 		}
 		col2Name.put(noc, title);
-		noc.addBoxed(title.toString(), (BT) this);
+		noc.addTitleBoxed(title.toString(), (BT) this);
 	}
 
 	/**
@@ -440,7 +441,7 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 
 	List<Object> objects = new ArrayList<Object>();
 
-	static <T> boolean addIfNew(List<T> objects2, T valueSetAs2) {
+	static <T> boolean addIfNew(Collection<T> objects2, T valueSetAs2) {
 		if (valueSetAs2 != null) {
 			if (!objects2.contains(valueSetAs2)) {
 				objects2.add(valueSetAs2);
@@ -460,7 +461,9 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 		return false;
 	}
 
-	public <T, E extends T> Iterable<E> getObjects(Class<T> type) {
+	public <T, E extends T> Iterable getObjects(Class<T> type) {
+		if (type == null)
+			return (Iterable) getObjects();
 		HashSet<E> objs = new HashSet<E>();
 		if (this.canConvert(type)) {
 			T one = convertTo(type);
@@ -479,6 +482,11 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 		if (m_largeview instanceof JPanel) {
 			return (JPanel) m_largeview;
 		}
+		for (Object o : myPanelMap.values()) {
+			if (o instanceof JPanel) {
+				return (JPanel) o;
+			}
+		}
 		JPanel pnl = makePropertiesPanel();
 		if (m_largeview == null) {
 			m_largeview = pnl;
@@ -490,13 +498,7 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 		List<TrigType> tgs = super.getTriggers();
 		DisplayContext dc = getDisplayContext();
 		for (Class cls : getTypes()) {
-			Boolean was = Utility.canMakeInstanceTriggers.get();
-			try {
-				Utility.canMakeInstanceTriggers.set(true);
-				TriggerMenuFactory.addTriggersForInstance(dc, cls, tgs, this);
-			} finally {
-				Utility.canMakeInstanceTriggers.set(was);
-			}
+			TriggerMenuFactory.addTriggersForInstance(dc, cls, tgs, this);
 		}
 		return tgs;
 	}
@@ -609,9 +611,38 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 		if (wv != null && wv != this && sbWrapperValue != wv) {
 			return wv.reallyGetValue();
 		}
+		if (valueSetAs == null)
+			return this;
+		Collection col = defaultItems();
+		if (nonDefaultItemCount() != 1) {
+			if (valueSetAs != null)
+				return valueSetAs;
+		}
 		if (valueSetAs != null)
 			return valueSetAs;
 		return this;
+	}
+
+	private int nonDefaultItemCount() {
+		int count = 0;
+		Collection di = defaultItems();
+		for (Object o : getObjects()) {
+			if (!di.contains(o))
+				count++;
+		}
+		return count;
+	}
+
+	Collection keyCol = null;
+
+	private Collection defaultItems() {
+		if (keyCol == null) {
+			keyCol = new HashSet();
+			addIfNew(keyCol, this);
+			addIfNew(keyCol, getIdent());
+			addIfNew(keyCol, getShortLabel());
+		}
+		return keyCol;
 	}
 
 	/**
@@ -862,6 +893,19 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	}
 
 	public void reallySetValue(Object newObject) {
+		if (newObject == valueSetAs || newObject == this)
+			return;
+		Object value = newObject;
+		String ds = getDescription();
+		if (ds == null) {
+			try {
+				setDescription("" + value + " " + value.getClass());
+			} catch (Throwable t) {
+				// tostring method can cuse ewxceptions!
+			}
+		}
+		if (clz == null)
+			clz = value.getClass();
 		if (removeIfOld(objects, valueSetAs)) {
 			noc.removeObject(valueSetAs);
 		}
@@ -938,32 +982,18 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 		if (value == null) {
 			value = new NullPointerException(uniqueName).fillInStackTrace();
 		}
-		if (clz == null)
-			clz = value.getClass();
-
 		try {
 			setObject(value);
-		} catch (InvocationTargetException e) {
-			// TODO Auto-generated catch block
+		} catch (Throwable e) {
 			e.printStackTrace();
 		}
 	}
 
 	public void setObject(Object value) throws InvocationTargetException {
-		String ds = getDescription();
-		if (ds == null) {
-			setDescription("" + value + " " + value.getClass());
-		}
 		Object oldObject = getValue();
 		if (oldObject == value) {
 			return;
 		}
-		if (value == null) {
-			value = new NullPointerException(getShortLabel()).fillInStackTrace();
-		}
-		if (clz == null)
-			clz = value.getClass();
-
 		reallySetValue(value);
 		try {
 			valueChanged(oldObject, value);
@@ -1087,6 +1117,9 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	}
 
 	@Override public void addValue(Object val) {
+		if (val == this)
+			return;
+
 		BT prev = noc.findBoxByObject(val);
 		if (prev != null && prev != this) {
 			Debuggable.notImplemented("Already existing value: " + prev);
@@ -1098,7 +1131,7 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	}
 
 	@Override public void addTitle(String nym) {
-		if (noc.addBoxed(nym, this))
+		if (noc.addTitleBoxed(nym, this))
 			getNames().add(nym);
 	}
 }

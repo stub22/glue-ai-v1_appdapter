@@ -10,8 +10,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import org.appdapter.api.trigger.AnyOper.UISalient;
 import org.appdapter.core.convert.NoSuchConversionException;
-import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.gui.api.BrowserPanelGUI;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.browse.Utility;
@@ -24,6 +24,8 @@ import org.appdapter.gui.util.PromiscuousClassUtilsA;
  *
  * @author Henrk Kniberg
  */
+
+@UISalient(Description = "Show subclasses and implementors of %t")
 public class ClassBrowserPanel extends JJPanel implements ActionListener {
 	DisplayContext context;
 
@@ -89,7 +91,7 @@ public class ClassBrowserPanel extends JJPanel implements ActionListener {
 	}
 
 	public void setObject(Object object) throws java.lang.reflect.InvocationTargetException, NoSuchConversionException {
-		Class clazz = ReflectUtils.recast(object, Class.class);
+		Class clazz = Utility.recast(object, Class.class);
 		text.setText(clazz.getCanonicalName());
 		if (context == null) {
 			Utility.ensureRunning();

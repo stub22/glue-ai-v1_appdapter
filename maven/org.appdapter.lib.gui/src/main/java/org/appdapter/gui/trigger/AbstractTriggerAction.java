@@ -23,7 +23,10 @@ public abstract class AbstractTriggerAction extends AbstractAction implements KM
 	protected NamedObjectCollection currentCollection;
 
 	@Override public Object getIdentityObject() {
-		return getShortLabel().intern();
+		String s = getMenuPath();
+		if (s == null || s.contains("%"))
+			return this;
+		return s.intern();
 	}
 
 	/**

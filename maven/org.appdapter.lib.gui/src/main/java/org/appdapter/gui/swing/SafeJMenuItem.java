@@ -12,7 +12,7 @@ import javax.swing.plaf.MenuItemUI;
 import org.appdapter.api.trigger.AnyOper.UISalient;
 import org.appdapter.gui.api.GetSetObject;
 
-public class SafeJMenuItem extends JMenuItem implements UISwingReplacement, GetSetObject {
+public class SafeJMenuItem extends JMenuItem implements UISwingReplacement, GetSetObject, IsReference {
 
 	@UISalient
 	public Object userObject;

@@ -16,10 +16,12 @@
 
 package org.appdapter.gui.box;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
+import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
@@ -125,7 +127,7 @@ public class ScreenBoxContextImpl extends BoxContextImpl implements DisplayConte
 		parentNode.add(childNode);
 		if (myTreeModel != null) {
 			if (parentNode instanceof TreeNode)
-				myTreeModel.reload((TreeNode) parentNode);
+				reloadNode(parentNode);
 		}
 		return childNode;
 	}
@@ -141,7 +143,7 @@ public class ScreenBoxContextImpl extends BoxContextImpl implements DisplayConte
 			parentNode.remove(prev);
 			if (myTreeModel != null) {
 				if (parentNode instanceof TreeNode)
-					myTreeModel.reload((TreeNode) parentNode);
+					reloadNode(parentNode);
 			}
 			return prev;
 		}
@@ -183,7 +185,21 @@ public class ScreenBoxContextImpl extends BoxContextImpl implements DisplayConte
 
 	public void ensureAndReloadTreeModel() {
 		TreeModel tm = ensureTreeModel();
-		DefaultTreeModel dtm = (DefaultTreeModel) tm;
-		dtm.reload();
+		final DefaultTreeModel dtm = (DefaultTreeModel) tm;
+		Utility.invokeLater(new Runnable() {
+			@Override public void run() {
+				dtm.reload();
+			}
+		});
+
 	}
+
+	private void reloadNode(final ScreenBoxTreeNodeImpl parentNode) {
+		Utility.invokeLater(new Runnable() {
+			@Override public void run() {
+				myTreeModel.reload((TreeNode) parentNode);
+			}
+		});
+	}
+
 }

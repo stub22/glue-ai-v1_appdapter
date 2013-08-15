@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
@@ -132,7 +133,14 @@ abstract public class BaseDemoNavigatorCtrl implements BrowserPanelGUI, org.appd
 		Box rootBox = myBoxCtx.getRootBox();
 		myBoxCtx.contextualizeAndAttachChildBox(rootBox, childBox);
 		if (reload) {
-			((DefaultTreeModel) myTM).reload();
+			try {
+				Utility.invokeLater(new Runnable() {
+					@Override public void run() {
+						((DefaultTreeModel) myTM).reload();
+					}
+				});
+			} catch (Throwable e) {
+			}
 		}
 	}
 

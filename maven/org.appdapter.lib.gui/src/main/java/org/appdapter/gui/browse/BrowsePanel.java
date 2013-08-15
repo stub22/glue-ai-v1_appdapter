@@ -27,6 +27,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.LinkedList;
 
@@ -39,6 +40,7 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.plaf.ColorUIResource;
@@ -108,7 +110,7 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 		myTreeModel = tm;
 		initComponents();
 		JTree tree = myTree;
-		Utility.theBoxPanelDisplayContext = myBoxPanelSwitchableViewImpl = new ObjectTabsForTabbedView(myBoxPanelTabPane, true);
+		Utility.theBoxPanelDisplayContext = myBoxPanelSwitchableViewImpl = new ObjectTabsForTabbedView(myBoxPanelTabPane, true, null);
 		setTabbedPaneOptions();
 		Utility.controlApp = app = new DisplayContextUIImpl(myBoxPanelSwitchableViewImpl, this, ctx);
 		Utility.clipBoardUtil = new CollectionEditorUtil(clipboard.getName(), app, clipboard);
@@ -194,11 +196,15 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 
 	}
 
-	public void setVisible(boolean aFlag) {
-		checkParent();
-		super.setVisible(aFlag);
-		Utility.updateToolsMenu();
-		Utility.updateLastResultsMenu();
+	public void setVisible(final boolean aFlag) {
+		Utility.invokeAndWait(new Runnable() {
+			@Override public void run() {
+				checkParent();
+				BrowsePanel.super.setVisible(aFlag);
+				Utility.updateToolsMenu();
+				Utility.updateLastResultsMenu();
+			}
+		});
 	}
 
 	public void addNotify() {
@@ -327,7 +333,7 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 
 		myBrowserSplitPane.add(myTreeScrollPane);
 
-		myContentPanel.setBackground(new java.awt.Color(214,217,223));
+		myContentPanel.setBackground(new java.awt.Color(214, 217, 223));
 		myContentPanel.setLayout(new java.awt.BorderLayout());
 
 		myBoxPanelStatus.setText("Extra text field - used for status display and special console input .   This screen shows a box navigation system.");
@@ -454,9 +460,33 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 		return showScreenBox(null, anyObject);
 	}
 
+	public UserResult addObject(final String title, final Object anyObject, final DisplayType attachType, final boolean showASAP, final boolean expandChildren) {
+		final UserResult[] res = new UserResult[1];
+		try {
+			Utility.invokeAfterLoader(new Runnable() {
+				@Override public void run() {
+					Utility.invokeLater(new Runnable() {
+						@Override public void run() {
+							res[0] = addObjectWorker(title, anyObject, attachType, showASAP, expandChildren);
+						}
+					});
+				}
+			});
+		} catch (Throwable e) {
+		}
+		return new UserResult() {
+			@Override public JPanel getPropertiesPanel() {
+				UserResult soup = res[0];
+				if (soup == null)
+					return SUCCESS.getPropertiesPanel();
+				return soup.getPropertiesPanel();
+			}
+		};
+	}
+
 	LinkedList<Object> workingOnShowingObject = new LinkedList<Object>();
 
-	public UserResult addObject(String title, Object anyObject, DisplayType attachType, boolean showASAP, boolean expandChildren) {
+	public UserResult addObjectWorker(String title, Object anyObject, DisplayType attachType, boolean showASAP, boolean expandChildren) {
 		synchronized (workingOnShowingObject) {
 			if (workingOnShowingObject.contains(anyObject))
 				return UserResult.SUCCESS;

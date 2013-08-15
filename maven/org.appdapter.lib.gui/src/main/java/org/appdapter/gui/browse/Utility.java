@@ -3,7 +3,9 @@ package org.appdapter.gui.browse;
 import static org.appdapter.core.convert.ReflectUtils.addAllNew;
 import static org.appdapter.core.convert.ReflectUtils.addIfNew;
 import static org.appdapter.core.convert.ReflectUtils.arrayOf;
+import static org.appdapter.core.convert.ReflectUtils.convertUsingReflection;
 import static org.appdapter.core.convert.ReflectUtils.copyOf;
+import static org.appdapter.core.convert.ReflectUtils.equalTypes;
 import static org.appdapter.core.convert.ReflectUtils.getAllFields;
 import static org.appdapter.core.convert.ReflectUtils.getAllMethods;
 import static org.appdapter.core.convert.ReflectUtils.getAnnotationOn;
@@ -32,13 +34,22 @@ import static org.appdapter.gui.trigger.TriggerMenuFactory.addTriggerToPoppup;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.EventQueue;
+import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.beans.BeanInfo;
 import java.beans.Customizer;
 import java.beans.IntrospectionException;
@@ -63,10 +74,9 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -88,17 +98,19 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JSpinner.DateEditor;
 import javax.swing.JTable;
-import javax.swing.ListModel;
+import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.table.TableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.tools.FileObject;
 
+import org.appdapter.api.trigger.AnyOper;
 import org.appdapter.api.trigger.AnyOper.Autoload;
 import org.appdapter.api.trigger.AnyOper.Singleton;
 import org.appdapter.api.trigger.AnyOper.UIHidden;
@@ -115,13 +127,13 @@ import org.appdapter.core.boot.ClassLoaderUtils;
 import org.appdapter.core.component.IdentToObjectListener;
 import org.appdapter.core.component.KnownComponent;
 import org.appdapter.core.convert.AggregateConverter;
+import org.appdapter.core.convert.Convertable;
 import org.appdapter.core.convert.Converter;
 import org.appdapter.core.convert.Converter.ConverterMethod;
 import org.appdapter.core.convert.NoSuchConversionException;
 import org.appdapter.core.convert.OptionalArg;
-import org.appdapter.core.convert.OptionalArgFromCollectionAndConvertor;
 import org.appdapter.core.convert.ReflectUtils;
-import org.appdapter.core.convert.TypeAssignable;
+import org.appdapter.core.log.Debuggable;
 import org.appdapter.core.name.FreeIdent;
 import org.appdapter.core.name.Ident;
 import org.appdapter.core.store.Repo;
@@ -129,7 +141,6 @@ import org.appdapter.gui.api.AddTabFrames;
 import org.appdapter.gui.api.BT;
 import org.appdapter.gui.api.BoxPanelSwitchableView;
 import org.appdapter.gui.api.BrowserPanelGUI;
-import org.appdapter.gui.api.Convertable;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.DisplayType;
 import org.appdapter.gui.api.GetDisplayContext;
@@ -140,8 +151,6 @@ import org.appdapter.gui.api.WrapperValue;
 import org.appdapter.gui.box.BoxedCollectionImpl;
 import org.appdapter.gui.demo.DemoBrowser;
 import org.appdapter.gui.editors.AbstractCollectionBeanInfo;
-import org.appdapter.gui.editors.ArrayContentsPanel;
-import org.appdapter.gui.editors.ArrayContentsPanel.ArrayContentsPanelTabFramer;
 import org.appdapter.gui.editors.BooleanEditor;
 import org.appdapter.gui.editors.ColorEditor;
 import org.appdapter.gui.editors.IntEditor;
@@ -160,19 +169,20 @@ import org.appdapter.gui.repo.RepoManagerPanel;
 import org.appdapter.gui.swing.CollectionEditorUtil;
 import org.appdapter.gui.swing.DisplayContextUIImpl.UnknownIcon;
 import org.appdapter.gui.swing.ErrorDialog;
+import org.appdapter.gui.swing.IsReference;
 import org.appdapter.gui.swing.ObjectChoiceComboPanel;
+import org.appdapter.gui.table.ArrayContentsPanel;
+import org.appdapter.gui.table.ArrayContentsPanel.ArrayContentsPanelTabFramer;
 import org.appdapter.gui.table.SafeJTable;
 import org.appdapter.gui.trigger.TriggerAdder;
 import org.appdapter.gui.trigger.TriggerFilter;
 import org.appdapter.gui.trigger.TriggerForClass;
 import org.appdapter.gui.trigger.TriggerMenuFactory;
+import org.appdapter.gui.trigger.TriggerMouseAdapter;
 import org.appdapter.gui.trigger.UtilityMenuOptions;
 import org.appdapter.gui.util.ClassFinder;
 import org.appdapter.gui.util.PromiscuousClassUtilsA;
 import org.slf4j.Logger;
-
-import sun.misc.Compare;
-import sun.misc.Sort;
 
 import com.hp.hpl.jena.graph.FrontsNode;
 import com.hp.hpl.jena.graph.Node;
@@ -187,21 +197,30 @@ import com.hp.hpl.jena.sdb.util.Pair;
 @UIHidden
 public class Utility extends UtilityMenuOptions {
 
+	public static void bug(String string) {
+		theLogger.warn("\n-----------------\nDUG BUG: " + string + "\n");
+
+	}
+
 	public final static ToFromStringNotSpecialized FROM_STRING_NOT_SPECIALIZED = new ToFromStringNotSpecialized();
 
-	static public class ToFromStringNotSpecialized extends ToFromKeyConverter<Object, String> {
+	static public class ToFromStringNotSpecialized extends ToFromKeyConverter<Object, String> implements AnyOper.DontAdd {
 
 		public ToFromStringNotSpecialized() {
 			super(Object.class, String.class);
 		}
 
 		@Override public Object fromKey(String title, Class specializedMaybe) {
-			return recastCC(title, specializedMaybe);
+			try {
+				return fromString(title, specializedMaybe);
+			} catch (NoSuchConversionException e) {
+				throw new ClassCastException(e.getMessage());
+			}
 		}
 
 		@Override public String toKey(Object toBecomeAKey) {
 
-			return getUniqueName(toBecomeAKey);
+			return getUniqueName(toBecomeAKey, uiObjects, true);
 		}
 
 	}
@@ -210,8 +229,12 @@ public class Utility extends UtilityMenuOptions {
 
 	static public class UtilityConverter implements Converter {
 
+		@Override public String toString() {
+			return "{" + Debuggable.toInfoStringArgV("Converter=", getClass()) + "}";
+		}
+
 		@Override public <T> T convert(Object obj, Class<T> objNeedsToBe, List maxCvt) throws NoSuchConversionException {
-			return recastUtil(obj, objNeedsToBe, maxCvt);
+			return (T) recastUtilOnly(obj, objNeedsToBe, maxCvt);
 		}
 
 		@Override public Integer declaresConverts(Object val, Class objClass, Class objNeedsToBe, List maxCvt) {
@@ -225,6 +248,10 @@ public class Utility extends UtilityMenuOptions {
 	}
 
 	static public class UtilityToFromConverterOnly implements Converter {
+
+		@Override public String toString() {
+			return "{" + Debuggable.toInfoStringArgV("Converter=", getClass()) + "}";
+		}
 
 		@Override public <T> T convert(Object obj, Class<T> objNeedsToBe, List maxCvt) throws NoSuchConversionException {
 			Converter converter = getToFromConverter(objNeedsToBe, obj.getClass());
@@ -245,8 +272,12 @@ public class Utility extends UtilityMenuOptions {
 
 	static public class UtilityUnboxingConverterOnly implements Converter {
 
+		@Override public String toString() {
+			return "{" + Debuggable.toInfoStringArgV("Converter=", getClass()) + "}";
+		}
+
 		@Override public <T> T convert(Object obj, Class<T> objNeedsToBe, List maxCvt) throws NoSuchConversionException {
-			return recastUtil(obj, objNeedsToBe, maxCvt);
+			return (T) recastUtilOnly(obj, objNeedsToBe, maxCvt);
 		}
 
 		@Override public Integer declaresConverts(Object val, Class objClass, Class objNeedsToBe, List maxCvt) {
@@ -262,12 +293,16 @@ public class Utility extends UtilityMenuOptions {
 
 	static public class UtilityConvertableConverterOnly implements Converter {
 
+		@Override public String toString() {
+			return "{" + Debuggable.toInfoStringArgV("Converter=", getClass()) + "}";
+		}
+
 		@Override public <T> T convert(Object val, Class<T> objNeedsToBe, List maxCvt) throws NoSuchConversionException {
 			if (val instanceof Convertable) {
 				Convertable convertable = (Convertable) val;
 				return convertable.convertTo(objNeedsToBe);
 			}
-			return recastUtil(val, objNeedsToBe, maxCvt);
+			return (T) recastUtilOnly(val, objNeedsToBe, maxCvt);
 		}
 
 		@Override public Integer declaresConverts(Object val, Class objClass, Class objNeedsToBe, List maxCvt) {
@@ -287,6 +322,10 @@ public class Utility extends UtilityMenuOptions {
 	static public class UtilityOptionalArgs implements OptionalArg {
 
 		private short filterSpec;
+
+		@Override public String toString() {
+			return "OptionalArgs=" + filterSpec;
+		}
 
 		public UtilityOptionalArgs(short optionalArgSpecs) {
 			this.filterSpec = optionalArgSpecs;
@@ -341,6 +380,10 @@ public class Utility extends UtilityMenuOptions {
 
 	public static Object getOptionalArg(Class type, short optionalArgSpecs, boolean onlyFirstGroup) throws NoSuchConversionException {
 		NoSuchConversionException nsce = null;
+		Boolean was = disableOptionalArgs.get() == Boolean.TRUE;
+		if (was) {
+			return null;
+		}
 		if (type.isArray()) {
 			Object fnd;
 			try {
@@ -399,7 +442,7 @@ public class Utility extends UtilityMenuOptions {
 			return (c);
 		}
 		// noSuchConversion throws NoSuchConversionException or returns 'null' so it's castable to collection
-		return (Collection)noSuchConversion(OptionalArg.class, type, null);
+		return (Collection) noSuchConversion(OptionalArg.class, type, null);
 	}
 
 	private static boolean isCollection(Class type) {
@@ -561,6 +604,18 @@ public class Utility extends UtilityMenuOptions {
 			object = null;
 		}
 
+		if (ObjectPanel.class.isAssignableFrom(cls)) {
+			if (ReflectUtils.isCreatable(cls)) {
+				Constructor cons;
+				try {
+					cons = cls.getDeclaredConstructor();
+					cons.setAccessible(true);
+				} catch (Throwable e) {
+					e.printStackTrace();
+				}
+			}
+		}
+
 		List<Trigger> appMenuGlobalTriggers = new ArrayList<Trigger>();
 		List<Trigger> objectContextMenuTriggers = new ArrayList<Trigger>();
 
@@ -576,7 +631,10 @@ public class Utility extends UtilityMenuOptions {
 				}
 			}
 			if (isSystemPrimitive(cls)) {
-				break;
+				if (!reallySingleton) {
+					theLogger.warn("Skipping methods found in class " + cls);
+					break;
+				}
 			}
 
 			for (Method m : getAllMethods(cls, true)) {
@@ -672,10 +730,10 @@ public class Utility extends UtilityMenuOptions {
 			}
 		}
 		if (isForCheckbox && canBeGlobal) {
-			TriggerMenuFactory.addMethodAsTrig(ctx, cls, m, appMenuGlobalTriggers, wrap, ADD_ALL, "%d|%m", isStatic, true);
+			TriggerMenuFactory.addMethodAsTrig(false, ctx, cls, m, appMenuGlobalTriggers, wrap, ADD_ALL, "%d|%m", isStatic, true);
 		}
 		if (!isStatic) {
-			TriggerMenuFactory.addMethodAsTrig(ctx, cls, m, objectContextMenuTriggers, null, ADD_ALL, "%c|%m", isStatic, true);
+			TriggerMenuFactory.addMethodAsTrig(true, ctx, cls, m, objectContextMenuTriggers, null, ADD_ALL, "%c|%m", isStatic, true);
 		}
 
 	}
@@ -738,12 +796,20 @@ public class Utility extends UtilityMenuOptions {
 			}
 		}
 
+		UISalient cmi = getAnnotationOn(m, UISalient.class);
+
+		if (cmi != null) {
+			if (cmi.IsFactoryMethod()) {
+				TriggerMenuFactory.addMethodAsTrig(false, ctx, cls, m, appMenuGlobalTriggers, null, ADD_ALL, "%m", true, false);
+			}
+		}
+
 		if (totalLen == 0 && missingLen == 0) {
-			TriggerMenuFactory.addMethodAsTrig(ctx, cls, m, appMenuGlobalTriggers, null, ADD_ALL, "%d|%m", true, false);
+			TriggerMenuFactory.addMethodAsTrig(false, ctx, cls, m, appMenuGlobalTriggers, null, ADD_ALL, "%d|%m", true, false);
 			return;
 		}
+
 		if (missingLen == 0) {
-			UISalient cmi = getAnnotationOn(m, UISalient.class);
 			if (cmi != null && cmi.ResultIsSingleton()) {
 				final Object raw0 = wrap;
 				final Method m0 = m;
@@ -755,18 +821,22 @@ public class Utility extends UtilityMenuOptions {
 			}
 		}
 		if (totalLen == 1 && missingLen == 0) {
-			addMethodAsTrig(ctx, cls, m, appMenuGlobalTriggers, wrap, ADD_ALL, "%d|%m", isStatic, false);
+			if (wrap == null) {
+				// gotten below
+				// addMethodAsTrig(true, ctx, cls, m, objectContextMenuTriggers, wrap, ADD_ALL, "%c|%m", isStatic, false);
+			} else {
+				addMethodAsTrig(false, ctx, cls, m, appMenuGlobalTriggers, wrap, ADD_ALL, "%d|%m", isStatic, false);
+			}
 		}
 
 		if (Component.class.isAssignableFrom(returnType)) {
 			if (totalLen == 1) {
 				// might be a panel method
-				TriggerMenuFactory.addMethodAsTrig(ctx, cls, m, objectContextMenuTriggers, null, ADD_ALL, "%c|%m", isStatic, false);
+				TriggerMenuFactory.addMethodAsTrig(true, ctx, cls, m, objectContextMenuTriggers, null, ADD_ALL, "%c|%m", isStatic, false);
 				return;
 			}
 		}
-
-		TriggerMenuFactory.addMethodAsTrig(ctx, cls, m, objectContextMenuTriggers, null, ADD_ALL, "%c|%m", isStatic, false);
+		TriggerMenuFactory.addMethodAsTrig(true, ctx, cls, m, objectContextMenuTriggers, null, ADD_ALL, "%c|%m", isStatic, false);
 	}
 
 	private static <V extends Object> void setSingletonValue(V object, Class<V> cls) {
@@ -798,6 +868,10 @@ public class Utility extends UtilityMenuOptions {
 	}
 
 	public static boolean isSystemPrimitive(Class cls) {
+		return isSystemPrimitive(cls, false);
+	}
+
+	public static boolean isSystemPrimitive(Class cls, boolean includeClass) {
 		if (cls == null)
 			return true;
 		if (cls.isPrimitive())
@@ -808,9 +882,9 @@ public class Utility extends UtilityMenuOptions {
 			return true;
 		if (Boolean.class.isAssignableFrom(cls))
 			return true;
-		if (false && java.lang.Class.class.isAssignableFrom(cls))
+		if (includeClass && java.lang.Class.class.isAssignableFrom(cls))
 			return true;
-		if (false && java.lang.reflect.Type.class.isAssignableFrom(cls))
+		if (includeClass && java.lang.reflect.Type.class.isAssignableFrom(cls))
 			return true;
 		Package pk = cls.getPackage();
 		if (pk != null) {
@@ -832,23 +906,44 @@ public class Utility extends UtilityMenuOptions {
 	}
 
 	public static void updateToolsMenu() {
-		List<Trigger> appMenuGlobalTriggers = getAppMenuGlobalMethods();
+		final List<Trigger> appMenuGlobalTriggers = getAppMenuGlobalMethods();
 		if (toolsMenu == null)
 			return;
-		toolsMenu.removeAll();
-		TriggerMenuFactory.sortTriggers(appMenuGlobalTriggers);
-		for (Trigger tfi : appMenuGlobalTriggers) {
-			addTriggerToPoppup(toolsMenu, null, tfi);
-		}
+		Utility.invokeLater(new Runnable() {
+			@Override public void run() {
+				toolsMenu.removeAll();
+				Boolean was = disableOptionalArgs.get();
+				try {
+					disableOptionalArgs.set(true);
+					TriggerMenuFactory.sortTriggers(appMenuGlobalTriggers);
+					for (Trigger tfi : appMenuGlobalTriggers) {
+						addTriggerToPoppup(toolsMenu, null, tfi);
+					}
+				} finally {
+					disableOptionalArgs.set(was);
+				}
+			}
+		});
 	}
 
 	public static void updateLastResultsMenu() {
 		if (lastResults == null || lastResultsMenu == null)
 			return;
-		synchronized (lastResultsMenu) {
-			lastResultsMenu.removeAll();
-		}
-		TriggerMenuFactory.addMap(lastResults, lastResultsMenu);
+		Utility.invokeLater(new Runnable() {
+			@Override public void run() {
+				synchronized (lastResultsMenu) {
+					lastResultsMenu.removeAll();
+				}
+
+				Boolean was = disableOptionalArgs.get();
+				try {
+					disableOptionalArgs.set(true);
+					TriggerMenuFactory.addMap(lastResults, lastResultsMenu);
+				} finally {
+					disableOptionalArgs.set(was);
+				}
+			}
+		});
 
 	}
 
@@ -1189,31 +1284,37 @@ public class Utility extends UtilityMenuOptions {
 		return invokeOptional(obj0, method, new UtilityOptionalArgs(optionalArgSpecs));
 	}
 
-	public static <T> T recastUtil(final Object val, Class<T> objNeedsToBe, List maxCvt) throws NoSuchConversionException {
-		Object obj = val;
-		if (obj == null)
+	static <T> Object recastUtilOnly(final Object val, Class<T> objNeedsToBe, List maxCvt) throws NoSuchConversionException {
+		//Object obj = val;
+		if (val == null)
 			return null;
-		if (obj instanceof Convertable) {
-			Convertable cvt = (Convertable) obj;
+		if (val instanceof Convertable) {
+			Convertable cvt = (Convertable) val;
 			if (cvt.canConvert(objNeedsToBe)) {
 				return cvt.convertTo(objNeedsToBe);
 			}
 		}
-		if (objNeedsToBe.isInstance(obj)) {
-			return (T) obj;
+		if (val instanceof IsReference) {
+			Object obj2 = dref(val);
+			if (obj2 != val && val != null) {
+				return recastUtilOnly(obj2, objNeedsToBe, maxCvt);
+			}
 		}
-		obj = dref(val);
-		if (obj != val) {
-			Object res = recastUtil(obj, objNeedsToBe, maxCvt);
-			if (objNeedsToBe.isInstance(res))
-				return (T) res;
-			res = drefO(obj);
-			if (objNeedsToBe.isInstance(res))
-				return (T) res;
-			obj = res;
+		if (objNeedsToBe.isInstance(val)) {
+			return (T) val;
 		}
-		if (obj instanceof String) {
-			return (T) fromString((String) obj, objNeedsToBe);
+		if (val instanceof String) {
+			return (T) fromString((String) val, objNeedsToBe, maxCvt);
+		}
+		Object obj = dref1(val, false);
+		if (obj != val && obj != null) {
+			Object obj2 = recastUtilOnly(obj, objNeedsToBe, maxCvt);
+			if (obj2 != null) {
+				if (objNeedsToBe.isInstance(obj2))
+					return (T) obj2;
+				return ReflectUtils.recastRU(obj2, objNeedsToBe, maxCvt);
+			}
+			return ReflectUtils.recastRU(obj, objNeedsToBe, maxCvt);
 		}
 		return (T) obj;
 	}
@@ -1222,55 +1323,74 @@ public class Utility extends UtilityMenuOptions {
 		return DisplayType.TOSTRING == getDisplayType(type);
 	}
 
-	public static Object fromString(Object title, Class type) throws NoSuchConversionException {
+	public static <T> T recast(Object obj, Class<T> objNeedsToBe) throws NoSuchConversionException {
+		return recastUtilFirst(obj, objNeedsToBe);
+	}
+
+	public static <T> T recastCC(Object obj, Class<T> objNeedsToBe) throws ClassCastException {
+		try {
+			return (T) recastUtilFirst(obj, objNeedsToBe);
+		} catch (NoSuchConversionException e) {
+			throw new ClassCastException(e.getMessage());
+		}
+	}
+
+	public static Object fromString(Object title, Class objNeedsToBe) throws NoSuchConversionException {
+		List maxConverts = AggregateConverter.getMcvt(false);
+		List was = new ArrayList(maxConverts);
+		try {
+			return fromString(title, objNeedsToBe, maxConverts);
+		} finally {
+			AggregateConverter.setMcvt(was);
+		}
+	}
+
+	public static Object fromString(Object title, Class type, List maxCvt) throws NoSuchConversionException {
 		//List maxCvt = Converter.MCVT;
 		Class keyClass = title.getClass();
 		if (keyClass != String.class) {
 			title = makeToString(title);
-			return fromString(title, type);
+			return fromString(title, type, maxCvt);
+		}
+		if (title instanceof String) {
+			String stitle = (String) title;
+			stitle = Utility.unquote(stitle);
+			Convertable box = getTreeBoxCollection().findBoxByName(stitle);
+			if (box != null) {
+				if (box.canConvert(type))
+					return box.convertTo(type);
+			} else {
+				// trouble!?
+			}
 		}
 		ToFromKeyConverter conv = getToFromConverter(type, keyClass);
-		if (conv != null)
-			return conv.fromKey(title, type);
+		if (conv != null) {
+			try {
+				Object o = conv.fromKey(title, type);
+				if (type.isInstance(o))
+					return o;
+				return ReflectUtils.recastRU(o, type, maxCvt);
+			} catch (Exception e) {
+				printStackTrace(e);
+			}
+		}
 
 		if (!isToStringType(type)) {
-			if (title instanceof String) {
-				String stitle = (String) title;
-				Convertable box = getTreeBoxCollection().findBoxByName(stitle);
-				if (box == null) {
-					throw new NoSuchConversionException(type + " findBoxByName " + title);
-				}
-				return box.convertTo(type);
-			}
+			warn("!isToStrType=", type);
+		}
+		return convertUsingReflection(title, type);
+	}
+
+	static final String[] quotingPairs = new String[] { "\"\"", "''", "()" };
+
+	public static String unquote(String stitle) {
+		int l = stitle.length() - 1;
+		for (String ch : quotingPairs) {
+			if (ch.charAt(0) == stitle.charAt(0) && ch.charAt(1) == stitle.charAt(l))
+				return stitle.substring(1, l);
 		}
 
-		if (type == keyClass)
-			return title;
-		type = nonPrimitiveTypeFor(type);
-
-		NoSuchConversionException cce = null;
-		Class searchType = type;
-		while (searchType != null) {
-			for (Method m : searchType.getDeclaredMethods()) {
-				if (m.getReturnType() == type) {
-					Class[] pt = m.getParameterTypes();
-					if (pt != null && pt.length == 1 && Modifier.isStatic(m.getModifiers())) {
-						try {
-							if (TypeAssignable.CASTING_ONLY.declaresConverts(title, keyClass, pt[0], null) == TypeAssignable.WONT)
-								continue;
-							m.setAccessible(true);
-							return m.invoke(null, title);
-						} catch (Throwable e) {
-							cce = new NoSuchConversionException(type + " " + m.getName() + " " + title, e);
-						}
-					}
-				}
-			}
-			searchType = searchType.getSuperclass();
-		}
-		if (cce != null)
-			throw cce;
-		throw new NoSuchConversionException(type + " fromString " + title);
+		return stitle;
 	}
 
 	public static RuntimeException reThrowable_UnusedNow(Throwable e) {
@@ -1568,11 +1688,15 @@ public class Utility extends UtilityMenuOptions {
 			if (tighter != expected) {
 				lastResults.put(tighter, obj);
 			}
-			updateLastResultsMenu();
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override public void run() {
+					updateLastResultsMenu();
+				}
+			});
 		}
 	}
 
-	public static void addSubResult(Object from, Box targetBox, ActionEvent evt, Object obj, Class expected) throws PropertyVetoException {
+	public static void addSubResult(Object from, Object targetBox, ActionEvent evt, Object obj, Class expected) throws PropertyVetoException {
 		addLastResultType(obj, expected);
 		expected = nonPrimitiveTypeFor(expected);
 		if (expected == Void.class)
@@ -1610,12 +1734,12 @@ public class Utility extends UtilityMenuOptions {
 		addNonStringSubResult(targetBox, obj, expected);
 	}
 
-	public static void addNonStringSubResult(Box whereFrom, Object obj, Class expected) throws PropertyVetoException {
+	public static void addNonStringSubResult(Object whereFrom, Object obj, Class expected) throws PropertyVetoException {
 		DisplayType dt = getDisplayType(expected);
 		final DisplayType edt = dt;
 		if (dt == DisplayType.TREE) {
 			BT boxed = getTreeBoxCollection().findOrCreateBox(null, obj);
-			BoxContext bc = whereFrom.getBoxContext();
+			BoxContext bc = asBoxed(whereFrom).getBoxContext();
 			bc.contextualizeAndAttachChildBox((Box) whereFrom, (MutableBox) boxed);
 			return;
 		}
@@ -1636,7 +1760,7 @@ public class Utility extends UtilityMenuOptions {
 			getCurrentContext().showScreenBox(obj);
 		} catch (Exception e) {
 			BT boxed = getTreeBoxCollection().findOrCreateBox(obj);
-			BoxContext bc = whereFrom.getBoxContext();
+			BoxContext bc = asBoxed(whereFrom).getBoxContext();
 			JPanel pnl = boxed.getPropertiesPanel();
 			if (dt == DisplayType.FRAME) {
 				BoxPanelSwitchableView jtp = getBoxPanelTabPane();
@@ -1726,6 +1850,129 @@ public class Utility extends UtilityMenuOptions {
 		if (pe != null) {
 			return UseEditor.class;
 		}
+		return null;
+	}
+
+	public static boolean getEditsObject(Object value, Class objClass, Class comp) {
+
+		if (objClass == null)
+			objClass = value.getClass();
+
+		try {
+			Method m = comp.getMethod("editsObject", Object.class);
+			if (m != null)
+				return m.invoke(null, value) == Boolean.TRUE;
+		} catch (Throwable e) {
+		}
+		try {
+			Method m = comp.getMethod("editsClass", Class.class);
+			if (m != null)
+				return m.invoke(null, objClass) == Boolean.TRUE;
+		} catch (Throwable e) {
+		}
+		try {
+			Field f = comp.getField("EDITTYPE");
+			if (isStatic(f)) {
+				Object os = f.get(null);
+				if (typeMatches(os, value))
+					return true;
+			}
+		} catch (Throwable e) {
+		}
+
+		Class itEdits = getEditsType(comp);
+		if (itEdits != null) {
+			if (isInstance(itEdits, value))
+				return true;
+		}
+		return false;
+	}
+
+	private static boolean typeMatches(Object os, Object value) {
+		if (os instanceof Type[]) {
+			for (Type c : (Type[]) os) {
+				if (typeMatches(c, value))
+					return true;
+			}
+		} else if (os instanceof Class[]) {
+			for (Type c : (Class[]) os) {
+				if (typeMatches(c, value))
+					return true;
+			}
+		} else if (os instanceof Class) {
+			if (isInstance((Class) os, value))
+				return true;
+		} else if (os instanceof Type) {
+			if (isInstance((Type) os, value))
+				return true;
+		}
+		return false;
+	}
+
+	public static boolean isInstance(Type os, Object value) {
+		return equalTypes(value.getClass(), os);
+	}
+
+	public static boolean isInstance(Class objNeedsToBe, Object value) {
+		try {
+			Object v = recastCC(value, objNeedsToBe);
+			if (v != null) {
+				if (objNeedsToBe.isInstance(v))
+					return true;
+				return true;
+			}
+		} catch (ClassCastException nsc) {
+		}
+		return false;
+	}
+
+	public static Class getEditsType(Class comp) {
+		try {
+			Field f = comp.getField("TYPE");
+			if (isStatic(f))
+				return (Class) f.get(null);
+		} catch (SecurityException e) {
+		} catch (NoSuchFieldException e) {
+		} catch (IllegalArgumentException e) {
+		} catch (IllegalAccessException e) {
+		}
+		try {
+			Field f = comp.getField("EDITTYPE");
+			if (isStatic(f)) {
+				Object os = f.get(null);
+				if (os instanceof Class) {
+					return (Class) os;
+				}
+				if (os instanceof Class[]) {
+					return ((Class[]) os)[0];
+				}
+			}
+		} catch (SecurityException e) {
+		} catch (NoSuchFieldException e) {
+		} catch (IllegalArgumentException e) {
+		} catch (IllegalAccessException e) {
+		}
+		try {
+			Type gtype = comp.getMethod("getClassOfBox").getGenericReturnType();
+			Class panelFor = getTypeClass(gtype, Class.class);
+			if (panelFor != null)
+				return panelFor;
+		} catch (SecurityException e) {
+		} catch (IllegalArgumentException e) {
+		} catch (NoSuchMethodException e) {
+		}
+		String cn = comp.getCanonicalName();
+		if (cn.endsWith("Editor")) {
+			cn = cn.substring(0, cn.length() - 6);
+			try {
+				Class panelFor = Class.forName(cn);
+				if (panelFor != null)
+					return panelFor;
+			} catch (ClassNotFoundException e) {
+			} catch (LinkageError e) {
+			}
+		}
+		java.beans.SimpleBeanInfo sbi = null;
 		return null;
 	}
 
@@ -1957,7 +2204,7 @@ public class Utility extends UtilityMenuOptions {
 		return true;
 	}
 
-	public static BT asWrapped(Object pojo) {
+	@ConverterMethod public static BT asWrapped(Object pojo) {
 		if (pojo instanceof BT)
 			return (BT) pojo;
 		if (pojo instanceof IGetBox)
@@ -1973,7 +2220,7 @@ public class Utility extends UtilityMenuOptions {
 		return uiObjects.findOrCreateBox(title, pojo);
 	}
 
-	public static Box asBoxed(Object pojo) {
+	@ConverterMethod public static Box asBoxed(Object pojo) {
 		if (pojo instanceof Box)
 			return (Box) pojo;
 		if (pojo instanceof IGetBox.NotWrapper)
@@ -2010,24 +2257,34 @@ public class Utility extends UtilityMenuOptions {
 	 * public static POJOBox addObject(Object obj) { return addObject(obj,
 	 * false); }
 	 */
-	public static UserResult showError(DisplayContext context, String msg, Throwable error) {
+	public static UserResult showError(final DisplayContext context, String msg, final Throwable error) {
+		final UserResult[] res = new UserResult[1];
 		if (msg == null)
 			msg = error.getMessage();
+		final String msg0 = msg;
 		try {
-			if (context == null) {
-				JPanel pnl = new org.appdapter.gui.swing.ErrorDialog(msg, error);
-				pnl.show();
-				return asUserResult(pnl);
-			} else {
-				browserPanel.showScreenBox(error); // @temp
-				return null;
-			}
-		} catch (Throwable err2) {
-			ErrorDialog pnl = new ErrorDialog("A new error occurred while trying to display the original error '" + error + "'!", err2);
-			pnl.show();
-			return asUserResult(pnl);
+			SwingUtilities.invokeAndWait(new Runnable() {
+				@Override public void run() {
+					try {
+						if (context == null) {
+							JPanel pnl = new org.appdapter.gui.swing.ErrorDialog(msg0, error);
+							pnl.show();
+							res[0] = asUserResult(pnl);
+						} else {
+							browserPanel.showScreenBox(error); // @temp
+							res[0] = null;
+						}
+					} catch (Throwable err2) {
+						ErrorDialog pnl = new ErrorDialog("A new error occurred while trying to display the original error '" + error + "'!", err2);
+						pnl.show();
+						res[0] = asUserResult(pnl);
+					}
+				}
+			});
+		} catch (Throwable e) {
 		}
 
+		return res[0];
 	}
 
 	public static String getDefaultName(Object object) {
@@ -2039,19 +2296,20 @@ public class Utility extends UtilityMenuOptions {
 	}
 
 	public static String getUniqueName(Object object) {
-		return getUniqueName(object, false);
+		return getUniqueName(object, getTreeBoxCollection(), false);
 	}
 
-	public static String getUniqueName(Object object, boolean mayCreate) {
+	public static String getUniqueName(Object object, NamedObjectCollection noc, boolean mayCreate) {
 		String title = hasDefaultName(object);
 		if (isTitled(title))
 			return title;
-		NamedObjectCollection noc = getTreeBoxCollection();
-		BT newBox;
+		BT newBox = null;
 		if (mayCreate) {
 			newBox = noc.findOrCreateBox(object);
 		} else {
-			newBox = noc.findBoxByObject(object);
+			if (noc != uiObjects) {
+				newBox = noc.findBoxByObject(object);
+			}
 		}
 		if (newBox != null) {
 			title = newBox.getShortLabel();
@@ -2061,59 +2319,20 @@ public class Utility extends UtilityMenuOptions {
 			Map<String, BT> map = noc.getNameToBoxIndex();
 			title = generateUniqueName_sug(object, null, map);
 			if (isTitled(title))
-				return "'" + title + "'";
+				return title;//"'" + title + "'";
 		}
 		return title;
 	}
 
 	public static boolean isTitled(String title) {
-		return title != null && title != NamedObjectCollection.MISSING_COMPONENT && !title.equals("<null>") && title.length() > 0;
+		return title != null && title != NamedObjectCollection.MISSING_COMPONENT && !title.equalsIgnoreCase("<null>") && title.length() > 0;
 	}
 
-	public static String getUniqueName(Object object0, NamedObjectCollection noc) {
-
-		Object object = object0;
-
-		if (object == null) {
-			object = dref(object, false);
-		}
-
-		Object boxed = object0;
-
-		object = dref(object, false);
-		String title = hasDefaultName(object);
-		if (title == null) {
-			BT newBox = null;
-			if (boxed instanceof BT) {
-				newBox = (BT) boxed;
-			} else if (object0 instanceof BT) {
-				newBox = (BT) object0;
-			}
-			if (newBox != null) {
-				title = newBox.getShortLabel();
-			} else {
-				if (noc != null) {
-					title = noc.getTitleOf(object);
-				}
-			}
-			if (!isTitled(title)) {
-				title = getUniqueName(object);
-			}
-		}
+	public static String getUniqueName(Object object, NamedObjectCollection noc) {
+		String title = getUniqueName(object, noc, true);
+		if (isTitled(title))
+			return title;
 		return title;
-	}
-
-	public static String getEasyDefaultName(Object object) {
-		if (object == null)
-			return "<null>";
-		Class type = object.getClass();
-		if (type == Class.class)
-			return ((Class) object).getName();
-		if (type == String.class)
-			return ((String) object);
-		if (isToStringType(type))
-			return makeToString(object);
-		return null;
 	}
 
 	public static String makeToString(Object object) {
@@ -2147,6 +2366,8 @@ public class Utility extends UtilityMenuOptions {
 	}
 
 	public static ToFromKeyConverter getToFromStringConverter(Class valueClazz) {
+		if (valueClazz == null || valueClazz == Object.class)
+			return FROM_STRING_NOT_SPECIALIZED;
 		return getToFromConverter(valueClazz, String.class);
 	}
 
@@ -2154,6 +2375,9 @@ public class Utility extends UtilityMenuOptions {
 		Map<Class, ToFromKeyConverter> toFrmKeyCnv = getKeyConvMap(key, false);
 		if (toFrmKeyCnv == null)
 			return null;
+		if (valueClazz == null || valueClazz == Object.class) {
+			warn("to-from=", valueClazz, key);
+		}
 		synchronized (toFrmKeyCnv) {
 			for (Class c : toFrmKeyCnv.keySet()) {
 				if (c.isAssignableFrom(valueClazz)) {
@@ -2167,15 +2391,24 @@ public class Utility extends UtilityMenuOptions {
 	public static String hasDefaultName(Object object) {
 		if (object == null)
 			return "<null>";
+
 		Class type = object.getClass();
+
 		if (type == Class.class)
 			return getSpecialClassName(((Class) object));
-		if (type == String.class)
-			return ((String) object);
-		if (object instanceof BT) {
-			return ((BT) object).getShortLabel();
-		}
+
 		String title;
+
+		if (type == String.class)
+			return quoteString((String) object, "\"");
+
+		if (object instanceof BT) {
+			title = ((BT) object).getShortLabel();
+			if (isTitled(title)) {
+				return title;
+			}
+		}
+
 		if (isToStringType(type)) {
 			title = makeToString(object);
 			if (isTitled(title)) {
@@ -2205,16 +2438,20 @@ public class Utility extends UtilityMenuOptions {
 				}
 			}
 		}
-		if (object != null) {
-			Object object2 = dref(object);
-			if (object2 != null && object2 != object) {
-				title = hasDefaultName(object2);
-				if (isTitled(title)) {
-					return title;
-				}
+
+		Object object2 = dref1(object, false);
+		if (object2 != null && object2 != object) {
+			title = hasDefaultName(object2);
+			if (isTitled(title)) {
+				return title;
 			}
 		}
+
 		return null;
+	}
+
+	public static String quoteString(String text, String quote) {
+		return quote + (text.replace("\\", "\\\\").replace(quote, "\\" + quote)) + quote;
 	}
 
 	static public org.appdapter.gui.api.DisplayType getDisplayType(Class expected) {
@@ -2222,6 +2459,12 @@ public class Utility extends UtilityMenuOptions {
 			return DisplayType.TOSTRING;
 		}
 		if (Number.class.isAssignableFrom(expected)) {
+			return DisplayType.TOSTRING;
+		}
+		if (Boolean.class.isAssignableFrom(expected)) {
+			return DisplayType.TOSTRING;
+		}
+		if (Character.class.isAssignableFrom(expected)) {
 			return DisplayType.TOSTRING;
 		}
 		if (Enum.class.isAssignableFrom(expected)) {
@@ -2238,6 +2481,9 @@ public class Utility extends UtilityMenuOptions {
 		}
 		if (expected == Boolean.class) {
 			return DisplayType.TOSTRING;
+		}
+		if (expected == Object.class) {
+			return DisplayType.PANEL;
 		}
 		ToFromKeyConverter cvt = getToFromStringConverter(expected);
 		if (cvt != null) {
@@ -2265,13 +2511,41 @@ public class Utility extends UtilityMenuOptions {
 		return dref(value, false);
 	}
 
-	public static Object dref(Object value, boolean onlyBTAndPanels) {
-		return dref(value, value, 4, onlyBTAndPanels);
+	public static Object drefJ(Object value) {
+		Object o = dref(value, false);
+		if (o == value) {
+			if (o instanceof JComponent) {
+				o = ((JComponent) o).getParent();
+				if (o != null && o != value) {
+					o = drefJ(o);
+				}
+			}
+		}
+		return o;
 	}
 
-	public static Object dref(Object value, Object onNull, int depth, boolean onlyBTAndPanels) {
+	public static Object dref(Object value, boolean onlyReferenceHolders) {
+		return dref(value, value, 9, onlyReferenceHolders);
+	}
+
+	public static Object dref1(Object value, boolean onlyReferenceHolders) {
+		return dref(value, value, 0, onlyReferenceHolders);
+	}
+
+	public static Object dref(Object value, Object onNull, int depth, boolean onlyBTAndPanelsAsReferenceHolders) {
 		if (value == null)
 			return onNull;
+
+		boolean wasRealDeref = false;
+		boolean onlyDeref1 = depth == 0;
+		if (value instanceof Convertable) {
+			onlyDeref1 = true;
+			// maybe should not dereference?
+			if (onlyBTAndPanelsAsReferenceHolders && !(value instanceof BT)) {
+				warn("Dref-ing a convertable ", value);
+			}
+		}
+
 		if (depth < 0) {
 			return value;
 		}
@@ -2280,15 +2554,21 @@ public class Utility extends UtilityMenuOptions {
 		try {
 			if (value instanceof JComponent && value instanceof GetObject) {
 				derefd = ((GetObject) value).getValue();
+				wasRealDeref = true;
+			} else if (value instanceof IsReference) {
+				derefd = ((IsReference) value).getValue();
+				wasRealDeref = true;
 			} else if (value instanceof DefaultMutableTreeNode) {
 				derefd = ((DefaultMutableTreeNode) value).getUserObject();
+				wasRealDeref = true;
 			} else if (value instanceof PropertyEditor) {
 				derefd = ((PropertyEditor) value).getValue();
+				wasRealDeref = true;
 			} else if (value instanceof BT) {
 				derefd = ((BT) value).getValue();
 			} else if (value instanceof IGetBox) {
 				derefd = ((IGetBox) value).getBox();
-			} else if (!onlyBTAndPanels) {
+			} else if (!onlyBTAndPanelsAsReferenceHolders) {
 				if (value instanceof GetObject) {
 					derefd = ((GetObject) value).getValue();
 				} else if (value instanceof WrapperValue) {
@@ -2298,8 +2578,16 @@ public class Utility extends UtilityMenuOptions {
 		} catch (Throwable t) {
 
 		}
-		if (derefd != null && derefd != value) {
-			value = dref(derefd, derefd, --depth, onlyBTAndPanels);
+		if (wasRealDeref && !onlyDeref1) {
+			if (derefd != null && derefd != value) {
+				return dref(derefd, value, depth, onlyBTAndPanelsAsReferenceHolders);
+			} else {
+				derefd = value;
+			}
+		}
+
+		if (derefd != null && derefd != value && !onlyDeref1) {
+			value = dref(derefd, derefd, --depth, onlyBTAndPanelsAsReferenceHolders);
 		}
 		if (value == null)
 			return onNull;
@@ -2425,7 +2713,7 @@ public class Utility extends UtilityMenuOptions {
 					//TriggerMenuFactory.addTriggersForObjectInstanceMaster(ctx, cls, tgs, poj, ADD_ALL, menuFmt, false);
 					Object also = dref(poj);
 					//if (also != null && also != poj) {
-					TriggerMenuFactory.addTriggersForObjectInstanceMaster(ctx, also.getClass(), tgs, also, ADD_ALL, menuFmt, false);
+					TriggerMenuFactory.addTriggersForObjectInstanceMaster(false, ctx, also.getClass(), tgs, also, ADD_ALL, menuFmt, false);
 					//}
 					//Object also2 = drefO(poj);
 					//if (also2 != null && also2 != poj && also2 != also) {
@@ -2656,11 +2944,12 @@ public class Utility extends UtilityMenuOptions {
 				if (skipStringables && (pt == null || (isToStringType(pt) || pt == Class.class)))
 					continue;
 				Object v = null;
+				Throwable why = null;
 				if (pd instanceof PropertyDescriptorForField) {
 					try {
 						v = ((PropertyDescriptorForField) pd).getFieldValue(object);
 					} catch (Throwable t) {
-						t.printStackTrace();
+						why = t;
 					}
 				} else {
 					if (pd == null)
@@ -2668,6 +2957,7 @@ public class Utility extends UtilityMenuOptions {
 					Method rm = pd.getReadMethod();
 					if (rm == null)
 						continue;
+
 					Class rtc = rm.getReturnType();
 					if (Component.class.isAssignableFrom(rtc))
 						continue;
@@ -2675,12 +2965,18 @@ public class Utility extends UtilityMenuOptions {
 						rm.setAccessible(true);
 						v = rm.invoke(object);
 					} catch (Throwable e) {
-						e.printStackTrace();
+						why = e;
 					}
 				}
 
 				if (v == null && skipNulls)
 					continue;
+				if (why instanceof InvocationTargetException) {
+					why = why.getCause();
+				}
+				if (v == null)
+					if (why instanceof RuntimeException)
+						continue;
 				showProps.put(pd.getName(), v);
 
 			}
@@ -2761,6 +3057,7 @@ public class Utility extends UtilityMenuOptions {
 				registerPanel(ModelAsTurtleEditor.class, Model.class);
 
 				unqueueFeatures();
+				runLoadComplete();
 			}
 		}.start();
 
@@ -2791,11 +3088,22 @@ public class Utility extends UtilityMenuOptions {
 
 	}
 
-	public static <T> T recastUtil(Object obj, Class<T> objNeedsToBe) throws NoSuchConversionException {
+	private static <T> T recastUtilFirst(Object obj, Class<T> objNeedsToBe) throws NoSuchConversionException {
 		List maxConverts = AggregateConverter.getMcvt();
 		List was = new ArrayList(maxConverts);
 		try {
-			return recastUtil(obj, objNeedsToBe, maxConverts);
+			try {
+				Object ret = recastUtilOnly(obj, objNeedsToBe, maxConverts);
+				if (ret != null) {
+					if (objNeedsToBe.isInstance(ret))
+						return (T) ret;
+					return (T) ReflectUtils.recastRU(ret, objNeedsToBe, maxConverts);
+				}
+			} catch (Throwable t) {
+
+			}
+			return (T) ReflectUtils.recastRU(obj, objNeedsToBe, maxConverts);
+
 		} finally {
 			AggregateConverter.setMcvt(was);
 		}
@@ -2807,6 +3115,8 @@ public class Utility extends UtilityMenuOptions {
 	}
 
 	public static HashSet<Class> localInterfaces = new HashSet<Class>();
+	private static boolean isLoadComplete = false;
+	private static List<Runnable> onLoadComplete = new LinkedList<Runnable>();
 	static {
 		localInterfaces.add(Set.class);
 		localInterfaces.add(List.class);
@@ -2834,24 +3144,6 @@ public class Utility extends UtilityMenuOptions {
 		PromiscuousClassUtilsA.ensureInstalled();
 		registerEditors();
 		setBeanInfoSearchPath();
-	}
-
-	public static <T> T recast(Object obj, Class<T> objNeedsToBe) throws NoSuchConversionException {
-		List maxConverts = AggregateConverter.getMcvt();
-		List was = new ArrayList(maxConverts);
-		try {
-			return recastUtil(obj, objNeedsToBe, maxConverts);
-		} finally {
-			AggregateConverter.setMcvt(was);
-		}
-	}
-
-	public static <T> T recastCC(Object obj, Class<T> objNeedsToBe) throws ClassCastException {
-		try {
-			return recast(obj, objNeedsToBe);
-		} catch (NoSuchConversionException e) {
-			throw new ClassCastException(e.getMessage());
-		}
 	}
 
 	public static Box asBox(Object b, ActionEvent e) {
@@ -2883,129 +3175,7 @@ public class Utility extends UtilityMenuOptions {
 
 	}
 
-	final static PopupForCell POPUP_FOR_CELL = new PopupForCell();
-
-	public static final class PopupForCell extends MouseAdapter {
-		public void mouseClicked(MouseEvent e) {
-			mouseEvent(e);
-		}
-
-		public void mouseReleased(MouseEvent e) {
-			mouseEvent(e);
-		}
-
-		private void mouseEvent(MouseEvent e) {
-			JTable source = (JTable) e.getSource();
-			int row = source.rowAtPoint(e.getPoint());
-			int column = source.columnAtPoint(e.getPoint());
-
-			mouseEvent(e, source, row, column);
-		}
-
-		private void mouseEvent(MouseEvent e, JTable source, int row, int column) {
-
-			if (!source.isRowSelected(row)) {
-				source.changeSelection(row, column, false, false);
-			}
-
-			if (e.isPopupTrigger()) {
-				int columns = source.getColumnCount();
-				Object cellSubBox = source.getValueAt(row, column);
-				Object rowObject = null;
-				TableModel tm = source.getModel();
-				if (tm instanceof ListModel) {
-					ListModel lm = (ListModel) tm;
-					rowObject = lm.getElementAt(row);
-				}
-				if (e.isShiftDown() || columns < 2) {
-					rowObject = dref(cellSubBox);
-				}
-
-				if (rowObject == null) {
-					Object o0 = dref(source.getValueAt(row, 0));
-					Object oN = dref(source.getValueAt(row, columns - 1));
-					rowObject = bestCandidate(cellSubBox, o0, oN);
-				}
-				Utility.showPopup(e, cellSubBox, rowObject);
-			}
-		}
-
-	}
-
-	static public Object bestCandidate(final Object... objs) {
-		Object[] sorted = objs.clone();
-		Sort.quicksort(sorted, new Compare() {
-
-			@Override public int doCompare(Object arg0, Object arg1) {
-				if (arg0 == arg1) {
-					return 0;
-				}
-				if (arg0 == null) {
-					return 1;
-				}
-				if (arg1 == null) {
-					return -1;
-				}
-				Class c0 = arg0.getClass();
-				Class c1 = arg1.getClass();
-				if (c0 != c1) {
-					int r0 = rateClass(c0);
-					int r1 = rateClass(c1);
-					if (r0 != r1) {
-						return r1 - r0;
-					}
-				}
-				return indexOf(objs, arg0) - indexOf(objs, arg1);
-
-			}
-
-			protected int indexOf(Object[] objs, Object arg1) {
-				int index = 0;
-				for (Object o : objs) {
-					if (o == arg1)
-						return index;
-					index++;
-				}
-				return -1;
-			}
-
-			protected int rateClass(Class<? extends Object> class1) {
-				int rate = -1;
-				while (class1 != null) {
-					if (class1 == Object.class || class1 == Number.class)
-						break;
-					rate++;
-					if (class1.isAnonymousClass()) {
-						rate++;
-					}
-					class1 = class1.getSuperclass();
-				}
-				return rate;
-			}
-		});
-		Object o0 = objs[0];
-		Object o1 = sorted[0];
-		if (o1 != o0) {
-			return o1;
-		}
-		if (false)
-			return new OptionalArgFromCollectionAndConvertor(sorted, null, true);
-		return o0;
-	}
-
-	public static void showPopup(MouseEvent e, Object cellSubBox, Object rowObject) {
-
-		if (rowObject == null) {
-			rowObject = cellSubBox;
-		}
-		if (rowObject != null) {
-
-			JPopupMenu cellPopMenu = TriggerMenuFactory.buildPopupMenu(Arrays.asList(cellSubBox, rowObject), e);
-			if (cellPopMenu != null) {
-				cellPopMenu.show(e.getComponent(), e.getX(), e.getY());
-			}
-		}
-	}
+	final static TriggerMouseAdapter POPUP_FOR_CELL = new TriggerMouseAdapter();
 
 	@UISalient public static Class[] getCreatableSubclasses(Class ancestor) {
 		ArrayList<Class> clzs = new ArrayList<Class>();
@@ -3037,4 +3207,324 @@ public class Utility extends UtilityMenuOptions {
 	static public Collection<AddTabFrames> getTabFrameAdders() {
 		return copyOf(Utility.addTabFramers);
 	}
+
+	public static <T> T invokeAndWait(final Callable<T> callable) {
+		final Object[] res = new Object[1];
+		final Throwable[] ex = new Throwable[1];
+		try {
+			if (EventQueue.isDispatchThread()) {
+				return callable.call();
+			}
+			SwingUtilities.invokeAndWait(new Runnable() {
+				@Override public void run() {
+					try {
+						res[0] = callable.call();
+					} catch (Throwable e) {
+						ex[0] = e;
+					}
+				}
+			});
+			if (ex[0] != null)
+				throw ex[0];
+		} catch (Error e) {
+			throw e;
+		} catch (RuntimeException e) {
+			throw e;
+		} catch (Throwable e) {
+			throw new RuntimeException(e);
+		}
+		return (T) res[0];
+	}
+
+	public static void invokeAndWait(final Runnable runnable) {
+
+		if (EventQueue.isDispatchThread()) {
+			runNow(runnable);
+			return;
+		}
+		final Throwable[] ex = new Throwable[1];
+		try {
+			SwingUtilities.invokeAndWait(new Runnable() {
+				@Override public void run() {
+					try {
+						runnable.run();
+					} catch (Throwable e) {
+						ex[0] = e;
+					}
+				}
+			});
+			if (ex[0] != null)
+				throw ex[0];
+		} catch (Error e) {
+			throw e;
+		} catch (RuntimeException e) {
+			throw e;
+		} catch (Throwable e) {
+			throw new RuntimeException(e);
+		}
+		return;
+	}
+
+	public static void invokeLater(Runnable runnable) {
+		SwingUtilities.invokeLater(runnable);
+	}
+
+	protected static void runLoadComplete() {
+		LinkedList<Runnable> todo = new LinkedList<Runnable>();
+		synchronized (onLoadComplete) {
+			isLoadComplete = true;
+			todo.addAll(onLoadComplete);
+			onLoadComplete.clear();
+		}
+		for (Runnable td : todo) {
+			runNow(td);
+		}
+
+	}
+
+	private static void runNow(Runnable td) {
+		try {
+			td.run();
+		} catch (Throwable t) {
+			printStackTrace(t);
+		}
+	}
+
+	public static void invokeAfterLoader(Runnable runnable) {
+		synchronized (onLoadComplete) {
+			if (!isLoadComplete) {
+				onLoadComplete.add(runnable);
+				return;
+			}
+		}
+		runNow(runnable);
+	}
+
+	static {
+		if (false)
+			invokeAfterLoader(new Runnable() {
+				@Override public void run() {
+					JFrame frame = Utility.getAppFrame();
+					Component glassPane = frame.getGlassPane();
+					JPopupMenu popup = new JPopupMenu();
+					popup.add(new JMenuItem("Dogs"));
+					popup.add(new JMenuItem("Cats"));
+					popup.add(new JMenuItem("Mass Hysteria"));
+					RightClickGlassPane rc = new RightClickGlassPane(frame.getContentPane(), popup);
+					//glassPane.addMouseListener(rc);
+					frame.setGlassPane(rc);
+					rc.setVisible(true);
+				}
+			});
+
+	}
+
+	static boolean isNeedToRedispatch() {
+		return needToRedispatch;
+	}
+
+	static boolean needToRedispatch = true;
+
+	static public class RightClickGlassPane extends JComponent implements MouseListener, MouseMotionListener, FocusListener, KeyListener {
+
+		private Container contentPane;
+		// trigger for redispatching (allows external control)
+		boolean inDrag = false;
+		private JPopupMenu popup;
+
+		public RightClickGlassPane(Container contentPane, JPopupMenu menu) {
+			addMouseListener(this);
+			addMouseMotionListener(this);
+			this.contentPane = contentPane;
+			this.popup = menu;
+		}
+
+		public void setVisible(boolean v) {
+			// Make sure we grab the focus so that key events don't go astray.
+			if (v)
+				requestFocus();
+			super.setVisible(v);
+		}
+
+		public void paint(Graphics g) {
+			//super.paint(g);
+		}
+
+		// We only need to redispatch if we're not visible, but having full control
+		// over this might prove handy.
+		public void setNeedToRedispatch(boolean need) {
+			needToRedispatch = need;
+		}
+
+		/*
+		 * (Based on code from the Java Tutorial) We must forward at least the mouse
+		 * drags that started with mouse presses over the check box. Otherwise, when
+		 * the user presses the check box then drags off, the check box isn't
+		 * disarmed -- it keeps its dark gray background or whatever its L&F uses to
+		 * indicate that the button is currently being pressed.
+		 */
+		public void mouseDragged(MouseEvent e) {
+			if (isNeedToRedispatch())
+				redispatchMouseEvent(e);
+		}
+
+		public void mouseMoved(MouseEvent e) {
+			if (isNeedToRedispatch())
+				redispatchMouseEvent(e);
+		}
+
+		public void mouseClicked(MouseEvent e) {
+			if (isNeedToRedispatch())
+				redispatchMouseEvent(e);
+		}
+
+		public void mouseEntered(MouseEvent e) {
+			if (isNeedToRedispatch())
+				redispatchMouseEvent(e);
+		}
+
+		public void mouseExited(MouseEvent e) {
+			if (isNeedToRedispatch())
+				redispatchMouseEvent(e);
+		}
+
+		public void mousePressed(MouseEvent e) {
+			if (isNeedToRedispatch())
+				redispatchMouseEvent(e);
+		}
+
+		public void mouseReleased(MouseEvent e) {
+			if (isNeedToRedispatch()) {
+				redispatchMouseEvent(e);
+				inDrag = false;
+			}
+		}
+
+		// Once we have focus, keep it if we're visible
+		public void focusLost(FocusEvent fe) {
+			if (isVisible())
+				requestFocus();
+		}
+
+		public void focusGained(FocusEvent fe) {
+		}
+
+		private void redispatchMouseEvent(MouseEvent e) {
+			JMenuBar menuBar = Utility.getMenuBar();
+			boolean inButton = false;
+			boolean inMenuBar = false;
+			Point glassPanePoint = e.getPoint();
+			Component component = null;
+			Container container = contentPane;
+			Point containerPoint = SwingUtilities.convertPoint(this, glassPanePoint, contentPane);
+			int eventID = e.getID();
+
+			if (containerPoint.y < 0) {
+				inMenuBar = true;
+				container = menuBar;
+				containerPoint = SwingUtilities.convertPoint(this, glassPanePoint, menuBar);
+				testForDrag(eventID);
+			}
+
+			//XXX: If the event is from a component in a popped-up menu,
+			//XXX: then the container should probably be the menu's
+			//XXX: JPopupMenu, and containerPoint should be adjusted
+			//XXX: accordingly.
+			component = SwingUtilities.getDeepestComponentAt(container, containerPoint.x, containerPoint.y);
+			// if it's a pop up
+
+			if (component == null) {
+				return;
+			} else {
+				inButton = true;
+				testForDrag(eventID);
+			}
+
+			boolean isPopupTrigger = e.isPopupTrigger();
+			Point componentPoint = SwingUtilities.convertPoint(this, glassPanePoint, component);
+			MouseEvent ev = new MouseEvent(component, eventID, e.getWhen(), e.getModifiers(), componentPoint.x, componentPoint.y, e.getClickCount(), isPopupTrigger);
+
+			if (inMenuBar || inButton || inDrag || true) {
+				component.dispatchEvent(ev);
+			}
+			if (ev.isConsumed())
+				return;
+
+			if (isPopupTrigger) {
+
+				// show the pop up and return
+				JPopupMenu popupMenu = new JPopupMenu();
+				popupMenu.add("" + component);
+				popupMenu.addSeparator();
+				Object v = drefJ(component);
+				if (v != component) {
+					popupMenu.add("" + v);
+				}
+				popupMenu.addSeparator();
+				popupMenu.add(popup);
+				popupMenu.addSeparator();
+				popupMenu.show(e.getComponent(), e.getX(), e.getY());
+			}
+		}
+
+		private void redispatchMouseEvent(MouseEvent e, boolean repaint) {
+
+			// if it's a pop up
+			if (e.isPopupTrigger()) {
+				// show the pop up and return
+				//makePopupFor(e.getComponent());
+				popup.show(e.getComponent(), e.getX(), e.getY());
+
+			} else {
+				// since it's not a pop up we need to redispatch it.
+				// get the mouse click point relative to the content pane 
+				Point containerPoint = SwingUtilities.convertPoint(this, e.getPoint(), contentPane);
+
+				// find the component that is under this point 
+				Component component = SwingUtilities.getDeepestComponentAt(contentPane, containerPoint.x, containerPoint.y);
+
+				// return if nothing was found
+				if (component == null) {
+					return;
+				}
+
+				// convert point relative to the target component 
+				Point componentPoint = SwingUtilities.convertPoint(this, e.getPoint(), component);
+
+				// redispatch the event	
+				component.dispatchEvent(new MouseEvent(component, e.getID(), e.getWhen(), e.getModifiers(), componentPoint.x, componentPoint.y, e.getClickCount(), e.isPopupTrigger()));
+			}
+		}
+
+		private void testForDrag(int eventID) {
+			if (eventID == MouseEvent.MOUSE_PRESSED) {
+				inDrag = true;
+			}
+		}
+
+		@Override public void keyTyped(KeyEvent e) {
+			redispatchKeyEvent(e);
+
+		}
+
+		@Override public void keyPressed(KeyEvent e) {
+			redispatchKeyEvent(e);
+
+		}
+
+		@Override public void keyReleased(KeyEvent e) {
+			redispatchKeyEvent(e);
+
+		}
+
+		private void redispatchKeyEvent(KeyEvent e) {
+			contentPane.dispatchEvent(e);
+		}
+
+	}
+
+	public static boolean isSideEffectSafe(Class declaringClass) {
+		return false;
+	}
+
 }

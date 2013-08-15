@@ -23,6 +23,7 @@ import java.util.Comparator;
 import java.util.Map;
 
 import javax.swing.AbstractAction;
+import javax.swing.JPopupMenu;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
@@ -42,13 +43,15 @@ import org.appdapter.gui.api.GetSetObject;
 import org.appdapter.gui.api.NamedObjectCollection;
 import org.appdapter.gui.api.ScreenBoxTreeNode;
 import org.appdapter.gui.browse.Utility;
+import org.appdapter.gui.trigger.PopupAdder;
+import org.appdapter.gui.trigger.TriggerAdder;
 import org.appdapter.gui.trigger.TriggerPopupMenu;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
 @SuppressWarnings("serial")
-abstract public class AbstractScreenBoxTreeNodeImpl extends DefaultMutableTreeNode implements GetSetObject, UIProvider, DisplayContextProvider, DisplayContext {
+abstract public class AbstractScreenBoxTreeNodeImpl extends DefaultMutableTreeNode implements GetSetObject, UIProvider, PopupAdder, DisplayContextProvider, DisplayContext {
 
 	abstract public String toString();
 
@@ -291,7 +294,7 @@ abstract public class AbstractScreenBoxTreeNodeImpl extends DefaultMutableTreeNo
 		return getLocalBoxedChildren().getTitleOf(value);
 	}
 
-	public void addExtraTriggers(TriggerPopupMenu popup) {
+	public void addLocalContributions(JPopupMenu popup) {
 		if (children != null && children.size() > 0) {
 			popup.add(new AbstractAction("Prune children") {
 

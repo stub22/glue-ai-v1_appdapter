@@ -14,20 +14,29 @@ import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.MenuElement;
 
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.GetSetObject;
+import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.trigger.TriggerMenuFactory;
+import org.appdapter.gui.trigger.TriggerMenuFactory.JMenuWithPath;
 
-public class SafeJMenu extends JMenu implements UISwingReplacement, GetSetObject {
+public class SafeJMenu extends JMenu implements UISwingReplacement, GetSetObject, IsReference {
 
 	//It also looks better if you're ignoring case sensitivity:
-	protected static Comparator nodeComparator = new TriggerMenuFactory.TriggerSorter();
+	protected static Comparator nodeComparator = new TriggerMenuFactory.TriggerSorter() {
+		public int compare(Object o1, Object o2) {
+			return super.compare(o1, o2);
+		}
+	};
 
 	ArrayList<Component> mcomps = new ArrayList<Component>();
 
 	@UISalient
 	public Object userObject;
+
+	private SafeJMenu moreMenu;
 
 	public SafeJMenu(boolean iamObject, String text, Object target) {
 		super(text);
@@ -50,7 +59,13 @@ public class SafeJMenu extends JMenu implements UISwingReplacement, GetSetObject
 
 	final @Override public Component add(Component c) {
 		ensureUnequelyNamed(c);
-		Component r = addSorted(c, -1);
+		Component r = null;
+		if (c instanceof MenuElement) {
+			r = addSorted((MenuElement) c, -1);
+		} else {
+			warn("C not c" + c);
+			r = super.add(c);
+		}
 		ensureFoundNamed(c);
 		return r;
 	}
@@ -67,7 +82,13 @@ public class SafeJMenu extends JMenu implements UISwingReplacement, GetSetObject
 	 */
 	final public Component add(Component c, int index) {
 		ensureUnequelyNamed(c);
-		Component r = super.add(c, index);
+		Component r = null;
+		if (c instanceof MenuElement) {
+			r = addSorted((MenuElement) c, index);
+		} else {
+			warn("C not c" + c);
+			r = super.add(c, index);
+		}
 		ensureFoundNamed(c);
 		return r;
 	}
@@ -97,27 +118,47 @@ public class SafeJMenu extends JMenu implements UISwingReplacement, GetSetObject
 	}
 
 	protected void addImpl(Component comp, Object constraints, int index) {
+		warn("calling addImpl");
 		mcomps.add(index, comp);
 		super.addImpl(comp, constraints, index);
 	}
 
 	@Override public void addSeparator() {
 		ensureSafePopupMenuCreated();
-		//super.addSeparator();
+		try {
+			//super.addSeparator();
+		} catch (Throwable t) {
+		}
 	}
 
-	final public <T> T addSorted(Component newChild, int childIndex) {
-		int last = getComponentCount();
-
+	final public <T> T addSorted(MenuElement newChild, int childIndex) {
+		int last = getMenuComponentCount();
+		Component c = newChild.getComponent();
+		if (last > 20 && (!(c instanceof JMenuWithPath))) {
+			// make a submenu
+			return (T) getMoreMenu().add(newChild.getComponent());
+		}
 		if (childIndex <= 0) {
 			int newchildIndex = findBestLocation(newChild);
+			if (newchildIndex < last) {
+				childIndex = newchildIndex;
+			}
 		} else {
 		}
-		return (T) addSuper((Component) newChild, childIndex);
+
+		return (T) addSuper(newChild, childIndex);
+	}
+
+	private SafeJMenu getMoreMenu() {
+		if (moreMenu == null) {
+			moreMenu = new SafeJMenu(true, "More... ", userObject);
+		}
+		addSuper((SafeJMenu) moreMenu, 0);
+		return this.moreMenu;
 	}
 
 	private int findBestLocation(Object mi) {
-		Component[] comps = getComponents();
+		Component[] comps = getMenuComponents();
 		int max = comps.length;
 		if (max == 0)
 			return 0;
@@ -136,20 +177,44 @@ public class SafeJMenu extends JMenu implements UISwingReplacement, GetSetObject
 		return newchildIndex;
 	}
 
-	public Component addSuper(Component c, int index) {
+	public Component addSuper(MenuElement me, int index) {
 		int size = mcomps.size();
 		if (size < index) {
 			index = size;
 		}
-		return super.add(c, index);
+		Component c = me.getComponent();
+		ensureUnequelyNamed(c);
+		if (c instanceof MenuElement) {
+
+		} else {
+			warn("C not MenuElement" + me);
+
+		}
+		Component comp = super.add(c, index);
+		ensureFoundNamed(c);
+		int mcompsNS = mcomps.size();
+		if (mcompsNS == size) {
+			// nothing added
+			if (index < 0)
+				index = size - 1;
+			if (index < 0)
+				index = 0;
+			mcomps.add(index, comp);
+		}
+		return comp;
 	}
 
-	public Component insert(Component c, int index) {
-		return addSorted(c, index);
+	private void warn(String c) {
+		Utility.theLogger.warn(c);
+
 	}
 
 	public JMenuItem insert(JMenuItem mi, int pos) {
+		int last = getMenuComponentCount();
 		int newchildIndex = findBestLocation(mi);
+		if (newchildIndex < last) {
+			pos = newchildIndex;
+		}
 		return super.insert(mi, pos);
 	}
 
@@ -192,13 +257,15 @@ public class SafeJMenu extends JMenu implements UISwingReplacement, GetSetObject
 	}
 
 	public void ensureFoundNamed(Component c) {
+		if (moreMenu != null)
+			return;
 		String fnd = TriggerMenuFactory.getLabel(c, 1);
 		Component found = TriggerMenuFactory.findChildNamed(this, true, fnd);
 		if (found != null) {
 			return;
 		}
+		warn("found=" + found + " for " + fnd);
 		found = TriggerMenuFactory.findChildNamed(this, true, fnd);
-		Debuggable.mustBeSameStrings("found=" + found, fnd);
 	}
 
 	private void ensureSafePopupMenuCreated() {
@@ -223,28 +290,20 @@ public class SafeJMenu extends JMenu implements UISwingReplacement, GetSetObject
 	}
 
 	public void ensureUnequelyNamed(Component c) {
+		if (moreMenu != null)
+			return;
 		String fnd = TriggerMenuFactory.getLabel(c, 1);
 		Component found = TriggerMenuFactory.findChildNamed(this, true, fnd);
 		if (found == null) {
 			Component p = getParent();
 			return;
 		}
-		Debuggable.mustBeSameStrings("found=" + found, fnd);
+		found = TriggerMenuFactory.findChildNamed(this, true, fnd);
+		//warn("found=" + found + " for " + fnd);
 	}
 
 	protected void fireActionPerformed(ActionEvent event) {
 		super.fireActionPerformed(event);
-	}
-
-	@Override public Component[] getComponents() {
-		if (true)
-			return mcomps.toArray(new Component[mcomps.size()]);
-		return super.getMenuComponents();
-	}
-
-	public Component getMenuComponent(int n) {
-		ensureSafePopupMenuCreated();
-		return super.getMenuComponent(n);
 	}
 
 	@Override public String getText() {

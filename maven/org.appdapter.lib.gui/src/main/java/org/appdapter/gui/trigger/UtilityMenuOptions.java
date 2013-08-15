@@ -1,5 +1,6 @@
 package org.appdapter.gui.trigger;
 
+import static org.appdapter.core.log.Debuggable.*;
 import java.awt.event.ActionEvent;
 import java.beans.Customizer;
 import java.beans.PropertyEditor;
@@ -23,6 +24,7 @@ import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.api.trigger.TriggerImpl;
 import org.appdapter.bind.rdf.jena.model.JenaModelUtils;
+import org.appdapter.core.component.KnownComponent;
 import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.core.convert.TypeAssignable;
 import org.appdapter.core.log.Debuggable;
@@ -34,12 +36,15 @@ import org.appdapter.gui.browse.KMCTrigger;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.editors.ObjectPanel;
 import org.appdapter.gui.repo.RepoManagerPanel;
-import org.appdapter.gui.util.CollectionSetUtils;
+import org.appdapter.gui.util.ClassFinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.shared.ReificationStyle;
+
 @UISalient(NonPublicMethods = false)
-abstract public class UtilityMenuOptions extends CollectionSetUtils implements UtilClass {
+abstract public class UtilityMenuOptions implements UtilClass {
 
 	protected static Logger theLogger = LoggerFactory.getLogger(UtilityMenuOptions.class);
 
@@ -62,22 +67,50 @@ abstract public class UtilityMenuOptions extends CollectionSetUtils implements U
 				Utility.addClassMethods(utilClass);
 			}
 		};
+
+		withSubclasses(KnownComponent.class, fw);
+		withSubclasses(Box.class, fw);
+		withSubclasses(Trigger.class, fw);
 		withSubclasses(ObjectPanel.class, fw);
 		withSubclasses(UtilClass.class, fw);
 		withSubclasses(AnyOper.class, fw);
 		withSubclasses(Customizer.class, fw);
 		withSubclasses(PropertyEditor.class, fw);
+		withSubclasses(ModelFactory.class, fw);
+		useScannedClasses("com.hp.hpl.jena.rdf.model.", fw);
+		createEnumClass(ReificationStyle.class);
+
 		loadAutoloads();
 		Utility.addClassMethods(RepoManagerPanel.class);
 	}
 
+	private static void createEnumClass(Class ec) {
+		Utility.addClassMethods(ec);
+	}
+
 	private static <T> void withSubclasses(Class<T> sc, VoidFunc<Class<? extends T>> func) {
+
 		for (Class utilClass : Utility.getCoreClasses(sc)) {
 			try {
 				func.call(utilClass);
 			} catch (Throwable t) {
-				Debuggable.printStackTrace(t);
+				printStackTrace(t);
 			}
+		}
+	}
+
+	private static <T> void useScannedClasses(String packagePrefix, VoidFunc<Class<? extends T>> func) {
+
+		try {
+			for (Class utilClass : ClassFinder.getClasses(packagePrefix, Object.class)) {
+				try {
+					func.call(utilClass);
+				} catch (Throwable t) {
+					printStackTrace(t);
+				}
+			}
+		} catch (IOException e) {
+			printStackTrace(e);
 		}
 	}
 
@@ -232,6 +265,14 @@ abstract public class UtilityMenuOptions extends CollectionSetUtils implements U
 			final boolean hasNoSideEffects) {
 
 		Utility.addTriggerForClassInst(new TriggerForClass() {
+
+			@Override public boolean isSideEffectSafe() {
+				return false;
+			}
+
+			@Override public boolean isFavorited() {
+				return true;
+			}
 
 			@Override public Object getIdentityObject() {
 				return member;

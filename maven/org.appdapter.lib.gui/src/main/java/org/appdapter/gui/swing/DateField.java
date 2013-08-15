@@ -47,7 +47,7 @@ public class DateField extends JVPanel implements KeyListener, ActionListener, F
 	}
 
 	@Override public void setObject(Object obj) throws InvocationTargetException, NoSuchConversionException {
-		setDate(ReflectUtils.recast(obj, Date.class));
+		setDate(Utility.recast(obj, Date.class));
 	}
 
 	/**

@@ -53,7 +53,7 @@ public class NamedItemChooserPanel extends JJPanel implements GetSetObject, Focu
 		removeAll();
 		adjustSize();
 		//namedObjects = context.getLocalBoxedChildren();
-		namedObjectListPanel = new CollectionContentsPanel(context, namedObjects.getName(), (Collection) namedObjects.getLiveCollection(), null, namedObjects, null, true);
+		namedObjectListPanel = new LargeObjectChooser(null, namedObjects);
 		//new LargeObjectChooser(null, namedObjects);
 		classChooserPanel = new ClassChooserPanel(context);
 		setLayout(new BorderLayout());

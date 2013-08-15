@@ -36,6 +36,10 @@ public abstract class Debuggable extends BasicDebugger {
 		return str + "(" + toInfoStringA(params, ",", PRINT_DEPTH) + ")";
 	}
 
+	public static String toInfoStringCompound(Object str, Object... params) {
+		return toInfoStringV(str, PRINT_DEPTH) + "(" + toInfoStringA(params, ",", PRINT_DEPTH) + ")";
+	}
+
 	public static <T extends Object> T NoSuchClassImpl(Object... objects) {
 		String dstr = "NoSuchClassImpl" + Debuggable.toInfoStringA(objects, ":", PRINT_DEPTH);
 
@@ -326,7 +330,9 @@ public abstract class Debuggable extends BasicDebugger {
 
 	public static RuntimeException reThrowable(Throwable e) {
 		if (e instanceof InvocationTargetException) {
-			e = e.getCause();
+			Throwable t = e.getCause();
+			if (t != null)
+				e = t;
 		}
 		if (e instanceof Error) {
 			throw ((Error) e);

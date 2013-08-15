@@ -1,6 +1,7 @@
 package org.appdapter.gui.swing;
 
 import java.awt.Color;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.datatransfer.DataFlavor;
@@ -25,7 +26,6 @@ import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
-import java.util.Collection;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -38,7 +38,7 @@ import org.appdapter.api.trigger.Box;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.NamedObjectCollection;
-import org.appdapter.gui.api.ObjectCollectionRemoveListener;
+import org.appdapter.gui.api.ValueChangeListener;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.editors.ObjectPanelHost;
 import org.appdapter.gui.trigger.TriggerPopupMenu;
@@ -115,35 +115,33 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 
 	JLabel label;
 
-	NamedObjectCollection maybeCoupled;
-	Collection parent;
 	JButton propButton;
 	JButton removeButton;
 
-	ObjectCollectionRemoveListener objectCollectionRemoveListener;
+	ValueChangeListener objectCollectionRemoveListener;
 	boolean showIcon;
 	boolean showLabel;
 	boolean showPropButton;
+	boolean showRemoveButton;
 	boolean showToString;
+	protected NamedObjectCollection nameMaker;
+	protected boolean isRemoved;
+	protected String title;
 
 	/**
 	 * @param parent if a parent is provided, a "remove" button will be added allowing you to remove this object from the given collection
 	 */
-	public SmallObjectView(DisplayContext context, NamedObjectCollection col, Object object, boolean showLabel, boolean showIcon, boolean showPropButton, boolean showToString, Collection parent) {
+	public SmallObjectView(DisplayContext context, NamedObjectCollection namer, Object object, String title, boolean showLabel, boolean showIcon, boolean showPropButton, boolean showToString) {
 		super(false);
 		objectValue = object;
+		isRemoved = false;
 		if (context == null)
 			context = Utility.getCurrentContext();
-		if (col == null) {
-			col = context.getLocalBoxedChildren();
-		}
-		this.maybeCoupled = col;
 		this.context = context;
 		this.showLabel = showLabel;
 		this.showIcon = showIcon;
 		this.showPropButton = showPropButton;
 		this.showToString = showToString;
-		this.parent = parent;
 		initGUI();
 		this.addMouseListener(this);
 		checkColor();
@@ -152,8 +150,8 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 		dragSource.createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_MOVE, this);
 	}
 
-	public SmallObjectView(DisplayContext context, NamedObjectCollection col, Object object, Collection parent) {
-		this(context, col, object, true, true, true, true, parent);
+	public SmallObjectView(DisplayContext context, NamedObjectCollection namer, Object object) {
+		this(context, namer, object, null, true, true, true, true);
 	}
 
 	@Override public void actionPerformed(ActionEvent evt) {
@@ -169,12 +167,12 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 
 	public void actionRemove() {
 		Object v = getValue();
-		if (parent != null) {
-			parent.remove(v);
-		}
-		if (objectCollectionRemoveListener != null) {
-			objectCollectionRemoveListener.objectRemoved(v, parent);
-		}
+		valueChanged(this, v, null);
+		isRemoved = true;
+		objectValue = null;
+		Container p = getParent();
+		if (p != null)
+			p.remove(this);
 	}
 
 	//==== Drag/drop methods ==========================
@@ -206,7 +204,7 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 	}
 
 	@Override public void dragEnter(DropTargetDragEvent dtde) {
-		Debuggable.notImplemented();
+		todo();
 
 	}
 
@@ -214,7 +212,7 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 	}
 
 	@Override public void dragExit(DropTargetEvent dte) {
-		Debuggable.notImplemented();
+		todo();
 
 	}
 
@@ -229,7 +227,7 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 	}
 
 	@Override public void dragOver(DropTargetDragEvent dtde) {
-		Debuggable.notImplemented();
+		todo();
 
 	}
 
@@ -248,7 +246,7 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 	}
 
 	@Override public void dropActionChanged(DropTargetDragEvent dtde) {
-		Debuggable.notImplemented();
+		todo();
 
 	}
 
@@ -275,6 +273,8 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 
 	public boolean initGUI() {
 
+		if (nameMaker == null)
+			nameMaker = Utility.getTreeBoxCollection();
 		setLayout(new OverlayLayout(this));
 
 		JPanel panel = new JPanel();
@@ -298,9 +298,11 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 				//add(iconView);
 			}
 			if (showLabel) {
-				String title = Utility.getUniqueName(object, maybeCoupled);
+				if (this.title == null) {
+					title = Utility.getUniqueName(object, nameMaker, false);
+				}
 				if ((title == null || title.equals("<null>")) && object != null && !(object instanceof String)) {
-					Debuggable.notImplemented("title for", object);
+					todo("title for", object);
 				}
 				label = new JLabel(title);
 				panel.add(label);
@@ -310,7 +312,7 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 				panel.add(propButton);
 				propButton.addActionListener(this);
 			}
-			if (parent != null) {
+			if (isRemovable(object)) {
 				removeButton = new RemoveButton();
 				panel.add(removeButton);
 				removeButton.addActionListener(this);
@@ -324,6 +326,25 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 		add(frontGlass);
 		add(panel);
 		return true;
+	}
+
+	private void todo(Object... params) {
+		Debuggable.notImplemented(params);
+
+	}
+
+	public boolean isRemovable(Object value) {
+		return !isRemoved;
+	}
+
+	public void valueChanged(Object sender, Object oldObject, Object newObject) {
+		if (sender != this) {
+			reallySetValue(newObject);
+		} else {
+			if (objectCollectionRemoveListener != null) {
+				objectCollectionRemoveListener.valueChanged(sender, oldObject, newObject);
+			}
+		}
 	}
 
 	//=================================================================
@@ -376,7 +397,7 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 
 	@Override public void propertyChange(PropertyChangeEvent evt) {
 		if (label != null) {
-			label.setText(Utility.getUniqueName(getValue(), maybeCoupled));
+			label.setText(Utility.getUniqueName(getValue(), nameMaker));
 		}
 		checkColor();
 	}
@@ -389,7 +410,7 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 		initGUI();
 	}
 
-	public void setRemoveListener(ObjectCollectionRemoveListener l) {
+	public void addChangeListener(ValueChangeListener l) {
 		this.objectCollectionRemoveListener = l;
 	}
 
@@ -403,13 +424,11 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 			object = this;
 		}
 		if (true || !object.getClass().isPrimitive()) {
-			TriggerPopupMenu menu = new TriggerPopupMenu(context, e, maybeCoupled, Arrays.asList(object));
+			TriggerPopupMenu menu = new TriggerPopupMenu(context, e, nameMaker);
+			menu.addMenuFromObject(object);
 			frontGlass.add(menu);
 			menu.show(frontGlass, x, y);
 		}
 	}
 
-	public void valueChanged(Object oldObject, Object newObject) {
-		reallySetValue(newObject);
-	}
 }

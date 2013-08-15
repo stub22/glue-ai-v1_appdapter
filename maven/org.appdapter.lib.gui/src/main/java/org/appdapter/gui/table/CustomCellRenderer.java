@@ -51,7 +51,7 @@ ListCellRenderer, TableCellRenderer, TreeCellRenderer {
 		columnNumber = columnNum;
 		toStr = toS;
 	}
-	
+
 	public TableColumn getTableColumn() {
 		TableColumn tcol = myTable.getColumnModel().getColumn(columnNumber);
 		return tcol;
@@ -163,7 +163,7 @@ ListCellRenderer, TableCellRenderer, TreeCellRenderer {
 				if (value instanceof Component)
 					comp = (Component) value;
 				else
-					comp = new SmallObjectView(null, null, value, false, true, true, false, null);
+					comp = new SmallObjectView(null, null, value, null, true, true, true, false);
 				if (true)
 					return comp;
 				JPanel label = new JPanel();

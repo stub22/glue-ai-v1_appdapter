@@ -3,16 +3,21 @@ package org.appdapter.gui.trigger;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 
+import org.appdapter.api.trigger.Box;
+import org.appdapter.api.trigger.BoxContext;
 import org.appdapter.api.trigger.GetObject;
+import org.appdapter.api.trigger.Trigger;
+import org.appdapter.core.convert.Convertable;
 import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.gui.api.BT;
-import org.appdapter.gui.api.Convertable;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.NamedObjectCollection;
 import org.appdapter.gui.api.POJOCollectionListener;
@@ -21,7 +26,7 @@ import static org.appdapter.core.convert.ReflectUtils.*;
 
 /**
  * The controller class for a object menu (JMenu or JPopupMenu), showing the list
- * of available actions for a given object. <p>
+ * of available actions for some given objects. <p>
  *
  * The list of available actions is fetched from the
  * given POJOCollectionContext. <p>
@@ -30,7 +35,7 @@ import static org.appdapter.core.convert.ReflectUtils.*;
  *
  * 
  */
-public class TriggerMenuController implements POJOCollectionListener, Convertable {
+public class TriggerMenuController implements POJOCollectionListener, Convertable, Box {
 	NamedObjectCollection localCollection;
 	final DisplayContext context;
 	final TriggerMenuFactory triggerFactory;
@@ -40,10 +45,12 @@ public class TriggerMenuController implements POJOCollectionListener, Convertabl
 	JPopupMenu popup = null;
 	JMenu menu = null;
 	public MouseEvent originalMouseEvent;
+	private String myLabel = "";
+	private List triggers;
 
-	private TriggerMenuController(DisplayContext context0, MouseEvent e, NamedObjectCollection noc, Collection object0) {
+	private TriggerMenuController(DisplayContext context0, MouseEvent e, NamedObjectCollection noc) {
 		this.originalMouseEvent = e;
-		this.objects = object0;
+		objects = new ArrayList();
 		if (context0 == null)
 			context0 = Utility.getCurrentContext();
 		this.context = context0;
@@ -51,48 +58,58 @@ public class TriggerMenuController implements POJOCollectionListener, Convertabl
 			noc = context0.getLocalBoxedChildren();
 		this.localCollection = noc;
 		triggerFactory = TriggerMenuFactory.getInstance(context);
-		if (localCollection != null) {
-			//	localCollection.addListener(this, false);
-		}
 	}
 
-	public TriggerMenuController(DisplayContext context0, MouseEvent e, NamedObjectCollection noc, Collection object0, JPopupMenu popup0) {
-		this(context0, e, noc, object0);
+	public TriggerMenuController(DisplayContext context0, MouseEvent e, NamedObjectCollection noc, JPopupMenu popup0) {
+		this(context0, e, noc);
 		this.popup = popup0;
-		addObjectsMenu();
 	}
 
-	public TriggerMenuController(DisplayContext context0, MouseEvent e, NamedObjectCollection noc, Collection object0, JMenu menu0) {
-		this(context0, e, noc, object0);
+	public TriggerMenuController(DisplayContext context0, MouseEvent e, NamedObjectCollection noc, JMenu menu0) {
+		this(context0, e, noc);
 		this.menu = menu0;
-		addObjectsMenu();
+		if (localCollection != null) {
+			localCollection.addListener(this, false);
+		}
 	}
 
 	void updateMenu() {
-		if (popup != null)
-			popup.removeAll();
-		else
-			menu.removeAll();
-		addObjectsMenu();
+		Utility.invokeAndWait(new Runnable() {
+			@Override public void run() {
+				if (popup != null)
+					popup.removeAll();
+				if (menu != null)
+					menu.removeAll();
+
+				Collection objects0 = objects;
+				TriggerMenuController.this.objects = new ArrayList();
+				for (Object o : objects0) {
+					addMenuFromObject(o);
+				}
+			}
+		});
 	}
 
-	private void addObjectsMenu() {
-		if (objects == null) {
-			objects = new ArrayList();
-			return;
-		}
-		for (Object o : objects) {
-			addObjectMenu(o);
-		}
-
-	}
-
-	public void addObjectMenu(Object o) {
+	public void addMenuFromObject(Object o) {
 		if (o == null)
 			return;
 		if (!objects.contains(o))
 			objects.add(o);
 		initLabelText(o);
+		if (o instanceof Action) {
+			addAction((Action) o);
+			return;
+		}
+		if (o instanceof PopupAdder) {
+			if (popup instanceof JPopupMenu) {
+				((PopupAdder) o).addLocalContributions((JPopupMenu) popup);
+				return;
+			} else {
+				theLogger.warn("Popup adder cannot add to " + popup.getClass() + " = " + popup);
+			}
+
+		}
+
 		if (context != null) {
 			Collection actions = context.getTriggersFromUI(o);
 			Iterator it = actions.iterator();
@@ -112,17 +129,24 @@ public class TriggerMenuController implements POJOCollectionListener, Convertabl
 		return this;
 	}
 
-	private void syncBoxedObject() {
-
-	}
-
 	private void initLabelText(Object object) {
-		final String label = Utility.getUniqueName(object, localCollection);
-		if (menu != null) {
-			menu.setText(label);
-		} else {
-			popup.setLabel(label);
+		final String label = Utility.getUniqueName(object, localCollection, false);
+		if (this.myLabel.contains(label)) {
+			return;
 		}
+		this.myLabel = label + " " + this.myLabel;
+		final String setLabel = myLabel;
+		Utility.invokeLater(new Runnable() {
+
+			@Override public void run() {
+				if (menu != null) {
+					menu.setText(setLabel);
+				}
+				if (popup != null) {
+					popup.setLabel(setLabel);
+				}
+			}
+		});
 	}
 
 	/*Box asBox() {
@@ -132,7 +156,8 @@ public class TriggerMenuController implements POJOCollectionListener, Convertabl
 	void addAction(Action a) {
 		if (popup != null) {
 			triggerFactory.addMenuItem(a, asBox(), popup);
-		} else {
+		}
+		if (menu != null) {
 			triggerFactory.addMenuItem(a, asBox(), menu);
 		}
 	}
@@ -168,6 +193,39 @@ public class TriggerMenuController implements POJOCollectionListener, Convertabl
 
 	private Iterable<?> getObjects() {
 		return objects;
+	}
+
+	@Override public BoxContext getBoxContext() {
+		return null;
+	}
+
+	@Override public Iterable getObjects(Class type) {
+		if (type == null)
+			return (Iterable) getObjects();
+		HashSet objs = new HashSet();
+		if (this.canConvert(type)) {
+			Object one = convertTo(type);
+			objs.add(one);
+		}
+		for (Object o : getObjects()) {
+			if (type.isInstance(o)) {
+				objs.add(o);
+			}
+		}
+		return objs;
+	}
+
+	@Override public List getTriggers() {
+		return this.triggers;
+	}
+
+	@Override public Object getValue() {
+		return this;
+	}
+
+	public void addTriggers(Collection<Trigger> trigs) {
+		// TODO Auto-generated method stub
+
 	}
 
 }

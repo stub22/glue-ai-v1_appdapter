@@ -24,11 +24,13 @@ import org.appdapter.api.trigger.BoxContext;
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.bind.rdf.jena.query.JenaArqQueryFuncs;
 import org.appdapter.bind.rdf.jena.query.JenaArqResultSetProcessor;
+import org.appdapter.core.convert.Converter.ConverterMethod;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.core.name.FreeIdent;
 import org.appdapter.core.store.BasicStoredMutableRepoImpl;
 import org.appdapter.core.store.Repo;
 import org.appdapter.core.store.Repo.GraphStat;
+import org.appdapter.core.store.Repo.WithDirectory;
 import org.appdapter.gui.api.LazySlow;
 import org.appdapter.gui.api.WrapperValue;
 import org.appdapter.gui.box.ScreenBoxImpl;
@@ -105,7 +107,16 @@ public abstract class RepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<TT>>>
 	@Override public Repo getValue() {
 		return getMRepo();
 	}
-	
+
+	@ConverterMethod//
+	public static Repo.WithDirectory boxToRepo(MutableRepoBox mrb) {
+		return (WithDirectory) mrb.getRepo();
+	}
+
+	@ConverterMethod//
+	public static MutableRepoBox boxToRepo(Repo mrb) {
+		return new DefaultMutableRepoBoxImpl(null, (Repo.WithDirectory) mrb);
+	}
 
 	@Override public Repo getRepo() {
 		return getMRepo();
