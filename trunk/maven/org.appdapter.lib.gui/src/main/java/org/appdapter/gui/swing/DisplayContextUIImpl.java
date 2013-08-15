@@ -121,7 +121,8 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 
 		@Override public void actionPerformed(ActionEvent evt) {
 			try {
-				currentCollection.findOrCreateBox(getValue());
+				Object o = getValue();
+				currentCollection.findOrCreateBox(o);
 			} catch (Exception e) {
 				showError(toString(), e);
 			}
@@ -416,8 +417,8 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 		if (object == null)
 			return actions;
 
-		NamedObjectCollection currentCollection = getCurrentCollection();
-		addCollectionActions(object, actions, currentCollection);
+		//NamedObjectCollection currentCollection = getCurrentCollection();
+		//addCollectionActions(object, actions, currentCollection);
 
 		NamedObjectCollection clipboardCollection = Utility.getClipboard();
 		addCollectionActions(object, actions, clipboardCollection);
@@ -426,8 +427,9 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 			actions.add(new ViewAction((Component) object));
 		}
 		actions.add(new PropertiesAction(object));
-		Class cls = val.getClass();
-		TriggerMenuFactory.addTriggersForInstance(getDisplayContext(), cls, actions, object);
+
+		TriggerMenuFactory.addTriggersForInstance(getDisplayContext(), object.getClass(), actions, object);
+
 		return actions;
 	}
 
@@ -718,6 +720,11 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 
 	@Override public UserResult addObject(String title, Object anyObject, boolean showASAP, boolean expandChildren) {
 		return Utility.browserPanel.addObject(title, anyObject, showASAP, expandChildren);
+	}
+
+	@Override public Collection getLiveCollection() {
+		final POJOCollection collection = getLocalBoxedChildren();
+		return collection.getLiveCollection();
 	}
 
 }

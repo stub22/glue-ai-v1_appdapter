@@ -22,22 +22,24 @@
 
 package org.appdapter.gui.repo;
 
-import java.awt.Component;
+import java.lang.reflect.Type;
 import java.util.List;
 
 import org.appdapter.api.trigger.Box;
-import org.appdapter.bind.rdf.jena.model.JenaLiteralUtils;
 import org.appdapter.gui.browse.ResourceToFromString;
 import org.appdapter.gui.browse.ToFromKeyConverter;
 import org.appdapter.gui.browse.Utility;
+import org.appdapter.gui.swing.CantankerousJob;
 import org.appdapter.gui.table.GenericBeansPanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.hp.hpl.jena.graph.Graph;
+import com.hp.hpl.jena.rdf.listeners.StatementListener;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelChangedListener;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Statement;
-import com.hp.hpl.jena.shared.PrefixMapping;
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -46,27 +48,79 @@ public class ModelMatrixPanel<BoxType extends Box> extends GenericBeansPanel {
 	static Logger theLogger = LoggerFactory.getLogger(ModelMatrixPanel.class);
 
 	@UISalient static public ModelMatrixPanel showModelMatrixPanel(final Model obj) {
-		return new ModelMatrixPanel() {
-			{
-				setObject(obj);
-			}
-		};
+		ModelMatrixPanel matrixPanel = new ModelMatrixPanel();
+		matrixPanel.setObject(obj);
+		return matrixPanel;
 	}
+
+	public static Type[] EDITTYPE = new Type[] { Model.class, Graph.class, collectionOf(Statement.class) };
 
 	static String[] columnNames = new String[] { "Subject", "Predicate", "Object" };//, "Model" };
 
 	public ModelMatrixPanel() {
 		super(Model.class, Statement.class, null, columnNames);
 	}
-	
 
 	ToFromKeyConverter mapping;
+
+	private StatementListener listener;
 
 	private Model getJenaModel() {
 		Object o = getValue();
 		if (o == null)
 			return null;
 		return Utility.recastCC(o, Model.class);
+	}
+
+	@Override public void objectValueChanged(Object oval, Object bean) {
+		if (oval != bean) {
+			if (oval instanceof Model) {
+				final Model boundModel = (Model) oval;
+				boundModel.unregister(this.listener);
+			}
+			if (bean instanceof Model) {
+				final Model boundModel = (Model) bean;
+				Utility.addShutdownHook(new Runnable() {
+					@Override public void run() {
+						boundModel.unregister(listener);
+					}
+				});
+
+				// Add listener to the model
+				this.listener = new StatementListener() {
+					public void addedStatement(Statement s) {
+						notifyConcurrentChange();
+					}
+
+					public void removedStatement(Statement s) {
+						notifyConcurrentChange();
+					}
+				};
+				boundModel.register(this.listener);
+			}
+
+			try {
+				notifyConcurrentChange();
+			} catch (Throwable e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	CantankerousJob cj = new CantankerousJob("reloadObjectGUI ", this) {
+
+		@Override public void run() {
+			try {
+				reloadObjectGUI(getJenaModel());
+			} catch (Throwable e) {
+				e.printStackTrace();
+			}
+
+		}
+	};
+
+	protected void notifyConcurrentChange() {
+		cj.attempt();
 	}
 
 	public List listFromHolder(Object o) {

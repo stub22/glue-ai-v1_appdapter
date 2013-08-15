@@ -1,4 +1,4 @@
-package org.appdapter.gui.api;
+package org.appdapter.core.convert;
 
 public interface Convertable {
 

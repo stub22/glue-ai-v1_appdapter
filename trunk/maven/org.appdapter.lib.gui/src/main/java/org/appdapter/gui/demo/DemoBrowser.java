@@ -16,10 +16,13 @@
 
 package org.appdapter.gui.demo;
 
+import static org.appdapter.core.log.Debuggable.printStackTrace;
+
 import java.awt.BorderLayout;
 
 import javax.swing.BoxLayout;
 import javax.swing.JApplet;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JTextArea;
 import javax.swing.tree.TreeModel;
@@ -51,7 +54,6 @@ import org.appdapter.gui.trigger.BootstrapTriggerFactory;
 import org.appdapter.gui.trigger.SysTriggers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import static org.appdapter.core.log.Debuggable.*;
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -339,6 +341,14 @@ final public class DemoBrowser implements AnyOper.Singleton {
 			theLogger.error("problem in tree init", t);
 			return null;
 		}
+
+	}
+
+	public static void close() {
+		JFrame main = Utility.getAppFrame();
+		DemoBrowser.mainControl = null;
+		main.setVisible(false);
+		main.dispose();
 
 	}
 

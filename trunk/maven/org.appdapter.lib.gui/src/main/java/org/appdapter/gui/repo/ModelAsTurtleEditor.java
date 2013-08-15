@@ -41,6 +41,7 @@ import org.appdapter.gui.swing.ScreenBoxPanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.hp.hpl.jena.graph.Graph;
 import com.hp.hpl.jena.rdf.listeners.StatementListener;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
@@ -70,6 +71,8 @@ import com.jidesoft.swing.SearchableUtils;
  */
 public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 	static Logger theLogger = LoggerFactory.getLogger(ModelMatrixPanel.class);
+
+	public static Class[] EDITTYPE = new Class[] { Model.class, Graph.class };
 
 	@UISalient(IsPanel = true) static public ModelAsTurtleEditor showTurtleTextEditor(Model obj) {
 		return new ModelAsTurtleEditor(obj);
@@ -565,7 +568,7 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 	}
 
 	@Override protected boolean reloadObjectGUI(Object obj) throws Throwable {
-		setModelObject(ReflectUtils.recast(obj, Model.class));
+		setModelObject(Utility.recast(obj, Model.class));
 		return true;
 	}
 

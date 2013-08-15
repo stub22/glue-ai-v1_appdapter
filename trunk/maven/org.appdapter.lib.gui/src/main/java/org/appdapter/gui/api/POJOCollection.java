@@ -26,4 +26,6 @@ public interface POJOCollection extends UIProvider {
 
 	public void renameObject(String oldName, String newName) throws PropertyVetoException;
 
+	public Collection getLiveCollection();
+
 }

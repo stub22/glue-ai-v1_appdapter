@@ -42,8 +42,6 @@ public class BasicStoredMutableRepoImpl extends BasicRepoImpl implements Repo.St
 
 	private Store myStore;
 
-
-
 	/**
 	 * 
 	 * @param aStore 
@@ -88,6 +86,7 @@ public class BasicStoredMutableRepoImpl extends BasicRepoImpl implements Repo.St
 			logError("problem in formatIfNeeded", t);
 		}
 	}
+
 	/**
 	 * Uses a "GraphUploadTask" to read the contents of sourceURL into tgtGraph (named or default),
 	 * with copious debug output.
@@ -110,6 +109,7 @@ public class BasicStoredMutableRepoImpl extends BasicRepoImpl implements Repo.St
 		Dataset ds = DatasetStore.create(store);
 		return ds;
 	}
+
 	/*
 	 * Does not work with Jena 2.6.4. May work in some later (Apache-era) Jena versions.
 	 *
@@ -142,8 +142,7 @@ public class BasicStoredMutableRepoImpl extends BasicRepoImpl implements Repo.St
 		connModel.removeAll();
 		connModel.add(srcModel);
 	}
-	
-	
+
 	/**
 	 * For unit testing, this static convenience method constructs the "basic" version of Store repo.  
 	 * See details in SdbStoreFactory.  
@@ -158,9 +157,8 @@ public class BasicStoredMutableRepoImpl extends BasicRepoImpl implements Repo.St
 		Store s = SdbStoreFactory.connectSdbStoreFromResPath(storeConfigPath, optCL);
 		BasicStoredMutableRepoImpl repo = new BasicStoredMutableRepoImpl(s);
 		return repo;
-	}	
-	
-	
+	}
+
 	/**
 	 * Old sample store-iterator code, replaced by Dataset-level impls. in BasicRepoImpl.getGraphStats.
 	 * Iterating the store's graphs directly, rather than thru Dataset. 
@@ -174,15 +172,13 @@ public class BasicStoredMutableRepoImpl extends BasicRepoImpl implements Repo.St
 		Iterator<Node> nodeIt = StoreUtils.storeGraphNames(store);
 		while (nodeIt.hasNext()) {
 			Node n = nodeIt.next();
-			GraphStat stat = new GraphStat();
-			stat.graphURI = n.getURI();
+			GraphStat stat = new GraphStat(n.getURI(), null);
 			Model m = SDBFactory.connectNamedModel(store, stat.graphURI);
-			stat.statementCount = m.size();
-			logInfo("Found graph with URI: " + stat.graphURI + " and size: " + stat.statementCount);
+			stat.setValue(m);
+			logInfo("Found graph with URI: " + stat.graphURI + " and size: " + stat.getStatementCount());
 			stats.add(stat);
 		}
 		return stats;
 	}
-	
-	
+
 }

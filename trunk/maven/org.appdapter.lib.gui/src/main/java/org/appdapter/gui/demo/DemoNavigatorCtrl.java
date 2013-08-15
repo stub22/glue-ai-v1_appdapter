@@ -1,6 +1,9 @@
 package org.appdapter.gui.demo;
 
+import java.lang.reflect.InvocationTargetException;
+
 import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 import javax.swing.tree.TreeModel;
 
 import org.appdapter.api.trigger.BoxContext;
@@ -9,6 +12,7 @@ import org.appdapter.api.trigger.UserResult;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.DisplayContextProvider;
 import org.appdapter.gui.api.ScreenBoxTreeNode;
+import org.appdapter.gui.browse.Utility;
 
 public class DemoNavigatorCtrl extends BaseDemoNavigatorCtrl implements DisplayContext, org.appdapter.demo.DemoBrowserCtrl {
 
@@ -20,8 +24,15 @@ public class DemoNavigatorCtrl extends BaseDemoNavigatorCtrl implements DisplayC
 		super(bc, tm, rootBTN, dcp);
 	}
 
-	@Override public void launchFrame(String title) {
-		super.launchFrame(title);
+	@Override public void launchFrame(final String title) {
+		try {
+			Utility.invokeLater(new Runnable() {
+				@Override public void run() {
+					DemoNavigatorCtrl.super.launchFrame(title);
+				}
+			});
+		} catch (Throwable e) {
+		}
 	}
 
 	public void addBoxToRoot(MutableBox childBox, boolean reload) {

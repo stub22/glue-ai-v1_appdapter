@@ -46,4 +46,6 @@ public interface BoxPanelSwitchableView {
 
 	public List<Component> containsComponentOfClass(Class comp);
 
+	public Object getRootValue();
+
 }

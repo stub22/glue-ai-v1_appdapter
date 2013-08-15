@@ -4,12 +4,12 @@ import java.awt.Component;
 import java.util.Collection;
 import java.util.Map;
 
+import org.appdapter.api.trigger.SetObject;
 import org.appdapter.core.convert.OptionalArg;
 import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.gui.api.AddTabFrames.SetTabTo;
 import org.appdapter.gui.api.BoxPanelSwitchableView;
 import org.appdapter.gui.api.DisplayContext;
-import org.appdapter.gui.api.SetObject;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.browse.Utility.UtilityConverter;
 import org.appdapter.gui.browse.Utility.UtilityOptionalArgs;
@@ -19,11 +19,11 @@ import org.appdapter.gui.swing.CollectionContentsPanelUsingTable;
 import org.appdapter.gui.swing.ConstructorsListPanel;
 import org.appdapter.gui.swing.ErrorPanel;
 import org.appdapter.gui.swing.LargeObjectChooser;
-import org.appdapter.gui.swing.MapContentsPanel;
 import org.appdapter.gui.swing.MethodsPanel;
 import org.appdapter.gui.swing.PropertiesPanel;
 import org.appdapter.gui.swing.ScreenBoxPanel;
 import org.appdapter.gui.swing.StaticMethodsPanel;
+import org.appdapter.gui.table.MapContentsPanel;
 
 public class SpecificObjectCustomizers extends TabPanelMaker {
 
@@ -51,13 +51,18 @@ public class SpecificObjectCustomizers extends TabPanelMaker {
 			if (tabs.containsComponentOfClass(comp).size() > 0)
 				continue;
 
+			String planinfo = ("instanceof " + comp + " for (" + objClass.getName() + ")" + object);
+
+			if (!Utility.getEditsObject(object, objClass, comp)) {
+				Utility.theLogger.warn("Wont use " + planinfo);
+				continue;
+			}
 			if (cmd == SetTabTo.ADD) {
 				Component cp = null;
-				String warn = ("instanceof " + comp + " for (" + objClass.getName() + ")" + object);
 				try {
 
 					Throwable why = null;
-					Utility.theLogger.warn("Creating " + warn);
+					Utility.theLogger.warn("Creating " + planinfo);
 					try {
 						cp = (Component) comp.newInstance();
 					} catch (Throwable e1) {
@@ -72,7 +77,7 @@ public class SpecificObjectCustomizers extends TabPanelMaker {
 						}
 					}
 					if (cp == null) {
-						Utility.theLogger.error("Did not create " + warn, why);
+						Utility.theLogger.error("Did not create " + planinfo, why);
 						continue;
 					}
 					if (cp instanceof SetObject) {
@@ -87,7 +92,7 @@ public class SpecificObjectCustomizers extends TabPanelMaker {
 
 				} catch (Throwable e) {
 					e.printStackTrace();
-					Utility.theLogger.error("Did not add to " + warn, e);
+					Utility.theLogger.error("Did not add to " + planinfo, e);
 				}
 
 			}
@@ -109,7 +114,7 @@ public class SpecificObjectCustomizers extends TabPanelMaker {
 				prefix = "Class ";
 			}
 			if (cmd == SetTabTo.ADD) {
-				PropertiesPanel props = new PropertiesPanel(context, object, objClass, false);
+				PropertiesPanel props = new PropertiesPanel(context, object, objClass, false, true);
 				tabs.addTab(prefix + "Properties", props);
 			}
 			if (cmd == SetTabTo.REMOVE) {
@@ -157,7 +162,7 @@ public class SpecificObjectCustomizers extends TabPanelMaker {
 				tabs.insertTab("Static methods", null, new ErrorPanel("Could not show static methods", err), null, 1);
 			}
 			try {
-				PropertiesPanel statics = new PropertiesPanel(context, null, clazz, true);
+				PropertiesPanel statics = new PropertiesPanel(context, null, clazz, true, true);
 				tabs.insertTab("Static Properties", null, statics, null, 1);
 			} catch (Exception err) {
 				tabs.insertTab("Static Properties", null, new ErrorPanel("Could not show static Properties", err), null, 1);
@@ -181,7 +186,7 @@ public class SpecificObjectCustomizers extends TabPanelMaker {
 			if (cmds != SetTabTo.ADD)
 				return;
 			try {
-				CollectionContentsPanel cc = new CollectionContentsPanel(context, title, (Collection) object, tabs);
+				CollectionContentsPanel cc = new CollectionContentsPanel(context, title, null, (Collection) object, null, tabs, true);
 				tabs.insertTab("Contents", null, cc, null, 0);
 				tabs.addChangeListener(cc);
 			} catch (Exception err) {
@@ -195,25 +200,6 @@ public class SpecificObjectCustomizers extends TabPanelMaker {
 				tabs.addChangeListener(cc);
 			} catch (Exception err) {
 				tabs.insertTab("Contents using JTable", null, new ErrorPanel(title + " could not be shown", err), null, 0);
-			}
-		}
-	}
-
-	static public class MapCustomizer extends TabPanelMaker {
-
-		@Override public void setTabs(BoxPanelSwitchableView tabs, DisplayContext context, Object object, Class objClass, SetTabTo cmds) {
-			if (!(object instanceof Map)) {
-				return;
-			}
-			String title = "The contents of " + object;
-			if (cmds != SetTabTo.ADD)
-				return;
-			try {
-				MapContentsPanel cc = new MapContentsPanel(context, title, (Map) object, tabs);
-				tabs.insertTab("Map Contents", null, cc, null, 0);
-				tabs.addChangeListener(cc);
-			} catch (Exception err) {
-				tabs.insertTab("Map Contents", null, new ErrorPanel(title + " could not be shown", err), null, 0);
 			}
 		}
 	}

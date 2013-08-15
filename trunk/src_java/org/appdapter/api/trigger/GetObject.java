@@ -1,7 +1,7 @@
 package org.appdapter.api.trigger;
 
-public interface GetObject {
-	Object getValue();
+public interface GetObject<T> {
+	T getValue();
 
 	///void setObject(Object obj) throws Exception;
 }

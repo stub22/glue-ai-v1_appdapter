@@ -1,7 +1,6 @@
 package org.appdapter.core.convert;
 
 import static org.appdapter.core.log.Debuggable.expectedToIgnore;
-import static org.appdapter.core.log.Debuggable.isNotShowingExceptions;
 import static org.appdapter.core.log.Debuggable.printStackTrace;
 import static org.appdapter.core.log.Debuggable.reThrowable;
 import static org.appdapter.core.log.Debuggable.warn;
@@ -37,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -50,6 +50,8 @@ import org.appdapter.core.convert.Converter.ConverterMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+//import com.google.inject.Inject;
+//import com.google.inject.TypeLiteral;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.sdb.util.Pair;
 
@@ -58,6 +60,7 @@ abstract public class ReflectUtils implements UtilClass {
 
 	final static List<Converter> registeredConverters = new ArrayList<Converter>();
 	final public static AggregateConverter DEFAULT_CONVERTER = new AggregateConverter(registeredConverters);
+	final public static Converter NO_CONVERTER = Converter.CASTING_ONLY;
 	private static final Class[] CLASS0 = new Class[0];
 
 	public static void registerConverter(Converter utilityConverter) {
@@ -117,16 +120,23 @@ abstract public class ReflectUtils implements UtilClass {
 				if (o == null) {
 					continue;
 				}
-				if (!c.isInstance(o)) {
+				if (c != null && !c.isInstance(o)) {
 					continue;
 				}
-				try {
-					final T madeIT = (T) o;
-					if (madeIT != null) {
+				return true;
+			}
+			for (Object o : objs) {
+				if (o == null) {
+					continue;
+				}
+				if (o instanceof Convertable) {
+					Convertable oc = (Convertable) o;
+					if (oc.canConvert(c))
 						return true;
-					}
-				} catch (Exception e) {
-					theLogger.error("JVM Issue (canConvert)", e);
+				}
+				if (c != null) {
+					if (!isAssignableFrom(c, o.getClass()))
+						continue;
 				}
 				return true;
 			}
@@ -143,8 +153,20 @@ abstract public class ReflectUtils implements UtilClass {
 
 	static public <T> T noSuchConversion(Object obj, Class<T> objNeedsToBe, Throwable nsc) throws NoSuchConversionException {
 		if (nsc instanceof NoSuchConversionException)
-			throw (NoSuchConversionException) nsc;
-		throw new NoSuchConversionException(obj, objNeedsToBe, nsc);
+			throw noSuchConversionException(obj, objNeedsToBe, nsc);
+		if (nsc instanceof ClassCastException)
+			throw noSuchConversionException(obj, objNeedsToBe, nsc);
+
+		throw noSuchConversionException(obj, objNeedsToBe, nsc);
+	}
+
+	static public NoSuchConversionException noSuchConversionException(Object obj, Class objNeedsToBe, Throwable nsc) {
+		if (nsc instanceof NoSuchConversionException)
+			return (NoSuchConversionException) nsc;
+		if (nsc instanceof ClassCastException)
+			return new NoSuchConversionException(obj, objNeedsToBe, nsc);
+
+		return new NoSuchConversionException(obj, objNeedsToBe, nsc);
 	}
 
 	static Integer leastOfCvt(int assignableFromW, int assignableFromW2) {
@@ -153,6 +175,40 @@ abstract public class ReflectUtils implements UtilClass {
 			return max;
 		}
 		return max;
+	}
+
+	public static Object convertUsingReflection(Object title, Class type) throws NoSuchConversionException {
+		NoSuchConversionException cce = null;
+		type = nonPrimitiveTypeFor(type);
+		Class keyClass = title.getClass();
+		if (type == keyClass)
+			return title;
+
+		for (Class searchType : new Class[] { type, keyClass }) {
+			while (searchType != null) {
+				for (Method m : searchType.getDeclaredMethods()) {
+					if (type.isAssignableFrom(nonPrimitiveTypeFor(m.getReturnType()))) {
+						Class[] pt = m.getParameterTypes();
+						if (pt != null && pt.length == 1 && Modifier.isStatic(m.getModifiers())) {
+							try {
+								if (TypeAssignable.CASTING_ONLY.declaresConverts(title, keyClass, pt[0], null) == TypeAssignable.WONT)
+									continue;
+								m.setAccessible(true);
+								Object o = recastRU(m.invoke(null, title), type);
+								if (type.isInstance(o)) {
+									registerConverterMethod(m, null);
+									return o;
+								}
+							} catch (Throwable e) {
+								cce = new NoSuchConversionException(type + " " + m.getName() + " " + title, e);
+							}
+						}
+					}
+				}
+				searchType = searchType.getSuperclass();
+			}
+		}
+		return noSuchConversion(title, type, cce);
 	}
 
 	public static List<Converter> getConverters(Object val, Class objClass, Class objNeedsToBe, int... which) {
@@ -245,40 +301,6 @@ abstract public class ReflectUtils implements UtilClass {
 		return m;
 	}
 
-	/*
-		public static Method getDeclaredMethod(Class search, String name, boolean laxPTs, Class... parameterTypes) throws SecurityException {
-			try {
-				getDeclaredMethod(search, name, true, checkOnlyName, useTypeAssignable, paramCount, parameterTypes)
-				return search.getMethod(name, parameterTypes);
-			} catch (NoSuchMethodException e) {
-				if (laxPTs) {
-					int ptlen = parameterTypes.length;
-					for (Method m : search.getDeclaredMethods()) {
-						if (!m.getName().equalsIgnoreCase(name))
-							continue;
-						Class[] mp = m.getParameterTypes();
-						if (mp.length != ptlen)
-							continue;
-						boolean cant = false;
-						for (int i = 0; i < ptlen; i++) {
-							if (isDisjoint(mp[i], parameterTypes[i])) {
-								cant = true;
-								break;
-							}
-						}
-						if (cant)
-							continue;
-						return m;
-					}
-				}
-				Class nis = search.getSuperclass();
-				if (nis != null)
-					return getDeclaredMethod(nis, name, laxPTs, parameterTypes);
-				return null;
-			}
-		}
-	*/
-
 	public static Class nonPrimitiveTypeFor(Class prim) {
 		Class wrapper = primitives.get(prim);
 		if (wrapper != null)
@@ -360,11 +382,11 @@ abstract public class ReflectUtils implements UtilClass {
 		return invokeAV(obj, DEFAULT_CONVERTER, method, args, optionalArgs);
 	}
 
-	public static Object invokeConstructorOptional(Converter converter, OptionalArg optionalArgs, Class clz, final Object... args) throws IllegalAccessException, IllegalArgumentException,
+	public static Object invokeConstructorOptional(Converter converter, OptionalArg optionalArgs, Class cls, final Object... args) throws IllegalAccessException, IllegalArgumentException,
 			InvocationTargetException, NoSuchMethodException, InstantiationException {
-		Constructor[] cons = clz.getDeclaredConstructors();
+		Constructor[] cons = cls.getDeclaredConstructors();
 		if (cons == null || cons.length == 0) {
-			return clz.newInstance();
+			return cls.newInstance();
 		}
 		int l = cons.length;
 
@@ -474,7 +496,7 @@ abstract public class ReflectUtils implements UtilClass {
 				Class pt = mts[i];
 				try {
 					Object b = optionalArg.getArg(pt);
-					Object p = recast(converter, b, pt);
+					Object p = recastRU3(converter, b, pt);
 					if (pt.isInstance(p)) {
 						mps[i] = p;
 						filledIn++;
@@ -493,7 +515,7 @@ abstract public class ReflectUtils implements UtilClass {
 				Object b = params[i];
 				Class pt = mts[i];
 				try {
-					Object p = recast(converter, b, pt);
+					Object p = recastRU3(converter, b, pt);
 					if (pt.isInstance(p)) {
 						mps[i] = p;
 						filledIn++;
@@ -525,23 +547,23 @@ abstract public class ReflectUtils implements UtilClass {
 				ArrayList xp = new ArrayList();
 				for (int i = lastParamNum; i < pl; i++) {
 					Object p = params[i];
-					Object o = recastOrNull(converter, p, pt);
+					Object o = recastOrNull3(converter, p, pt);
 					if (o == null)
 						return mps;
 					xp.add(o);
 				}
 				lpv = xp.toArray();
 			}
-			mps[lastParamNum] = recastOrNull(converter, lpv, mts[lastParamNum]);
+			mps[lastParamNum] = recastOrNull3(converter, lpv, mts[lastParamNum]);
 			return makeParams_canThrow(converter, mts, isVarArgs, mps, optionalArg);
 		}
 		return mps;
 
 	}
 
-	private static Object recastOrNull(Converter converter, Object p, Class pt) {
+	private static Object recastOrNull3(Converter converter, Object p, Class pt) {
 		try {
-			return recast(converter, p, pt);
+			return recastRU3(converter, p, pt);
 		} catch (Throwable e) {
 			expectedToIgnore(e, NoSuchConversionException.class);
 			return null;
@@ -596,7 +618,7 @@ abstract public class ReflectUtils implements UtilClass {
 		for (int i = 0; i < lastParamNum; i++) {
 			Object p = params[i];
 			Class pt = mts[i];
-			mps[i] = recast(converter, p, pt);
+			mps[i] = recastRU3(converter, p, pt);
 			if (mps[i] != p) {
 				anyChange = true;
 			}
@@ -619,14 +641,14 @@ abstract public class ReflectUtils implements UtilClass {
 				ArrayList xp = new ArrayList();
 				for (int i = lastParamNum; i < pl; i++) {
 					Object p = params[i];
-					Object o = recastOrNull(converter, p, pt);
+					Object o = recastOrNull3(converter, p, pt);
 					if (o == null)
 						return noSuchConversion(p, pt, null);
 					xp.add(o);
 				}
 				lpv = xp.toArray();
 			}
-			mps[lastParamNum] = recastOrNull(converter, lpv, mts[lastParamNum]);
+			mps[lastParamNum] = recastOrNull3(converter, lpv, mts[lastParamNum]);
 			return invokeAVConstructors(converter, method, mps, optionalArg);
 		}
 
@@ -668,7 +690,11 @@ abstract public class ReflectUtils implements UtilClass {
 
 		if (!isStatic) {
 			if (!isProxyMethodClass(objNeedsToBe, method)) {
-				Object r = recast(converter, obj0, objNeedsToBe);
+				Object r = null;
+				try {
+					r = recastRU3(converter, obj0, objNeedsToBe);
+				} catch (Throwable t) {
+				}
 				if (r != obj0 && r != null) {
 					return invokeAV(r, converter, method, params, optionalArg);
 				}
@@ -723,7 +749,7 @@ abstract public class ReflectUtils implements UtilClass {
 			if (pt.isInstance(was))
 				continue;
 			Object p = params[i];
-			mps[i] = recast(converter, p, pt);
+			mps[i] = recastRU3(converter, p, pt);
 			if (mps[i] != p) {
 				anyChange = true;
 			}
@@ -749,14 +775,14 @@ abstract public class ReflectUtils implements UtilClass {
 				ArrayList xp = new ArrayList();
 				for (int i = lastParamNum; i < pl; i++) {
 					Object p = params[i];
-					Object o = recastOrNull(converter, p, pt);
+					Object o = recastOrNull3(converter, p, pt);
 					if (o == null)
 						return mps;
 					xp.add(o);
 				}
 				lpv = xp.toArray();
 			}
-			mps[lastParamNum] = recastOrNull(converter, lpv, mts[lastParamNum]);
+			mps[lastParamNum] = recastOrNull3(converter, lpv, mts[lastParamNum]);
 			return invokeA(obj0, converter, method, mps);
 		}
 		return invokeReal(method, obj0, mps);
@@ -828,7 +854,7 @@ abstract public class ReflectUtils implements UtilClass {
 		if (!isStatic(method)) {
 			Class objectMustBe = method.getDeclaringClass();
 			if (!objectMustBe.isInstance(obj)) {
-				Object o = recast(DEFAULT_CONVERTER, obj, objectMustBe);
+				Object o = recastRU(obj, objectMustBe);
 				if (o != obj && o != null) {
 					if (!objectMustBe.isInstance(o)) {
 						throw new IllegalArgumentException(" " + obj.getClass() + ": " + obj + " is not targable from " + method);
@@ -840,7 +866,8 @@ abstract public class ReflectUtils implements UtilClass {
 		}
 
 		Object neededLock = getLock(obj);
-
+		Throwable e1 = null;
+		InvocationTargetException orig = null;
 		try {
 			if (neededLock != null) {
 				synchronized (neededLock) {
@@ -856,14 +883,21 @@ abstract public class ReflectUtils implements UtilClass {
 			warn(e);
 			throw e;
 		} catch (InvocationTargetException e) {
-			if (!isNotShowingExceptions())
-				warn(e);
-			throw e;
+			orig = e;
+			e1 = e.getCause();
+		} catch (Throwable e) {
+			orig = new InvocationTargetException(e);
+			e1 = e;
 		} finally {
 			if (neededLock != null) {
 
 			}
 		}
+		if (e1 instanceof RuntimeException)
+			throw (RuntimeException) e1;
+		if (e1 instanceof Error)
+			throw (Error) e1;
+		throw orig;
 	}
 
 	private static Object getLock(Object obj) {
@@ -879,21 +913,21 @@ abstract public class ReflectUtils implements UtilClass {
 		return null;
 	}
 
-	public static Object recast(Object obj, Class objNeedsToBe, List maxConverts) throws NoSuchConversionException {
-		return recast(DEFAULT_CONVERTER, obj, objNeedsToBe, maxConverts);
+	public static Object recastRU(Object obj, Class objNeedsToBe, List maxConverts) throws NoSuchConversionException {
+		return recast4(DEFAULT_CONVERTER, obj, objNeedsToBe, maxConverts);
 	}
 
-	private static Object recast(Converter converter, Object p, Class pt) throws NoSuchConversionException {
+	private static Object recastRU3(Converter converter, Object p, Class pt) throws NoSuchConversionException {
 		List maxConverts = AggregateConverter.getMcvt();
 		List was = new ArrayList(maxConverts);
 		try {
-			return recast(converter, p, pt, maxConverts);
+			return recast4(converter, p, pt, maxConverts);
 		} finally {
 			AggregateConverter.setMcvt(was);
 		}
 	}
 
-	public static <T> T recast(Converter converter, Object obj0, Class<T> objNeedsToBe, List maxConverts) throws NoSuchConversionException {
+	private static <T> T recast4(Converter converter, Object obj0, Class<T> objNeedsToBe, List maxConverts) throws NoSuchConversionException {
 		if (objNeedsToBe == null)
 			return null;
 		if (converter == null)
@@ -901,29 +935,33 @@ abstract public class ReflectUtils implements UtilClass {
 		try {
 			return converter.convert(obj0, objNeedsToBe, maxConverts);
 		} catch (NoSuchConversionException e) {
+			return noSuchConversion(obj0, objNeedsToBe, e);
+		} catch (ClassCastException e) {
+			return noSuchConversion(obj0, objNeedsToBe, e);
+		} catch (Throwable e) {
 			printStackTrace(e);
-			return (T) obj0;
+			return noSuchConversion(obj0, objNeedsToBe, e);
 		}
 	}
 
-	public static <T> T recast(Object obj0, Class<T> objNeedsToBe) throws NoSuchConversionException {
+	public static <T> T recastRU(Object obj0, Class<T> objNeedsToBe) throws NoSuchConversionException {
 		List maxConverts = AggregateConverter.getMcvt();
 		List was = new ArrayList(maxConverts);
 		try {
-			return recast(DEFAULT_CONVERTER, obj0, objNeedsToBe, maxConverts);
+			return recast4(DEFAULT_CONVERTER, obj0, objNeedsToBe, maxConverts);
 		} finally {
 			AggregateConverter.setMcvt(was);
 		}
 	}
 
-	public static Object recastOrNull(Object obj0, Class objNeedsToBe, Object otherwise) {
+	public static Object recastOrOtherwise(Object obj0, Class objNeedsToBe, Object otherwise) {
 		List maxConverts = AggregateConverter.getMcvt();
 		List was = new ArrayList(maxConverts);
 		try {
 			try {
-				return recast(DEFAULT_CONVERTER, obj0, objNeedsToBe, maxConverts);
+				return recast4(DEFAULT_CONVERTER, obj0, objNeedsToBe, maxConverts);
 			} catch (NoSuchConversionException e) {
-				printStackTrace(e);
+				//printStackTrace(e);
 				return otherwise;
 			}
 		} finally {
@@ -953,8 +991,8 @@ abstract public class ReflectUtils implements UtilClass {
 		if (isStatic(field))
 			val0 = null;
 		else
-			val0 = recast(val, field.getDeclaringClass());
-		Object recast = recast(value, field.getType());
+			val0 = recastRU(val, field.getDeclaringClass());
+		Object recast = recastRU(value, field.getType());
 		setFieldValue(field, val0, recast);
 		return;
 	}
@@ -1002,7 +1040,7 @@ abstract public class ReflectUtils implements UtilClass {
 		else {
 			if (val == null)
 				return null;
-			val0 = recastOrNull(val, field.getDeclaringClass(), null);
+			val0 = recastRU(val, field.getDeclaringClass());
 			if (val0 == null)
 				return null;
 		}
@@ -1010,7 +1048,7 @@ abstract public class ReflectUtils implements UtilClass {
 
 	}
 
-	private static Field findField(Object val, Class classOf, Class otherwise, String fieldname) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+	public static Field findField(Object val, Class classOf, Class otherwise, String fieldname) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
 		Collection<Field> fields = findFields(val, classOf, otherwise, false, null, false, fieldname);
 		if (fields.size() > 0)
 			return fields.iterator().next();
@@ -1044,28 +1082,57 @@ abstract public class ReflectUtils implements UtilClass {
 			}
 		}
 		List<Field> fields = null;
+
 		while (otherwise != null) {
 			try {
 				for (Field f : otherwise.getDeclaredFields()) {
-					if (!methodMatches(f.getName(), fieldname, caseInsensitive, endsWith)) {
+					if (fieldname != null && !methodMatches(f.getName(), fieldname, caseInsensitive, endsWith)) {
 						continue;
 					}
-
+					if (mustBe != null) {
+						if (!mustBe.isAssignableFrom(f.getType()))
+							continue;
+					}
 					if (fields == null)
 						fields = new ArrayList<Field>();
 					fields.add(f);
 				}
-				return fields;
+			} catch (SecurityException e) {
+				se = e;
+				why = null;
+			}
+			otherwise = otherwise.getSuperclass();
+		}
+		for (Class ow : classOf.getInterfaces()) {
+			try {
+				for (Field f : ow.getDeclaredFields()) {
+					if (fieldname != null && !methodMatches(f.getName(), fieldname, caseInsensitive, endsWith)) {
+						continue;
+					}
+					if (mustBe != null) {
+						if (!mustBe.isAssignableFrom(f.getType()))
+							continue;
+					}
+					if (fields == null)
+						fields = new ArrayList<Field>();
+					fields.add(f);
+				}
 			} catch (SecurityException e) {
 				se = e;
 				why = null;
 			}
 		}
+		if (fields != null)
+			return fields;
+
 		if (iae != null)
 			throw iae;
 		if (why != null)
 			throw why;
-		throw se;
+
+		if (se != null)
+			throw se;
+		return new ArrayList<Field>();
 
 	}
 
@@ -1096,9 +1163,9 @@ abstract public class ReflectUtils implements UtilClass {
 			setFieldValue(f, object, value);
 			return true;
 		} catch (ClassCastException nsf) {
-			throw new NoSuchConversionException(e, cvtTo, nsf);
+			throw noSuchConversionException(e, cvtTo, nsf);
 		} catch (NoSuchConversionException nsf) {
-			throw nsf;
+			throw noSuchConversionException(e, cvtTo, nsf);
 		} catch (NoSuchFieldException nsf) {
 			if (okIfFieldNotFound)
 				return false;
@@ -1263,6 +1330,7 @@ abstract public class ReflectUtils implements UtilClass {
 
 	private static void getDeclaredMethods(Collection<Method> methods, Class c, String name, boolean caseInsensitive, boolean checkOnlyName, TypeAssignable useTypeAssignable, int maxNum,
 			int paramCount, long level, Class... parameterTypes) throws SecurityException {
+		final Class ci = c;
 		boolean slowLoop = name == null || caseInsensitive || checkOnlyName || useTypeAssignable != null || paramCount != -1;
 		while (c != null) {
 			try {
@@ -1283,6 +1351,26 @@ abstract public class ReflectUtils implements UtilClass {
 			} catch (NoSuchMethodException nsf2) {
 			}
 			c = c.getSuperclass();
+			continue;
+		}
+		for (Class cc : ci.getInterfaces()) {
+			try {
+				if (slowLoop) {
+					for (Method m : cc.getDeclaredMethods()) {
+						if (name != null && !methodMatches(m.getName(), name, caseInsensitive, false))
+							continue;
+						if (!checkOnlyName && !methodMatches(m, name, caseInsensitive, checkOnlyName, useTypeAssignable, paramCount, parameterTypes))
+							continue;
+						if (!protectionLevelIncludes(m.getModifiers(), level))
+							continue;
+						addIfNew(methods, m);
+					}
+				} else {
+					addIfNew(methods, cc.getDeclaredMethod(name, parameterTypes));
+				}
+			} catch (SecurityException e) {
+			} catch (NoSuchMethodException nsf2) {
+			}
 			continue;
 		}
 	}
@@ -1420,16 +1508,16 @@ abstract public class ReflectUtils implements UtilClass {
 		return !isAssignableTypes(c1, c2);
 	}
 
-	public static Collection<Method> getAllMethods(Class clz) {
-		return getAllMethods(clz, false);
+	public static Collection<Method> getAllMethods(Class cls) {
+		return getAllMethods(cls, false);
 	}
 
-	public static Collection<Method> getAllMethods(Class clz, boolean preferSuperclass) {
-		final Class gi = clz;
+	public static Collection<Method> getAllMethods(Class cls, boolean preferSuperclass) {
+		final Class gi = cls;
 		Map<String, Method> methods = new HashMap<String, Method>();
-		while (clz != null) {
-			addMethods(clz, preferSuperclass, methods);
-			clz = clz.getSuperclass();
+		while (cls != null) {
+			addMethods(cls, preferSuperclass, methods);
+			cls = cls.getSuperclass();
 		}
 		if (preferSuperclass) {
 			for (Class c : gi.getInterfaces()) {
@@ -1439,8 +1527,8 @@ abstract public class ReflectUtils implements UtilClass {
 		return methods.values();
 	}
 
-	private static void addMethods(Class clz, boolean preferSuperclass, Map<String, Method> methods) {
-		for (Method m : clz.getDeclaredMethods()) {
+	private static void addMethods(Class cls, boolean preferSuperclass, Map<String, Method> methods) {
+		for (Method m : cls.getDeclaredMethods()) {
 			String key = methodString(m);
 			if (preferSuperclass || !methods.containsKey(key)) {
 				if (isSynthetic(m)) {
@@ -1451,13 +1539,13 @@ abstract public class ReflectUtils implements UtilClass {
 		}
 	}
 
-	public static Method getInterfaceMethod(Class clz, Method from) {
+	public static Method getInterfaceMethod(Class cls, Method from) {
 		String name = from.getName();
 		Class[] params = from.getParameterTypes();
-		Method sc = getSuperClassiestMethod(clz, name, params);
+		Method sc = getSuperClassiestMethod(cls, name, params);
 		if (sc != null && sc.getDeclaringClass().isInterface())
 			return sc;
-		for (Class ifc : clz.getInterfaces()) {
+		for (Class ifc : cls.getInterfaces()) {
 			Method m = getSuperClassiestMethod(ifc, name, params);
 			if (m != null && m.getDeclaringClass().isInterface())
 				return m;
@@ -1465,12 +1553,12 @@ abstract public class ReflectUtils implements UtilClass {
 		return sc;
 	}
 
-	public static Method getSuperClassiestMethod(Class clz, String name, Class[] params) {
+	public static Method getSuperClassiestMethod(Class cls, String name, Class[] params) {
 		Method lastm = null;
-		while (clz != null) {
+		while (cls != null) {
 			Method m;
 			try {
-				m = clz.getDeclaredMethod(name, params);
+				m = cls.getDeclaredMethod(name, params);
 				// ikvm can return null
 				if (m != null) {
 					//Class dc = m.getDeclaringClass();
@@ -1480,7 +1568,7 @@ abstract public class ReflectUtils implements UtilClass {
 			} catch (SecurityException e) {
 			} catch (NoSuchMethodException e) {
 			}
-			clz = clz.getSuperclass();
+			cls = cls.getSuperclass();
 		}
 		return lastm;
 	}
@@ -1502,13 +1590,13 @@ abstract public class ReflectUtils implements UtilClass {
 		return sb.toString();
 	}
 
-	public static Collection<Field> getAllFields(Class clz) {
+	public static Collection<Field> getAllFields(Class cls) {
 		List<Field> methods = new ArrayList<Field>();
-		while (clz != null) {
-			for (Field m : clz.getDeclaredFields()) {
+		while (cls != null) {
+			for (Field m : cls.getDeclaredFields()) {
 				methods.add(m);
 			}
-			clz = clz.getSuperclass();
+			cls = cls.getSuperclass();
 		}
 		return methods;
 	}
@@ -1626,7 +1714,22 @@ abstract public class ReflectUtils implements UtilClass {
 		});
 	}
 
-	public static Class getTypeClass(Object typeVariable, Class rawType, Collection exceptFor) {
+	public static Class getTypeClass(Type typeVariable, int argNum) {
+		if (typeVariable instanceof ParameterizedType) {
+			if (argNum == 0)
+				return getTypeClass(((ParameterizedType) typeVariable).getRawType(), 0);
+			return getTypeClass(((ParameterizedType) typeVariable).getActualTypeArguments()[argNum - 1], 0);
+		}
+		if (argNum == 0)
+			return (Class) typeVariable;
+		return getTypeClass(typeVariable, typeVariable, new ArrayList() {
+			{
+				add(Object.class);
+			}
+		});
+	}
+
+	public static Class getTypeClass(Object typeVariable, Type rawType, Collection exceptFor) {
 		if (typeVariable == null || exceptFor.contains(typeVariable)) {
 			return null;
 		}
@@ -1710,35 +1813,205 @@ abstract public class ReflectUtils implements UtilClass {
 		return null;
 	}
 
-	public static String getCanonicalSimpleName(Class clz) {
-		return getCanonicalSimpleName(clz, false);
+	///@Inject 
+	public static ParameterizedType makeParameterizedType(final Class raw, final Type... typeArguments) {
+		if (false) {
+			//bind(new TypeLiteral<Dao<Foo>>(){}).to(GenericDAO.class);
+			//return new com.google.inject.util.Modules.newParameterizedType(raw, typeArguments);
+		}
+		return new ParameterizedType() {
+			@Override public boolean equals(Object obj) {
+				if (!(obj instanceof Type))
+					return false;
+				return equalTypes(this, (Type) obj);
+			}
+
+			@Override public Type getRawType() {
+				return raw;
+			}
+
+			@Override public Type getOwnerType() {
+				return null;
+			}
+
+			@Override public Type[] getActualTypeArguments() {
+				return typeArguments;
+			}
+		};
 	}
 
-	public static String getCanonicalSimpleName(Class clz, boolean includePackaging) {
-		if (clz == null)
-			return "<?>";
-		if (clz.isArray()) {
-			return getCanonicalSimpleName(clz.getComponentType(), includePackaging) + "[]";
+	private static boolean equalTypes(Type[] a, Type[] b) {
+		if (a == b)
+			return true;
+		if (a == null || b == null)
+			return true;
+		if (a.length != b.length)
+			return false;
+		int al = a.length;
+		for (int i = 0; i < al; i++) {
+			if (!equalTypes(a[i], b[i]))
+				return false;
 		}
-		String c = clz.getSimpleName();
+		return true;
+	}
+
+	public static boolean equalTypes(Type a, Type b) {
+		if (a.getClass() != b.getClass()) {
+			if (a instanceof ParameterizedType) {
+				if (b instanceof ParameterizedType) {
+					if (!equalTypes(((ParameterizedType) a).getRawType(), ((ParameterizedType) b).getRawType()))
+						return false;
+					return equalTypes(((ParameterizedType) a).getActualTypeArguments(), ((ParameterizedType) b).getActualTypeArguments());
+				} else {
+					return equalTypes(b, a);
+				}
+			} else {
+				if (b instanceof ParameterizedType) {
+					return equalTypes(a, ((ParameterizedType) b).getRawType());
+				} else {
+					//
+				}
+			}
+		}
+		if (a.getClass() == b.getClass())
+			return a == b;
+		return false;
+	}
+
+	/**
+	 * Perform an unchecked cast based on a type parameter.
+	 * 
+	 * @param <T> The type to which the object should be cast.
+	 * @param o   The object.
+	 * @return    The object, cast to the given type.
+	 */
+	@SuppressWarnings("unchecked") public static <T> T uncheckedCast(Object o) {
+		return (T) o;
+	}
+
+	public static interface TypeArgumentDelegator {
+		public Map<String, Type> getTypeArguments(Class<?> genericType);
+	}
+
+	public static <T> Type getTypeArgument(Class<T> genericType, String typeParameterName, T obj) {
+		Map<String, Type> typeArguments = getTypeArguments(genericType, obj);
+		return typeArguments == null ? null : typeArguments.get(typeParameterName);
+	}
+
+	/**
+	 * Try to find the instantiation of all of genericTypes type parameters in objs class.
+	 * 
+	 * @param genericType   the generic supertype of objs class
+	 * @param obj                   an instantiation of a subclass of genericType. All of genericTypes type
+	 *                                              parameters must have been instantiated in the inheritance hierarchy.
+	 * @return                              a map of genericTypes type parameters (their name in the source code) to
+	 *                                              the type they are instantiated as in obj
+	 */
+	public static Map<String, Type> getTypeArguments(Class<?> genericType, Object obj) {
+		if (obj instanceof TypeArgumentDelegator) {
+			return ((TypeArgumentDelegator) obj).getTypeArguments(genericType);
+		}
+		Map<String, Type> typeMap = new TreeMap<String, Type>();
+		return getTypeArguments(genericType, obj.getClass(), typeMap);
+	}
+
+	public static boolean isAssignableFrom(Type type1, Type type2) {
+		if (type1 instanceof Class<?> && type2 instanceof Class<?>) {
+			return ((Class<?>) type1).isAssignableFrom((Class<?>) type2);
+		} else {
+			return type1.equals(type2);
+		}
+	}
+
+	private static Map<String, Type> getTypeArguments(Class<?> genericType, Type type, Map<String, Type> typeMap) {
+		if (type instanceof ParameterizedType) {
+			return getTypeArguments(genericType, (ParameterizedType) type, typeMap);
+		} else if (type instanceof Class<?>) {
+			return getTypeArguments(genericType, (Class<?>) type, typeMap);
+		} else {
+			throw new IllegalArgumentException();
+		}
+	}
+
+	private static Map<String, Type> getTypeArguments(Class<?> genericType, Class<?> classType, Map<String, Type> typeMap) {
+		if (genericType.isInterface()) {
+			for (Type interfaceType : classType.getGenericInterfaces()) {
+				Map<String, Type> result = getTypeArguments(genericType, interfaceType, typeMap);
+				if (result != null)
+					return result;
+			}
+		}
+
+		Type superType = classType.getGenericSuperclass();
+		if (superType != null) {
+			return getTypeArguments(genericType, superType, typeMap);
+		}
+
+		return null;
+	}
+
+	private static Map<String, Type> getTypeArguments(Class<?> genericType, ParameterizedType paramType, Map<String, Type> typeMap) {
+		Class<?> rawType = (Class<?>) paramType.getRawType();
+		if (rawType == genericType) {
+			// found it!
+			TypeVariable<?> typeVars[] = rawType.getTypeParameters();
+			Type actualTypes[] = paramType.getActualTypeArguments();
+			Map<String, Type> result = new TreeMap<String, Type>();
+			for (int i = 0; i < actualTypes.length; i++) {
+				while (actualTypes[i] != null && actualTypes[i] instanceof TypeVariable<?>) {
+					String key = typevarString((TypeVariable<?>) actualTypes[i]);
+					if (typeMap.containsKey(key))
+						actualTypes[i] = typeMap.get(key);
+					else
+						actualTypes[i] = null;
+				}
+				result.put(typeVars[i].getName(), actualTypes[i]);
+			}
+			return result;
+		} else {
+			TypeVariable<?> typeVars[] = rawType.getTypeParameters();
+			Type actualTypes[] = paramType.getActualTypeArguments();
+			for (int i = 0; i < typeVars.length; i++)
+				typeMap.put(typevarString(typeVars[i]), actualTypes[i]);
+			return getTypeArguments(genericType, paramType.getRawType(), typeMap);
+		}
+	}
+
+	private static String typevarString(TypeVariable<?> tv) {
+		return tv.getGenericDeclaration().toString() + " " + tv.getName();
+	}
+
+	public static String getCanonicalSimpleName(Class cls) {
+		return getCanonicalSimpleName(cls, false);
+	}
+
+	public static String getCanonicalSimpleName(Class cls, boolean includePackaging) {
+		if (cls == null)
+			return "<?>";
+		if (cls.isArray()) {
+			return getCanonicalSimpleName(cls.getComponentType(), includePackaging) + "[]";
+		}
+		String c = cls.getSimpleName();
+		if (cls.isPrimitive())
+			return c;
 		if (includePackaging && c != null) {
-			c = clz.getPackage().getName() + "." + c;
+			c = cls.getPackage().getName() + "." + c;
 		}
 		if (c == null || c.length() == 0) {
-			c = clz.getCanonicalName();
+			c = cls.getCanonicalName();
 			if (c != null & !includePackaging) {
 				c = c.substring(c.lastIndexOf('.') + 1);
 			}
 		}
 		if (c == null || c.length() == 0) {
-			c = clz.getName();
+			c = cls.getName();
 			if (!includePackaging)
 				c = c.substring(c.lastIndexOf('.') + 1);
 		}
-		if (clz.isAnonymousClass()) {
-			Class clz1 = clz.getSuperclass();
+		if (cls.isAnonymousClass()) {
+			Class clz1 = cls.getSuperclass();
 			if (clz1 == null || clz1 == Object.class) {
-				Class[] cs = clz.getInterfaces();
+				Class[] cs = cls.getInterfaces();
 				if (cs != null && cs.length > 0) {
 					return getCanonicalSimpleName(cs[0], false) + "-" + c;
 				}
@@ -1749,12 +2022,20 @@ abstract public class ReflectUtils implements UtilClass {
 	}
 
 	public static Object getFieldValue(Object obj, Field f) throws IllegalArgumentException, IllegalAccessException {
-		if (isStatic(f))
-			return f.get(null);
+		boolean ca = f.isAccessible();
 		try {
-			return f.get(recast(obj, f.getDeclaringClass()));
+			if (!ca) {
+				f.setAccessible(true);
+			}
+			if (isStatic(f))
+				return f.get(null);
+			return f.get(recastRU(obj, f.getDeclaringClass()));
 		} catch (NoSuchConversionException e) {
 			throw new IllegalArgumentException(e);
+		} finally {
+			if (!ca) {
+				//f.setAccessible(false);
+			}
 		}
 	}
 
@@ -2029,9 +2310,9 @@ abstract public class ReflectUtils implements UtilClass {
 		return on;
 	}
 
-	public static boolean implementsAllClasses(Class clz, Class... classes) {
+	public static boolean implementsAllClasses(Class cls, Class... classes) {
 		for (Class c : classes) {
-			if (!isAssignableFrom(c, clz))
+			if (!isAssignableFrom(c, cls))
 				return false;
 		}
 		return true;

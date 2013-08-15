@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -20,6 +21,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.Utilities;
 
 import org.appdapter.gui.api.BT;
 import org.appdapter.gui.api.DisplayContext;
@@ -109,25 +111,30 @@ public class ClassChooserPanel extends JPanel implements ActionListener, Documen
 				classAdd0(c);
 			}
 		}
-		try {
-			synchronized (classesShown) {
-				List<String> copy;
-				synchronized (classesSaved) {
-					if (classesSaved.size() == classesShown.size())
-						return;
-					copy = new ArrayList<String>(classesSaved);
-				}
-				classField.setEnabled(false);
-				for (String c : copy) {
-					if (!classesShown.add(c)) {
-						classField.addItem(c);
-					}
-				}
-			}
-		} finally {
-			classField.setEnabled(true);
+
+		final List<String> copy;
+		synchronized (classesSaved) {
+			if (classesSaved.size() == classesShown.size())
+				return;
+			copy = new ArrayList<String>(classesSaved);
 		}
 
+		Utility.invokeAndWait(new Runnable() {
+
+			@Override public void run() {
+
+				try {
+					classField.setEnabled(false);
+					for (String c : copy) {
+						if (!classesShown.add(c)) {
+							classField.addItem(c);
+						}
+					}
+				} finally {
+					classField.setEnabled(true);
+				}
+			}
+		});
 	}
 
 	@Override public void actionPerformed(ActionEvent evt) {

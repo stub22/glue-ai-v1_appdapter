@@ -16,10 +16,16 @@
 
 package org.appdapter.gui.trigger;
 
+import javax.swing.JFrame;
+
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.TriggerImpl;
 import org.appdapter.gui.box.ScreenBoxImpl;
+import org.appdapter.gui.browse.Utility;
+import org.appdapter.gui.demo.DemoBrowser;
 
+import twinkle.ui.components.ComponentRegistry;
+import twinkle.ui.components.TwinkleMain;
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -27,20 +33,21 @@ import org.appdapter.gui.box.ScreenBoxImpl;
 public class SysTriggers {
 
 	public enum Kind {
-		QUIT,
-		DUMP
+		QUIT, DUMP
 	}
-	public static class QuitTrigger<BT extends Box<TriggerImpl<BT>>> extends  TriggerImpl<BT> {
-		
-		public TriggerImpl<BT> makeTrigger(Class<BT> captures) {		
+
+	public static class QuitTrigger<BT extends Box<TriggerImpl<BT>>> extends TriggerImpl<BT> {
+
+		public TriggerImpl<BT> makeTrigger(Class<BT> captures) {
 			return new QuitTrigger<BT>();
 		}
 
 		@Override public void fire(BT targetBox) {
 			logInfo(toString() + "-firing, program exiting");
-			System.exit(0);
+			DemoBrowser.close();
 		}
 	}
+
 	// Example of the shorter, less-safe, raw typing style.
 	public static class DumpTrigger extends TriggerImpl {
 		@Override public void fire(Box targetBox) {

@@ -15,6 +15,7 @@ import org.appdapter.api.trigger.AnyOper.UIProvider;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.api.trigger.UserResult;
+import org.appdapter.core.convert.Convertable;
 
 /**
  * A wrapper for objects used in the ScreenBox system. It holds an object,

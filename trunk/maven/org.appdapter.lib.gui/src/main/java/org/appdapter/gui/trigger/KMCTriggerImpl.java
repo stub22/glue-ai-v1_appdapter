@@ -12,7 +12,7 @@ import org.appdapter.gui.browse.KMCTrigger;
 abstract public class KMCTriggerImpl extends TriggerForMember implements KMCTrigger {
 
 	public KMCTriggerImpl(String menuName, DisplayContext ctx, Class cls, Object obj, Member fd, boolean isDeclNonStatic0, FeatureDescriptor feature, boolean hasNoSideEffects) {
-		super(menuName, ctx, cls, obj, fd, isDeclNonStatic0, feature, hasNoSideEffects);
+		super(false, menuName, ctx, cls, obj, fd, isDeclNonStatic0, feature, hasNoSideEffects);
 	}
 
 	@Override public boolean equals(Object obj) {

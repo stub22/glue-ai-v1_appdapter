@@ -9,4 +9,8 @@ public interface TriggerForClass extends TriggerForType {
 
 	Trigger createTrigger(String menuFmt, DisplayContext ctx, Object poj);
 
+	boolean isFavorited();
+
+	boolean isSideEffectSafe();
+
 }

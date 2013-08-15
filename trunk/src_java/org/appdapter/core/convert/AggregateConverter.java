@@ -30,14 +30,23 @@ public class AggregateConverter implements Converter {
 	}
 
 	public static List getMcvt() {
+		return getMcvt(true);
+	}
+
+	public static List getMcvt(boolean check) {
 		List cc = curretnConversions.get();
 		if (cc == null) {
 			cc = new ArrayList();
 			curretnConversions.set(cc);
 			return cc;
 		}
-		if (cc.size() > 0) {
-			throw new ConcurrentModificationException("converns errors" + cc);
+		if (check && cc.size() > 0) {
+			if (true) {
+				cc.clear();
+
+			} else {
+				throw new ConcurrentModificationException("converns errors" + cc);
+			}
 		}
 		return cc;
 	}
@@ -73,33 +82,29 @@ public class AggregateConverter implements Converter {
 			}
 			try {
 				made = converter.convert(obj, objNeedsToBe, maxConverts);
+				if (objNeedsToBe.isInstance(made))
+					return (T) made;
 			} catch (NoSuchConversionException e) {
 				issue0 = e;
 			} catch (Throwable e) {
-				issue0 = new NoSuchConversionException(obj, objNeedsToBe, e);
+				issue0 = ReflectUtils.noSuchConversionException(obj, objNeedsToBe, e);
 			}
-			if (objNeedsToBe.isInstance(made))
-				return (T) made;
 		}
 		// set this to try and set a breakpoint to see why conversion failed
-		if (false & made != obj && made != null) {
-			obj = made;
+		if (false) {
 			for (Converter converter : cnverters) {
 				try {
 					made = converter.convert(obj, objNeedsToBe, maxConverts);
+					if (objNeedsToBe.isInstance(made))
+						return (T) made;
 				} catch (NoSuchConversionException e) {
 					issue0 = e;
 				} catch (Throwable e) {
-					issue0 = new NoSuchConversionException(obj, objNeedsToBe, e);
+					issue0 = ReflectUtils.noSuchConversionException(obj, objNeedsToBe, e);
 				}
-				if (objNeedsToBe.isInstance(made))
-					return (T) made;
 			}
 		}
-		if (issue0 == null)
-			issue0 = new NoSuchConversionException(obj, objNeedsToBe);
-
-		throw issue0;
+		throw ReflectUtils.noSuchConversionException(obj, objNeedsToBe, issue0);
 	}
 
 	@Override public Integer declaresConverts(Object val, Class from, Class objNeedsToBe, List maxConverts) {

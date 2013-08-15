@@ -3,12 +3,14 @@ package org.appdapter.gui.trigger;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
+import java.util.List;
 
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
+import org.appdapter.api.trigger.Trigger;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.NamedObjectCollection;
 import org.appdapter.gui.swing.SafeJMenuItem;
@@ -20,8 +22,8 @@ import org.appdapter.gui.swing.SafeJMenuItem;
 public class TriggerPopupMenu extends JPopupMenu {
 	final TriggerMenuController controller;
 
-	public TriggerPopupMenu(DisplayContext context, MouseEvent e, NamedObjectCollection noc, Collection object) {
-		controller = new TriggerMenuController(context, e, noc, object, this);
+	public TriggerPopupMenu(DisplayContext context, MouseEvent e, NamedObjectCollection noc) {
+		controller = new TriggerMenuController(context, e, noc, this);
 	}
 
 	/**
@@ -67,9 +69,13 @@ public class TriggerPopupMenu extends JPopupMenu {
 		return mi;
 	}
 
-	public void addObjectMenu(Object o) {
-		controller.addObjectMenu(o);
-		
+	public void addMenuFromObject(Object o) {
+		controller.addMenuFromObject(o);
+
+	}
+
+	public void addTriggers(Collection<Trigger> trigs) {
+		controller.addTriggers(trigs);
 	}
 
 }

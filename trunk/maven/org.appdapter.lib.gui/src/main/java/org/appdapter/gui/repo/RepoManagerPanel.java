@@ -22,27 +22,25 @@
 
 package org.appdapter.gui.repo;
 
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.beans.Customizer;
 import java.io.File;
-import java.util.List;
+import java.lang.reflect.Type;
 
 import javax.swing.JFileChooser;
-import javax.swing.JPopupMenu;
-import javax.swing.JTable;
-import javax.swing.table.TableModel;
 
-import org.appdapter.api.trigger.AnyOper.UISalient;
 import org.appdapter.api.trigger.AnyOper.UtilClass;
-import org.appdapter.api.trigger.Box;
+import org.appdapter.api.trigger.GetObject;
+import org.appdapter.core.matdat.OmniLoaderRepo;
+import org.appdapter.core.name.Ident;
 import org.appdapter.core.store.Repo;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.editors.ObjectPanel;
 import org.appdapter.gui.swing.ScreenBoxPanel;
-import org.appdapter.gui.trigger.TriggerMenuFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -50,13 +48,22 @@ import org.slf4j.LoggerFactory;
 public class RepoManagerPanel extends ScreenBoxPanel<MutableRepoBox> implements Customizer, UtilClass, ObjectPanel {
 	static Logger theLogger = LoggerFactory.getLogger(RepoManagerPanel.class);
 
-	@UISalient static public RepoManagerPanel showRepoManagerPanel(final Repo repo) {
-		return new RepoManagerPanel() {
-			{
-				setObject(repo);
-			}
-		};
+	@UISalient(IsPanel = true) static public RepoManagerPanel showRepoManagerPanel(final Repo repo) {
+		RepoManagerPanel rp = new RepoManagerPanel();
+		rp.setObject(repo);
+		return rp;
 	}
+
+	@UISalient static public Repo.WithDirectory createNewRepoWithModelForDirectory(final Model repo) {
+		return new OmniLoaderRepo(repo);
+	}
+
+	@UISalient(IsFactoryMethod = true)//
+	static public Repo.WithDirectory createNewRepoWithBlankModelForDirectory() {
+		return new OmniLoaderRepo(ModelFactory.createDefaultModel());
+	}
+
+	public static Type[] EDITTYPE = new Type[] { Repo.class, mapOf(Ident.class, makeParameterizedType(GetObject.class, Model.class)) };
 
 	@Override protected void initSubclassGUI() throws Throwable {
 		initComponents();
@@ -84,7 +91,6 @@ public class RepoManagerPanel extends ScreenBoxPanel<MutableRepoBox> implements 
 			Utility.makeTablePopupHandler(myGraphTable);
 		}
 	}
-
 
 	/** This method is called from within the constructor to
 	 * initialize the form.

@@ -17,8 +17,11 @@ import javax.swing.JComponent;
 import org.appdapter.api.trigger.AnyOper.AskIfEqual;
 import org.appdapter.api.trigger.AnyOper.UISalient;
 import org.appdapter.api.trigger.Box;
+import org.appdapter.api.trigger.GetObject;
 import org.appdapter.api.trigger.MutableTrigger;
 import org.appdapter.api.trigger.TriggerImpl;
+import org.appdapter.core.convert.Convertable;
+import org.appdapter.core.convert.Converter;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.core.name.Ident;
 import org.appdapter.gui.api.DisplayContext;
@@ -26,6 +29,7 @@ import org.appdapter.gui.api.GetDisplayContext;
 import org.appdapter.gui.api.UIAware;
 import org.appdapter.gui.browse.KMCTrigger;
 import org.appdapter.gui.browse.Utility;
+import org.appdapter.gui.swing.IsReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,10 +54,11 @@ ButtonFactory, AskIfEqual, UIAware, Action, ActionListener, KMCTrigger, GetDispl
 
 	//abstract protected void fireIT(Box b, ActionEvent e) throws InvocationTargetException;
 
-	public void fireIT(Box targetBox, ActionEvent actevt) throws InvocationTargetException {
+	public void fireIT(Object targetBox, ActionEvent actevt) throws InvocationTargetException {
 		getLogger().debug(this.toString() + " firing on " + targetBox.toString());
 		Object obj = valueOf(targetBox, actevt, true, true);
 		try {
+			useCount++;
 			Utility.addSubResult(this, targetBox, actevt, obj, getReturnType());
 		} catch (PropertyVetoException e) {
 			Debuggable.printStackTrace(e);
@@ -61,7 +66,9 @@ ButtonFactory, AskIfEqual, UIAware, Action, ActionListener, KMCTrigger, GetDispl
 
 	}
 
-	public abstract Object valueOf(Box targetBox, ActionEvent actevt, boolean wantSideEffect, boolean isPaste) throws InvocationTargetException;
+	abstract public boolean isSideEffectSafe();
+
+	public abstract Object valueOf(Object targetBox, ActionEvent actevt, boolean wantSideEffect, boolean isPaste) throws InvocationTargetException;
 
 	private Action actionImpl = new AbstractAction() {
 
@@ -70,6 +77,7 @@ ButtonFactory, AskIfEqual, UIAware, Action, ActionListener, KMCTrigger, GetDispl
 		}
 
 		@Override public void actionPerformed(ActionEvent e) {
+			useCount++;
 			TriggerForInstance.this.actionPerformed(e);
 		}
 
@@ -79,14 +87,55 @@ ButtonFactory, AskIfEqual, UIAware, Action, ActionListener, KMCTrigger, GetDispl
 
 	};
 	protected String menuPath_cache;
+	protected ActionEvent lastEvent;
+	public MouseEvent lastMEvent;
+	public int useCount;
+	public TriggerForClass creator;
 
 	final @Override public void actionPerformed(ActionEvent e) {
 		try {
-			fireIT(Utility.asBoxed(e.getSource()), e);
+			if (lastEvent == e) {
+				return;
+			}
+			lastEvent = e;
+			fireIT(findBox(e.getSource()), e);
 		} catch (InvocationTargetException e1) {
 			Debuggable.printStackTrace(e1);
 			throw Debuggable.reThrowable(e1);
+		} finally {
+			lastEvent = e;
 		}
+	}
+
+	private Box findBox(Object source) {
+		if (source instanceof Box)
+			return (Box) source;
+		int fuel = 10;
+		while (source instanceof IsReference) {
+			Object s2 = ((IsReference) source).getValue();
+			if (s2 == null || s2 == source)
+				break;
+			source = s2;
+			if (source instanceof Box)
+				return (Box) source;
+			fuel--;
+			if (fuel < 0) {
+				return null;
+			}
+		}
+		fuel = 10;
+		while (source instanceof GetObject) {
+			Object s2 = ((GetObject) source).getValue();
+			if (s2 == null || s2 == source)
+				break;
+			source = s2;
+			if (source instanceof Box)
+				return (Box) source;
+			if (fuel < 0) {
+				return null;
+			}
+		}
+		return null;
 	}
 
 	@Override public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -155,7 +204,7 @@ ButtonFactory, AskIfEqual, UIAware, Action, ActionListener, KMCTrigger, GetDispl
 		return actionImpl.getValue(key);
 	}
 
-	public Object getValueOr(Box targetBox) {
+	public Object getValueOr(Object targetBox) {
 		if (_object != null) {
 			return Utility.dref(_object, true);
 		}
@@ -243,6 +292,7 @@ ButtonFactory, AskIfEqual, UIAware, Action, ActionListener, KMCTrigger, GetDispl
 				//onMouseEvent(e);
 			}
 		};
+		comp.removeMouseListener(myMouseListener);
 		comp.addMouseListener(myMouseListener);
 		comp.setName(getShortLabel());
 		comp.setToolTipText(getDescription());
@@ -254,5 +304,13 @@ ButtonFactory, AskIfEqual, UIAware, Action, ActionListener, KMCTrigger, GetDispl
 	abstract public void onMouseEvent(MouseEvent event);
 
 	abstract public void applySalience(UISalient isSalient);
+
+	public boolean isFavorited() {
+		if (useCount > 0)
+			return true;
+		if (creator != null)
+			return creator.isFavorited();
+		return false;
+	}
 
 }

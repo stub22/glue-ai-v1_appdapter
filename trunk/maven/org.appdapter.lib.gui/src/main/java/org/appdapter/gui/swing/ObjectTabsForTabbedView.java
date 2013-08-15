@@ -13,6 +13,7 @@ import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.BoxPanelSwitchableView;
 import org.appdapter.gui.api.DisplayType;
 import org.appdapter.gui.browse.Utility;
+import org.appdapter.gui.editors.ObjectPanel;
 import org.appdapter.gui.trigger.TriggerMenuFactory;
 
 import com.jidesoft.swing.JideTabbedPane;
@@ -21,8 +22,10 @@ public class ObjectTabsForTabbedView implements BoxPanelSwitchableView {
 
 	final JideTabbedPane tabs;
 	final Object lock;
+	final Object rootValue;
 
-	public ObjectTabsForTabbedView(JideTabbedPane tbs, boolean closableTabs) {
+	public ObjectTabsForTabbedView(JideTabbedPane tbs, boolean closableTabs, Object rootValue) {
+		this.rootValue = rootValue;
 		lock = tbs;
 		synchronized (lock) {
 			tabs = (JideTabbedPane) tbs;
@@ -173,6 +176,10 @@ public class ObjectTabsForTabbedView implements BoxPanelSwitchableView {
 			title = titleCheck(title, view);
 			if (index == -1) {
 				tabs.addTab(title, view);
+				if (view instanceof ObjectPanel) {
+					ObjectPanel objpanel = (ObjectPanel) view;
+					objpanel.setTabHost(this);
+				}
 				return true;
 			} else {
 
@@ -298,5 +305,9 @@ public class ObjectTabsForTabbedView implements BoxPanelSwitchableView {
 			}
 		}
 		return list;
+	}
+
+	@Override public Object getRootValue() {
+		return this.rootValue;
 	}
 }

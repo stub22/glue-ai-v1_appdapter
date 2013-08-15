@@ -7,11 +7,18 @@ import java.util.List;
 import org.appdapter.core.convert.Converter;
 import org.appdapter.core.convert.NoSuchConversionException;
 import org.appdapter.core.convert.ReflectUtils;
+import org.appdapter.core.log.Debuggable;
 
 abstract public class ToFromKeyConverter<VALUECLASS, KEYCLASS> implements Converter {
 	protected Class<VALUECLASS> valueClass;
 	protected Class<KEYCLASS> keyClass;
 
+	
+	@Override public String toString() {
+		return "{" + Debuggable.toInfoStringArgV(keyClass, "=", valueClass, getClass()) + "}";
+	}
+
+	
 	@Override public Integer declaresConverts(Object val, Class valClass, Class objNeedsToBe, List maxCvt) {
 		if (valClass != keyClass)
 			return WONT;

@@ -77,6 +77,12 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 
 	public void setSelection(Object object) {
 		model.setSelectedItem(object);
+		String whatWasSelected = model.getSelectedItem();
+		Object whatWasSelectedObj = model.getSelectedBean();
+
+		if (whatWasSelectedObj != object) {
+			Utility.bug("SetSelection broken  on this " + this);
+		}
 	}
 
 	@Override public void pojoAdded(Object obj, BT box, Object senderCollection) {
@@ -132,7 +138,8 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 	private void showMenu(int x, int y, MouseEvent e) {
 		Object object = model.getSelectedBean();
 		if (object != null) {
-			TriggerPopupMenu menu = new TriggerPopupMenu(null, e, null, Arrays.asList(object));
+			TriggerPopupMenu menu = new TriggerPopupMenu(null, e, null);
+			menu.addMenuFromObject(object);
 			add(menu);
 			menu.show(this, x, y);
 		}
@@ -144,22 +151,41 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 		if (object instanceof String)
 			return (String) object;
 		try {
-			if (converter != null)
-				return "" + converter.toKey(object);
-		} catch (Throwable t) {
+			if (converter != null) {
+				Object key = converter.toKey(object);
+				if (key instanceof String)
+					return (String) key;
 
+			}
+		} catch (Throwable t) {
+			t.printStackTrace();
 		}
 		return Utility.getUniqueName(object, context);
 	}
 
 	public Object stringToObject(String title) {
+		if (title.equals("<null>"))
+			return null;
+		Object obj = stringToObjectImpl(title);
+		if (obj == null || (type != null && !type.isInstance(obj))) {
+			obj = stringToObjectImpl(title);
+			Utility.bug("stringToObjectImpl producing inccorect " + type + ": " + obj);
+		}
+		return obj;
+	}
+
+	public Object stringToObjectImpl(String title) {
 		if (title == null || title.equals("<null>"))
 			return null;
 		if (type == String.class)
 			return title;
 
-		if (converter != null)
-			return converter.fromKey(title, type);
+		if (converter != null) {
+			Object obj = converter.fromKey(title, type);
+			if (obj != null) {
+				return obj;
+			}
+		}
 		Object obj = context.findObjectByName(title);
 		if (obj != null)
 			return obj;
@@ -183,11 +209,23 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 		}
 
 		@Override public synchronized void setSelectedItem(Object anItem) {
-			setSelectedName(objectToString(anItem));
+			if (anItem instanceof String) {
+				setSelectedName((String) anItem);
+				return;
+			}
+			String title = objectToString(anItem);
+			Object obj = stringToObject(title);
+			if (obj != anItem) {
+				Utility.bug("Not round tripping " + anItem);
+			}
+			setSelectedName(title);
 		}
 
 		public synchronized void setSelectedName(String anItem) {
-			String old = selected;
+			if (selected == null) {
+
+			}
+			String old = getSelectedItem();
 			selected = anItem;
 
 			//if (old != selected)
@@ -197,7 +235,8 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 				values.add(selected);
 			}
 			fireContentsChanged(this, -1, -1);
-			Object o = stringToObject(old), n = stringToObject(selected);
+			Object o = stringToObject(old);
+			Object n = stringToObject(selected);
 			if (o != n) {
 				propSupport.firePropertyChange("selection", o, n);
 			}
@@ -211,6 +250,8 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 		}
 
 		public Object getSelectedBean() {
+			if (selected == null)
+				return null;
 			return stringToObject(selected);
 		}
 

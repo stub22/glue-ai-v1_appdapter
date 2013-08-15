@@ -34,8 +34,12 @@ import com.hp.hpl.jena.rdf.model.Resource;
 public class AssemblerConverter implements Converter {
 	static Logger theLogger = LoggerFactory.getLogger(AssemblerConverter.class);
 
-	public AssemblerConverter(Assembler asmblr, Mode mode) {
+	Class targetClass = null;
+	public AssemblerConverter(Assembler asmblr, Mode mode, Class tafc) {
 		// TODO Auto-generated constructor stub
+	}
+	@Override public String toString() {
+		return "{" + Debuggable.toInfoStringArgV("Assember=", targetClass, getClass()) + "}";
 	}
 
 	@Override public <T> T convert(Object obj, Class<T> objNeedsToBe, List maxConverts) throws NoSuchConversionException {
@@ -43,21 +47,21 @@ public class AssemblerConverter implements Converter {
 			Object eval = JenaLiteralUtils.convertOrNull(obj, objNeedsToBe);
 			if (objNeedsToBe.isInstance(eval))
 				return (T) eval;
-			throw new NoSuchConversionException(obj, objNeedsToBe, null);
+			throw ReflectUtils.noSuchConversionException(obj, objNeedsToBe, null);
 		} catch (Throwable e) {
-			throw new NoSuchConversionException(obj, objNeedsToBe, e);
+			return ReflectUtils.noSuchConversion(obj, objNeedsToBe, e);
 		}
 	}
 
-	public static AssemblerConverter makeConverter(Assembler asmblr, Mode mode) {
-		return new AssemblerConverter(asmblr, mode);
+	public static AssemblerConverter makeConverter(Assembler asmblr, Mode mode, Class tafc) {
+		return new AssemblerConverter(asmblr, mode, tafc);
 	}
 
 	public static void initObjectProperties(Object target, Item item, Assembler asmblr, Mode mode, ItemAssemblyReader reader, Class tafc) {
 		JenaResourceItem resourceItem = null;
 		ArrayList<Throwable> oops = null;
 		int missedCount = 0;
-		AssemblerConverter converter = makeConverter(asmblr, mode);
+		AssemblerConverter converter = makeConverter(asmblr, mode, tafc);
 		if (item instanceof JenaResourceItem) {
 			resourceItem = (JenaResourceItem) item;
 			Map<Property, List<RDFNode>> properties = resourceItem.getPropertyMap();

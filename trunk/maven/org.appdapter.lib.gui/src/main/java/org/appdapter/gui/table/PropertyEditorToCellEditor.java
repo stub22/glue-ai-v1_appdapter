@@ -40,6 +40,8 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.text.JTextComponent;
 import javax.swing.tree.TreeCellEditor;
 
+import org.appdapter.gui.browse.Utility;
+
 
 /**
  * Allows to use any PropertyEditor as a Table or Tree cell editor. <br>
@@ -69,7 +71,7 @@ public class PropertyEditorToCellEditor extends AbstractCellEditor implements Ta
 		public void focusGained(final FocusEvent e) {
 			if (!(e.getSource() instanceof JTextField))
 				return;
-			SwingUtilities.invokeLater(new Runnable() {
+			Utility.invokeLater(new Runnable() {
 				public void run() {
 					((JTextField) e.getSource()).selectAll();
 				}
@@ -79,7 +81,7 @@ public class PropertyEditorToCellEditor extends AbstractCellEditor implements Ta
 		public void focusLost(final FocusEvent e) {
 			if (!(e.getSource() instanceof JTextField))
 				return;
-			SwingUtilities.invokeLater(new Runnable() {
+			Utility.invokeLater(new Runnable() {
 				public void run() {
 					((JTextField) e.getSource()).select(0, 0);
 				}
@@ -156,7 +158,7 @@ public class PropertyEditorToCellEditor extends AbstractCellEditor implements Ta
 
 		// request focus later so the editor can be used to enter value as soon as
 		// made visible
-		SwingUtilities.invokeLater(new Runnable() {
+		Utility.invokeLater(new Runnable() {
 			public void run() {
 				cellEditor.requestFocus();
 			}

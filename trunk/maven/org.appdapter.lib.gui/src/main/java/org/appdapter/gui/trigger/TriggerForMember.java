@@ -48,6 +48,8 @@ import com.hp.hpl.jena.rdf.model.Container;
 public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerForInstance<BT> implements Comparable<Trigger>, AskIfEqual, TriggerForClass {
 	//extends TriggerForInstance implements Comparable<Trigger>, AskIfEqual {
 
+	public static boolean ShowConvertedTargetTriggers = false;
+
 	@UISalient(MenuName = "%m")
 	static public boolean PrefixWithIndirectyWhenIndirect = true;
 
@@ -72,28 +74,38 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 	private String menuFormat;
 	public PropertyDescriptorForField propDesc;
 	Object retvalCache;
-	boolean isSideEffectSafe;
+	private boolean isSideEffectSafe;
+	boolean isTemplateTrigger = false;
 
 	// means the _object is ingnored
 	boolean isDeclaredLikeStatic;
 
-	private boolean isPaste;
+	private boolean isPasteAtPopup;
 
-	public TriggerForMember(String menuName, DisplayContext ctx, Class cls, Object obj, Member fd, boolean isDeclNonStatic0, FeatureDescriptor feature, boolean hasNoSideEffects) {
+	public TriggerForMember(boolean isTemplate, String menuName, DisplayContext ctx, Class cls, Object obj, Member fd, boolean isDeclNonStatic0, FeatureDescriptor feature, boolean hasNoSideEffects) {
+		isTemplateTrigger = isTemplate;
 		init(menuName, ctx, cls, obj, fd, isDeclNonStatic0, feature);
 		member = fd;
-		isSideEffectSafe = hasNoSideEffects;
+		setSideEffectSafe(hasNoSideEffects);
 		recheckSideEffects(fd);
 	}
 
 	private void recheckSideEffects(Member fd) {
-		if (!isSideEffectSafe) {
+
+		if (fd != null && nonPrimReturnType() == Void.class) {
+			// void methods must do someting (unsafe)
+			setSideEffectSafe(false);
+		}
+		if (!isSideEffectSafe()) {
 			if (fd != null && nonPrimReturnType() != Void.class) {
+				if (member.getName().equals("getConverters")) {
+					error("getConverters is not sideEffectSafe?");
+				}
 				if (isReady()) {
 					String memberName = fd.getName();
 					if (memberName.startsWith("get") || memberName.startsWith("is")) {
 						if (isSafeOfSideEffects(getDeclaringClass()) && isSafeOfSideEffects(getReturnType())) {
-							isSideEffectSafe = true;
+							setSideEffectSafe(true);
 						}
 					}
 				}
@@ -112,7 +124,17 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 
 	@Override public boolean appliesTarget(Class cls, Object anyObject) {
 		Class classOfBox = getDeclaringClass();
-		return ReflectUtils.convertsTo(anyObject, cls, classOfBox);
+		if (anyObject != null && classOfBox.isInstance(anyObject)) {
+			return true;
+		}
+		if (classOfBox.isAssignableFrom(cls)) {
+			return true;
+		}
+		if (!ReflectUtils.convertsTo(anyObject, cls, classOfBox))
+			return false;
+		if (!ShowConvertedTargetTriggers)
+			return false;
+		return true;
 	}
 
 	public boolean appliesToOperand(Class cls) {
@@ -131,18 +153,22 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 		this.isSalientMethod = uiSalient;
 		String mn = uiSalient.MenuName();
 		if (mn != null && mn.length() > 0) {
+			menuFormat = mn;
+			menuPath_cache = null;
 			setShortLabel(mn);
+			getMenuPath();
 			setMenuInfo();
 		}
 		if (uiSalient.IsSideEffectSafe()) {
-			isSideEffectSafe = true;
+			setSideEffectSafe(true);
 		}
 		if (uiSalient.IsNotSideEffectSafe()) {
-			isSideEffectSafe = false;
+			setSideEffectSafe(false);
 		}
 		if (uiSalient.TreatLikeStatic()) {
 			isDeclaredLikeStatic = true;
 		}
+
 	}
 
 	/**
@@ -181,7 +207,11 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 	public TriggerForInstance createTrigger(String menuFmt, DisplayContext ctx, Object poj) {
 		if (menuFmt == null)
 			menuFmt = this.menuFormat;
-		return new TriggerForMember(menuFmt, ctx, arg0Clazz, poj, member, isDeclNonStatic, featureDesc, isSideEffectSafe);
+		TriggerForMember tfm = new TriggerForMember(false, menuFmt, ctx, arg0Clazz, poj, member, isDeclNonStatic, featureDesc, isSideEffectSafe());
+		tfm.applySalience(this.isSalientMethod);
+		tfm.creator = this;
+		tfm.useCount = this.useCount;
+		return tfm;
 	}
 
 	public boolean equalJob(Trigger obj) {
@@ -265,8 +295,12 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 		return false;
 	}
 
-	public void fireIT(Box targetBox, ActionEvent actevt) throws InvocationTargetException {
-		getLogger().debug(Debuggable.toInfoStringArgV(this, " firing on ", targetBox, " with " + actevt));
+	@Override public void fireIT(Object targetBox, ActionEvent actevt) throws InvocationTargetException {
+		if (lastEvent == actevt) {
+			getLogger().debug(Debuggable.toInfoStringArgV(this, " firing 0n ", targetBox, " with " + actevt));
+		} else {
+			getLogger().debug(Debuggable.toInfoStringArgV(this, " firing on ", targetBox, " with " + actevt));
+		}
 		Object obj = valueOf(targetBox, actevt, true, wasPaste(actevt));
 		Class rt = nonPrimReturnType();
 		try {
@@ -278,7 +312,7 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 	}
 
 	public boolean wasPaste(ActionEvent actevt) {
-		return isPaste;
+		return isPasteAtPopup;
 	}
 
 	public Class getDeclaringClass() {
@@ -315,8 +349,8 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 		boolean was = Debuggable.isNotShowingExceptions();
 		Debuggable.setDoNotShowExceptions(true);
 		try {
-			if (this.menuPath_cache == null || isPaste || isReady()) {
-				isPaste = false;
+			if (this.menuPath_cache == null || isPasteAtPopup || isReady()) {
+				isPasteAtPopup = false;
 				menuPath_cache = makeMenuPath();
 			}
 			return this.menuPath_cache;
@@ -326,7 +360,7 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 	}
 
 	public boolean isReady() {
-		if (isPaste)
+		if (isPasteAtPopup)
 			return true;
 		return getMissingParametersAtPopup() == 0;
 	}
@@ -367,35 +401,35 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 		if (isStatic) {
 			prefix = "Static|";
 		}
-		Class ifc = tdc;
-		if (!tdc.isInterface() || true) {
-			Member member = getMember();
-			if (member instanceof Method) {
-				Class fi = member.getDeclaringClass();
-				Method m = getInterfaceMethod(fi, (Method) member);
-				if (m == null) {
-					Class srch = mdc;
-					if (!isStatic(member)) {
-						if (o1 != null) {
-							srch = o1.getClass();
-						}
-					}
-					if (srch != fi) {
-						m = getInterfaceMethod(srch, (Method) member);
-					}
-				}
-				if (m != null) {
-					mdc = m.getDeclaringClass();
-					//tdc = mdc;
-					if (mdc.isInterface()) {
-						ifc = mdc;
-					}
-				}
-			}
-		}
 
 		boolean isIndirect = (o1 != null && !tdc.isInstance(o1));
 		if (s.contains("%c")) {
+			Class ifc = tdc;
+			if (false && !tdc.isInterface()) {
+				Member member = getMember();
+				if (member instanceof Method) {
+					Class fi = member.getDeclaringClass();
+					Method m = getInterfaceMethod(fi, (Method) member);
+					if (m == null) {
+						Class srch = mdc;
+						if (!isStatic(member)) {
+							if (o1 != null) {
+								srch = o1.getClass();
+							}
+						}
+						if (srch != fi) {
+							m = getInterfaceMethod(srch, (Method) member);
+						}
+					}
+					if (m != null) {
+						mdc = m.getDeclaringClass();
+						//tdc = mdc;
+						if (mdc.isInterface()) {
+							ifc = mdc;
+						}
+					}
+				}
+			}
 			String strval = ReflectUtils.getCanonicalSimpleName(ifc);
 			if (isIndirect) {
 				isIndirect = true;
@@ -417,8 +451,12 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 			s = replace(s, "%d", strval);
 		}
 		if (s.contains("%o")) {
-			String strval = Utility.getUniqueName(ReflectUtils.recastOrNull(o1, tdc, "<NoConversion>"));
+			String strval = Utility.getUniqueName(ReflectUtils.recastOrOtherwise(o1, tdc, "<NoConversion>"));
 			s = replace(s, "%o", strval);
+		}
+		if (s.contains("%t")) {
+			String strval = Utility.getUniqueName(o1);
+			s = replace(s, "%t", strval);
 		}
 		if (s.contains("%i")) {
 			Class fi = mdc;
@@ -489,6 +527,9 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 					strval = replace(strval, "is", "Show");
 				}
 			}
+			if (nonPrimReturnType() == Void.class) {
+				strval = "* " + strval;
+			}
 			boolean showMoreParamsNeeded = true;
 			Class[] params = getParameters();
 			Object[] filledInParams = this.filledInParams;
@@ -508,7 +549,7 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 						}
 
 						strval = "Paste|" + strval + " with '" + Utility.getUniqueName(paste) + "'";
-						isPaste = true;
+						isPasteAtPopup = true;
 						showMoreParamsNeeded = false;
 					}
 				} catch (NoSuchConversionException e) {
@@ -533,8 +574,26 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 					strval = "More Params Needed|" + strval;
 				}
 			}
+
 			s = replace(s, "%m", strval);
 		}
+		if (missingParamsTotal > 0) {
+			if (!s.contains("%p"))
+				s = s + " %p";
+		}
+		if (s.contains("%p")) {
+			String strval = "";
+			Class[] params = getParameters();
+			for (int i = 0; i < params.length; i++) {
+				if (strval == "") {
+					strval = Utility.getShortClassName(params[i]);
+				} else {
+					strval += "," + Utility.getShortClassName(params[i]);
+				}
+			}
+			s = replace(s, "%p", "(" + strval + ")");
+		}
+
 		return prefix + s + suffix.toString();
 	}
 
@@ -641,7 +700,7 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 	public Object getSafeValue() {
 		if (retvalCache != null)
 			return retvalCache;
-		if (isSideEffectSafe) {
+		if (isSideEffectSafe()) {
 			try {
 				return retvalCache = valueOf(null, null, false, false);
 			} catch (Throwable e) {
@@ -661,21 +720,34 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 		featureDesc = feature;
 		_object = obj;
 		isDeclNonStatic = isDeclNonStatic0;
-		if (isDeclNonStatic && !ReflectUtils.isStatic(member)) {
+		boolean isStatic = ReflectUtils.isStatic(member);
+		if (isDeclNonStatic && !isStatic) {
 			theLogger.warn("isDeclNonStatic to non static " + member);
 		}
+
 		String desc = describeMethod(fd);
 		Class[] ps = getParameters();
 		if (ps.length > 0) {
 			arg0Clazz = getParameters()[0];
 		}
+
+		boolean dirrect = arg0Clazz.isInstance(obj);
+
+		if (!isTemplateTrigger && !dirrect && ps.length > 0) {
+			error("not isntance of " + arg0Clazz);
+		}
+		if (isTemplateTrigger && dirrect) {
+			error("not isntance of " + arg0Clazz);
+		}
+
 		if (featureDesc instanceof PropertyDescriptorForField) {
-			isSideEffectSafe = true;
+			setSideEffectSafe(true);
 			propDesc = (PropertyDescriptorForField) feature;
 			desc = desc + " " + propDesc.getShortDescription();
 			//menuName = propDesc.getSyntheticName(member);
 			Field f = propDesc.getField();
-			if (propDesc.getReadMethod() == member) {
+			Method rm = propDesc.getReadMethod();
+			if (rm == null || rm == member) {
 				member = f;
 				arg0Clazz = f.getDeclaringClass();
 			}
@@ -683,7 +755,12 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 		} else {
 			setDescription(desc);
 		}
-		setShortLabel(getShortLabel());
+		//setShortLabel(getShortLabel());
+	}
+
+	private void error(String msg) {
+		Utility.bug(msg);
+
 	}
 
 	@Override public AbstractButton makeMenuItem(String menuName, final Object b) {
@@ -697,7 +774,7 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 		}
 		final TriggerForMember trig = this;
 
-		if (isSideEffectSafe && nonPrimReturnType() == Boolean.class) {
+		if (isSideEffectSafe() && nonPrimReturnType() == Boolean.class) {
 			jmi = new SafeJCheckBoxMenuItem(b, true, menuName, null, getSafeValue() == Boolean.TRUE);
 
 		} else {
@@ -738,7 +815,7 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 		}
 
 		if (nonPrimReturnType() == Boolean.class) {
-			if (isSideEffectSafe) {
+			if (isSideEffectSafe()) {
 				boolean b;
 				try {
 					Object res = getSafeValue();
@@ -770,41 +847,55 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 		}
 	}
 
-	public Object valueOf(Box targetBox, ActionEvent actevt, boolean wantSideEffect, boolean isPaste) throws InvocationTargetException {
+	public Object valueOf(Object targetBox, ActionEvent actevt, boolean wantSideEffect, boolean isPaste) throws InvocationTargetException {
 		boolean was = Debuggable.isNotShowingExceptions();
 		if (!wantSideEffect) {
 			Debuggable.setDoNotShowExceptions(true);
 		} else {
+			addUseCount();
 			if (eventHandled) {
-				return null;
+				return retvalCache;
 			}
 		}
 		try {
 			return valueOfImpl(targetBox, actevt, wantSideEffect, isPaste);
 		} finally {
 			Debuggable.setDoNotShowExceptions(was);
-			lastEvent = null;
+			//lastEvent = null;
 			eventHandled = false;
 		}
 	}
 
+	public void addUseCount() {
+		useCount++;
+		if (creator instanceof TriggerForInstance) {
+			TriggerForInstance tfi = (TriggerForInstance) creator;
+			tfi.useCount++;
+		}
+
+	}
+
 	// ==true mean another event handler has handled the event
 	boolean eventHandled = false;
-	MouseEvent lastEvent = null;
+
+	//MouseEvent lastEvent = null;
 
 	@Override public void onMouseEvent(MouseEvent event) {
 		Object src = event.getSource();
 		if (src instanceof AbstractButton && src != jmi) {
 			jmi = (AbstractButton) src;
 		}
-		lastEvent = event;
+		if (super.lastMEvent == event) {
+			return;
+		}
+		super.lastMEvent = event;
 		boolean popOutAndNotUp = event.getButton() != 3;
 		// handling a right click
 		Class type = nonPrimReturnType();
 		if (type == Void.class)
 			return;
 		TriggerMenuFactory tmf = TriggerMenuFactory.getInstance(this);
-		if (isSideEffectSafe) {
+		if (isSideEffectSafe()) {
 			Object valueAtTip;
 			try {
 
@@ -848,7 +939,7 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 	}
 
 	private void showSubMenuPopup(MouseEvent event, Object valueAtTip, Container from) {
-		JPopupMenu tpm = TriggerMenuFactory.buildPopupMenu(Collections.singleton(valueAtTip), event);
+		JPopupMenu tpm = TriggerMenuFactory.buildPopupMenuAndShow(event, false, valueAtTip);
 		tpm.setLocation((int) event.getLocationOnScreen().getX(), (int) event.getLocationOnScreen().getY());
 		tpm.show();
 	}
@@ -861,7 +952,7 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 		tpm.show();
 	}
 
-	private Object valueOfImpl(Box targetBox, ActionEvent actevt, boolean wantSideEffect, boolean isPaste) throws InvocationTargetException {
+	private Object valueOfImpl(Object targetBox, ActionEvent actevt, boolean wantSideEffect, boolean isPaste) throws InvocationTargetException {
 		Class rt = nonPrimReturnType();
 		Member m = getMember();
 		{
@@ -902,11 +993,11 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 				}
 				// is a method
 				if (m instanceof Method) {
-					if (isSideEffectSafe || wantSideEffect) {
+					if (isSideEffectSafe() || wantSideEffect) {
 						OptionalArg optionalArg = new UtilityOptionalArgs(getOptionalArgSpec());
 						int missing = fillInParamsFromUI(optionalArg, null);
-						if (missing == 0) {
-							retvalCache = invokeA(tryValue, DEFAULT_CONVERTER, (Method) m, filledInParams);
+						if (missing == 0 && retvalCache == null) {
+							retvalCache = invokeA(tryValue, NO_CONVERTER, (Method) m, filledInParams);
 						}
 						return retvalCache;
 					} else {
@@ -914,16 +1005,38 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 					}
 				}
 				return retvalCache;
+			} catch (NoSuchConversionException e) {
+				if (logError(e, wantSideEffect))
+					return null;
+				throw e;
+			} catch (ClassCastException e) {
+				if (logError(e, wantSideEffect))
+					return null;
+				throw e;
 			} catch (InvocationTargetException e) {
+				if (logError(e, wantSideEffect))
+					return null;
 				throw e;
 			} catch (Throwable e) {
+				logError(e, wantSideEffect);
+				if (!wantSideEffect)
+					return null;
 				printStackTrace(e);
 				throw new InvocationTargetException(e);
 			}
 		}
 	}
 
-	private Object getParam0(Box targetBox) {
+	private boolean logError(Throwable e, boolean wantSideEffect) {
+		if (isSideEffectSafe && !wantSideEffect) {
+			// error without wanting side effects
+			setSideEffectSafe(false);
+		}
+		return !wantSideEffect;
+
+	}
+
+	protected Object getParam0(Object targetBox) {
 		Object tryValue = targetBox;
 		if (_object != null) {
 			tryValue = _object;
@@ -933,9 +1046,23 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 
 	private short getOptionalArgSpec() {
 		short optionalArgSpec = OptionalArg.OPTIONAL_FROM_SINGLETON;
-		if (isPaste) {
+		if (isPasteAtPopup) {
 			optionalArgSpec += OptionalArg.OPTIONAL_FROM_CLIPBOARD;
 		}
 		return optionalArgSpec;
+	}
+
+	public boolean isSideEffectSafe() {
+		if (creator != null && !creator.isSideEffectSafe())
+			return false;
+		if (!Utility.isSideEffectSafe(getDeclaringClass()))
+			return false;
+		return isSideEffectSafe;
+	}
+
+	void setSideEffectSafe(boolean val) {
+		if (creator instanceof TriggerForMember && val == false)
+			((TriggerForMember) creator).isSideEffectSafe = false;
+		this.isSideEffectSafe = val;
 	}
 }

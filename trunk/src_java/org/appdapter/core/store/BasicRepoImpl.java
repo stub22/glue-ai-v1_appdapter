@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.appdapter.api.trigger.GetObject;
 import org.appdapter.bind.rdf.jena.assembly.AssemblerUtils;
 import org.appdapter.bind.rdf.jena.query.JenaArqQueryFuncs;
 import org.appdapter.bind.rdf.jena.query.JenaArqResultSetProcessor;
@@ -83,14 +84,15 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 
 	@Override public List<GraphStat> getGraphStats() {
 		List<GraphStat> stats = new ArrayList<GraphStat>();
-		Dataset mainDset = getMainQueryDataset();
+		final Dataset mainDset = getMainQueryDataset();
 		Iterator<String> nameIt = mainDset.listNames();
 		while (nameIt.hasNext()) {
-			String modelName = nameIt.next();
-			Repo.GraphStat gs = new GraphStat();
-			gs.graphURI = modelName;
-			Model m = mainDset.getNamedModel(modelName);
-			gs.statementCount = m.size();
+			final String modelName = nameIt.next();
+			Repo.GraphStat gs = new GraphStat(modelName, new GetObject<Model>() {
+				@Override public Model getValue() {
+					return mainDset.getNamedModel(modelName);
+				}
+			});
 			stats.add(gs);
 		}
 		return stats;
