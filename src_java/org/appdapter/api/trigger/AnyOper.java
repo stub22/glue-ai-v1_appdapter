@@ -120,6 +120,14 @@ public interface AnyOper {
 		public boolean IsPanel() default false;
 
 		boolean IsNotSideEffectSafe() default false;
+		
+		boolean IsFactoryMethod() default false;
+		
+		String Tooltip() default "";
+
+		String Description() default "";
+
+		String HelpText() default "";
 
 	}
 

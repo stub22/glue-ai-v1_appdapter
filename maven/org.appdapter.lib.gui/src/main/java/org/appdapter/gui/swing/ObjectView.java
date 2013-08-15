@@ -1,6 +1,12 @@
 package org.appdapter.gui.swing;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.Collection;
+import java.util.Map;
+
 import org.appdapter.api.trigger.Box;
+import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.gui.api.GetSetObject;
 
 /**
@@ -12,6 +18,18 @@ import org.appdapter.gui.api.GetSetObject;
 abstract public class ObjectView<BoxType extends Box>
 
 extends JJPanel implements GetSetObject {
+
+	protected static Type collectionOf(final Class c) {
+		return makeParameterizedType(Collection.class, c);
+	}
+
+	protected static Type makeParameterizedType(final Class raw, final Type... pts) {
+		return ReflectUtils.makeParameterizedType(raw, pts);
+	}
+
+	protected static Type mapOf(final Type k, final Type v) {
+		return makeParameterizedType(Map.class, k, v);
+	}
 
 	abstract public void focusOnBox(BoxType b);
 

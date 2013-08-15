@@ -1,17 +1,20 @@
 package org.appdapter.gui.editors;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.beans.Customizer;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
+import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Map;
 
 import javax.swing.JLabel;
 
 import org.appdapter.api.trigger.Box;
+import org.appdapter.api.trigger.SetObject;
 import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.AddTabFrames;
@@ -19,7 +22,6 @@ import org.appdapter.gui.api.AddTabFrames.SetTabTo;
 import org.appdapter.gui.api.BoxPanelSwitchableView;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.GetSetObject;
-import org.appdapter.gui.api.SetObject;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.swing.ObjectTabsForTabbedView;
 import org.appdapter.gui.swing.ObjectView;
@@ -49,7 +51,8 @@ extends ObjectView<BoxType> implements Customizer, GetSetObject, ObjectPanelHost
 		}
 
 	}
-
+	public static Type[] EDITTYPE = new Type[] { Object.class };
+	
 	protected DisplayContext context;
 	protected JideTabbedPane tabs;
 	//protected Object objectValue;
@@ -182,7 +185,7 @@ extends ObjectView<BoxType> implements Customizer, GetSetObject, ObjectPanelHost
 		setLayout(new BorderLayout());
 		tabs = new JideTabbedPane();
 		add("Center", tabs);
-		objTabs = new ObjectTabsForTabbedView(tabs, false);
+		objTabs = new ObjectTabsForTabbedView(tabs, false, this);
 		initedGuiOnce = false;
 	}
 

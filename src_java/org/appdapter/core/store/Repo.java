@@ -15,13 +15,20 @@
  */
 package org.appdapter.core.store;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import org.appdapter.api.trigger.GetObject;
+import org.appdapter.api.trigger.SetObject;
+import org.appdapter.core.convert.NoSuchConversionException;
+import org.appdapter.core.name.FreeIdent;
 import org.appdapter.core.name.Ident;
 
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.query.QuerySolution;
+import com.hp.hpl.jena.rdf.listeners.StatementListener;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.sdb.Store;
 
@@ -35,19 +42,19 @@ public interface Repo extends QueryProcessor {
 	 * @return 
 	 */
 	public Dataset getMainQueryDataset();
-	
+
 	/**
 	 * Get summary information about the graphs in this repo.
 	 * @return 
 	 */
 	public List<GraphStat> getGraphStats();
-	
+
 	/**
 	 * Get named graph as Jena "Model" object, for direct API access.
 	 * @param graphNameIdent
 	 * @return 
 	 */
-	public Model getNamedModel (Ident graphNameIdent);
+	public Model getNamedModel(Ident graphNameIdent);
 
 	/**
 	 * Use the Jena "assembler" vocabulary to build a set of objects from a given model.
@@ -55,16 +62,49 @@ public interface Repo extends QueryProcessor {
 	 * @return 
 	 */
 	public Set<Object> assembleRootsFromNamedModel(Ident graphNameIdent);
-	
-	
-	
-	public static class GraphStat {
+
+	public static class GraphStat extends StatementListener implements Map.Entry<Ident, Model> {
+
+		@Override public Ident getKey() {
+			return new FreeIdent(graphURI);
+		}
+
+		public GraphStat(String uri, GetObject<Model> mdl) {
+			this.graphURI = uri;
+			model = mdl;
+		}
 
 		public String graphURI;
-		public long statementCount;
-		public String toString() { 
-			return "[GraphStat uri=" + graphURI + ", stmtCnt=" + statementCount + "]";
+		private GetObject<Model> model;
+
+		public String toString() {
+			return "[GraphStat uri=" + graphURI + ", stmtCnt=" + getStatementCount() + "]";
 		}
+
+		@Override public Model getValue() {
+			return model.getValue();
+		}
+
+		@Override public Model setValue(Model value) {
+			Model mdl = model.getValue();
+			if (mdl == value)
+				return mdl;
+			if (model instanceof SetObject) {
+				try {
+					((SetObject) model).setObject(value);
+				} catch (InvocationTargetException e) {
+					throw new RuntimeException(e.getCause());
+				}
+			} else {
+				throw new UnsupportedOperationException("Cannot change the model in this graphStat to " + value);
+			}
+			return mdl;
+		}
+
+		public long getStatementCount() {
+			return model.getValue().size();
+		}
+
 	}
 
 	public static interface Stored extends Repo {
@@ -74,20 +114,22 @@ public interface Repo extends QueryProcessor {
 		// public void setStore(Store store);
 
 		// public void mountStoreUsingFileConfig(String storeConfigPath);
-		
+
 	}
-	
+
 	// for loading operations does not claim persistence
 	public static interface Updatable extends Repo {
-		
+
 		// this merges the new model into
 		public void addNamedModel(Ident modelID, Model model);
+
 		// this is like Add but clears the old first
 		public void replaceNamedModel(Ident modelID, Model model);
 
 	}
+
 	public static interface Mutable extends Repo, Updatable {
-		
+
 		public void importGraphFromURL(String tgtGraphName, String sourceURL, boolean replaceTgtFlag);
 
 		// uploadHomePath is just a UI config helper ... looking for its proper place in java-land
@@ -95,16 +137,22 @@ public interface Repo extends QueryProcessor {
 
 		public void formatRepoIfNeeded();
 	}
+
 	public static interface WithFallbackModelClient extends Repo, ModelClient {
 		public ModelClient getFallbackModelClient();
 	}
+
 	public static interface WithDirectory extends WithFallbackModelClient {
 		public Model getDirectoryModel();
+
 		public ModelClient getDirectoryModelClient();
+
 		public InitialBinding makeInitialBinding();
-		
-		public List<QuerySolution> queryIndirectForAllSolutions( Ident qSrcGraphIdent, Ident queryIdent, QuerySolution qInitBinding ) ;
-		public List<QuerySolution> queryIndirectForAllSolutions( String qSrcGraphQN, String queryQN, QuerySolution qInitBinding ) ;
-		public List<QuerySolution> queryDirectForAllSolutions( String qText, QuerySolution qInitBinding);
+
+		public List<QuerySolution> queryIndirectForAllSolutions(Ident qSrcGraphIdent, Ident queryIdent, QuerySolution qInitBinding);
+
+		public List<QuerySolution> queryIndirectForAllSolutions(String qSrcGraphQN, String queryQN, QuerySolution qInitBinding);
+
+		public List<QuerySolution> queryDirectForAllSolutions(String qText, QuerySolution qInitBinding);
 	}
 }

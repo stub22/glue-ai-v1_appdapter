@@ -317,7 +317,7 @@ public class SafeJTable extends JTable implements GetSetObject {
 		//  we use the invokeLater()
 
 		if (e instanceof MouseEvent && isSelectAllForMouseEvent) {
-			SwingUtilities.invokeLater(new Runnable() {
+			Utility.invokeLater(new Runnable() {
 				public void run() {
 					((JTextComponent) editor).selectAll();
 				}

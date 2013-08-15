@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.RandomAccess;
 
+import javax.swing.JMenu;
+
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContext;
 import org.appdapter.api.trigger.MutableBox;
@@ -88,7 +90,7 @@ public class AddToTreeListener implements POJOCollectionListener {
 	void pojoUpdateObjectOnly(Object anyObject, BT box, boolean isRemoval) throws PropertyVetoException {
 
 		Class oc = anyObject.getClass();
-
+		
 		if (!isRemoval) {
 			Utility.addObjectFeatures(anyObject);
 			addChildObject(root, box.getShortLabel(), anyObject);
@@ -112,6 +114,9 @@ public class AddToTreeListener implements POJOCollectionListener {
 			return;
 		}
 		if (obj instanceof RandomAccess)
+			return;
+
+		if (obj instanceof JMenu)
 			return;
 
 		if (Utility.isSystemPrimitive(oc))

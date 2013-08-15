@@ -107,7 +107,7 @@ public class RepoGraphTableModel extends RowTableModel {
 		case 1:
 			return stat.graphURI;
 		case 2:
-			return new Long(stat.statementCount);
+			return new Long(stat.getStatementCount());
 		default:
 			return new Double(-1.0);
 		}

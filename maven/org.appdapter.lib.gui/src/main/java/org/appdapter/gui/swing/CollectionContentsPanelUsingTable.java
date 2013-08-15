@@ -14,6 +14,7 @@ import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyVetoException;
+import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
@@ -35,11 +36,13 @@ import org.appdapter.gui.api.BoxPanelSwitchableView;
 import org.appdapter.gui.api.Chooser;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.NamedObjectCollection;
-import org.appdapter.gui.api.ObjectCollectionRemoveListener;
+import org.appdapter.gui.api.ValueChangeListener;
 import org.appdapter.gui.api.POJOCollectionListener;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.table.BeanTableModel;
 import org.appdapter.gui.table.SafeJTable;
+import static org.appdapter.core.convert.ReflectUtils.*;
+import static org.appdapter.core.convert.ReflectUtils.*;
 
 /**
  * A GUI component that shows what a Collection contains,
@@ -49,141 +52,18 @@ import org.appdapter.gui.table.SafeJTable;
  */
 public class CollectionContentsPanelUsingTable<BoxType extends Box>
 
-extends ScreenBoxPanel<BoxType> implements ObjectCollectionRemoveListener, DropTargetListener, Chooser<Object>
+extends CollectionContentsPanel<BoxType> implements ValueChangeListener, DropTargetListener, Chooser<Object>
 
-, ChangeListener, POJOCollectionListener {
+, ChangeListener {
 
-	public Collection getValue() {
-		return getCollection();
-	}
-
-	@Override public Dimension getPreferredSize() {
-		return new Dimension(130, 200);
-		// return Utility.getMaxDimension(new Dimension(250, 200),
-		// super.getPreferredSize());
-	}
-
-	@Override public Dimension getMinimumSize() {
-		return getPreferredSize();
-	}
-
-	@Override public void pojoAdded(Object obj, BT box, Object senderCollection) {
-		// @optimize
-		if (filter != null) {
-			if (!filter.isInstance(obj))
-				return;
-		}
-		reloadContents();
-	}
-
-	@Override public void pojoRemoved(Object obj, BT box, Object from) {
-		// @optimize
-		if (filter != null) {
-			if (!filter.isInstance(obj))
-				return;
-		}
-		reloadContents();
-	}
-
-	CantankerousJob reloadConts = new CantankerousJob("reloadContents", this) {
-		@Override public void run() {
-			reloadContents00();
-		}
-	};
-
-	public void reloadContents() {
-		reloadConts.attempt();
-	}
-
-	protected void replaceInContext(NamedObjectCollection context2, Object oldValue, Object newValue) {
-		Object shouldBeenOldValue = context2.findOrCreateBox(oldValue).setValue(newValue);
-	}
-
-	public Object getSelectedObject() {
-		if (!valueIsOneSelectedItem)
-			return super.getValue();
-		return localNOC.getSelectedObject();
-	}
-
-	public void setSelectedObject(Object object) throws PropertyVetoException {
-
-		localNOC.setSelectedObject(object);
-
-	}
-
-	@Override public void stateChanged(ChangeEvent evt) {
-		boolean isSelected = parentTabs.getSelectedIndex() == parentTabs.indexOfComponent(this);
-		if (wasSelected != isSelected) {
-			if (isSelected) {
-				this.reloadContents();
-			}
-		}
-		wasSelected = isSelected;
-	}
-
-	boolean wasSelected = false;
-	BoxPanelSwitchableView parentTabs;
-	//Collection collection;
-	DisplayContext context;
-	JTable panel;
 	BeanTableModel tableModel;
-	JScrollPane scroll;
-	Border defaultScrollBorder;
-	JButton reloadButton;
 
-	DropTarget dropTarget;
-
-	//An invisible panel in front of the list of contents, which
-	//captures drag/drop operations
-	JPanel dropGlass;
-	NamedObjectCollection localNOC;
-	Class filter;
-	boolean valueIsOneSelectedItem = false;
-	private String titleString;
-
-	@Override public String getName() {
-		if (titleString != null)
-			return titleString;
-		String named = localNOC.toString();
-		if (filter != null) {
-			named = Utility.getShortClassName(filter) + " of " + named;
-		}
-		return named;
-	}
-
-	public Collection getCollection() {
-		Object v = super.getValue();
-		return (Collection) v;
-	}
-
-	public void setTitle(String title) {
-		titleString = title;
-		//defaultScrollBorder = new Defa
-		//	scroll.setBorder(new TitledBorder(defaultScrollBorder, title));
-	}
-
-	public CollectionContentsPanelUsingTable(DisplayContext context, String titleStr, Collection collection, Class filterc, NamedObjectCollection noc, BoxPanelSwitchableView tabs,
-			boolean valueIsNotCollection) {
-		this.titleString = titleStr;
-		this.valueIsOneSelectedItem = valueIsNotCollection;
-		this.context = context;
-		this.filter = filterc;
-		this.parentTabs = tabs;
-		if (noc == null) {
-			if (collection instanceof NamedObjectCollection) {
-				noc = (NamedObjectCollection) collection;
-			} else {
-				noc = Utility.uiObjects;
-			}
-		}
-		this.localNOC = noc;
-		this.objectValue = collection;
-		if (localNOC != null)
-			localNOC.addListener(this, false);
+	public CollectionContentsPanelUsingTable() {
+		super();
 	}
 
 	public CollectionContentsPanelUsingTable(DisplayContext context, String titleStr, Collection collection, BoxPanelSwitchableView tabs) {
-		this(context, titleStr, collection, null, null, tabs, false);
+		super(context, titleStr, null, collection, null, tabs, false);
 	}
 
 	@Override protected void initSubclassGUI() throws Throwable {
@@ -215,45 +95,40 @@ extends ScreenBoxPanel<BoxType> implements ObjectCollectionRemoveListener, DropT
 		setLayout(new BorderLayout());
 		add("North", buttonPanel);
 		add("Center", stack);
-		
+
 	}
 
 	public void reloadContents00() {
 
 		final Collection collection = getCollection();
 		panel.removeAll();
-		for (Object value : collection) {
+		for (Object value : copyOf(collection)) {
 			if (filter != null) {
 				if (!filter.isInstance(value))
 					continue;
 			}
-			addRow(collection, value);
+			addRow(value);
 		}
-		invalidate();
-		validate();
-		repaint();
+		reloaded();
 	}
 
-	private void addRow(final Collection collection, final Object value) {
+	private void addRow(final Object value) {
 
-		final SmallObjectView view = new SmallObjectView(context, localNOC, value, collection) {
-			@Override public void valueChanged(Object oldValue, Object newValue) {
-				replaceInContext(localNOC, oldValue, newValue);
-				replace(collection, oldValue, newValue);
-				super.valueChanged(oldValue, newValue);
+		if (filter != null) {
+			if (!filter.isInstance(value))
+				return;
+		}
+		final SmallObjectView view = new SmallObjectView(context, nameMaker, value) {
+
+			@Override public boolean isRemovable(Object value) {
+				return !isRemoved;
 			}
 		};
-		view.setRemoveListener(new ObjectCollectionRemoveListener() {
-			@Override public void objectRemoved(Object oldValue, Collection parent) {
-				replaceInContext(localNOC, oldValue, null);
-			}
-		});
-		view.setRemoveListener(this);
 		if (true) {
 			tableModel.addRow(new Map.Entry() {
 
 				@Override public String getKey() {
-					return localNOC.getTitleOf(value);
+					return nameMaker.getTitleOf(value);
 				}
 
 				@Override public Object getValue() {
@@ -265,8 +140,8 @@ extends ScreenBoxPanel<BoxType> implements ObjectCollectionRemoveListener, DropT
 					return view;
 				}
 			});
-			return;
 		}
+		view.addChangeListener(this);
 	}
 
 	public void completeSubClassGUI() {
@@ -274,60 +149,4 @@ extends ScreenBoxPanel<BoxType> implements ObjectCollectionRemoveListener, DropT
 		reloadContents();
 	}
 
-	@Override public void objectRemoved(Object object, Collection parent) {
-		if (parent != null) {
-			parent.remove(object);
-		}
-		reloadContents();
-	}
-
-	static private void replace(Collection collection, Object oldValue, Object newValue) {
-		Iterator it = collection.iterator();
-		while (it.hasNext()) {
-			final Object value = it.next();
-			if (value == oldValue) {
-				it.remove();
-				collection.add(newValue);
-				return;
-			}
-		}
-
-	}
-
-	//======= Drag/Drop methods ====================================0
-
-	@Override public void dragEnter(DropTargetDragEvent event) {
-		event.acceptDrag(DnDConstants.ACTION_MOVE);
-	}
-
-	@Override public void dragExit(DropTargetEvent dtde) {
-	}
-
-	@Override public void dragOver(DropTargetDragEvent dtde) {
-	}
-
-	@Override public void drop(DropTargetDropEvent event) {
-		Transferable t = event.getTransferable();
-		try {
-			Object o = t.getTransferData(new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType));
-			Collection collection = (Collection) this.objectValue;
-			collection.add(o);
-			reloadContents();
-		} catch (Exception err) {
-			new ErrorDialog("An error occurred while handling a drop operation", err).show();
-		}
-	}
-
-	@Override public void dropActionChanged(DropTargetDragEvent dtde) {
-	}
-
-	@Override protected boolean reloadObjectGUI(Object obj) throws Throwable {
-		this.objectValue = ReflectUtils.recast(obj, Collection.class);
-		reloadContents();
-		return true;
-	}
-
-	@Override public Class<Collection> getClassOfBox() {
-		return (Class<Collection>) getValue().getClass();
-	}
 }

@@ -2,6 +2,7 @@ package org.appdapter.gui.trigger;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
 import javax.swing.AbstractButton;
@@ -10,12 +11,21 @@ import org.appdapter.api.trigger.AnyOper.UISalient;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.TriggerImpl;
 import org.appdapter.core.convert.ReflectUtils;
+import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.UIAware;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.swing.SafeJMenuItem;
 
 public class ShowPanelTrigger<BT extends Box<TriggerImpl<BT>>> extends TriggerForInstance<BT> {
+
+	@Override public boolean isFavorited() {
+		return true;
+	}
+
+	public boolean isSideEffectSafe() {
+		return false;
+	}
 
 	final Class panelClass;
 
@@ -40,31 +50,35 @@ public class ShowPanelTrigger<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 		return panelClass;
 	}
 
-	public Object valueOf(Box targetBox, ActionEvent actevt, boolean wantSideEffect, boolean isPaste) {
+	public Object valueOf(Object targetBox, ActionEvent actevt, boolean wantSideEffect, boolean isPaste) {
 		if (!wantSideEffect)
 			return null;
 		Object value = getValueOr(targetBox);
 		try {
-			Method m = ReflectUtils.getDeclaredMethod(panelClass, "focusOnBox", (Class) null);
-			if (m != null) {
-				value = targetBox;
-			} else {
-				m = ReflectUtils.getDeclaredMethod(panelClass, "setObject", Object.class);
-				if (m == null)
-					m = ReflectUtils.getDeclaredMethod(panelClass, "setValue", Object.class);
-				if (m == null) {
-					getLogger().error("No way to set object in panel " + panelClass);
-					return null;
+			Constructor cons = panelClass.getDeclaredConstructor();
+			Object cust = Utility.newInstance(panelClass);
+			Class classToTry = value == null ? null : value.getClass();
+
+			for (String s : new String[] { "focusOnBox", "setObject", "setValue", "setBean" }) {
+				Method m = ReflectUtils.getDeclaredMethod(panelClass, s, classToTry);
+				if (m != null) {
+					try {
+						Class mustBe = m.getParameterTypes()[0];
+						Object t = Utility.recastCC(value, mustBe);
+						value = Utility.dref(value);
+						m.invoke(cust, t);
+						//@TODO cust.addPropertyChangeListener(listener)
+						getDisplayContext().addObject(null, cust, true);
+						return cust;
+					} catch (Exception e) {
+						getLogger().error("Skipping method " + m, e);
+					}
 				}
 			}
-			Object cust = Utility.newInstance(panelClass);
-			m.invoke(cust, Utility.recast(value, m.getParameterTypes()[0]));
-			//@TODO cust.addPropertyChangeListener(listener)
-			getDisplayContext().addObject(null, cust, true);
-			return cust;
-
+			getLogger().error("No way to set object in panel " + panelClass);
+			return null;
 		} catch (Exception e) {
-			e.printStackTrace();
+			getLogger().error("Not making panel of " + panelClass, e);
 			return null;
 		}
 	}

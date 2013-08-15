@@ -23,6 +23,7 @@
 package org.appdapter.gui.repo;
 
 import java.sql.Connection;
+import java.util.Map;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.core.log.Debuggable;
@@ -80,6 +81,8 @@ public class DatabaseManagerPanel extends ScreenBoxPanel<Box> {
 		Debuggable.notImplemented();
 		return false;
 	}
+	
+	public static Class EDITTYPE = Connection.class;
 
 	// Variables declaration - do not modify//GEN-BEGIN:variables
 	// End of variables declaration//GEN-END:variables

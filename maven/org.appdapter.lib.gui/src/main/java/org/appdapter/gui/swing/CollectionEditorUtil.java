@@ -256,7 +256,7 @@ public class CollectionEditorUtil implements PropertyChangeListener {
 
 		Object selected = collection.getSelectedObject();
 		if (selected != null) {
-			selectedMenu = new TriggerMenu("With Selected", null, null, collection, Arrays.asList(selected));
+			selectedMenu = new TriggerMenu("With Selected", null, null, collection, selected);
 			menuBar.add(selectedMenu);
 		}
 		nameItemChooserPanel.invalidate();

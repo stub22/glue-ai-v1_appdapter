@@ -28,7 +28,7 @@ public class ClassSelectionField extends JJPanel {
 		return super.getName();
 	}
 
-	@Override public Object getValue() throws Throwable {
+	@Override public Object getValue() {
 		return selectedClass;
 	}
 

@@ -11,7 +11,7 @@ import javax.swing.plaf.MenuItemUI;
 
 import org.appdapter.gui.api.GetSetObject;
 
-public class SafeJCheckBoxMenuItem extends JCheckBoxMenuItem implements UISwingReplacement, GetSetObject {
+public class SafeJCheckBoxMenuItem extends JCheckBoxMenuItem implements UISwingReplacement, GetSetObject, IsReference {
 
 	@UISalient
 	public Object userObject;

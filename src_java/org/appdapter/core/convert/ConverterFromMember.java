@@ -18,6 +18,10 @@ public class ConverterFromMember extends Debuggable implements Converter {
 	boolean allowOptionalArgs;
 	ConverterMethod info;
 
+	@Override public String toString() {
+		return "{" + toInfoStringArgV(from, "=", to, m.toString()) + "}";
+	}
+
 	@Override public boolean equals(Object obj) {
 		return super.equals(obj) || ((obj instanceof ConverterFromMember) && (((ConverterFromMember) obj).m == m));
 	}

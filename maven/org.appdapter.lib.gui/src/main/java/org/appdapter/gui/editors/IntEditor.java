@@ -1,9 +1,11 @@
 package org.appdapter.gui.editors;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
+import java.lang.reflect.Type;
 
 import javax.swing.JLabel;
 
@@ -16,12 +18,20 @@ public class IntEditor extends PropertyEditorSupport implements PropertyChangeLi
 	public IntEditor() {
 	}
 
+	public static Type[] EDITTYPE = new Type[] { int.class, Integer.class };
+	
 	@Override public void setAsText(String text) throws IllegalArgumentException {
 		setValue(Integer.valueOf(text));
 	}
 
 	@Override public void setValue(Object value) {
-		if (value != null && !(value.equals(getValue()))) {
+		if (value != null) {
+			Object oldValue = getValue();
+			if (oldValue != null) {
+				if (value.equals(oldValue)) {
+					return;
+				}
+			}
 			Integer intValue;
 			try {
 				intValue = (Integer) value;

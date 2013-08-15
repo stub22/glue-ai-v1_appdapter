@@ -3,6 +3,7 @@ package org.appdapter.gui.editors;
 import java.awt.Color;
 import java.awt.Component;
 import java.beans.PropertyEditorSupport;
+import java.lang.reflect.Type;
 import java.util.Vector;
 
 import javax.swing.AbstractListModel;
@@ -11,6 +12,10 @@ import javax.swing.JComboBox;
 
 import org.appdapter.gui.util.PairTable;
 
+import com.hp.hpl.jena.graph.Graph;
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.Statement;
+
 /**
 * JavaBeansCollection PropertyEditor implementation for boolean values.
 * Basically a checkbox...
@@ -18,6 +23,8 @@ import org.appdapter.gui.util.PairTable;
 public class ColorEditor extends PropertyEditorSupport {
 	GUI gui = null;
 	ComboModel model;
+
+	public static Type[] EDITTYPE = new Type[] { Color.class };
 
 	public ColorEditor() {
 		model = new ComboModel();

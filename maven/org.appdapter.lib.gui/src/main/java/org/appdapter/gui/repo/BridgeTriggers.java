@@ -18,7 +18,6 @@ package org.appdapter.gui.repo;
 
 import java.net.URL;
 import java.util.*;
-import java.util.Set;
 
 import org.appdapter.api.trigger.AnyOper.UISalient;
 import org.appdapter.api.trigger.AnyOper.UtilClass;
@@ -35,7 +34,10 @@ import org.appdapter.core.log.Debuggable;
 import org.appdapter.core.store.Repo;
 import org.appdapter.demo.DemoResources;
 import org.appdapter.gui.api.DisplayContext;
+import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.trigger.TriggerForClass;
+
+import twinkle.Twinkle;
 
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -44,6 +46,15 @@ import com.hp.hpl.jena.rdf.model.Model;
  * @author Stu B. <www.texpedient.com>
  */
 public class BridgeTriggers implements UtilClass {
+
+	@UISalient(MenuName = "Startup Twinkle main") public static void startTwinkle() {
+		Twinkle.main(new String[0]);
+	}
+
+	@UISalient(MenuName = "Run Twinkle On Model %t", IsNotSideEffectSafe = true)//
+	public static void startTwinkle(Model m) {
+		Twinkle.mainWithModel(m);
+	}
 
 	@UISalient public static List<Model> getModelsFoundIn(Repo repo) {
 		return getModelsFoundIn(repo.getMainQueryDataset());
@@ -59,6 +70,18 @@ public class BridgeTriggers implements UtilClass {
 
 	public static class MountSubmenuFromTriplesTrigger<BT extends Box<TriggerImpl<BT>>> extends TriggerImpl<BT> implements TriggerForClass {
 
+		// as opposed to system gnerated triggers
+		@Override public boolean isFavorited() {
+			return true;
+		}
+
+		/**
+		 *  return @true if the trigger can be invoked for a visual that changes no state
+		 */
+		@Override public boolean isSideEffectSafe() {
+			return false;
+		}
+
 		@UISalient(MenuName = "triplesURLParam")
 		public static Class<URL> boxTargetClass = URL.class;
 
@@ -68,7 +91,7 @@ public class BridgeTriggers implements UtilClass {
 
 		@Override public Trigger createTrigger(String menuFmt, DisplayContext ctx, Object poj) {
 			try {
-				return new MountSubmenuFromTriplesTrigger(ReflectUtils.recast(poj, boxTargetClass));
+				return new MountSubmenuFromTriplesTrigger(Utility.recast(poj, boxTargetClass));
 			} catch (NoSuchConversionException e) {
 				throw Debuggable.reThrowable(e);
 			}

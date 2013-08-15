@@ -7,6 +7,7 @@ import java.awt.event.ActionListener;
 import java.lang.reflect.Constructor;
 import java.util.Collection;
 import java.util.Hashtable;
+import java.util.Map;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -22,6 +23,7 @@ import org.appdapter.gui.browse.Utility;
 public class ConstructorsListPanel<BoxType extends Box> extends ScreenBoxPanel<BoxType> implements ActionListener {
 	//==== Instance variables ==========================
 
+	public static Class EDITTYPE = Class.class;
 	//Class cls;
 	DisplayContext context;
 
@@ -32,13 +34,17 @@ public class ConstructorsListPanel<BoxType extends Box> extends ScreenBoxPanel<B
 	Hashtable panels = new Hashtable();
 
 	//==== Constructors =============================
+	public ConstructorsListPanel() {
+		this(null);
+	}
 
 	public ConstructorsListPanel(DisplayContext context, Class cls) {
 		this.context = context;
-		reloadObjectGUI(cls);
+		if (cls != null)
+			reloadObjectGUI(cls);
 	}
 
-	public ConstructorsListPanel(Class cls) throws Exception {
+	public ConstructorsListPanel(Class cls) {
 		this(Utility.getCurrentContext(), cls);
 	}
 
@@ -105,7 +111,7 @@ public class ConstructorsListPanel<BoxType extends Box> extends ScreenBoxPanel<B
 	}
 
 	@Override protected boolean reloadObjectGUI(Object obj) {
-		this.objectValue = (Class) obj;
+		this.objectValue = Utility.recastCC(obj, Class.class);
 		completeSubClassGUI();
 		return true;
 	}

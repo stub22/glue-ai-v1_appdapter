@@ -16,8 +16,12 @@ import org.appdapter.gui.swing.SafeJMenu;
 public class TriggerMenu extends SafeJMenu {
 	TriggerMenuController controller;
 
-	public TriggerMenu(String title, MouseEvent e, DisplayContext context, NamedObjectCollection noc, Collection box) {
-		super(true, title, box);
-		controller = new TriggerMenuController(context, e, noc, box, this);
+	public TriggerMenu(String title, MouseEvent e, DisplayContext context, NamedObjectCollection noc, Object... objects) {
+		super(true, title, null);
+		controller = new TriggerMenuController(context, e, noc, this);
+		super.userObject = controller;
+		for (Object o : objects) {
+			controller.addMenuFromObject(o);
+		}
 	}
 }

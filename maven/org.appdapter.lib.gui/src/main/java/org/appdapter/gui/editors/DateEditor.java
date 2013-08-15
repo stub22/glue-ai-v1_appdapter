@@ -1,10 +1,12 @@
 
 
 package org.appdapter.gui.editors;
+import java.awt.Color;
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
+import java.lang.reflect.Type;
 import java.util.Date;
 
 import javax.swing.JLabel;
@@ -18,6 +20,8 @@ public class DateEditor extends PropertyEditorSupport implements PropertyChangeL
   public DateEditor() {
   }
 
+	public static Type[] EDITTYPE = new Type[] { Date.class };
+	
   /*public void setAsText(String text) throws IllegalArgumentException {
     setValue(Integer.valueOf(text));
   } */
