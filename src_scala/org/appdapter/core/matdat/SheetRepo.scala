@@ -124,7 +124,10 @@ abstract class SheetRepo(directoryModel: Model, var fileModelCLs: java.util.List
           trace("Loading OnmiRepo to make UpToDate")
           this.isUpdatedFromDir = true;
           var dirModelSize = getDirectoryModel().size;
-          updateFromDirModel
+          // only load from non empty dir models
+          // this is because we need to have non initalized repos at times 
+          if (dirModelSize>0) updateFromDirModel
+        
           var newModelSize = getDirectoryModel().size;
           if (newModelSize != dirModelSize) {
             trace("OnmiRepo Dir.size changed!  " + dirModelSize + " -> " + newModelSize)

@@ -132,6 +132,7 @@ import org.appdapter.core.component.KnownComponent;
 import org.appdapter.core.convert.AggregateConverter;
 import org.appdapter.core.convert.Convertable;
 import org.appdapter.core.convert.Converter;
+import org.appdapter.core.convert.ConverterFromMember;
 import org.appdapter.core.convert.Converter.ConverterMethod;
 import org.appdapter.core.convert.NoSuchConversionException;
 import org.appdapter.core.convert.OptionalArg;
@@ -182,6 +183,7 @@ import org.appdapter.gui.trigger.EditableTriggerImpl;
 import org.appdapter.gui.trigger.TriggerAdder;
 import org.appdapter.gui.trigger.TriggerFilter;
 import org.appdapter.gui.trigger.TriggerForClass;
+import org.appdapter.gui.trigger.TriggerMenuController;
 import org.appdapter.gui.trigger.TriggerMenuFactory;
 import org.appdapter.gui.trigger.TriggerMouseAdapter;
 import org.appdapter.gui.trigger.UtilityMenuOptions;
@@ -794,6 +796,7 @@ public class Utility extends UtilityMenuOptions {
 							|| "convertTo^".equals(mname) // 
 							|| "coerce^".equals(mname) // 
 							|| "from^".equals(mname)) {
+						theLogger.warn("Registering converter: " + m);
 						registerConverterMethod(m, cmi);
 					}
 
@@ -1312,6 +1315,10 @@ public class Utility extends UtilityMenuOptions {
 		if (val instanceof String) {
 			return (T) fromString((String) val, objNeedsToBe, maxCvt);
 		}
+
+		/*if (val .getClass().getMethod("as"+objNeedsToBe, ) {
+			return (T) fromString((String) val, objNeedsToBe, maxCvt);
+		}*/
 		Object obj = dref1(val, false);
 		if (obj != val && obj != null) {
 			Object obj2 = recastUtilOnly(obj, objNeedsToBe, maxCvt);
@@ -2542,6 +2549,20 @@ public class Utility extends UtilityMenuOptions {
 		if (value == null)
 			return onNull;
 
+		if (value instanceof TriggerMenuController) {
+			TriggerMenuController tmc = (TriggerMenuController) value;
+			HashSet objs = new HashSet();
+			for (Object o : tmc.getObjects(null)) {
+				Object v = dref(o, onlyBTAndPanelsAsReferenceHolders);
+				objs.add(v);
+			}
+			if (objs.size() == 1) {
+				return objs.iterator().next();
+			} else {
+				warn("Not Dref-ing a TMC", value);
+			}
+
+		}
 		boolean wasRealDeref = false;
 		boolean onlyDeref1 = depth == 0;
 		if (value instanceof Convertable) {
@@ -3167,6 +3188,19 @@ public class Utility extends UtilityMenuOptions {
 	}
 
 	public static Box asBox(Object b, ActionEvent e) {
+		if (b instanceof TriggerMenuController) {
+			TriggerMenuController tmc = (TriggerMenuController) b;
+			HashSet objs = new HashSet();
+			for (Object o : tmc.getObjects(null)) {
+				Object v = dref(o);
+				objs.add(v);
+			}
+			if (objs.size() == 1) {
+				b = objs.iterator().next();
+			}
+
+		}
+		Object v = dref(b);
 		return asBoxed(b);
 	}
 
@@ -3549,6 +3583,10 @@ public class Utility extends UtilityMenuOptions {
 		if (Component.class.isAssignableFrom(cls))
 			return false;
 		return true;
+	}
+
+	public static <F, T> void registerConverterFunction(Class<F> from, Class<T> to, CallableWithParameters<F, T> cmi) {
+		registerConverter(new ConverterFromMember(from, to, cmi, true, null));
 	}
 
 	/**
