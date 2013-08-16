@@ -92,122 +92,16 @@ import static org.appdapter.core.convert.ReflectUtils.*;
 public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<TrigType>>> //
 		extends ABoxImpl<TrigType> //
 		implements BT<TrigType> {
-	public class SBWrapperValue implements WrapperValue {
-
-		public Class getObjectClass() {
-			return ScreenBoxImpl.this.getObjectClass();
-		}
-
-		public Object reallyGetValue() {
-			return ScreenBoxImpl.this.getValueOrThis();
-		}
-
-		public void reallySetValue(Object newObject) throws UnsupportedOperationException {
-			if (newObject == ScreenBoxImpl.this)
-				return;
-			if (newObject == ScreenBoxImpl.this.getValueOrThis())
-				return;
-			throw new UnsupportedOperationException("value");
-		}
-
-	}
-
-	//===== Inner classes ==========================
-	/**
-	 * A rather ugly but workable default icon used in cases
-	 * where there is no known icon for the value.
-	 */
-	static class UnknownIcon implements Icon, java.io.Serializable {
-		public int getIconHeight() {
-			return 16;
-		}
-
-		public int getIconWidth() {
-			return 16;
-		}
-
-		public void paintIcon(Component c, Graphics g, int x, int y) {
-			g.setColor(Color.blue);
-			g.setFont(new Font("serif", Font.BOLD, 12));
-			g.drawString("@", x, y + 12);
-		}
-	}
 
 	static Logger theLogger = LoggerFactory.getLogger(ScreenBoxImpl.class);
 
-	public static List<ScreenBox> boxctxGetOpenChildBoxesNarrowed(BoxContext oh, Object parent, Class boxClass, Class trigClass) {
-		return oh.getOpenChildBoxesNarrowed((Box) parent, boxClass, trigClass);
-	}
-
-	public static void doAttachTrigger(Object box, Object bt) {
-		((MutableBox) box).attachTrigger((Trigger) bt);
-	}
-
-	/*
-	public POJOBoxImpl(NamedObjectCollection noc, String label) {
-	this(noc, label, null);
-	}*/
-
-	public static void doSetShortLabel(Object box, Object nym) {
-		((MutableKnownComponent) box).setShortLabel((String) nym);
-	}
-
-	public static BeanInfo getBeanInfo(Class beanClass) throws IntrospectionException {
-		return Introspector.getBeanInfo(beanClass, Introspector.USE_ALL_BEANINFO);
-	}
-
-	/**
-	 * Returns an Icon for this value, determined using BeanInfo.
-	 * If no icon was found a default icon will be returned.
-	 */
-	static public Icon getIcon(BeanInfo info) {
-		Icon icon;
-		try {
-			Image image;
-			image = info.getIcon(BeanInfo.ICON_COLOR_16x16);
-			if (image == null) {
-				image = info.getIcon(BeanInfo.ICON_MONO_16x16);
-			}
-
-			if (image == null) {
-				icon = new UnknownIcon();
-			} else {
-				icon = new ImageIcon(image);
-			}
-		} catch (Exception err) {
-			icon = new UnknownIcon();
-		}
-		return icon;
-	}
-
 	public Class<?> clz;
 
-	///public String name = null;
-	/*
-		public POJOBoxImpl(NamedObjectCollection noc, String title, Object boxOrObj) {
-			m_view = vis;
-			m_parent_component = parent;
-			if (boxOrObj instanceof Box) {
-				m_box = (Box) boxOrObj;
-				m_obj = boxOrObj;
-			} else {
-				m_obj = boxOrObj;
-			}
-			m_displayType = displayType;
-			if (bpsv != null) {
-				m_toplvl = bpsv;
-				m_toplvl.registerPair(this, false);
-			}
-			addToNoc(noc, title);
-		}
-	*/
 	Map<NamedObjectCollection, String> col2Name = new HashMap<NamedObjectCollection, String>();
 
 	public DisplayContext m_displayContext;
 
 	public DisplayType m_displayType = DisplayType.PANEL;
-	//	public boolean m_is_added;
-	//	public Container m_parent_component;
 
 	protected boolean madeElsewhere;
 
@@ -218,21 +112,9 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	// A box may have up to one panel for any kind.
 	protected Map<Object, JPanel> myPanelMap = new HashMap<Object, JPanel>();
 
-	//public Object value;
 	private NamedObjectCollection noc;
 
-	// ==== Transient instance variables =============
-	transient PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
-
-	SBWrapperValue sbWrapperValue;
-
-	boolean selected = false;
-
-	public Object valueSetAs = null;
-
-	//==== Serializable instance variables ===============
-	//public Object value = null;//this;//;//new NoObject();
-	protected transient VetoableChangeSupport vetoSupport = new VetoableChangeSupport(this);
+	public Object valueSetAs = this;
 
 	//==== Constructors ==================================
 
@@ -243,10 +125,13 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	public ScreenBoxImpl() {
 		madeElsewhere = true;
 		Utility.recordCreated(this);
+		valueSetAs = this;
 	}
 
 	public ScreenBoxImpl(boolean isSelfTheValue) {
 		this.madeElsewhere = isSelfTheValue;
+		if (isSelfTheValue)
+			valueSetAs = this;
 		Utility.recordCreated(this);
 	}
 
@@ -257,32 +142,6 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	public ScreenBoxImpl(NamedObjectCollection noc, String title, Object value) {
 		this.noc = noc;
 		setNameValue(title, value);
-	}
-
-	/**
-	 * PropertyChangeListeners will find out when the name or selection state
-	 * changes.
-	 */
-	public void addPropertyChangeListener(PropertyChangeListener p) {
-		checkTransient();
-		propSupport.addPropertyChangeListener(p);
-	}
-
-	protected void addToNoc(NamedObjectCollection noc, String title) {
-		if (this instanceof POJOCollectionListener) {
-			noc.addListener((POJOCollectionListener) this, true);
-		}
-		col2Name.put(noc, title);
-		noc.addTitleBoxed(title.toString(), (BT) this);
-	}
-
-	/**
-	 * VetoableChangeListeners will find out when the name or selection state is
-	 * about to change, and can prevent such changes if desired.
-	 */
-	public void addVetoableChangeListener(VetoableChangeListener v) {
-		checkTransient();
-		vetoSupport.addVetoableChangeListener(v);
 	}
 
 	public Box asBox() {
@@ -301,10 +160,7 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	 * Updates transient instance variables if necessary
 	 */
 	private void checkTransient() {
-		if (propSupport == null) {
-			propSupport = new PropertyChangeSupport(this);
-			vetoSupport = new VetoableChangeSupport(this);
-		}
+
 	}
 
 	public void dump() {
@@ -316,7 +172,7 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 			return ((GetDisplayContext) b).getDisplayContext();
 		}
 		Debuggable.notImplemented();
-		return null;
+		return m_displayContext;
 	}
 
 	public JPanel findExistingBoxPanel(Kind kind) {
@@ -339,23 +195,6 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 			bp = makeBoxPanelCustomized(kind);
 		}
 		return bp;
-	}
-
-	/**
-	 * Gets a BeanInfo object for this object, using the Introspector class
-	 */
-	public BeanInfo getBeanInfo() throws IntrospectionException {
-		try {
-			return Utility.getPOJOInfo(getObjectClass(), Introspector.USE_ALL_BEANINFO);
-		} catch (IntrospectionException e) {
-			try {
-				return Utility.getPOJOInfo(Object.class, Introspector.USE_ALL_BEANINFO);
-			} catch (IntrospectionException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-				return getBeanInfo(this.getObjectClass());
-			}
-		}
 	}
 
 	public BT getBox() {
@@ -517,55 +356,6 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 		return al;
 	}
 
-	//abstract public <T> T convertTo(Class<T> c) throws ClassCastException;
-
-	/**
-	 * True if this value is selected
-	 */
-	public boolean getUISelected() {
-		return selected;
-	}
-
-	/*@UIHidden
-	public class NoObject implements UIHidden {
-		private Throwable myCreation;
-		private String myName;
-
-		public String toString() {
-			return myName;
-		}
-
-		NoObject() {
-			this.myName = "NO_pojoObject" + System.currentTimeMillis();
-			this.myCreation = new NullPointerException(myName).fillInStackTrace();
-		}
-
-		 public Class<? extends Annotation> annotationType() {
-			if (true)
-				return UIHidden.class;
-			return (Class<? extends Annotation>) getClass().getInterfaces()[0];
-		}
-	}*/
-
-	//	protected String _uname = null;
-	//	public Box m_box = this;
-
-	//	DisplayType m_displayType = DisplayType.PANEL;
-	/*
-		public static String getDefaultName(Object object) {
-			Class type = object.getClass();
-			if (type == Class.class)
-				return ((Class) object).getName();
-			else
-				return "a " + Utility.getShortClassName(object.getClass());
-		}*/
-
-	//	public String m_title;
-
-	//	public BoxPanelSwitchableView m_toplvl;
-
-	//public String registeredWithName;
-
 	/**
 	 * Returns the name of this value
 	 */
@@ -607,11 +397,9 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	}
 
 	public Object getValue() {
-		WrapperValue wv = getWrapperValue();
-		if (wv != null && wv != this && sbWrapperValue != wv) {
-			return wv.reallyGetValue();
-		}
 		if (valueSetAs == null)
+			return this;
+		if (valueSetAs == this)
 			return this;
 		Collection col = defaultItems();
 		if (nonDefaultItemCount() != 1) {
@@ -664,16 +452,6 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 
 		//	getLogger().warn("Default implementation of getObject() for {} is returning 'this'", getShortLabel());
 		return this;
-	}
-
-	public WrapperValue getWrapperValue() {
-		if (this instanceof WrapperValue) {
-			return (WrapperValue) this;
-		}
-		if (sbWrapperValue == null) {
-			sbWrapperValue = new SBWrapperValue();
-		}
-		return sbWrapperValue;
 	}
 
 	public boolean isNamed(String test) {
@@ -855,10 +633,6 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 		return pnl;
 	}
 
-	public void propertyChange(PropertyChangeEvent evt) {
-		propSupport.firePropertyChange(evt);
-	}
-
 	protected void putBoxPanel(Object kind, JPanel bp) {
 		JPanel oldBP = findExistingBoxPanel(kind);
 		if (oldBP != null) {
@@ -913,15 +687,6 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 		addValue(valueSetAs);
 	}
 
-	/**
-	 * PropertyChangeListeners will find out when the name or selection state
-	 * changes.
-	 */
-	public void removePropertyChangeListener(PropertyChangeListener p) {
-		checkTransient();
-		propSupport.removePropertyChangeListener(p);
-	}
-
 	// ========= Utility methods =================
 
 	/*
@@ -937,15 +702,6 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 			return (NamedObjectCollection) m_toplevel.getNamedObjectCollection();
 		}
 	*/
-
-	/**
-	 * VetoableChangeListeners will find out when the name or selection state is
-	 * about to change, and can prevent such changes if desired.
-	 */
-	public void removeVetoableChangeListener(VetoableChangeListener v) {
-		checkTransient();
-		vetoSupport.removeVetoableChangeListener(v);
-	}
 
 	public boolean representsObject(Object test) {
 		if (test == null) {
@@ -966,7 +722,10 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 				return true;
 			}
 		}
-		return getKey() == test;
+		if (test instanceof String) {
+			return test.equals(getKey());
+		}
+		return false;
 	}
 
 	public void setDisplayContextProvider(DisplayContextProvider dcp) {
@@ -975,13 +734,14 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 
 	public void setNameValue(String uniqueName, Object value) {
 
+		if (value == null) {
+			value = valueSetAs;
+		}
 		if (uniqueName == null) {
 			uniqueName = Utility.generateUniqueName(value, uniqueName, noc.getNameToBoxIndex());
 		}
 		setShortLabel(uniqueName);
-		if (value == null) {
-			value = new NullPointerException(uniqueName).fillInStackTrace();
-		}
+
 		try {
 			setObject(value);
 		} catch (Throwable e) {
@@ -997,7 +757,6 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 		reallySetValue(value);
 		try {
 			valueChanged(oldObject, value);
-			getWrapperValue().reallySetValue(value);
 		} catch (PropertyVetoException e) {
 			throw Debuggable.reThrowable(e);
 		}
@@ -1016,21 +775,6 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 
 	public void setShortLabel(String shortLabel) {
 		super.setShortLabel(shortLabel);
-	}
-
-	/**
-	 * Changes the selection state.
-	 *
-	 * @throws PropertyVetoException if someone refused to allow selection state change
-	 */
-	public void setUISelected(boolean newSelected) throws PropertyVetoException {
-		if (newSelected != selected) {
-			checkTransient();
-			boolean oldSelected = selected;
-			vetoSupport.fireVetoableChange("selected", new Boolean(oldSelected), new Boolean(newSelected));
-			this.selected = newSelected;
-			propSupport.firePropertyChange("selected", new Boolean(oldSelected), new Boolean(newSelected));
-		}
 	}
 
 	/**
@@ -1055,9 +799,9 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 		if (!newName.equals(name)) {
 			checkTransient();
 			String oldName = name;
-			vetoSupport.fireVetoableChange("name", oldName, newName);
+
 			setShortLabel(newName);
-			propSupport.firePropertyChange("name", oldName, newName);
+
 		}
 	}
 
@@ -1106,14 +850,7 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	public void valueChanged(Object oldObject, Object newObject) throws PropertyVetoException {
 		checkTransient();
 		String oldName = getShortLabel();
-		vetoSupport.fireVetoableChange("value", oldObject, newObject);
 		this.reallySetValue(newObject);
-		propSupport.firePropertyChange("value", oldObject, newObject);
-	}
-
-	public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
-		vetoSupport.fireVetoableChange(evt);
-
 	}
 
 	@Override public void addValue(Object val) {

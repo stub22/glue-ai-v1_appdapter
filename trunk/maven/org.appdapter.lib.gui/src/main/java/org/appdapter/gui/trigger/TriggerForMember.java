@@ -104,22 +104,16 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 				if (isReady()) {
 					String memberName = fd.getName();
 					if (memberName.startsWith("get") || memberName.startsWith("is")) {
-						if (isSafeOfSideEffects(getDeclaringClass()) && isSafeOfSideEffects(getReturnType())) {
-							setSideEffectSafe(true);
+						if (Utility.isSideEffectReturnType(getReturnType())) {
+							if (isStatic(fd) || Utility.isSideEffectSafe(getDeclaringClass())) {
+								setSideEffectSafe(true);
+							}
 						}
 					}
 				}
 			}
 			// if (isSideEffectSafe) theLogger.warn("isSideEffectSafe " + fd);
 		}
-	}
-
-	private boolean isSafeOfSideEffects(Class clz) {
-		if (Component.class.isAssignableFrom(clz))
-			return false;
-		if (Thread.class.isAssignableFrom(clz))
-			return false;
-		return true;
 	}
 
 	@Override public boolean appliesTarget(Class cls, Object anyObject) {

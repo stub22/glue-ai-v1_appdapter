@@ -114,8 +114,8 @@ public class TriggerMenuController implements POJOCollectionListener, Convertabl
 			Collection actions = context.getTriggersFromUI(o);
 			Iterator it = actions.iterator();
 			while (it.hasNext()) {
-				Action action = (Action) it.next();
-				addAction(action);
+				Trigger t = (Trigger) it.next();
+				addTrigger(t);
 			}
 		}
 		if (popup != null)
@@ -159,6 +159,21 @@ public class TriggerMenuController implements POJOCollectionListener, Convertabl
 		}
 		if (menu != null) {
 			triggerFactory.addMenuItem(a, asBox(), menu);
+		}
+	}
+
+	void addTrigger(Trigger t) {
+		if (t instanceof Action) {
+			Action action = (Action) t;
+			addAction(action);
+			return;
+		}
+
+		if (popup != null) {
+			triggerFactory.addTriggerToPoppup(popup, asBox(), t);
+		}
+		if (menu != null) {
+			triggerFactory.addTriggerToPoppup(menu, asBox(), t);
 		}
 	}
 

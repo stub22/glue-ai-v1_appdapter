@@ -113,6 +113,8 @@ extends ScreenBoxPanel<BoxType> implements ValueChangeListener, DropTargetListen
 		}
 	};
 
+	private Object selectedObject;
+
 	final public void reloadContents() {
 		reloadConts.attempt();
 	}
@@ -126,13 +128,11 @@ extends ScreenBoxPanel<BoxType> implements ValueChangeListener, DropTargetListen
 	}
 
 	public Object getSelectedObject() {
-		if (!valueIsOneSelectedItem)
-			return super.getValue();
-		return nameMaker.getSelectedObject();
+		return this.selectedObject;
 	}
 
 	public void setSelectedObject(Object object) throws PropertyVetoException {
-		nameMaker.setSelectedObject(object);
+		this.selectedObject = (object);
 	}
 
 	@Override public void stateChanged(ChangeEvent evt) {

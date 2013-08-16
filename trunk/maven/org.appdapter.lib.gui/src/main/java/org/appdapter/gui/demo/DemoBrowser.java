@@ -160,7 +160,7 @@ final public class DemoBrowser implements AnyOper.Singleton {
 	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
 	 * 
 	 */
-	public static EditableTrigger registerTriggerForPredicate(CallableWithParameters<Boolean, Box> predicate, String menuLabel, Trigger trigger) {
+	public static EditableTrigger registerTriggerForPredicate(CallableWithParameters<Box, Boolean> predicate, String menuLabel, Trigger trigger) {
 		return Utility.registerTriggerForPredicate(predicate, menuLabel, trigger);
 	}
 
@@ -173,7 +173,7 @@ final public class DemoBrowser implements AnyOper.Singleton {
 	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
 	 * 
 	 */
-	public static EditableTrigger registerCallableForPredicate(CallableWithParameters<Boolean, Box> predicate, String menuLabel, CallableWithParameters function) {
+	public static EditableTrigger registerCallableForPredicate(CallableWithParameters<Box, Boolean> predicate, String menuLabel, CallableWithParameters function) {
 		return Utility.registerCallableForPredicate(predicate, menuLabel, function);
 	}
 
@@ -228,7 +228,7 @@ final public class DemoBrowser implements AnyOper.Singleton {
 				DemoBrowserUI.registerDemo(crtlMaker);
 				//frame.setSize(800, 600);
 				//org.appdapter.gui.pojo.Utility.centerWindow(frame);
-				mainControl = (DemoNavigatorCtrl) DemoBrowserUI.makeDemoNavigatorCtrl(args);
+				mainControl = (DemoNavigatorCtrl) DemoBrowserUI.makeDemoNavigatorCtrl(args, defaultExampleCode);
 				mainControl.launchFrame("This is " + appName);
 
 				//frame.show();
@@ -269,8 +269,52 @@ final public class DemoBrowser implements AnyOper.Singleton {
 	// ==== Main method ==========================
 	public static void main(String[] args) throws InterruptedException {
 		testLoggingSetup();
+		// we set 'defaultExampleCode' from main
+		defaultExampleCode = true;
 		ensureRunning(true, args);
-		Utility.getAppFrame().setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		JFrame appFrame = Utility.getAppFrame();
+		appFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		if (defaultExampleCode) {
+			// some more test code
+			addMoreExamples();
+		}
+	}
+
+	public static void addMoreExamples() {
+		showObject(appName, mainControl, false, false);
+		registerTriggerForObject(mainControl, "System.exit(0)", new Trigger() {
+			@Override public void fire(Box targetBox) {
+				System.exit(0);
+			}
+		});
+		registerTriggerForClassInstances(mainControl.getClass(), "Count triggers", new Trigger() {
+			@Override public void fire(Box targetBox) {
+				String result = "" + targetBox + " has " + targetBox.getTriggers().size() + " trigger(s)";
+				mainControl.showScreenBox("Count of triggers", result);
+			}
+		});
+		registerTriggerForPredicate(new CallableWithParameters<Box, Boolean>() {
+
+			@Override public Boolean call(Box box, Object... params) {
+				int lastObj = params.length - 1;
+				String named;
+				if (box != null) {
+					named = "" + box;
+				} else {
+					if (lastObj < 0) {
+						return false;
+					}
+					named = "" + params[lastObj];
+				}
+
+				return Character.isUpperCase(named.charAt(0));
+			}
+		}, "I am part of the Proper crowd", new Trigger() {
+			@Override public void fire(Box targetBox) {
+				String result = "" + targetBox + " has " + targetBox.getTriggers().size() + " trigger(s)";
+				mainControl.showScreenBox("Count of triggers", result);
+			}
+		});
 	}
 
 	static public class AsApplet extends JApplet {

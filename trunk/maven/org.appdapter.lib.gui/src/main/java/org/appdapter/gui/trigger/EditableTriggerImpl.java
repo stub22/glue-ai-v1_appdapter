@@ -12,12 +12,12 @@ import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.EditableTrigger;
 import org.appdapter.gui.browse.Utility;
 
-public class EditableTriggerImpl extends TriggerImpl implements EditableTrigger, CallableWithParameters, TriggerForClass {
+public class EditableTriggerImpl extends TriggerImpl implements EditableTrigger, CallableWithParameters<Box, Object>, TriggerForClass {
 
 	Trigger trigger;
-	CallableWithParameters callableWithParameters;
+	CallableWithParameters<Box, Object> callableWithParameters;
 
-	CallableWithParameters predicateWithParameters;
+	CallableWithParameters<Box, Boolean> predicateWithParameters;
 	Object objectValue;
 
 	String menuPath = null;
@@ -39,13 +39,13 @@ public class EditableTriggerImpl extends TriggerImpl implements EditableTrigger,
 		setMenuPath(shortLabel);
 	}
 
-	public EditableTriggerImpl(CallableWithParameters<Boolean, Box> predicate, String menuLabel, CallableWithParameters function) {
+	public EditableTriggerImpl(CallableWithParameters<Box, Boolean> predicate, String menuLabel, CallableWithParameters function) {
 		callableWithParameters = function;
 		predicateWithParameters = predicate;
 		setMenuPath(menuLabel);
 	}
 
-	public EditableTriggerImpl(CallableWithParameters<Boolean, Box> predicate, String menuLabel, Trigger t) {
+	public EditableTriggerImpl(CallableWithParameters<Box, Boolean> predicate, String menuLabel, Trigger t) {
 		predicateWithParameters = predicate;
 		trigger = t;
 		setMenuPath(menuLabel);
@@ -59,6 +59,7 @@ public class EditableTriggerImpl extends TriggerImpl implements EditableTrigger,
 		trigger = editableTriggerImpl.trigger;
 		predicateWithParameters = editableTriggerImpl.predicateWithParameters;
 		callableWithParameters = editableTriggerImpl.callableWithParameters;
+		setShortLabel(editableTriggerImpl.getShortLabel());
 		setDescription(editableTriggerImpl.getDescription());
 		setIdent(editableTriggerImpl.getIdent());
 		setMenuPath(menuFmt);
@@ -88,10 +89,17 @@ public class EditableTriggerImpl extends TriggerImpl implements EditableTrigger,
 	}
 
 	public void setRequireClass(final Class cls) {
-		predicateWithParameters = new CallableWithParameters() {
-			@Override public Object call(Object box, Object... params) {
+		predicateWithParameters = new CallableWithParameters<Box, Boolean>() {
+			@Override public Boolean call(Box box, Object... classAndObjAndParams) {
 				Object v = Utility.dref(box);
-				return v instanceof Class && cls.isAssignableFrom((Class) v);
+				if (v != null) {
+					return cls.isInstance(v);
+				}
+				if (classAndObjAndParams == null || classAndObjAndParams.length == 0)
+					return false;
+
+				Object other = classAndObjAndParams[0];
+				return other instanceof Class && cls.isAssignableFrom((Class) other);
 			}
 		};
 	}
@@ -103,7 +111,7 @@ public class EditableTriggerImpl extends TriggerImpl implements EditableTrigger,
 		}
 
 		if (callableWithParameters != null) {
-			Object result = call(getValue(targetBox));
+			Object result = call(targetBox);
 			try {
 				Utility.addSubResult(this, targetBox, null, result, null);
 			} catch (PropertyVetoException e) {
@@ -121,15 +129,14 @@ public class EditableTriggerImpl extends TriggerImpl implements EditableTrigger,
 		return targetBox.getValue();
 	}
 
-	@Override public Object call(Object box, Object... params) {
-		Object use = box;
-		if (box == null) {
-			use = objectValue;
-		} else if (box instanceof Box) {
-			use = getValue((Box) box);
+	@Override public Object call(Box box, Object... params) {
+		Object use = objectValue;
+		if (box instanceof Box) {
+			use = getValue(box);
 		}
 		if (callableWithParameters != null) {
-			return callableWithParameters.call(use, params);
+			box = Utility.asBoxed(use);
+			return callableWithParameters.call(box, params);
 		}
 		fire(Utility.asBoxed(use));
 		return null;
@@ -141,7 +148,7 @@ public class EditableTriggerImpl extends TriggerImpl implements EditableTrigger,
 
 	@Override public boolean appliesTarget(Class cls, Object example) {
 		if (predicateWithParameters != null) {
-			return predicateWithParameters.call(cls, example) == Boolean.TRUE;
+			return predicateWithParameters.call(null, cls, example) == Boolean.TRUE;
 		}
 		if (objectValue != null)
 			return example == objectValue;
