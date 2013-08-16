@@ -24,8 +24,8 @@ import org.appdapter.gui.box.ScreenBoxImpl;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.demo.DemoBrowser;
 
-import twinkle.ui.components.ComponentRegistry;
-import twinkle.ui.components.TwinkleMain;
+//import twinkle.ui.components.ComponentRegistry;
+//import twinkle.ui.components.TwinkleMain;
 
 /**
  * @author Stu B. <www.texpedient.com>
