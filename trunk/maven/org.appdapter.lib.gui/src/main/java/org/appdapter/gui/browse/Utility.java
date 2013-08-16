@@ -2208,7 +2208,7 @@ public class Utility extends UtilityMenuOptions {
 
 		Customizer customizer;
 		try {
-			customizer = newInstance(customizerClass);
+			customizer = (Customizer) newInstance(customizerClass);
 		} catch (Throwable e) {
 			return findOrCreateObjectView(objectIn, key, LargeObjectView.class);
 		}
@@ -2220,7 +2220,7 @@ public class Utility extends UtilityMenuOptions {
 		customizer.setObject(object);
 		view = (JPanel) customizer;
 
-		myPanelMap.put(object, view);
+		myPanelMap.put(key, view);		
 		return view;
 	}
 
