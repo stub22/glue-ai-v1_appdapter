@@ -37,8 +37,6 @@ import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.trigger.TriggerForClass;
 
-import twinkle.Twinkle;
-
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Model;
 
@@ -47,13 +45,13 @@ import com.hp.hpl.jena.rdf.model.Model;
  */
 public class BridgeTriggers implements UtilClass {
 
-	@UISalient(MenuName = "Startup Twinkle main") public static void startTwinkle() {
-		Twinkle.main(new String[0]);
+	@UISalient(MenuName = "Startup Twinkle main") public static void startTwinkle() throws Throwable {
+		Class.forName("twinkle.Twinkle").getMethod("main", String[].class).invoke(null, new String[0]);
 	}
 
 	@UISalient(MenuName = "Run Twinkle On Model %t", IsNotSideEffectSafe = true)//
-	public static void startTwinkle(Model m) {
-		Twinkle.mainWithModel(m);
+	public static void startTwinkle(Model m) throws Throwable {
+		Class.forName("twinkle.Twinkle").getMethod("main", Model.class).invoke(null, m);
 	}
 
 	@UISalient public static List<Model> getModelsFoundIn(Repo repo) {

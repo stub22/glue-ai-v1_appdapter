@@ -26,7 +26,7 @@ public class DemoNavigatorCtrl extends BaseDemoNavigatorCtrl implements DisplayC
 
 	@Override public void launchFrame(final String title) {
 		try {
-			Utility.invokeLater(new Runnable() {
+			Utility.invokeAndWait(new Runnable() {
 				@Override public void run() {
 					DemoNavigatorCtrl.super.launchFrame(title);
 				}
