@@ -118,6 +118,7 @@ import org.appdapter.api.trigger.AnyOper.UISalient;
 import org.appdapter.api.trigger.AnyOper.UtilClass;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContext;
+import org.appdapter.api.trigger.CallableWithParameters;
 import org.appdapter.api.trigger.GetObject;
 import org.appdapter.api.trigger.MutableBox;
 import org.appdapter.api.trigger.Trigger;
@@ -143,6 +144,7 @@ import org.appdapter.gui.api.BoxPanelSwitchableView;
 import org.appdapter.gui.api.BrowserPanelGUI;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.DisplayType;
+import org.appdapter.gui.api.EditableTrigger;
 import org.appdapter.gui.api.GetDisplayContext;
 import org.appdapter.gui.api.GetSetObject;
 import org.appdapter.gui.api.IGetBox;
@@ -174,6 +176,7 @@ import org.appdapter.gui.swing.ObjectChoiceComboPanel;
 import org.appdapter.gui.table.ArrayContentsPanel;
 import org.appdapter.gui.table.ArrayContentsPanel.ArrayContentsPanelTabFramer;
 import org.appdapter.gui.table.SafeJTable;
+import org.appdapter.gui.trigger.EditableTriggerImpl;
 import org.appdapter.gui.trigger.TriggerAdder;
 import org.appdapter.gui.trigger.TriggerFilter;
 import org.appdapter.gui.trigger.TriggerForClass;
@@ -3525,6 +3528,115 @@ public class Utility extends UtilityMenuOptions {
 
 	public static boolean isSideEffectSafe(Class declaringClass) {
 		return false;
+	}
+
+	/**
+	 * Register a Trigger to places on all instances of 'cls'
+	 * @param cls
+	 * @param menuLabel
+	 * @param trigger
+	 * 
+	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
+	 * 
+	 */
+	public static EditableTrigger registerTriggerForClassInstances(Class cls, String menuLabel, Trigger trigger) {
+		EditableTrigger editableTrigger = new EditableTriggerImpl(cls, menuLabel, trigger);
+		synchronized (objectContextMenuTriggers0) {
+			objectContextMenuTriggers0.add(editableTrigger);
+		}
+		synchronized (appMenuGlobalTriggers0) {
+			appMenuGlobalTriggers0.add(editableTrigger);
+		}
+		return editableTrigger;
+	}
+
+	/**
+	 * Register a Trigger onto a class Object
+	 * @param cls
+	 * @param menuLabel
+	 * @param trigger
+	 * 
+	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
+	 * 
+	 */
+	public static EditableTrigger registerTriggerForClass(Class cls, String menuLabel, Trigger trigger) {
+		EditableTrigger editableTrigger = new EditableTriggerImpl(cls, menuLabel, trigger);
+		synchronized (objectContextMenuTriggers0) {
+			objectContextMenuTriggers0.add(editableTrigger);
+		}
+		return editableTrigger;
+	}
+
+	/**
+	 * Register a Trigger onto a class Object
+	 * @param cls
+	 * @param menuLabel
+	 * @param trigger
+	 * 
+	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
+	 * 
+	 */
+	public static EditableTrigger registerTriggerForPredicate(CallableWithParameters<Boolean, Box> predicate, String menuLabel, Trigger trigger) {
+		EditableTrigger editableTrigger = new EditableTriggerImpl(predicate, menuLabel, trigger);
+		synchronized (objectContextMenuTriggers0) {
+			objectContextMenuTriggers0.add(editableTrigger);
+		}
+		synchronized (appMenuGlobalTriggers0) {
+			appMenuGlobalTriggers0.add(editableTrigger);
+		}
+		return editableTrigger;
+	}
+
+	/**
+	 * Register a Factory for a Class
+	 * @param cls
+	 * @param menuLabel
+	 * @param trigger
+	 * 
+	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
+	 * 
+	 */
+	public static <T> EditableTrigger registerFactoryForClass(Class<T> cls, String menuLabel, CallableWithParameters<? extends T, Class> function) {
+		EditableTrigger editableTrigger = new EditableTriggerImpl(cls, menuLabel, function);
+		synchronized (objectContextMenuTriggers0) {
+			objectContextMenuTriggers0.add(editableTrigger);
+		}
+		synchronized (appMenuGlobalTriggers0) {
+			appMenuGlobalTriggers0.add(editableTrigger);
+		}
+		return editableTrigger;
+	}
+
+	/**
+	 * Register a Trigger on a specific object
+	 * @param cls
+	 * @param menuLabel
+	 * @param trigger
+	 * 
+	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
+	 * 
+	 */
+	public static EditableTrigger registerTriggerForObject(Object anyObject, String shortLabel, Trigger trigger) {
+		EditableTrigger editableTrigger = new EditableTriggerImpl(shortLabel, trigger);
+		((MutableBox) asBoxed(anyObject)).attachTrigger(editableTrigger);
+		return editableTrigger;
+	}
+
+	/**
+	 * Register a Trigger onto a class Object
+	 * @param cls
+	 * @param menuLabel
+	 * @param trigger
+	 * 
+	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
+	 * 
+	 */
+	public static EditableTrigger registerCallableForPredicate(CallableWithParameters<Boolean, Box> predicate, String menuLabel, CallableWithParameters function) {
+		EditableTrigger editableTrigger = new EditableTriggerImpl(predicate, menuLabel, function);
+		synchronized (objectContextMenuTriggers0) {
+			objectContextMenuTriggers0.add(editableTrigger);
+		}
+		return editableTrigger;
 	}
 
 }
