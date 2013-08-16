@@ -72,6 +72,7 @@ public abstract class Debuggable extends BasicDebugger {
 			return rte;
 		}
 		rte.printStackTrace();
+		breakpoint();
 		return rte;
 	}
 
@@ -542,6 +543,10 @@ public abstract class Debuggable extends BasicDebugger {
 
 	public static boolean isRelease() {
 		return !isDebugging();
+	}
+
+	public static boolean breakpoint() {
+		return isDebugging();
 	}
 
 }
