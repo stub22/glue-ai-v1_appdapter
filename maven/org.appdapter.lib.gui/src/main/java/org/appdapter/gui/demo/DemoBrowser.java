@@ -86,7 +86,7 @@ final public class DemoBrowser implements AnyOper.Singleton {
 	public static DemoNavigatorCtrl makeDemoNavigatorCtrl(String[] args) {
 		if (mainControl == null) {
 			try {
-				main(args);
+				ensureRunning(false, args);
 			} catch (InterruptedException e) {
 				printStackTrace(e);
 			}
@@ -122,6 +122,8 @@ final public class DemoBrowser implements AnyOper.Singleton {
 	}
 
 	static public boolean defaultExampleCode = false;
+
+	static public String appName = "Wackamole";
 
 	/**
 	 * Register a Trigger to places on all instances of 'cls'
@@ -208,9 +210,35 @@ final public class DemoBrowser implements AnyOper.Singleton {
 	 * 
 	 * @throws Exception
 	 */
-	public static synchronized void ensureRunning(boolean bringToFront) throws InterruptedException {
+	public static synchronized void ensureRunning(boolean bringToFront, String... args) throws InterruptedException {
 		if (mainControl == null) {
-			main(new String[0]);
+
+			theLogger.info(appName + ".ensureRunning()-START");
+			try {
+				//ObjectNavigator frame = new ObjectNavigator();
+				//Utility.setInstancesOfObjects(frame.getChildCollectionWithContext());
+				// frame.pack();
+				DemoNavigatorCtrlFactory crtlMaker = new DemoNavigatorCtrlFactory() {
+
+					@Override public DemoNavigatorCtrl makeDemoNavigatorCtrl(String[] main, boolean defaultExampleCode1) {
+						return makeDemoNavigatorCtrlReal(main, defaultExampleCode1);
+					}
+
+				};
+				DemoBrowserUI.registerDemo(crtlMaker);
+				//frame.setSize(800, 600);
+				//org.appdapter.gui.pojo.Utility.centerWindow(frame);
+				mainControl = (DemoNavigatorCtrl) DemoBrowserUI.makeDemoNavigatorCtrl(args);
+				mainControl.launchFrame("This is " + appName);
+
+				//frame.show();
+				//
+				theLogger.info(appName + " is now running!");
+			} catch (Exception err) {
+				theLogger.error(appName + " could not be started", err);
+			}
+			theLogger.info(appName + ".ensureRunning()-END");
+			flushIO();
 		}
 		try {
 			if (bringToFront) {
@@ -241,31 +269,8 @@ final public class DemoBrowser implements AnyOper.Singleton {
 	// ==== Main method ==========================
 	public static void main(String[] args) throws InterruptedException {
 		testLoggingSetup();
-		theLogger.info("DemoBrowser.main()-START");
-		try {
-			//ObjectNavigator frame = new ObjectNavigator();
-			//Utility.setInstancesOfObjects(frame.getChildCollectionWithContext());
-			// frame.pack();
-			DemoNavigatorCtrlFactory crtlMaker = new DemoNavigatorCtrlFactory() {
-
-				@Override public DemoNavigatorCtrl makeDemoNavigatorCtrl(String[] main, boolean defaultExampleCode1) {
-					return makeDemoNavigatorCtrlReal(main, defaultExampleCode1);
-				}
-
-			};
-			DemoBrowserUI.registerDemo(crtlMaker);
-			//frame.setSize(800, 600);
-			//org.appdapter.gui.pojo.Utility.centerWindow(frame);
-			mainControl = (DemoNavigatorCtrl) DemoBrowserUI.makeDemoNavigatorCtrl(args);
-			mainControl.launchFrame("This is ObjectNavigator");
-			//frame.show();
-			//frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-			theLogger.info("ObjectNavigator is now running!");
-		} catch (Exception err) {
-			theLogger.error("ObjectNavigator could not be started", err);
-		}
-		theLogger.info("DemoBrowser.main()-END");
-		flushIO();
+		ensureRunning(true, args);
+		Utility.getAppFrame().setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 
 	static public class AsApplet extends JApplet {
