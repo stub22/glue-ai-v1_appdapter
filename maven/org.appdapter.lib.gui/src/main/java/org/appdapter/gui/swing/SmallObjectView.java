@@ -61,7 +61,7 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 		public PropertyButton() {
 			super();
 			try {
-				setIcon(new ImageIcon(IconView.class.getResource("PropertyButton.gif")));
+				setIcon(Utility.getImageIcon(IconView.class.getResource("PropertyButton.gif")));
 			} catch (Throwable err) {
 				setText("...");
 			}
@@ -82,7 +82,7 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 		public RemoveButton() {
 			super();
 			try {
-				setIcon(new ImageIcon(IconView.class.getResource("RemoveButton.gif")));
+				setIcon(Utility.getImageIcon(IconView.class.getResource("RemoveButton.gif")));
 			} catch (Throwable err) {
 				setText("x");
 				setForeground(Color.red);

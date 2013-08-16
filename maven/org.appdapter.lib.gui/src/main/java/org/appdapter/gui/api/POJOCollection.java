@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.appdapter.api.trigger.AnyOper.UIProvider;
+import org.appdapter.gui.box.ScreenBoxImpl;
 
 public interface POJOCollection extends UIProvider {
 
@@ -22,7 +23,7 @@ public interface POJOCollection extends UIProvider {
 
 	public Collection findObjectsByType(Class type);
 
-	public BT findOrCreateBox(Object newObject);
+	public ScreenBoxImpl findOrCreateBox(Object newObject);
 
 	public void renameObject(String oldName, String newName) throws PropertyVetoException;
 

@@ -70,16 +70,21 @@ final public class DemoBrowser implements AnyOper.Singleton {
 
 	public static DemoNavigatorCtrl mainControl;
 
-	public static void showObject(String optionalName, Object any, boolean showASAP, boolean loadChildren) {
-		// This can take up to a few seconds, depending on log level.  
-		try {
-			ensureRunning(showASAP);
-			mainControl.addObject(optionalName, any, showASAP, loadChildren);
-			if (showASAP)
-				mainControl.show();
+	public static void showObject(final String optionalName, final Object any, final boolean showASAP, final boolean loadChildren) {
+		// This can take up to a few seconds, depending on log level.
 
-		} catch (Throwable e1) {
-			Debuggable.printStackTrace(e1);
+		try {
+			ensureRunning(false);
+			Utility.invokeAfterLoader(new Runnable() {
+				@Override public void run() {
+					mainControl.addObject(optionalName, any, showASAP, loadChildren);
+					mainControl.addObject(optionalName, any, showASAP, loadChildren);
+					if (showASAP)
+						mainControl.show();
+				}
+			});
+		} catch (Throwable e) {
+			Debuggable.printStackTrace(e);
 		}
 	}
 
@@ -242,7 +247,11 @@ final public class DemoBrowser implements AnyOper.Singleton {
 		}
 		try {
 			if (bringToFront) {
-				mainControl.show();
+				Utility.invokeAfterLoader(new Runnable() {
+					@Override public void run() {
+						mainControl.show();
+					}
+				});
 			}
 		} catch (Throwable t) {
 			printStackTrace(t);
@@ -260,7 +269,8 @@ final public class DemoBrowser implements AnyOper.Singleton {
 
 	public static void show() {
 		try {
-			ensureRunning(true);
+			ensureRunning(false);
+			mainControl.show();
 		} catch (InterruptedException e) {
 			printStackTrace(e);
 		}
@@ -272,6 +282,7 @@ final public class DemoBrowser implements AnyOper.Singleton {
 		// we set 'defaultExampleCode' from main
 		defaultExampleCode = true;
 		ensureRunning(true, args);
+		show();
 		JFrame appFrame = Utility.getAppFrame();
 		appFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		if (defaultExampleCode) {
@@ -325,7 +336,7 @@ final public class DemoBrowser implements AnyOper.Singleton {
 				getContentPane().add("Center", box);
 				box.add(new JLabel("Opening DemoNavigatorCtrl in a new window..."));
 				DemoNavigatorCtrl dnc = makeDemoNavigatorCtrlReal(new String[0], defaultExampleCode);
-				dnc.launchFrame("Appdapter Demo Browser as Applet");
+				dnc.launchFrameBlocking("Appdapter Demo Browser as Applet");
 				setVisible(false);
 				setSize(0, 0);
 			} catch (Exception err) {
@@ -415,7 +426,7 @@ final public class DemoBrowser implements AnyOper.Singleton {
 	ScreenBoxContextImpl makeBoxContextImpl(Class<BT> regBoxClass, Class<RBT> repoBoxClass, TriggerImpl<BT> regTrigProto, TriggerImpl<RBT> repoTrigProto, boolean isExampleCode) {
 		try {
 
-			BT rootBox = (BT) DemoServiceWrapFuncs.makeTestBoxImpl((Class) regBoxClass, (TriggerImpl) regTrigProto, "All Objects", Class.class);
+			BT rootBox = (BT) DemoServiceWrapFuncs.makeTestBoxImplWithValue((Class<BT>) regBoxClass, Class.class, "All Objects");
 
 			ScreenBoxContextImpl bctx = new ScreenBoxContextImpl(rootBox);
 

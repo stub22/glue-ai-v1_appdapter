@@ -26,11 +26,11 @@ public class DemoNavigatorCtrl extends BaseDemoNavigatorCtrl implements DisplayC
 
 	@Override public void launchFrame(final String title) {
 		try {
-			Utility.invokeAndWait(new Runnable() {
+			new Thread(new Runnable() {
 				@Override public void run() {
-					DemoNavigatorCtrl.super.launchFrame(title);
+					DemoNavigatorCtrl.super.launchFrameBlocking(title);
 				}
-			});
+			}, "Launching frame slowly").start();
 		} catch (Throwable e) {
 		}
 	}
@@ -60,6 +60,6 @@ public class DemoNavigatorCtrl extends BaseDemoNavigatorCtrl implements DisplayC
 	}
 
 	@Override public void show() {
-		launchFrame(null);
+		launchFrameBlocking(null);
 	}
 }
