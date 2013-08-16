@@ -60,8 +60,6 @@ import org.appdapter.gui.util.PromiscuousClassUtilsA;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.emory.mathcs.backport.java.util.Collections;
-
 /**
 /**  Base implementation of our demo Swing Panel boxes. 
  * The default implementation can own one swing panel of each "Kind".

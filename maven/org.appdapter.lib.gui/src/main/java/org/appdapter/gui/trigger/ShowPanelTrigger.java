@@ -9,6 +9,7 @@ import javax.swing.AbstractButton;
 
 import org.appdapter.api.trigger.AnyOper.UISalient;
 import org.appdapter.api.trigger.Box;
+import org.appdapter.api.trigger.Trigger;
 import org.appdapter.api.trigger.TriggerImpl;
 import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.core.log.Debuggable;
@@ -17,7 +18,7 @@ import org.appdapter.gui.api.UIAware;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.swing.SafeJMenuItem;
 
-public class ShowPanelTrigger<BT extends Box<TriggerImpl<BT>>> extends TriggerForInstance<BT> {
+public class ShowPanelTrigger<BT extends Box<TriggerImpl<BT>>> extends TriggerForInstance<BT> implements TriggerForClass {
 
 	@Override public boolean isFavorited() {
 		return true;
@@ -120,5 +121,15 @@ public class ShowPanelTrigger<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 
 	@Override public Class getDeclaringClass() {
 		return arg0Clazz;
+	}
+
+	@Override public boolean appliesTarget(Class cls, Object example) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override public Trigger createTrigger(String menuFmt, DisplayContext ctx, Object poj) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

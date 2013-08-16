@@ -29,6 +29,7 @@ import javax.swing.event.ChangeListener;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.core.convert.ReflectUtils;
+import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.BoxPanelSwitchableView;
 import org.appdapter.gui.api.Chooser;
 import org.appdapter.gui.api.DisplayContext;
@@ -86,9 +87,15 @@ extends ScreenBoxPanel<BoxType> implements ValueChangeListener, DropTargetListen
 	}
 
 	@Override protected boolean reloadObjectGUI(Object obj) throws Throwable {
-		this.objectValue = Utility.recast(obj, getClassOfBox());
-		reloadContents();
+		try {
+			this.objectValue = Utility.recast(obj, getClassOfBox());
+			reloadContents();
+		} catch (Throwable t) {
+			Debuggable.printStackTrace(t);
+			Debuggable.warn(" " + t);
+		}
 		return true;
+
 	}
 
 	abstract protected void replaceValue(Object oldValue, Object newValue);
