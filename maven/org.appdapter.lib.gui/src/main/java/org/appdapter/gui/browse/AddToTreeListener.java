@@ -2,9 +2,8 @@ package org.appdapter.gui.browse;
 
 import java.awt.Container;
 import java.beans.PropertyVetoException;
-import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.RandomAccess;
 
@@ -18,6 +17,8 @@ import org.appdapter.gui.api.BT;
 import org.appdapter.gui.api.NamedObjectCollection;
 import org.appdapter.gui.api.POJOCollectionListener;
 
+import scala.collection.parallel.ParIterableLike.Foreach;
+
 public class AddToTreeListener implements POJOCollectionListener {
 
 	public String toString() {
@@ -29,6 +30,8 @@ public class AddToTreeListener implements POJOCollectionListener {
 	BoxContext mybctx;
 	Container jtree;
 	boolean organizeIntoClasses;
+	HashSet<Class> classesAtFirstLevel = new HashSet();
+	HashSet<Object> objectsAtSecondLevel = new HashSet();
 
 	public AddToTreeListener(Container myTree, NamedObjectCollection ctx, BoxContext bctx, MutableBox root, boolean organizeIntoClasses) {
 		mybctx = bctx;
@@ -36,15 +39,20 @@ public class AddToTreeListener implements POJOCollectionListener {
 		col = ctx;
 		this.root = root;
 		this.organizeIntoClasses = organizeIntoClasses;
-		addboxes(ctx);
-		ctx.addListener(this, false);
+		Utility.invokeAfterLoader(new Runnable() {
+
+			@Override public void run() {
+				addboxes(col);
+				col.addListener(AddToTreeListener.this, false);
+			}
+		});
 	}
 
 	private void addboxes(NamedObjectCollection ctx) {
 		Iterator it = ctx.getBoxes();
 		while (it.hasNext()) {
 			BT b = (BT) it.next();
-			pojoAdded0(b.getValue(), b);
+			pojoAdded0(b.getValueOrThis(), b);
 		}
 		invalidate();
 	}
@@ -90,7 +98,7 @@ public class AddToTreeListener implements POJOCollectionListener {
 	void pojoUpdateObjectOnly(Object anyObject, BT box, boolean isRemoval) throws PropertyVetoException {
 
 		Class oc = anyObject.getClass();
-		
+
 		if (!isRemoval) {
 			Utility.addObjectFeatures(anyObject);
 			addChildObject(root, box.getShortLabel(), anyObject);
@@ -100,10 +108,14 @@ public class AddToTreeListener implements POJOCollectionListener {
 
 	}
 
-	void pojoUpdateObjectWithClass(Object obj, BT box, boolean isRemoval) throws PropertyVetoException {
+	void pojoUpdateObjectWithClass(Object obj, BT box0, boolean isRemoval) {
+		obj = Utility.drefO(obj);
+		pojoUpdateObjectWithClass(obj, isRemoval);
+	}
+
+	void pojoUpdateObjectWithClass(Object obj, boolean isRemoval) {
 
 		Class oc = obj.getClass();
-
 		if (oc.isArray()) {
 			Class compType = oc.getComponentType();
 			if (Utility.isSystemPrimitive(compType))
@@ -112,6 +124,13 @@ public class AddToTreeListener implements POJOCollectionListener {
 				Utility.addObjectFeatures(o);
 			}
 			return;
+		}
+
+		synchronized (this) {
+			if (obj instanceof Class) {
+				addFirstLevelClass((Class) obj, isRemoval);
+				return;
+			}
 		}
 		if (obj instanceof RandomAccess)
 			return;
@@ -125,31 +144,71 @@ public class AddToTreeListener implements POJOCollectionListener {
 		if (!isRemoval) {
 			//	Utility.addObjectFeatures(obj);
 		}
+		synchronized (this) {
+			addFirstLevelClass(oc, isRemoval);
+			addSecondLevelObject(obj, isRemoval);
+		}
 
-		MutableBox objectBox = (MutableBox) box;
+	}
 
-		MutableBox rootBox = getFirstBox(null);
-		saveInClassTree(rootBox, oc, objectBox, isRemoval);
-		if (obj instanceof Class)
+	private void addFirstLevelClass(Class newClassMaybe, boolean isRemoval) {
+		if (BT.class == newClassMaybe) {
+			if (classesAtFirstLevel.contains(newClassMaybe))
+				return;
+		}
+		if (classesAtFirstLevel.contains(newClassMaybe))
 			return;
-		for (Class ifc : oc.getInterfaces()) {
+		classesAtFirstLevel.add(newClassMaybe);
+		MutableBox rootBox = getFirstBox(null);
+
+		saveInClassTree(rootBox, Class.class, asMutable(newClassMaybe), isRemoval);
+
+		for (Object o : objectsAtSecondLevel) {
+			if (newClassMaybe.isInstance(asValue(o))) {
+				saveInClassTree(rootBox, newClassMaybe, asMutable(o), isRemoval);
+			}
+		}
+		if (newClassMaybe.isInterface())
+			return;
+		for (Class ifc : newClassMaybe.getInterfaces()) {
 			if (!Utility.isLocalInterface(ifc))
 				continue;
-			MutableBox faceBox = getFirstBox(Class.class);
-			saveInClassTree(faceBox, ifc, objectBox, isRemoval);
+			addFirstLevelClass(ifc, isRemoval);
 		}
 	}
 
-	public MutableBox getFirstBox(Object obj) throws PropertyVetoException {
+	private void addSecondLevelObject(Object o, boolean isRemoval) {
+		if (objectsAtSecondLevel.contains(o))
+			return;
+		objectsAtSecondLevel.add(o);
+		MutableBox rootBox = getFirstBox(null);
+		for (Class newClassMaybe : classesAtFirstLevel) {
+			if (newClassMaybe.isInstance(asValue(o))) {
+				saveInClassTree(rootBox, newClassMaybe, asMutable(o), isRemoval);
+			}
+		}
+	}
+
+	private Object asValue(Object o) {
+		return Utility.drefO(o);
+	}
+
+	private MutableBox asMutable(Object o) {
+		if (o instanceof MutableBox)
+			return (MutableBox) o;
+		return (MutableBox) findOrCreateBox(null, o);
+	}
+
+	public MutableBox getFirstBox(Object obj) {
 		if (obj == null) {
 			if (root != null)
 				return root;
 			return (MutableBox) mybctx.getRootBox();
 		}
-		return (MutableBox) findOrCreateBox(null, obj);
+		return asMutable(obj);
 	}
 
-	private void saveInClassTree(Box belowBox, Class oc, MutableBox objectBox, boolean isRemoval) throws PropertyVetoException {
+	private void saveInClassTree(Box belowBox, Class oc, MutableBox objectBox, boolean isRemoval) {
 		try {
 			saveInTreeWC(belowBox, oc, objectBox, isRemoval);
 		} catch (Exception e2) {

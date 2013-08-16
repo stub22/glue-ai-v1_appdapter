@@ -104,7 +104,16 @@ abstract public class BaseDemoNavigatorCtrl implements BrowserPanelGUI, org.appd
 		myBP.addTreeMouseAdapter(menuMA);
 	}
 
-	public void launchFrame(String title) {
+	public void launchFrameBlocking(final String title) {
+		Utility.invokeAndWait(new Runnable() {
+			@Override public void run() {
+				launchFrameBlockingInSwing(title);
+
+			}
+		});
+	}
+
+	public void launchFrameBlockingInSwing(String title) {
 		myJFrame = Utility.appFrame;
 		boolean firstTime = false;
 		if (myJFrame == null) {

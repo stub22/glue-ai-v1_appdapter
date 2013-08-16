@@ -11,6 +11,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
 import org.appdapter.gui.browse.Utility;
+import org.appdapter.gui.swing.DisplayContextUIImpl.UnknownIcon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,7 +62,9 @@ public class Icons {
 
 	public static Icon loadIcon(String filename) {
 		try {
-			return new ImageIcon(Utility.getResource(filename));
+			java.net.URL url = Utility.getResource(filename);
+			if (url==null) return new UnknownIcon();
+			return new ImageIcon();
 		} catch (Exception err) {
 			theLogger.warn("Warning - icon '" + filename + "' could not be loaded: " + err, err);
 			return new DummyIcon();

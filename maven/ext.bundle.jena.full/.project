@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-  <name>ext.bundle.jena_all_264</name>
-  <comment>Jena + ARQ + SDB.  Versions used match the midpoint of Joseki 3.4.3 and 3.4.4. NO_M2ECLIPSE_SUPPORT: Project files created with the maven-eclipse-plugin are not supported in M2Eclipse.</comment>
+  <name>ext.bundle.jena_all_2_10_1</name>
+  <comment>Jena 2.10.1, ARQ + SDB. NO_M2ECLIPSE_SUPPORT: Project files created with the maven-eclipse-plugin are not supported in M2Eclipse.</comment>
   <projects/>
   <buildSpec>
     <buildCommand>

@@ -22,10 +22,8 @@ import java.lang.reflect.InvocationTargetException;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContext;
 import org.appdapter.api.trigger.MutableBox;
-import org.appdapter.api.trigger.SetObject;
 import org.appdapter.api.trigger.TriggerImpl;
 import org.appdapter.bind.rdf.jena.assembly.CachingComponentAssembler;
-import org.appdapter.core.convert.NoSuchConversionException;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.ScreenBox.Kind;
 import org.appdapter.gui.api.WrapperValue;
@@ -44,7 +42,7 @@ public class DemoServiceWrapFuncs {
 		return result;
 	}
 
-	private static <BT extends ScreenBoxImpl<TT>, TT extends TriggerImpl<BT>> BT makeTestBoxImplWithValue(Class<BT> boxClass, Object value, String label) {
+	public static <BT extends ScreenBoxImpl<TT>, TT extends TriggerImpl<BT>> BT makeTestBoxImplWithValue(Class<BT> boxClass, Object value, String label) {
 		BT result = CachingComponentAssembler.makeEmptyComponent(boxClass);
 		if (!WrapperValue.class.isAssignableFrom(boxClass)) {
 			try {
@@ -75,17 +73,8 @@ public class DemoServiceWrapFuncs {
 	 * @param label
 	 * @return 
 	 */
-	public static <BT extends ScreenBoxImpl<TT>, TT extends TriggerImpl<BT>> BT makeTestBoxImpl(Class<BT> boxClass, TT trigProto, String label, Object value) {
+	public static <BT extends ScreenBoxImpl<TT>, TT extends TriggerImpl<BT>> BT makeTestBoxImpl(Class<BT> boxClass, TT trigProto, String label) {
 		BT result = CachingComponentAssembler.makeEmptyComponent(boxClass);
-		if (!WrapperValue.class.isAssignableFrom(boxClass)) {
-			try {
-				result = (BT) Utility.uiObjects.findOrCreateBox(label, value);
-			} catch (PropertyVetoException e) {
-				throw Debuggable.reThrowable(e);
-			}
-		} else {
-			result = CachingComponentAssembler.makeEmptyComponent(boxClass);
-		}
 		result.setShortLabel(label);
 		result.setDescription("full description for box with label: " + label);
 		return result;
@@ -106,7 +95,7 @@ public class DemoServiceWrapFuncs {
 	public static <BT extends ScreenBoxImpl<TT>, TT extends TriggerImpl<BT>> BT makeTestChildBoxImpl(Box parentBox, Class<BT> childBoxClass, TT trigProto, String label) {
 		BT result = null;
 		BoxContext ctx = parentBox.getBoxContext();
-		result = makeTestBoxImpl(childBoxClass, trigProto, label, null);
+		result = makeTestBoxImpl(childBoxClass, trigProto, label);
 		ctx.contextualizeAndAttachChildBox(parentBox, result);
 		return result;
 	}

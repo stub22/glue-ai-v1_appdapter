@@ -63,12 +63,14 @@ abstract public class ReflectUtils implements UtilClass {
 	final public static Converter NO_CONVERTER = Converter.CASTING_ONLY;
 	private static final Class[] CLASS0 = new Class[0];
 
-	public static void registerConverter(Converter utilityConverter) {
-		if (utilityConverter == DEFAULT_CONVERTER)
+	public static void registerConverter(Converter conv) {
+		if (conv == DEFAULT_CONVERTER)
 			return;
+		theLogger.warn("Register converter: " + conv);
 		synchronized (registeredConverters) {
-			registeredConverters.remove(utilityConverter);
-			registeredConverters.add(0, utilityConverter);
+			registeredConverters.remove(conv);
+			if (!(conv instanceof DontAdd))
+				registeredConverters.add(0, conv);
 		}
 	}
 

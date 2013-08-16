@@ -266,10 +266,11 @@ public class AssemblerCacheGrabber extends BasicDebugger implements AnyOper.Sing
 	synchronized void setLongRunner(final Runnable longRunner) {
 
 		synchronized (longThreadSync) {
-			if (this.longThread != null) {
+			Thread lf = longThread;
+			if (lf != null) {
 				longThreadQuit = true;
 				try {
-					longThread.join();
+					lf.join();
 				} catch (InterruptedException e) {
 				}
 			}

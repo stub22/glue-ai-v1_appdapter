@@ -39,6 +39,7 @@ import org.appdapter.gui.api.NamedObjectCollection;
 import org.appdapter.gui.api.POJOCollection;
 import org.appdapter.gui.api.POJOCollectionListener;
 import org.appdapter.gui.api.WrapperValue;
+import org.appdapter.gui.box.ScreenBoxImpl;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.editors.Icons;
 import org.appdapter.gui.editors.RenameDialog;
@@ -47,6 +48,8 @@ import org.appdapter.gui.trigger.TriggerMenuFactory;
 import org.appdapter.gui.util.PairTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.hp.hpl.jena.rdf.model.Container;
 
 /**
  * A POJOCollectionContext implementation that uses a ObjectNavigator.
@@ -77,8 +80,7 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 			} else if (source instanceof JInternalFrame) {
 				JInternalFrame window = (JInternalFrame) source;
 				window.removeInternalFrameListener(this);
-				boxPanels.remove(window);
-				objectWindows.remove(window);
+				Utility.forgetWindow(window);
 				window.dispose();
 			}
 		}
@@ -103,8 +105,7 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 			} else if (source instanceof Window) {
 				Window window = (Window) source;
 				window.removeWindowListener(this);
-				boxPanels.remove(window);
-				objectWindows.remove(window);
+				Utility.forgetWindow(window);
 				window.dispose();
 			}
 		}
@@ -139,7 +140,8 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 
 		@Override public void actionPerformed(ActionEvent evt) {
 			try {
-				showScreenBox(Utility.getPropertiesPanel(getValue()));
+				Object val = getValue();
+				showScreenBox(Utility.getPropertiesPanel(val));
 			} catch (Throwable err) {
 				Utility.showError(null, null, err);
 			}
@@ -238,10 +240,6 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 
 	// ==== Instance variables ================
 	BoxPanelSwitchableView tabsUI;
-
-	Hashtable<Box, JPanel> boxPanels = new Hashtable<Box, JPanel>();
-
-	PairTable<Object, Component> objectWindows = new PairTable();
 
 	/**
 	 * Creates a new context linked to the given GUI. All operations will use
@@ -352,7 +350,7 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 		return collection.findObjectsByType(type);
 	}
 
-	@Override public BT findOrCreateBox(Object value) {
+	@Override public ScreenBoxImpl findOrCreateBox(Object value) {
 		final POJOCollection collection = getLocalBoxedChildren();
 		return collection.findOrCreateBox(value);
 	}
@@ -575,7 +573,7 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 		if (guiFor instanceof String) {
 			return Utility.browserPanel.showMessage((String) guiFor, String.class);
 		}
-		
+
 		Utility.recordCreated(guiFor);
 
 		JPanel pnl;
@@ -643,6 +641,10 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 	 * @throws IntrospectionException 
 	 */
 	private void showObjectGUI(String name, Object guiFor, Component component, boolean showASAP) {
+		showObjectGUI(name, guiFor, component, showASAP, Utility.objectWindows);
+	}
+
+	private void showObjectGUI(String name, Object guiFor, Component component, boolean showASAP, PairTable objectWindows) {
 
 		if (guiFor == null)
 			guiFor = Utility.drefO(component);

@@ -13,9 +13,9 @@ import org.appdapter.core.log.Debuggable;
 
 public class ConverterFromMember extends Debuggable implements Converter {
 
-	final Method m;
+	Method m;
 	final Class to, from;
-	final boolean isStatic;
+	boolean isStatic;
 	boolean allowTransitive;
 	boolean allowOptionalArgs;
 	ConverterMethod info;
@@ -26,12 +26,14 @@ public class ConverterFromMember extends Debuggable implements Converter {
 	}
 
 	private Object getFunction() {
-		if (callable != null)
-			return callable;
-		return m;
+		if (m != null)
+			return m;
+		return callable;
 	}
 
-	public void setMethod(Method m) {
+	public void setMethodAsCallable(Method m) {
+		this.m = m;
+		isStatic = ReflectUtils.isStatic(m);
 		callable = new CallableWithParameters() {
 			final Method m = this.m;
 
@@ -112,14 +114,14 @@ public class ConverterFromMember extends Debuggable implements Converter {
 		try {
 			Object o = DEFAULT_CONVERTER.convert(obj, from, maxConverts);
 			Object mid;
-			if (callable != null) {
-				mid = this.callable.call(o);
-			} else {
+			if (m != null) {
 				if (isStatic) {
 					mid = m.invoke(null, o);
 				} else {
 					mid = m.invoke(o);
 				}
+			} else {
+				mid = this.callable.call(o);
 			}
 			return (T) DEFAULT_CONVERTER.convert(mid, objNeedsToBe, maxConverts);
 		} catch (Throwable e) {
