@@ -1161,7 +1161,7 @@ public class Utility extends UtilityMenuOptions {
 	public static boolean ensureRunning() {
 		if (browserPanel == null) {
 			try {
-				DemoBrowser.main(new String[0]);
+				DemoBrowser.ensureRunning(true, new String[0]);
 			} catch (Exception e) {
 				theLogger.error("ensureRunning() caught an exception", e);
 			}
