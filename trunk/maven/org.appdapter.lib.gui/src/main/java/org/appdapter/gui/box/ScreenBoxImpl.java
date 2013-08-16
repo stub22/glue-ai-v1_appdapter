@@ -16,23 +16,12 @@ package org.appdapter.gui.box;
  *  limitations under the License.
  */
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Image;
-import java.beans.BeanInfo;
 import java.beans.Customizer;
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.beans.PropertyEditor;
 import java.beans.PropertyVetoException;
-import java.beans.VetoableChangeListener;
-import java.beans.VetoableChangeSupport;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -40,19 +29,15 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 
 import org.appdapter.api.trigger.ABoxImpl;
 import org.appdapter.api.trigger.AnyOper.UIHidden;
 import org.appdapter.api.trigger.Box;
-import org.appdapter.api.trigger.BoxContext;
-import org.appdapter.api.trigger.MutableBox;
 import org.appdapter.api.trigger.SetObject;
 import org.appdapter.api.trigger.Trigger;
-import org.appdapter.core.component.MutableKnownComponent;
 import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.core.name.Ident;
@@ -63,10 +48,8 @@ import org.appdapter.gui.api.DisplayType;
 import org.appdapter.gui.api.FocusOnBox;
 import org.appdapter.gui.api.GetDisplayContext;
 import org.appdapter.gui.api.NamedObjectCollection;
-import org.appdapter.gui.api.POJOCollectionListener;
-import org.appdapter.gui.api.ScreenBox;
-import org.appdapter.gui.api.WrapperValue;
 import org.appdapter.gui.browse.Utility;
+import org.appdapter.gui.editors.LargeObjectView;
 import org.appdapter.gui.editors.UseEditor;
 import org.appdapter.gui.repo.DatabaseManagerPanel;
 import org.appdapter.gui.repo.ModelMatrixPanel;
@@ -76,7 +59,8 @@ import org.appdapter.gui.trigger.TriggerMenuFactory;
 import org.appdapter.gui.util.PromiscuousClassUtilsA;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import static org.appdapter.core.convert.ReflectUtils.*;
+
+import edu.emory.mathcs.backport.java.util.Collections;
 
 /**
 /**  Base implementation of our demo Swing Panel boxes. 
@@ -95,26 +79,28 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 
 	static Logger theLogger = LoggerFactory.getLogger(ScreenBoxImpl.class);
 
-	public Class<?> clz;
-
-	Map<NamedObjectCollection, String> col2Name = new HashMap<NamedObjectCollection, String>();
+	Map<NamedObjectCollection, String> col2Name = null;//new HashMap<NamedObjectCollection, String>();
 
 	public DisplayContext m_displayContext;
 
 	public DisplayType m_displayType = DisplayType.PANEL;
 
-	protected boolean madeElsewhere;
+	public boolean notWrapper;
+
+	public static final Object lock = new Object();
 
 	// Because it's a "provider", we have an extra layer of indirection between
 	// box and display, enabling independence.
 	private DisplayContextProvider myDCP;
 
 	// A box may have up to one panel for any kind.
-	protected Map<Object, JPanel> myPanelMap = new HashMap<Object, JPanel>();
+	//protected Map<Object, JPanel> myPanelMap = new HashMap<Object, JPanel>();
 
-	private NamedObjectCollection noc;
+	//private NamedObjectCollection noc;
 
 	public Object valueSetAs = this;
+
+	//private Set<NamedObjectCollection> nocs;
 
 	//==== Constructors ==================================
 
@@ -123,13 +109,13 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	 * 
 	 */
 	public ScreenBoxImpl() {
-		madeElsewhere = true;
+		notWrapper = true;
 		Utility.recordCreated(this);
 		valueSetAs = this;
 	}
 
 	public ScreenBoxImpl(boolean isSelfTheValue) {
-		this.madeElsewhere = isSelfTheValue;
+		this.notWrapper = isSelfTheValue;
 		if (isSelfTheValue)
 			valueSetAs = this;
 		Utility.recordCreated(this);
@@ -139,9 +125,9 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	 * Creates a new ScreenBox for the given value
 	 * and assigns it a default name.
 	 */
-	public ScreenBoxImpl(NamedObjectCollection noc, String title, Object value) {
-		this.noc = noc;
-		setNameValue(title, value);
+	ScreenBoxImpl(NamedObjectCollection noc, String title, Object value) {
+		notWrapper = false;
+		setNameValue(noc, title, value);
 	}
 
 	public Box asBox() {
@@ -176,10 +162,12 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	}
 
 	public JPanel findExistingBoxPanel(Kind kind) {
-		return myPanelMap.get(toKey(kind));
+		Map<Object, JPanel> myPanelMap = Utility.getPanelMap(getValueOrThis());
+		return (JPanel) myPanelMap.get(toKey(kind));
 	}
 
 	public JPanel findExistingBoxPanel(Object kind) {
+		Map<Object, JPanel> myPanelMap = Utility.getPanelMap(getValueOrThis());
 		return myPanelMap.get(toKey(kind));
 	}
 
@@ -247,14 +235,7 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 		return m_displayType;
 	}
 
-	public NamedObjectCollection getNoc() {
-		return noc;
-	}
-
 	public Class<? extends Object> getObjectClass() {
-		if (clz != null) {
-			return this.clz;
-		}
 		Object obj = getValueOrThis();
 		if (obj != null) {
 			return obj.getClass();
@@ -317,6 +298,7 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	}
 
 	final public JPanel getPropertiesPanel() {
+		Map myPanelMap = Utility.getPanelMap(getValueOrThis());
 		Object m_largeview = myPanelMap.get(Kind.OBJECT_PROPERTIES);
 		if (m_largeview instanceof JPanel) {
 			return (JPanel) m_largeview;
@@ -363,8 +345,10 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 		String sl = super_getShortLabel();
 		if (sl != null)
 			return sl;
-		if (noc != null) {
-			return getUniqueName(noc.getNameToBoxIndex());
+		for (NamedObjectCollection noc : getNOCs()) {
+			if (noc != null) {
+				return getUniqueName(noc.getNameToBoxIndex());
+			}
 		}
 		return getUniqueName(null);
 	}
@@ -530,6 +514,7 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	}
 
 	public JPanel makeBoxPanelForCustomizer2(Object customizer) {
+		Map<Object, JPanel> myPanelMap = Utility.getPanelMap(getValueOrThis());
 		JPanel pnl = myPanelMap.get(toKey(customizer));
 		if (pnl != null) {
 			return pnl;
@@ -580,19 +565,34 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	}
 
 	// ===== Property getters and setters ========================
+	public static Class kindToClass(Kind kind) {
+		if (kind == Kind.MATRIX)
+			return ModelMatrixPanel.class;
+		if (kind == Kind.REPO_MANAGER)
+			return RepoManagerPanel.class;
+		if (kind == Kind.DB_MANAGER)
+			return DatabaseManagerPanel.class;
+		if (kind == Kind.OBJECT_PROPERTIES)
+			return LargeObjectView.class;
+		if (kind == Kind.OTHER)
+			return Customizer.class;
+		if (kind == null)
+			return LargeObjectView.class;
+		if (Debuggable.isRelease())
+			return LargeObjectView.class;
+		throw new RuntimeException("Found unexpected ScreenBoxPanelKind: " + kind);
+	}
 
 	protected JPanel makeBoxPanelForKind(Kind kind) {
-		if (kind == Kind.MATRIX)
-			return new ModelMatrixPanel();
-		if (kind == Kind.REPO_MANAGER)
-			return new RepoManagerPanel();
-		if (kind == Kind.DB_MANAGER)
-			return new DatabaseManagerPanel();
-		if (kind == Kind.OBJECT_PROPERTIES)
-			return Utility.getPropertiesPanel(this);
+
 		if (kind == Kind.OTHER)
 			return makeOtherPanel();
-		throw new RuntimeException("Found unexpected ScreenBoxPanelKind: " + kind);
+		Class make = kindToClass(kind);
+		try {
+			return (JPanel) make.newInstance();
+		} catch (Throwable e) {
+			throw new RuntimeException("Unable to make ScreenBoxPanelKind: " + make + " for " + kind, e);
+		}
 	}
 
 	/**
@@ -613,7 +613,8 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	}
 
 	protected JPanel makePropertiesPanel() {
-		Object m_largeview = myPanelMap.get(Kind.OBJECT_PROPERTIES);
+		Map<Object, JPanel> myPanelMap = Utility.getPanelMap(getValueOrThis());
+		Object m_largeview = myPanelMap.get(toKey(Kind.OBJECT_PROPERTIES));
 		if (m_largeview instanceof JPanel) {
 			return (JPanel) m_largeview;
 		}
@@ -626,23 +627,26 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 		}
 		JPanel pnl = Utility.getPropertiesPanel(obj);
 		if (pnl == null) {
-			Utility.gpp.remove(obj);
-			pnl = Utility.getPropertiesPanel(obj);
+			theLogger.warn("Not getting a panel " + getShortLabel() + " to {} with {} ", this, obj);
+			return null;
 		}
 		pnl.setName(getShortLabel());
 		return pnl;
 	}
 
 	protected void putBoxPanel(Object kind, JPanel bp) {
-		JPanel oldBP = findExistingBoxPanel(kind);
+		Object key = toKey(kind);
+		JPanel oldBP = findExistingBoxPanel(key);
 		if (oldBP != null) {
 			theLogger.warn("Replacing old ScreenBoxPanel link for " + getShortLabel() + " to {} with {} ", oldBP, bp);
 		}
+		Map<Object, JPanel> myPanelMap = Utility.getPanelMap(getValueOrThis());
+		myPanelMap.put(key, bp);
 		setPanelBox(bp);
-		myPanelMap.put(toKey(kind), bp);
+
 	}
 
-	private void setPanelBox(JPanel bp) {
+	protected void setPanelBox(JPanel bp) {
 		boolean needSet = true;
 		if (needSet && bp instanceof FocusOnBox) {
 			try {
@@ -678,10 +682,11 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 				// tostring method can cuse ewxceptions!
 			}
 		}
-		if (clz == null)
-			clz = value.getClass();
+
 		if (removeIfOld(objects, valueSetAs)) {
-			noc.removeObject(valueSetAs);
+			for (NamedObjectCollection noc : getNOCs()) {
+				noc.removeObject(valueSetAs);
+			}
 		}
 		valueSetAs = newObject;
 		addValue(valueSetAs);
@@ -717,6 +722,7 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 		if (test == m_displayContext) {
 			return true;
 		}
+		Map<Object, JPanel> myPanelMap = Utility.getPanelMap(getValueOrThis());
 		for (Object p : myPanelMap.values()) {
 			if (p == test) {
 				return true;
@@ -732,13 +738,23 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 		myDCP = dcp;
 	}
 
-	public void setNameValue(String uniqueName, Object value) {
+	public void setNameValue(NamedObjectCollection noc, String uniqueName, Object value) {
 
 		if (value == null) {
-			value = valueSetAs;
+			if (notWrapper) {
+				value = valueSetAs;
+			}
 		}
-		if (uniqueName == null) {
-			uniqueName = Utility.generateUniqueName(value, uniqueName, noc.getNameToBoxIndex());
+
+		synchronized (lock) {
+			if (col2Name == null) {
+				col2Name = new HashMap<NamedObjectCollection, String>();
+			}
+
+			if (uniqueName == null) {
+				uniqueName = Utility.generateUniqueName_sug(value, uniqueName, noc.getNameToBoxIndex());
+			}
+			col2Name.put(noc, uniqueName);
 		}
 		setShortLabel(uniqueName);
 
@@ -814,7 +830,10 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 		return obj;
 	}
 
-	protected Object toKey(Object kind) {
+	public static Object toKey(Object kind) {
+		if (kind instanceof Kind) {
+			kind = kindToClass((Kind) kind);
+		}
 		if (kind == null) {
 			return null;
 		}
@@ -856,19 +875,32 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	@Override public void addValue(Object val) {
 		if (val == this)
 			return;
-
-		BT prev = noc.findBoxByObject(val);
-		if (prev != null && prev != this) {
-			Debuggable.notImplemented("Already existing value: " + prev);
+		if (addIfNew(objects, val)) {
+			for (NamedObjectCollection noc : getNOCs()) {
+				BT prev = noc.findBoxByObject(val);
+				if (prev != null && prev != this) {
+					Debuggable.notImplemented("Already existing value: " + prev);
+				}
+				noc.addValueBoxed(val, this);
+			}
 		}
-
-		if (addIfNew(objects, val))
-			noc.addValueBoxed(val, this);
 
 	}
 
+	private Iterable<NamedObjectCollection> getNOCs() {
+		synchronized (lock) {
+			if (col2Name == null) {
+				return Collections.singleton(Utility.getTreeBoxCollection());
+			}
+			return ReflectUtils.copyOf(col2Name.keySet());
+		}
+	}
+
 	@Override public void addTitle(String nym) {
-		if (noc.addTitleBoxed(nym, this))
-			getNames().add(nym);
+		if (addIfNew(getNames(), nym)) {
+			for (NamedObjectCollection noc : getNOCs()) {
+				noc.addTitleBoxed(nym, this);
+			}
+		}
 	}
 }

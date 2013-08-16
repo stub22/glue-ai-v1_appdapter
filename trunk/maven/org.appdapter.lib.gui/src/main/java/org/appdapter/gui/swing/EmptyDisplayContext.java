@@ -15,7 +15,9 @@ import org.appdapter.gui.api.BrowserPanelGUI;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.NamedObjectCollection;
 import org.appdapter.gui.api.POJOCollectionListener;
+import org.appdapter.gui.api.ScreenBox;
 import org.appdapter.gui.box.BoxedCollectionImpl;
+import org.appdapter.gui.box.ScreenBoxImpl;
 import org.appdapter.gui.browse.Utility;
 
 public class EmptyDisplayContext extends BoxedCollectionImpl implements BrowserPanelGUI, NamedObjectCollection {
@@ -80,7 +82,7 @@ public class EmptyDisplayContext extends BoxedCollectionImpl implements BrowserP
 		return Utility.getDisplayContext();
 	}
 
-	@Override public BT findOrCreateBox(Object value) {
+	@Override public ScreenBoxImpl findOrCreateBox(Object value) {
 		Debuggable.notImplemented();
 		return null;
 	}

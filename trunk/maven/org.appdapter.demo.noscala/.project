@@ -5,8 +5,9 @@
 		Uses only deps to Maven-Central repo.  Does NOT use lib.core - compiles all code internally. NO_M2ECLIPSE_SUPPORT: Project files created with the maven-eclipse-plugin are not supported in M2Eclipse.</comment>
   <projects>
     <project>ext.bundle.xml.dom4j_161</project>
-    <project>ext.bundle.jena_all_264</project>
+    <project>ext.bundle.jena_all_2_10_1</project>
     <project>org.appdapter.lib.core</project>
+    <project>ext.bundle.osgi.common</project>
   </projects>
   <buildSpec>
     <buildCommand>

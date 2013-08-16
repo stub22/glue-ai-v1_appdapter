@@ -4,7 +4,9 @@
   <comment>Optional felix/gogo/remote shell launcher.   This (optional) bundle sets up dependencies on the 
 			local+remote Felix/Gogo shell bundles.  We use it directly to test the launch of Felix shell, 
 			from segregated Ant command line. NO_M2ECLIPSE_SUPPORT: Project files created with the maven-eclipse-plugin are not supported in M2Eclipse.</comment>
-  <projects/>
+  <projects>
+    <project>ext.bundle.osgi.common</project>
+  </projects>
   <buildSpec>
     <buildCommand>
       <name>org.eclipse.jdt.core.javabuilder</name>

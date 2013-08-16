@@ -318,7 +318,7 @@ public abstract class Debuggable extends BasicDebugger {
 	public static <T> T notImplemented(Object... params) {
 		String msg = "notImplemented: " + toInfoStringA(params, ",", PRINT_DEPTH);
 		warn(msg);
-		if (false)
+		if (isDebugging())
 			throw new AbstractMethodError(msg);
 		return (T) null;
 	}
@@ -519,6 +519,7 @@ public abstract class Debuggable extends BasicDebugger {
 	}
 
 	static InheritableThreadLocal<Boolean> QUITELY = new InheritableThreadLocal<Boolean>();
+	static InheritableThreadLocal<Boolean> DEBUGGING = new InheritableThreadLocal<Boolean>();
 
 	public static boolean isNotShowingExceptions() {
 		return QUITELY.get() == Boolean.TRUE;
@@ -526,6 +527,21 @@ public abstract class Debuggable extends BasicDebugger {
 
 	public static void setDoNotShowExceptions(boolean quietlyDoNotShowExceptions) {
 		QUITELY.set(quietlyDoNotShowExceptions);
+	}
+
+	public static void maybeDebug(Runnable runnable) {
+		if (isNotShowingExceptions())
+			return;
+		if (isDebugging())
+			runnable.run();
+	}
+
+	public static boolean isDebugging() {
+		return DEBUGGING.get() == Boolean.TRUE;
+	}
+
+	public static boolean isRelease() {
+		return !isDebugging();
 	}
 
 }

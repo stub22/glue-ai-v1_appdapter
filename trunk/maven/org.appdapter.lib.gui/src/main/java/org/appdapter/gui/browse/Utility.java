@@ -87,9 +87,9 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.Callable;
 
 import javax.imageio.ImageIO;
@@ -98,6 +98,8 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JInternalFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -132,8 +134,8 @@ import org.appdapter.core.component.KnownComponent;
 import org.appdapter.core.convert.AggregateConverter;
 import org.appdapter.core.convert.Convertable;
 import org.appdapter.core.convert.Converter;
-import org.appdapter.core.convert.ConverterFromMember;
 import org.appdapter.core.convert.Converter.ConverterMethod;
+import org.appdapter.core.convert.ConverterFromMember;
 import org.appdapter.core.convert.NoSuchConversionException;
 import org.appdapter.core.convert.OptionalArg;
 import org.appdapter.core.convert.ReflectUtils;
@@ -152,8 +154,10 @@ import org.appdapter.gui.api.GetDisplayContext;
 import org.appdapter.gui.api.GetSetObject;
 import org.appdapter.gui.api.IGetBox;
 import org.appdapter.gui.api.NamedObjectCollection;
+import org.appdapter.gui.api.ScreenBox.Kind;
 import org.appdapter.gui.api.WrapperValue;
 import org.appdapter.gui.box.BoxedCollectionImpl;
+import org.appdapter.gui.box.ScreenBoxImpl;
 import org.appdapter.gui.demo.DemoBrowser;
 import org.appdapter.gui.editors.AbstractCollectionBeanInfo;
 import org.appdapter.gui.editors.BooleanEditor;
@@ -188,6 +192,7 @@ import org.appdapter.gui.trigger.TriggerMenuFactory;
 import org.appdapter.gui.trigger.TriggerMouseAdapter;
 import org.appdapter.gui.trigger.UtilityMenuOptions;
 import org.appdapter.gui.util.ClassFinder;
+import org.appdapter.gui.util.PairTable;
 import org.appdapter.gui.util.PromiscuousClassUtilsA;
 import org.slf4j.Logger;
 
@@ -796,7 +801,7 @@ public class Utility extends UtilityMenuOptions {
 							|| "convertTo^".equals(mname) // 
 							|| "coerce^".equals(mname) // 
 							|| "from^".equals(mname)) {
-						theLogger.warn("Registering converter: " + m);
+						//theLogger.warn("Registering converter: " + m);
 						registerConverterMethod(m, cmi);
 					}
 
@@ -1772,17 +1777,21 @@ public class Utility extends UtilityMenuOptions {
 		try {
 			getCurrentContext().showScreenBox(obj);
 		} catch (Exception e) {
-			BT boxed = getTreeBoxCollection().findOrCreateBox(obj);
-			BoxContext bc = asBoxed(whereFrom).getBoxContext();
-			JPanel pnl = boxed.getPropertiesPanel();
-			if (dt == DisplayType.FRAME) {
-				BoxPanelSwitchableView jtp = getBoxPanelTabPane();
-				jtp.addComponent(pnl.getName(), pnl, DisplayType.FRAME);
-				return;
-			}
-			BoxPanelSwitchableView jtp = getBoxPanelTabPane();
-			jtp.addComponent(pnl.getName(), pnl, DisplayType.PANEL);
+			displayFallback(whereFrom, obj, dt);
 		}
+	}
+
+	private static void displayFallback(Object whereFrom, Object obj, DisplayType dt) {
+		BT boxed = getTreeBoxCollection().findOrCreateBox(obj);
+		BoxContext bc = asBoxed(whereFrom).getBoxContext();
+		JPanel pnl = boxed.getPropertiesPanel();
+		if (dt == DisplayType.FRAME) {
+			BoxPanelSwitchableView jtp = getBoxPanelTabPane();
+			jtp.addComponent(pnl.getName(), pnl, DisplayType.FRAME);
+			return;
+		}
+		BoxPanelSwitchableView jtp = getBoxPanelTabPane();
+		jtp.addComponent(pnl.getName(), pnl, DisplayType.PANEL);
 	}
 
 	static Hashtable<Class, GetSetObject> panelsFor = new Hashtable<Class, GetSetObject>();
@@ -1819,9 +1828,6 @@ public class Utility extends UtilityMenuOptions {
 			HashSet<Class<? extends T>> list = new HashSet<Class<? extends T>>();
 			for (Pair<Class, Class> rl : classToClassRegistry) {
 				Class l = rl.getLeft();
-				if (l == ModelAsTurtleEditor.class) {
-					theLogger.debug("searching for " + mustBe + " for " + objClass);
-				}
 				if (!typesMatch(mustBe, l, useAssignable))
 					continue;
 				Class r = rl.getRight();
@@ -2133,50 +2139,100 @@ public class Utility extends UtilityMenuOptions {
 		return null;
 	}
 
-	public static HashMap<Object, JPanel> gpp = new HashMap();
+	public static HashMap<Object, Class> alreadySearching = new HashMap();
 
 	public static class AlreadyLooking extends JPanel {
-
+		public AlreadyLooking(Object o) {
+			add(new JLabel("AlreadyLooking " + o));
+		}
 	}
 
-	public static AlreadyLooking alreadyLooking = new AlreadyLooking();
+	public static Hashtable<Object, JPanel> largeObjectViews = new Hashtable<Object, JPanel>();
+	public static PairTable<Object, Component> objectWindows = new PairTable();
 
-	public static JPanel getPropertiesPanel(Object object) {
-		object = dref(object, object);
-		JPanel view = (JPanel) gpp.get(object);
+	/**
+	 * Return a JPAnel to edit obj
+	 * @param object
+	 * @return
+	 */
+	public static JPanel getPropertiesPanel(Object objectIn) {
+		final Object object = drefO(objectIn);
+		Map<Object, JPanel> myPanelMap = Utility.getPanelMap(object);
+		ScreenBoxImpl bt = asScreenBoxImpl(objectIn);
+		Object key = bt.toKey(Kind.OBJECT_PROPERTIES);
+
+		JPanel view = (JPanel) myPanelMap.get(key);
 		if (view instanceof AlreadyLooking) {
+			theLogger.warn("Looping while getting a panel for {} with {} ", objectIn, object);
 			return null;
 		}
+
 		if (view != null)
 			return view;
-		gpp.put(object, alreadyLooking);
+
 		Class objClass = object.getClass();
 		Class<? extends Customizer> customizerClass = getCustomizerClassForClass(objClass);
+		return findOrCreateObjectView(objectIn, key, customizerClass);
+	}
+
+	public static JPanel getLargeObjectView(Object objectIn) {
+		return findOrCreateObjectView(objectIn, LargeObjectView.class, LargeObjectView.class);
+	}
+
+	public static JPanel findOrCreateObjectView(Object objectIn, Object key, Class customizerClass) {
+		Object object = dref(objectIn);
+		Map<Object, JPanel> myPanelMap = Utility.getPanelMap(object);
+
+		JPanel view = myPanelMap.get(key);
+		if (view == null)
+			view = (JPanel) myPanelMap.get(customizerClass);
+
+		if (view instanceof AlreadyLooking) {
+			theLogger.warn("Looping while getting a panel for {} with {} ", objectIn, object);
+			return null;
+		} else if (view != null) {
+			return view;
+		}
+
 		Customizer customizer;
 		try {
 			customizer = newInstance(customizerClass);
 		} catch (Throwable e) {
-			customizer = new LargeObjectView(getCurrentContext());
+			return findOrCreateObjectView(objectIn, key, LargeObjectView.class);
 		}
-		customizer.setObject(object);
-		if (customizer instanceof JPanel)
-			view = (JPanel) customizer;
-		else {
+		if (!(customizer instanceof JPanel)) {
 			theLogger.warn("customizer is not a Component " + customizer);
-			LargeObjectView lov;
-			view = lov = new LargeObjectView(getCurrentContext());
-			lov.setObject(object);
+			return findOrCreateObjectView(objectIn, key, LargeObjectView.class);
 		}
-		gpp.put(object, view);
+
+		customizer.setObject(object);
+		view = (JPanel) customizer;
+
+		myPanelMap.put(object, view);
 		return view;
 	}
 
-	public static Class getCustomizerClassForClass(Class objClass) {
+	public static Class getCustomizerClassForClass(final Class objClass) {
 		Class<? extends Customizer> customizerClass = findCustomizerClass(objClass);
-		if (customizerClass != LargeObjectView.class) {
-			customizerClass = findCustomizerClass(objClass);
+		if (customizerClass == null) {
+			theLogger.warn("No specific customizer for " + objClass);
+			Debuggable.maybeDebug(new Runnable() {
+
+				@Override public void run() {
+					findCustomizerClass(objClass);
+
+				}
+			});
 			customizerClass = LargeObjectView.class;
-		} else {
+		} else if (customizerClass != LargeObjectView.class) {
+			theLogger.warn("Special customizer for " + objClass + " of type " + customizerClass);
+			Debuggable.maybeDebug(new Runnable() {
+
+				@Override public void run() {
+					findCustomizerClass(objClass);
+
+				}
+			});
 			customizerClass = LargeObjectView.class;
 		}
 		return customizerClass;
@@ -2225,12 +2281,20 @@ public class Utility extends UtilityMenuOptions {
 		return uiObjects.findOrCreateBox(pojo);
 	}
 
+	@ConverterMethod public static ScreenBoxImpl asScreenBoxImpl(Object pojo) {
+		if (pojo instanceof ScreenBoxImpl)
+			return (ScreenBoxImpl) pojo;
+		if (pojo instanceof IGetBox)
+			return asScreenBoxImpl(((IGetBox) pojo).getBox());
+		return uiObjects.findOrCreateBox(pojo);
+	}
+
 	public static BT asWrapped(String title, Object pojo) throws PropertyVetoException {
 		if (pojo instanceof BT)
 			return (BT) pojo;
 		if (pojo instanceof IGetBox)
 			return ((IGetBox) pojo).getBox();
-		return uiObjects.findOrCreateBox(title, pojo);
+		return uiObjects.findOrCreateBox(pojo);
 	}
 
 	@ConverterMethod public static Box asBoxed(Object pojo) {
@@ -2605,16 +2669,20 @@ public class Utility extends UtilityMenuOptions {
 		} catch (Throwable t) {
 
 		}
-		if (wasRealDeref && !onlyDeref1) {
-			if (derefd != null && derefd != value) {
-				return dref(derefd, value, depth, onlyBTAndPanelsAsReferenceHolders);
-			} else {
-				derefd = value;
-			}
-		}
 
-		if (derefd != null && derefd != value && !onlyDeref1) {
-			value = dref(derefd, derefd, --depth, onlyBTAndPanelsAsReferenceHolders);
+		int nextDepth = depth - (wasRealDeref ? 0 : 1);
+		boolean changed = (derefd != null && derefd != value);
+		if (wasRealDeref || changed) {
+			if (!onlyDeref1) {
+				if (!changed) {
+					warn("no value change " + value);
+					value = derefd;
+				} else {
+					value = dref(derefd, derefd, nextDepth, onlyBTAndPanelsAsReferenceHolders);
+				}
+			} else {
+				value = derefd;
+			}
 		}
 		if (value == null)
 			return onNull;
@@ -2903,7 +2971,19 @@ public class Utility extends UtilityMenuOptions {
 	}
 
 	public static ImageIcon getIcon(String string) {
-		return new ImageIcon(getImage(string));
+		return getImageIcon(getImage(string));
+	}
+
+	public static ImageIcon getImageIcon(Image url) {
+		if (url == null)
+			return null;
+		return new ImageIcon(url);
+	}
+
+	public static ImageIcon getImageIcon(URL url) {
+		if (url == null)
+			return null;
+		return new ImageIcon(url);
 	}
 
 	public static Image getImage(String string) {
@@ -2912,6 +2992,8 @@ public class Utility extends UtilityMenuOptions {
 
 	public static Image getImage(URL uri) {
 		try {
+			if (uri == null)
+				return null;
 			return ImageIO.read(uri);
 		} catch (IOException e) {
 			printStackTrace(e);
@@ -3696,6 +3778,31 @@ public class Utility extends UtilityMenuOptions {
 			objectContextMenuTriggers0.add(editableTrigger);
 		}
 		return editableTrigger;
+	}
+
+	public static void forgetWindow(Object window) {
+		synchronized (largeObjectViews) {
+			largeObjectViews.remove(window);
+			largeObjectViews.values().remove(window);
+		}
+		synchronized (objectWindows) {
+			objectWindows.remove(window);
+		}
+
+	}
+
+	private static Map<Object, Map<Object, JPanel>> objectPanelMaps = new HashMap<Object, Map<Object, JPanel>>();
+
+	public static Map<Object, JPanel> getPanelMap(Object valueOrThis) {
+		valueOrThis = drefO(valueOrThis);
+		synchronized (objectPanelMaps) {
+			Map<Object, JPanel> map = objectPanelMaps.get(valueOrThis);
+			if (map == null) {
+				map = new HashMap<Object, JPanel>();
+				objectPanelMaps.put(valueOrThis, map);
+			}
+			return map;
+		}
 	}
 
 }

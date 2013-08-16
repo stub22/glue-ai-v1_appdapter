@@ -16,6 +16,7 @@ import java.util.*;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.core.component.KnownComponent;
+import org.appdapter.core.convert.Converter.ConverterMethod;
 import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.BT;
@@ -53,6 +54,11 @@ import org.slf4j.LoggerFactory;
 public class BoxedCollectionImpl implements NamedObjectCollection,
 
 VetoableChangeListener, PropertyChangeListener, Serializable, Set {
+
+	@ConverterMethod//
+	public Map asMap() {
+		return getLiveMap();
+	}
 
 	public class BoxMap extends AbstractMap<String, Object> {
 
@@ -441,9 +447,9 @@ VetoableChangeListener, PropertyChangeListener, Serializable, Set {
 		return result;
 	}
 
-	@Override public BT findOrCreateBox(Object value) {
+	@Override public ScreenBoxImpl findOrCreateBox(Object value) {
 		try {
-			return findOrCreateBox(null, value);
+			return (ScreenBoxImpl) findOrCreateBox(null, value);
 		} catch (PropertyVetoException e) {
 			throw Debuggable.reThrowable(e);
 		}
@@ -457,7 +463,7 @@ VetoableChangeListener, PropertyChangeListener, Serializable, Set {
 	public BT findOrCreateBox(String title, Object value) throws PropertyVetoException {
 		BT wrapper = Utility.asBTNoCreate(value);
 		if (wrapper != null) {
-			value = wrapper.getValue();
+			value = wrapper.getValueOrThis();
 		}
 		boolean notify = false;
 		synchronized (syncObject) {
@@ -467,8 +473,11 @@ VetoableChangeListener, PropertyChangeListener, Serializable, Set {
 			if (wrapper == null && title != null) {
 				wrapper = findBoxByName(title);
 			}
+			if (title == null) {
+				title = Utility.generateUniqueName_sug(value, title, getNameToBoxIndex());
+			}
 			if (wrapper == null) {
-				wrapper = (BT) new ScreenBoxImpl(this, title, value);
+				wrapper = (BT) makeWrapper(title, value);
 			}
 		}
 		notify = addNameValueBoxed(title, value, wrapper);
@@ -647,8 +656,8 @@ VetoableChangeListener, PropertyChangeListener, Serializable, Set {
 		}
 	}
 
-	private BT makeWrapper(Object value) throws PropertyVetoException {
-		BT wrapper = (BT) new ScreenBoxImpl(this, generateUniqueName(value), value);
+	protected ScreenBoxImpl makeWrapper(String title, Object value) throws PropertyVetoException {
+		ScreenBoxImpl wrapper = new ScreenBoxImpl(this, title, value);
 		return wrapper;
 	}
 
