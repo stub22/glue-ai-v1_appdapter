@@ -22,8 +22,11 @@ import java.util.concurrent.ExecutionException;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContext;
 import org.appdapter.api.trigger.Trigger;
+import org.appdapter.bind.rdf.jena.model.GraphUploadMonitor;
+import org.appdapter.bind.rdf.jena.model.JenaFileManagerUtils;
 import org.appdapter.bind.rdf.jena.query.JenaArqQueryFuncs;
 import org.appdapter.bind.rdf.jena.query.JenaArqResultSetProcessor;
+import org.appdapter.bind.rdf.jena.sdb.GraphUploadTask;
 import org.appdapter.core.convert.Converter.ConverterMethod;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.core.name.FreeIdent;
@@ -38,9 +41,14 @@ import org.appdapter.gui.browse.Utility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.hp.hpl.jena.graph.Graph;
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.sdb.Store;
+import com.hp.hpl.jena.util.FileManager;
+import com.hp.hpl.jena.util.FileUtils;
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -133,7 +141,11 @@ public abstract class RepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<TT>>>
 	}
 
 	public Repo.Mutable getMRepo() {
-		return (Repo.Mutable) getRepo();
+		Repo repo = getRepo();
+		if (repo instanceof Repo.Mutable) {
+			return (Repo.Mutable) repo;
+		}
+		return null;
 	}
 
 	public Repo.WithDirectory getRepoWD() {
@@ -173,12 +185,53 @@ public abstract class RepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<TT>>>
 
 	@Override public String getUploadHomePath() {
 		Repo.Mutable myRepo = getMRepo();
+		if (myRepo == null)
+			return null;
 		return myRepo.getUploadHomePath();
 	}
 
 	@Override public void importGraphFromURL(String graphName, String sourceURL, boolean replaceTgtFlag) {
 		Repo.Mutable myRepo = getMRepo();
+		if (myRepo == null) {
+			Repo.WithDirectory wd = getRepoWD();
+			if (wd != null) {
+				importGraphFromURLWithDirectory(graphName, sourceURL, replaceTgtFlag);
+				return;
+			}
+		}
 		myRepo.importGraphFromURL(graphName, sourceURL, replaceTgtFlag);
+	}
+
+	public void importGraphFromURLWithDirectory(String tgtGraphName, String sourceURL, boolean replaceTgtFlag) {
+		// Copied settings from dflt constructor
+		boolean timingEnabledFlag = true;
+		boolean verboseFlag = true;
+		boolean quietFlag = false;
+		Repo.WithDirectory wd = getRepoWD();
+
+		Model tgtStoreModel = wd.getMainQueryDataset().getNamedModel(tgtGraphName);
+		Graph graph = tgtStoreModel.getGraph();
+
+		if (replaceTgtFlag) {
+			if (verboseFlag) {
+				theLogger.info("Emptying graph: " + tgtGraphName);
+			}
+			tgtStoreModel.removeAll();
+		}
+		// Crude but convenient
+		if (sourceURL.indexOf(':') == -1) {
+			sourceURL = "file:" + sourceURL;
+		}
+
+		if (verboseFlag) {
+			theLogger.info("Start loading from: " + sourceURL);
+		}
+
+		String lang = FileUtils.guessLang(sourceURL);
+
+		// Load here
+		tgtStoreModel.read(sourceURL, lang);
+
 	}
 
 	@Override public String processQueryAtUrlAndProduceXml(String queryURL, ClassLoader optResourceCL) {
