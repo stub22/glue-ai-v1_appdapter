@@ -28,7 +28,7 @@ public class DefaultMutableRepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<
 		return myRSBF.findGraphBox(this, graphURI);
 	}
 
-	Repo.WithDirectory myRepoWD;
+	//Repo.WithDirectory myRepoWD;
 	String myDebugName;
 	public List<MutableRepoBox> childBoxes = new ArrayList<MutableRepoBox>();
 
@@ -38,7 +38,7 @@ public class DefaultMutableRepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<
 
 	public DefaultMutableRepoBoxImpl(String myDebugNym, Repo.WithDirectory repo) {
 		myDebugName = myDebugNym;
-		myRepoWD = (WithDirectory) repo;
+		super.setRepo(repo);
 		// resyncChildrenToTree();
 	}
 
@@ -78,23 +78,18 @@ public class DefaultMutableRepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<
 		}*/
 	}
 
-	@Override
-	final public Repo getValue() {
-		return myRepoWD;
+	@Override final public Repo getValue() {
+		return getRepo();
 	}
 
-	public Repo.WithDirectory getRepoWD() {
-		return myRepoWD;
-	}
-
-	@Override
-	public List getAllGraphStats() {
+	@Override public List getAllGraphStats() {
 		Repo myRepo = getValue();
+		if (myRepo == null)
+			return null;
 		return myRepo.getGraphStats();
 	}
 
-	@Override
-	public Box findGraphBox(String graphURI) {
+	@Override public Box findGraphBox(String graphURI) {
 		Logger logger = DemoBrowser.theLogger;
 
 		Box fnd = superfindGraphBox(graphURI);
@@ -104,6 +99,7 @@ public class DefaultMutableRepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<
 			madeAlready = true;
 		}
 
+		Repo.WithDirectory myRepoWD = getRepoWD();
 		BoxContext ctx = getBoxContext();
 		List<Repo.GraphStat> graphStats = getAllGraphStats();
 		Model m = myRepoWD.getNamedModel(new FreeIdent(graphURI));
@@ -131,37 +127,34 @@ public class DefaultMutableRepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<
 		return null;
 	}
 
-	@Override
-	public void mount(String configPath) {
+	@Override public void mount(String configPath) {
 		super.mount(configPath);
 	}
 
-	@Override
-	public void formatStoreIfNeeded() {
+	@Override public void formatStoreIfNeeded() {
 		super.formatStoreIfNeeded();
 	}
 
-	@Override
-	public void importGraphFromURL(String tgtGraphName, String sourceURL, boolean replaceTgtFlag) {
+	@Override public void importGraphFromURL(String tgtGraphName, String sourceURL, boolean replaceTgtFlag) {
 		super.importGraphFromURL(tgtGraphName, sourceURL, replaceTgtFlag);
 	}
 
-	@Override
-	public String getUploadHomePath() {
+	@Override public String getUploadHomePath() {
 		return super.getUploadHomePath();
 	}
 
-	@Override
-	public Object reallyGetValue() {
+	@Override public Object reallyGetValue() {
+		if (true) return getValue();
+		Repo.WithDirectory myRepoWD = getRepoWD();
 		return myRepoWD;
 	}
 
-	@Override
-	public void reallySetValue(Object newObject) throws UnsupportedOperationException {
+	@Override public void reallySetValue(Object newObject) throws UnsupportedOperationException {
 		if (newObject instanceof String) {
 			mount(newObject.toString());
 			return;
 		}
+		Repo.WithDirectory myRepoWD = getRepoWD();
 		myRepoWD = (WithDirectory) newObject;
 	}
 

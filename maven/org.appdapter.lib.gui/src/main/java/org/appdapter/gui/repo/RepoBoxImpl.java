@@ -49,7 +49,7 @@ import com.hp.hpl.jena.rdf.model.Model;
 public abstract class RepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<TT>>> extends ScreenBoxImpl<TT> //
 		implements MutableRepoBox<TT>, WrapperValue {
 	static Logger theLogger = LoggerFactory.getLogger(RepoBoxImpl.class);
-	private LazySlow<Repo.Mutable> myRepo;
+	private LazySlow<Repo> myRepo;
 
 	@Override public Box findGraphBox(String graphURI) {
 		Logger logger = theLogger;
@@ -105,7 +105,7 @@ public abstract class RepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<TT>>>
 	// public static String	myStoreConfigPath;	
 
 	@Override public Repo getValue() {
-		return getMRepo();
+		return getRepo();
 	}
 
 	@ConverterMethod//
@@ -119,12 +119,8 @@ public abstract class RepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<TT>>>
 	}
 
 	@Override public Repo getRepo() {
-		return getMRepo();
-	}
-
-	public Repo.Mutable getMRepo() {
 		if (myRepo == null) {
-			theLogger.warn("Returning null (getRepo) from " + this);
+			theLogger.warn("Returning null (getRepo) from " + this.getClass() + "@");
 			return null;
 		}
 		try {
@@ -136,15 +132,30 @@ public abstract class RepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<TT>>>
 		}
 	}
 
-	public void setRepo(Repo.Mutable repo) {
+	public Repo.Mutable getMRepo() {
+		return (Repo.Mutable) getRepo();
+	}
+
+	public Repo.WithDirectory getRepoWD() {
+		return (WithDirectory) getRepo();
+	}
+
+	public void setRepo(final Repo repo) {
+		if (myRepo == null) {
+			myRepo = new LazySlow.GetSet<Repo>() {
+				@Override protected Repo doGet() {
+					return super.m_val;
+				}
+			};
+		}
 		myRepo.setReady(repo);
 	}
 
 	@Override public void mount(String configPath) {
 		final String m_configPath = configPath;
 		// This bonehead static method call does not allow us to construct a fancier subtype of BasicStoredMutableRepoImpl.
-		myRepo = new LazySlow.GetSet<Repo.Mutable>() {
-			@Override protected Repo.Mutable doGet() {
+		myRepo = new LazySlow.GetSet<Repo>() {
+			@Override protected Repo doGet() {
 				return BasicStoredMutableRepoImpl.openBasicRepoFromConfigPath(m_configPath, getClass().getClassLoader());
 			}
 		};
@@ -156,7 +167,7 @@ public abstract class RepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<TT>>>
 	}
 
 	@Override public List<GraphStat> getAllGraphStats() {
-		Repo.Mutable myRepo = getMRepo();
+		Repo myRepo = getRepo();
 		return myRepo.getGraphStats();
 	}
 
@@ -172,7 +183,7 @@ public abstract class RepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<TT>>>
 
 	@Override public String processQueryAtUrlAndProduceXml(String queryURL, ClassLoader optResourceCL) {
 		Query parsedQuery = JenaArqQueryFuncs.parseQueryURL(queryURL, optResourceCL);
-		Repo.Mutable myRepo = getMRepo();
+		Repo myRepo = getRepo();
 		String xmlOut = myRepo.processQuery(parsedQuery, null, new JenaArqResultSetProcessor<String>() {
 			@Override public String processResultSet(ResultSet rset) {
 				return JenaArqQueryFuncs.dumpResultSetToXML(rset);

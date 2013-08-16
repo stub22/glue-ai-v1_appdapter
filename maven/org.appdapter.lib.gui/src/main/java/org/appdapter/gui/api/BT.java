@@ -29,7 +29,7 @@ import org.appdapter.core.convert.Convertable;
 @UIHidden
 public interface BT<TT extends Trigger<? extends ScreenBox<TT>>> //
 		extends GetSetObject, java.io.Serializable, java.util.Map.Entry<String, Object>, Convertable, UserResult, IGetBox, //
-		ScreenBox<TT>, DisplayContextProvider,Box<TT> //
+		ScreenBox<TT>, DisplayContextProvider, Box<TT> //
 //, GetDisplayContext, UIProvider,  //
 //Map.Entry
 
@@ -86,25 +86,25 @@ public interface BT<TT extends Trigger<? extends ScreenBox<TT>>> //
 	 * PropertyChangeListeners will find out when the name or selection state
 	 * changes.
 	 */
-	public void addPropertyChangeListener(PropertyChangeListener p);
+	//	public void addPropertyChangeListener(PropertyChangeListener p);
 
 	/**
 	 * PropertyChangeListeners will find out when the name or selection state
 	 * changes.
 	 */
-	public void removePropertyChangeListener(PropertyChangeListener p);
+	//public void removePropertyChangeListener(PropertyChangeListener p);
 
 	/**
 	 * VetoableChangeListeners will find out when the name or selection state is
 	 * about to change, and can prevent such changes if desired.
 	 */
-	public void addVetoableChangeListener(VetoableChangeListener v);
+	///public void addVetoableChangeListener(VetoableChangeListener v);
 
 	/**
 	 * VetoableChangeListeners will find out when the name or selection state is
 	 * about to change, and can prevent such changes if desired.
 	 */
-	public void removeVetoableChangeListener(VetoableChangeListener v);
+	//public void removeVetoableChangeListener(VetoableChangeListener v);
 
 	// ===== Property getters and setters ========================
 
@@ -155,12 +155,12 @@ public interface BT<TT extends Trigger<? extends ScreenBox<TT>>> //
 	 *
 	 * @throws PropertyVetoException if someone refused to allow selection state change
 	 */
-	public void setUISelected(boolean newSelected) throws PropertyVetoException;
+	//public void setUISelected(boolean newSelected) throws PropertyVetoException;
 
 	/**
 	 * True if this value is selected
 	 */
-	public boolean getUISelected();
+	//	public boolean getUISelected();
 
 	/**
 	 * Returns the object that this value wrapper represents

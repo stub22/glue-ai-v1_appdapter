@@ -21,7 +21,7 @@ public interface LazySlow<T> extends Future<T> {
 			startGetting();
 		}
 
-		T m_val;
+		protected T m_val;
 		boolean m_done;
 		private boolean m_busy;
 		private ExecutionException badness;

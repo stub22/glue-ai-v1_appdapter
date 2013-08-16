@@ -119,14 +119,20 @@ abstract public class BaseDemoNavigatorCtrl implements BrowserPanelGUI, org.appd
 			myJFrame.setTitle(title);
 
 		if (firstTime) {
-			myJFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+			// we dont need to "myJFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);" do this.. main methods can
 			myJFrame.getContentPane().add(myBP, BorderLayout.CENTER);
 			myBP.checkParent();
 			myJFrame.pack();
 		}
+
+		// we were started as a dwarf and maybe offscreen
+		if (myJFrame.getSize().width < 1) {
+			myJFrame.setSize(800, 600);
+			Utility.centerWindow(myJFrame);
+		}
+
 		myBP.setVisible(true);
 		myJFrame.setVisible(true);
-
 	}
 
 	public void addBoxToRoot(MutableBox childBox, boolean reload) {

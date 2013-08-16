@@ -80,12 +80,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -1098,7 +1100,8 @@ public class Utility extends UtilityMenuOptions {
 	static public void recordCreated(NamedObjectCollection noc, Ident id, Object comp) {
 		//BoxPanelSwitchableView boxPanelDisplayContext = getBoxPanelTabPane();
 		try {
-			recordCreated(noc.findOrCreateBox(id.toString(), comp));
+			if (id != null)
+				recordCreated(noc.findOrCreateBox(id.toString(), comp));
 		} catch (PropertyVetoException e) {
 			printStackTrace(e);
 			throw reThrowable(e);
@@ -2203,7 +2206,7 @@ public class Utility extends UtilityMenuOptions {
 	public static synchronized boolean recordBCreated(BT box) {
 		if (allBoxes.containsKey(box))
 			return false;
-		allBoxes.put(box, box);
+		allBoxes.put(box.getValue(), box);
 		return true;
 	}
 
@@ -2962,7 +2965,7 @@ public class Utility extends UtilityMenuOptions {
 						continue;
 
 					Class rtc = rm.getReturnType();
-					if (Component.class.isAssignableFrom(rtc))
+					if (isSideEffectReturnType(rtc))
 						continue;
 					try {
 						rm.setAccessible(true);
@@ -2987,6 +2990,20 @@ public class Utility extends UtilityMenuOptions {
 			e.printStackTrace();
 		}
 		return showProps;
+	}
+
+	public static boolean isSideEffectReturnType(Class cls) {
+		if (Component.class.isAssignableFrom(cls))
+			return true;
+		if (Iterator.class.isAssignableFrom(cls))
+			return true;
+		if (Enumeration.class.isAssignableFrom(cls))
+			return true;
+		if (Object[].class.isAssignableFrom(cls))
+			return true;
+		if (void.class == cls || Void.class == cls)
+			return true;
+		return false;
 	}
 
 	public static void replaceRunnable(Object key, Runnable runnable) {
@@ -3526,8 +3543,12 @@ public class Utility extends UtilityMenuOptions {
 
 	}
 
-	public static boolean isSideEffectSafe(Class declaringClass) {
-		return false;
+	public static boolean isSideEffectSafe(Class cls) {
+		if (Thread.class.isAssignableFrom(cls))
+			return false;
+		if (Component.class.isAssignableFrom(cls))
+			return false;
+		return true;
 	}
 
 	/**
@@ -3576,7 +3597,7 @@ public class Utility extends UtilityMenuOptions {
 	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
 	 * 
 	 */
-	public static EditableTrigger registerTriggerForPredicate(CallableWithParameters<Boolean, Box> predicate, String menuLabel, Trigger trigger) {
+	public static EditableTrigger registerTriggerForPredicate(CallableWithParameters<Box, Boolean> predicate, String menuLabel, Trigger trigger) {
 		EditableTrigger editableTrigger = new EditableTriggerImpl(predicate, menuLabel, trigger);
 		synchronized (objectContextMenuTriggers0) {
 			objectContextMenuTriggers0.add(editableTrigger);
@@ -3631,7 +3652,7 @@ public class Utility extends UtilityMenuOptions {
 	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
 	 * 
 	 */
-	public static EditableTrigger registerCallableForPredicate(CallableWithParameters<Boolean, Box> predicate, String menuLabel, CallableWithParameters function) {
+	public static EditableTrigger registerCallableForPredicate(CallableWithParameters<Box, Boolean> predicate, String menuLabel, CallableWithParameters function) {
 		EditableTrigger editableTrigger = new EditableTriggerImpl(predicate, menuLabel, function);
 		synchronized (objectContextMenuTriggers0) {
 			objectContextMenuTriggers0.add(editableTrigger);
