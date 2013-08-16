@@ -91,4 +91,8 @@ public class NamedItemChooserPanel extends JJPanel implements GetSetObject, Focu
 	@Override public Class<Box> getClassOfBox() {
 		return Box.class;
 	}
+
+	public Object getSelectedObject() {
+		return namedObjectListPanel.getSelectedObject();
+	}
 }

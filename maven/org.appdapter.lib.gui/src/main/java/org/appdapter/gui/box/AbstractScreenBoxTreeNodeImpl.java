@@ -308,6 +308,8 @@ abstract public class AbstractScreenBoxTreeNodeImpl extends DefaultMutableTreeNo
 		Object value = userObject;
 		if (userObject instanceof BT) {
 			value = ((BT) userObject).getValue();
+			if (value == null)
+				value = userObject;
 			Class beanClass = value.getClass();
 			if (beanClass.isArray()) {
 				beanClass = beanClass.getComponentType();

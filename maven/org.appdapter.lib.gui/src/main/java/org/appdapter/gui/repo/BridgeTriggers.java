@@ -45,20 +45,23 @@ import com.hp.hpl.jena.rdf.model.Model;
  */
 public class BridgeTriggers implements UtilClass {
 
-	@UISalient(MenuName = "Startup Twinkle main") public static void startTwinkle() throws Throwable {
-		Class.forName("twinkle.Twinkle").getMethod("main", String[].class).invoke(null, (Object)new String[0]);
+	@UISalient(MenuName = "External Tools|Startup Twinkle main")//
+	public static void startTwinkle() throws Throwable {
+		Class.forName("twinkle.Twinkle").getMethod("main", String[].class).invoke(null, (Object) new String[0]);
 	}
 
-	@UISalient(MenuName = "Run Twinkle On Model %t", IsNotSideEffectSafe = true)//
+	@UISalient(MenuName = "External Tools|Run Twinkle On Model %t", IsNotSideEffectSafe = true)//
 	public static void startTwinkle(Model m) throws Throwable {
 		Class.forName("twinkle.Twinkle").getMethod("mainWithModel", Model.class).invoke(null, m);
 	}
 
-	@UISalient public static List<Model> getModelsFoundIn(Repo repo) {
+	@UISalient(MenuName = "%m%p")//
+	public static List<Model> getModelsFoundIn(Repo repo) {
 		return getModelsFoundIn(repo.getMainQueryDataset());
 	}
 
-	@UISalient public static List<Model> getModelsFoundIn(Dataset mainQueryDataset) {
+	@UISalient(MenuName = "%m%p")//
+	public static List<Model> getModelsFoundIn(Dataset mainQueryDataset) {
 		ArrayList<Model> models = new ArrayList<Model>();
 		for (String s : ReflectUtils.toList(mainQueryDataset.listNames())) {
 			models.add(mainQueryDataset.getNamedModel(s));

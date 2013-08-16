@@ -53,9 +53,8 @@ public interface NamedObjectCollection //
 	//POJOBox findOrCreateBox(Object object);
 
 	boolean addTitleBoxed(String named, BT screenBoxImpl);
-	
+
 	boolean addValueBoxed(Object named, BT screenBoxImpl);
-	
 
 	/**
 	 * Checks if this collection contains the given object
@@ -108,7 +107,7 @@ public interface NamedObjectCollection //
 	/**
 	 * Returns the currently selected object, or null if none.
 	 */
-	Object getSelectedObject();
+	//Object getSelectedObject();
 
 	/**
 	 * This is used for ScreenBoxImpls to tell their POJOCollection that a
@@ -175,7 +174,7 @@ public interface NamedObjectCollection //
 	 */
 	public void removeListener(POJOCollectionListener o);
 
-	void setSelectedObject(Object object) throws PropertyVetoException;
+	//void setSelectedObject(Object object) throws PropertyVetoException;
 
 	String getName();
 

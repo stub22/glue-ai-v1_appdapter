@@ -234,8 +234,8 @@ VetoableChangeListener, PropertyChangeListener, Serializable, Set {
 
 			if (addIfNew(boxList, wrapper)) {
 				// Add myself as listener
-				wrapper.addVetoableChangeListener(this);
-				wrapper.addPropertyChangeListener(this);
+				/*	wrapper.addVetoableChangeListener(this);
+					wrapper.addPropertyChangeListener(this);*/
 				notify = true;
 			}
 
@@ -637,13 +637,13 @@ VetoableChangeListener, PropertyChangeListener, Serializable, Set {
 			if (propSupport == null) {
 				propSupport = new PropertyChangeSupport(this);
 			}
-
+			/*
 			Iterator it = getBoxes();
 			while (it.hasNext()) {
 				BT b = (BT) it.next();
 				b.addVetoableChangeListener(this);
 				b.addPropertyChangeListener(this);
-			}
+			}*/
 		}
 	}
 
@@ -687,14 +687,14 @@ VetoableChangeListener, PropertyChangeListener, Serializable, Set {
 			if (containsObject(value)) {
 				if (newValue.equals(new Boolean(true))) {
 					try {
-						setSelectedObject(value);
-					} catch (PropertyVetoException err) {
+						//setSelectedObject(value);
+					} catch (Exception err) {
 						theLogger.warn("The NamedObjectCollection was notified that a value has been selected, and when trying to update the internal state a PropertyVetoException occurred", err);
 					}
 				} else if (newValue.equals(new Boolean(false))) {
 					try {
-						setSelectedObject(null);
-					} catch (PropertyVetoException err) {
+						//	setSelectedObject(null);
+					} catch (Exception err) {
 						theLogger.warn("The NamedObjectCollection was notified that a value has been deselected, and when trying to update the internal state a PropertyVetoException occurred", err);
 					}
 				}
@@ -764,8 +764,8 @@ VetoableChangeListener, PropertyChangeListener, Serializable, Set {
 			try {
 				//The value will fire a PropertyChangeEvent which I will
 				//catch, so I don't need to do setSelectedObject(null)
-				wrapper.setUISelected(false);
-			} catch (PropertyVetoException err) {
+				//wrapper.setUISelected(false);
+			} catch (Exception err) {
 				theLogger.warn("In NamedObjectCollection.removeObject(...) I was unable to deselect the removed value. I'll ignore the problem, i.e. leave it selected and remove it anyway.", err);
 			}
 		}
@@ -869,7 +869,7 @@ VetoableChangeListener, PropertyChangeListener, Serializable, Set {
 	 * and a property change event will be fired.
 	 *
 	 * @throws PropertyVetoException if someone refused to let the selected value change
-	 */
+	
 	public synchronized void setSelectedObject(Object value) throws PropertyVetoException {
 		if (selected != value && containsObject(value)) {
 			synchronized (syncObject) {
@@ -890,8 +890,7 @@ VetoableChangeListener, PropertyChangeListener, Serializable, Set {
 				propSupport.firePropertyChange("selected", oldSelected, selected);
 			}
 		}
-	}
-
+	}*/
 	@Override public String toString() {
 		return toStringText;
 	}

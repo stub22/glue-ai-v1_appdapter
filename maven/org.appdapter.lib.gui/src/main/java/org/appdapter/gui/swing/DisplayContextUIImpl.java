@@ -521,7 +521,7 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 	 */
 	public void showObjectGUI(Component value) {
 		try {
-			showObjectGUI(null, value, true);
+			showObjectGUI(null, null, value, true);
 		} catch (Throwable e) {
 			throw Debuggable.reThrowable(e);
 		}
@@ -565,61 +565,62 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 	/**
 	 * Opens up a GUI to show the details of the given object
 	 */
-	public UserResult showScreenBoxAsResult(String title, Object object, Class typeWhenNull) {
-		if (object == null) {
-			return Utility.browserPanel.showMessage("RESULT: " + "null", null);
-		}
-		final Object objectIn = object;
-		object = Utility.dref(object);
+	public UserResult showScreenBoxAsResult(String title, Object anyObject, Class typeWhenNull) {
 
-		if (object instanceof String) {
-			return Utility.browserPanel.showMessage("RESULT:" + object, String.class);
+		if (anyObject == null) {
+			return Utility.browserPanel.showMessage("(" + typeWhenNull + ")null", typeWhenNull);
+		}
+		Object guiFor = Utility.dref(anyObject);
 
+		if (guiFor instanceof String) {
+			return Utility.browserPanel.showMessage((String) guiFor, String.class);
 		}
-		Class objClass = object.getClass();
-		Utility.recordCreated(object);
-		if (Utility.isToStringType(objClass)) {
-			String str = Utility.makeToString(object);
-			if (title == null)
-				title = str;
-			Object roundTrip = null;
-			try {
-				roundTrip = Utility.fromString(str, objClass);
-			} catch (NoSuchConversionException e) {
-			}
-			if (roundTrip != null) {
-				if ((roundTrip.getClass() == objClass)) {
-					Utility.browserPanel.showMessage(str, objClass);
-					return UserResult.SUCCESS;
-				}
-			}
-			// this did not round trip maybe something more interesting like a JenaResource
-		}
-		JPanel pnl = null;
-		if (object instanceof Component) {
-			Component comp = (Component) object;
-			pnl = ComponentHost.asPanel(comp, object);
+		
+		Utility.recordCreated(guiFor);
+
+		JPanel pnl;
+		if (anyObject instanceof Component) {
+			Component comp = (Component) anyObject;
+			pnl = ComponentHost.asPanel(comp, guiFor);
 		} else {
-			pnl = objectToPanel(title, object, true);
+
+			Object object = guiFor;
+			// if the object can be made to a string and come back as a non string of the same value.. only show this in the message area
+			Class objClass = object.getClass();
+			if (Utility.isToStringType(objClass)) {
+				String str = Utility.makeToString(object);
+				if (title == null)
+					title = str;
+				Object roundTrip = null;
+				try {
+					roundTrip = Utility.fromString(str, objClass);
+				} catch (NoSuchConversionException e) {
+				}
+				if (roundTrip != null) {
+					if ((roundTrip.getClass() == objClass)) {
+						//
+						Utility.browserPanel.showMessage(str, objClass);
+						return UserResult.SUCCESS;
+					}
+				}
+				// this did not round trip maybe something more interesting like a JenaResource
+			}
+			pnl = objectToPanel(title, guiFor, true);
 		}
-		try {
-			showObjectGUI(pnl.getName(), pnl, true);
-		} catch (IntrospectionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+
+		showObjectGUI(pnl.getName(), guiFor, pnl, true);
 		return Utility.asUserResult(pnl);
+
 	}
 
 	/**
 	 * Opens up a GUI to show the details of the given value
 	 */
-	public UserResult addObject(String label, Object valueIn, boolean showASAP) throws Exception {
+	public UserResult addObject(String label, Object value, boolean showASAP) throws Exception {
 
-		Object value = valueIn;
-		if (showASAP && valueIn instanceof Component) {
-			showObjectGUI(label, (Component) valueIn, showASAP);
-			return Utility.asUserResult(valueIn);
+		if (value instanceof Component) {
+			showObjectGUI(label, null, (Component) value, showASAP);
+			return Utility.asUserResult(value);
 		}
 		final NamedObjectCollection collection = getLocalBoxedChildren();
 		BT wrapper = collection.findOrCreateBox(label, value);
@@ -627,7 +628,7 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 		if (label == null)
 			label = wrapper.getShortLabel();
 		JPanel view = wrapper.getPropertiesPanel();
-		showObjectGUI(label, view, showASAP);
+		showObjectGUI(label, value, view, showASAP);
 		return Utility.asUserResult(view);
 	}
 
@@ -641,20 +642,43 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 	 * @return 
 	 * @throws IntrospectionException 
 	 */
-	private void showObjectGUI(String name, Component object, boolean showASAP) throws IntrospectionException {
-		Component existing = (Component) objectWindows.findBrother(Utility.drefO(object));
+	private void showObjectGUI(String name, Object guiFor, Component component, boolean showASAP) {
+
+		if (guiFor == null)
+			guiFor = Utility.drefO(component);
+
+		Component existing = (Component) objectWindows.findBrother(guiFor);
+		if (existing == null) {
+			existing = (Component) objectWindows.findBrother(component);
+		}
 
 		if (existing != null) {
-			bringToFront(existing);
+			if (component == existing) {
+				// all is good
+				bringToFront(existing);
+				return;
+			} else {
+				// now we have two UIs :(
+			}
+		}
+
+		if (component == null && guiFor instanceof Component) {
+			showObjectGUI(name, null, (Component) guiFor, showASAP);
+			return;
+		}
+
+		if (component == null) {
+			component = Utility.getPropertiesPanel(guiFor);
+			showObjectGUI(name, guiFor, component, showASAP);
 			return;
 		}
 
 		BoxPanelSwitchableView boxPanelDisplayContext = getBoxPanelTabPane();
 
-		if (object instanceof JInternalFrame) {
-			JInternalFrame f = (JInternalFrame) object;
+		if (component instanceof JInternalFrame) {
+			JInternalFrame f = (JInternalFrame) component;
 			if (!DisplayContextUIImpl.ALLOW_MULTIPLE_WINDOWS) {
-				objectWindows.add(object, f);
+				objectWindows.add(guiFor, f);
 			}
 			f.addInternalFrameListener(listener);
 			boxPanelDisplayContext.addComponent(f.getTitle(), f, DisplayType.FRAME);
@@ -662,20 +686,20 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 				f.toFront();
 				f.show();
 			}
-		} else if (object instanceof JPanel) {
-			JPanel f = ComponentHost.asPanel(object, object);
+		} else if (component instanceof JPanel) {
+			JPanel f = ComponentHost.asPanel(component, guiFor);
 			boxPanelDisplayContext.addComponent(name, f, DisplayType.PANEL);
 			if (showASAP) {
 				boxPanelDisplayContext.setSelectedComponent(f);
 			}
 			return;
-		} else if (object instanceof JComponent) {
+		} else if (component instanceof JComponent) {
 			JInternalFrame f = new JInternalFrame(name, true, true, true, true);
-			Object value = Utility.dref(object);
-			f.setFrameIcon(Utility.getIcon(value.getClass()));
-			f.getContentPane().add(object);
+			//Object value = Utility.dref(object);
+			f.setFrameIcon(Utility.getIcon(guiFor.getClass()));
+			f.getContentPane().add(component);
 			if (!DisplayContextUIImpl.ALLOW_MULTIPLE_WINDOWS) {
-				objectWindows.add(object, f);
+				objectWindows.add(guiFor, f);
 			}
 			f.addInternalFrameListener(listener);
 			f.pack();
@@ -685,10 +709,10 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 				f.show();
 			}
 
-		} else if (object instanceof Window) {
-			Window window = (Window) object;
+		} else if (component instanceof Window) {
+			Window window = (Window) component;
 			if (!DisplayContextUIImpl.ALLOW_MULTIPLE_WINDOWS) {
-				objectWindows.add(object, window);
+				objectWindows.add(guiFor, window);
 			}
 			window.addWindowListener(listener);
 			window.setSize(window.getPreferredSize());
@@ -699,10 +723,10 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 
 		} else {
 			JInternalFrame f = new JInternalFrame(name, true, true, true, true);
-			f.getContentPane().add(object);
+			f.getContentPane().add(component);
 			f.setSize(f.getPreferredSize());
 			if (!DisplayContextUIImpl.ALLOW_MULTIPLE_WINDOWS) {
-				objectWindows.add(object, f);
+				objectWindows.add(guiFor, f);
 			}
 			f.addInternalFrameListener(listener);
 			f.pack();
