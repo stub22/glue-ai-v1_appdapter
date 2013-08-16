@@ -51,7 +51,7 @@ public class BridgeTriggers implements UtilClass {
 
 	@UISalient(MenuName = "Run Twinkle On Model %t", IsNotSideEffectSafe = true)//
 	public static void startTwinkle(Model m) throws Throwable {
-		Class.forName("twinkle.Twinkle").getMethod("main", Model.class).invoke(null, m);
+		Class.forName("twinkle.Twinkle").getMethod("mainWithModel", Model.class).invoke(null, m);
 	}
 
 	@UISalient public static List<Model> getModelsFoundIn(Repo repo) {
