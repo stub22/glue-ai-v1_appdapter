@@ -18,29 +18,29 @@ package org.appdapter.scafun
 
 import scala.collection.JavaConverters.asScalaBufferConverter
 
-import org.appdapter.api.trigger.{BoxContext, MutableTrigger, TriggerImpl}
+import org.appdapter.api.trigger.{ BoxContext, MutableTrigger, TriggerImpl }
 import org.appdapter.bind.rdf.jena.assembly.AssemblerUtils
 import org.appdapter.bind.rdf.jena.model.JenaFileManagerUtils
 import org.appdapter.demo.DemoResources
 import org.appdapter.gui.box.ScreenBoxImpl
 
 class FullBox[FT <: FullTrigger[_ <: FullBox[FT]]] extends ScreenBoxImpl[FT] {}
- 
+
 trait FullTrigger[FB <: FullBox[_ <: FullTrigger[FB]]] extends MutableTrigger[FB] {}
 
 class BoxOne extends FullBox[TriggerOne] {
   import collection.JavaConverters._
   def getOpenKidBoxes(bc: BoxContext): Seq[BoxOne] = {
-    val kidBoxJL = ScreenBoxImpl.boxctxGetOpenChildBoxesNarrowed(bc, this, classOf[BoxOne], classOf[TriggerOne]).asInstanceOf[java.util.List[BoxOne]];
+    val kidBoxJL = bc.getOpenChildBoxesNarrowed(this, classOf[BoxOne], classOf[TriggerOne]).asInstanceOf[java.util.List[BoxOne]];
     // Scala 2.8
-//  	val kidBoxSeq : Seq[BoxOne] = scala.collection.JavaConversions.asBuffer(kidBoxJL) ;
-  	// Scala 2.10
-   val kidBoxSeq: Seq[BoxOne] = kidBoxJL.asScala;
+    //  	val kidBoxSeq : Seq[BoxOne] = scala.collection.JavaConversions.asBuffer(kidBoxJL) ;
+    // Scala 2.10
+    val kidBoxSeq: Seq[BoxOne] = kidBoxJL.asScala;
     kidBoxSeq;
   }
 }
 
-class TriggerOne extends TriggerImpl[BoxOne] with FullTrigger[BoxOne] { 
+class TriggerOne extends TriggerImpl[BoxOne] with FullTrigger[BoxOne] {
   override def fire(box: BoxOne): Unit = {
     println(this.toString() + " firing on " + box.toString());
   }
@@ -50,10 +50,10 @@ object Boxy {
 
   def boxItUp(): BoxOne = {
     val box1 = new BoxOne();
-    ScreenBoxImpl.doSetShortLabel(box1, "boxOne-1")
+    box1.setShortLabel("boxOne-1")
     val trig1 = new TriggerOne();
     trig1.setShortLabel("trigOne-1");
-    ScreenBoxImpl.doAttachTrigger(box1, trig1);
+    box1.attachTrigger(trig1);
     box1;
   }
   def main(args: Array[String]): Unit = {

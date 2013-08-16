@@ -493,12 +493,18 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 			workingOnShowingObject.add(anyObject);
 		}
 		try {
-			BT impl = getTreeBoxCollection().findOrCreateBox(title, anyObject);
-			if (showASAP) {
-				return app.showScreenBox(title, impl);
-			}
-			if (expandChildren) {
-				treeExpand(anyObject);
+
+			if (attachType == DisplayType.TOSTRING) {
+				return app.showScreenBox(title, anyObject);
+			} else {
+
+				BT impl = getTreeBoxCollection().findOrCreateBox(title, anyObject);
+				if (showASAP) {
+					return app.showScreenBox(title, impl);
+				}
+				if (expandChildren) {
+					treeExpand(anyObject);
+				}
 			}
 			return UserResult.SUCCESS;
 		} catch (Exception e) {
