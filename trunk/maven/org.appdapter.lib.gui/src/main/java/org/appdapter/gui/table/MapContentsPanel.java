@@ -64,7 +64,7 @@ public class MapContentsPanel extends BaseCollectionContentsPanel implements Val
 		return getMap();
 	}
 
-	public Map getMap() {
+	public Map getMap() {	
 		return Utility.recastCC(super.getValue(), Map.class);
 	}
 

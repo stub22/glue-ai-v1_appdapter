@@ -50,6 +50,10 @@ public class LargeObjectChooser extends CollectionContentsPanel implements POJOC
 	}
 
 	@Override public Collection getCollection() {
+		if ((filter == null || filter == objectValue) && objectValue instanceof Class) {
+			filter = (Class) objectValue;
+			objectValue = null;
+		}
 		if (objectValue == null)
 			return null;
 		return ((POJOCollection) objectValue).findObjectsByType(filter);
