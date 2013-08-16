@@ -98,7 +98,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
-import javax.swing.JInternalFrame;
+import javax.swing.*;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -139,7 +139,7 @@ import org.appdapter.core.convert.ConverterFromMember;
 import org.appdapter.core.convert.NoSuchConversionException;
 import org.appdapter.core.convert.OptionalArg;
 import org.appdapter.core.convert.ReflectUtils;
-import org.appdapter.core.log.Debuggable;
+import org.appdapter.core.log.*;
 import org.appdapter.core.name.FreeIdent;
 import org.appdapter.core.name.Ident;
 import org.appdapter.core.store.Repo;
@@ -351,6 +351,7 @@ public class Utility extends UtilityMenuOptions {
 		}
 	}
 
+	private static Map panelClassesFromCached = new HashMap();
 	public static HashMap<Class, Object> lastResults = new HashMap<Class, Object>();
 	public static HashMap<Class, Callable<Object>> singletons = new HashMap<Class, Callable<Object>>();
 	private static Collection EMPTY_COLLECTION = Collections.EMPTY_LIST;
@@ -624,6 +625,7 @@ public class Utility extends UtilityMenuOptions {
 					cons.setAccessible(true);
 				} catch (Throwable e) {
 					e.printStackTrace();
+					Debuggable.warn("" + e);
 				}
 			}
 		}
@@ -682,7 +684,7 @@ public class Utility extends UtilityMenuOptions {
 			if (isCreatable(cls)) {
 				try {
 					Class panelFor = getTypeClass(cls.getMethod("getClassOfBox").getGenericReturnType(), Class.class);
-					if (panelFor != null) {
+					if (panelFor != null && panelFor != Class.class) {
 						registerPanel(cls, panelFor);
 					}
 				} catch (SecurityException e) {
@@ -1842,9 +1844,15 @@ public class Utility extends UtilityMenuOptions {
 	private static <T> void registerPair(Class<T> mustBe, Class objClass) {
 		synchronized (classToClassRegistry) {
 			Pair pair = new Pair(mustBe, objClass);
+
 			if (!classToClassRegistry.remove(pair))
 				theLogger.warn("registering pair " + pair.getLeft() + "->" + pair.getRight());
 			classToClassRegistry.add(0, pair);
+			if (panelClassesFromCached.size() > 0) {
+				synchronized (panelClassesFromCached) {
+					panelClassesFromCached.clear();
+				}
+			}
 		}
 
 	}
@@ -2058,16 +2066,17 @@ public class Utility extends UtilityMenuOptions {
 		return null;
 	}
 
-	private static Map panelClassesFromCached = new HashMap();
-
 	public static Collection<Class> findPanelClasses(Class targetType) {
-		Collection<Class> cc = (Collection<Class>) panelClassesFromCached.get(targetType);
-		if (cc == null) {
-			panelClassesFromCached.put(targetType, EMPTY_COLLECTION);
-			cc = findPanelClassesFromCached(targetType);
-			panelClassesFromCached.put(targetType, cc);
+		synchronized (panelClassesFromCached) {
+			Collection<Class> cc = (Collection<Class>) panelClassesFromCached.get(targetType);
+			if (cc == null || targetType == Class.class) {
+				panelClassesFromCached.put(targetType, EMPTY_COLLECTION);
+				cc = findPanelClassesFromCached(targetType);
+				panelClassesFromCached.put(targetType, cc);
+			}
+
+			return cc;
 		}
-		return cc;
 	}
 
 	private static Collection<Class> findPanelClassesFromCached(Class targetType) {
@@ -2086,6 +2095,9 @@ public class Utility extends UtilityMenuOptions {
 			// PropertyEditorManager is a wild and untamed thing
 		} finally {
 			isInClassLoadPing(wasInClassloaderPing);
+		}
+		if (targetType == Class.class) {
+			Debuggable.breakpoint();
 		}
 		addIfNew(panelClass, findImplmentingForMatch(PropertyEditor.class, targetType), false);
 		addIfNew(panelClass, findImplmentingForMatch(Customizer.class, targetType), false);
