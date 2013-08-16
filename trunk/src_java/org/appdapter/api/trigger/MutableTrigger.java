@@ -16,6 +16,8 @@
 
 package org.appdapter.api.trigger;
 
+import org.appdapter.core.component.KnownComponent;
+import org.appdapter.core.component.MutableKnownComponent;
 
 /**
  * @author Stu B. <www.texpedient.com>

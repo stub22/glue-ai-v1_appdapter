@@ -19,6 +19,7 @@ package org.appdapter.gui.demo;
 import static org.appdapter.core.log.Debuggable.printStackTrace;
 
 import java.awt.BorderLayout;
+import java.util.concurrent.Callable;
 
 import javax.swing.BoxLayout;
 import javax.swing.JApplet;
@@ -29,7 +30,10 @@ import javax.swing.tree.TreeModel;
 
 import org.appdapter.api.trigger.AnyOper;
 import org.appdapter.api.trigger.Box;
+import org.appdapter.api.trigger.CallableWithParameters;
 import org.appdapter.api.trigger.MutableBox;
+import org.appdapter.api.trigger.MutableTrigger;
+import org.appdapter.api.trigger.Trigger;
 import org.appdapter.api.trigger.TriggerImpl;
 import org.appdapter.core.log.BasicDebugger;
 import org.appdapter.core.log.Debuggable;
@@ -39,6 +43,7 @@ import org.appdapter.demo.DemoBrowserUI;
 import org.appdapter.demo.DemoNavigatorCtrlFactory;
 import org.appdapter.demo.DemoResources;
 import org.appdapter.gui.api.DisplayContextProvider;
+import org.appdapter.gui.api.EditableTrigger;
 import org.appdapter.gui.api.ScreenBox.Kind;
 import org.appdapter.gui.box.ScreenBoxContextImpl;
 import org.appdapter.gui.box.ScreenBoxImpl;
@@ -52,6 +57,8 @@ import org.appdapter.gui.repo.RepoModelBoxImpl;
 import org.appdapter.gui.repo.RepoTriggers;
 import org.appdapter.gui.trigger.BootstrapTriggerFactory;
 import org.appdapter.gui.trigger.SysTriggers;
+import org.appdapter.gui.trigger.TriggerForClass;
+import org.appdapter.gui.trigger.TriggerForInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -115,6 +122,84 @@ final public class DemoBrowser implements AnyOper.Singleton {
 	}
 
 	static public boolean defaultExampleCode = false;
+
+	/**
+	 * Register a Trigger to places on all instances of 'cls'
+	 * @param cls
+	 * @param menuLabel
+	 * @param trigger
+	 * 
+	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
+	 * 
+	 */
+	public static EditableTrigger registerTriggerForClassInstances(Class cls, String menuLabel, Trigger trigger) {
+		return Utility.registerTriggerForClassInstances(cls, menuLabel, trigger);
+	}
+
+	/**
+	 * Register a Trigger onto a class Object
+	 * @param cls
+	 * @param menuLabel
+	 * @param trigger
+	 * 
+	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
+	 * 
+	 */
+	public static EditableTrigger registerTriggerForClass(Class cls, String menuLabel, Trigger trigger) {
+		return Utility.registerTriggerForClass(cls, menuLabel, trigger);
+	}
+
+	/**
+	 * Register a Trigger onto a class Object
+	 * @param cls
+	 * @param menuLabel
+	 * @param trigger
+	 * 
+	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
+	 * 
+	 */
+	public static EditableTrigger registerTriggerForPredicate(CallableWithParameters<Boolean, Box> predicate, String menuLabel, Trigger trigger) {
+		return Utility.registerTriggerForPredicate(predicate, menuLabel, trigger);
+	}
+
+	/**
+	 * Register a Trigger onto a class Object
+	 * @param cls
+	 * @param menuLabel
+	 * @param trigger
+	 * 
+	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
+	 * 
+	 */
+	public static EditableTrigger registerCallableForPredicate(CallableWithParameters<Boolean, Box> predicate, String menuLabel, CallableWithParameters function) {
+		return Utility.registerCallableForPredicate(predicate, menuLabel, function);
+	}
+
+	/**
+	 * Register a Factory for a Class
+	 * @param cls
+	 * @param menuLabel
+	 * @param trigger
+	 * 
+	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
+	 * 
+	 */
+	public static <T> EditableTrigger registerFactoryForClass(Class<T> cls, String menuLabel, CallableWithParameters<? extends T, Class> trigger) {
+		return Utility.registerFactoryForClass(cls, menuLabel, trigger);
+	}
+
+	/**
+	 * Register a Trigger on a specific object
+	 * @param cls
+	 * @param menuLabel
+	 * @param trigger
+	 * 
+	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
+	 * 
+	 */
+	public static EditableTrigger registerTriggerForObject(Object anyObject, String shortLabel, Trigger trigger) {
+		return Utility.registerTriggerForObject(anyObject, shortLabel, trigger);
+	}
 
 	/**
 	 *  Ensure the main instance is started
@@ -191,7 +276,7 @@ final public class DemoBrowser implements AnyOper.Singleton {
 				getContentPane().add("Center", box);
 				box.add(new JLabel("Opening DemoNavigatorCtrl in a new window..."));
 				DemoNavigatorCtrl dnc = makeDemoNavigatorCtrlReal(new String[0], defaultExampleCode);
-				dnc.launchFrame("Appdapter Demo Browser");
+				dnc.launchFrame("Appdapter Demo Browser as Applet");
 				setVisible(false);
 				setSize(0, 0);
 			} catch (Exception err) {
