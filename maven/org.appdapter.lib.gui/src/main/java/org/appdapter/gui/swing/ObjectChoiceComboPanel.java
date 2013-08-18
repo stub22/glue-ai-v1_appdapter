@@ -25,6 +25,7 @@ import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.BT;
 import org.appdapter.gui.api.NamedObjectCollection;
 import org.appdapter.gui.api.POJOCollectionListener;
+import org.appdapter.gui.browse.SearchableDemo;
 import org.appdapter.gui.browse.ToFromKeyConverter;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.trigger.TriggerPopupMenu;
@@ -110,9 +111,11 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 		model = new Model();
 		combo = new JComboBox(model);
 		combo.setEditable(false);
+		combo.setRenderer(new ObjectComboPrettyRender());
 		setLayout(new BorderLayout());
 		add("Center", combo);
 		combo.addMouseListener(this);
+		SearchableDemo.installSearchable(combo);
 	}
 
 	@Override public void mouseClicked(MouseEvent e) {
@@ -210,9 +213,9 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 		return null;
 	}
 
-	class ComboBoxRenderer extends JLabel implements ListCellRenderer {
+	static class ObjectComboPrettyRender extends JLabel implements ListCellRenderer {
 
-		public ComboBoxRenderer() {
+		public ObjectComboPrettyRender() {
 			setOpaque(true);
 			setHorizontalAlignment(CENTER);
 			setVerticalAlignment(CENTER);
