@@ -64,7 +64,7 @@ public class MapContentsPanel extends BaseCollectionContentsPanel implements Val
 		return getMap();
 	}
 
-	public Map getMap() {	
+	public Map getMap() {
 		return Utility.recastCC(super.getValue(), Map.class);
 	}
 
@@ -133,7 +133,7 @@ public class MapContentsPanel extends BaseCollectionContentsPanel implements Val
 						continue;
 				}
 				final Object v = value.getValue();
-				SmallObjectView view = new SmallObjectView(context, nameMaker, v, Utility.getUniqueName(v, nameMaker, false), true, true, true, true) {
+				SmallObjectView view = new SmallObjectView(context, nameMaker, v, Utility.getUniqueName(v, nameMaker, false, false), true, true, true, true) {
 					@Override public void valueChanged(Object sender, Object oldValue, Object newValue) {
 						map.put(value.getKey(), newValue);
 					}

@@ -474,7 +474,7 @@ VetoableChangeListener, PropertyChangeListener, Serializable, Set {
 				wrapper = findBoxByName(title);
 			}
 			if (title == null) {
-				title = Utility.generateUniqueName_sug(value, title, getNameToBoxIndex());
+				title = Utility.generateUniqueName_sug(value, title, getNameToBoxIndex(), false);
 			}
 			if (wrapper == null) {
 				wrapper = (BT) makeWrapper(title, value);
@@ -595,7 +595,7 @@ VetoableChangeListener, PropertyChangeListener, Serializable, Set {
 		if (wrapper == null)
 			return MISSING_COMPONENT;
 		if (wrapper instanceof BT)
-			return ((BT) wrapper).getUniqueName(getNameToBoxIndex());
+			return ((BT) wrapper).generateUniqueName(getNameToBoxIndex());
 		String lbl = ((KnownComponent) wrapper).getShortLabel();
 		if (lbl != null)
 			return lbl;

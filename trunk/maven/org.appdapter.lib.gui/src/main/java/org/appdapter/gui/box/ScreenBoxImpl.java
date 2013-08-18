@@ -346,16 +346,16 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 			return sl;
 		for (NamedObjectCollection noc : getNOCs()) {
 			if (noc != null) {
-				return getUniqueName(noc.getNameToBoxIndex());
+				return generateUniqueName(noc.getNameToBoxIndex());
 			}
 		}
-		return getUniqueName(null);
+		return generateUniqueName(null);
 	}
 
 	/**
 	 * Returns the name of this object
 	 */
-	final public String getUniqueName(Map checkAgainst) {
+	final public String generateUniqueName(Map checkAgainst) {
 		//String _uname = null;
 		String name = super_getShortLabel();
 		if (name == null) {
@@ -751,7 +751,7 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 			}
 
 			if (uniqueName == null) {
-				uniqueName = Utility.generateUniqueName_sug(value, uniqueName, noc.getNameToBoxIndex());
+				uniqueName = Utility.generateUniqueName_sug(value, uniqueName, noc.getNameToBoxIndex(), false);
 			}
 			col2Name.put(noc, uniqueName);
 		}
@@ -810,7 +810,7 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	 *             if someone refused to allow the name to change
 	 */
 	public void setUniqueName(String newName, Map checkAgainst) throws PropertyVetoException {
-		final String name = getUniqueName(checkAgainst);
+		final String name = generateUniqueName(checkAgainst);
 		if (!newName.equals(name)) {
 			checkTransient();
 			String oldName = name;
@@ -861,7 +861,7 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 		if (name != null) {
 			return name;
 		}
-		return getUniqueName(null) + " -> " + getDebugName();
+		return generateUniqueName(null) + " -> " + getDebugName();
 
 	}
 
