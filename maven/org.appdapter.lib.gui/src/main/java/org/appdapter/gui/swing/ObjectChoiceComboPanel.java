@@ -3,20 +3,25 @@ package org.appdapter.gui.swing;
 import static org.appdapter.core.log.Debuggable.printStackTrace;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyEditorSupport;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
+import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
 
 import org.appdapter.core.convert.NoSuchConversionException;
+import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.BT;
 import org.appdapter.gui.api.NamedObjectCollection;
 import org.appdapter.gui.api.POJOCollectionListener;
@@ -41,6 +46,8 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 	Model model;
 	ToFromKeyConverter converter;
 
+	public boolean useStringProxies;
+
 	public ObjectChoiceComboPanel(Class type, Object value) {
 		this(null, type, value, Utility.getToFromStringConverter(type));
 	}
@@ -52,8 +59,13 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 		if (context0 == null)
 			context0 = Utility.getTreeBoxCollection();
 		this.context = context0;
-		if (type == null)
+		if (type == null) {
+			Utility.bug("type of value unknown: " + value);
 			type = Object.class;
+			useStringProxies = false;
+		} else {
+			useStringProxies = Utility.isToStringType(type) && type != String.class;
+		}
 		initGUI();
 		if (context != null)
 			context.addListener(this, true);
@@ -77,7 +89,6 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 
 	public void setSelection(Object object) {
 		model.setSelectedItem(object);
-		String whatWasSelected = model.getSelectedItem();
 		Object whatWasSelectedObj = model.getSelectedBean();
 
 		if (whatWasSelectedObj != object) {
@@ -199,10 +210,52 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 		return null;
 	}
 
+	class ComboBoxRenderer extends JLabel implements ListCellRenderer {
+
+		public ComboBoxRenderer() {
+			setOpaque(true);
+			setHorizontalAlignment(CENTER);
+			setVerticalAlignment(CENTER);
+		}
+
+		/*
+		* This method finds the image and text corresponding
+		* to the selected value and returns the label, set up
+		* to display the text and image.
+		*/
+		public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+			//Get the selected index. (The index param isn't
+			//always valid, so just use the value.)
+			int selectedIndex = ((Integer) value).intValue();
+
+			if (isSelected) {
+				setBackground(list.getSelectionBackground());
+				setForeground(list.getSelectionForeground());
+			} else {
+				setBackground(list.getBackground());
+				setForeground(list.getForeground());
+			}
+
+			//Set the icon and text.  If icon was null, say so.
+			ImageIcon icon = null;// images[selectedIndex];
+			String title = Utility.getUniqueNamePretty(value);
+			if (icon != null) {
+				setIcon(icon);
+			} else {
+				//setUhOhText(pet + " (no image available)", list.getFont());
+			}
+			setText(title);
+			setFont(list.getFont());
+
+			return this;
+		}
+
+	}
+
 	class Model extends AbstractListModel implements ComboBoxModel {
 		//Vector listeners = new Vector();
-		java.util.List<String> values;
-		String selected = null;
+		java.util.List<Object> objectValues;
+		Object selectedObject = null;
 
 		@SuppressWarnings("unchecked") public Model() {
 			reload();
@@ -210,58 +263,40 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 
 		@Override public synchronized void setSelectedItem(Object anItem) {
 			if (anItem instanceof String) {
-				setSelectedName((String) anItem);
-				return;
-			}
-			String title = objectToString(anItem);
-			Object obj = stringToObject(title);
-			if (obj != anItem) {
-				Utility.bug("Not round tripping " + anItem);
-			}
-			setSelectedName(title);
-		}
+				if (ObjectChoiceComboPanel.this.useStringProxies) {
 
-		public synchronized void setSelectedName(String anItem) {
-			if (selected == null) {
-
+					anItem = stringToObject((String) anItem);
+				}
 			}
-			String old = getSelectedItem();
-			selected = anItem;
-
-			//if (old != selected)
-			//  notifyListeners();
-
-			if (selected != null && !values.contains(selected)) {
-				values.add(selected);
+			if (!Debuggable.isRelease()) {
+				String title = objectToString(anItem);
+				Object obj = stringToObject(title);
+				if (obj != anItem) {
+					Utility.bug("Not round tripping " + anItem);
+				}
 			}
-			fireContentsChanged(this, -1, -1);
-			Object o = stringToObject(old);
-			Object n = stringToObject(selected);
-			if (o != n) {
-				propSupport.firePropertyChange("selection", o, n);
+			if (selectedObject != anItem) {
+				Object oldValue = selectedObject;
+				selectedObject = anItem;
+				propSupport.firePropertyChange("selection", oldValue, anItem);
 			}
 		}
 
-		@Override public String getSelectedItem() {
-			if (selected == null)
-				return "<null>";
-			else
-				return selected;
+		@Override public Object getSelectedItem() {
+			return selectedObject;
 		}
 
 		public Object getSelectedBean() {
-			if (selected == null)
-				return null;
-			return stringToObject(selected);
+			return selectedObject;
 		}
 
 		@Override public int getSize() {
-			return values.size();
+			return objectValues.size();
 		}
 
-		@Override public String getElementAt(int index) {
+		@Override public Object getElementAt(int index) {
 			try {
-				return values.get(index);
+				return objectValues.get(index);
 			} catch (Exception err) {
 				return null;
 			}
@@ -270,16 +305,16 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 		public synchronized void reload() {
 			Object selected = getSelectedBean();
 			if (context == null)
-				values = new LinkedList();
+				objectValues = new LinkedList();
 			else {
 				Collection col = context.findObjectsByType(type);
-				values = new LinkedList();
+				objectValues = new LinkedList();
 				for (Object o : col) {
 
-					values.add(context.getTitleOf(o));
+					objectValues.add(o);
 				}
 			}
-			values.add("<null>");
+			objectValues.add("<null>");
 			setSelectedItem(selected);
 		}
 	}

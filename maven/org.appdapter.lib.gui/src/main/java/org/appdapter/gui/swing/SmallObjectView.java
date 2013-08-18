@@ -299,10 +299,10 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 			}
 			if (showLabel) {
 				if (this.title == null) {
-					title = Utility.getUniqueName(object, nameMaker, false);
+					title = Utility.getUniqueName(object, nameMaker, false, false);
 				}
 				if ((title == null || title.equals("<null>")) && object != null && !(object instanceof String)) {
-					todo("title for", object);
+					Utility.bug("title for" + object);
 				}
 				label = new JLabel(title);
 				panel.add(label);
