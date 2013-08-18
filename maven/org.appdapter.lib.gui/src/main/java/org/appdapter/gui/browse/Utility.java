@@ -2525,7 +2525,7 @@ public class Utility extends UtilityMenuOptions {
 			if (isTitled(title)) {
 				if (!wantLessAnonymous)
 					return title;
-				bug("want pretty for " + object);
+				//bug("want pretty for " + object);
 			}
 		}
 		if (object instanceof KnownComponent) {
