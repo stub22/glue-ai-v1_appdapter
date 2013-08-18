@@ -38,9 +38,9 @@ public class RenameDialog extends JFrame {
 		java.util.Map nocmap = noc.getNameToBoxIndex();
 
 		JPanel top = new JPanel(new FlowLayout());
-		top.add(new JLabel("Rename " + object.getUniqueName(nocmap) + " to: "));
+		top.add(new JLabel("Rename " + object.generateUniqueName(nocmap) + " to: "));
 		top.add(nameField);
-		nameField.setText(object.getUniqueName(nocmap));
+		nameField.setText(object.generateUniqueName(nocmap));
 		nameField.selectAll();
 
 		JPanel bottom = new JPanel(new FlowLayout());

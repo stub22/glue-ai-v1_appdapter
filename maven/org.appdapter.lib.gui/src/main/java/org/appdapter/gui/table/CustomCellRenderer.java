@@ -184,7 +184,7 @@ ListCellRenderer, TableCellRenderer, TreeCellRenderer {
 			label.setFont(list.getFont());
 			if (isText) {
 				if (value != null) {
-					value = Utility.getUniqueName(value);
+					value = Utility.getUniqueNamePretty(value);
 				} else {
 					value = "(" + Utility.getShortClassName(columnClass) + ")null";
 				}

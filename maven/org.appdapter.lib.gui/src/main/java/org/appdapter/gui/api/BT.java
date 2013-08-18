@@ -121,7 +121,7 @@ public interface BT<TT extends Trigger<? extends ScreenBox<TT>>> //
 	/**
 	 * Returns the name of this object
 	 */
-	public String getUniqueName(Map stringToSomething);
+	public String generateUniqueName(Map stringToSomething);
 
 	/**
 	 * Changes the name of this object. The name should never be null.

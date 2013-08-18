@@ -232,7 +232,7 @@ public class Utility extends UtilityMenuOptions {
 
 		@Override public String toKey(Object toBecomeAKey) {
 
-			return getUniqueName(toBecomeAKey, uiObjects, true);
+			return getUniqueName(toBecomeAKey, uiObjects, true, false);
 		}
 
 	}
@@ -1621,82 +1621,6 @@ public class Utility extends UtilityMenuOptions {
 		return o;
 	}
 
-	/**
-	 * Generates a default name for the given object, while will be something
-	 * like "Button1", "Button2", etc.
-	 * 
-	 * @param nameIndex
-	 */
-	public static String generateUniqueName(Object object, Map<String, BT> checkAgainst) {
-		return generateUniqueName_sug(object, null, checkAgainst);
-	}
-
-	public static String generateUniqueName(Object object, String suggestedName, Map<String, BT> checkAgainst) {
-		String newName = generateUniqueName_sug(object, suggestedName, checkAgainst);
-		if (suggestedName != null && !suggestedName.equals(newName)) {
-			warn("did not get suggested name : " + suggestedName + " isntead got " + newName + " for " + object);
-		}
-		return newName;
-	}
-
-	public static String generateUniqueName_sug(Object object, String suggestedName, Map<String, BT> checkAgainst) {
-		if (object == null)
-			return "<null>";
-		if (object instanceof Class) {
-			return getSpecialClassName((Class) object);
-		}
-		if (object instanceof KnownComponent) {
-			String str = ((KnownComponent) object).getShortLabel();
-			if (str != null) {
-
-				if (checkAgainst != null) {
-					BT other = null;
-					other = checkAgainst.get(str);
-					if (other == null)
-						return str;
-					if (other.representsObject(object))
-						return str;
-					if (str != null)
-						return str;
-				}
-				// conflict!
-			}
-		}
-
-		if (checkAgainst == null) {
-			if (suggestedName == null)
-				return getDefaultName(object);
-			return suggestedName + getDefaultName(object);
-		}
-
-		String className = suggestedName;
-		String name;
-		int counter = 1;
-		if (className == null) {
-			className = getShortClassName(object.getClass());
-			name = className + counter;
-		} else {
-			name = suggestedName;
-		}
-
-		boolean done = false;
-
-		while (!done) {
-			Object otherPOJO = checkAgainst.get(name);
-			if (otherPOJO == null) {
-				done = true;
-			} else {
-				++counter;
-				name = className + counter;
-			}
-		}
-		return name;
-	}
-
-	public static int identityHashCode(Object object) {
-		return System.identityHashCode(object);
-	}
-
 	public static void addLastResultType(Object obj, Class expected) {
 		if (obj == null)
 			return;
@@ -2220,7 +2144,7 @@ public class Utility extends UtilityMenuOptions {
 		customizer.setObject(object);
 		view = (JPanel) customizer;
 
-		myPanelMap.put(key, view);		
+		myPanelMap.put(key, view);
 		return view;
 	}
 
@@ -2376,41 +2300,34 @@ public class Utility extends UtilityMenuOptions {
 		return res[0];
 	}
 
-	public static String getDefaultName(Object object) {
-		String title = hasDefaultName(object);
-		if (title == null) {
-			return object.getClass().getCanonicalName() + "@" + identityHashCode(object);
+	/**
+	 * Generates a default name for the given object, while will be something
+	 * like "Button1", "Button2", etc.
+	 * 
+	 * @param nameIndex
+	 */
+	public static String generateUniqueName(Object object, Map<String, BT> checkAgainst) {
+		return generateUniqueName_sug(object, null, checkAgainst, false);
+	}
+
+	public static String generateUniqueNameWarnIfMissed(Object object, String suggestedName, Map<String, BT> checkAgainst) {
+		String newName = generateUniqueName_sug(object, suggestedName, checkAgainst, false);
+		if (suggestedName != null && !suggestedName.equals(newName)) {
+			warn("did not get suggested name : " + suggestedName + " isntead got " + newName + " for " + object);
 		}
-		return title;
+		return newName;
+	}
+
+	public static String getUniqueNamePretty(Object object) {
+		String un = getUniqueName(object, getTreeBoxCollection(), false, true);
+		if (un.contains(" ") || un.contains("-") || un.contains("+"))
+			return un;
+		bug("Not pretty string: " + un + " perhaps use " + makeTooltipText(object));
+		return un;
 	}
 
 	public static String getUniqueName(Object object) {
-		return getUniqueName(object, getTreeBoxCollection(), false);
-	}
-
-	public static String getUniqueName(Object object, NamedObjectCollection noc, boolean mayCreate) {
-		String title = hasDefaultName(object);
-		if (isTitled(title))
-			return title;
-		BT newBox = null;
-		if (mayCreate) {
-			newBox = noc.findOrCreateBox(object);
-		} else {
-			if (noc != uiObjects) {
-				newBox = noc.findBoxByObject(object);
-			}
-		}
-		if (newBox != null) {
-			title = newBox.getShortLabel();
-			if (isTitled(title))
-				return title;
-		} else {
-			Map<String, BT> map = noc.getNameToBoxIndex();
-			title = generateUniqueName_sug(object, null, map);
-			if (isTitled(title))
-				return title;//"'" + title + "'";
-		}
-		return title;
+		return getUniqueName(object, getTreeBoxCollection(), false, false);
 	}
 
 	public static boolean isTitled(String title) {
@@ -2418,9 +2335,10 @@ public class Utility extends UtilityMenuOptions {
 	}
 
 	public static String getUniqueName(Object object, NamedObjectCollection noc) {
-		String title = getUniqueName(object, noc, true);
+		String title = getUniqueName(object, noc, true, false);
 		if (isTitled(title))
 			return title;
+		bug("bad title " + title + " for " + object);
 		return title;
 	}
 
@@ -2449,9 +2367,107 @@ public class Utility extends UtilityMenuOptions {
 		return "" + object;
 	}
 
-	private static void breakpoint() {
-		// TODO Auto-generated method stub
+	public static String getUniqueName(Object object, NamedObjectCollection noc, boolean mayCreate, boolean wantLessAnonymous) {
+		if (object == null)
+			return "<null>";
+		String title = hasDefaultName(object, wantLessAnonymous);
+		if (isTitled(title))
+			return title;
+		BT newBox = null;
+		if (mayCreate) {
+			newBox = noc.findOrCreateBox(object);
+		} else {
+			if (noc != uiObjects) {
+				newBox = noc.findBoxByObject(object);
+			}
+		}
+		if (newBox != null) {
+			title = newBox.getShortLabel();
+			if (isTitled(title))
+				return title;
+		} else {
+			Map<String, BT> map = noc.getNameToBoxIndex();
+			title = generateUniqueName_sug(object, null, map, wantLessAnonymous);
+			if (isTitled(title)) {
+				if (!mayCreate) {
+					return getUniqueName(object, noc, true, wantLessAnonymous);
+				}
+				bug("awol title " + title + " for " + object);
+				return title;//"'" + title + "'";
+			}
+		}
+		bug("bad title " + title + " for " + object);
+		return title;
+	}
 
+	public static String getDefaultName(Object object, boolean wantLessAnonymous) {
+		String title = hasDefaultName(object, wantLessAnonymous);
+		if (title == null) {
+			return object.getClass().getCanonicalName() + "@" + identityHashCode(object);
+		}
+		return title;
+	}
+
+	public static String generateUniqueName_sug(Object object, String suggestedName, Map<String, BT> checkAgainst, boolean wantLessAnonymous) {
+		if (object == null)
+			return "<null>";
+		if (object instanceof Class) {
+			return getSpecialClassName((Class) object);
+		}
+		if (object instanceof KnownComponent) {
+			String str = ((KnownComponent) object).getShortLabel();
+			if (str != null) {
+
+				if (checkAgainst != null) {
+					BT other = null;
+					other = checkAgainst.get(str);
+					if (other == null)
+						return str;
+					if (other.representsObject(object))
+						return str;
+					if (str != null)
+						return str;
+				}
+				// conflict!
+			}
+		}
+
+		if (checkAgainst == null) {
+			if (suggestedName == null)
+				return getDefaultName(object, wantLessAnonymous);
+			return suggestedName + getDefaultName(object, wantLessAnonymous);
+		}
+
+		String className = suggestedName;
+		String name;
+		int counter = 1;
+		if (className == null) {
+			className = getShortClassName(object.getClass());
+			name = className + counter;
+		} else {
+			name = suggestedName;
+		}
+
+		boolean done = false;
+
+		while (!done) {
+			Object otherPOJO = checkAgainst.get(name);
+			if (otherPOJO == null) {
+				done = true;
+			} else {
+				++counter;
+				name = className + counter;
+			}
+		}
+		return name;
+	}
+
+	public static int identityHashCode(Object object) {
+		return System.identityHashCode(object);
+	}
+
+	private static void breakpoint() {
+		bug("hit bp");
 	}
 
 	public static ToFromKeyConverter getToFromStringConverter(Class valueClazz) {
@@ -2477,7 +2493,7 @@ public class Utility extends UtilityMenuOptions {
 		return null;
 	}
 
-	public static String hasDefaultName(Object object) {
+	public static String hasDefaultName(Object object, boolean wantLessAnonymous) {
 		if (object == null)
 			return "<null>";
 
@@ -2507,7 +2523,9 @@ public class Utility extends UtilityMenuOptions {
 		if (uiObjects.containsObject(object)) {
 			title = uiObjects.getTitleOf(object);
 			if (isTitled(title)) {
-				return title;
+				if (!wantLessAnonymous)
+					return title;
+				bug("want pretty for " + object);
 			}
 		}
 		if (object instanceof KnownComponent) {
@@ -2530,7 +2548,7 @@ public class Utility extends UtilityMenuOptions {
 
 		Object object2 = dref1(object, false);
 		if (object2 != null && object2 != object) {
-			title = hasDefaultName(object2);
+			title = hasDefaultName(object2, wantLessAnonymous);
 			if (isTitled(title)) {
 				return title;
 			}

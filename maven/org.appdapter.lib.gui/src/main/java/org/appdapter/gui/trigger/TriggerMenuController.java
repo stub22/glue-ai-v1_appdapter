@@ -129,8 +129,8 @@ public class TriggerMenuController implements POJOCollectionListener, Convertabl
 		return this;
 	}
 
-	private void initLabelText(Object object) {
-		final String label = Utility.getUniqueName(object, localCollection, false);
+	private void initLabelText(final Object object) {
+		final String label = Utility.getUniqueName(object, localCollection, false, true);
 		if (this.myLabel.contains(label)) {
 			return;
 		}
@@ -141,9 +141,11 @@ public class TriggerMenuController implements POJOCollectionListener, Convertabl
 			@Override public void run() {
 				if (menu != null) {
 					menu.setText(setLabel);
+					menu.setToolTipText(Utility.makeTooltipText(object));
 				}
 				if (popup != null) {
 					popup.setLabel(setLabel);
+					popup.setToolTipText(Utility.makeTooltipText(object));
 				}
 			}
 		});
