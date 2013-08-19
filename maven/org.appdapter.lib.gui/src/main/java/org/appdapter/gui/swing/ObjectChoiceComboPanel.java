@@ -57,6 +57,8 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 	public boolean useSmallObjectViewInLists;
 	public boolean isStringChooser;
 
+	Object selectedObject = null;
+
 	public ObjectChoiceComboPanel(Class type, Object value) {
 		this(null, type, value, Utility.getToFromStringConverter(type));
 	}
@@ -64,6 +66,7 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 	public ObjectChoiceComboPanel(NamedObjectCollection context0, Class type0, Object value, ToFromKeyConverter conv) {
 		super(false);
 		this.converter = conv;
+		selectedObject = value;
 		this.type = type0;
 		if (context0 == null)
 			context0 = Utility.getTreeBoxCollection();
@@ -121,13 +124,14 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 	private void initGUI() {
 		model = new ObjectChoiceModel();
 		combo = new JComboBox(model);
-		combo.setEditable(false);
+		//combo.setEditable(false);
 		SearchableDemo.installSearchable(combo);
 		combo.setRenderer(new ObjectComboPrettyRender());
 		setLayout(new BorderLayout());
 		add("Center", combo);
 		combo.addMouseListener(this);
 		model.reload();
+		combo.setEditable(isStringChooser || useStringProxies);
 	}
 
 	@Override public void mouseClicked(MouseEvent e) {
@@ -285,10 +289,8 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 	class ObjectChoiceModel extends AbstractListModel implements ComboBoxModel {
 		//Vector listeners = new Vector();
 		java.util.List<Object> objectValues;
-		Object selectedObject = null;
 
 		@SuppressWarnings("unchecked") public ObjectChoiceModel() {
-			reload();
 		}
 
 		@Override public synchronized void setSelectedItem(Object anItem) {
@@ -321,6 +323,8 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 		}
 
 		@Override public int getSize() {
+			if (objectValues == null)
+				return 0;
 			return objectValues.size();
 		}
 
@@ -337,9 +341,10 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 			if (context == null)
 				objectValues = new LinkedList();
 			else {
-				Collection col = context.findObjectsByType(type);
-				if (col.size() < 1) {
-
+				Class ft = type;
+				Collection col = context.findObjectsByType(ft);
+				if (col.size() == 0) {
+					Utility.bug("col.size() == 0 for " + ft);
 				}
 				objectValues = new LinkedList();
 				for (Object o : col) {
