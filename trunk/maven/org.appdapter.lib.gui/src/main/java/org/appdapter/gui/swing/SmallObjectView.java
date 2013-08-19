@@ -48,8 +48,8 @@ import org.slf4j.LoggerFactory;
 /**
  * A panel containing a very minimal GUI for an object
  * <p>
- * 
- * 
+ *
+ *
  */
 public class SmallObjectView<BoxType extends Box>
 
@@ -143,6 +143,7 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 	 */
 	public SmallObjectView(DisplayContext context, NamedObjectCollection namer, Object object, String title, boolean showLabel, boolean showIcon, boolean showPropButton, boolean showToString) {
 		super(false);
+		showIcon = false;
 		objectValue = object;
 		isRemoved = false;
 		if (context == null)
@@ -311,10 +312,15 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 				if (this.title == null) {
 					title = Utility.getUniqueName(object, nameMaker, false, false);
 				}
+				String labelname = title;
 				if ((title == null || title.equals("<null>")) && object != null && !(object instanceof String)) {
 					Utility.bug("title for" + object);
+				} else {
+					if (labelname.length() > 128) {
+						labelname = labelname.substring(0, 128);
+					}
 				}
-				label = new JLabel(title);
+				label = new JLabel(labelname);
 				panel.add(label);
 			}
 			if (showPropButton && !objectClass.isPrimitive()) {
@@ -328,10 +334,13 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 				removeButton.addActionListener(this);
 			}
 			String tooltip = Utility.makeTooltipText(object);
+			setToolTipText(tooltip);
 			if (showToString) {
+				if (tooltip.length() > 128) {
+					tooltip = tooltip.substring(0, 128);
+				}
 				panel.add(new JLabel(tooltip));
 			}
-			setToolTipText(tooltip);
 		} else {
 			panel.add(new JLabel("null"));
 		}
