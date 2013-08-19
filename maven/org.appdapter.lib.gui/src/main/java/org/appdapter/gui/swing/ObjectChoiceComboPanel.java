@@ -344,7 +344,7 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 				Class ft = type;
 				Collection col = context.findObjectsByType(ft);
 				if (col.size() == 0) {
-					Utility.bug("col.size() == 0 for " + ft);
+					Utility.theLogger.warn("col.size() == 0 for " + ft);
 				}
 				objectValues = new LinkedList();
 				for (Object o : col) {

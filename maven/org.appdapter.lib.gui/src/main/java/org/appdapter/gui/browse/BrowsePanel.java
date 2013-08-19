@@ -79,7 +79,7 @@ import com.jidesoft.tree.StyledTreeCellRenderer;
  * @author Stu B. <www.texpedient.com>
  */
 @UIHidden
-public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessageAndErrors, Singleton {
+public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessageAndErrors {
 
 	public TreeModel myTreeModel;
 	public DisplayContextUIImpl app;
@@ -117,12 +117,12 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 		Utility.clipBoardUtil = new CollectionEditorUtil(clipboard.getName(), app, clipboard);
 		myBoxPanelTabPane.add("Clipboard", Utility.clipBoardUtil.getGUIPanel());
 		myBoxPanelTabPane.setBackground(Color.LIGHT_GRAY);
-		UIManager.put("nimbusBase", new ColorUIResource(128, 128, 128));
+		//UIManager.put("nimbusBase", new ColorUIResource(128, 128, 128));
 		myBoxContext = bctx0;
 		hookTree();
 		this.addToTreeListener = new AddToTreeListener(myTree, ctx, bctx0, (MutableBox) bctx0.getRootBox(), true);
 		//addClipboard(clipboard);
-
+		Utility.setSingletonValue(getClass(), this);
 		invalidate();
 	}
 
@@ -297,7 +297,8 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 		menu.getAccessibleContext().setAccessibleDescription("Last returns");
 		menuBar.add(menu);
 
-		createLookAndFeelMenu();
+		if (Utility.isLAFSafe())
+			createLookAndFeelMenu();
 
 		if (oldJMenuBar != null && oldJMenuBar != menuBar)
 			menuBar.add(oldJMenuBar);

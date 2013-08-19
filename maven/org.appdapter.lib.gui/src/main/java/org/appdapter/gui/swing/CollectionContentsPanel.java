@@ -27,6 +27,10 @@ public class CollectionContentsPanel<BoxType extends Box>
 
 extends BaseCollectionContentsPanel<BoxType> implements ValueChangeListener, DropTargetListener, Chooser<Object>, ChangeListener {
 
+	public void setFilter(Class bean) {
+		filter = bean;
+	}
+
 	@Override public Collection getValue() {
 		return getCollection();
 	}

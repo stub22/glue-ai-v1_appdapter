@@ -1,7 +1,7 @@
 /**
- * 
- * A Two collumn table is all 
- * 
+ *
+ * A Two collumn table is all
+ *
  */
 package org.appdapter.gui.swing;
 
@@ -19,9 +19,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-
 public class PropertySheet extends JJPanel {
-
 
 	private GridBagLayout gb = new GridBagLayout();
 	private GridBagConstraints c = new GridBagConstraints();
@@ -48,9 +46,11 @@ public class PropertySheet extends JJPanel {
 				));
 	}
 
-	@Override public Component add(String label, Component comp) {
+	public Component add(String label, String tip, Component comp) {
 		JLabel labelComponent = new JLabel(label);
-
+		if (tip != null) {
+			labelComponent.setToolTipText(tip);
+		}
 		c.gridwidth = 1;
 		c.gridx = 0;
 		c.gridy = y;
@@ -67,6 +67,10 @@ public class PropertySheet extends JJPanel {
 
 		++y;
 		return null;
+	}
+
+	@Override public Component add(String label, Component comp) {
+		return add(label, null, comp);
 	}
 
 	@Override public Component add(Component comp) {

@@ -38,7 +38,7 @@ public class PropertiesPanel<BoxType extends Box> extends ScreenBoxPanel<BoxType
 	boolean staticOnly = false;
 	boolean showFields = false;
 
-	private JPanel sheet;
+	private PropertySheet sheet;
 
 	private JJPanel buttonPanel;
 
@@ -88,7 +88,7 @@ public class PropertiesPanel<BoxType extends Box> extends ScreenBoxPanel<BoxType
 			PropertyDescriptor b = (PropertyDescriptor) second;
 			String nameA = a.getName();
 			String nameB = b.getName();
-			return nameA.compareTo(nameB);
+			return nameA.compareToIgnoreCase(nameB);
 		}
 
 		@Override public boolean equals(Object o) {
@@ -138,8 +138,11 @@ public class PropertiesPanel<BoxType extends Box> extends ScreenBoxPanel<BoxType
 					PropertyDescriptor p = (PropertyDescriptor) it.next();
 					String attributeName = p.getDisplayName();
 					propsShown.add(attributeName);
+					Class type = p.getClass();
 					PropertyValueControl pvc = new PropertyValueControl(context, attributeName, source, p);
-					sheet.add(attributeName + ":", pvc);
+					String tip = type + ":" + p.getReadMethod() + "/" + p.getWriteMethod();
+					pvc.setToolTipText(tip);
+					sheet.add(attributeName + ":", tip, pvc);
 				}
 				if (propsShown.size() == 0)
 					showFields = true;
@@ -160,7 +163,9 @@ public class PropertiesPanel<BoxType extends Box> extends ScreenBoxPanel<BoxType
 						}
 						propsShown.add(attributeName);
 						PropertyValueControl pvc = new PropertyValueControl(context, attributeName, source, f);
-						sheet.add(attributeName + ":", pvc);
+						String tip = "" + f;
+						pvc.setToolTipText(tip);
+						sheet.add(attributeName + ":", tip, pvc);
 					}
 				}
 				removeAll();
