@@ -3,6 +3,8 @@ package org.appdapter.gui.swing;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.LayoutManager;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeListener;
@@ -18,6 +20,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
+import javax.swing.SwingConstants;
 
 import org.appdapter.core.convert.NoSuchConversionException;
 import org.appdapter.core.log.Debuggable;
@@ -243,13 +246,13 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 				value = null;
 			}
 			if (value != null && useSmallObjectViewInLists) {
-				view = new SmallObjectView(null, context, value) {
+				String title = null;
+
+				view = new SmallObjectView(null, context, value, title, true, true, true, true) {
 					@Override public boolean isRemovable(Object value) {
 						return false;
 					}
 				};
-				Dimension size = new Dimension(100, 22);
-				view.setMaximumSize(size);
 			} else {
 				//Set the icon and text.  If icon was null, say so.
 				ImageIcon icon = null;// images[selectedIndex];
@@ -259,6 +262,8 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 				} else {
 					//setUhOhText(pet + " (no image available)", list.getFont());
 				}
+				this.setLayout(new FlowLayout(FlowLayout.LEFT));
+				setHorizontalAlignment(SwingConstants.LEFT);
 				setText(title);
 				setFont(list.getFont());
 			}
