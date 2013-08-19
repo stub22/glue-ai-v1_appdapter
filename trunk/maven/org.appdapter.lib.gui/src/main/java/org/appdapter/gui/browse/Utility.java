@@ -847,7 +847,7 @@ public class Utility extends UtilityMenuOptions {
 		TriggerMenuFactory.addMethodAsTrig(true, ctx, cls, m, objectContextMenuTriggers, null, ADD_ALL, "%c|%m", isStatic, false);
 	}
 
-	public static <V extends Object> void setSingletonValue(Class<V> cls, V object) {
+	public static <V extends Object> void setSingletonValue(Class cls, V object) {
 		final V singleTon = object;
 		synchronized (singletons) {
 			singletons.put(cls, new Callable<Object>() {
@@ -3921,6 +3921,10 @@ public class Utility extends UtilityMenuOptions {
 			printStackTrace(e);
 		}
 
+	}
+
+	public static boolean isLAFSafe() {
+		return !isOSGi();
 	}
 
 }

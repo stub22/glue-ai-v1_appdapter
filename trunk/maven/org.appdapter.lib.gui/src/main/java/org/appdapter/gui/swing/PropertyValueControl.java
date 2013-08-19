@@ -624,7 +624,7 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 				printStackTrace(ex);
 			}
 		}
-		// readBoundValue();
+		readBoundValue();
 		recreateGUI();
 	}
 
@@ -634,7 +634,7 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 		type = property.getType();
 		editable = !Modifier.isFinal(property.getModifiers());
 		isStatic = ReflectUtils.isStatic(property);
-		//readBoundValue();
+		readBoundValue();
 		recreateGUI();
 	}
 
@@ -719,7 +719,7 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 	}
 
 	public boolean isBound() {
-		return source != null && isStatic;
+		return source != null || isStatic;
 	}
 
 	public boolean isEditable() {

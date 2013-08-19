@@ -113,7 +113,7 @@ abstract public class ScreenBoxPanel<BoxType extends Box> extends ObjectView<Box
 	 * once, before the Customizer has been added to any parent AWT container.
 	 * @param bean  The object to be customized.
 	 */
-	final public void setObject(Object bean) {
+	public void setObject(Object bean) {
 		synchronized (valueLock) {
 			super.setObject(bean);
 			if (objectValue == null && bean != null) {

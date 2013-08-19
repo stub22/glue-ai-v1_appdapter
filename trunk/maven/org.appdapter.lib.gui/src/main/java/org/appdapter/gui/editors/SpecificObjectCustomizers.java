@@ -170,6 +170,10 @@ public class SpecificObjectCustomizers extends TabPanelMaker {
 			}
 			try {
 				NamedObjectCollection noc = context.getLocalBoxedChildren();
+				Collection c = noc.findObjectsByType(clazz);
+				if (c.size() == 0) {
+					Utility.bug("no InstancesOf " + clazz);
+				}
 				LargeObjectChooser instances = new LargeObjectChooser(clazz, noc);
 				tabs.insertTab("InstancesOf", null, instances, null, 0);
 			} catch (Exception err) {
