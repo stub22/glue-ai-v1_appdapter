@@ -444,6 +444,8 @@ VetoableChangeListener, PropertyChangeListener, Serializable, Set {
 				result.add(value.convertTo(type));
 			}
 		}
+		if (result.size() > 0)
+			return result;
 		return result;
 	}
 
