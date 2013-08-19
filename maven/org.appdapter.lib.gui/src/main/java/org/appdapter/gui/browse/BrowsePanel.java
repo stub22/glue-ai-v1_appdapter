@@ -89,6 +89,7 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 
 	@UISalient
 	boolean OnTreeFocusShowObject = false;
+	private ObjectTabsForTabbedView myBoxPanelSwitchableViewImpl;
 
 	public BoxContext getBoxContext() {
 		return myBoxContext;
@@ -110,7 +111,7 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 		myTreeModel = tm;
 		initComponents();
 		JTree tree = myTree;
-		Utility.theBoxPanelDisplayContext = myBoxPanelSwitchableViewImpl = new ObjectTabsForTabbedView(myBoxPanelTabPane, true, null);
+		Utility.theBoxPanelDisplayContext = this.myBoxPanelSwitchableViewImpl = new ObjectTabsForTabbedView(myBoxPanelTabPane, true, null);
 		setTabbedPaneOptions();
 		Utility.controlApp = app = new DisplayContextUIImpl(myBoxPanelSwitchableViewImpl, this, ctx);
 		Utility.clipBoardUtil = new CollectionEditorUtil(clipboard.getName(), app, clipboard);
@@ -122,7 +123,6 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 		this.addToTreeListener = new AddToTreeListener(myTree, ctx, bctx0, (MutableBox) bctx0.getRootBox(), true);
 		//addClipboard(clipboard);
 
-		Utility.addObjectFeatures(this);
 		invalidate();
 	}
 
@@ -309,31 +309,26 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 	private void initComponents() {
 
 		myTopFrameMenu = new javax.swing.JMenuBar();
-		myBrowserSplitPane = new JideSplitPane();
-		myTreeScrollPane = new JideScrollPane();
+		myBrowserSplitPane = new com.jidesoft.swing.JideSplitPane();
+		myTreeScrollPane = new com.jidesoft.swing.JideScrollPane();
 		myTree = new javax.swing.JTree();
 		myContentPanel = new javax.swing.JPanel();
 		myBoxPanelStatus = new javax.swing.JTextField();
-		myBoxPanelTabPane = new JideTabbedPane();
+		myBoxPanelTabPane = new com.jidesoft.swing.JideTabbedPane();
 		myHomeBoxPanel = new javax.swing.JPanel();
-		myLowerPanel = new JPanel();
+		myLowerPanel = new javax.swing.JPanel();
 		myCmdInputTextField = new javax.swing.JTextField();
-		myLogScrollPane = new JideScrollPane();
+		myLogScrollPane = new com.jidesoft.swing.JideScrollPane();
 		myLogTextArea = new javax.swing.JTextArea();
 
 		setLayout(new java.awt.BorderLayout());
-
-		myBoxPanelTabPane = new JideTabbedPane();
-		myTreeScrollPane = new JideScrollPane();
-		myLogScrollPane = new JideScrollPane();
-		myBrowserSplitPane.setDividerLocation(0, 140);
 
 		myTree.setModel(myTreeModel);
 		myTreeScrollPane.setViewportView(myTree);
 
 		myBrowserSplitPane.add(myTreeScrollPane);
 
-		myContentPanel.setBackground(new java.awt.Color(214, 217, 223));
+		myContentPanel.setBackground(new java.awt.Color(204, 204, 255));
 		myContentPanel.setLayout(new java.awt.BorderLayout());
 
 		myBoxPanelStatus.setText("Extra text field - used for status display and special console input .   This screen shows a box navigation system.");
@@ -344,20 +339,22 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 		});
 		myContentPanel.add(myBoxPanelStatus, java.awt.BorderLayout.NORTH);
 
-		myBoxPanelTabPane.setBackground(new java.awt.Color(204, 204, 255));
 		myBoxPanelTabPane.setAutoscrolls(true);
+		myBoxPanelTabPane.setBackground(new java.awt.Color(204, 204, 255));
+		myBoxPanelTabPane.setBoldActiveTab(true);
+
+		myHomeBoxPanel.setInheritsPopupMenu(true);
 
 		javax.swing.GroupLayout myHomeBoxPanelLayout = new javax.swing.GroupLayout(myHomeBoxPanel);
 		myHomeBoxPanel.setLayout(myHomeBoxPanelLayout);
-		myHomeBoxPanelLayout.setHorizontalGroup(myHomeBoxPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGap(0, 784, Short.MAX_VALUE));
+		myHomeBoxPanelLayout.setHorizontalGroup(myHomeBoxPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGap(0, 956, Short.MAX_VALUE));
 		myHomeBoxPanelLayout.setVerticalGroup(myHomeBoxPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGap(0, 519, Short.MAX_VALUE));
 
-		myBoxPanelTabPane.add("Home", myHomeBoxPanel);
+		myBoxPanelTabPane.addTab("Home", myHomeBoxPanel);
 
 		myLowerPanel.setLayout(new java.awt.BorderLayout());
 
-		myCmdInputTextField
-				.setText("console input - type/paste commands/uris/urls here, and see output in resizable pane below.   NOTE:  The tabs at upper right can hold anyObject Swing GUI components");
+		myCmdInputTextField.setText("console input - type/paste commands/uris/urls here, and see output in resizable pane below.   NOTE:  The tabs at upper right can hold any Swing GUI components");
 		myCmdInputTextField.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				myCmdInputTextFieldActionPerformed(evt);
@@ -373,9 +370,9 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 
 		myLowerPanel.add(myLogScrollPane, java.awt.BorderLayout.CENTER);
 
-		myBoxPanelTabPane.add("Command", myLowerPanel);
+		myBoxPanelTabPane.addTab("Command", myLowerPanel);
 
-		myContentPanel.add(myBoxPanelTabPane, java.awt.BorderLayout.LINE_START);
+		myContentPanel.add(myBoxPanelTabPane, java.awt.BorderLayout.CENTER);
 
 		myBrowserSplitPane.add(myContentPanel);
 
@@ -403,19 +400,17 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 	//GEN-BEGIN:variables
 	// Variables declaration - do not modify
 	private javax.swing.JTextField myBoxPanelStatus;
-	public JideTabbedPane myBoxPanelTabPane;
-	private JideSplitPane myBrowserSplitPane;
+	private com.jidesoft.swing.JideTabbedPane myBoxPanelTabPane;
+	private com.jidesoft.swing.JideSplitPane myBrowserSplitPane;
 	private javax.swing.JTextField myCmdInputTextField;
 	private javax.swing.JPanel myContentPanel;
 	private javax.swing.JPanel myHomeBoxPanel;
-	private JideScrollPane myLogScrollPane;
+	private com.jidesoft.swing.JideScrollPane myLogScrollPane;
 	private javax.swing.JTextArea myLogTextArea;
 	private javax.swing.JPanel myLowerPanel;
 	private javax.swing.JMenuBar myTopFrameMenu;
-	private JTree myTree;
-	private JideScrollPane myTreeScrollPane;
-	private BoxPanelSwitchableView myBoxPanelSwitchableViewImpl;
-
+	private javax.swing.JTree myTree;
+	private com.jidesoft.swing.JideScrollPane myTreeScrollPane;
 	// End of variables declaration//GEN-END:variables
 	Class myBoxPanelStatusType = null;
 
@@ -527,7 +522,7 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 
 	public BoxPanelSwitchableView getBoxPanelTabPane() {
 		if (myBoxPanelSwitchableViewImpl == null) {
-			myBoxPanelSwitchableViewImpl = Utility.getBoxPanelTabPane();
+			myBoxPanelSwitchableViewImpl = (ObjectTabsForTabbedView) Utility.getBoxPanelTabPane();
 		}
 		return myBoxPanelSwitchableViewImpl;
 	}
