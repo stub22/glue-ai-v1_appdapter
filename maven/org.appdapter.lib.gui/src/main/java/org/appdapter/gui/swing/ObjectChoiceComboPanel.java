@@ -1,21 +1,20 @@
 package org.appdapter.gui.swing;
 
-import static org.appdapter.core.log.Debuggable.printStackTrace;
-
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyEditorSupport;
-import java.util.Collection;
-import java.util.LinkedList;
+import java.util.*;
 
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
@@ -28,6 +27,8 @@ import org.appdapter.gui.api.POJOCollectionListener;
 import org.appdapter.gui.browse.SearchableDemo;
 import org.appdapter.gui.browse.ToFromKeyConverter;
 import org.appdapter.gui.browse.Utility;
+import org.appdapter.gui.swing.ObjectChoiceComboPanel.Model;
+import org.appdapter.gui.swing.ObjectChoiceComboPanel.ObjectComboPrettyRender;
 import org.appdapter.gui.trigger.TriggerPopupMenu;
 
 /**
@@ -36,6 +37,8 @@ import org.appdapter.gui.trigger.TriggerPopupMenu;
  *
  */
 public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionListener, MouseListener {
+
+	public static final Object NULLOBJECT = "<null>";
 
 	PropertyEditorSupport editorSupport = new PropertyEditorSupport();
 
@@ -48,6 +51,8 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 	ToFromKeyConverter converter;
 
 	public boolean useStringProxies;
+	public boolean useSmallObjectViewInLists;
+	public boolean isStringChooser;
 
 	public ObjectChoiceComboPanel(Class type, Object value) {
 		this(null, type, value, Utility.getToFromStringConverter(type));
@@ -65,8 +70,10 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 			type = Object.class;
 			useStringProxies = false;
 		} else {
-			useStringProxies = Utility.isToStringType(type) && type != String.class;
+			this.isStringChooser = type == String.class;
+			useStringProxies = Utility.isToStringType(type) && !isStringChooser;
 		}
+		useSmallObjectViewInLists = !useStringProxies && !isStringChooser;
 		initGUI();
 		if (context != null)
 			context.addListener(this, true);
@@ -160,8 +167,8 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 	}
 
 	public String objectToString(Object object) {
-		if (object == null)
-			return "<null>";
+		if (object == null || object == NULLOBJECT)
+			return NULLOBJECT.toString();
 		if (object instanceof String)
 			return (String) object;
 		try {
@@ -178,7 +185,7 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 	}
 
 	public Object stringToObject(String title) {
-		if (title.equals("<null>"))
+		if (title == null || title.equals(NULLOBJECT.toString()))
 			return null;
 		Object obj = stringToObjectImpl(title);
 		if (obj == null || (type != null && !type.isInstance(obj))) {
@@ -189,7 +196,7 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 	}
 
 	public Object stringToObjectImpl(String title) {
-		if (title == null || title.equals("<null>"))
+		if (title == null || title.equals(NULLOBJECT.toString()))
 			return null;
 		if (type == String.class)
 			return title;
@@ -207,13 +214,17 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 			try {
 				return Utility.fromString(title, type);
 			} catch (NoSuchConversionException e) {
-				printStackTrace(e);
+				Debuggable.printStackTrace(e);
 			}
 		}
+		Utility.bug("cant find " + type + " object for: " + title);
 		return null;
 	}
 
-	static class ObjectComboPrettyRender extends JLabel implements ListCellRenderer {
+	Map<String, Object> s2o = new HashMap();
+	Map<Object, String> o2s = new HashMap();
+
+	class ObjectComboPrettyRender extends JLabel implements ListCellRenderer {
 
 		public ObjectComboPrettyRender() {
 			setOpaque(true);
@@ -227,30 +238,39 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 		* to display the text and image.
 		*/
 		public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-			//Get the selected index. (The index param isn't
-			//always valid, so just use the value.)
-			int selectedIndex = ((Integer) value).intValue();
+			JComponent view = this;
+			if (value != null && value == NULLOBJECT) {
+				value = null;
+			}
+			if (value != null && useSmallObjectViewInLists) {
+				view = new SmallObjectView(null, context, value) {
+					@Override public boolean isRemovable(Object value) {
+						return false;
+					}
+				};
+				Dimension size = new Dimension(100, 22);
+				view.setMaximumSize(size);
+			} else {
+				//Set the icon and text.  If icon was null, say so.
+				ImageIcon icon = null;// images[selectedIndex];
+				String title = Utility.getUniqueNamePretty(value);
+				if (icon != null) {
+					setIcon(icon);
+				} else {
+					//setUhOhText(pet + " (no image available)", list.getFont());
+				}
+				setText(title);
+				setFont(list.getFont());
+			}
 
 			if (isSelected) {
-				setBackground(list.getSelectionBackground());
-				setForeground(list.getSelectionForeground());
+				view.setBackground(list.getSelectionBackground());
+				view.setForeground(list.getSelectionForeground());
 			} else {
-				setBackground(list.getBackground());
-				setForeground(list.getForeground());
+				view.setBackground(list.getBackground());
+				view.setForeground(list.getForeground());
 			}
-
-			//Set the icon and text.  If icon was null, say so.
-			ImageIcon icon = null;// images[selectedIndex];
-			String title = Utility.getUniqueNamePretty(value);
-			if (icon != null) {
-				setIcon(icon);
-			} else {
-				//setUhOhText(pet + " (no image available)", list.getFont());
-			}
-			setText(title);
-			setFont(list.getFont());
-
-			return this;
+			return view;
 		}
 
 	}
@@ -266,8 +286,7 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 
 		@Override public synchronized void setSelectedItem(Object anItem) {
 			if (anItem instanceof String) {
-				if (ObjectChoiceComboPanel.this.useStringProxies) {
-
+				if (useStringProxies) {
 					anItem = stringToObject((String) anItem);
 				}
 			}
@@ -281,6 +300,7 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 			if (selectedObject != anItem) {
 				Object oldValue = selectedObject;
 				selectedObject = anItem;
+				combo.setToolTipText(Utility.makeTooltipText(selectedObject));
 				propSupport.firePropertyChange("selection", oldValue, anItem);
 			}
 		}
@@ -317,7 +337,7 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 					objectValues.add(o);
 				}
 			}
-			objectValues.add("<null>");
+			objectValues.add(NULLOBJECT);
 			setSelectedItem(selected);
 		}
 	}

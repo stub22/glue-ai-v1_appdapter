@@ -209,9 +209,13 @@ import com.hp.hpl.jena.sdb.util.Pair;
 @UIHidden
 public class Utility extends UtilityMenuOptions {
 
-	public static void bug(String string) {
-		theLogger.warn("\n-----------------\nDUG BUG: " + string + "\n");
-
+	// warnings that should never happen
+	public static void bug(Object... params) {
+		String msg = Debuggable.toInfoStringArgV(params);
+		theLogger.warn("\n-----------------\nDUG BUG: " + msg + "\n");
+		if (!Debuggable.isRelease()) {
+			Debuggable.warn(params);
+		}
 	}
 
 	public final static ToFromStringNotSpecialized FROM_STRING_NOT_SPECIALIZED = new ToFromStringNotSpecialized();
@@ -2319,6 +2323,8 @@ public class Utility extends UtilityMenuOptions {
 	}
 
 	public static String getUniqueNamePretty(Object object) {
+		if (object == null)
+			return "<null>";
 		String un = getUniqueName(object, getTreeBoxCollection(), false, true);
 		if (un.contains(" ") || un.contains("-") || un.contains("+"))
 			return un;
