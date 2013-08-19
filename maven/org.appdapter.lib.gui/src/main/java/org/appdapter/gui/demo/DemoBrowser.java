@@ -346,6 +346,10 @@ final public class DemoBrowser implements AnyOper.Singleton {
 			@Override public void fire(Box targetBox) {
 				try {
 					File myFile = Utility.createNewFromUI(File.class);
+					if (myFile == null) {
+						Utility.showResult("No file was selected");
+						return;
+					}
 					Utility.showResult(new OfflineXlsSheetRepoSpec(myFile.getAbsolutePath(), BMC_NAMESPACE_SHEET_NAME, BMC_DIRECTORY_SHEET_NAME, null));
 				} catch (Exception error) {
 					Utility.showError(null, "ERROR While trying to load a file repo...", error);
