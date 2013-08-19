@@ -32,7 +32,6 @@ import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.ScreenBox;
 import org.appdapter.gui.box.BoxImpl;
 import org.appdapter.gui.box.ScreenBoxImpl;
-import org.appdapter.gui.browse.KMCTrigger;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.editors.ObjectPanel;
 import org.appdapter.gui.repo.RepoManagerPanel;

@@ -33,7 +33,7 @@ import static org.appdapter.core.convert.ReflectUtils.*;
  *
  * If the object or context is null the menu will be empty.
  *
- * 
+ *
  */
 public class TriggerMenuController implements POJOCollectionListener, Convertable, Box {
 	NamedObjectCollection localCollection;
@@ -201,11 +201,11 @@ public class TriggerMenuController implements POJOCollectionListener, Convertabl
 	}
 
 	@Override public <T> boolean canConvert(Class<T> c) {
-		return ReflectUtils.canConvert(c, getObjects());
+		return ReflectUtils.canConvert(c, getObjects(), this);
 	}
 
 	@Override public <T> T convertTo(Class<T> c) {
-		return ReflectUtils.convertTo(c, getObjects());
+		return ReflectUtils.convertTo(c, getObjects(), this);
 	}
 
 	private Iterable<?> getObjects() {

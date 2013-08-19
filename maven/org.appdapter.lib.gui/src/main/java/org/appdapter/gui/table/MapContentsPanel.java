@@ -56,7 +56,7 @@ import org.appdapter.gui.swing.VerticalLayout;
  * A GUI component that shows what a Map contains,
  * and lets you add and remove elements.
  *
- * 
+ *
  */
 public class MapContentsPanel extends BaseCollectionContentsPanel implements ValueChangeListener, DropTargetListener, Customizer {
 
@@ -128,9 +128,8 @@ public class MapContentsPanel extends BaseCollectionContentsPanel implements Val
 
 			for (Object e : map.entrySet()) {
 				final Entry value = (Entry) e;
-				if (filter != null) {
-					if (!filter.isInstance(value.getValue()))
-						continue;
+				if (!meetsFilter(value.getValue()) && !meetsFilter(value)) {
+					continue;
 				}
 				final Object v = value.getValue();
 				SmallObjectView view = new SmallObjectView(context, nameMaker, v, Utility.getUniqueName(v, nameMaker, false, false), true, true, true, true) {

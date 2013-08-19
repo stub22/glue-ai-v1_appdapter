@@ -23,23 +23,21 @@ public class LargeObjectChooser extends CollectionContentsPanel implements POJOC
 		super();
 	}
 
-	//public BaseCollectionContentsPanel(DisplayContext context, String titleStr, Class filterc, NamedObjectCollection noc, BoxPanelSwitchableView tabs, boolean valueIsNotCollection) 
+	//public BaseCollectionContentsPanel(DisplayContext context, String titleStr, Class filterc, NamedObjectCollection noc, BoxPanelSwitchableView tabs, boolean valueIsNotCollection)
 	public LargeObjectChooser(Class filterc, NamedObjectCollection noc) {
 		super(null, noc.getName(), noc, noc.getLiveCollection(), filterc, null, true);
 		noc.addListener(this, true);
 	}
 
 	@Override public void pojoAdded(Object obj, BT box, Object senderCollection) {
-		if (filter != null)
-			if (!filter.isInstance(obj))
-				return;
+		if (!meetsFilter(obj))
+			return;
 		reloadContents();
 	}
 
 	@Override public void pojoRemoved(Object obj, BT box, Object senderCollection) {
-		if (filter != null)
-			if (!filter.isInstance(obj))
-				return;
+		if (!meetsFilter(obj))
+			return;
 		reloadContents();
 	}
 
@@ -57,5 +55,9 @@ public class LargeObjectChooser extends CollectionContentsPanel implements POJOC
 		if (objectValue == null)
 			return null;
 		return ((POJOCollection) objectValue).findObjectsByType(filter);
+	}
+
+	@Override public Class getClassOfBox() {
+		return EDITTYPE;
 	}
 }

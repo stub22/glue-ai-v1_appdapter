@@ -355,7 +355,7 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 	}
 
 	public boolean isRemovable(Object value) {
-		return !isRemoved;
+		return false && !isRemoved;
 	}
 
 	public void valueChanged(Object sender, Object oldObject, Object newObject) {

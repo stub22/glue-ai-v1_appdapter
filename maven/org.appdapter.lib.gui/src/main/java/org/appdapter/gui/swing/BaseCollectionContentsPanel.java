@@ -43,6 +43,14 @@ extends ScreenBoxPanel<BoxType> implements ValueChangeListener, DropTargetListen
 
 , ChangeListener {
 
+	public boolean meetsFilter(Object value) {
+		if (filter != null) {
+			if (!filter.isInstance(value))
+				return false;
+		}
+		return true;
+	}
+
 	public BaseCollectionContentsPanel(DisplayContext context, String titleStr, NamedObjectCollection noc, Class filterc, BoxPanelSwitchableView tabs, boolean valueIsNotCollection) {
 		this.titleString = titleStr;
 		this.valueIsOneSelectedItem = valueIsNotCollection;

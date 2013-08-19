@@ -93,22 +93,8 @@ import java.util.TreeMap;
 import java.util.concurrent.Callable;
 
 import javax.imageio.ImageIO;
-import javax.swing.Action;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
 import javax.swing.*;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 import javax.swing.JSpinner.DateEditor;
-import javax.swing.JTable;
-import javax.swing.SwingUtilities;
-import javax.swing.ToolTipManager;
 import javax.swing.table.TableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
@@ -140,6 +126,7 @@ import org.appdapter.core.convert.NoSuchConversionException;
 import org.appdapter.core.convert.OptionalArg;
 import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.core.log.*;
+import org.appdapter.core.matdat.OfflineXlsSheetRepoSpec;
 import org.appdapter.core.name.FreeIdent;
 import org.appdapter.core.name.Ident;
 import org.appdapter.core.store.Repo;
@@ -358,6 +345,8 @@ public class Utility extends UtilityMenuOptions {
 	private static Map panelClassesFromCached = new HashMap();
 	public static HashMap<Class, Object> lastResults = new HashMap<Class, Object>();
 	public static HashMap<Class, Callable<Object>> singletons = new HashMap<Class, Callable<Object>>();
+	public static HashMap<Class, Callable<Object>> factories = new HashMap<Class, Callable<Object>>();
+	public static HashMap<Class, Callable<Object>> factoriesNoninteractive = new HashMap<Class, Callable<Object>>();
 	private static Collection EMPTY_COLLECTION = Collections.EMPTY_LIST;
 	private static ThreadLocal<Boolean> inClassLoadingPing = new ThreadLocal<Boolean>();
 	public static Collection<AddTabFrames> addTabFramers = new HashSet<AddTabFrames>();
@@ -616,7 +605,7 @@ public class Utility extends UtilityMenuOptions {
 		if (Singleton.class.isAssignableFrom(cls) || reallySingleton) {
 			reallySingleton = true;
 			object = makeSingleton(object, cls);
-			setSingletonValue(object, cls);
+			setSingletonValue(cls, object);
 		} else {
 			object = null;
 		}
@@ -802,10 +791,10 @@ public class Utility extends UtilityMenuOptions {
 					String returnName = properCase(getCanonicalSimpleName(returnType));
 					mname = mname.replace(returnName, "^");
 					if ("to^".equals(mname) //
-							|| "as^".equals(mname) // 
-							|| "getAs^".equals(mname) // 
-							|| "convertTo^".equals(mname) // 
-							|| "coerce^".equals(mname) // 
+							|| "as^".equals(mname) //
+							|| "getAs^".equals(mname) //
+							|| "convertTo^".equals(mname) //
+							|| "coerce^".equals(mname) //
 							|| "from^".equals(mname)) {
 						//theLogger.warn("Registering converter: " + m);
 						registerConverterMethod(m, cmi);
@@ -858,13 +847,21 @@ public class Utility extends UtilityMenuOptions {
 		TriggerMenuFactory.addMethodAsTrig(true, ctx, cls, m, objectContextMenuTriggers, null, ADD_ALL, "%c|%m", isStatic, false);
 	}
 
-	private static <V extends Object> void setSingletonValue(V object, Class<V> cls) {
+	public static <V extends Object> void setSingletonValue(Class<V> cls, V object) {
 		final V singleTon = object;
-		singletons.put(cls, new Callable<Object>() {
-			@Override public V call() throws Exception {
-				return singleTon;
-			}
-		});
+		synchronized (singletons) {
+			singletons.put(cls, new Callable<Object>() {
+				@Override public V call() throws Exception {
+					return singleTon;
+				}
+			});
+		}
+	}
+
+	public static <V extends Object> void setFactory(Class<V> cls, Callable function) {
+		synchronized (factories) {
+			factories.put(cls, function);
+		}
 	}
 
 	private static Object makeSingleton(Object object, Class cls) {
@@ -1205,7 +1202,7 @@ public class Utility extends UtilityMenuOptions {
 	/*
 	 * public static void setDisplayContext(BrowserPanelGUI browserPanelGUI) {
 	 * notImplemented();
-	 * 
+	 *
 	 * }
 	 */
 
@@ -1219,7 +1216,7 @@ public class Utility extends UtilityMenuOptions {
 	/*
 	 * public static void setDefaultContext(POJOCollectionWithSwizzler c) {
 	 * context = c; }
-	 * 
+	 *
 	 * public static POJOCollectionWithSwizzler getDefaultContext() { return
 	 * context; }
 	 */
@@ -1227,7 +1224,7 @@ public class Utility extends UtilityMenuOptions {
 
 	/*
 	 * public static POJOBox addObject(Object object, boolean showASAP) {
-	 * 
+	 *
 	 * if (object instanceof POJOBox) { return ((POJOBox) object); } try {
 	 * BoxPanelSwitchableView boxPanelDisplayContext = getBoxPanelTabPane();
 	 * return boxPanelDisplayContext.addObject(object, showASAP); } catch
@@ -1645,6 +1642,8 @@ public class Utility extends UtilityMenuOptions {
 	}
 
 	public static void addSubResult(Object from, Object targetBox, ActionEvent evt, Object obj, Class expected) throws PropertyVetoException {
+		if (expected == null && obj != null)
+			expected = obj.getClass();
 		addLastResultType(obj, expected);
 		expected = nonPrimitiveTypeFor(expected);
 		if (expected == Void.class)
@@ -1933,7 +1932,7 @@ public class Utility extends UtilityMenuOptions {
 
 	/**
 	 * Locate a value editor for a given target type.
-	 * 
+	 *
 	 * @param targetType
 	 *            The Class object for the type to be edited
 	 * @return An editor object for the given target class. The result is null
@@ -2087,7 +2086,7 @@ public class Utility extends UtilityMenuOptions {
 		}
 	}
 
-	public static Hashtable<Object, JPanel> largeObjectViews = new Hashtable<Object, JPanel>();
+	public static Hashtable<Object, JPanel> breadCrumbedObjectViews = new Hashtable<Object, JPanel>();
 	public static PairTable<Object, Component> objectWindows = new PairTable();
 
 	/**
@@ -2280,7 +2279,7 @@ public class Utility extends UtilityMenuOptions {
 			msg = error.getMessage();
 		final String msg0 = msg;
 		try {
-			SwingUtilities.invokeAndWait(new Runnable() {
+			Utility.invokeAndWait(new Runnable() {
 				@Override public void run() {
 					try {
 						if (context == null) {
@@ -2307,7 +2306,7 @@ public class Utility extends UtilityMenuOptions {
 	/**
 	 * Generates a default name for the given object, while will be something
 	 * like "Button1", "Button2", etc.
-	 * 
+	 *
 	 * @param nameIndex
 	 */
 	public static String generateUniqueName(Object object, Map<String, BT> checkAgainst) {
@@ -2711,7 +2710,7 @@ public class Utility extends UtilityMenuOptions {
 		if (wasRealDeref || changed) {
 			if (!onlyDeref1) {
 				if (!changed) {
-					warn("no value change " + value);
+					//warn("no value change " + value);
 					value = derefd;
 				} else {
 					value = dref(derefd, derefd, nextDepth, onlyBTAndPanelsAsReferenceHolders);
@@ -3306,6 +3305,11 @@ public class Utility extends UtilityMenuOptions {
 	}
 
 	public static Box asBox(Object b, ActionEvent e) {
+		if (b == null) {
+			if (true)
+				return null;
+			b = e.getSource();
+		}
 		if (b instanceof TriggerMenuController) {
 			TriggerMenuController tmc = (TriggerMenuController) b;
 			HashSet objs = new HashSet();
@@ -3649,10 +3653,10 @@ public class Utility extends UtilityMenuOptions {
 
 			} else {
 				// since it's not a pop up we need to redispatch it.
-				// get the mouse click point relative to the content pane 
+				// get the mouse click point relative to the content pane
 				Point containerPoint = SwingUtilities.convertPoint(this, e.getPoint(), contentPane);
 
-				// find the component that is under this point 
+				// find the component that is under this point
 				Component component = SwingUtilities.getDeepestComponentAt(contentPane, containerPoint.x, containerPoint.y);
 
 				// return if nothing was found
@@ -3660,10 +3664,10 @@ public class Utility extends UtilityMenuOptions {
 					return;
 				}
 
-				// convert point relative to the target component 
+				// convert point relative to the target component
 				Point componentPoint = SwingUtilities.convertPoint(this, e.getPoint(), component);
 
-				// redispatch the event	
+				// redispatch the event
 				component.dispatchEvent(new MouseEvent(component, e.getID(), e.getWhen(), e.getModifiers(), componentPoint.x, componentPoint.y, e.getClickCount(), e.isPopupTrigger()));
 			}
 		}
@@ -3712,9 +3716,9 @@ public class Utility extends UtilityMenuOptions {
 	 * @param cls
 	 * @param menuLabel
 	 * @param trigger
-	 * 
+	 *
 	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
-	 * 
+	 *
 	 */
 	public static EditableTrigger registerTriggerForClassInstances(Class cls, String menuLabel, Trigger trigger) {
 		EditableTrigger editableTrigger = new EditableTriggerImpl(cls, menuLabel, trigger);
@@ -3732,9 +3736,9 @@ public class Utility extends UtilityMenuOptions {
 	 * @param cls
 	 * @param menuLabel
 	 * @param trigger
-	 * 
+	 *
 	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
-	 * 
+	 *
 	 */
 	public static EditableTrigger registerTriggerForClass(Class cls, String menuLabel, Trigger trigger) {
 		EditableTrigger editableTrigger = new EditableTriggerImpl(cls, menuLabel, trigger);
@@ -3749,9 +3753,9 @@ public class Utility extends UtilityMenuOptions {
 	 * @param cls
 	 * @param menuLabel
 	 * @param trigger
-	 * 
+	 *
 	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
-	 * 
+	 *
 	 */
 	public static EditableTrigger registerTriggerForPredicate(CallableWithParameters<Box, Boolean> predicate, String menuLabel, Trigger trigger) {
 		EditableTrigger editableTrigger = new EditableTriggerImpl(predicate, menuLabel, trigger);
@@ -3769,15 +3773,38 @@ public class Utility extends UtilityMenuOptions {
 	 * @param cls
 	 * @param menuLabel
 	 * @param trigger
-	 * 
+	 *
 	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
-	 * 
+	 *
 	 */
-	public static <T> EditableTrigger registerFactoryForClass(Class<T> cls, String menuLabel, CallableWithParameters<? extends T, Class> function) {
+	public static <T> EditableTrigger registerFactoryForClass(final Class<T> cls, String menuLabel, final CallableWithParameters<Class<T>, ? extends T> function) {
 		EditableTrigger editableTrigger = new EditableTriggerImpl(cls, menuLabel, function);
+
+		setFactory(cls, new Callable() {
+			@Override public Object call() throws Exception {
+				return function.call(cls);
+			}
+		});
 		synchronized (objectContextMenuTriggers0) {
 			objectContextMenuTriggers0.add(editableTrigger);
 		}
+		synchronized (appMenuGlobalTriggers0) {
+			appMenuGlobalTriggers0.add(editableTrigger);
+		}
+		return editableTrigger;
+	}
+
+	/**
+	 * Register a Factory for a Class
+	 * @param cls
+	 * @param menuLabel
+	 * @param trigger
+	 *
+	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
+	 *
+	 */
+	public static <T> EditableTrigger registerToolsTrigger(String menuLabel, Trigger function) {
+		EditableTrigger editableTrigger = new EditableTriggerImpl(menuLabel, function);
 		synchronized (appMenuGlobalTriggers0) {
 			appMenuGlobalTriggers0.add(editableTrigger);
 		}
@@ -3789,12 +3816,15 @@ public class Utility extends UtilityMenuOptions {
 	 * @param cls
 	 * @param menuLabel
 	 * @param trigger
-	 * 
+	 *
 	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
-	 * 
+	 *
 	 */
-	public static EditableTrigger registerTriggerForObject(Object anyObject, String shortLabel, Trigger trigger) {
-		EditableTrigger editableTrigger = new EditableTriggerImpl(shortLabel, trigger);
+	public static EditableTrigger registerTriggerForObject(Object anyObject, String menuLabel, Trigger trigger) {
+		if (anyObject == null) {
+			return registerToolsTrigger(menuLabel, trigger);
+		}
+		EditableTrigger editableTrigger = new EditableTriggerImpl(menuLabel, trigger);
 		((MutableBox) asBoxed(anyObject)).attachTrigger(editableTrigger);
 		return editableTrigger;
 	}
@@ -3804,9 +3834,9 @@ public class Utility extends UtilityMenuOptions {
 	 * @param cls
 	 * @param menuLabel
 	 * @param trigger
-	 * 
+	 *
 	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
-	 * 
+	 *
 	 */
 	public static EditableTrigger registerCallableForPredicate(CallableWithParameters<Box, Boolean> predicate, String menuLabel, CallableWithParameters function) {
 		EditableTrigger editableTrigger = new EditableTriggerImpl(predicate, menuLabel, function);
@@ -3817,9 +3847,9 @@ public class Utility extends UtilityMenuOptions {
 	}
 
 	public static void forgetWindow(Object window) {
-		synchronized (largeObjectViews) {
-			largeObjectViews.remove(window);
-			largeObjectViews.values().remove(window);
+		synchronized (breadCrumbedObjectViews) {
+			breadCrumbedObjectViews.remove(window);
+			breadCrumbedObjectViews.values().remove(window);
 		}
 		synchronized (objectWindows) {
 			objectWindows.remove(window);
@@ -3839,6 +3869,56 @@ public class Utility extends UtilityMenuOptions {
 			}
 			return map;
 		}
+	}
+
+	public static Callable findCreateNewFromUI(final Class cls, boolean mayUseConversion) {
+		synchronized (factories) {
+			Callable fm = factories.get(cls);
+			if (fm != null)
+				return fm;
+			Class[] keySet = factories.keySet().toArray(CLASS0);
+			for (Class c : keySet) {
+				if (cls.isAssignableFrom(c)) {
+					fm = factories.get(cls);
+					return fm;
+				}
+			}
+			if (mayUseConversion) {
+				for (Class c : keySet) {
+					if (isAssignableFrom(cls, c)) {
+						final Callable subfm = factories.get(cls);
+						return new Callable() {
+							@Override public Object call() throws Exception {
+								Object subObj = subfm.call();
+								return recastCC(subObj, cls);
+							}
+
+						};
+					}
+				}
+			}
+		}
+		return null;
+	}
+
+	public static <T> T createNewFromUI(Class<T> cls) throws Exception {
+		Callable fm = findCreateNewFromUI(cls, true);
+		if (fm == null) {
+			throw new NoSuchConversionException("New Object", cls);
+		}
+		return (T) fm.call();
+	}
+
+	public static void showResult(Object anyObject) {
+		Object lastFrom = null;
+		Object lastTargetBox = null;
+		ActionEvent lastEvt = null;
+		try {
+			Utility.addSubResult(lastFrom, lastTargetBox, lastEvt, anyObject, anyObject.getClass());
+		} catch (PropertyVetoException e) {
+			printStackTrace(e);
+		}
+
 	}
 
 }

@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeMap;
+import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -98,7 +99,7 @@ abstract public class ReflectUtils implements UtilClass {
 		return new HashSet(col);
 	}
 
-	static public <T> T convertTo(Class<T> c, Iterable objs) throws ClassCastException {
+	static public <T> T convertTo(Class<T> c, Iterable objs, Object... exceptFor) throws ClassCastException {
 		for (Object o : objs) {
 			if (o == null) {
 				continue;
@@ -113,10 +114,27 @@ abstract public class ReflectUtils implements UtilClass {
 				return (T) o;
 			}
 		}
+		List<Object> except4 = Arrays.asList(exceptFor);
+		for (Object o : objs) {
+			if (o == null) {
+				continue;
+			}
+			if (except4.contains(o))
+				continue;
+			if (o instanceof Convertable) {
+				Convertable oc = (Convertable) o;
+				if (oc.canConvert(c))
+					return oc.convertTo(c);
+			}
+			if (c != null) {
+				if (!isAssignableFrom(c, o.getClass()))
+					continue;
+			}
+		}
 		return null;
 	}
 
-	static public <T> boolean canConvert(Class<T> c, Iterable objs) {
+	static public <T> boolean canConvert(Class<T> c, Iterable objs, Object... exceptFor) {
 		try {
 			for (Object o : objs) {
 				if (o == null) {
@@ -125,12 +143,16 @@ abstract public class ReflectUtils implements UtilClass {
 				if (c != null && !c.isInstance(o)) {
 					continue;
 				}
+
 				return true;
 			}
+			List<Object> except4 = Arrays.asList(exceptFor);
 			for (Object o : objs) {
 				if (o == null) {
 					continue;
 				}
+				if (except4.contains(o))
+					continue;
 				if (o instanceof Convertable) {
 					Convertable oc = (Convertable) o;
 					if (oc.canConvert(c))
@@ -1154,7 +1176,7 @@ abstract public class ReflectUtils implements UtilClass {
 		} catch (SecurityException e1) {
 		} catch (NoSuchMethodException e1) {
 		} catch (NoSuchConversionException nsf) {
-			//			throw nsf;			
+			//			throw nsf;
 		} catch (Throwable e1) {
 		}
 
@@ -1226,7 +1248,7 @@ abstract public class ReflectUtils implements UtilClass {
 			}
 		} catch (SecurityException e1) {
 		} catch (NoSuchConversionException nsf) {
-			//			throw nsf;			
+			//			throw nsf;
 		} catch (Throwable e1) {
 		}
 
@@ -1815,7 +1837,7 @@ abstract public class ReflectUtils implements UtilClass {
 		return null;
 	}
 
-	///@Inject 
+	///@Inject
 	public static ParameterizedType makeParameterizedType(final Class raw, final Type... typeArguments) {
 		if (false) {
 			//bind(new TypeLiteral<Dao<Foo>>(){}).to(GenericDAO.class);
@@ -1882,7 +1904,7 @@ abstract public class ReflectUtils implements UtilClass {
 
 	/**
 	 * Perform an unchecked cast based on a type parameter.
-	 * 
+	 *
 	 * @param <T> The type to which the object should be cast.
 	 * @param o   The object.
 	 * @return    The object, cast to the given type.
@@ -1902,7 +1924,7 @@ abstract public class ReflectUtils implements UtilClass {
 
 	/**
 	 * Try to find the instantiation of all of genericTypes type parameters in objs class.
-	 * 
+	 *
 	 * @param genericType   the generic supertype of objs class
 	 * @param obj                   an instantiation of a subclass of genericType. All of genericTypes type
 	 *                                              parameters must have been instantiated in the inheritance hierarchy.

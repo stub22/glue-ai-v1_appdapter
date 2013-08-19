@@ -135,11 +135,28 @@ public class EditableTriggerImpl extends TriggerImpl implements EditableTrigger,
 			use = getValue(box);
 		}
 		if (callableWithParameters != null) {
-			box = Utility.asBoxed(use);
-			return callableWithParameters.call(box, params);
+			if (use != null) {
+				box = asBoxed(use);
+			}
+			try {
+				return callableWithParameters.call(box, params);
+			} catch (ClassCastException cce) {
+				if (trigger != null) {
+					trigger.fire(box);
+					return null;
+				}
+				cce.printStackTrace();
+				return null;
+			}
 		}
-		fire(Utility.asBoxed(use));
+		fire(asBoxed(use));
 		return null;
+	}
+
+	public Box asBoxed(Object use) {
+		if (use == null)
+			return null;
+		return Utility.asBoxed(use);
 	}
 
 	@Override public Object getIdentityObject() {
@@ -166,5 +183,9 @@ public class EditableTriggerImpl extends TriggerImpl implements EditableTrigger,
 
 	@Override public boolean isSideEffectSafe() {
 		return false;
+	}
+
+	@Override public Object call() throws Exception {
+		return call(null);
 	}
 }
