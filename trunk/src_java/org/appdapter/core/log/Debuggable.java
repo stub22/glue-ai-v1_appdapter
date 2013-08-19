@@ -521,6 +521,7 @@ public abstract class Debuggable extends BasicDebugger {
 
 	static InheritableThreadLocal<Boolean> QUITELY = new InheritableThreadLocal<Boolean>();
 	static InheritableThreadLocal<Boolean> DEBUGGING = new InheritableThreadLocal<Boolean>();
+	static InheritableThreadLocal<Boolean> INTESTS = new InheritableThreadLocal<Boolean>();
 
 	public static boolean isNotShowingExceptions() {
 		return QUITELY.get() == Boolean.TRUE;
@@ -541,8 +542,19 @@ public abstract class Debuggable extends BasicDebugger {
 		return DEBUGGING.get() == Boolean.TRUE;
 	}
 
+	public static boolean isTesting() {
+		return INTESTS.get() == Boolean.TRUE;
+	}
+
 	public static boolean isRelease() {
-		return !isDebugging();
+		if (isDebugging())
+			return false;
+		if (isTesting())
+			return false;
+		if (false // change this to true if you dare
+		)
+			return false;
+		return true;
 	}
 
 	public static boolean breakpoint() {

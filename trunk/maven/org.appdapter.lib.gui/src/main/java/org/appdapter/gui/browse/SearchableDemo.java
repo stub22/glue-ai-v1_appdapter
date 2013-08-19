@@ -359,14 +359,14 @@ public class SearchableDemo implements AnyOper.Singleton, AnyOper.Autoload {
 	public static void installSearchable(final JComboBox combo) {
 
 		if (true) {
-			AutoCompletion autoCompletion = new AutoCompletion(combo);
-			autoCompletion.setStrict(false);
-			autoCompletion.setStrictCompletion(false);
 			ComboBoxSearchable searchable = SearchableUtils.installSearchable(combo);
 			searchable.setCaseSensitive(false);
 			searchable.setRefreshPopupDuringSearching(true);
 			searchable.setWildcardEnabled(true);
 			searchable.setCountMatch(true);
+			AutoCompletion autoCompletion = new AutoCompletion(combo, searchable);
+			autoCompletion.setStrict(false);
+			autoCompletion.setStrictCompletion(false);
 			return;
 		}
 
