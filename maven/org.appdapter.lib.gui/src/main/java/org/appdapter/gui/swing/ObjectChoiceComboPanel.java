@@ -30,7 +30,7 @@ import org.appdapter.gui.api.POJOCollectionListener;
 import org.appdapter.gui.browse.SearchableDemo;
 import org.appdapter.gui.browse.ToFromKeyConverter;
 import org.appdapter.gui.browse.Utility;
-import org.appdapter.gui.swing.ObjectChoiceComboPanel.Model;
+import org.appdapter.gui.swing.ObjectChoiceComboPanel.ObjectChoiceModel;
 import org.appdapter.gui.swing.ObjectChoiceComboPanel.ObjectComboPrettyRender;
 import org.appdapter.gui.trigger.TriggerPopupMenu;
 
@@ -50,7 +50,7 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 
 	Class type;
 	JComboBox combo;
-	Model model;
+	ObjectChoiceModel model;
 	ToFromKeyConverter converter;
 
 	public boolean useStringProxies;
@@ -78,6 +78,7 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 		}
 		useSmallObjectViewInLists = !useStringProxies && !isStringChooser;
 		initGUI();
+
 		if (context != null)
 			context.addListener(this, true);
 		combo.setSelectedItem(value);
@@ -118,14 +119,15 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 	}
 
 	private void initGUI() {
-		model = new Model();
+		model = new ObjectChoiceModel();
 		combo = new JComboBox(model);
 		combo.setEditable(false);
+		SearchableDemo.installSearchable(combo);
 		combo.setRenderer(new ObjectComboPrettyRender());
 		setLayout(new BorderLayout());
 		add("Center", combo);
 		combo.addMouseListener(this);
-		SearchableDemo.installSearchable(combo);
+		model.reload();
 	}
 
 	@Override public void mouseClicked(MouseEvent e) {
@@ -280,12 +282,12 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 
 	}
 
-	class Model extends AbstractListModel implements ComboBoxModel {
+	class ObjectChoiceModel extends AbstractListModel implements ComboBoxModel {
 		//Vector listeners = new Vector();
 		java.util.List<Object> objectValues;
 		Object selectedObject = null;
 
-		@SuppressWarnings("unchecked") public Model() {
+		@SuppressWarnings("unchecked") public ObjectChoiceModel() {
 			reload();
 		}
 
@@ -336,6 +338,9 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 				objectValues = new LinkedList();
 			else {
 				Collection col = context.findObjectsByType(type);
+				if (col.size() < 1) {
+
+				}
 				objectValues = new LinkedList();
 				for (Object o : col) {
 
