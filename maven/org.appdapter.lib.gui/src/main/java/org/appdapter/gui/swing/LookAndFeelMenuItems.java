@@ -36,6 +36,8 @@ public class LookAndFeelMenuItems extends SafeJMenu {
 	}
 
 	private void initGUI(boolean isOSGi) {
+		if (isOSGi)
+			return;
 		final LookAndFeelMenuItems menu = this;
 		menu.add(createLnfAction("Metal", "javax.swing.plaf.metal.MetalLookAndFeel"));
 		menu.add(createLnfAction("System", UIManager.getSystemLookAndFeelClassName()));
