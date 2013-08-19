@@ -1,6 +1,9 @@
 package org.appdapter.gui.swing;
 
 import java.awt.BorderLayout;
+import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.BeanInfo;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
@@ -11,6 +14,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
+
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.core.convert.ReflectUtils;
@@ -94,6 +101,16 @@ public class PropertiesPanel<BoxType extends Box> extends ScreenBoxPanel<BoxType
 		//setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		//setLayout(new VerticalLayout(VerticalLayout.LEFT, true));
 		setLayout(new BorderLayout());
+
+		JPanel buttonPanel = new JJPanel(new FlowLayout(FlowLayout.LEFT));
+		JButton reloadButton = new JButton("Refresh Properties");
+		buttonPanel.add(reloadButton);
+		reloadButton.addActionListener(new ActionListener() {
+			@Override public void actionPerformed(ActionEvent event) {
+				reloadObjectGUI(getValue());
+			}
+		});
+		this.add(buttonPanel);
 	}
 
 	@Override protected void completeSubClassGUI() {
