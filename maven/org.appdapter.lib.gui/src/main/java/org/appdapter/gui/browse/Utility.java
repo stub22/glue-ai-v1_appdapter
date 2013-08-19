@@ -200,7 +200,7 @@ public class Utility extends UtilityMenuOptions {
 	public static void bug(Object... params) {
 		String msg = Debuggable.toInfoStringArgV(params);
 		theLogger.warn("\n-----------------\nDUG BUG: " + msg + "\n");
-		if (!Debuggable.isRelease()) {
+		if (!Debuggable.isRelease() && false) {
 			Debuggable.warn(params);
 		}
 	}
