@@ -2859,6 +2859,8 @@ public class Utility extends UtilityMenuOptions {
 	}
 
 	public static boolean isOSGi() {
+		if (true)
+			return true;
 		ClassLoader cl = PromiscuousClassUtilsA.getCallerClassLoader();
 		if (cl != null) {
 			Class cls = cl.getClass();
