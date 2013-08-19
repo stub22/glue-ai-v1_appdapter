@@ -317,9 +317,11 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 				panel.add(removeButton);
 				removeButton.addActionListener(this);
 			}
+			String tooltip = Utility.makeTooltipText(object);
 			if (showToString) {
-				panel.add(new JLabel(Utility.makeTooltipText(object)));
+				panel.add(new JLabel(tooltip));
 			}
+			setToolTipText(tooltip);
 		} else {
 			panel.add(new JLabel("null"));
 		}
