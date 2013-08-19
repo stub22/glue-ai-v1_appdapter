@@ -23,6 +23,14 @@ public class LargeObjectChooser extends CollectionContentsPanel implements POJOC
 		super();
 	}
 
+	@Override public void setObject(Object bean) {
+        if (bean instanceof Class) {
+        	setFilter((Class)bean);
+        	return;
+        }
+		super.setObject(bean);
+	}
+
 	//public BaseCollectionContentsPanel(DisplayContext context, String titleStr, Class filterc, NamedObjectCollection noc, BoxPanelSwitchableView tabs, boolean valueIsNotCollection)
 	public LargeObjectChooser(Class filterc, NamedObjectCollection noc) {
 		super(null, noc.getName(), noc, noc.getLiveCollection(), filterc, null, true);
