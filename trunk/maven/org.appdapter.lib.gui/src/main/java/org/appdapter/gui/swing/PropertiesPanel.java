@@ -138,7 +138,7 @@ public class PropertiesPanel<BoxType extends Box> extends ScreenBoxPanel<BoxType
 					PropertyDescriptor p = (PropertyDescriptor) it.next();
 					String attributeName = p.getDisplayName();
 					propsShown.add(attributeName);
-					Class type = p.getClass();
+					Class type = p.getPropertyType();
 					PropertyValueControl pvc = new PropertyValueControl(context, attributeName, source, p);
 					String tip = type + ":" + p.getReadMethod() + "/" + p.getWriteMethod();
 					pvc.setToolTipText(tip);
