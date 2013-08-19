@@ -27,7 +27,6 @@ import org.appdapter.core.name.Ident;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.GetDisplayContext;
 import org.appdapter.gui.api.UIAware;
-import org.appdapter.gui.browse.KMCTrigger;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.swing.IsReference;
 import org.slf4j.Logger;

@@ -13,7 +13,6 @@ import org.appdapter.core.component.KnownComponent;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.core.name.Ident;
 import org.appdapter.gui.api.NamedObjectCollection;
-import org.appdapter.gui.browse.KMCTrigger;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.util.CollectionSetUtils;
 

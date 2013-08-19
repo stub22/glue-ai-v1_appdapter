@@ -414,11 +414,28 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 		}
 		final String lbl = checkForDash(path[idx].trim());
 		Component child = findChildNamed(popup, true, lbl.toLowerCase());
-		if (isLast || isFavorited(trig)) {
+		if (isLast) {
 			if (child == null) {
 				popup.add(makeMenuItem(box, lbl, trig));
+				return;
+			} else {
+				//duplicate
+				// @todo confirm what to do in this case
+				return;
 			}
-			return;
+
+		}
+		if (isFavorited(trig)) {
+			if (getTriggerPath(trig).length > 1) {
+				// continue
+			} else {
+				if (child == null) {
+					popup.add(makeMenuItem(box, lbl, trig));
+					return;
+				} else {
+					//	return;
+				}
+			}
 		}
 		if (child == null) {
 			JMenuWithPath item = new JMenuWithPath(lbl, box);
@@ -747,10 +764,11 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 				jmi = ((ButtonFactory) trig).makeMenuItem(lbl, b);
 			}
 		} catch (Throwable t) {
-
+			t.printStackTrace();
 		}
-		if (jmi == null)
+		if (jmi == null) {
 			jmi = new SafeJMenuItem(b, true, getTriggerName(trig));
+		}
 		if (trig instanceof UIAware) {
 			jmi = (AbstractButton) ((UIAware) trig).visitComponent(jmi);
 		}
@@ -759,7 +777,8 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 		} else {
 			jmi.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					trig.fire(Utility.asBox(b, e));
+					Box box = Utility.asBox(b, e);
+					trig.fire(box);
 				}
 			});
 		}

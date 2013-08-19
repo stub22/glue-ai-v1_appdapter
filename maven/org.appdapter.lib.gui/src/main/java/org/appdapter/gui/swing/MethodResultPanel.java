@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
  * A panel showing the output of a method execution.
  * Used by MethodsPanel.
  *
- * 
+ *
  */
 class MethodResultPanel extends JJPanel {
 	static Logger theLogger = LoggerFactory.getLogger(MethodResultPanel.class);
@@ -68,7 +68,11 @@ class MethodResultPanel extends JJPanel {
 				if (value != null) {
 					remove(value);
 				}
-				value = new SmallObjectView(context, null, object);
+				value = new SmallObjectView(context, null, object) {
+					public boolean isRemovable(Object value) {
+						return false;
+					};
+				};
 
 				add("Center", value);
 				invalidate();

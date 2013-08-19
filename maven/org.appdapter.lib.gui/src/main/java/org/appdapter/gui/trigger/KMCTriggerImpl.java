@@ -7,7 +7,6 @@ import java.lang.reflect.Member;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.gui.api.DisplayContext;
-import org.appdapter.gui.browse.KMCTrigger;
 
 abstract public class KMCTriggerImpl extends TriggerForMember implements KMCTrigger {
 

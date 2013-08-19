@@ -10,8 +10,8 @@ import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.editors.ObjectPanel;
 
 /**
- * A Tabbed GUI component used to render 
- * 
+ * A Tabbed GUI component used to render
+ *
  */
 abstract public class ScreenBoxPanel<BoxType extends Box> extends ObjectView<BoxType> implements GetSetObject, FocusOnBox<BoxType>, ObjectPanel {
 
@@ -152,8 +152,8 @@ abstract public class ScreenBoxPanel<BoxType extends Box> extends ObjectView<Box
 	}
 
 	/**
-	 * 
-	 * 
+	 *
+	 *
 	 * Called whenever the pojo is switched. Caused the GUI to update to render
 	 * the new pojObject instead.
 	 */

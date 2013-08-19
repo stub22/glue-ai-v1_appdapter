@@ -1,5 +1,6 @@
 package org.appdapter.gui.editors;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.beans.Customizer;
 import java.beans.PropertyChangeListener;
@@ -51,6 +52,7 @@ public class UseEditor<BoxType extends Box> extends ScreenBoxPanel<BoxType> impl
 
 	@Override protected void completeSubClassGUI() throws Throwable {
 		removeAll();
+		setLayout(new BorderLayout());
 		this.custEditor = ec.getCustomEditor();
 		add(this.custEditor);
 	}

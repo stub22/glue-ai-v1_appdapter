@@ -9,8 +9,10 @@ import javax.swing.Action;
 import org.appdapter.gui.browse.Settings;
 
 public class FileMenu extends SafeJMenu {
+
+
 	/**
-	 * 
+	 *
 	 */
 	private final CollectionEditorUtil collectionEditorUtil;
 	Vector recentFiles = new Vector();

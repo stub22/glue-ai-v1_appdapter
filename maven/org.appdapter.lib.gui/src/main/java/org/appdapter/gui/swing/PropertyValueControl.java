@@ -145,7 +145,7 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 		public ObjectReferenceEditor(Class type, boolean editable, PropertyValueControl pvc, Container validater) {
 			if (editable) {
 				if (type == String.class) {
-					Debuggable.warn("This is not good for strings!");
+					Utility.bug("This is not good as a non read-only string editor!");
 				}
 			}
 			provalctrl = pvc;
@@ -817,7 +817,7 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 							if (fields != null && fields.size() > 0)
 								return ReflectUtils.getFieldValue(obj, fields.iterator().next());
 						} catch (NoSuchFieldException nsfe) {
-							//							
+							//
 						}
 					}
 				}

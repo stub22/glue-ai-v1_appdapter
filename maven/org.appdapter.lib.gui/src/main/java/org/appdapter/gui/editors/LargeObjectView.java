@@ -33,8 +33,8 @@ import com.jidesoft.swing.JideTabbedPane;
  * A panel containing a complete GUI for a object, including properties,
  * methods, etc.
  * <p>
- * 
- * 
+ *
+ *
  */
 @SuppressWarnings("serial")
 final public class LargeObjectView<BoxType extends Box>
@@ -51,8 +51,9 @@ extends ObjectView<BoxType> implements Customizer, GetSetObject, ObjectPanelHost
 		}
 
 	}
+
 	public static Type[] EDITTYPE = new Type[] { Object.class };
-	
+
 	protected DisplayContext context;
 	protected JideTabbedPane tabs;
 	//protected Object objectValue;
@@ -148,14 +149,14 @@ extends ObjectView<BoxType> implements Customizer, GetSetObject, ObjectPanelHost
 
 	/**
 	 * Return the live object in which we think we are updating
-	 * 
+	 *
 	 * This can be 'this' object
-	 * 
+	 *
 	 */
 	@Override public Object getValue() {
 		Object o = objectValue;
 		if (o == this || o == null) {
-			Debuggable.warn("LargeObjectView value=" + o);
+			//	Debuggable.warn("LargeObjectView value=" + o);
 		}
 		return o;
 	}

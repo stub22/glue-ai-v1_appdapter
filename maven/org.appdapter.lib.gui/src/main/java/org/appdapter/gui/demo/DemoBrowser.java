@@ -19,6 +19,8 @@ package org.appdapter.gui.demo;
 import static org.appdapter.core.log.Debuggable.printStackTrace;
 
 import java.awt.BorderLayout;
+import java.awt.FileDialog;
+import java.io.File;
 import java.util.concurrent.Callable;
 
 import javax.swing.BoxLayout;
@@ -37,13 +39,13 @@ import org.appdapter.api.trigger.Trigger;
 import org.appdapter.api.trigger.TriggerImpl;
 import org.appdapter.core.log.BasicDebugger;
 import org.appdapter.core.log.Debuggable;
-import org.appdapter.core.store.Repo;
-import org.appdapter.core.store.RepoBox;
+import org.appdapter.bind.csv.datmat.*;
+import org.appdapter.core.matdat.*;
+import org.appdapter.core.store.*;
 import org.appdapter.demo.DemoBrowserUI;
 import org.appdapter.demo.DemoNavigatorCtrlFactory;
 import org.appdapter.demo.DemoResources;
-import org.appdapter.gui.api.DisplayContextProvider;
-import org.appdapter.gui.api.EditableTrigger;
+import org.appdapter.gui.api.*;
 import org.appdapter.gui.api.ScreenBox.Kind;
 import org.appdapter.gui.box.ScreenBoxContextImpl;
 import org.appdapter.gui.box.ScreenBoxImpl;
@@ -55,10 +57,7 @@ import org.appdapter.gui.repo.DefaultMutableRepoBoxImpl;
 import org.appdapter.gui.repo.RepoBoxImpl;
 import org.appdapter.gui.repo.RepoModelBoxImpl;
 import org.appdapter.gui.repo.RepoTriggers;
-import org.appdapter.gui.trigger.BootstrapTriggerFactory;
-import org.appdapter.gui.trigger.SysTriggers;
-import org.appdapter.gui.trigger.TriggerForClass;
-import org.appdapter.gui.trigger.TriggerForInstance;
+import org.appdapter.gui.trigger.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,6 +68,10 @@ final public class DemoBrowser implements AnyOper.Singleton {
 	public static Logger theLogger = getLogger();
 
 	public static DemoNavigatorCtrl mainControl;
+
+	public static void showObject(final Object any) {
+		showObject(null, any, true, false);
+	}
 
 	public static void showObject(final String optionalName, final Object any, final boolean showASAP, final boolean loadChildren) {
 		// This can take up to a few seconds, depending on log level.
@@ -107,6 +110,12 @@ final public class DemoBrowser implements AnyOper.Singleton {
 
 	// These constants are used to test the ChanBinding model found in "GluePuma_BehavMasterDemo"
 	//   https://docs.google.com/spreadsheet/ccc?key=0AlpQRNQ-L8QUdFh5YWswSzdYZFJMb1N6aEhJVWwtR3c
+	public static String GluePuma_HRKR50_TestFull_SHEET_KEY = "0ArBjkBoH40tndDdsVEVHZXhVRHFETTB5MGhGcWFmeGc";
+	public static int GluePuma_HRKR50_TestFull_NAMESPACE_SHEET_NUM = 8;
+	public static int GluePuma_HRKR50_TestFull_DIRECTORY_SHEET_NUM = 9;
+
+	// These constants are used to test the ChanBinding model found in "GluePuma_BehavMasterDemo"
+	//   https://docs.google.com/spreadsheet/ccc?key=0AlpQRNQ-L8QUdFh5YWswSzdYZFJMb1N6aEhJVWwtR3c
 	// When exported to Disk
 	public static String BMC_WORKBOOK_PATH = "GluePuma_BehavMasterDemo.xlsx";
 	public static String BMC_NAMESPACE_SHEET_NAME = "Nspc";
@@ -135,9 +144,9 @@ final public class DemoBrowser implements AnyOper.Singleton {
 	 * @param cls
 	 * @param menuLabel
 	 * @param trigger
-	 * 
+	 *
 	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
-	 * 
+	 *
 	 */
 	public static EditableTrigger registerTriggerForClassInstances(Class cls, String menuLabel, Trigger trigger) {
 		return Utility.registerTriggerForClassInstances(cls, menuLabel, trigger);
@@ -148,9 +157,9 @@ final public class DemoBrowser implements AnyOper.Singleton {
 	 * @param cls
 	 * @param menuLabel
 	 * @param trigger
-	 * 
+	 *
 	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
-	 * 
+	 *
 	 */
 	public static EditableTrigger registerTriggerForClass(Class cls, String menuLabel, Trigger trigger) {
 		return Utility.registerTriggerForClass(cls, menuLabel, trigger);
@@ -161,9 +170,9 @@ final public class DemoBrowser implements AnyOper.Singleton {
 	 * @param cls
 	 * @param menuLabel
 	 * @param trigger
-	 * 
+	 *
 	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
-	 * 
+	 *
 	 */
 	public static EditableTrigger registerTriggerForPredicate(CallableWithParameters<Box, Boolean> predicate, String menuLabel, Trigger trigger) {
 		return Utility.registerTriggerForPredicate(predicate, menuLabel, trigger);
@@ -174,9 +183,9 @@ final public class DemoBrowser implements AnyOper.Singleton {
 	 * @param cls
 	 * @param menuLabel
 	 * @param trigger
-	 * 
+	 *
 	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
-	 * 
+	 *
 	 */
 	public static EditableTrigger registerCallableForPredicate(CallableWithParameters<Box, Boolean> predicate, String menuLabel, CallableWithParameters function) {
 		return Utility.registerCallableForPredicate(predicate, menuLabel, function);
@@ -187,11 +196,11 @@ final public class DemoBrowser implements AnyOper.Singleton {
 	 * @param cls
 	 * @param menuLabel
 	 * @param trigger
-	 * 
+	 *
 	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
-	 * 
+	 *
 	 */
-	public static <T> EditableTrigger registerFactoryForClass(Class<T> cls, String menuLabel, CallableWithParameters<? extends T, Class> trigger) {
+	public static <T> EditableTrigger registerFactoryForClass(Class<T> cls, String menuLabel, CallableWithParameters<Class<T>, ? extends T> trigger) {
 		return Utility.registerFactoryForClass(cls, menuLabel, trigger);
 	}
 
@@ -200,19 +209,23 @@ final public class DemoBrowser implements AnyOper.Singleton {
 	 * @param cls
 	 * @param menuLabel
 	 * @param trigger
-	 * 
+	 *
 	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
-	 * 
+	 *
 	 */
-	public static EditableTrigger registerTriggerForObject(Object anyObject, String shortLabel, Trigger trigger) {
-		return Utility.registerTriggerForObject(anyObject, shortLabel, trigger);
+	public static EditableTrigger registerTriggerForObject(Object anyObject, String menuLabel, Trigger trigger) {
+		return Utility.registerTriggerForObject(anyObject, menuLabel, trigger);
+	}
+
+	public static <T> EditableTrigger registerToolsTrigger(String menuLabel, Trigger trigger) {
+		return Utility.registerToolsTrigger(menuLabel, trigger);
 	}
 
 	/**
 	 *  Ensure the main instance is started
-	 * 
+	 *
 	 * @param bringToFront
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public static synchronized void ensureRunning(boolean bringToFront, String... args) throws InterruptedException {
@@ -292,7 +305,56 @@ final public class DemoBrowser implements AnyOper.Singleton {
 	}
 
 	public static void addMoreExamples() {
+
 		showObject(appName, mainControl, false, false);
+		registerToolsTrigger("System.exit(3)", new Trigger() {
+			@Override public void fire(Box targetBox) {
+				System.exit(3);
+			}
+		});
+
+		registerFactoryForClass(File.class, "Browse for File", new CallableWithParameters<Class<File>, File>() {
+
+			@Override public File call(Class box, Object... params) {
+				FileDialog dialog = new FileDialog(Utility.getAppFrame(), "Load... ", FileDialog.LOAD);
+				dialog.show();
+				String fileName = dialog.getFile();
+				String directory = dialog.getDirectory();
+				if (directory == null && fileName == null)
+					return null;
+				return new File(directory, fileName);
+			}
+
+		});
+		registerToolsTrigger("Load Repo From|Google Doc GluePuma_BehavMasterDemo", new Trigger() {
+			@Override public void fire(Box targetBox) {
+				Utility.showResult(new org.appdapter.core.matdat.GoogSheetRepoSpec(BMC_SHEET_KEY, BMC_NAMESPACE_SHEET_NUM, BMC_DIRECTORY_SHEET_NUM));
+			}
+		});
+		registerToolsTrigger("Load Repo From|GluePuma_HRKR50_TestFull", new TriggerImpl() {
+			@Override public void fire(Box targetBox) {
+				Utility.showResult(new org.appdapter.core.matdat.GoogSheetRepoSpec(GluePuma_HRKR50_TestFull_SHEET_KEY, GluePuma_HRKR50_TestFull_NAMESPACE_SHEET_NUM,
+						GluePuma_HRKR50_TestFull_DIRECTORY_SHEET_NUM));
+			}
+		});
+		registerToolsTrigger("Load Repo From|" + BMC_WORKBOOK_PATH, new Trigger() {
+			@Override public void fire(Box targetBox) {
+				Utility.showResult(new org.appdapter.core.matdat.OfflineXlsSheetRepoSpec(BMC_WORKBOOK_PATH, BMC_NAMESPACE_SHEET_NAME, BMC_DIRECTORY_SHEET_NAME, null));
+			}
+		});
+		registerToolsTrigger("Load Repo From|A Choosen a File", new Trigger() {
+			@Override public void fire(Box targetBox) {
+				try {
+					File myFile = Utility.createNewFromUI(File.class);
+					Utility.showResult(new OfflineXlsSheetRepoSpec(myFile.getAbsolutePath(), BMC_NAMESPACE_SHEET_NAME, BMC_DIRECTORY_SHEET_NAME, null));
+				} catch (Exception error) {
+					Utility.showError(null, "ERROR While trying to load a file repo...", error);
+				}
+
+				new org.appdapter.core.matdat.GoogSheetRepoSpec(BMC_SHEET_KEY, BMC_NAMESPACE_SHEET_NUM, BMC_DIRECTORY_SHEET_NUM);
+			}
+		});
+
 		registerTriggerForObject(mainControl, "System.exit(0)", new Trigger() {
 			@Override public void fire(Box targetBox) {
 				System.exit(0);
@@ -322,8 +384,13 @@ final public class DemoBrowser implements AnyOper.Singleton {
 			}
 		}, "I am part of the Proper crowd", new Trigger() {
 			@Override public void fire(Box targetBox) {
-				String result = "" + targetBox + " has " + targetBox.getTriggers().size() + " trigger(s)";
-				mainControl.showScreenBox("Count of triggers", result);
+				if (targetBox == null) {
+					// from  tools menu
+					mainControl.showScreenBox("Count of triggers", "tools menu item has no box triggers");
+				} else {
+					String result = "" + targetBox + " has " + targetBox.getTriggers().size() + " trigger(s)";
+					mainControl.showScreenBox("Count of triggers", result);
+				}
 			}
 		});
 	}
@@ -392,7 +459,7 @@ final public class DemoBrowser implements AnyOper.Singleton {
 
 	/**
 	 * <code>
-	 * 	<BT extends ScreenBoxImpl<TriggerImpl<BT>>, RBT extends RepoBoxImpl<TriggerImpl<RBT>>> 
+	 * 	<BT extends ScreenBoxImpl<TriggerImpl<BT>>, RBT extends RepoBoxImpl<TriggerImpl<RBT>>>
 	 *		ScreenBoxContextImpl makeBCI(Class<BT> boxClass, Class<RBT> repoBoxClass) {.. }
 	 * </code>
 	 */
@@ -412,14 +479,14 @@ final public class DemoBrowser implements AnyOper.Singleton {
 	// }  //   TT extends TriggerImpl<BT>
 
 	/** Here is a humdinger of a static method, that constructs a demontration application tree
-	 * 
+	 *
 	 * @param <BT>
 	 * @param <RBT>
 	 * @param regBoxClass
 	 * @param repoBoxClass
 	 * @param regTrigProto - defines the BT  trigger parameter type for screen boxes.  The regTrigProto instance data is unused.
 	 * @param repoTrigProto - defines the RBT trigger parameter type for repo boxes.  The repoTrigProto instance data is unused.
-	 * @return 
+	 * @return
 	 */
 	public static <TBT extends TriggerImpl<BT>, BT extends ScreenBoxImpl<TBT>, TRBT extends TriggerImpl<RBT>, RBT extends RepoBoxImpl<TRBT>>
 

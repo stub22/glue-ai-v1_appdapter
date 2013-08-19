@@ -33,8 +33,8 @@ import org.slf4j.LoggerFactory;
 /**
  * The top-level Test for the POJOCollection code. It also contains the
  * main(...) method.
- * 
- * 
+ *
+ *
  */
 @SuppressWarnings("serial")
 public class CollectionEditorUtil implements PropertyChangeListener {
@@ -164,7 +164,7 @@ public class CollectionEditorUtil implements PropertyChangeListener {
 				dnc.show();
 				return;
 			}
-			Class.forName("org.cogchar.gui.demo.RepoNavigator").getMethod("main", new Class[] { String.class }).invoke(new String[0]);
+			Class.forName("org.appdapter.gui.DemoBrowser").getMethod("main", new Class[] { String.class }).invoke(new String[0]);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -173,7 +173,7 @@ public class CollectionEditorUtil implements PropertyChangeListener {
 	}
 
 	void openCollection() {
-		FileDialog dialog = new FileDialog(getFrame(), "Load ObjectNavigator", FileDialog.LOAD);
+		FileDialog dialog = new FileDialog(getFrame(), "Load... ", FileDialog.LOAD);
 		dialog.show();
 		String fileName = dialog.getFile();
 		String directory = dialog.getDirectory();
