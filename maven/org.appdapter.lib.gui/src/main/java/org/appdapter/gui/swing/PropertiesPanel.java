@@ -1,23 +1,19 @@
 package org.appdapter.gui.swing;
 
-import java.awt.BorderLayout;
-import java.awt.FlowLayout;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.BeanInfo;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
-import java.sql.Connection;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
+import javax.swing.*;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.core.convert.ReflectUtils;
@@ -41,6 +37,10 @@ public class PropertiesPanel<BoxType extends Box> extends ScreenBoxPanel<BoxType
 	private DisplayContext context;
 	boolean staticOnly = false;
 	boolean showFields = false;
+
+	private JPanel sheet;
+
+	private JJPanel buttonPanel;
 
 	// private LessString lessString = new LessString();
 	public PropertiesPanel() {
@@ -97,30 +97,32 @@ public class PropertiesPanel<BoxType extends Box> extends ScreenBoxPanel<BoxType
 	}
 
 	@Override protected void initSubclassGUI() {
-		removeAll();
-		//setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-		//setLayout(new VerticalLayout(VerticalLayout.LEFT, true));
-		setLayout(new BorderLayout());
 
-		JPanel buttonPanel = new JJPanel(new FlowLayout(FlowLayout.LEFT));
+		this.buttonPanel = new JJPanel(new FlowLayout(FlowLayout.LEFT));
 		JButton reloadButton = new JButton("Refresh Properties");
 		buttonPanel.add(reloadButton);
 		reloadButton.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent event) {
-				reloadObjectGUI(getValue());
+				Utility.invokeLater(new Runnable() {
+					@Override public void run() {
+						completeSubClassGUI();
+					}
+				});
 			}
 		});
-		this.add(buttonPanel);
+		removeAll();
+		setLayout(new BorderLayout());
+		add(BorderLayout.NORTH, buttonPanel);
 	}
 
 	@Override protected void completeSubClassGUI() {
-		initSubclassGUI();
 
-		Object source = getValue();
+		final Object source = getValue();
 		if (source != null) {
 			try {
-				PropertySheet sheet = new PropertySheet();
+				this.sheet = new PropertySheet();
 
+				//sheet.setLayout(new BoxLayout(sheet, BoxLayout.Y_AXIS));
 				if (objClass == null) {
 					objClass = source.getClass();
 				}
@@ -161,7 +163,11 @@ public class PropertiesPanel<BoxType extends Box> extends ScreenBoxPanel<BoxType
 						sheet.add(attributeName + ":", pvc);
 					}
 				}
-				add("Center", sheet);
+				removeAll();
+				setLayout(new BorderLayout());
+				add(BorderLayout.NORTH, buttonPanel);
+				add(BorderLayout.CENTER, sheet);
+				validate();
 			} catch (Exception err) {
 				theLogger.error("An error occurred", err);
 			}
@@ -181,6 +187,7 @@ public class PropertiesPanel<BoxType extends Box> extends ScreenBoxPanel<BoxType
 		Utility.replaceRunnable(this, new Runnable() {
 			public void run() {
 				if (objectValue != null) {
+					initSubclassGUI();
 					completeSubClassGUI();
 				} else {
 					initSubclassGUI();

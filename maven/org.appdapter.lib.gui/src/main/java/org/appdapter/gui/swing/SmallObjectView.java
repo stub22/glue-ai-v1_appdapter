@@ -57,6 +57,16 @@ extends ObjectView<Box>
 
 implements PropertyChangeListener, MouseListener, ActionListener, DragGestureListener, Transferable, DragSourceListener, DropTargetListener, ObjectPanelHost {
 
+	@Override public String toString() {
+		String ttt = getToolTipText();
+		if (ttt == null || ttt.length() == 0) {
+			if (objectValue == null)
+				return "<null>";
+			ttt = Utility.makeTooltipText(objectValue);
+		}
+		return ttt;
+	}
+
 	class PropertyButton extends JButton {
 		public PropertyButton() {
 			super();
