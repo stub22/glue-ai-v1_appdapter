@@ -49,7 +49,7 @@ public class LookAndFeelMenuItems extends SafeJMenu {
 		if (true)
 			return;
 
-		//JIDESOFT  
+		//JIDESOFT
 		if (!isOSGi)
 			LookAndFeelFactory.installDefaultLookAndFeelAndExtension();
 

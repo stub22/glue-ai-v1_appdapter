@@ -22,7 +22,7 @@ import org.appdapter.gui.swing.SmallObjectView;
  * A GUI component that shows what an array contains,
  * and lets you add and remove elements.
  *
- * 
+ *
  */
 public class ArrayContentsPanel extends BaseCollectionContentsPanel implements ValueChangeListener, DropTargetListener, Customizer {
 
@@ -88,9 +88,8 @@ public class ArrayContentsPanel extends BaseCollectionContentsPanel implements V
 			for (int i = 0; i < len; i++) {
 				final int index = i;
 				final Object value = Array.get(objectValue, index);
-				if (filter != null) {
-					if (!filter.isInstance(value))
-						continue;
+				if (!meetsFilter(value)) {
+					continue;
 				}
 				SmallObjectView view = new SmallObjectView(context, nameMaker, value) {
 					@Override public void valueChanged(Object sender, Object oldValue, Object newValue) {

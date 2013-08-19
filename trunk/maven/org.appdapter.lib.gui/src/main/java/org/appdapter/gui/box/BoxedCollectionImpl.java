@@ -33,22 +33,22 @@ import org.slf4j.LoggerFactory;
  * A BoxedCollection is a container of objects and corresponding POJOBoxs,
  * which add the concept of "name" and "selected".
  * <p>
- * 
+ *
  * Each value inside the BoxedCollection has a corresponding Box. A
  * Box has a reference to the value in memory it represents. Given an
  * value the only way to find the corresponding Box is to use
  * getBox(Object wrapper)
  * <p>
- * 
+ *
  * PropertyChangeListeners can register to find out when the selected value is
  * changed, in which case the property "selectedBoxed" will change.
  * <p>
- * 
+ *
  * POJOCollectionListeners can register to find out when objects are
  * added or removed.
- * 
+ *
  * @see Box
- * 
+ *
  */
 @SuppressWarnings("serial")
 public class BoxedCollectionImpl implements NamedObjectCollection,
@@ -474,7 +474,12 @@ VetoableChangeListener, PropertyChangeListener, Serializable, Set {
 				wrapper = findBoxByName(title);
 			}
 			if (title == null) {
-				title = Utility.generateUniqueName_sug(value, title, getNameToBoxIndex(), false);
+				if (wrapper != null) {
+					title = wrapper.getShortLabel();
+				}
+				if (title == null) {
+					title = Utility.generateUniqueName_sug(value, title, getNameToBoxIndex(), false);
+				}
 			}
 			if (wrapper == null) {
 				wrapper = (BT) makeWrapper(title, value);
@@ -793,7 +798,7 @@ VetoableChangeListener, PropertyChangeListener, Serializable, Set {
 		boxList.remove(wrapper);
 		objectsToWrappers.remove(value);
 
-		//Update the name index			
+		//Update the name index
 		nameIndex.remove(title);
 		String key = wrapper.getShortLabel();
 		nameIndex.remove(key);
@@ -878,7 +883,7 @@ VetoableChangeListener, PropertyChangeListener, Serializable, Set {
 	 * and a property change event will be fired.
 	 *
 	 * @throws PropertyVetoException if someone refused to let the selected value change
-	
+
 	public synchronized void setSelectedObject(Object value) throws PropertyVetoException {
 		if (selected != value && containsObject(value)) {
 			synchronized (syncObject) {

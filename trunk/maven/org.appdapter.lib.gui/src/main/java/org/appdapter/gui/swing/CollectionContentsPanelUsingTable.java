@@ -48,7 +48,7 @@ import static org.appdapter.core.convert.ReflectUtils.*;
  * A GUI component that shows what a Collection contains,
  * and lets you add and remove elements.
  *
- * 
+ *
  */
 public class CollectionContentsPanelUsingTable<BoxType extends Box>
 
@@ -103,10 +103,6 @@ extends CollectionContentsPanel<BoxType> implements ValueChangeListener, DropTar
 		final Collection collection = getCollection();
 		panel.removeAll();
 		for (Object value : copyOf(collection)) {
-			if (filter != null) {
-				if (!filter.isInstance(value))
-					continue;
-			}
 			addRow(value);
 		}
 		reloaded();
@@ -114,10 +110,11 @@ extends CollectionContentsPanel<BoxType> implements ValueChangeListener, DropTar
 
 	private void addRow(final Object value) {
 
-		if (filter != null) {
-			if (!filter.isInstance(value))
-				return;
+		if (!meetsFilter(value)) {
+			Utility.bug("Add Row doesn not meet filter: " + value);
+			return;
 		}
+
 		final SmallObjectView view = new SmallObjectView(context, nameMaker, value) {
 
 			@Override public boolean isRemovable(Object value) {
@@ -147,6 +144,12 @@ extends CollectionContentsPanel<BoxType> implements ValueChangeListener, DropTar
 	public void completeSubClassGUI() {
 		setTitle(getName());
 		reloadContents();
+	}
+
+	@Override public Class<?> getClassOfBox() {
+		if (false && objectValue != null)
+			return objectValue.getClass();
+		return EDITTYPE;
 	}
 
 }

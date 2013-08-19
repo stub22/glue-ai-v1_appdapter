@@ -118,7 +118,7 @@ public class SearchableDemo implements AnyOper.Singleton, AnyOper.Autoload {
 		table.setColumnSelectionAllowed(false);
 		table.setRowSelectionAllowed(true);
 		TableSearchable tableSearchable = SearchableUtils.installSearchable(table);
-		tableSearchable.setMainIndex(-1); // search for all columns 
+		tableSearchable.setMainIndex(-1); // search for all columns
 
 		JTextArea textArea = new JTextArea();
 		textArea.setRows(15);
@@ -246,7 +246,7 @@ public class SearchableDemo implements AnyOper.Singleton, AnyOper.Autoload {
 		table.setRowSelectionAllowed(true);
 		TableSearchable tSearchable = SearchableUtils.installSearchable(table);
 		setSearchableParams(tSearchable);
-		tSearchable.setMainIndex(-1); // search for all columns 
+		tSearchable.setMainIndex(-1); // search for all columns
 		//installTitledPanel("Search: ", 'T', table);
 	}
 
@@ -356,38 +356,23 @@ public class SearchableDemo implements AnyOper.Singleton, AnyOper.Autoload {
 		return -1;
 	}
 
-	public static void installSearchable(final JComboBox combo) {
-
-		if (true) {
-			ComboBoxSearchable searchable = SearchableUtils.installSearchable(combo);
-			searchable.setCaseSensitive(false);
-			searchable.setRefreshPopupDuringSearching(true);
-			searchable.setWildcardEnabled(true);
-			searchable.setCountMatch(true);
-			AutoCompletion autoCompletion = new AutoCompletion(combo, searchable);
-			autoCompletion.setStrict(false);
-			autoCompletion.setStrictCompletion(false);
-			return;
-		}
-
-		combo.addActionListener(new ActionListener() {
-			boolean isSearchMode = false;
-			ComboBoxSearchable tSearchable = null;
-
-			@Override public void actionPerformed(ActionEvent e) {
-				if (true)
-					return;
-				if (tSearchable == null) {
-					combo.setEnabled(false);
-					tSearchable = SearchableUtils.installSearchable(combo);
-					setSearchableParams(tSearchable);
-					//installTitledPanel("Search: ", 'C', combo);
-				} else {
-					combo.setEnabled(true);
-					SearchableUtils.uninstallSearchable(tSearchable);
-				}
+	public static AutoCompletion installSearchable(final JComboBox combo) {
+		ComboBoxSearchable searchable = SearchableUtils.installSearchable(combo);
+		searchable.setCaseSensitive(false);
+		searchable.setWildcardEnabled(true);
+		searchable.setCountMatch(true);
+		searchable.setShowPopupDuringSearching(true);
+		searchable.setRefreshPopupDuringSearching(true);
+		AutoCompletion autoCompletion = new AutoCompletion(combo, searchable) {
+			@Override protected AutoCompletionDocument createDocument() {
+				return super.createDocument();
 			}
-		});
+		};
+		autoCompletion.setStrict(false);
+		autoCompletion.setStrictCompletion(false);
+		autoCompletion.installListeners();
+		return autoCompletion;
+
 	}
 
 	private static void setSearchableParams(Searchable searchable) {

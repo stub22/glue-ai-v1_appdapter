@@ -19,7 +19,7 @@ import org.appdapter.gui.util.PromiscuousClassUtilsA;
 
 public class NamedItemChooserPanel extends JJPanel implements GetSetObject, FocusOnBox<Box> {
 
-	/** 
+	/**
 	 * @deprecated As of JDK version 1.1,
 	 * replaced by <code>getPreferredSize()</code>.
 	 */
@@ -35,7 +35,7 @@ public class NamedItemChooserPanel extends JJPanel implements GetSetObject, Focu
 	//JLayeredPane desk;
 	//JSplitPane split;
 	ClassChooserPanel classChooserPanel;
-	//LargeObjectChooser 
+	//LargeObjectChooser
 
 	CollectionContentsPanel namedObjectListPanel;
 	NamedObjectCollection namedObjects;
@@ -55,7 +55,7 @@ public class NamedItemChooserPanel extends JJPanel implements GetSetObject, Focu
 		//namedObjects = context.getLocalBoxedChildren();
 		namedObjectListPanel = new LargeObjectChooser(null, namedObjects);
 		//new LargeObjectChooser(null, namedObjects);
-		classChooserPanel = new ClassChooserPanel(context);
+		classChooserPanel = new ClassChooserPanel();
 		setLayout(new BorderLayout());
 		namedObjectListPanel.setBorder(new TitledBorder(namedObjects.getName()));
 		add("North", classChooserPanel);

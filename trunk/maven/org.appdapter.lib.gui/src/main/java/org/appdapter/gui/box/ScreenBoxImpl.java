@@ -56,25 +56,26 @@ import org.appdapter.gui.repo.DatabaseManagerPanel;
 import org.appdapter.gui.repo.ModelMatrixPanel;
 import org.appdapter.gui.repo.RepoManagerPanel;
 import org.appdapter.gui.swing.ComponentHost;
+import org.appdapter.gui.swing.SmallObjectView;
 import org.appdapter.gui.trigger.TriggerMenuFactory;
 import org.appdapter.gui.util.PromiscuousClassUtilsA;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
-/**  Base implementation of our demo Swing Panel boxes. 
+/**  Base implementation of our demo Swing Panel boxes.
  * The default implementation can own one swing panel of each "Kind".
  * This owner does not actually create any kind of GUI resource until it is asked to
  * findBoxPanel(kind).  A strongheaded purpose-specific box might ignore "Kind",
- * and always return whatever panel it thinks is "best".  
- * <br/> 
+ * and always return whatever panel it thinks is "best".
+ * <br/>
  * @author Stu B. <www.texpedient.com>
  */
 
 @UIHidden
 public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<TrigType>>> //
 		extends ABoxImpl<TrigType> //
-		implements BT<TrigType> {
+		implements BT<TrigType>, Comparable {
 
 	static Logger theLogger = LoggerFactory.getLogger(ScreenBoxImpl.class);
 
@@ -105,7 +106,7 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 
 	/**
 	 * Creates a new Box
-	 * 
+	 *
 	 */
 	public ScreenBoxImpl() {
 		notWrapper = true;
@@ -134,11 +135,11 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	}
 
 	@Override public <T> boolean canConvert(Class<T> c) {
-		return ReflectUtils.canConvert(c, getObjects());
+		return ReflectUtils.canConvert(c, getObjects(), this);
 	}
 
 	@Override public <T> T convertTo(Class<T> c) {
-		return ReflectUtils.convertTo(c, getObjects());
+		return ReflectUtils.convertTo(c, getObjects(), this);
 	}
 
 	/**
@@ -171,10 +172,10 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	}
 
 	/**
-	 * The box panel returned might be one that we "made" earlier, 
+	 * The box panel returned might be one that we "made" earlier,
 	 * or it might be one that someone "put" onto me.
 	 * @param kind
-	 * @return 
+	 * @return
 	 */
 	public JPanel findOrCreateBoxPanel(Object kind) {
 		JPanel bp = findExistingBoxPanel(kind);
@@ -189,7 +190,7 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	}
 
 	public Component getComponent() {
-		//if (m_view != null) 			return m_view;		
+		//if (m_view != null) 			return m_view;
 		for (Object o : getObjects()) {
 			if (Component.class.isInstance(o)) {
 				return (Component) o;
@@ -242,7 +243,7 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 		return Object.class;
 	}
 
-	/** 
+	/**
 	 * This returns the decomposed Mixins
 	 * @return
 	 */
@@ -478,7 +479,7 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	 * comes when you override this ScreenBoxImpl class, and provide your own OTHER kind of panel.
 	 * When these mechanisms mature, we will expand to a proper GUI component type registry.
 	 * @param kind
-	 * @return 
+	 * @return
 	 */
 	protected JPanel makeBoxPanel(Kind kind) {
 		JPanel bp = makeBoxPanelForKind(kind);
@@ -600,10 +601,10 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	 * BrowseTabFuncs.openBoxPanelAndFocus, PanelTriggers.OpenTrigger, or your
 	 * PanelTriggers.OpenTrigger, or your own mechanism.  Note that your ScreenBoxPanel
 	 * may be able to display any number of boxes, by responding to the focusOnBox method.
-	 * If those boxes are screen boxes, you may want to tell them to 
+	 * If those boxes are screen boxes, you may want to tell them to
 	 * putBoxPanel() the one currently displaying them, in case they are later asked
 	 * to findBoxPanel themselves.
-	 * 
+	 *
 	 * @return
 	 */
 	protected JPanel makeOtherPanel() {
@@ -805,7 +806,7 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 
 	/**
 	 * Changes the name of this object. The name should never be null.
-	 * 
+	 *
 	 * @throws PropertyVetoException
 	 *             if someone refused to allow the name to change
 	 */
@@ -901,5 +902,19 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 				noc.addTitleBoxed(nym, this);
 			}
 		}
+	}
+
+	@Override public int compareTo(Object o) {
+		if (o == null)
+			return 2;
+		String a2 = o.toString();
+		if (a2 == null || a2.length() == 0)
+			return 1;
+		return getKey().compareToIgnoreCase(a2);
+	}
+
+	SmallObjectView makeSmallObjectView() {
+		DisplayContext dc = getDisplayContext();
+		return new SmallObjectView(dc, dc.getLocalBoxedChildren(), getValueOrThis());
 	}
 }

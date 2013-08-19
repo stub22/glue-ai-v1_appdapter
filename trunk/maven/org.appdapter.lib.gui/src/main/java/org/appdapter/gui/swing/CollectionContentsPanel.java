@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
  * A GUI component that shows what a Collection contains,
  * and lets you add and remove elements.
  *
- * 
+ *
  */
 public class CollectionContentsPanel<BoxType extends Box>
 
@@ -54,10 +54,8 @@ extends BaseCollectionContentsPanel<BoxType> implements ValueChangeListener, Dro
 		collection = copyOf(collection);
 		int size = collection.size();
 		for (Object value : collection) {
-			if (filter != null) {
-				if (!filter.isInstance(value))
-					continue;
-			}
+			if (!meetsFilter(value))
+				continue;
 			SmallObjectView view = new SmallObjectView(context, nameMaker, value) {
 				@Override public boolean isRemovable(Object value) {
 					return CollectionContentsPanel.this.containsObject(value);
@@ -107,8 +105,10 @@ extends BaseCollectionContentsPanel<BoxType> implements ValueChangeListener, Dro
 		return Utility.recastCC(super.getValue(), Collection.class);
 	}
 
-	@Override public Class<Collection> getClassOfBox() {
-		return Collection.class;
+	@Override public Class<?> getClassOfBox() {
+		if (false && objectValue != null)
+			return objectValue.getClass();
+		return EDITTYPE;
 	}
 
 }

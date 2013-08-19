@@ -10,6 +10,7 @@ import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.gui.api.AddTabFrames.SetTabTo;
 import org.appdapter.gui.api.BoxPanelSwitchableView;
 import org.appdapter.gui.api.DisplayContext;
+import org.appdapter.gui.api.NamedObjectCollection;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.browse.Utility.UtilityConverter;
 import org.appdapter.gui.browse.Utility.UtilityOptionalArgs;
@@ -168,7 +169,8 @@ public class SpecificObjectCustomizers extends TabPanelMaker {
 				tabs.insertTab("Static Properties", null, new ErrorPanel("Could not show static Properties", err), null, 1);
 			}
 			try {
-				LargeObjectChooser instances = new LargeObjectChooser(clazz, context.getLocalBoxedChildren());
+				NamedObjectCollection noc = context.getLocalBoxedChildren();
+				LargeObjectChooser instances = new LargeObjectChooser(clazz, noc);
 				tabs.insertTab("InstancesOf", null, instances, null, 0);
 			} catch (Exception err) {
 				tabs.insertTab("InstancesOf", null, new ErrorPanel("Could not show Instances", err), null, 0);

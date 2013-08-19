@@ -348,6 +348,8 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 	}
 
 	public Object getValue() {
+		if (model == null)
+			return model;
 		return model.getSelectedBean();
 	}
 

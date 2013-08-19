@@ -1,12 +1,12 @@
 /*
  *  Copyright 2012 by The Appdapter Project (www.appdapter.org).
- * 
+ *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
  *  You may obtain a copy of the License at
- * 
+ *
  *       http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  *  Unless required by applicable law or agreed to in writing, software
  *  distributed under the License is distributed on an "AS IS" BASIS,
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -85,9 +85,9 @@ abstract class SheetRepo(directoryModel: Model, var fileModelCLs: java.util.List
   var myIdent: Ident = null;
 
   def reloadAllModelsFromDir() = {
-    val repo = myRepoSpecForRef.makeRepo();
     val oldDataset = getMainQueryDataset();
     val oldDirModel = getDirectoryModel();
+    val repo = myRepoSpecForRef.makeRepo();
     val myNewDirectoryModel = repo.getDirectoryModel();
     val myPNewMainQueryDataset = repo.getMainQueryDataset();
     RepoOper.replaceModelElements(oldDirModel, myNewDirectoryModel)
@@ -125,9 +125,9 @@ abstract class SheetRepo(directoryModel: Model, var fileModelCLs: java.util.List
           this.isUpdatedFromDir = true;
           var dirModelSize = getDirectoryModel().size;
           // only load from non empty dir models
-          // this is because we need to have non initalized repos at times 
+          // this is because we need to have non initalized repos at times
           if (dirModelSize>0) updateFromDirModel
-        
+
           var newModelSize = getDirectoryModel().size;
           if (newModelSize != dirModelSize) {
             trace("OnmiRepo Dir.size changed!  " + dirModelSize + " -> " + newModelSize)
