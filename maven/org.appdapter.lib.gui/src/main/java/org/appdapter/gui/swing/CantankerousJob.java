@@ -45,9 +45,9 @@ abstract public class CantankerousJob implements Runnable {
 				while (skipped > 0) {
 					skipped = 0;
 					try {
-						Utility.invokeAndWait(CantankerousJob.this);						
+						CantankerousJob.this.run();
 					} catch (Throwable t) {
-						Debuggable.printStackTrace(t);	
+						Debuggable.printStackTrace(t);
 						try {
 							Thread.sleep(10000);
 						} catch (InterruptedException e) {
