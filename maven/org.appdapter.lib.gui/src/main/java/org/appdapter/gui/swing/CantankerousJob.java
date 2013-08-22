@@ -1,9 +1,6 @@
 package org.appdapter.gui.swing;
 
-import javax.swing.SwingUtilities;
-
 import org.appdapter.core.log.Debuggable;
-import org.appdapter.gui.browse.Utility;
 
 abstract public class CantankerousJob implements Runnable {
 	int skipped = 0;
