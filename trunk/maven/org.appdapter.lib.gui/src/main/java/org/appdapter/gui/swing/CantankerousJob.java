@@ -1,6 +1,7 @@
 package org.appdapter.gui.swing;
 
 import org.appdapter.core.log.Debuggable;
+import org.appdapter.gui.browse.Utility;
 
 abstract public class CantankerousJob implements Runnable {
 	int skipped = 0;
@@ -8,14 +9,16 @@ abstract public class CantankerousJob implements Runnable {
 	private String jobname;
 	private Object toStr;
 	final Object lock = new Object();
+	boolean isUIThreadTask = false;
 
 	public Object getLock() {
 		return lock;
 	}
 
-	public CantankerousJob(String jobnam, Object name) {
+	public CantankerousJob(String jobnam, Object name, boolean inUIThread) {
 		jobname = jobnam;
 		this.toStr = name;
+		isUIThreadTask = inUIThread;
 	}
 
 	@Override public String toString() {
@@ -42,7 +45,11 @@ abstract public class CantankerousJob implements Runnable {
 				while (skipped > 0) {
 					skipped = 0;
 					try {
-						CantankerousJob.this.run();
+						if (isUIThreadTask) {
+							Utility.invokeAndWait(CantankerousJob.this);
+						} else {
+							CantankerousJob.this.run();
+						}
 					} catch (Throwable t) {
 						Debuggable.printStackTrace(t);
 						try {

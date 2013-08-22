@@ -52,7 +52,7 @@ abstract public class UtilityMenuOptions implements UtilClass {
 	public static boolean allTriggersAreGlobal = true;
 	public static boolean useBeanIcons = false;
 	public static boolean usePropertyEditorManager = true;
-	public static boolean separateSlowThreads = false;
+	public static boolean separateSlowThreads = true;
 
 	interface VoidFunc<A> {
 		void call(A r);

@@ -91,16 +91,26 @@ ButtonFactory, AskIfEqual, UIAware, Action, ActionListener, KMCTrigger, GetDispl
 	public int useCount;
 	public TriggerForClass creator;
 
-	final @Override public void actionPerformed(ActionEvent e) {
+	final @Override public void actionPerformed(final ActionEvent e) {
 		try {
 			if (lastEvent == e) {
 				return;
 			}
 			lastEvent = e;
-			fireIT(findBox(e.getSource()), e);
-		} catch (InvocationTargetException e1) {
-			Debuggable.printStackTrace(e1);
-			throw Debuggable.reThrowable(e1);
+			final String threadName = "Clicked on ... " + getMenuPath();
+			Utility.actionThreadStart(new Runnable() {
+				@Override public void run() {
+					try {
+						fireIT(findBox(e.getSource()), e);
+					} catch (InvocationTargetException e1) {
+						Debuggable.printStackTrace(e1);
+						throw Debuggable.reThrowable(e1);
+					} catch (Throwable e1) {
+						Debuggable.printStackTrace(e1);
+					}
+					theLogger.info("Ended worker thread " + threadName);
+				}
+			}, threadName);
 		} finally {
 			lastEvent = e;
 		}

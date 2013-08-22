@@ -107,7 +107,7 @@ public class ModelMatrixPanel<BoxType extends Box> extends GenericBeansPanel {
 		}
 	}
 
-	CantankerousJob cj = new CantankerousJob("reloadObjectGUI ", this) {
+	CantankerousJob cj = new CantankerousJob("reloadObjectGUI ", this, true) {
 
 		@Override public void run() {
 			try {
