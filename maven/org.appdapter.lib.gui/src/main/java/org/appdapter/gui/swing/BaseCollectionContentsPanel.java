@@ -122,7 +122,7 @@ extends ScreenBoxPanel<BoxType> implements ValueChangeListener, DropTargetListen
 		return getPreferredSize();
 	}
 
-	CantankerousJob reloadConts = new CantankerousJob("reloadContents", this) {
+	CantankerousJob reloadConts = new CantankerousJob("reloadContents", this, true) {
 		@Override public void run() {
 			reloadContents00();
 		}

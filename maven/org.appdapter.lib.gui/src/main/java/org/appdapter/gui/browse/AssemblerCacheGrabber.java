@@ -104,28 +104,6 @@ public class AssemblerCacheGrabber extends BasicDebugger implements AnyOper.Sing
 		});
 	}
 
-	public Map<String, CantankerousJob> longThreads = new HashMap();
-	private Object longThreadSync = longThreads;
-
-	synchronized void setLongRunner(String named, final Runnable longRunner) {
-
-		synchronized (longThreadSync) {
-			CantankerousJob cj = longThreads.get(named);
-			if (cj == null) {
-				cj = new CantankerousJob(named, this) {
-
-					@Override public void run() {
-						longRunner.run();
-
-					}
-				};
-				longThreads.put(named, cj);
-			}
-			cj.attempt();
-		}
-
-	}
-
 	@UISalient public void loadBasicDebuggerInstances() {
 		setLongRunner("loadBasicDebuggerInstances", new Runnable() {
 			@Override public void run() {
@@ -142,6 +120,11 @@ public class AssemblerCacheGrabber extends BasicDebugger implements AnyOper.Sing
 				}
 			}
 		});
+	}
+
+	private void setLongRunner(String named, Runnable runnable) {
+		Utility.setLongRunner(named, runnable, this);
+
 	}
 
 }
