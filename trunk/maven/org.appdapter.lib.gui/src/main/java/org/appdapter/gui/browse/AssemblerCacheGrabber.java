@@ -3,11 +3,7 @@ package org.appdapter.gui.browse;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.GraphicsEnvironment;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 import javax.swing.BorderFactory;
@@ -32,6 +28,7 @@ import org.appdapter.core.log.Debuggable;
 import org.appdapter.core.name.Ident;
 import org.appdapter.gui.api.BT;
 import org.appdapter.gui.api.NamedObjectCollection;
+import org.appdapter.gui.swing.CantankerousJob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,50 +61,105 @@ public class AssemblerCacheGrabber extends BasicDebugger implements AnyOper.Sing
 		return "" + any;
 	}
 
-	public boolean longThreadQuit = false;
-
 	@UISalient public void loadAssemblerClasses() {
-		final NamedObjectCollection bp = Utility.getTreeBoxCollection();
-		Map<Class, ComponentCache> map = getCacheMap();
-		final Object[] clzes;
-		synchronized (map) {
-			clzes = map.keySet().toArray();
-		}
-		setLongRunner(new Runnable() {
+		setLongRunner("loadAssemblerClasses", new Runnable() {
 			@Override public void run() {
+				final NamedObjectCollection bp = Utility.getTreeBoxCollection();
+				Map<Class, ComponentCache> map = getCacheMap();
+				final Object[] clzes;
+				synchronized (map) {
+					clzes = map.keySet().toArray();
+				}
 				for (Object c : clzes) {
 					bp.findOrCreateBox(c);
-					if (longThreadQuit) {
-						longThreadQuit = false;
-						return;
-					}
 				}
 			}
 		});
 	}
 
 	@UISalient() public void loadAssemblerInstances() {
-		final NamedObjectCollection bp = Utility.getTreeBoxCollection();
-		Map<Class, ComponentCache> cmap = getCacheMap();
-		final Object[] clzes;
-		synchronized (cmap) {
-			clzes = cmap.values().toArray();
-		}
-
-		setLongRunner(new Runnable() {
+		setLongRunner("loadAssemblerInstances", new Runnable() {
 
 			@Override public void run() {
+				final NamedObjectCollection bp = Utility.getTreeBoxCollection();
+				Map<Class, ComponentCache> cmap = getCacheMap();
+				final Object[] clzes;
+				synchronized (cmap) {
+					clzes = cmap.values().toArray();
+				}
 				for (Object c : clzes) {
 					Map<Ident, Object> map = (Map<Ident, Object>) ((ComponentCache) c).getCompCache();
 					synchronized (map) {
 						for (Map.Entry<Ident, Object> me : map.entrySet()) {
-							if (longThreadQuit) {
-								longThreadQuit = false;
-								return;
-							}
 							Utility.recordCreated(bp, me.getKey(), me.getValue());
 						}
 					}
+				}
+			}
+		});
+	}
+
+	@UISalient() public void loadAddedBoxes() {
+		setLongRunner("loadAddedBoxes", new Runnable() {
+
+			@Override public void run() {
+				final NamedObjectCollection bp = Utility.getTreeBoxCollection();
+				Map<Class, ComponentCache> cmap = getCacheMap();
+				final Object[] clzes;
+				synchronized (cmap) {
+					clzes = cmap.values().toArray();
+				}
+				for (Object c : clzes) {
+					Map<Object, BT> map = Utility.allBoxes;
+					List<Entry<Object, BT>> es;
+					synchronized (map) {
+						es = ReflectUtils.copyOf(map.entrySet());
+					}
+					for (Map.Entry<Object, BT> me : es) {
+						Object obj = me.getKey();
+						Utility.asWrapped(obj);
+					}
+				}
+
+			}
+		});
+	}
+
+	public Map<String, CantankerousJob> longThreads = new HashMap();
+	private Object longThreadSync = longThreads;
+
+	synchronized void setLongRunner(String named, final Runnable longRunner) {
+
+		synchronized (longThreadSync) {
+			CantankerousJob cj = longThreads.get(named);
+			if (cj == null) {
+				cj = new CantankerousJob(named, this) {
+
+					@Override public void run() {
+						longRunner.run();
+
+					}
+				};
+				longThreads.put(named, cj);
+			}
+			cj.attempt();
+		}
+
+	}
+
+	@UISalient public void loadBasicDebuggerInstances() {
+		setLongRunner("loadBasicDebuggerInstances", new Runnable() {
+			@Override public void run() {
+				Collection all = Debuggable.allObjectsForDebug;
+				final NamedObjectCollection bp = Utility.getTreeBoxCollection();
+				final Collection allCopy;
+				synchronized (all) {
+					allCopy = new LinkedList(all);
+				}
+				for (Object o : allCopy) {
+					if (o.getClass() == BasicDebugger.class)
+						continue;
+					bp.findOrCreateBox(o);
 				}
 			}
 		});
@@ -121,7 +173,7 @@ public class AssemblerCacheGrabber extends BasicDebugger implements AnyOper.Sing
 		_fontList = Arrays.asList(_fontNames);
 
 		JPanel panel1 = createPanel1();
-		JPanel panel2 = createAutoCompleteForTree(Utility.browserPanel.getTree());
+		JPanel panel2 = createAutoCompleteForTree();
 
 		JPanel panel = new JPanel(new BorderLayout(6, 6));
 		panel.add(panel1, BorderLayout.BEFORE_FIRST_LINE);
@@ -186,8 +238,9 @@ public class AssemblerCacheGrabber extends BasicDebugger implements AnyOper.Sing
 		return panel;
 	}
 
-	static public JPanel createAutoCompleteForTree(JTree tree) {
+	static public JPanel createAutoCompleteForTree() {
 		JPanel panel = new JPanel();
+		JTree tree = new JTree();
 		panel.setLayout(new JideBoxLayout(panel, JideBoxLayout.Y_AXIS));
 		/*panel.setBorder(BorderFactory.createCompoundBorder(new JideTitledBorder(new PartialEtchedBorder(PartialEtchedBorder.LOWERED, PartialSide.NORTH), "AutoCompletion with list and tree",
 				JideTitledBorder.LEADING, JideTitledBorder.ABOVE_TOP), BorderFactory.createEmptyBorder(0, 0, 0, 0)));
@@ -229,92 +282,4 @@ public class AssemblerCacheGrabber extends BasicDebugger implements AnyOper.Sing
 		return panel;
 	}
 
-	@UISalient() public void loadAddedBoxes() {
-		final NamedObjectCollection bp = Utility.getTreeBoxCollection();
-		Map<Class, ComponentCache> cmap = getCacheMap();
-		final Object[] clzes;
-		synchronized (cmap) {
-			clzes = cmap.values().toArray();
-		}
-
-		setLongRunner(new Runnable() {
-
-			@Override public void run() {
-				for (Object c : clzes) {
-					Map<Object, BT> map = Utility.allBoxes;
-					List<Entry<Object, BT>> es;
-					synchronized (map) {
-						es = ReflectUtils.copyOf(map.entrySet());
-					}
-					for (Map.Entry<Object, BT> me : es) {
-						if (longThreadQuit) {
-							longThreadQuit = false;
-							return;
-						}
-						Object obj = me.getKey();
-						Utility.asWrapped(obj);
-					}
-				}
-
-			}
-		});
-	}
-
-	private Object longThreadSync = this;
-	public Thread longThread;
-
-	synchronized void setLongRunner(final Runnable longRunner) {
-
-		synchronized (longThreadSync) {
-			Thread lf = longThread;
-			if (lf != null) {
-				longThreadQuit = true;
-				try {
-					lf.join();
-				} catch (InterruptedException e) {
-				}
-			}
-			longThread = new Thread() {
-				public void destroy() {
-					longThreadQuit = true;
-				}
-
-				public void run() {
-					longRunner.run();
-					//synchronized (longThreadSync) 
-					{
-						if (longThread == Thread.currentThread()) {
-							longThread = null;
-						}
-					}
-				};
-			};
-			longThreadQuit = false;
-			longThread.start();
-		}
-
-	}
-
-	@UISalient public void loadBasicDebuggerInstances() {
-		Collection all = Debuggable.allObjectsForDebug;
-		final NamedObjectCollection bp = Utility.getTreeBoxCollection();
-		final Collection allCopy;
-		synchronized (all) {
-			allCopy = new LinkedList(all);
-		}
-		setLongRunner(new Runnable() {
-
-			@Override public void run() {
-				for (Object o : allCopy) {
-					if (o.getClass() == BasicDebugger.class)
-						continue;
-					if (longThreadQuit) {
-						longThreadQuit = false;
-						return;
-					}
-					bp.findOrCreateBox(o);
-				}
-			}
-		});
-	}
 }
