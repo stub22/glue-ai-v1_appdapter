@@ -16,6 +16,7 @@ import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.BT;
 import org.appdapter.gui.api.NamedObjectCollection;
 import org.appdapter.gui.api.POJOCollectionListener;
+import org.appdapter.gui.swing.CantankerousJob;
 
 import scala.collection.parallel.ParIterableLike.Foreach;
 
@@ -57,8 +58,18 @@ public class AddToTreeListener implements POJOCollectionListener {
 		invalidate();
 	}
 
+	CantankerousJob cj = new CantankerousJob("RefeshUI", this, true) {
+		@Override public void run() {
+			Utility.invokeLater(new Runnable() {
+				@Override public void run() {
+					jtree.invalidate();
+				}
+			});
+		}
+	};
+
 	private void invalidate() {
-		jtree.invalidate();
+		cj.attempt();
 	}
 
 	@Override public void pojoAdded(Object obj, BT box, Object senderCollection) {

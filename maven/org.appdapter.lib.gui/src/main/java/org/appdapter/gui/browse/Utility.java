@@ -89,12 +89,24 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.concurrent.Callable;
 
 import javax.imageio.ImageIO;
-import javax.swing.*;
+import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JSpinner.DateEditor;
+import javax.swing.JTable;
+import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
 import javax.swing.table.TableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
@@ -125,8 +137,8 @@ import org.appdapter.core.convert.ConverterFromMember;
 import org.appdapter.core.convert.NoSuchConversionException;
 import org.appdapter.core.convert.OptionalArg;
 import org.appdapter.core.convert.ReflectUtils;
-import org.appdapter.core.log.*;
-import org.appdapter.core.matdat.OfflineXlsSheetRepoSpec;
+import org.appdapter.core.item.JenaResourceItem;
+import org.appdapter.core.log.Debuggable;
 import org.appdapter.core.name.FreeIdent;
 import org.appdapter.core.name.Ident;
 import org.appdapter.core.store.Repo;
@@ -162,6 +174,7 @@ import org.appdapter.gui.editors.UseEditor;
 import org.appdapter.gui.repo.ModelAsTurtleEditor;
 import org.appdapter.gui.repo.ModelMatrixPanel;
 import org.appdapter.gui.repo.RepoManagerPanel;
+import org.appdapter.gui.swing.CantankerousJob;
 import org.appdapter.gui.swing.CollectionEditorUtil;
 import org.appdapter.gui.swing.DisplayContextUIImpl.UnknownIcon;
 import org.appdapter.gui.swing.ErrorDialog;
@@ -1010,7 +1023,7 @@ public class Utility extends UtilityMenuOptions {
 		toFrmKeyCnv.put(Literal.class, RESOURCE_TO_FROM_STRING);
 		toFrmKeyCnv.put(RDFNode.class, RESOURCE_TO_FROM_STRING);
 		toFrmKeyCnv.put(Node.class, RESOURCE_TO_FROM_STRING);
-		//toFrmKeyCnv.put(JenaResourceItem.class, RESOURCE_TO_FROM_STRING);
+		toFrmKeyCnv.put(JenaResourceItem.class, RESOURCE_TO_FROM_STRING);
 		//toFrmKeyCnv.put(KnownComponent.class, RESOURCE_TO_FROM_STRING);
 	}
 
@@ -1516,7 +1529,10 @@ public class Utility extends UtilityMenuOptions {
 		if (!stronglyType.getClass().isAssignableFrom(newValue.getClass())) {
 			return newValue.equals(stronglyType);
 		}
-		return newValue.equals(stronglyType);
+		if (newValue.equals(stronglyType)) {
+			return true;
+		}
+		return false;
 	}
 
 	/**
@@ -3925,6 +3941,40 @@ public class Utility extends UtilityMenuOptions {
 
 	public static boolean isLAFSafe() {
 		return !isOSGi();
+	}
+
+	public static void actionThreadStart(final Runnable runnable, final String threadName) {
+		setLongRunner("actionPerformedThread", runnable, threadName);
+	}
+
+	static public Map<String, Thread> longThreads = new HashMap();
+	static private Object longThreadSync = longThreads;
+
+	static synchronized void setLongRunner(final String channelName, final Runnable longRunner, final Object taskSpecificName) {
+		Thread cj = null;
+		synchronized (longThreadSync) {
+			cj = longThreads.get(channelName);
+			if (cj == null) {
+				cj = new Thread(channelName + " doing " + taskSpecificName) {
+
+					@Override public void run() {
+						try {
+							longRunner.run();
+						} finally {
+							synchronized (longThreadSync) {
+								longThreads.remove(channelName);
+							}
+						}
+
+					}
+				};
+				longThreads.put(channelName, cj);
+				cj.start();
+				return;
+			}
+		}
+		theLogger.warn("Not starting " + taskSpecificName + "Already doing " + channelName + " as " + cj);
+
 	}
 
 }

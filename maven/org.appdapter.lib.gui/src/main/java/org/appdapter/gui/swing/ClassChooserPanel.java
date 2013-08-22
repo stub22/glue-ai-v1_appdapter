@@ -395,7 +395,7 @@ public class ClassChooserPanel extends JPanel implements ActionListener, Documen
 		});
 	}
 
-	CantankerousJob cj = new CantankerousJob("updatedClassFilter", this) {
+	CantankerousJob cj = new CantankerousJob("updatedClassFilter", this, false) {
 		@Override public void run() {
 			updatedClassFilter0();
 		}

@@ -1,10 +1,12 @@
 package org.appdapter.gui.swing;
 
+import static org.appdapter.core.convert.ReflectUtils.getFieldValue;
+import static org.appdapter.core.log.Debuggable.printStackTrace;
 import static org.appdapter.gui.browse.Utility.findEditor;
-import static org.appdapter.gui.browse.Utility.*;
+import static org.appdapter.gui.browse.Utility.getBeanInfo;
 import static org.appdapter.gui.browse.Utility.getCurrentContext;
-import static org.appdapter.core.convert.ReflectUtils.*;
-import static org.appdapter.core.log.Debuggable.*;
+import static org.appdapter.gui.browse.Utility.getTreeBoxCollection;
+import static org.appdapter.gui.browse.Utility.isEqual;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -40,6 +42,7 @@ import javax.swing.tree.TreeCellEditor;
 
 import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.core.log.Debuggable;
+import org.appdapter.core.name.Ident;
 import org.appdapter.gui.api.BT;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.GetSetObject;
@@ -130,17 +133,45 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 		}
 	}
 
+	public class ReadOnlyObjectPanel extends JJPanel {
+		JLabel label = null;
+		SmallObjectView view = null;
+		Object shownObjectValue;
+
+		public ReadOnlyObjectPanel() {
+			setLayout(new BorderLayout());
+		}
+
+		public synchronized void updateReadonlyPanel(Object newValue) {
+			if (shownObjectValue == newValue) {
+				return;
+			}
+			shownObjectValue = newValue;
+			removeAll();
+			if (newValue == null) {
+				Class type2 = type;
+				if (label == null)
+					label = new JLabel("(" + type.getName() + ")null");
+				view = null;
+				add(label);
+			} else {
+				label = null;
+				view = new SmallObjectView(null, null, newValue);
+				add(view);
+			}
+			invalidate();
+		}
+	}
+
 	public class ObjectReferenceEditor extends PropertyEditorSupport implements PropertyChangeListener {
 
 		ObjectChoiceComboPanel choice = null;
 		boolean editable;
-		JLabel label = null;
-		JPanel objectPanel = null;
+		ReadOnlyObjectPanel objectPanel = null;
 		//NamedObjectCollection fromCollection = null;
 		final PropertyValueControl provalctrl;
 		Class type = null;
 		final Container validator;
-		SmallObjectView view = null;
 
 		public ObjectReferenceEditor(Class type, boolean editable, PropertyValueControl pvc, Container validater) {
 			if (editable) {
@@ -189,13 +220,17 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 				return choice;
 			} else {
 				if (objectPanel == null) {
-					objectPanel = new JPanel();
-					objectPanel.setLayout(new BorderLayout());
+					objectPanel = new ReadOnlyObjectPanel();
 				}
 				Object initialValue = getBoundValue();
 				updateReadonlyPanel(initialValue);
 				return objectPanel;
 			}
+		}
+
+		private void updateReadonlyPanel(Object newValue) {
+			objectPanel.updateReadonlyPanel(newValue);
+
 		}
 
 		public Object getObject() {
@@ -225,15 +260,15 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 					if (choice != null) {
 						choice.setSelection(newValue);
 						updateShownValue(newValue);
+						return;
 					} else {
 						Debuggable.warn(" choice == null ");
 					}
 				} else {
 					if (objectPanel == null) {
-						objectPanel = new JPanel();
+						objectPanel = new ReadOnlyObjectPanel();
 						objectPanel.setLayout(new BorderLayout());
 					}
-					updateReadonlyPanel(newValue);
 					updateShownValue(newValue);
 				}
 			}
@@ -245,29 +280,6 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 
 		@Override public Object getValue() {
 			return getShownValue();
-		}
-
-		private void updateReadonlyPanel(Object newValue) {
-			if (objectPanel != null) {
-				Object object = newValue;
-				if (editable) {
-					Debuggable.warn(" aboutToLabelAnEditable(); ");
-				}
-				objectPanel.removeAll();
-				if (object == null) {
-					Class type2 = getPropertyValueControl().getReturnType();
-					if (label == null)
-						label = new JLabel("<null> " + type2);
-					view = null;
-					objectPanel.add(label);
-				} else {
-					// obj is null
-					label = null;
-					view = new SmallObjectView(null, provalctrl.getNamedObjectCollection(), object);
-					objectPanel.add(view);
-				}
-				validator.validate();
-			}
 		}
 
 		public Object getBoundValue() {
@@ -844,22 +856,27 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 		if (isBound()) {
 			Throwable realCause;
 			Object obj = source;
+			Object boundValue;
 			try {
-				Object boundValue = getBoundValue();
+				boundValue = getBoundValue();
 				setObject(boundValue);
 				return;
 			} catch (Throwable err) {
 				realCause = err;
-				try {
-					Object boundValue = getBoundValue();
-					setObject(boundValue);
-					return;
-				} catch (Throwable err2) {
+				Debuggable.maybeDebug(new Runnable() {
+					@Override public void run() {
+						try {
+							Object boundValue = getBoundValue();
+							setObject(boundValue);
+							return;
+						} catch (Throwable err2) {
 
-				}
+						}
+					}
+				});
 			}
 			try {
-				setObject(null);
+				setObject(value);
 			} catch (Exception err2) {
 				PropertyValueControl.theLogger.error("An error occurred setting null", err2);
 			}
@@ -947,16 +964,30 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 				comp = getEditorComponent(currentEditor, editable);
 			}
 		} else {
-			// The type is fixed
-			currentEditor = getEditor(type, editable);
-			// currentEditor.setValue(value);
-			comp = getEditorComponent(currentEditor, editable);
-			if (isBound()) {
-				// It is bound, so I have to listen for changes
-				readBoundValue();
-				listenToSource();
+			if (editable && type == Ident.class) {
+				// The type is fixed
+				currentEditor = getEditor(type, editable);
+				// currentEditor.setValue(value);
+				comp = getEditorComponent(currentEditor, editable);
+				if (isBound()) {
+					// It is bound, so I have to listen for changes
+					readBoundValue();
+					listenToSource();
+				}
+				writeEditorValue();
+			} else {
+				// The type is fixed
+				currentEditor = getEditor(type, editable);
+				// currentEditor.setValue(value);
+				comp = getEditorComponent(currentEditor, editable);
+				if (isBound()) {
+					// It is bound, so I have to listen for changes
+					readBoundValue();
+					listenToSource();
+				}
+				writeEditorValue();
 			}
-			writeEditorValue();
+
 		}
 		if (comp instanceof ObjectChoiceComboPanel) {
 
