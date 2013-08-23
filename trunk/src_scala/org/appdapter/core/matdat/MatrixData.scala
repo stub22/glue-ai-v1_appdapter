@@ -16,19 +16,19 @@
 
 package org.appdapter.core.matdat
 
-import org.appdapter.core.store.{ FileStreamUtils };
-import java.io.Reader;
-import java.util.Iterator;
-import org.appdapter.bind.csv.datmat.TestSheetReadMain;
-import au.com.bytecode.opencsv.CSVReader;
-
-import org.appdapter.core.log.BasicDebugger;
-
+import org.appdapter.core.store.{ FileStreamUtils }
+import java.io.Reader
+import java.util.Iterator
+import org.appdapter.bind.csv.datmat.TestSheetReadMain
+import au.com.bytecode.opencsv.CSVReader
+import org.appdapter.core.log.BasicDebugger
 import com.hp.hpl.jena.rdf.model.{ Model, Statement, Resource, Property, Literal, RDFNode }
 import com.hp.hpl.jena.ontology.{ OntProperty, ObjectProperty, DatatypeProperty }
 import com.hp.hpl.jena.datatypes.{ RDFDatatype, TypeMapper }
 import com.hp.hpl.jena.datatypes.xsd.{ XSDDatatype }
 import com.hp.hpl.jena.shared.{ PrefixMapping }
+import java.io.FileNotFoundException
+import org.appdapter.core.log.Debuggable
 /**
  * @author Stu B. <www.texpedient.com>
  */
@@ -116,15 +116,22 @@ class MapSheetProc(headerRowCount: Int, val keyColIdx: Int, val vColIdx: Int) ex
   def getJavaMap: java.util.Map[String, String] = myResultMap;
 }
 
-object MatrixData {
+object MatrixData extends BasicDebugger {
 
   def processSheet(url: String, processor: MatrixRow => Unit) {
     val rawReader: Reader = FileStreamUtils.makeSheetURLDataReader(url);
-    processSheetR(rawReader, processor);
+    if (rawReader == null) {
+    	getLogger().error("No sheet found: " + url, new FileNotFoundException(url))
+    } else {
+    	processSheetR(rawReader, processor);
+    }
   }
 
   def processSheetR(rawReader: Reader, processor: MatrixRow => Unit) {
-
+    if (rawReader == null) {
+    	getLogger().error("NUll reader")
+    	return
+    }
     val csvr: CSVReader = new CSVReader(rawReader);
 
     var done = false;
@@ -132,7 +139,11 @@ object MatrixData {
       val rowArray: Array[String] = csvr.readNext();
       val matrixRow = new MatrixRowCSV(rowArray);
       if (rowArray != null) {
-        processor(matrixRow);
+        try {
+          processor(matrixRow);
+        } catch {
+          case e: Exception => getLogger().error(Debuggable.toInfoStringArgV("processing a row problem " + e,e,processor, rowArray))
+        }
       } else {
         done = true;
       }
