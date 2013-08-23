@@ -9,8 +9,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.appdapter.core.convert.ReflectUtils;
+import org.appdapter.core.convert.ToFromKeyConverter;
 import org.appdapter.gui.api.DisplayContext;
-import org.appdapter.gui.browse.ToFromKeyConverter;
 import org.appdapter.gui.browse.Utility;
 
 /**

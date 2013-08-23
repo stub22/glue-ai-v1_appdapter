@@ -12,8 +12,6 @@ import java.beans.PropertyChangeSupport;
 import java.beans.PropertyEditorSupport;
 import java.util.*;
 
-import javax.swing.AbstractListModel;
-import javax.swing.ComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -21,16 +19,17 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.SwingConstants;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 
 import org.appdapter.core.convert.NoSuchConversionException;
+import org.appdapter.core.convert.ToFromKeyConverter;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.BT;
 import org.appdapter.gui.api.NamedObjectCollection;
 import org.appdapter.gui.api.POJOCollectionListener;
 import org.appdapter.gui.browse.SearchableDemo;
-import org.appdapter.gui.browse.ToFromKeyConverter;
 import org.appdapter.gui.browse.Utility;
-import org.appdapter.gui.swing.ObjectChoiceComboPanel.ObjectChoiceModel;
 import org.appdapter.gui.swing.ObjectChoiceComboPanel.ObjectComboPrettyRender;
 import org.appdapter.gui.trigger.TriggerPopupMenu;
 
@@ -39,7 +38,7 @@ import org.appdapter.gui.trigger.TriggerPopupMenu;
  * of a certain type.
  *
  */
-public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionListener, MouseListener {
+public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionListener, MouseListener, ToFromKeyConverter<Object, String>, ListDataListener {
 
 	public static final Object NULLOBJECT = "<null>";
 
@@ -50,14 +49,12 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 
 	Class type;
 	JComboBox combo;
-	ObjectChoiceModel model;
-	ToFromKeyConverter converter;
+	final ObjectChoiceModel model;
+	ToFromKeyConverter<Object, String> converter;
 
 	public boolean useStringProxies;
 	public boolean useSmallObjectViewInLists;
 	public boolean isStringChooser;
-
-	Object selectedObject = null;
 
 	public ObjectChoiceComboPanel(Class type, Object value) {
 		this(null, type, value, Utility.getToFromStringConverter(type));
@@ -66,7 +63,6 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 	public ObjectChoiceComboPanel(NamedObjectCollection context0, Class type0, Object value, ToFromKeyConverter conv) {
 		super(false);
 		this.converter = conv;
-		selectedObject = value;
 		this.type = type0;
 		if (context0 == null)
 			context0 = Utility.getTreeBoxCollection();
@@ -80,6 +76,8 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 			useStringProxies = Utility.isToStringType(type) && !isStringChooser;
 		}
 		useSmallObjectViewInLists = !useStringProxies && !isStringChooser;
+		model = new ObjectChoiceModel(context, type, this, combo, propSupport);
+		model.addListDataListener(this);
 		initGUI();
 
 		if (context != null)
@@ -122,7 +120,7 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 	}
 
 	private void initGUI() {
-		model = new ObjectChoiceModel();
+
 		combo = new JComboBox(model);
 		//combo.setEditable(false);
 		SearchableDemo.installSearchable(combo);
@@ -286,81 +284,33 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 
 	}
 
-	class ObjectChoiceModel extends AbstractListModel implements ComboBoxModel {
-		//Vector listeners = new Vector();
-		java.util.List<Object> objectValues;
-
-		@SuppressWarnings("unchecked") public ObjectChoiceModel() {
-		}
-
-		@Override public synchronized void setSelectedItem(Object anItem) {
-			if (anItem instanceof String) {
-				if (useStringProxies) {
-					anItem = stringToObject((String) anItem);
-				}
-			}
-			if (!Debuggable.isRelease()) {
-				String title = objectToString(anItem);
-				Object obj = stringToObject(title);
-				if (obj != anItem) {
-					Utility.bug("Not round tripping " + anItem);
-				}
-			}
-			if (selectedObject != anItem) {
-				Object oldValue = selectedObject;
-				selectedObject = anItem;
-				combo.setToolTipText(Utility.makeTooltipText(selectedObject));
-				propSupport.firePropertyChange("selection", oldValue, anItem);
-			}
-		}
-
-		@Override public Object getSelectedItem() {
-			return selectedObject;
-		}
-
-		public Object getSelectedBean() {
-			return selectedObject;
-		}
-
-		@Override public int getSize() {
-			if (objectValues == null)
-				return 0;
-			return objectValues.size();
-		}
-
-		@Override public Object getElementAt(int index) {
-			try {
-				return objectValues.get(index);
-			} catch (Exception err) {
-				return null;
-			}
-		}
-
-		public synchronized void reload() {
-			Object selected = getSelectedBean();
-			if (context == null)
-				objectValues = new LinkedList();
-			else {
-				Class ft = type;
-				Collection col = context.findObjectsByType(ft);
-				if (col.size() == 0) {
-					Utility.theLogger.warn("col.size() == 0 for " + ft);
-				}
-				objectValues = new LinkedList();
-				for (Object o : col) {
-
-					objectValues.add(o);
-				}
-			}
-			objectValues.add(NULLOBJECT);
-			setSelectedItem(selected);
-		}
-	}
-
 	public Object getValue() {
 		if (model == null)
 			return model;
 		return model.getSelectedBean();
+	}
+
+	@Override public Object fromKey(String title, Class type) {
+		return stringToObject(title);
+	}
+
+	@Override public String toKey(Object object) {
+		return objectToString(object);
+	}
+
+	@Override public void intervalAdded(ListDataEvent e) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override public void intervalRemoved(ListDataEvent e) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override public void contentsChanged(ListDataEvent e) {
+		// TODO Auto-generated method stub
+
 	}
 
 }
