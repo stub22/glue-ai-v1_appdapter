@@ -180,7 +180,7 @@ object OmniLoaderRepoTest {
   final val GROUP_KEY_THEATER = "TheaterGroupId";
   final val THEATER_GROUP_QN = "csi:theater_group_44";
 
-  def main(args: Array[String]) = {
+  def main(args: Array[String]): Unit  = {
     print("Start Whackamole");
     val repoNav = DemoBrowserUI.makeDemoNavigatorCtrl(args);
     print("Create a Goog Sheet Spec");
