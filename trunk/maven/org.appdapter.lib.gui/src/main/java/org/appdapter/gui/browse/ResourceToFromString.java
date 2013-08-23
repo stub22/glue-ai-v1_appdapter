@@ -22,7 +22,7 @@ import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.RDFReader;
 import com.hp.hpl.jena.rdf.model.impl.ResourceImpl;
 
-public class ResourceToFromString extends ToFromKeyConverter<Object, String> {
+public class ResourceToFromString extends ToFromKeyConverterImpl<Object, String> {
 
 	private static Map<String, String> knownNamespaces = new HashMap();
 	static Model oenhmodel;

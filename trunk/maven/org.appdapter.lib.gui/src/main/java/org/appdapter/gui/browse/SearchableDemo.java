@@ -15,8 +15,10 @@ import java.awt.GridLayout;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
+import javax.swing.AbstractListModel;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JCheckBox;
@@ -34,6 +36,7 @@ import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.JViewport;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.tree.TreePath;
 
@@ -495,10 +498,10 @@ public class SearchableDemo implements AnyOper.Singleton, AnyOper.Autoload {
 		panel.add(new JScrollPane(tree));
 		panel.add(Box.createVerticalStrut(12), JideBoxLayout.FIX);
 
+		initFontNames();
+
 		if (true)
 			return panel;
-		_fontNames = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
-		_fontList = Arrays.asList(_fontNames);
 
 		// create font name combobox
 		final JTextField fontNameTextField = new JTextField();
@@ -518,8 +521,7 @@ public class SearchableDemo implements AnyOper.Singleton, AnyOper.Autoload {
 	}
 
 	@UISalient public Component getOtherDemoPanel() {
-		_fontNames = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
-		_fontList = Arrays.asList(_fontNames);
+		initFontNames();
 
 		JPanel panel1 = createPanel1();
 		JPanel panel2 = createAutoCompleteForTree();
@@ -528,5 +530,25 @@ public class SearchableDemo implements AnyOper.Singleton, AnyOper.Autoload {
 		panel.add(panel1, BorderLayout.BEFORE_FIRST_LINE);
 		panel.add(panel2);
 		return panel;
+	}
+
+	static public void initFontNames() {
+		_fontNames = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
+		_fontList = Arrays.asList(_fontNames);
+	}
+
+	public static AutoCompletion createAutoCompleteForText(JTextComponent txtBox, List col) {
+		SelectAllUtils.install(txtBox);
+		final List col0 = col;
+		return new AutoCompletion(txtBox, new ListSearchable(new JList(new AbstractListModel() {
+			public int getSize() {
+				return col0.size();
+			}
+
+			public Object getElementAt(int i) {
+				return col0.get(i);
+			}
+		})));
+
 	}
 }

@@ -10,7 +10,7 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
 import javax.swing.tree.TreeCellEditor;
 
-import org.appdapter.gui.browse.ToFromKeyConverter;
+import org.appdapter.core.convert.ToFromKeyConverter;
 import org.appdapter.gui.swing.PropertyValueControl;
 
 public class CustomCellEditor extends CustomCellRenderer implements TableCellEditor, TreeCellEditor {

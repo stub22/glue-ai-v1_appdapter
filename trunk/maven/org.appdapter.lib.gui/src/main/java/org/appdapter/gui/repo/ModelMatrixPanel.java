@@ -26,8 +26,8 @@ import java.lang.reflect.Type;
 import java.util.List;
 
 import org.appdapter.api.trigger.Box;
+import org.appdapter.core.convert.ToFromKeyConverter;
 import org.appdapter.gui.browse.ResourceToFromString;
-import org.appdapter.gui.browse.ToFromKeyConverter;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.swing.CantankerousJob;
 import org.appdapter.gui.table.GenericBeansPanel;
