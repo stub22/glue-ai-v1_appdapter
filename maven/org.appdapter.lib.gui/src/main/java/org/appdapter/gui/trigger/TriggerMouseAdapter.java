@@ -22,6 +22,10 @@ public class TriggerMouseAdapter extends MouseAdapter {
 		mouseEvent(e);
 	}
 
+	public void mousePressed(MouseEvent e) {
+		mouseEvent(e);
+	}
+
 	public void mouseReleased(MouseEvent e) {
 		mouseEvent(e);
 	}
