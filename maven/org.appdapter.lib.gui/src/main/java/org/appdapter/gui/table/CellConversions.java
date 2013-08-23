@@ -2,7 +2,7 @@ package org.appdapter.gui.table;
 
 import java.util.List;
 
-import org.appdapter.gui.browse.ToFromKeyConverter;
+import org.appdapter.core.convert.ToFromKeyConverter;
 
 public interface CellConversions {
 

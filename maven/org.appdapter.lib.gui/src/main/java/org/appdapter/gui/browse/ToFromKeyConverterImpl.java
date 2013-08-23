@@ -7,30 +7,29 @@ import java.util.List;
 import org.appdapter.core.convert.Converter;
 import org.appdapter.core.convert.NoSuchConversionException;
 import org.appdapter.core.convert.ReflectUtils;
+import org.appdapter.core.convert.ToFromKeyConverter;
 import org.appdapter.core.log.Debuggable;
 
-abstract public class ToFromKeyConverter<VALUECLASS, KEYCLASS> implements Converter {
+abstract public class ToFromKeyConverterImpl<VALUECLASS, KEYCLASS> implements Converter, ToFromKeyConverter<VALUECLASS, KEYCLASS> {
 	protected Class<VALUECLASS> valueClass;
 	protected Class<KEYCLASS> keyClass;
 
-	
 	@Override public String toString() {
 		return "{" + Debuggable.toInfoStringArgV(keyClass, "=", valueClass, getClass()) + "}";
 	}
 
-	
 	@Override public Integer declaresConverts(Object val, Class valClass, Class objNeedsToBe, List maxCvt) {
 		if (valClass != keyClass)
 			return WONT;
 		return CASTING_ONLY.declaresConverts(val, valueClass, objNeedsToBe, maxCvt);
 	}
 
-	protected ToFromKeyConverter(Class<VALUECLASS> toClz, Class<KEYCLASS> fromClz) {
+	protected ToFromKeyConverterImpl(Class<VALUECLASS> toClz, Class<KEYCLASS> fromClz) {
 		valueClass = toClz;
 		keyClass = fromClz;
 	}
 
-	protected ToFromKeyConverter() {
+	protected ToFromKeyConverterImpl() {
 		valueClass = null;
 	}
 

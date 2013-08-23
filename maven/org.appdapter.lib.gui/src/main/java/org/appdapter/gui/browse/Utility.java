@@ -137,6 +137,7 @@ import org.appdapter.core.convert.ConverterFromMember;
 import org.appdapter.core.convert.NoSuchConversionException;
 import org.appdapter.core.convert.OptionalArg;
 import org.appdapter.core.convert.ReflectUtils;
+import org.appdapter.core.convert.ToFromKeyConverter;
 import org.appdapter.core.item.JenaResourceItem;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.core.name.FreeIdent;
@@ -220,7 +221,7 @@ public class Utility extends UtilityMenuOptions {
 
 	public final static ToFromStringNotSpecialized FROM_STRING_NOT_SPECIALIZED = new ToFromStringNotSpecialized();
 
-	static public class ToFromStringNotSpecialized extends ToFromKeyConverter<Object, String> implements AnyOper.DontAdd {
+	static public class ToFromStringNotSpecialized extends ToFromKeyConverterImpl<Object, String> implements AnyOper.DontAdd {
 
 		public ToFromStringNotSpecialized() {
 			super(Object.class, String.class);
@@ -255,7 +256,7 @@ public class Utility extends UtilityMenuOptions {
 
 		@Override public Integer declaresConverts(Object val, Class objClass, Class objNeedsToBe, List maxCvt) {
 			if (objClass != null) {
-				if (getToFromConverter(objNeedsToBe, objClass) != null)
+				if (getToFromKeyConverter(objNeedsToBe, objClass) != null)
 					return WILL;
 			}
 			return MIGHT;// .declaresConverts(val, objClass, objNeedsToBe);
@@ -270,15 +271,18 @@ public class Utility extends UtilityMenuOptions {
 		}
 
 		@Override public <T> T convert(Object obj, Class<T> objNeedsToBe, List maxCvt) throws NoSuchConversionException {
-			Converter converter = getToFromConverter(objNeedsToBe, obj.getClass());
+			ToFromKeyConverter converter = getToFromKeyConverter(objNeedsToBe, obj.getClass());
 			if (converter == null)
 				return noSuchConversion(obj, objNeedsToBe, null);
-			return converter.convert(obj, objNeedsToBe, maxCvt);
+			if (converter instanceof Converter) {
+				return ((Converter) converter).convert(obj, objNeedsToBe, maxCvt);
+			}
+			return (T) converter.fromKey(obj, objNeedsToBe);
 		}
 
 		@Override public Integer declaresConverts(Object val, Class objClass, Class objNeedsToBe, List maxCvt) {
 			if (objClass != null) {
-				if (getToFromConverter(objNeedsToBe, objClass) != null)
+				if (getToFromKeyConverter(objNeedsToBe, objClass) != null)
 					return WILL;
 			}
 			return WONT;// .declaresConverts(val, objClass, objNeedsToBe);
@@ -1008,7 +1012,7 @@ public class Utility extends UtilityMenuOptions {
 		registerConverter(new UtilityConverter());
 		Map<Class, ToFromKeyConverter> toFrmKeyCnv = getKeyConvMap(String.class, true);
 
-		toFrmKeyCnv.put(Ident.class, new ToFromKeyConverter<Ident, String>(Ident.class, String.class) {
+		toFrmKeyCnv.put(Ident.class, new ToFromKeyConverterImpl<Ident, String>(Ident.class, String.class) {
 
 			@Override public String toKey(Ident toBecomeAString) {
 				return toBecomeAString.getAbsUriString();
@@ -1397,7 +1401,7 @@ public class Utility extends UtilityMenuOptions {
 				// trouble!?
 			}
 		}
-		ToFromKeyConverter conv = getToFromConverter(type, keyClass);
+		ToFromKeyConverter conv = getToFromKeyConverter(type, keyClass);
 		if (conv != null) {
 			try {
 				Object o = conv.fromKey(title, type);
@@ -2369,9 +2373,9 @@ public class Utility extends UtilityMenuOptions {
 			return "<nULL>";
 		}
 		Class cls = nonPrimitiveTypeFor(object.getClass());
-		ToFromKeyConverter<?, String> conv = getToFromStringConverter(cls);
+		ToFromKeyConverter<Object, String> conv = getToFromStringConverter(cls);
 		if (conv != null) {
-			String toKey = conv.toKeyFromObject(object);
+			String toKey = conv.toKey((Object) object);
 			if (toKey != null || toKey.trim().length() > 0) {
 				return toKey;
 			} else {
@@ -2494,10 +2498,10 @@ public class Utility extends UtilityMenuOptions {
 	public static ToFromKeyConverter getToFromStringConverter(Class valueClazz) {
 		if (valueClazz == null || valueClazz == Object.class)
 			return FROM_STRING_NOT_SPECIALIZED;
-		return getToFromConverter(valueClazz, String.class);
+		return getToFromKeyConverter(valueClazz, String.class);
 	}
 
-	static public <T, K> ToFromKeyConverter<T, K> getToFromConverter(Class<T> valueClazz, Class<K> key) {
+	static public <T, K> ToFromKeyConverter<T, K> getToFromKeyConverter(Class<T> valueClazz, Class<K> key) {
 		Map<Class, ToFromKeyConverter> toFrmKeyCnv = getKeyConvMap(key, false);
 		if (toFrmKeyCnv == null)
 			return null;

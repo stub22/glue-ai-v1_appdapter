@@ -27,8 +27,8 @@ import static org.appdapter.core.log.Debuggable.printStackTrace;
 import java.util.List;
 
 import org.appdapter.api.trigger.Box;
+import org.appdapter.core.convert.ToFromKeyConverter;
 import org.appdapter.gui.api.WrapperValue;
-import org.appdapter.gui.browse.ToFromKeyConverter;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.swing.ScreenBoxPanel;
 import org.slf4j.Logger;

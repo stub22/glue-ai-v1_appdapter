@@ -41,6 +41,7 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.tree.TreeCellEditor;
 
 import org.appdapter.core.convert.ReflectUtils;
+import org.appdapter.core.convert.ToFromKeyConverter;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.core.name.Ident;
 import org.appdapter.gui.api.BT;
@@ -48,7 +49,7 @@ import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.GetSetObject;
 import org.appdapter.gui.api.IValidate;
 import org.appdapter.gui.api.NamedObjectCollection;
-import org.appdapter.gui.browse.ToFromKeyConverter;
+import org.appdapter.gui.browse.SearchableDemo;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.editors.ValueEditor;
 import org.appdapter.gui.table.CellEditorComponent;
@@ -103,7 +104,7 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 		}
 
 		public String getSelectedItem() {
-			return (String) getToFromConv().toKeyFromObject(getValue());
+			return (String) getToFromConv().toKey(getValue());
 		}
 
 		private void writeValue() {
@@ -337,6 +338,7 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 			editor.addPropertyChangeListener(this);
 			addActionListener(this);
 			addFocusListener(this);
+			SearchableDemo.createAutoCompleteForText(this, null);
 		}
 
 		@Override public void actionPerformed(ActionEvent evt) {
