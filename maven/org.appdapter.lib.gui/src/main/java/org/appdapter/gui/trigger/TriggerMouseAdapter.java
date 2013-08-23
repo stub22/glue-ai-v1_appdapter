@@ -31,6 +31,15 @@ public class TriggerMouseAdapter extends MouseAdapter {
 	}
 
 	public void mouseEvent(MouseEvent e) {
+		if (e.isConsumed())
+			return;
+		synchronized (e) {
+			// so popup menue event wont overlap
+			mouseEvent0(e);
+		}
+	}
+
+	public void mouseEvent0(MouseEvent e) {
 		Object source = e.getSource();
 		if (source instanceof JTable) {
 			mouseEvent(e, (JTable) source);
@@ -38,7 +47,7 @@ public class TriggerMouseAdapter extends MouseAdapter {
 			mouseEvent(e, (JTree) source);
 		} else {
 			TriggerMenuFactory.theLogger.trace("Click on " + source.getClass() + " " + source);
-			if (e.isPopupTrigger()) {
+			if (e.isPopupTrigger() && !e.isConsumed()) {
 				TriggerMenuFactory.buildPopupMenuAndShow(e, true, source, e.getComponent(), e);
 			}
 		}
@@ -53,7 +62,7 @@ public class TriggerMouseAdapter extends MouseAdapter {
 			source.changeSelection(row, column, false, false);
 		}
 
-		if (e.isPopupTrigger()) {
+		if (e.isPopupTrigger() && !e.isConsumed()) {
 			int columns = source.getColumnCount();
 			Object cellSubBox = source.getValueAt(row, column);
 			Object rowObject = null;
@@ -78,7 +87,7 @@ public class TriggerMouseAdapter extends MouseAdapter {
 			return;
 		}
 		tree.setSelectionPath(path);
-		if (e.isPopupTrigger()) {
+		if (e.isPopupTrigger() && !e.isConsumed()) {
 
 			// Nodes are not *required* to implement TreeNode
 			DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) path.getLastPathComponent();
