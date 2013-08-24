@@ -26,6 +26,7 @@ import org.appdapter.gui.api.DisplayType;
 import org.appdapter.gui.api.NamedObjectCollection;
 import org.appdapter.gui.api.POJOCollectionListener;
 import org.appdapter.gui.browse.Utility;
+import org.appdapter.gui.swing.IsReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -439,13 +440,23 @@ VetoableChangeListener, PropertyChangeListener, Serializable, Set {
 				result.add(value);
 			}
 		}
+		if (result.size() == 0) {
+
+		}
 		for (BT value : getScreenBoxes()) {
-			if (value.isTypeOf(type)) {
+			if (value.isTypeOf(type) || value.canConvert(type)) {
 				result.add(value.convertTo(type));
 			}
 		}
+		if (Debuggable.isRelease())
+			return result;
 		if (result.size() > 0)
 			return result;
+		for (BT value : getScreenBoxes()) {
+			if (value.isTypeOf(type) || value.canConvert(type)) {
+				result.add(value.convertTo(type));
+			}
+		}
 		return result;
 	}
 

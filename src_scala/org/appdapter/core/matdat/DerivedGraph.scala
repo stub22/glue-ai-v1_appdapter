@@ -93,8 +93,12 @@ case class DirectDerivedGraph(val mySpec : DerivedGraphSpec, val myUpstreamNMP :
 				var cumUnionModel = ModelFactory.createDefaultModel();
 				for (srcGraphID <- mySpec.myInGraphIDs) {
 					val srcGraph = myUpstreamNMP.getNamedModel(srcGraphID)
-					// TODO : when upgrading (to Jena v2.8?) use  ModelFactory.createUnion();
-					cumUnionModel = cumUnionModel.union(srcGraph)
+					if (srcGraph==null) {
+						getLogger().error("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ERRORR!!!! %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ERROR !! %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% \nUnknown srcGraphID = " + srcGraphID + " in " + myUpstreamNMP)
+					} else {
+						// TODO : when upgrading (to Jena v2.8?) use  ModelFactory.createUnion();
+						cumUnionModel = cumUnionModel.union(srcGraph)					  
+					}
 				}
 				cumUnionModel
 			}

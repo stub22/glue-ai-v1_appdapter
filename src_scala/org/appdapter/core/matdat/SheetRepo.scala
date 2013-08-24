@@ -99,8 +99,12 @@ abstract class SheetRepo(directoryModel: Model, var fileModelCLs: java.util.List
     ClassLoaderUtils.getFileResourceClassLoaders(ClassLoaderUtils.ALL_RESOURCE_CLASSLOADER_TYPES, fileModelCLs, clList);
   }
   override def toString(): String = {
-    val dm = getDirectoryModel();
-    getClass.getSimpleName + "[name=" + myDebugNameToStr + ", dir=" + dm.size() + " setof=" + RepoOper.setOF(getMainQueryDataset.listNames) + "]";
+     val dm = getDirectoryModel();
+    if (isLoadingLocked) {
+    	getClass.getSimpleName + "[name=" + myDebugNameToStr + ", dir=" + dm.size() + " setof=Loading...]";
+    } else {
+    	getClass.getSimpleName + "[name=" + myDebugNameToStr + ", dir=" + dm.size() + " setof=" + RepoOper.setOF(getMainQueryDataset.listNames) + "]";
+    }
   }
 
   def reloadSingleModelByName(modelName: String) = {
@@ -117,16 +121,28 @@ abstract class SheetRepo(directoryModel: Model, var fileModelCLs: java.util.List
 
   var isUpdatedFromDir = false
 
+  override def callLoadingInLock(): Unit = {
+    // Load the rest of the repo's initial *sheet* models, as instructed by the directory.
+    getLogger().debug("Loading Sheet Models")
+    loadSheetModelsIntoMainDataset()
+    // Load the rest of the repo's initial *file/resource* models, as instructed by the directory.
+    getLogger().debug("Loading File Models")
+    loadDerivedModelsIntoMainDataset(fileModelCLs)
+    getLogger().debug("Done loading")
+  }
+
   def ensureUpdatedPrivate() = {
     {
       this.synchronized {
+        beginLoading();
+        finishLoading();
         if (!this.isUpdatedFromDir) {
           trace("Loading OnmiRepo to make UpToDate")
           this.isUpdatedFromDir = true;
           var dirModelSize = getDirectoryModel().size;
           // only load from non empty dir models
           // this is because we need to have non initalized repos at times
-          if (dirModelSize>0) updateFromDirModel
+          if (dirModelSize > 0) updateFromDirModel
 
           var newModelSize = getDirectoryModel().size;
           if (newModelSize != dirModelSize) {
