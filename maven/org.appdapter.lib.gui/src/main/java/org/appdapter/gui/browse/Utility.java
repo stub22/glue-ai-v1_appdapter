@@ -2858,7 +2858,11 @@ public class Utility extends UtilityMenuOptions {
 			if (oc == null) {
 				oc = getSpecialClassName(((Class) gv));
 			}
-			gv = getSpecialClassName(gv.getClass()) + ".this.toString: " + oc;
+			String gvStr = getSpecialClassName(gv.getClass()) + ".this.toString: " + oc;
+			if (gvStr.length() > 2048) {
+				gvStr = gvStr.substring(0, 2048);
+				gv = gvStr;
+			}
 		}
 		return "" + gv;
 	}
