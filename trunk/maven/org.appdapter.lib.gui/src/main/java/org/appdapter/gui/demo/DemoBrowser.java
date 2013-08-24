@@ -21,31 +21,40 @@ import static org.appdapter.core.log.Debuggable.printStackTrace;
 import java.awt.BorderLayout;
 import java.awt.FileDialog;
 import java.io.File;
-import java.util.concurrent.Callable;
 
 import javax.swing.BoxLayout;
 import javax.swing.JApplet;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.plaf.metal.DefaultMetalTheme;
+import javax.swing.plaf.metal.MetalLookAndFeel;
+import javax.swing.plaf.metal.OceanTheme;
 import javax.swing.tree.TreeModel;
 
 import org.appdapter.api.trigger.AnyOper;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.CallableWithParameters;
 import org.appdapter.api.trigger.MutableBox;
-import org.appdapter.api.trigger.MutableTrigger;
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.api.trigger.TriggerImpl;
 import org.appdapter.core.log.BasicDebugger;
 import org.appdapter.core.log.Debuggable;
-import org.appdapter.bind.csv.datmat.*;
-import org.appdapter.core.matdat.*;
-import org.appdapter.core.store.*;
+import org.appdapter.core.matdat.OfflineXlsSheetRepoSpec;
+import org.appdapter.core.store.Repo;
+import org.appdapter.core.store.RepoBox;
 import org.appdapter.demo.DemoBrowserUI;
 import org.appdapter.demo.DemoNavigatorCtrlFactory;
 import org.appdapter.demo.DemoResources;
-import org.appdapter.gui.api.*;
+import org.appdapter.gui.api.DisplayContextProvider;
+import org.appdapter.gui.api.EditableTrigger;
 import org.appdapter.gui.api.ScreenBox.Kind;
 import org.appdapter.gui.box.ScreenBoxContextImpl;
 import org.appdapter.gui.box.ScreenBoxImpl;
@@ -57,7 +66,8 @@ import org.appdapter.gui.repo.DefaultMutableRepoBoxImpl;
 import org.appdapter.gui.repo.RepoBoxImpl;
 import org.appdapter.gui.repo.RepoModelBoxImpl;
 import org.appdapter.gui.repo.RepoTriggers;
-import org.appdapter.gui.trigger.*;
+import org.appdapter.gui.trigger.BootstrapTriggerFactory;
+import org.appdapter.gui.trigger.SysTriggers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -566,6 +576,61 @@ final public class DemoBrowser implements AnyOper.Singleton {
 		main.setVisible(false);
 		main.dispose();
 
+	}
+
+	public static void setLookAndFeelFromProperty() {
+		String LOOKANDFEEL = System.getProperty("swing.LAF");
+		if (LOOKANDFEEL == null) {
+			return;
+		}
+		setLookAndFeel(LOOKANDFEEL);
+	}
+
+	public static boolean setLookAndFeel(String className) {
+		try {
+			UIManager.setLookAndFeel(className);
+			new JComboBox();
+			new JPopupMenu();
+			new JPanel();
+			new JMenu().getPopupMenu();
+			new JSplitPane();
+			return true;
+		} catch (Throwable ex) {
+			theLogger.error("LAF = >" + className, ex);
+			return false;
+		}
+	}
+
+	public static void setLookAndFeelSafely(String laf) {
+		try {
+			String LOOKANDFEEL = laf.toLowerCase();
+			if (LOOKANDFEEL.contains("metal")) {
+				if (LOOKANDFEEL.contains("defaultmetal"))
+					MetalLookAndFeel.setCurrentTheme(new DefaultMetalTheme());
+				else if (LOOKANDFEEL.contains("ocean"))
+					MetalLookAndFeel.setCurrentTheme(new OceanTheme());
+				UIManager.setLookAndFeel(new MetalLookAndFeel());
+			}
+			if (LOOKANDFEEL.contains("system")) {
+				if (setLookAndFeel(UIManager.getSystemLookAndFeelClassName()))
+					return;
+			}
+			if (LOOKANDFEEL.contains("crossplatform")) {
+				if (setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName()))
+					return;
+			}
+			for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+				if (info.getName().toLowerCase().contains(LOOKANDFEEL)) {
+					if (setLookAndFeel(info.getClassName()))
+						return;
+				}
+			}
+			if (setLookAndFeel(LOOKANDFEEL))
+				return;
+		} catch (Throwable ex) {
+			theLogger.error("Setting LAF" + laf, ex);
+		}
+		setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
 	}
 
 	/*

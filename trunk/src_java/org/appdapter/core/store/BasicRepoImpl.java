@@ -41,6 +41,9 @@ import com.hp.hpl.jena.shared.Lock;
 
 public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements Repo {
 	private Dataset myMainQueryDataset;
+	final public Object loadingLock = new Object();
+	public boolean isLoadingStarted = false;
+	public boolean isLoadingLocked = false;
 
 	public void replaceNamedModel(Ident modelID, Model jenaModel) {
 		Dataset repoDset = getMainQueryDataset();
@@ -76,10 +79,43 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 	protected abstract Dataset makeMainQueryDataset();
 
 	@Override public Dataset getMainQueryDataset() {
+		beginLoading();
+		finishLoading();
 		if (myMainQueryDataset == null) {
 			myMainQueryDataset = makeMainQueryDataset();
 		}
 		return myMainQueryDataset;
+	}
+
+	// this will make sure that loadingLock is locked so all callers that want to use the repo will need to call finishLoading();
+	// (getMainQueryDataset you'll notice calls finishLoading() )
+	final public void beginLoading() {
+		if (isLoadingStarted || isLoadingLocked)
+			return;
+		synchronized (this.loadingLock) {
+			isLoadingStarted = true;
+			isLoadingLocked = true;
+			(new Thread("Loading " + this) {
+				@Override public void run() {
+					synchronized (loadingLock) {
+						callLoadingInLock();
+					}
+					isLoadingLocked = false;
+				}
+			}).start();
+		}
+	}
+
+	// this is meant to be overridden optionally
+	public void callLoadingInLock() {
+
+	}
+
+	// call this and it will block untill load is complete
+	final public void finishLoading() {
+		synchronized (this.loadingLock) {
+			return;
+		}
 	}
 
 	@Override public List<GraphStat> getGraphStats() {

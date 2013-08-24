@@ -16,6 +16,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.browse.Utility;
+import org.appdapter.gui.demo.DemoBrowser;
 import org.appdapter.gui.util.PromiscuousClassUtilsA;
 
 import com.jidesoft.plaf.LookAndFeelFactory;
@@ -36,9 +37,12 @@ public class LookAndFeelMenuItems extends SafeJMenu {
 	}
 
 	private void initGUI(boolean isOSGi) {
+		final LookAndFeelMenuItems menu = this;
+		for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+			menu.add(createLnfAction(info.getName(), info.getClassName()));
+		}
 		if (isOSGi)
 			return;
-		final LookAndFeelMenuItems menu = this;
 		menu.add(createLnfAction("Metal", "javax.swing.plaf.metal.MetalLookAndFeel"));
 		menu.add(createLnfAction("System", UIManager.getSystemLookAndFeelClassName()));
 		menu.add(createLnfAction("CrossPlatform", UIManager.getCrossPlatformLookAndFeelClassName()));
@@ -118,7 +122,7 @@ public class LookAndFeelMenuItems extends SafeJMenu {
 	private static Action createLnfAction(String title, final String className) {
 		return new AbstractAction(title) {
 			@Override public void actionPerformed(ActionEvent e) {
-				setLookAndFeel(className);
+				DemoBrowser.setLookAndFeel(className);
 			}
 		};
 	}

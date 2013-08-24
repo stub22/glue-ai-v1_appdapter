@@ -27,7 +27,6 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.LinkedList;
 
@@ -37,16 +36,13 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JPanel;
+import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.JTree;
-import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
-import javax.swing.UIManager;
-import javax.swing.plaf.ColorUIResource;
 import javax.swing.tree.TreeModel;
 
-import org.appdapter.api.trigger.AnyOper.Singleton;
 import org.appdapter.api.trigger.AnyOper.UIHidden;
 import org.appdapter.api.trigger.AnyOper.UISalient;
 import org.appdapter.api.trigger.Box;
@@ -70,9 +66,6 @@ import org.appdapter.gui.swing.LookAndFeelMenuItems;
 import org.appdapter.gui.swing.ObjectTabsForTabbedView;
 import org.appdapter.gui.swing.SafeJMenu;
 
-import com.jidesoft.swing.JideScrollPane;
-import com.jidesoft.swing.JideSplitPane;
-import com.jidesoft.swing.JideTabbedPane;
 import com.jidesoft.tree.StyledTreeCellRenderer;
 
 /**
@@ -85,7 +78,6 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 	public DisplayContextUIImpl app;
 	public AddToTreeListener addToTreeListener;
 	public BoxContext myBoxContext;
-	private AddToTreeListener addClipToTreeListener;
 
 	@UISalient
 	boolean OnTreeFocusShowObject = false;
@@ -126,26 +118,18 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 		invalidate();
 	}
 
-	private void addClipboard(NamedObjectCollection clipboard) {
-		try {
-			Box suposeRoot = myBoxContext.getRootBox();
-			ScreenBoxImpl clipboardBox = new ScreenBoxImpl();
-			clipboardBox.setObject(clipboard);
-			addToTreeListener.addChildObject(suposeRoot, "Clipboard", clipboardBox);
-			ScreenBoxContextImpl clipContext = new ScreenBoxContextImpl(clipboardBox);
-			this.addClipToTreeListener = new AddToTreeListener(myTree, clipboard, clipContext, clipboardBox, false);
-		} catch (Exception e) {
-
-		}
-	}
-
 	private void setTabbedPaneOptions() {
 		/**JIDESOFT	 */
-		myBoxPanelTabPane.setUseDefaultShowCloseButtonOnTab(true);
-		myBoxPanelTabPane.setShowCloseButtonOnTab(true);
-		myBoxPanelTabPane.setTabEditingAllowed(true);
+		boolean closableTabs = true;
 		myBoxPanelTabPane.setBoldActiveTab(true);
 		myBoxPanelTabPane.setShowCloseButtonOnMouseOver(false);
+		myBoxPanelTabPane.setScrollSelectedTabOnWheel(true);
+		myBoxPanelTabPane.setTabEditingAllowed(false);
+
+		myBoxPanelTabPane.setShowCloseButton(closableTabs);
+		myBoxPanelTabPane.setUseDefaultShowCloseButtonOnTab(closableTabs);
+		myBoxPanelTabPane.setCloseTabOnMouseMiddleButton(closableTabs);
+		myBoxPanelTabPane.setShowCloseButtonOnTab(closableTabs);
 	}
 
 	private void hookTree() {
@@ -161,7 +145,7 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 						if (box != null)
 							value = box;
 					}
-					String valueStr = Utility.getUniqueName(value);
+					String valueStr = Utility.getUniqueNamePretty(value);
 					super.customizeStyledLabel(tree, valueStr, sel, expanded, leaf, row, hazFocus);
 					setText(valueStr);
 					if (OnTreeFocusShowObject && hazFocus && sel) {
@@ -310,8 +294,8 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 	private void initComponents() {
 
 		myTopFrameMenu = new javax.swing.JMenuBar();
-		myBrowserSplitPane = new com.jidesoft.swing.JideSplitPane();
-		myTreeScrollPane = new com.jidesoft.swing.JideScrollPane();
+		myBrowserSplitPane = new javax.swing.JSplitPane();
+		myTreeScrollPane = new javax.swing.JScrollPane();
 		myTree = new javax.swing.JTree();
 		myContentPanel = new javax.swing.JPanel();
 		myBoxPanelStatus = new javax.swing.JTextField();
@@ -319,7 +303,7 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 		myHomeBoxPanel = new javax.swing.JPanel();
 		myLowerPanel = new javax.swing.JPanel();
 		myCmdInputTextField = new javax.swing.JTextField();
-		myLogScrollPane = new com.jidesoft.swing.JideScrollPane();
+		myLogScrollPane = new javax.swing.JScrollPane();
 		myLogTextArea = new javax.swing.JTextArea();
 
 		setLayout(new java.awt.BorderLayout());
@@ -327,7 +311,7 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 		myTree.setModel(myTreeModel);
 		myTreeScrollPane.setViewportView(myTree);
 
-		myBrowserSplitPane.add(myTreeScrollPane);
+		myBrowserSplitPane.add(myTreeScrollPane, JSplitPane.LEFT);
 
 		myContentPanel.setBackground(new java.awt.Color(204, 204, 255));
 		myContentPanel.setLayout(new java.awt.BorderLayout());
@@ -375,7 +359,7 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 
 		myContentPanel.add(myBoxPanelTabPane, java.awt.BorderLayout.CENTER);
 
-		myBrowserSplitPane.add(myContentPanel);
+		myBrowserSplitPane.add(myContentPanel,JSplitPane.RIGHT);
 
 		add(myBrowserSplitPane, java.awt.BorderLayout.CENTER);
 	}// </editor-fold>
@@ -402,16 +386,16 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 	// Variables declaration - do not modify
 	private javax.swing.JTextField myBoxPanelStatus;
 	private com.jidesoft.swing.JideTabbedPane myBoxPanelTabPane;
-	private com.jidesoft.swing.JideSplitPane myBrowserSplitPane;
+	private javax.swing.JSplitPane myBrowserSplitPane;
 	private javax.swing.JTextField myCmdInputTextField;
 	private javax.swing.JPanel myContentPanel;
 	private javax.swing.JPanel myHomeBoxPanel;
-	private com.jidesoft.swing.JideScrollPane myLogScrollPane;
+	private javax.swing.JScrollPane myLogScrollPane;
 	private javax.swing.JTextArea myLogTextArea;
 	private javax.swing.JPanel myLowerPanel;
 	private javax.swing.JMenuBar myTopFrameMenu;
 	private javax.swing.JTree myTree;
-	private com.jidesoft.swing.JideScrollPane myTreeScrollPane;
+	private javax.swing.JScrollPane myTreeScrollPane;
 	// End of variables declaration//GEN-END:variables
 	Class myBoxPanelStatusType = null;
 

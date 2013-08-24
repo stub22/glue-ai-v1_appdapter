@@ -1072,6 +1072,16 @@ public class Utility extends UtilityMenuOptions {
 		return Singleton.class.isAssignableFrom(cls);
 	}
 
+	public static void addObjectToValues(Object obj) {
+		if (obj == null)
+			return;
+		Class oc = obj.getClass();
+		addObjectFeatures(obj);
+		if (!(obj instanceof UtilClass)) {
+			uiObjects.findOrCreateBox(obj);
+		}
+	}
+
 	public static void addObjectFeatures(Object obj) {
 		if (obj == null)
 			return;
@@ -1423,6 +1433,8 @@ public class Utility extends UtilityMenuOptions {
 
 	public static String unquote(String stitle) {
 		int l = stitle.length() - 1;
+		if (l < 1)
+			return stitle;
 		for (String ch : quotingPairs) {
 			if (ch.charAt(0) == stitle.charAt(0) && ch.charAt(1) == stitle.charAt(l))
 				return stitle.substring(1, l);
@@ -1793,7 +1805,7 @@ public class Utility extends UtilityMenuOptions {
 			Pair pair = new Pair(mustBe, objClass);
 
 			if (!classToClassRegistry.remove(pair))
-				theLogger.warn("registering pair " + pair.getLeft() + "->" + pair.getRight());
+				theLogger.trace("registering pair " + pair.getLeft() + "->" + pair.getRight());
 			classToClassRegistry.add(0, pair);
 			if (panelClassesFromCached.size() > 0) {
 				synchronized (panelClassesFromCached) {
@@ -2345,7 +2357,7 @@ public class Utility extends UtilityMenuOptions {
 		if (object == null)
 			return "<null>";
 		String un = getUniqueName(object, getTreeBoxCollection(), false, true);
-		if (un.contains(" ") || un.contains("-") || un.contains("+"))
+		if (true || un.contains(" ") || un.contains("-") || un.contains("+"))
 			return un;
 		bug("Not pretty string: " + un + " perhaps use " + makeTooltipText(object));
 		return un;
@@ -3944,6 +3956,8 @@ public class Utility extends UtilityMenuOptions {
 	}
 
 	public static boolean isLAFSafe() {
+		if (true)
+			return true;
 		return !isOSGi();
 	}
 

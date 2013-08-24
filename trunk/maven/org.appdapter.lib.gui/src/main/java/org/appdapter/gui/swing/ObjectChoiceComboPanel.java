@@ -38,7 +38,7 @@ import org.appdapter.gui.trigger.TriggerPopupMenu;
  * of a certain type.
  *
  */
-public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionListener, MouseListener, ToFromKeyConverter<Object, String>, ListDataListener {
+public class ObjectChoiceComboPanel extends JJPanel implements MouseListener, ToFromKeyConverter<Object, String>, ListDataListener {
 
 	public static final Object NULLOBJECT = "<null>";
 
@@ -56,11 +56,11 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 	public boolean useSmallObjectViewInLists;
 	public boolean isStringChooser;
 
-	public ObjectChoiceComboPanel(Class type, Object value) {
-		this(null, type, value, Utility.getToFromStringConverter(type));
+	public ObjectChoiceComboPanel(Class type, String title, Object value) {
+		this(null, type, title, value, Utility.getToFromStringConverter(type));
 	}
 
-	public ObjectChoiceComboPanel(NamedObjectCollection context0, Class type0, Object value, ToFromKeyConverter conv) {
+	public ObjectChoiceComboPanel(NamedObjectCollection context0, Class type0, String title, Object value, ToFromKeyConverter conv) {
 		super(false);
 		this.converter = conv;
 		this.type = type0;
@@ -76,12 +76,14 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 			useStringProxies = Utility.isToStringType(type) && !isStringChooser;
 		}
 		useSmallObjectViewInLists = !useStringProxies && !isStringChooser;
-		model = new ObjectChoiceModel(context, type, this, combo, propSupport);
+		model = new ObjectChoiceModel(context, type, title, this, this, propSupport);
+		model.setSelectedItem(value);
 		model.addListDataListener(this);
 		initGUI();
 
 		if (context != null)
-			context.addListener(this, true);
+			context.addListener(model, true);
+
 		combo.setSelectedItem(value);
 	}
 
@@ -109,16 +111,6 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 		}
 	}
 
-	@Override public void pojoAdded(Object obj, BT box, Object senderCollection) {
-		if (type.isInstance(obj))
-			model.reload();
-	}
-
-	@Override public void pojoRemoved(Object obj, BT box, Object senderCollection) {
-		if (type.isInstance(obj))
-			model.reload();
-	}
-
 	private void initGUI() {
 
 		combo = new JComboBox(model);
@@ -128,7 +120,6 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 		setLayout(new BorderLayout());
 		add("Center", combo);
 		combo.addMouseListener(this);
-		model.reload();
 		combo.setEditable(isStringChooser || useStringProxies);
 	}
 
@@ -170,6 +161,7 @@ public class ObjectChoiceComboPanel extends JJPanel implements POJOCollectionLis
 			menu.addMenuFromObject(object);
 			add(menu);
 			menu.show(this, x, y);
+			e.consume();
 		}
 	}
 
