@@ -35,6 +35,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.JViewport;
+import javax.swing.ListModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
@@ -537,18 +538,9 @@ public class SearchableDemo implements AnyOper.Singleton, AnyOper.Autoload {
 		_fontList = Arrays.asList(_fontNames);
 	}
 
-	public static AutoCompletion createAutoCompleteForText(JTextComponent txtBox, List col) {
+	public static AutoCompletion createAutoCompleteForText(JTextComponent txtBox, ListModel col) {
 		SelectAllUtils.install(txtBox);
-		final List col0 = col;
-		return new AutoCompletion(txtBox, new ListSearchable(new JList(new AbstractListModel() {
-			public int getSize() {
-				return col0.size();
-			}
-
-			public Object getElementAt(int i) {
-				return col0.get(i);
-			}
-		})));
+		return new AutoCompletion(txtBox, new ListSearchable(new JList(col)));
 
 	}
 }

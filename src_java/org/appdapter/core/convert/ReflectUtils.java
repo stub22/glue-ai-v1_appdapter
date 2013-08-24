@@ -5,6 +5,7 @@ import static org.appdapter.core.log.Debuggable.printStackTrace;
 import static org.appdapter.core.log.Debuggable.reThrowable;
 import static org.appdapter.core.log.Debuggable.warn;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
@@ -67,7 +68,7 @@ abstract public class ReflectUtils implements UtilClass {
 	public static void registerConverter(Converter conv) {
 		if (conv == DEFAULT_CONVERTER)
 			return;
-		theLogger.warn("Register converter: " + conv);
+		theLogger.trace("Register converter: " + conv);
 		synchronized (registeredConverters) {
 			registeredConverters.remove(conv);
 			if (!(conv instanceof DontAdd))
@@ -2364,6 +2365,18 @@ abstract public class ReflectUtils implements UtilClass {
 		if (type.getTypeParameters().length == 0)
 			return false;
 		return true;
+	}
+
+	/**
+	 * "Mutable" classes are basically anything except String and Number
+	 * subclasses, i.e stuff you can modify after creation.
+	 */
+	public static boolean isTypeMutable(Class type) {
+		if (type == null)
+			return true;
+		if (Type.class.isAssignableFrom(type))
+			return false;
+		return !(String.class.isAssignableFrom(type) || Number.class.isAssignableFrom(type) || Boolean.class.isAssignableFrom(type) || Color.class.isAssignableFrom(type) || type.isPrimitive());
 	}
 
 }

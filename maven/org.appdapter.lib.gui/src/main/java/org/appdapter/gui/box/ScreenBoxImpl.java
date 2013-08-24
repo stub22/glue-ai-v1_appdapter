@@ -673,13 +673,17 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	public void reallySetValue(Object newObject) {
 		if (newObject == valueSetAs || newObject == this)
 			return;
+		if (newObject == null) {
+			Utility.bug("setting this to null?");
+		}
 		Object value = newObject;
 		String ds = getDescription();
 		if (ds == null) {
 			try {
-				setDescription("" + value + " " + value.getClass());
+				if (value != null)
+					setDescription("" + value + " " + value.getClass());
 			} catch (Throwable t) {
-				// tostring method can cuse ewxceptions!
+				// toString method can cause exceptions!
 			}
 		}
 

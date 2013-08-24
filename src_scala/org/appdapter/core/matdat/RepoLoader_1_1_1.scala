@@ -54,12 +54,11 @@ object SpecialRepoLoader extends BasicDebugger {
     }
     // Construct a repo around that directory        
     val shRepo = new OmniLoaderRepo(spec, specURI, myDebugName, dirModel, fileModelCLs)
-    // Load the rest of the repo's initial *sheet* models, as instructed by the directory.
-    getLogger().debug("Loading Sheet Models")
-    shRepo.loadSheetModelsIntoMainDataset()
-    // Load the rest of the repo's initial *file/resource* models, as instructed by the directory.
-    getLogger().debug("Loading File Models")
-    shRepo.loadDerivedModelsIntoMainDataset(fileModelCLs)
+    shRepo.beginLoading();
+    // set to false to have concurrent background loading
+    if (true) {
+      shRepo.finishLoading();
+    }
     shRepo
   }
 

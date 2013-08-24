@@ -31,6 +31,7 @@ import java.util.EventObject;
 
 import javax.swing.AbstractCellEditor;
 import javax.swing.JComponent;
+import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JTree;
@@ -42,7 +43,6 @@ import javax.swing.tree.TreeCellEditor;
 
 import org.appdapter.gui.browse.Utility;
 
-
 /**
  * Allows to use any PropertyEditor as a Table or Tree cell editor. <br>
  */
@@ -51,6 +51,7 @@ public class PropertyEditorToCellEditor extends AbstractCellEditor implements Ta
 	protected PropertyEditor editor;
 	protected int clickCountToStart = 1;
 	private Component custComponent;
+	private Component hookTo;
 
 	class CommitEditing implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
@@ -92,13 +93,23 @@ public class PropertyEditorToCellEditor extends AbstractCellEditor implements Ta
 	public PropertyEditorToCellEditor(PropertyEditor editor) {
 		this.editor = editor;
 		this.custComponent = editor.getCustomEditor();
-		if (custComponent instanceof JTextField) {
-			JTextField field = (JTextField) custComponent;
+		Component hookTo = custComponent;
+		if (hookTo instanceof JPanel) {
+			JPanel panel = (JPanel) custComponent;
+			for (Component c : panel.getComponents()) {
+				if (c instanceof JTextField) {
+					hookTo = c;
+					break;
+				}
+			}
+		}
+		if (hookTo instanceof JTextField) {
+			JTextField field = (JTextField) hookTo;
 			field.addFocusListener(new SelectOnFocus());
 			field.addActionListener(new CommitEditing());
 			field.registerKeyboardAction(new CancelEditing(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_FOCUSED);
 		} else {
-			if (custComponent instanceof JTextComponent) {
+			if (hookTo instanceof JTextComponent) {
 
 			}
 		}
