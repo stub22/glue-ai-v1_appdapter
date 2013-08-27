@@ -66,9 +66,10 @@ abstract class SheetRepo(directoryModel: Model, var fileModelCLs: java.util.List
     this(directoryModel, null)
   // BEGIN NEXT DIFF
 
-  final def loadDerivedModelsIntoMainDataset(clList: java.util.List[ClassLoader]) = {
+  final def loadDerivedModelsIntoMainDataset(clList: java.util.List[ClassLoader]): Unit = {
     val mainDset: Dataset = getMainQueryDataset().asInstanceOf[Dataset];
     var clListG = this.getClassLoaderList(clList)
+    if (myDirectoryModel.size == 0) return ;
     FileModelRepoLoader.loadSheetModelsIntoTargetDataset(this, mainDset, myDirectoryModel, clListG)
     DerivedRepoLoader.loadSheetModelsIntoTargetDataset(this, mainDset, myDirectoryModel, clListG)
   }
@@ -81,8 +82,8 @@ abstract class SheetRepo(directoryModel: Model, var fileModelCLs: java.util.List
     loadDerivedModelsIntoMainDataset(clList);
   }
 
-  var myBasePath: String = null;
-  var myIdent: Ident = null;
+  var myBasePath0: String = null;
+  var myIdent0: Ident = null;
 
   def reloadAllModelsFromDir() = {
     val oldDataset = getMainQueryDataset();
@@ -99,11 +100,11 @@ abstract class SheetRepo(directoryModel: Model, var fileModelCLs: java.util.List
     ClassLoaderUtils.getFileResourceClassLoaders(ClassLoaderUtils.ALL_RESOURCE_CLASSLOADER_TYPES, fileModelCLs, clList);
   }
   override def toString(): String = {
-     val dm = getDirectoryModel();
+    val dm = getDirectoryModel();
     if (isLoadingLocked) {
-    	getClass.getSimpleName + "[name=" + myDebugNameToStr + ", dir=" + dm.size() + " setof=Loading...]";
+      getClass.getSimpleName + "[name=" + myDebugNameToStr + ", dir=" + dm.size() + " setof=Loading...]";
     } else {
-    	getClass.getSimpleName + "[name=" + myDebugNameToStr + ", dir=" + dm.size() + " setof=" + RepoOper.setOF(getMainQueryDataset.listNames) + "]";
+      getClass.getSimpleName + "[name=" + myDebugNameToStr + ", dir=" + dm.size() + " setof=" + RepoOper.setOF(getMainQueryDataset.listNames) + "]";
     }
   }
 
@@ -133,7 +134,8 @@ abstract class SheetRepo(directoryModel: Model, var fileModelCLs: java.util.List
 
   def ensureUpdatedPrivate() = {
     {
-      this.synchronized {
+      //this.synchronized 
+      {
         beginLoading();
         finishLoading();
         if (!this.isUpdatedFromDir) {
@@ -211,8 +213,9 @@ class FileModelRepoLoader extends InstallableRepoReader {
 object FileModelRepoLoader extends BasicDebugger {
 
   def loadSheetModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: Dataset,
-    myDirectoryModel: Model, clList: java.util.List[ClassLoader]) = {
+    myDirectoryModel: Model, clList: java.util.List[ClassLoader]): Unit = {
 
+    if (myDirectoryModel.size == 0) return
     val nsJavaMap: java.util.Map[String, String] = myDirectoryModel.getNsPrefixMap()
 
     val msqText = """
