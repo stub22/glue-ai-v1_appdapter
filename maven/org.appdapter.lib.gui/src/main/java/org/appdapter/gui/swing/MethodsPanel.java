@@ -1,15 +1,20 @@
 package org.appdapter.gui.swing;
 
 import java.awt.BorderLayout;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JToggleButton;
+import javax.swing.ListCellRenderer;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -38,6 +43,8 @@ public class MethodsPanel extends JJPanel implements ActionListener, ListSelecti
 	JButton executeButton;
 	JSplitPane splitter;
 	MethodResultPanel resultPanel;
+
+	private JJPanel buttonPanel;
 
 	public MethodsPanel(Object object) throws Exception {
 		this(object, false);
@@ -80,6 +87,102 @@ public class MethodsPanel extends JJPanel implements ActionListener, ListSelecti
 		}
 	}
 
+	protected void reload() {
+		methodList.reload();
+	}
+
+	protected void initSubclassGUI() {
+
+		this.buttonPanel = new JJPanel(new FlowLayout(FlowLayout.LEFT));
+		JButton reloadButton = new JButton("Refresh Properties");
+		reloadButton.addActionListener(new ActionListener() {
+			@Override public void actionPerformed(ActionEvent event) {
+				reload();
+			}
+		});
+		buttonPanel.add(reloadButton);
+		buttonPanel.add(new JCheckBox("Show Instance") {
+			{
+				setModel(new JToggleButton.ToggleButtonModel() {
+					@Override public boolean isSelected() {
+						return methodList.showNonStatic;
+					}
+
+					@Override public void setSelected(boolean b) {
+						if (isSelected() == b)
+							return;
+						methodList.showNonStatic = b;
+						super.setSelected(b);
+						reload();
+					}
+				});
+			}
+		});
+		buttonPanel.add(new JCheckBox("Show Static") {
+			{
+				setModel(new JToggleButton.ToggleButtonModel() {
+					@Override public boolean isSelected() {
+						return methodList.showStatic;
+					}
+
+					@Override public void setSelected(boolean b) {
+						if (isSelected() == b)
+							return;
+						methodList.showStatic = b;
+						super.setSelected(b);
+						reload();
+					}
+				});
+			}
+		});
+
+		buttonPanel.add(new JCheckBox("Show Non Public") {
+			{
+				setModel(new JToggleButton.ToggleButtonModel() {
+					@Override public boolean isSelected() {
+						return methodList.showNonPublic;
+					}
+
+					@Override public void setSelected(boolean b) {
+						if (isSelected() == b)
+							return;
+						methodList.showNonPublic = b;
+						super.setSelected(b);
+						reload();
+					}
+				});
+			}
+		});
+
+		buttonPanel.add(new JCheckBox("Basic Info") {
+			{
+				setModel(new JToggleButton.ToggleButtonModel() {
+					@Override public boolean isSelected() {
+						return methodList.basicBeanInfo;
+					}
+
+					@Override public void setSelected(boolean b) {
+						if (isSelected() == b)
+							return;
+						methodList.basicBeanInfo = b;
+						super.setSelected(b);
+						reload();
+					}
+				});
+				setToolTipText("Only Show non-Enhanced by Appdapter(tm) BeanInfo");
+
+			}
+		});
+		buttonPanel.add(new SmallObjectView(null, null, object) {
+			@Override public boolean isRemovable(Object value) {
+				return false;
+			}
+		});
+		removeAll();
+		setLayout(new BorderLayout());
+		add(BorderLayout.NORTH, buttonPanel);
+	}
+
 	private void initGUI() throws Exception {
 		paramPanel = new MethodParametersPanel();
 		methodList = new MethodList(object, object instanceof Class);
@@ -98,7 +201,7 @@ public class MethodsPanel extends JJPanel implements ActionListener, ListSelecti
 
 		splitter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, scroller, paramPanel);
 
-		setLayout(new BorderLayout());
+		initSubclassGUI();
 		add("Center", splitter);
 		add("South", bottomPanel);
 		methodList.addListSelectionListener(this);

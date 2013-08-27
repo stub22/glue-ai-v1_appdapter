@@ -12,9 +12,11 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 import org.appdapter.api.trigger.Box;
+import org.appdapter.api.trigger.SetObject;
 import org.appdapter.core.component.KnownComponent;
 import org.appdapter.core.convert.Converter.ConverterMethod;
 import org.appdapter.core.convert.ReflectUtils;
@@ -23,6 +25,7 @@ import org.appdapter.gui.api.BT;
 import org.appdapter.gui.api.BrowserPanelGUI;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.DisplayType;
+import org.appdapter.gui.api.GetSetObject;
 import org.appdapter.gui.api.NamedObjectCollection;
 import org.appdapter.gui.api.POJOCollectionListener;
 import org.appdapter.gui.browse.Utility;
@@ -306,19 +309,7 @@ VetoableChangeListener, PropertyChangeListener, Serializable, Set {
 	 * Checks if this namedObjects contains the given value
 	 */
 	@Override public boolean containsObject(Object value) {
-		synchronized (syncObject) {
-			value = Utility.dref(value);
-
-			if (objectsToWrappers != null) {
-				synchronized (objectsToWrappers) {
-					return objectsToWrappers.containsKey(value);
-				}
-			}
-			if (objectsToWrappers.keySet() != null)
-				return objectsToWrappers.keySet().contains(value);
-
-			return findBoxByObject(value) != null;
-		}
+		return findBoxByObject(value) != null;
 	}
 
 	@Override public String getName() {
@@ -400,7 +391,7 @@ VetoableChangeListener, PropertyChangeListener, Serializable, Set {
 			return findBoxByName((String) value);
 		}
 
-		BT w = objectsToWrappers.get(value);
+		BT w = objectsToWrappers.get(ReflectUtils.asObjectKey(value, false));
 		if (w != null)
 			return w;
 
@@ -489,9 +480,11 @@ VetoableChangeListener, PropertyChangeListener, Serializable, Set {
 			if (title == null) {
 				if (wrapper != null) {
 					title = wrapper.getShortLabel();
+					labelCheck(title);
 				}
 				if (title == null) {
-					title = Utility.generateUniqueName_sug(value, title, getNameToBoxIndex(), false);
+					title = Utility.generateUniqueName_sug(value, title, getNameToBoxIndex(), false, true);
+					labelCheck(title);
 				}
 			}
 			if (wrapper == null) {
@@ -501,6 +494,12 @@ VetoableChangeListener, PropertyChangeListener, Serializable, Set {
 		notify = addNameValueBoxed(title, value, wrapper);
 
 		return wrapper;
+	}
+
+	public static void labelCheck(String shortLabel) {
+		if (shortLabel != null && shortLabel.contains("JenaResourceItem[")) {
+			Utility.bug("Short label =" + shortLabel);
+		}
 	}
 
 	/**
@@ -962,7 +961,7 @@ VetoableChangeListener, PropertyChangeListener, Serializable, Set {
 	}
 
 	@Override public boolean contains(Object o) {
-		return objectsToWrappers.keySet().contains(o);
+		return objectsToWrappers.keySet().contains(ReflectUtils.asObjectKey(o, false));
 	}
 
 	@Override public Iterator iterator() {

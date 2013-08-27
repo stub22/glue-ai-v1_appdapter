@@ -310,7 +310,7 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 			}
 			if (showLabel) {
 				if (this.title == null) {
-					title = Utility.getUniqueName(object, nameMaker, false, false);
+					title = Utility.getUniqueNameForKey(object, nameMaker);
 				}
 				String labelname = title;
 				if ((title == null || title.equals("<null>")) && object != null && !(object instanceof String)) {
@@ -418,7 +418,7 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 
 	@Override public void propertyChange(PropertyChangeEvent evt) {
 		if (label != null) {
-			label.setText(Utility.getUniqueName(getValue(), nameMaker));
+			label.setText(Utility.getUniqueNameForKey(getValue(), nameMaker));
 		}
 		checkColor();
 	}

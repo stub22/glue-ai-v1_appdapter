@@ -303,10 +303,22 @@ public class JenaLiteralUtils {
 					}
 				}
 			}
-			if (mapping != null) {
-				return ((Node_URI) val).toString(mapping, true);
-			} else {
-				return ((Node_URI) val).toString(true);
+			if (true) {
+				String ustr;
+				if (mapping != null) {
+					ustr = ((Node_URI) val).toString(mapping, true);
+					if (ustr.startsWith("http://")) {
+						// mapping failed?
+						Map map = mapping.getNsPrefixMap();
+						return val;
+					}
+				} else {
+					ustr = ((Node_URI) val).toString(true);
+				}
+				if (ustr.startsWith("http://")) {
+					return val;
+				}
+				return ustr;
 			}
 		}
 		if (val instanceof Literal) {

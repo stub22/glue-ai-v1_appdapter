@@ -34,13 +34,13 @@ public class SpecificObjectCustomizers extends TabPanelMaker {
 
 	public void setTabs0(BoxPanelSwitchableView tabs, DisplayContext context, Object object, Class objClass, SetTabTo cmd) {
 
-		for (Class comp : Utility.findComponentClasses(objClass)) {
+		for (Class comp : Utility.findPanelClasses(objClass)) {
 			if (comp == null) {
 				return;
 			}
-			String prefix = ReflectUtils.getCanonicalSimpleName(comp);
 			if (!ReflectUtils.isCreatable(comp))
 				continue;
+			String prefix = ReflectUtils.getCanonicalSimpleName(comp);
 
 			if (ObjectPanelHost.class.isAssignableFrom(comp))
 				continue;
@@ -115,7 +115,7 @@ public class SpecificObjectCustomizers extends TabPanelMaker {
 				prefix = "Class ";
 			}
 			if (cmd == SetTabTo.ADD) {
-				PropertiesPanel props = new PropertiesPanel(context, object, objClass, false, true);
+				PropertiesPanel props = new PropertiesPanel(context, object, objClass, true, false, true);
 				tabs.addTab(prefix + "Properties", props);
 			}
 			if (cmd == SetTabTo.REMOVE) {
@@ -163,17 +163,13 @@ public class SpecificObjectCustomizers extends TabPanelMaker {
 				tabs.insertTab("Static methods", null, new ErrorPanel("Could not show static methods", err), null, 1);
 			}
 			try {
-				PropertiesPanel statics = new PropertiesPanel(context, null, clazz, true, true);
+				PropertiesPanel statics = new PropertiesPanel(context, null, clazz, false, true, true);
 				tabs.insertTab("Static Properties", null, statics, null, 1);
 			} catch (Exception err) {
 				tabs.insertTab("Static Properties", null, new ErrorPanel("Could not show static Properties", err), null, 1);
 			}
 			try {
 				NamedObjectCollection noc = context.getLocalBoxedChildren();
-				Collection c = noc.findObjectsByType(clazz);
-				if (c.size() == 0) {
-					Utility.bug("no InstancesOf " + clazz);
-				}
 				LargeObjectChooser instances = new LargeObjectChooser(clazz, noc);
 				tabs.insertTab("InstancesOf", null, instances, null, 0);
 			} catch (Exception err) {

@@ -108,12 +108,17 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 		private int comparePaths(String[] p1, String[] p2) {
 			int l1 = p1.length;
 			int l2 = p1.length;
-			if (l1 != l2)
-				return l2 - l1;
-			while (--l1 >= 0) {
-				int res = (p1[l1].compareToIgnoreCase(p2[l1]));
+			int shortest = Math.min(l1, l2);
+			if (l1 != l2) {
+				if (shortest == 0)
+					return l2 - l1;
+				if (shortest == 1)
+					return l2 - l1;
+			}
+			for (int i = 0; i < shortest; i++) {
+				int res = (p1[i].compareToIgnoreCase(p2[i]));
 				if (res != 0)
-					return res;
+					return -res;
 			}
 			return 0;
 		}
@@ -183,8 +188,14 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 		}
 		Boolean was = Utility.canMakeInstanceTriggers.get();
 		try {
-			for (TriggerAdder ta : Utility.getTriggerAdders(ctx, cls, poj)) {
-				ta.addTriggersForObjectInstance(ctx, cls, tgs, poj, ADD_ALL, null);
+			for (Object ta : Utility.getTriggerAdders(ctx, cls, poj)) {
+				if (ta instanceof TriggerAdder) {
+					try {
+						((TriggerAdder) ta).addTriggersForObjectInstance(ctx, cls, tgs, poj, ADD_ALL, null);
+					} catch (Throwable t) {
+						Debuggable.printStackTrace(t);
+					}
+				}
 			}
 		} finally {
 			Utility.canMakeInstanceTriggers.set(was);
@@ -368,7 +379,7 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 	public static <TrigType> void addGlobalStatics(DisplayContext ctx, Class cls, List<TrigType> tgs, Object poj) {
 		if (!UtilityMenuOptions.addGlobalStatics && !UtilityMenuOptions.allTriggersAreGlobal)
 			return;
-		for (Trigger trig : Utility.getGlobalStaticTriggers(ctx, cls, poj)) {
+		for (Trigger trig : Utility.getGlobalTriggers(ctx, cls, poj)) {
 			CollectionSetUtils.addIfNew(tgs, (TrigType) trig);
 		}
 	}
@@ -609,6 +620,14 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 	}
 
 	public static String getLabelC(Component c, int maxDepth) {
+		String s = getLabelC0(c, maxDepth);
+		String ss = getLabelC0(c.getParent(), 0);
+		if (ss != null)
+			return ss + "|" + s;
+		return s;
+	}
+
+	public static String getLabelC0(Component c, int maxDepth) {
 
 		if (c instanceof JPopupMenu) {
 			return ((JPopupMenu) c).getLabel();
@@ -870,18 +889,13 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 		return new TriggerForAction(a);
 	}
 
-	public MouseAdapter makePopupMouseAdapter() {
-		MouseAdapter ma = new TriggerMouseAdapter();
-		return ma;
-	}
-
 	public static void addMap(Map lastResults, Container popup) {
 		Map<?, ?> lr;
 		synchronized (lastResults) {
 			lr = new HashMap(lastResults);
 		}
 		for (Map.Entry me : lr.entrySet()) {
-			String[] path = getTriggerPath(Utility.getUniqueName(me.getKey()));
+			String[] path = getTriggerPath(Utility.getUniqueNameForKey(me.getKey()));
 			Object box = me.getValue();
 			List trigs = getTriggers(box);
 			addTriggersToPoppup(box, path, trigs, popup);
@@ -915,11 +929,11 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 
 	private static <T> List<T> joinArrays(T[] path, T[] ts) {
 		if (path == null || path.length == 0)
-			return Arrays.asList(ts);
+			return ReflectUtils.asList(ts);
 		ArrayList<T> sl = new ArrayList();
-		sl.addAll(Arrays.asList(path));
+		sl.addAll(ReflectUtils.asList(path));
 		if (ts != null || ts.length > 0)
-			sl.addAll(Arrays.asList(ts));
+			sl.addAll(ReflectUtils.asList(ts));
 		return sl;
 	}
 

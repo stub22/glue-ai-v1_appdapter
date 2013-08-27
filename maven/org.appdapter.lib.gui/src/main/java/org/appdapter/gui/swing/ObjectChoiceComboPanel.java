@@ -5,24 +5,32 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.LayoutManager;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
+import java.lang.reflect.Method;
 import java.util.*;
 
+import javax.swing.ComboBoxEditor;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.SwingConstants;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
+import javax.swing.plaf.UIResource;
 
+import org.appdapter.api.trigger.GetObject;
 import org.appdapter.core.convert.NoSuchConversionException;
+import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.core.convert.ToFromKeyConverter;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.BT;
@@ -31,6 +39,7 @@ import org.appdapter.gui.api.POJOCollectionListener;
 import org.appdapter.gui.browse.SearchableDemo;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.swing.ObjectChoiceComboPanel.ObjectComboPrettyRender;
+import org.appdapter.gui.trigger.TriggerMouseAdapter;
 import org.appdapter.gui.trigger.TriggerPopupMenu;
 
 /**
@@ -38,7 +47,7 @@ import org.appdapter.gui.trigger.TriggerPopupMenu;
  * of a certain type.
  *
  */
-public class ObjectChoiceComboPanel extends JJPanel implements MouseListener, ToFromKeyConverter<Object, String>, ListDataListener {
+public class ObjectChoiceComboPanel extends JJPanel implements MouseListener, ToFromKeyConverter<Object, String>, ListDataListener, GetObject {
 
 	public static final Object NULLOBJECT = "<null>";
 
@@ -111,9 +120,101 @@ public class ObjectChoiceComboPanel extends JJPanel implements MouseListener, To
 		}
 	}
 
+	public static class SynthComboBoxEditor implements ComboBoxEditor {
+		protected JTextField editor;
+		private Object oldValue;
+		ObjectChoiceModel model;
+
+		public SynthComboBoxEditor(ObjectChoiceModel model) {
+			this.model = model;
+			String initialValue = model.objectToString(model.getSelectedItem());
+			editor = new JTextField(initialValue, 9);
+			editor.setName("ComboBox.textField");
+		}
+
+		@Override public Component getEditorComponent() {
+			SearchableDemo.createAutoCompleteForText(editor, model);
+			return editor;
+		}
+
+		/** 
+		* Sets the item that should be edited. 
+		*
+		* @param anObject the displayed value of the editor
+		*/
+		@Override public void setItem(Object anObject) {
+			String text = model.objectToString(anObject);
+			// workaround for 4530952
+			if (!text.equals(editor.getText())) {
+				editor.setText(text);
+			}
+		}
+
+		@Override public Object getItem() {
+			String title;
+			Object newValue = title = editor.getText();
+
+			if (oldValue != null && !(oldValue instanceof String)) {
+				// The original value is not a string. Should return the value in it's
+				// original type.
+				if (newValue.equals(oldValue.toString())) {
+					return oldValue;
+				} else {
+					// Must take the value from the editor and get the value and cast it to the new type.
+					Class cls = oldValue.getClass();
+					try {
+						if (true)
+							return model.stringToObject(title);
+						Method method = cls.getMethod("valueOf", new Class[] { String.class });
+						newValue = method.invoke(oldValue, new Object[] { editor.getText() });
+					} catch (Exception ex) {
+						// Fail silently and return the newValue (a String object)
+					}
+				}
+			}
+			return newValue;
+		}
+
+		@Override public void selectAll() {
+			editor.selectAll();
+			editor.requestFocus();
+		}
+
+		@Override public void addActionListener(ActionListener l) {
+			editor.addActionListener(l);
+		}
+
+		@Override public void removeActionListener(ActionListener l) {
+			editor.removeActionListener(l);
+		}
+	}
+
 	private void initGUI() {
 
-		combo = new JComboBox(model);
+		combo = new JComboBox(model) {
+			public void setSelectedItem(Object anObject) {
+				if (ReflectUtils.eq(selectedItemReminder, anObject, false)) {
+					return;
+				}
+				selectedItemReminder = ReflectUtils.asObjectKey(selectedItemReminder, false);
+				super.setSelectedItem(anObject);
+			}
+
+			/**
+			 * Returns the editor used to paint and edit the selected item in the 
+			 * <code>JComboBox</code> field.
+			 *  
+			 * @return the <code>ComboBoxEditor</code> that displays the selected item
+			 */
+			public ComboBoxEditor getEditor() {
+				ComboBoxEditor editor = super.getEditor();
+				if (editor != null)
+					return editor;
+				SynthComboBoxEditor cbo = new SynthComboBoxEditor(model);
+				return cbo;
+			}
+
+		};
 		//combo.setEditable(false);
 		SearchableDemo.installSearchable(combo);
 		combo.setRenderer(new ObjectComboPrettyRender());
@@ -180,7 +281,7 @@ public class ObjectChoiceComboPanel extends JJPanel implements MouseListener, To
 		} catch (Throwable t) {
 			t.printStackTrace();
 		}
-		return Utility.getUniqueName(object, context);
+		return Utility.getUniqueNameForKey(object, context);
 	}
 
 	public Object stringToObject(String title) {

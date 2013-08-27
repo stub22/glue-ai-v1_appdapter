@@ -65,6 +65,7 @@ import org.appdapter.gui.swing.DisplayContextUIImpl;
 import org.appdapter.gui.swing.LookAndFeelMenuItems;
 import org.appdapter.gui.swing.ObjectTabsForTabbedView;
 import org.appdapter.gui.swing.SafeJMenu;
+import org.appdapter.gui.trigger.TriggerMouseAdapter;
 
 import com.jidesoft.tree.StyledTreeCellRenderer;
 
@@ -116,6 +117,15 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 		//addClipboard(clipboard);
 		Utility.setSingletonValue(getClass(), this);
 		invalidate();
+	}
+
+	public void setDividerLocation(double proportionalLocation) {
+		myBrowserSplitPane.setDividerLocation(proportionalLocation);
+		invalidate();
+	}
+
+	public void selectInTree(Object anyObject) {
+		addToTreeListener.selectInTree(anyObject);
 	}
 
 	private void setTabbedPaneOptions() {
@@ -217,6 +227,11 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 			return;
 		unHookFrom(hookedParent);
 		hookTo(p);
+		Utility.invokeAfterLoader(new Runnable() {
+			@Override public void run() {
+				setDividerLocation(0.33);
+			}
+		});
 	}
 
 	private void unHookFrom(Container p) {
@@ -313,7 +328,7 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 
 		myBrowserSplitPane.add(myTreeScrollPane, JSplitPane.LEFT);
 
-		myContentPanel.setBackground(new java.awt.Color(204, 204, 255));
+		myContentPanel.setBackground(Color.LIGHT_GRAY);
 		myContentPanel.setLayout(new java.awt.BorderLayout());
 
 		myBoxPanelStatus.setText("Extra text field - used for status display and special console input .   This screen shows a box navigation system.");
@@ -325,7 +340,7 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 		myContentPanel.add(myBoxPanelStatus, java.awt.BorderLayout.NORTH);
 
 		myBoxPanelTabPane.setAutoscrolls(true);
-		myBoxPanelTabPane.setBackground(new java.awt.Color(204, 204, 255));
+		myBoxPanelTabPane.setBackground(Color.LIGHT_GRAY);
 		myBoxPanelTabPane.setBoldActiveTab(true);
 
 		myHomeBoxPanel.setInheritsPopupMenu(true);
@@ -359,7 +374,8 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 
 		myContentPanel.add(myBoxPanelTabPane, java.awt.BorderLayout.CENTER);
 
-		myBrowserSplitPane.add(myContentPanel,JSplitPane.RIGHT);
+		myBrowserSplitPane.add(myContentPanel, JSplitPane.RIGHT);
+		myBrowserSplitPane.setDividerLocation(0.33);
 
 		add(myBrowserSplitPane, java.awt.BorderLayout.CENTER);
 	}// </editor-fold>
@@ -374,8 +390,9 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 
 	}//GEN-LAST:event_myBoxPanelStatusActionPerformed
 
-	public void addTreeMouseAdapter(MouseAdapter ma) {
-		myTree.addMouseListener(ma);
+	public void addTreeMouseAdapter() {
+		MouseAdapter ma = TriggerMouseAdapter.installMouseAdapter(myTree);
+		addMouseListener(ma);
 	}
 
 	public JTextField getBoxPanelStatus() {
@@ -414,11 +431,11 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 			}
 			if (expected.isInstance(was)) {
 				JPanel pnl = Utility.getPropertiesPanel(was);
-				showScreenBox(message, pnl);
+				return showScreenBox(message, pnl);
 			}
 		}
 
-		return null;
+		return UserResult.SUCCESS;
 	}
 
 	public String getMessage() {

@@ -1,6 +1,7 @@
 package org.appdapter.gui.swing;
 
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.LayoutManager;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -10,14 +11,15 @@ import javax.swing.JPanel;
 import org.appdapter.core.convert.NoSuchConversionException;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.browse.Utility;
+import org.appdapter.gui.trigger.TriggerMouseAdapter;
 
 public class JJPanel extends JPanel implements UISwingReplacement, IsReference {
 	public JJPanel() {
-		super();
+		this(new FlowLayout());
 	}
 
 	public JJPanel(boolean predecorate) {
-		super();
+		this(new FlowLayout());
 	}
 
 	public JJPanel(LayoutManager layout) {
@@ -34,7 +36,7 @@ public class JJPanel extends JPanel implements UISwingReplacement, IsReference {
 			try {
 				Object val = getValue();
 				if (val != null) {
-					return Utility.getUniqueName(val);
+					return Utility.getUniqueNameForKey(val);
 				}
 			} catch (Throwable t) {
 
@@ -47,7 +49,8 @@ public class JJPanel extends JPanel implements UISwingReplacement, IsReference {
 	}
 
 	public Object getValue() {
-		Debuggable.warn("getValue not Implemented (returning null)");
+		if (getClass() != JJPanel.class && !Debuggable.isNotShowingExceptions())
+			Debuggable.warn("getValue not Implemented (returning null)");
 		return null;
 	}
 

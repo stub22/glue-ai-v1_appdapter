@@ -13,6 +13,9 @@ import java.util.Queue;
 
 import org.appdapter.bind.rdf.jena.model.JenaLiteralUtils;
 import org.appdapter.bind.rdf.jena.model.ModelStuff;
+import org.appdapter.core.component.KnownComponent;
+import org.appdapter.core.item.JenaResourceItem;
+import org.appdapter.core.name.ModelIdent;
 
 import com.hp.hpl.jena.enhanced.EnhGraph;
 import com.hp.hpl.jena.graph.Node;
@@ -20,6 +23,7 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.RDFReader;
+import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.impl.ResourceImpl;
 
 public class ResourceToFromString extends ToFromKeyConverterImpl<Object, String> {
@@ -41,10 +45,16 @@ public class ResourceToFromString extends ToFromKeyConverterImpl<Object, String>
 		Map map2 = model2.getNsPrefixMap();
 
 		knownNamespaces.putAll(map2);
+		if (map2.size() != knownNamespaces.size()) {
+			model2.setNsPrefixes(knownNamespaces);
+		}
 
 	}
 
 	@Override public String toKey(Object toBecomeAString) {
+		if (toBecomeAString instanceof JenaResourceItem) {
+			toBecomeAString = ((JenaResourceItem) toBecomeAString).getJenaResource();
+		}
 		RDFNode rdfnode = null;
 		Model model = getModel(toBecomeAString);
 		offerModel(model);
@@ -56,16 +66,30 @@ public class ResourceToFromString extends ToFromKeyConverterImpl<Object, String>
 				str = "" + literalOrNode_URI;
 			}
 		}
+		if (str.startsWith("http")) {
+			return str;
+		}
 		return str;
 	}
 
 	public Model getModel(Object toBecomeAString) {
-		if (toBecomeAString instanceof RDFNode) {
-			return (((RDFNode) toBecomeAString).getModel());
+		if (toBecomeAString instanceof KnownComponent) {
+			toBecomeAString = ((KnownComponent) toBecomeAString).getIdent();
 		}
-		Model model = enhmodel;
+		if (toBecomeAString instanceof ModelIdent) {
+			toBecomeAString = ((ModelIdent) toBecomeAString).getJenaResource();
+		}
+		Model model = null;
+		if (toBecomeAString instanceof Resource) {
+			model = ((Resource) toBecomeAString).getModel();
+		} else if (toBecomeAString instanceof RDFNode) {
+			model = (((RDFNode) toBecomeAString).getModel());
+		}
 		if (model == null) {
-			model = oenhmodel;
+			model = enhmodel;
+			if (model == null) {
+				model = oenhmodel;
+			}
 		}
 		return model;
 	}

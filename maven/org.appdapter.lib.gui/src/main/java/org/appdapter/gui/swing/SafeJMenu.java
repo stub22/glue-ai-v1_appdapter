@@ -25,7 +25,7 @@ import org.appdapter.gui.trigger.TriggerMenuFactory.JMenuWithPath;
 public class SafeJMenu extends JMenu implements UISwingReplacement, GetSetObject, IsReference {
 
 	//It also looks better if you're ignoring case sensitivity:
-	protected static Comparator nodeComparator = new TriggerMenuFactory.TriggerSorter() {
+	final protected static Comparator nodeComparator = new TriggerMenuFactory.TriggerSorter() {
 		public int compare(Object o1, Object o2) {
 			return super.compare(o1, o2);
 		}
@@ -139,7 +139,7 @@ public class SafeJMenu extends JMenu implements UISwingReplacement, GetSetObject
 			return (T) getMoreMenu().add(newChild.getComponent());
 		}
 		if (childIndex <= 0) {
-			int newchildIndex = findBestLocation(newChild);
+			int newchildIndex = findBestLocation(newChild, childIndex);
 			if (newchildIndex < last) {
 				childIndex = newchildIndex;
 			}
@@ -157,7 +157,10 @@ public class SafeJMenu extends JMenu implements UISwingReplacement, GetSetObject
 		return this.moreMenu;
 	}
 
-	private int findBestLocation(Object mi) {
+	private int findBestLocation(Object mi, int suggested) {
+		if (!isSortedLocally()) {
+			return suggested;
+		}
 		Component[] comps = getMenuComponents();
 		int max = comps.length;
 		if (max == 0)
@@ -165,7 +168,16 @@ public class SafeJMenu extends JMenu implements UISwingReplacement, GetSetObject
 
 		int newchildIndex = 0;
 		for (Component c : comps) {
-			if (nodeComparator.compare(mi, c) > 1) {
+			int res = nodeComparator.compare(mi, c);
+			if (res == 0) {
+				if (mi.equals(c)) {
+					Utility.bug("mi.equals(c) -> ", c);
+				}
+			}
+			if (res > 1) {
+				if (res > 1) {
+					break;
+				}
 				break;
 			}
 			newchildIndex++;
@@ -179,8 +191,8 @@ public class SafeJMenu extends JMenu implements UISwingReplacement, GetSetObject
 
 	public Component addSuper(MenuElement me, int index) {
 		int size = mcomps.size();
-		if (size < index) {
-			index = size;
+		if (index > size) {
+			index = -1;
 		}
 		Component c = me.getComponent();
 		ensureUnequelyNamed(c);
@@ -190,11 +202,22 @@ public class SafeJMenu extends JMenu implements UISwingReplacement, GetSetObject
 			warn("C not MenuElement" + me);
 
 		}
-		Component comp = super.add(c, index);
+		int atIndex = index;
+		if (isSortedLocally() && false) {
+			atIndex = size - index - 1;
+			if (atIndex != 0) {
+				int cc = atIndex;
+			}
+
+		}
+		if (atIndex == size)
+			atIndex = -1;
+		Component comp = super.add(c, atIndex);
 		ensureFoundNamed(c);
 		int mcompsNS = mcomps.size();
 		if (mcompsNS == size) {
 			// nothing added
+			index = atIndex;
 			if (index < 0)
 				index = size - 1;
 			if (index < 0)
@@ -204,6 +227,10 @@ public class SafeJMenu extends JMenu implements UISwingReplacement, GetSetObject
 		return comp;
 	}
 
+	private boolean isSortedLocally() {
+		return true;
+	}
+
 	private void warn(String c) {
 		Utility.theLogger.warn(c);
 
@@ -211,7 +238,7 @@ public class SafeJMenu extends JMenu implements UISwingReplacement, GetSetObject
 
 	public JMenuItem insert(JMenuItem mi, int pos) {
 		int last = getMenuComponentCount();
-		int newchildIndex = findBestLocation(mi);
+		int newchildIndex = findBestLocation(mi, pos);
 		if (newchildIndex < last) {
 			pos = newchildIndex;
 		}

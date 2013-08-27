@@ -1,5 +1,6 @@
 package org.appdapter.gui.browse;
 
+import static org.appdapter.core.convert.ReflectUtils.DEFAULT_CONVERTER;
 import static org.appdapter.core.convert.ReflectUtils.addAllNew;
 import static org.appdapter.core.convert.ReflectUtils.addIfNew;
 import static org.appdapter.core.convert.ReflectUtils.arrayOf;
@@ -37,6 +38,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Point;
@@ -137,6 +139,7 @@ import org.appdapter.core.convert.ConverterFromMember;
 import org.appdapter.core.convert.NoSuchConversionException;
 import org.appdapter.core.convert.OptionalArg;
 import org.appdapter.core.convert.ReflectUtils;
+import org.appdapter.core.convert.ReflectUtils.PCons;
 import org.appdapter.core.convert.ToFromKeyConverter;
 import org.appdapter.core.item.JenaResourceItem;
 import org.appdapter.core.log.Debuggable;
@@ -154,7 +157,7 @@ import org.appdapter.gui.api.GetDisplayContext;
 import org.appdapter.gui.api.GetSetObject;
 import org.appdapter.gui.api.IGetBox;
 import org.appdapter.gui.api.NamedObjectCollection;
-import org.appdapter.gui.api.ScreenBox.Kind;
+import org.appdapter.gui.api.POJOCollection;
 import org.appdapter.gui.api.WrapperValue;
 import org.appdapter.gui.box.BoxedCollectionImpl;
 import org.appdapter.gui.box.ScreenBoxImpl;
@@ -175,12 +178,11 @@ import org.appdapter.gui.editors.UseEditor;
 import org.appdapter.gui.repo.ModelAsTurtleEditor;
 import org.appdapter.gui.repo.ModelMatrixPanel;
 import org.appdapter.gui.repo.RepoManagerPanel;
-import org.appdapter.gui.swing.CantankerousJob;
 import org.appdapter.gui.swing.CollectionEditorUtil;
 import org.appdapter.gui.swing.DisplayContextUIImpl.UnknownIcon;
 import org.appdapter.gui.swing.ErrorDialog;
 import org.appdapter.gui.swing.IsReference;
-import org.appdapter.gui.swing.ObjectChoiceComboPanel;
+import org.appdapter.gui.swing.JJPanel;
 import org.appdapter.gui.table.ArrayContentsPanel;
 import org.appdapter.gui.table.ArrayContentsPanel.ArrayContentsPanelTabFramer;
 import org.appdapter.gui.table.SafeJTable;
@@ -203,7 +205,6 @@ import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.sdb.util.Pair;
 //import sun.beans.editors.ColorEditor;
 //import sun.beans.editors.IntEditor;
 
@@ -221,6 +222,28 @@ public class Utility extends UtilityMenuOptions {
 
 	public final static ToFromStringNotSpecialized FROM_STRING_NOT_SPECIALIZED = new ToFromStringNotSpecialized();
 
+	public static class TriggerAdderForInstance<TrigType> implements TriggerAdder {
+		@Override public String toString() {
+			// TODO Auto-generated method stub
+			return getClass().getSuperclass() + " addTriggersForObjectInstance";
+		}
+
+		@Override public <TrigType> void addTriggersForObjectInstance(DisplayContext ctx, Class cls, List<TrigType> tgs, Object poj, TriggerFilter rulesOfAdd, String menuFmt) {
+			//TriggerMenuFactory.addTriggersForObjectInstanceMaster(ctx, cls, tgs, poj, ADD_ALL, menuFmt, false);
+			if (cls != null && poj != null && !cls.isInstance(poj) && poj instanceof BT) {
+				bug("addTriggersForObjectInstance = " + poj);
+			}
+			Object also = dref(poj);
+			//if (also != null && also != poj) {
+			TriggerMenuFactory.addTriggersForObjectInstanceMaster(false, ctx, also.getClass(), tgs, also, ADD_ALL, menuFmt, false);
+			//}
+			//Object also2 = drefO(poj);
+			//if (also2 != null && also2 != poj && also2 != also) {
+			//TriggerMenuFactory.addTriggersForObjectInstanceMaster(ctx, also2.getClass(), tgs, also2, ADD_ALL, menuFmt, false);
+			//}
+		}
+	}
+
 	static public class ToFromStringNotSpecialized extends ToFromKeyConverterImpl<Object, String> implements AnyOper.DontAdd {
 
 		public ToFromStringNotSpecialized() {
@@ -237,7 +260,7 @@ public class Utility extends UtilityMenuOptions {
 
 		@Override public String toKey(Object toBecomeAKey) {
 
-			return getUniqueName(toBecomeAKey, uiObjects, true, false);
+			return getUniqueName(toBecomeAKey, uiObjects, true, false, true);
 		}
 
 	}
@@ -254,12 +277,45 @@ public class Utility extends UtilityMenuOptions {
 			return (T) recastUtilOnly(obj, objNeedsToBe, maxCvt);
 		}
 
-		@Override public Integer declaresConverts(Object val, Class objClass, Class objNeedsToBe, List maxCvt) {
-			if (objClass != null) {
-				if (getToFromKeyConverter(objNeedsToBe, objClass) != null)
-					return WILL;
+		@Override public Integer declaresConverts(Object val, Class from, Class objNeedsToBe, List maxCvt) {
+			if (from != null && objNeedsToBe != null) {
+				if (from == String.class)
+					if (getToFromKeyConverter(objNeedsToBe, from) != null)
+						return WILL;
+				if (objNeedsToBe == String.class)
+					if (getToFromKeyConverter(from, objNeedsToBe) != null)
+						return WILL;
 			}
-			return MIGHT;// .declaresConverts(val, objClass, objNeedsToBe);
+			if (val instanceof Convertable) {
+				Convertable convertable = (Convertable) val;
+				if (convertable.canConvert(objNeedsToBe))
+					return WILL;
+				return WONT;
+			}
+			if (val == null)
+				return MIGHT;
+
+			Object o = Utility.dref1(val, true);
+			if (o == val) {
+				try {
+					if (false) {
+						o = Utility.recastUtilOnly(val, objNeedsToBe, maxCvt);
+						if (objNeedsToBe.isInstance(o)) {
+							return WILL;
+						}
+					}
+				} catch (NoSuchConversionException e) {
+				}
+				return WONT;
+			}
+			if (o != val && o != null) {
+				Class from2 = o.getClass();
+				if (from2 != from) {
+					return DEFAULT_CONVERTER.declaresConverts(val, from2, objNeedsToBe, maxCvt);
+				}
+				return DEFAULT_CONVERTER.declaresConverts(val, from2, objNeedsToBe, maxCvt);
+			}
+			return MIGHT;// .declaresConverts(val, from, objNeedsToBe);
 		}
 
 	}
@@ -280,12 +336,12 @@ public class Utility extends UtilityMenuOptions {
 			return (T) converter.fromKey(obj, objNeedsToBe);
 		}
 
-		@Override public Integer declaresConverts(Object val, Class objClass, Class objNeedsToBe, List maxCvt) {
-			if (objClass != null) {
-				if (getToFromKeyConverter(objNeedsToBe, objClass) != null)
+		@Override public Integer declaresConverts(Object val, Class from, Class objNeedsToBe, List maxCvt) {
+			if (from != null) {
+				if (getToFromKeyConverter(objNeedsToBe, from) != null)
 					return WILL;
 			}
-			return WONT;// .declaresConverts(val, objClass, objNeedsToBe);
+			return WONT;// .declaresConverts(val, from, objNeedsToBe);
 		}
 
 	}
@@ -300,8 +356,8 @@ public class Utility extends UtilityMenuOptions {
 			return (T) recastUtilOnly(obj, objNeedsToBe, maxCvt);
 		}
 
-		@Override public Integer declaresConverts(Object val, Class objClass, Class objNeedsToBe, List maxCvt) {
-			if (objClass != null && GetObject.class.isAssignableFrom(objClass)) {
+		@Override public Integer declaresConverts(Object val, Class from, Class objNeedsToBe, List maxCvt) {
+			if (from != null && GetObject.class.isAssignableFrom(from)) {
 				return MIGHT;
 			}
 			if (val instanceof GetObject) {
@@ -325,14 +381,14 @@ public class Utility extends UtilityMenuOptions {
 			return (T) recastUtilOnly(val, objNeedsToBe, maxCvt);
 		}
 
-		@Override public Integer declaresConverts(Object val, Class objClass, Class objNeedsToBe, List maxCvt) {
-			if (objClass != null && Convertable.class.isAssignableFrom(objClass)) {
-				return MIGHT;
-			}
+		@Override public Integer declaresConverts(Object val, Class from, Class objNeedsToBe, List maxCvt) {
 			if (val instanceof Convertable) {
 				Convertable convertable = (Convertable) val;
 				if (convertable.canConvert(objNeedsToBe))
 					return WILL;
+				return WONT;
+			}
+			if (from != null && Convertable.class.isAssignableFrom(from)) {
 				return MIGHT;
 			}
 			return WONT;
@@ -373,7 +429,7 @@ public class Utility extends UtilityMenuOptions {
 	final static Map<Class, Map<Class, ToFromKeyConverter>> toFrmKeyCnvMap = new HashMap<Class, Map<Class, ToFromKeyConverter>>();
 	static HashMap<String, LinkedList> displayLists = new HashMap<String, LinkedList>();
 	static Map<Object, Thread> slowThreads = new HashMap<Object, Thread>();
-	static List<Pair<Class, Class>> classToClassRegistry = new ArrayList<Pair<Class, Class>>();
+	static List<PCons<Class, Class>> classToClassRegistry = new ArrayList<PCons<Class, Class>>();
 
 	// ==== Instance variables ==========
 	public static BrowsePanel browserPanel;
@@ -552,7 +608,7 @@ public class Utility extends UtilityMenuOptions {
 		Boolean was = canMakeInstanceTriggers.get();
 		try {
 			canMakeInstanceTriggers.set(true);
-			addMethods(object, null, true);
+			addClassTemplateTriggers(object, null, true);
 		} finally {
 			canMakeInstanceTriggers.set(was);
 		}
@@ -571,14 +627,17 @@ public class Utility extends UtilityMenuOptions {
 			Boolean was = canMakeInstanceTriggers.get();
 			try {
 				canMakeInstanceTriggers.set(false);
-				addMethods(null, cls, false);
+				addClassTemplateTriggers(null, cls, false);
+				for (Class ifc : cls.getInterfaces()) {
+					addClassMethods(ifc);
+				}
 			} finally {
 				canMakeInstanceTriggers.set(was);
 			}
 		}
 	}
 
-	public static void addMethods(Object object, Class cls, boolean reallySingleton) {
+	public static void addClassTemplateTriggers(Object object, Class cls, boolean reallySingleton) {
 		if (cls == null) {
 			if (object == null)
 				return;
@@ -587,13 +646,13 @@ public class Utility extends UtilityMenuOptions {
 		Boolean was = disableOptionalArgs.get();
 		try {
 			disableOptionalArgs.set(true);
-			addMethods0000(object, cls, reallySingleton);
+			addClassTemplateTriggers0(object, cls, reallySingleton);
 		} finally {
 			disableOptionalArgs.set(was);
 		}
 	}
 
-	private static void addMethods0000(Object object, Class cls, boolean reallySingleton) {
+	private static void addClassTemplateTriggers0(Object object, Class cls, boolean reallySingleton) {
 
 		if (object != null && cls != null) {
 			addLastResultType(object, cls);
@@ -619,9 +678,9 @@ public class Utility extends UtilityMenuOptions {
 			}
 		}
 		/// instance singletons
-		if (Singleton.class.isAssignableFrom(cls) || reallySingleton) {
-			reallySingleton = true;
+		if ((Singleton.class.isAssignableFrom(cls) && !cls.isInterface()) || reallySingleton) {
 			object = makeSingleton(object, cls);
+			reallySingleton = true;
 			setSingletonValue(cls, object);
 		} else {
 			object = null;
@@ -649,6 +708,20 @@ public class Utility extends UtilityMenuOptions {
 				break;
 			}
 
+			if (implementsAllClasses(cls, ObjectPanel.class, Component.class)) {
+				if (isCreatable(cls)) {
+					try {
+						Class panelFor = getTypeClass(cls.getMethod("getClassOfBox").getGenericReturnType(), Class.class);
+						if (panelFor != null && panelFor != Class.class) {
+							registerPanel(cls, panelFor);
+						}
+					} catch (SecurityException e) {
+					} catch (NoSuchMethodException e) {
+					}
+
+				}
+			}
+
 			synchronized (loadedClassMethods) {
 				if (!loadedClassMethods.add(cls)) {
 					break;
@@ -656,12 +729,12 @@ public class Utility extends UtilityMenuOptions {
 			}
 			if (isSystemPrimitive(cls)) {
 				if (!reallySingleton) {
-					theLogger.warn("Skipping methods found in class " + cls);
+					theLogger.trace("Skipping methods found in " + cls);
 					break;
 				}
 			}
 
-			for (Method m : getAllMethods(cls, true)) {
+			for (Method m : ReflectUtils.getAllMethods(cls, false)) {
 
 				if (!loadedClassMethods.add(m)) {
 					continue;
@@ -685,24 +758,9 @@ public class Utility extends UtilityMenuOptions {
 				addField(m, cls, object, objectContextMenuTriggers, appMenuGlobalTriggers, ctx);
 
 			}
-			if (true)
-				break;
 			cls = cls.getSuperclass();
 		}
 
-		if (implementsAllClasses(cls, ObjectPanel.class, Component.class)) {
-			if (isCreatable(cls)) {
-				try {
-					Class panelFor = getTypeClass(cls.getMethod("getClassOfBox").getGenericReturnType(), Class.class);
-					if (panelFor != null && panelFor != Class.class) {
-						registerPanel(cls, panelFor);
-					}
-				} catch (SecurityException e) {
-				} catch (NoSuchMethodException e) {
-				}
-
-			}
-		}
 		int ps1 = 0;
 		int ps2 = 0;
 
@@ -911,6 +969,8 @@ public class Utility extends UtilityMenuOptions {
 			return true;
 		if (CharSequence.class.isAssignableFrom(cls))
 			return true;
+		if (Iterator.class.isAssignableFrom(cls))
+			return true;
 		if (Number.class.isAssignableFrom(cls))
 			return true;
 		if (Boolean.class.isAssignableFrom(cls))
@@ -1041,6 +1101,9 @@ public class Utility extends UtilityMenuOptions {
 	}
 
 	private static <T> T getKeyConvMap(Map<Class, T> toFrmKeyCnvMap, Callable<T> whenMissing, Class keyType) {
+		if (keyType == null || keyType == Object.class) {
+			bug("key class = " + keyType);
+		}
 		synchronized (toFrmKeyCnvMap) {
 			T toFrmKeyCnv = toFrmKeyCnvMap.get(keyType);
 			if (toFrmKeyCnv != null)
@@ -1139,7 +1202,7 @@ public class Utility extends UtilityMenuOptions {
 		//BoxPanelSwitchableView boxPanelDisplayContext = getBoxPanelTabPane();
 		try {
 			if (id != null)
-				recordCreated(noc.findOrCreateBox(id.toString(), comp));
+				recordCreated(noc.findOrCreateBox(getDefaultName(id, true, true), comp));
 		} catch (PropertyVetoException e) {
 			printStackTrace(e);
 			throw reThrowable(e);
@@ -1276,24 +1339,70 @@ public class Utility extends UtilityMenuOptions {
 		PropertyEditorManager.setEditorSearchPath(new String[] { AbstractCollectionBeanInfo.class.getPackage().getName() });
 		// ClassFinder.getClasses(PropertyEditor);
 
-		registerTabs(ClassCustomizer.class, Class.class);
-		registerTabs(CollectionCustomizer.class, Collection.class);
-		registerTabs(ThrowableCustomizer.class, Throwable.class);
-		registerTabs(BasicObjectCustomizer.class, Throwable.class);
-		registerTabs(ArrayContentsPanelTabFramer.class, Object[].class);
-		registerTabs(SpecificObjectCustomizers.class, Object.class);
+		registerTabsCreator(ClassCustomizer.class, Class.class);
+		registerTabsCreator(CollectionCustomizer.class, Collection.class);
+		registerTabsCreator(ThrowableCustomizer.class, Throwable.class);
+		registerTabsCreator(ArrayContentsPanelTabFramer.class, Object[].class);
+		registerTabsCreator(SpecificObjectCustomizers.class, Object.class);
+		registerTabsCreator(BasicObjectCustomizer.class, Object.class);
 
 		registerPanel(RepoManagerPanel.class, Repo.class);
 		registerPanel(ArrayContentsPanel.class, Object[].class);
-		registerPanel(ObjectChoiceComboPanel.class, Class.class);
+		registerCustomizer(ArrayContentsPanel.class, ReflectUtils.makeArrayType(ReflectUtils.makeAnyType()));
+		//registerPanel(ObjectChoiceComboPanel.class, Class.class);
 		registerPanel(ModelAsTurtleEditor.class, Model.class);
 		registerPanel(ModelMatrixPanel.class, Model.class);
 
-		registerCustomizer(ArrayContentsPanel.class, Object[].class);
-		// registerCustomizer(IndexedCustomizer.class, List.class);
+		//registerCustomizer(org.openide.nodes.IndexedCustomizer.class, List.class);
+		registerCustomizer(org.appdapter.gui.editors.LargeObjectView.class, Object.class);
+		registerCustomizer(org.appdapter.gui.editors.UseEditor.class, PropertyEditor.class);
+		registerCustomizer(org.appdapter.gui.swing.CollectionContentsPanel.class, Collection.class);
+		registerCustomizer(org.appdapter.gui.swing.CollectionContentsPanelUsingTable.class, Collection.class);
+		registerCustomizer(org.appdapter.gui.swing.ConstructorsListPanel.class, Class.class);
+		registerCustomizer(org.appdapter.gui.swing.LargeObjectChooser.class, POJOCollection.class);
+		registerCustomizer(org.appdapter.gui.swing.PropertiesPanel.class, ReflectUtils.typeAnd(Object.class, ReflectUtils.typeNot(Object[].class)));
+		registerCustomizer(org.appdapter.gui.table.MapContentsPanel.class, Map.class);
+
+		/*	registerEditor(org.openide.explorer.propertysheet.PropUtils.DifferentValuesEditor.class, null);
+			registerEditor(org.openide.explorer.propertysheet.PropUtils.ExDifferentValuesEditor.class, null);
+			registerEditor(org.openide.explorer.propertysheet.PropUtils.NoPropertyEditorEditor.class, null);
+
+			registerEditor(org.openide.loaders.SortModeEditor.class, org.openide.loaders.DataFolder.SortMode.class);*/
+		/*registerEditor(org.openide.explorer.propertysheet.Boolean3WayEditor.class, null);
+		registerEditor(org.openide.explorer.propertysheet.RendererFactory.ExceptionPropertyEditor.class, null);
+		registerEditor(org.openide.explorer.propertysheet.EnumPropertyEditor.class, Enum.class);
+		registerEditor(org.openide.explorer.propertysheet.IndexedPropertyEditor.class, Object[].class);
+		registerEditor(org.apache.activemq.util.BooleanEditor.class, boolean.class);
+		registerEditor(org.apache.activemq.util.ListEditor.class, List.class);
+		registerEditor(org.apache.activemq.util.MemoryIntPropertyEditor.class, int.class);
+		registerEditor(org.apache.activemq.util.MemoryPropertyEditor.class, long.class);
+		registerEditor(org.apache.activemq.util.StringArrayEditor.class, String[].class);
+		registerEditor(org.apache.taglibs.standard.lang.jstl.test.Bean2Editor.class, Bean2.class);*/
+
+		registerEditor(sun.beans.editors.BoolEditor.class, boolean.class);
+		registerEditor(sun.beans.editors.ByteEditor.class, byte.class);
+		registerEditor(sun.beans.editors.ColorEditor.class, Color.class);
+		registerEditor(sun.beans.editors.DoubleEditor.class, double.class);
+		registerEditor(sun.beans.editors.FloatEditor.class, float.class);
+		registerEditor(sun.beans.editors.FontEditor.class, Font.class);
+		registerEditor(sun.beans.editors.IntEditor.class, int.class);
+		registerEditor(sun.beans.editors.LongEditor.class, long.class);
+		registerEditor(sun.beans.editors.ShortEditor.class, short.class);
+		registerEditor(sun.beans.editors.StringEditor.class, String.class);
+		registerEditor(org.appdapter.gui.browse.PropertyDescriptorForField.ObjectFieldEditor.class, Object.class);
+		registerEditor(org.appdapter.gui.editors.BooleanEditor.class, boolean.class);
+		registerEditor(org.appdapter.gui.editors.ColorEditor.class, Color.class);
+		registerEditor(org.appdapter.gui.editors.DateEditor.class, Date.class);
+		registerEditor(org.appdapter.gui.editors.IntEditor.class, int.class);
+		registerEditor(org.appdapter.gui.editors.StringEditor.class, String.class);
+		registerEditor(org.appdapter.gui.swing.PropertyValueControl.ObjectReferenceEditor.class, Object.class);
 	}
 
-	public static void registerTabs(Class<? extends AddTabFrames> class1, Class class2) {
+	private static void registerEditor(Class<? extends PropertyEditor> class1, Object object) {
+
+	}
+
+	public static void registerTabsCreator(Class<? extends AddTabFrames> class1, Class class2) {
 		try {
 			addTabFramers.add((AddTabFrames) newInstance(class1));
 		} catch (Throwable e) {
@@ -1301,19 +1410,24 @@ public class Utility extends UtilityMenuOptions {
 		}
 	}
 
-	private static void registerCustomizer(Class<? extends Customizer> customizer, Class<?>... cls) {
-		addDelegateClass(Customizer.class, customizer, cls);
+	private static void registerCustomizer(Class<? extends Customizer> customizer, Type... cls) {
+		registerPairs(customizer, cls);
 	}
 
-	public static void addDelegateClass(Class ignored, Class customizer, Class<?>[] cls) {
-		for (Class c : cls) {
+	public static void registerPanel(Class<? extends ObjectPanel> customizer, Type... cls) {
+		registerPairs(customizer, cls);
+	}
+
+	public static void registerPairs(Class customizer, Type[] cls) {
+		for (Type c : cls) {
 			registerPair(customizer, c);
 		}
-
 	}
 
-	public static void registerPanel(Class customizer, Class<?>... cls) {
-		addDelegateClass(Component.class, customizer, cls);
+	public static void registerPairs(Class customizer, Class[] cls) {
+		for (Type c : cls) {
+			registerPair(customizer, c);
+		}
 	}
 
 	static {
@@ -1328,7 +1442,7 @@ public class Utility extends UtilityMenuOptions {
 		return invokeOptional(obj0, method, new UtilityOptionalArgs(optionalArgSpecs));
 	}
 
-	static <T> Object recastUtilOnly(final Object val, Class<T> objNeedsToBe, List maxCvt) throws NoSuchConversionException {
+	static <T> Object recastUtilOnly(Object val, Class<T> objNeedsToBe, List maxCvt) throws NoSuchConversionException {
 		//Object obj = val;
 		if (val == null)
 			return null;
@@ -1348,7 +1462,14 @@ public class Utility extends UtilityMenuOptions {
 			return (T) val;
 		}
 		if (val instanceof String) {
-			return (T) fromString((String) val, objNeedsToBe, maxCvt);
+			Object obj = fromString((String) val, objNeedsToBe, maxCvt);
+			if (objNeedsToBe.isInstance(obj)) {
+				return objNeedsToBe.cast(obj);
+			}
+			if (obj != null && obj != val) {
+				val = obj;
+			}
+			return ReflectUtils.noSuchConversion(val, objNeedsToBe, null);
 		}
 
 		/*if (val .getClass().getMethod("as"+objNeedsToBe, ) {
@@ -1364,7 +1485,7 @@ public class Utility extends UtilityMenuOptions {
 			}
 			return ReflectUtils.recastRU(obj, objNeedsToBe, maxCvt);
 		}
-		return (T) obj;
+		return ReflectUtils.noSuchConversion(val, objNeedsToBe, null);
 	}
 
 	static public boolean isToStringType(Class type) {
@@ -1595,6 +1716,9 @@ public class Utility extends UtilityMenuOptions {
 		if (c.isArray()) {
 			return getSpecialClassName(c.getComponentType()) + "Array";
 		}
+		if (c.isPrimitive()) {
+			return getSpecialClassName(nonPrimitiveTypeFor(c)) + "+Primitive";
+		}
 		String name = getCanonicalSimpleName(c, true);
 		int i = name.indexOf(".");
 		if (i == -1)
@@ -1765,34 +1889,16 @@ public class Utility extends UtilityMenuOptions {
 		return null;
 	}
 
-	public static Class<? extends Customizer> findCustomizerClass(Class objClass) {
-		try {
-			for (Class c : findImplmentingForMatch(Customizer.class, objClass)) {
-				if (c != null)
-					return c;
-			}
-			return makeCustomizerFromEditor(objClass);
-		} catch (Throwable e) {
-			theLogger.error(" " + objClass, e);
-			return null;
-		}
-	}
-
-	public static Collection<Class<? extends Component>> findComponentClasses(Class objClass) {
-		Collection<Class<? extends Component>> im = findImplmentingForMatch(Component.class, objClass);
-		return im;
-	}
-
-	private static <T> Collection<Class<? extends T>> findImplmentingForMatch(Class<T> mustBe, Class objClass) {
-		boolean useAssignable = false;
+	public static <T> Collection<Class<? extends T>> findImplmentingForMatch(Class<T> mustBe, Class forTarget) {
+		boolean allowConversion = false;
 		synchronized (classToClassRegistry) {
 			HashSet<Class<? extends T>> list = new HashSet<Class<? extends T>>();
-			for (Pair<Class, Class> rl : classToClassRegistry) {
+			for (PCons<Class, Class> rl : classToClassRegistry) {
 				Class l = rl.getLeft();
-				if (!typesMatch(mustBe, l, useAssignable))
+				if (!mustBe.isAssignableFrom(l))
 					continue;
-				Class r = rl.getRight();
-				if (r.isAssignableFrom(objClass)) {
+				Type r = rl.getRight();
+				if (ReflectUtils.isAssignableFromMaybeConvert(r, forTarget, allowConversion)) {
 					list.add(l);
 				}
 			}
@@ -1800,12 +1906,24 @@ public class Utility extends UtilityMenuOptions {
 		}
 	}
 
-	private static <T> void registerPair(Class<T> mustBe, Class objClass) {
+	public static boolean ensurePanelRegistered(Class mustBe) {
 		synchronized (classToClassRegistry) {
-			Pair pair = new Pair(mustBe, objClass);
+			for (PCons<Class, Class> rl : classToClassRegistry) {
+				Class l = rl.getLeft();
+				if (mustBe == l)
+					return true;
+			}
+			return false;
+
+		}
+	}
+
+	private static <T> void registerPair(Class<T> mustBe, Type objClass) {
+		synchronized (classToClassRegistry) {
+			PCons pair = new PCons(mustBe, objClass);
 
 			if (!classToClassRegistry.remove(pair))
-				theLogger.trace("registering pair " + pair.getLeft() + "->" + pair.getRight());
+				theLogger.warn("registering pair " + pair.getLeft() + "->" + pair.getRight());
 			classToClassRegistry.add(0, pair);
 			if (panelClassesFromCached.size() > 0) {
 				synchronized (panelClassesFromCached) {
@@ -1814,21 +1932,6 @@ public class Utility extends UtilityMenuOptions {
 			}
 		}
 
-	}
-
-	static boolean typesMatch(Class mustBe, Class srch, boolean useAssignable) {
-		if (mustBe == srch)
-			return true;
-		if (useAssignable) {
-			if (mustBe.isAssignableFrom(srch))
-				return true;
-			if (srch.isAssignableFrom(mustBe))
-				return true;
-		}
-		if (isAssignableFrom(mustBe, srch)) {
-			return true;
-		}
-		return false;
 	}
 
 	private static Class makeCustomizerFromEditor(Class objClass) {
@@ -2028,9 +2131,11 @@ public class Utility extends UtilityMenuOptions {
 	public static Collection<Class> findPanelClasses(Class targetType) {
 		synchronized (panelClassesFromCached) {
 			Collection<Class> cc = (Collection<Class>) panelClassesFromCached.get(targetType);
-			if (cc == null || targetType == Class.class) {
+			if (cc == null || targetType == Class.class || true) {
 				panelClassesFromCached.put(targetType, EMPTY_COLLECTION);
 				cc = findPanelClassesFromCached(targetType);
+				if (cc.size() == 0)
+					theLogger.warn("No Panel Classes For " + targetType);
 				panelClassesFromCached.put(targetType, cc);
 			}
 
@@ -2056,16 +2161,16 @@ public class Utility extends UtilityMenuOptions {
 			isInClassLoadPing(wasInClassloaderPing);
 		}
 		if (targetType == Class.class) {
-			Debuggable.breakpoint();
+			//Debuggable.breakpoint();
 		}
 		addIfNew(panelClass, findImplmentingForMatch(PropertyEditor.class, targetType), false);
 		addIfNew(panelClass, findImplmentingForMatch(Customizer.class, targetType), false);
 		addIfNew(panelClass, findImplmentingForMatch(Component.class, targetType), false);
 		addIfNew(panelClass, findImplmentingForMatch(Object.class, targetType), false);
-		addIfNew(panelClass, findCustomizerClass(targetType), false);
 		addIfNew(panelClass, makeCustomizerFromEditor(targetType), false);
-		if (panelClass.size() == 0)
+		if (panelClass.size() == 0) {
 			return EMPTY_COLLECTION;
+		}
 		return panelClass;
 	}
 
@@ -2127,39 +2232,50 @@ public class Utility extends UtilityMenuOptions {
 	 * @return
 	 */
 	public static JPanel getPropertiesPanel(Object objectIn) {
+		JPanel view = getLargeObjectView(objectIn);
+		return view;
+	}
+
+	public static LargeObjectView getLargeObjectView(Object objectIn) {
+		return (LargeObjectView) findOrCreateObjectView3(objectIn, LargeObjectView.class, LargeObjectView.class);
+	}
+
+	public static JPanel getCustomizerPanel2(Object objectIn, Class<? extends Customizer> customizerClass) {
 		final Object object = drefO(objectIn);
 		Map<Object, JPanel> myPanelMap = Utility.getPanelMap(object);
-		ScreenBoxImpl bt = asScreenBoxImpl(objectIn);
-		Object key = bt.toKey(Kind.OBJECT_PROPERTIES);
-
-		JPanel view = (JPanel) myPanelMap.get(key);
-		if (view instanceof AlreadyLooking) {
-			theLogger.warn("Looping while getting a panel for {} with {} ", objectIn, object);
-			return null;
+		synchronized (myPanelMap) {
+			return findOrCreate1ObjectView(objectIn, null, customizerClass, object, myPanelMap);
 		}
-
-		if (view != null)
-			return view;
-
-		Class objClass = object.getClass();
-		Class<? extends Customizer> customizerClass = getCustomizerClassForClass(objClass);
-		return findOrCreateObjectView(objectIn, key, customizerClass);
 	}
 
-	public static JPanel getLargeObjectView(Object objectIn) {
-		return findOrCreateObjectView(objectIn, LargeObjectView.class, LargeObjectView.class);
-	}
-
-	public static JPanel findOrCreateObjectView(Object objectIn, Object key, Class customizerClass) {
+	public static JPanel findOrCreateObjectView3(Object objectIn, Object key, Class customizerClass) {
 		Object object = dref(objectIn);
 		Map<Object, JPanel> myPanelMap = Utility.getPanelMap(object);
+		synchronized (myPanelMap) {
+			return findOrCreate1ObjectView(objectIn, key, customizerClass, object, myPanelMap);
+		}
+	}
 
+	private static JPanel findOrCreate1ObjectView(Object objectIn, Object key, Class customizerClass, Object object, Map<Object, JPanel> myPanelMap) {
+		ScreenBoxImpl bt = asScreenBoxImpl(objectIn);
+		if (key == null) {
+			key = bt.toKey(customizerClass);
+		} else {
+			key = bt.toKey(key);
+		}
 		JPanel view = myPanelMap.get(key);
-		if (view == null)
+		if (view != null && !(view instanceof AlreadyLooking)) {
+			return view;
+		}
+		if (customizerClass == null) {
+			Class objClass = object.getClass();
+			customizerClass = (Class) bt.toKey(customizerClass);
 			view = (JPanel) myPanelMap.get(customizerClass);
+		}
 
 		if (view instanceof AlreadyLooking) {
 			theLogger.warn("Looping while getting a panel for {} with {} ", objectIn, object);
+			bug("Looping for " + objectIn);
 			return null;
 		} else if (view != null) {
 			return view;
@@ -2168,45 +2284,19 @@ public class Utility extends UtilityMenuOptions {
 		Customizer customizer;
 		try {
 			customizer = (Customizer) newInstance(customizerClass);
+			if (!(customizer instanceof JPanel)) {
+				theLogger.warn("customizer is not a Component " + customizer);
+			}
+
+			customizer.setObject(object);
+			view = (JPanel) customizer;
+
+			myPanelMap.put(key, view);
+			return view;
 		} catch (Throwable e) {
-			return findOrCreateObjectView(objectIn, key, LargeObjectView.class);
+			theLogger.warn("customizer error: " + customizerClass, e);
+			return null;
 		}
-		if (!(customizer instanceof JPanel)) {
-			theLogger.warn("customizer is not a Component " + customizer);
-			return findOrCreateObjectView(objectIn, key, LargeObjectView.class);
-		}
-
-		customizer.setObject(object);
-		view = (JPanel) customizer;
-
-		myPanelMap.put(key, view);
-		return view;
-	}
-
-	public static Class getCustomizerClassForClass(final Class objClass) {
-		Class<? extends Customizer> customizerClass = findCustomizerClass(objClass);
-		if (customizerClass == null) {
-			theLogger.warn("No specific customizer for " + objClass);
-			Debuggable.maybeDebug(new Runnable() {
-
-				@Override public void run() {
-					findCustomizerClass(objClass);
-
-				}
-			});
-			customizerClass = LargeObjectView.class;
-		} else if (customizerClass != LargeObjectView.class) {
-			theLogger.warn("Special customizer for " + objClass + " of type " + customizerClass);
-			Debuggable.maybeDebug(new Runnable() {
-
-				@Override public void run() {
-					findCustomizerClass(objClass);
-
-				}
-			});
-			customizerClass = LargeObjectView.class;
-		}
-		return customizerClass;
 	}
 
 	public static boolean stringsEqual(String s1, String s2) {
@@ -2342,11 +2432,11 @@ public class Utility extends UtilityMenuOptions {
 	 * @param nameIndex
 	 */
 	public static String generateUniqueName(Object object, Map<String, BT> checkAgainst) {
-		return generateUniqueName_sug(object, null, checkAgainst, false);
+		return generateUniqueName_sug(object, null, checkAgainst, false, true);
 	}
 
 	public static String generateUniqueNameWarnIfMissed(Object object, String suggestedName, Map<String, BT> checkAgainst) {
-		String newName = generateUniqueName_sug(object, suggestedName, checkAgainst, false);
+		String newName = generateUniqueName_sug(object, suggestedName, checkAgainst, false, true);
 		if (suggestedName != null && !suggestedName.equals(newName)) {
 			warn("did not get suggested name : " + suggestedName + " isntead got " + newName + " for " + object);
 		}
@@ -2356,23 +2446,25 @@ public class Utility extends UtilityMenuOptions {
 	public static String getUniqueNamePretty(Object object) {
 		if (object == null)
 			return "<null>";
-		String un = getUniqueName(object, getTreeBoxCollection(), false, true);
-		if (true || un.contains(" ") || un.contains("-") || un.contains("+"))
+		String un = getUniqueName(object, getTreeBoxCollection(), false, true, false);
+		if (un.contains(" ") || un.contains("-") || un.contains("+"))
 			return un;
-		bug("Not pretty string: " + un + " perhaps use " + makeTooltipText(object));
+		//bug("Not pretty string: " + un + " perhaps use " + makeTooltipText(object));
 		return un;
-	}
-
-	public static String getUniqueName(Object object) {
-		return getUniqueName(object, getTreeBoxCollection(), false, false);
 	}
 
 	public static boolean isTitled(String title) {
 		return title != null && title != NamedObjectCollection.MISSING_COMPONENT && !title.equalsIgnoreCase("<null>") && title.length() > 0;
 	}
 
-	public static String getUniqueName(Object object, NamedObjectCollection noc) {
-		String title = getUniqueName(object, noc, true, false);
+	public static String getUniqueNameForKey(Object object) {
+		if (object == null)
+			return "<null>";
+		return getUniqueNameForKey(object, null);
+	}
+
+	public static String getUniqueNameForKey(Object object, NamedObjectCollection noc) {
+		String title = getUniqueName(object, noc, true, false, true);
 		if (isTitled(title))
 			return title;
 		bug("bad title " + title + " for " + object);
@@ -2385,6 +2477,8 @@ public class Utility extends UtilityMenuOptions {
 			return "<nULL>";
 		}
 		Class cls = nonPrimitiveTypeFor(object.getClass());
+		if (Number.class.isAssignableFrom(cls))
+			return "" + object;
 		ToFromKeyConverter<Object, String> conv = getToFromStringConverter(cls);
 		if (conv != null) {
 			String toKey = conv.toKey((Object) object);
@@ -2404,10 +2498,10 @@ public class Utility extends UtilityMenuOptions {
 		return "" + object;
 	}
 
-	public static String getUniqueName(Object object, NamedObjectCollection noc, boolean mayCreate, boolean wantLessAnonymous) {
+	public static String getUniqueName(Object object, NamedObjectCollection noc, boolean mayCreate, boolean wantsPretty, boolean reReadable) {
 		if (object == null)
 			return "<null>";
-		String title = hasDefaultName(object, wantLessAnonymous);
+		String title = hasDefaultName(object, wantsPretty, reReadable);
 		if (isTitled(title))
 			return title;
 		BT newBox = null;
@@ -2424,10 +2518,10 @@ public class Utility extends UtilityMenuOptions {
 				return title;
 		} else {
 			Map<String, BT> map = noc.getNameToBoxIndex();
-			title = generateUniqueName_sug(object, null, map, wantLessAnonymous);
+			title = generateUniqueName_sug(object, null, map, wantsPretty, reReadable);
 			if (isTitled(title)) {
 				if (!mayCreate) {
-					return getUniqueName(object, noc, true, wantLessAnonymous);
+					return getUniqueName(object, noc, true, wantsPretty, reReadable);
 				}
 				bug("awol title " + title + " for " + object);
 				return title;//"'" + title + "'";
@@ -2437,15 +2531,15 @@ public class Utility extends UtilityMenuOptions {
 		return title;
 	}
 
-	public static String getDefaultName(Object object, boolean wantLessAnonymous) {
-		String title = hasDefaultName(object, wantLessAnonymous);
+	public static String getDefaultName(Object object, boolean wantsPretty, boolean reReadable) {
+		String title = hasDefaultName(object, wantsPretty, reReadable);
 		if (title == null) {
 			return object.getClass().getCanonicalName() + "@" + identityHashCode(object);
 		}
 		return title;
 	}
 
-	public static String generateUniqueName_sug(Object object, String suggestedName, Map<String, BT> checkAgainst, boolean wantLessAnonymous) {
+	public static String generateUniqueName_sug(Object object, String suggestedName, Map<String, BT> checkAgainst, boolean wantsPretty, boolean reReadable) {
 		if (object == null)
 			return "<null>";
 		if (object instanceof Class) {
@@ -2471,8 +2565,8 @@ public class Utility extends UtilityMenuOptions {
 
 		if (checkAgainst == null) {
 			if (suggestedName == null)
-				return getDefaultName(object, wantLessAnonymous);
-			return suggestedName + getDefaultName(object, wantLessAnonymous);
+				return getDefaultName(object, wantsPretty, reReadable);
+			return suggestedName + getDefaultName(object, wantsPretty, reReadable);
 		}
 
 		String className = suggestedName;
@@ -2514,15 +2608,20 @@ public class Utility extends UtilityMenuOptions {
 	}
 
 	static public <T, K> ToFromKeyConverter<T, K> getToFromKeyConverter(Class<T> valueClazz, Class<K> key) {
+		if (key != String.class) {
+			return null;
+			//warn("to-from=", valueClazz, key);
+		}
 		Map<Class, ToFromKeyConverter> toFrmKeyCnv = getKeyConvMap(key, false);
 		if (toFrmKeyCnv == null)
 			return null;
 		if (valueClazz == null || valueClazz == Object.class) {
-			warn("to-from=", valueClazz, key);
+			//warn("to-from=", valueClazz, key);
+			return (ToFromKeyConverter<T, K>) FROM_STRING_NOT_SPECIALIZED;
 		}
 		synchronized (toFrmKeyCnv) {
 			for (Class c : toFrmKeyCnv.keySet()) {
-				if (c.isAssignableFrom(valueClazz)) {
+				if (valueClazz.isAssignableFrom(c)) {
 					return toFrmKeyCnv.get(c);
 				}
 			}
@@ -2530,7 +2629,7 @@ public class Utility extends UtilityMenuOptions {
 		return null;
 	}
 
-	public static String hasDefaultName(Object object, boolean wantLessAnonymous) {
+	public static String hasDefaultName(Object object, boolean wantsPretty, boolean reReadable) {
 		if (object == null)
 			return "<null>";
 
@@ -2544,27 +2643,13 @@ public class Utility extends UtilityMenuOptions {
 		if (type == String.class)
 			return quoteString((String) object, "\"");
 
-		if (object instanceof BT) {
-			title = ((BT) object).getShortLabel();
-			if (isTitled(title)) {
-				return title;
-			}
-		}
-
 		if (isToStringType(type)) {
 			title = makeToString(object);
 			if (isTitled(title)) {
 				return title;
 			}
 		}
-		if (uiObjects.containsObject(object)) {
-			title = uiObjects.getTitleOf(object);
-			if (isTitled(title)) {
-				if (!wantLessAnonymous)
-					return title;
-				//bug("want pretty for " + object);
-			}
-		}
+
 		if (object instanceof KnownComponent) {
 			KnownComponent kc = (KnownComponent) object;
 			Ident id = kc.getIdent();
@@ -2583,9 +2668,26 @@ public class Utility extends UtilityMenuOptions {
 			}
 		}
 
+		if (object instanceof BT) {
+			title = ((BT) object).getShortLabel();
+			if (isTitled(title)) {
+				return title;
+			}
+		}
+
+		BT bt = uiObjects.findBoxByObject(object);
+		if (bt != null) {
+			title = bt.getShortLabel();
+			if (isTitled(title)) {
+				//if (!wantsPretty)
+				return title;
+				//bug("want pretty for " + object);
+			}
+		}
+
 		Object object2 = dref1(object, false);
 		if (object2 != null && object2 != object) {
-			title = hasDefaultName(object2, wantLessAnonymous);
+			title = hasDefaultName(object2, wantsPretty, reReadable);
 			if (isTitled(title)) {
 				return title;
 			}
@@ -2679,7 +2781,8 @@ public class Utility extends UtilityMenuOptions {
 	public static Object dref(Object value, Object onNull, int depth, boolean onlyBTAndPanelsAsReferenceHolders) {
 		if (value == null)
 			return onNull;
-
+		if (value.getClass() == JJPanel.class)
+			return value;
 		if (value instanceof TriggerMenuController) {
 			TriggerMenuController tmc = (TriggerMenuController) value;
 			HashSet objs = new HashSet();
@@ -2869,24 +2972,7 @@ public class Utility extends UtilityMenuOptions {
 
 	static {
 		synchronized (triggerAdders) {
-			triggerAdders.add(new TriggerAdder() {
-				@Override public String toString() {
-					// TODO Auto-generated method stub
-					return getClass().getSuperclass() + " addTriggersForObjectInstance";
-				}
-
-				@Override public <TrigType> void addTriggersForObjectInstance(DisplayContext ctx, Class cls, List<TrigType> tgs, Object poj, TriggerFilter rulesOfAdd, String menuFmt) {
-					//TriggerMenuFactory.addTriggersForObjectInstanceMaster(ctx, cls, tgs, poj, ADD_ALL, menuFmt, false);
-					Object also = dref(poj);
-					//if (also != null && also != poj) {
-					TriggerMenuFactory.addTriggersForObjectInstanceMaster(false, ctx, also.getClass(), tgs, also, ADD_ALL, menuFmt, false);
-					//}
-					//Object also2 = drefO(poj);
-					//if (also2 != null && also2 != poj && also2 != also) {
-					//TriggerMenuFactory.addTriggersForObjectInstanceMaster(ctx, also2.getClass(), tgs, also2, ADD_ALL, menuFmt, false);
-					//}
-				}
-			});
+			triggerAdders.add(new TriggerAdderForInstance<Object>());
 		}
 	}
 
@@ -3109,9 +3195,10 @@ public class Utility extends UtilityMenuOptions {
 		}
 	}
 
-	public static Collection<Trigger> getGlobalStaticTriggers(DisplayContext ctx, Class cls, Object poj) {
+	public static Collection<Trigger> getGlobalTriggers(DisplayContext ctx, Class cls, Object poj) {
 		ArrayList<Trigger> triggersFound = new ArrayList<Trigger>();
-		for (TriggerForClass trigc : getObjectGlobalMethods()) {
+		List<TriggerForClass> trigsToTest = getObjectGlobalMethods();
+		for (TriggerForClass trigc : trigsToTest) {
 			if (trigc.appliesTarget(cls, poj))
 				triggersFound.add(trigc.createTrigger(null, ctx, poj));
 		}
@@ -3262,26 +3349,31 @@ public class Utility extends UtilityMenuOptions {
 	public static HashSet<String> localPackagePrefixs = new HashSet<String>();
 
 	static {
-		localPackagePrefixs.add("org.app");
+		localPackagePrefixs.add("org.appd");
 		localPackagePrefixs.add("org.cog");
 		localPackagePrefixs.add("org.robo");
 		localPackagePrefixs.add("org.rw");
+		localPackagePrefixs.add("org.openide");
 		localPackagePrefixs.add("com.hr");
 		localPackagePrefixs.add("java.util.");
+		localPackagePrefixs.add("java.b");
 	}
 
-	public static <T> Set<Class<? extends T>> getCoreClasses(Class<T> ancestor) {
-		Set<Class<? extends T>> cls = new HashSet();
-		try {
-			for (String s : copyOf(localPackagePrefixs)) {
-				cls.addAll(ClassFinder.getClasses(s, ancestor));
+	public static <T> Set<Class<? extends T>> getCoreClasses(final Class<T> ancestor) {
+		return ReflectUtils.cachedResult(new Callable() {
+			@Override public Object call() throws Exception {
+				Set<Class<? extends T>> cls = new HashSet();
+				try {
+					for (String s : copyOf(localPackagePrefixs)) {
+						cls.addAll(ClassFinder.getClasses(s, ancestor));
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+
+				return cls;
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		return cls;
-
+		}, ancestor);
 	}
 
 	private static <T> T recastUtilFirst(Object obj, Class<T> objNeedsToBe) throws NoSuchConversionException {
@@ -3313,6 +3405,15 @@ public class Utility extends UtilityMenuOptions {
 	public static HashSet<Class> localInterfaces = new HashSet<Class>();
 	private static boolean isLoadComplete = false;
 	private static List<Runnable> onLoadComplete = new LinkedList<Runnable>();
+
+	static {
+		invokeAfterLoader(new Runnable() {
+
+			@Override public void run() {
+				UtilityMenuOptions.ensurePanelsAllRegistered();
+			}
+		});
+	}
 	static {
 		localInterfaces.add(Set.class);
 		localInterfaces.add(List.class);
@@ -3367,8 +3468,7 @@ public class Utility extends UtilityMenuOptions {
 	static public void makeTablePopupHandler(final JTable jTable) {
 		jTable.setAutoCreateRowSorter(true);
 		jTable.setFillsViewportHeight(true);
-		jTable.removeMouseListener(POPUP_FOR_CELL);
-		jTable.addMouseListener(POPUP_FOR_CELL);
+		TriggerMouseAdapter.installMouseAdapter(jTable);
 		jTable.setColumnSelectionAllowed(false);
 		TableModel tm = jTable.getModel();
 		SafeJTable.setComponentRenderers(jTable, tm);
@@ -3388,8 +3488,6 @@ public class Utility extends UtilityMenuOptions {
 		}
 
 	}
-
-	final static TriggerMouseAdapter POPUP_FOR_CELL = new TriggerMouseAdapter();
 
 	@UISalient public static Class[] getCreatableSubclasses(Class ancestor) {
 		ArrayList<Class> clzs = new ArrayList<Class>();
@@ -3499,8 +3597,12 @@ public class Utility extends UtilityMenuOptions {
 	private static void runNow(Runnable td) {
 		try {
 			td.run();
-		} catch (Throwable t) {
-			printStackTrace(t);
+		} catch (Error e) {
+			throw e;
+		} catch (RuntimeException e) {
+			throw e;
+		} catch (Throwable e) {
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -3763,9 +3865,9 @@ public class Utility extends UtilityMenuOptions {
 		synchronized (objectContextMenuTriggers0) {
 			objectContextMenuTriggers0.add(editableTrigger);
 		}
-		synchronized (appMenuGlobalTriggers0) {
+		/*synchronized (appMenuGlobalTriggers0) {
 			appMenuGlobalTriggers0.add(editableTrigger);
-		}
+		}*/
 		return editableTrigger;
 	}
 
@@ -3953,10 +4055,15 @@ public class Utility extends UtilityMenuOptions {
 		ActionEvent lastEvt = null;
 		try {
 			Utility.addSubResult(lastFrom, lastTargetBox, lastEvt, anyObject, anyObject.getClass());
+			Utility.selectInTree(anyObject);
 		} catch (PropertyVetoException e) {
 			printStackTrace(e);
 		}
 
+	}
+
+	public static void selectInTree(Object anyObject) {
+		browserPanel.selectInTree(anyObject);
 	}
 
 	public static boolean isLAFSafe() {

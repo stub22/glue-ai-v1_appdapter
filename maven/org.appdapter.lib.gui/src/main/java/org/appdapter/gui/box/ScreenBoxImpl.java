@@ -32,11 +32,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 import org.appdapter.api.trigger.ABoxImpl;
 import org.appdapter.api.trigger.AnyOper.UIHidden;
 import org.appdapter.api.trigger.Box;
+import org.appdapter.api.trigger.BoxContextImpl;
 import org.appdapter.api.trigger.SetObject;
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.core.convert.ReflectUtils;
@@ -319,7 +321,8 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 		List<TrigType> tgs = super.getTriggers();
 		DisplayContext dc = getDisplayContext();
 		for (Class cls : getTypes()) {
-			TriggerMenuFactory.addTriggersForInstance(dc, cls, tgs, this);
+			Object obj = convertTo(cls);
+			TriggerMenuFactory.addTriggersForInstance(dc, cls, tgs, obj);
 		}
 		return tgs;
 	}
@@ -514,54 +517,63 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	}
 
 	public JPanel makeBoxPanelForCustomizer2(Object customizer) {
-		Map<Object, JPanel> myPanelMap = Utility.getPanelMap(getValueOrThis());
+		Object val = getValueOrThis();
+		Map<Object, JPanel> myPanelMap = Utility.getPanelMap(val);
 		JPanel pnl = myPanelMap.get(toKey(customizer));
 		if (pnl != null) {
 			return pnl;
 		}
+		Class objClass = val.getClass();
 
-		Object val = getValueOrThis();
+		if (customizer instanceof Class) {
+			Class mustBe = (Class) customizer;
+			for (Class cust : Utility.findPanelClasses(objClass)) {
+				if (mustBe != null && !mustBe.isAssignableFrom(cust))
+					continue;
+				if (ReflectUtils.isCreatable(cust)) {
+					try {
+						Object ni = Utility.newInstance(cust);
+						Object pnlMaybe = internPanel(myPanelMap, ni, val);
+						if (pnlMaybe instanceof JPanel)
+							return (JPanel) pnlMaybe;
+					} catch (InstantiationException e) {
+					} catch (IllegalAccessException e) {
+					} catch (Throwable e) {
+					}
+				}
+			}
+		}
+		return null;
+	}
 
+	public Object internPanel(Map dict, Object customizer, Object val) {
+		dict.put(customizer.getClass(), customizer);
 		if (customizer instanceof Customizer) {
 			Customizer cust = (Customizer) customizer;
 			cust.setObject(val);
 			if (this instanceof PropertyChangeListener) {
 				cust.addPropertyChangeListener((PropertyChangeListener) this);
 			}
-		}
-
-		Class objClass = val.getClass();
-
-		if (customizer instanceof Class) {
-			Class cust = (Class) customizer;
-			if (Customizer.class == customizer) {
-				cust = Utility.findCustomizerClass(objClass);
+			if (customizer instanceof JPanel) {
+				return customizer;
 			}
-			if (PromiscuousClassUtilsA.isCreateable(cust)) {
-				try {
-					return ComponentHost.asPanel(findOrCreateBoxPanel(Utility.newInstance(cust)), val);
-				} catch (InstantiationException e) {
-				} catch (IllegalAccessException e) {
-				}
-			}
-
-		}
-		Class clazz = Utility.getCustomizerClassForClass(objClass);
-		if (PropertyEditor.class == customizer) {
-			customizer = Utility.findEditor(objClass);
 		}
 		if (customizer instanceof PropertyEditor) {
 			PropertyEditor editor = (PropertyEditor) customizer;
-			customizer = new UseEditor(editor, objClass, this);
+			Component comp = editor.getCustomEditor();
+			if (comp instanceof JComponent) {
+				customizer = comp;
+				customizer = internPanel(dict, comp, val);
+			} else {
+				customizer = internPanel(dict, new UseEditor(editor, this), val);
+			}
 		}
-
 		if (customizer instanceof Component) {
-			customizer = pnl = ComponentHost.asPanel((Component) customizer, val);
-			((ComponentHost) pnl).focusOnBox(this);
-			return pnl;
-
+			customizer = ComponentHost.asPanel((Component) customizer, val);
+			((ComponentHost) customizer).focusOnBox(this);
 		}
-		return null;
+		return customizer;
+
 	}
 
 	// ===== Property getters and setters ========================
@@ -756,7 +768,7 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 			}
 
 			if (uniqueName == null) {
-				uniqueName = Utility.generateUniqueName_sug(value, uniqueName, noc.getNameToBoxIndex(), false);
+				uniqueName = Utility.generateUniqueName_sug(value, uniqueName, noc.getNameToBoxIndex(), false, true);
 			}
 			col2Name.put(noc, uniqueName);
 		}
@@ -794,6 +806,7 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	}
 
 	public void setShortLabel(String shortLabel) {
+		BoxedCollectionImpl.labelCheck(shortLabel);
 		super.setShortLabel(shortLabel);
 	}
 
@@ -917,8 +930,4 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 		return getKey().compareToIgnoreCase(a2);
 	}
 
-	SmallObjectView makeSmallObjectView() {
-		DisplayContext dc = getDisplayContext();
-		return new SmallObjectView(dc, dc.getLocalBoxedChildren(), getValueOrThis());
-	}
 }
