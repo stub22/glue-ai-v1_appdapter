@@ -6,13 +6,14 @@ import java.awt.Container;
 import java.util.Collection;
 
 import javax.swing.JComponent;
+import javax.swing.JDesktopPane;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.GetObject;
 import org.appdapter.api.trigger.UserResult;
 import org.appdapter.core.log.Debuggable;
-import org.appdapter.gui.api.BT;
 import org.appdapter.gui.api.BoxPanelSwitchableView;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.FocusOnBox;
@@ -85,6 +86,17 @@ public class ComponentHost extends JJPanel implements DisplayContext, GetObject,
 
 		if (view instanceof JComponent) {
 			return new ComponentHost(view, object);
+		}
+		if (view instanceof javax.swing.JInternalFrame) {
+			JDesktopPane view2 = new JDesktopPane();
+			view2.add(view);
+			return new ComponentHost(view2, object);
+		}
+
+		if (view instanceof javax.swing.JFrame) {
+			JDesktopPane view2 = new JDesktopPane();
+			view2.add(view);
+			return new ComponentHost(view2, object);
 		}
 
 		if (object == null) {

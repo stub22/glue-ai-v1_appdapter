@@ -16,12 +16,10 @@
 
 package org.appdapter.gui.box;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
-import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
@@ -73,7 +71,7 @@ public class ScreenBoxContextImpl extends BoxContextImpl implements DisplayConte
 		return result;
 	}
 
-	private ScreenBoxTreeNodeImpl findNodeForBox(Box b) {
+	public ScreenBoxTreeNodeImpl findNodeForBox(Box b) {
 		return (ScreenBoxTreeNodeImpl) myRootNode.findTreeNodeDisplayContext(b);
 	}
 
@@ -148,6 +146,14 @@ public class ScreenBoxContextImpl extends BoxContextImpl implements DisplayConte
 			return prev;
 		}
 		return null;
+	}
+
+	public ScreenBoxTreeNodeImpl findNodeForBox(Box parentBox, Box childBox) {
+		ScreenBoxTreeNodeImpl parentNode = findNodeForBox(parentBox);
+		if (parentNode == null) {
+			throw new RuntimeException("Can't find node for parentBox: " + parentBox);
+		}
+		return (ScreenBoxTreeNodeImpl) parentNode.findDescendantNodeForBox(childBox);
 	}
 
 	public void contextualizeAndAttachChildBox(Box parentBox, MutableBox childBox) {

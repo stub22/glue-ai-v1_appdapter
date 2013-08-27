@@ -27,6 +27,7 @@ public class ScreenBoxTreeNodeImpl extends AbstractScreenBoxTreeNodeImpl impleme
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	static final private boolean localNames = false;
 
 	public ScreenBoxTreeNodeImpl(BoxPanelSwitchableView bsv, Box box, boolean allowsChildrn, NamedObjectCollection noc) {
 		this.bsv = bsv;
@@ -35,10 +36,12 @@ public class ScreenBoxTreeNodeImpl extends AbstractScreenBoxTreeNodeImpl impleme
 			getUserObject();
 		}
 		this.allowsChildren = allowsChildrn;
-		if (allowsChildrn && noc == null) {
-			noc = new BoxedCollectionImpl("Object chilens for " + box, this);
+		if (localNames) {
+			if (allowsChildrn && noc == null) {
+				noc = new BoxedCollectionImpl("Object chilens for " + box, this);
+			}
+			this.thisNamedObjectCollection = noc;
 		}
-		this.thisNamedObjectCollection = noc;
 	}
 
 	public Object getUserObject() {

@@ -19,12 +19,16 @@ package org.appdapter.gui.demo;
 import static org.appdapter.core.log.Debuggable.printStackTrace;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.FileDialog;
 import java.io.File;
+import java.util.concurrent.Callable;
 
 import javax.swing.BoxLayout;
 import javax.swing.JApplet;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -32,8 +36,9 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
+import javax.swing.LookAndFeel;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.plaf.metal.DefaultMetalTheme;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.plaf.metal.OceanTheme;
@@ -71,6 +76,8 @@ import org.appdapter.gui.trigger.SysTriggers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.jidesoft.swing.JideTabbedPane;
+
 /**
  * @author Stu B. <www.texpedient.com>
  */
@@ -87,13 +94,17 @@ final public class DemoBrowser implements AnyOper.Singleton {
 		// This can take up to a few seconds, depending on log level.
 
 		try {
-			ensureRunning(false);
 			Utility.invokeAfterLoader(new Runnable() {
 				@Override public void run() {
+					try {
+						ensureRunning(false);
+					} catch (InterruptedException e) {
+						Debuggable.printStackTrace(e);
+					}
 					mainControl.addObject(optionalName, any, showASAP, loadChildren);
-					mainControl.addObject(optionalName, any, showASAP, loadChildren);
-					if (showASAP)
+					if (showASAP) {
 						mainControl.show();
+					}
 				}
 			});
 		} catch (Throwable e) {
@@ -238,7 +249,7 @@ final public class DemoBrowser implements AnyOper.Singleton {
 	 *
 	 * @throws Exception
 	 */
-	public static synchronized void ensureRunning(boolean bringToFront, String... args) throws InterruptedException {
+	public static synchronized void ensureRunning(boolean bringToFront, final String... args) throws InterruptedException {
 		if (mainControl == null) {
 
 			theLogger.info(appName + ".ensureRunning()-START");
@@ -248,15 +259,25 @@ final public class DemoBrowser implements AnyOper.Singleton {
 				// frame.pack();
 				DemoNavigatorCtrlFactory crtlMaker = new DemoNavigatorCtrlFactory() {
 
-					@Override public DemoNavigatorCtrl makeDemoNavigatorCtrl(String[] main, boolean defaultExampleCode1) {
-						return makeDemoNavigatorCtrlReal(main, defaultExampleCode1);
-					}
+					@Override public DemoNavigatorCtrl makeDemoNavigatorCtrl(final String[] main, final boolean defaultExampleCode1) {
+						return Utility.invokeAndWait(new Callable<DemoNavigatorCtrl>() {
+							@Override public DemoNavigatorCtrl call() throws Exception {
+								return makeDemoNavigatorCtrlReal(main, defaultExampleCode1);
+							}
+						});
 
+					}
 				};
+
 				DemoBrowserUI.registerDemo(crtlMaker);
 				//frame.setSize(800, 600);
 				//org.appdapter.gui.pojo.Utility.centerWindow(frame);
-				mainControl = (DemoNavigatorCtrl) DemoBrowserUI.makeDemoNavigatorCtrl(args, defaultExampleCode);
+				mainControl = (DemoNavigatorCtrl) Utility.invokeAndWait(new Callable<DemoNavigatorCtrl>() {
+					@Override public DemoNavigatorCtrl call() throws Exception {
+						return (DemoNavigatorCtrl) DemoBrowserUI.makeDemoNavigatorCtrl(args, defaultExampleCode);
+					}
+				});
+
 				mainControl.launchFrame("This is " + appName);
 
 				//frame.show();
@@ -312,6 +333,7 @@ final public class DemoBrowser implements AnyOper.Singleton {
 			// some more test code
 			addMoreExamples();
 		}
+		setLookAndFeelFromProperty();
 	}
 
 	public static void addMoreExamples() {
@@ -579,58 +601,175 @@ final public class DemoBrowser implements AnyOper.Singleton {
 	}
 
 	public static void setLookAndFeelFromProperty() {
-		String LOOKANDFEEL = System.getProperty("swing.LAF");
+		String LOOKANDFEEL = System.getProperty("swing.defaultlaf");
 		if (LOOKANDFEEL == null) {
 			return;
 		}
 		setLookAndFeel(LOOKANDFEEL);
 	}
 
-	public static boolean setLookAndFeel(String className) {
+	public static void setLookAndFeel(String laf) {
 		try {
-			UIManager.setLookAndFeel(className);
-			new JComboBox();
-			new JPopupMenu();
-			new JPanel();
-			new JMenu().getPopupMenu();
-			new JSplitPane();
-			return true;
-		} catch (Throwable ex) {
-			theLogger.error("LAF = >" + className, ex);
-			return false;
-		}
-	}
-
-	public static void setLookAndFeelSafely(String laf) {
-		try {
+			if (laf == null) {
+				laf = "null";
+			}
 			String LOOKANDFEEL = laf.toLowerCase();
+			if (LOOKANDFEEL.equals("null")) {
+				setLookAndFeel((LookAndFeel) null);
+				return;
+			}
 			if (LOOKANDFEEL.contains("metal")) {
-				if (LOOKANDFEEL.contains("defaultmetal"))
+				if (LOOKANDFEEL.contains("defaultmetal")) {
 					MetalLookAndFeel.setCurrentTheme(new DefaultMetalTheme());
-				else if (LOOKANDFEEL.contains("ocean"))
+				} else if (LOOKANDFEEL.contains("ocean")) {
 					MetalLookAndFeel.setCurrentTheme(new OceanTheme());
-				UIManager.setLookAndFeel(new MetalLookAndFeel());
+				}
+				setLookAndFeel(new MetalLookAndFeel());
+				return;
 			}
 			if (LOOKANDFEEL.contains("system")) {
-				if (setLookAndFeel(UIManager.getSystemLookAndFeelClassName()))
+				if (setLookAndFeelUnsafely(UIManager.getSystemLookAndFeelClassName()))
 					return;
 			}
 			if (LOOKANDFEEL.contains("crossplatform")) {
-				if (setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName()))
+				if (setLookAndFeelUnsafely(UIManager.getCrossPlatformLookAndFeelClassName()))
 					return;
 			}
 			for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
 				if (info.getName().toLowerCase().contains(LOOKANDFEEL)) {
-					if (setLookAndFeel(info.getClassName()))
+					if (setLookAndFeelUnsafely(info.getClassName()))
 						return;
 				}
 			}
-			if (setLookAndFeel(LOOKANDFEEL))
+			if (setLookAndFeelUnsafely(laf))
 				return;
 		} catch (Throwable ex) {
 			theLogger.error("Setting LAF" + laf, ex);
 		}
 		setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+	}
+
+	public static boolean setLookAndFeel(LookAndFeel laf) {
+		LookAndFeel prevlaf = UIManager.getLookAndFeel();
+		try {
+			UIManager.setLookAndFeel(laf);
+			// make sure we can still set things
+			updateComponentTreeUI(laf != null);
+			return true;
+		} catch (Throwable ex) {
+			theLogger.error("LAF = >" + laf, ex);
+			setLookAndFeel(prevlaf);
+			return false;
+		}
+	}
+
+	public static boolean setLookAndFeelUnsafely(String className) {
+		LookAndFeel prevlaf = UIManager.getLookAndFeel();
+		try {
+			if (prevlaf != null && className != null) {
+
+			}
+			UIManager.setLookAndFeel(className);
+			// make sure we can still set things
+			updateComponentTreeUI(true);
+			return true;
+		} catch (Throwable ex) {
+			if (ex instanceof ClassNotFoundException || ex instanceof NullPointerException) {
+				return true;
+			}
+			theLogger.error("LAF = >" + className, ex);
+			setLookAndFeel(prevlaf);
+			return false;
+		}
+	}
+
+	static public boolean updateComponentTreeUI(boolean mayThrow) throws Throwable {
+		final Throwable[] ex = new Throwable[1];
+		if (Utility.invokeAndWait(new Callable<Boolean>() {
+			@Override public Boolean call() throws Exception {
+				try {
+					JFrame frame = Utility.getAppFrame();
+					if (frame != null) {
+						updateComponentTreeUI(frame);
+						frame.pack();
+					}
+					new JComboBox();
+					new JPopupMenu();
+					new JPanel();
+					new JMenu().getPopupMenu();
+					new JSplitPane();
+					return true;
+				} catch (Throwable e2) {
+					ex[0] = e2;
+					return false;
+				}
+			}
+		})) {
+			return true;
+		}
+		Throwable e2 = ex[0];
+		if (e2 != null) {
+			theLogger.error("updateComponentTreeUI LAF ", e2);
+			if (mayThrow)
+				throw e2;
+		}
+		return false;
+	}
+
+	public static void updateComponentTreeUI(Component c) {
+		LookAndFeel curlaf = UIManager.getLookAndFeel();
+		updateComponentTreeUI(c, curlaf);
+	}
+
+	public static void updateComponentTreeUI(Component c, LookAndFeel defaults) {
+		try {
+			updateComponentTreeUI0(c, defaults);
+		} catch (Throwable t) {
+		}
+		try {
+			c.invalidate();
+			c.validate();
+		} catch (Throwable t) {
+		}
+		try {
+			c.repaint();
+		} catch (Throwable t) {
+		}
+	}
+
+	private static void updateComponentTreeUI0(Component c, LookAndFeel defaults) {
+		if (c instanceof JComponent) {
+			JComponent jc = (JComponent) c;
+			try {
+				if (jc instanceof JideTabbedPane) {
+					JideTabbedPane tp = (JideTabbedPane) jc;
+					try {
+						tp.updateUI();
+					} catch (Throwable t1) {
+						c = jc;
+					}
+				} else {
+					jc.updateUI();
+				}
+				JPopupMenu jpm = jc.getComponentPopupMenu();
+				if (jpm != null /*&& jpm.isVisible() && jpm.getInvoker() == jc*/) {
+					updateComponentTreeUI(jpm, defaults);
+				}
+			} catch (Throwable t) {
+
+			}
+		}
+		Component[] children = null;
+		if (c instanceof JMenu) {
+			children = ((JMenu) c).getMenuComponents();
+		} else if (c instanceof Container) {
+			children = ((Container) c).getComponents();
+		}
+		if (children != null) {
+			for (int i = 0; i < children.length; i++) {
+				updateComponentTreeUI0(children[i], defaults);
+			}
+		}
 	}
 
 	/*

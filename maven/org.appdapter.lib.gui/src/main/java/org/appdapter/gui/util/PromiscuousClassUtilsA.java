@@ -8,6 +8,7 @@ import static org.appdapter.core.log.Debuggable.UnhandledException;
 import static org.appdapter.core.log.Debuggable.notImplemented;
 import static org.appdapter.core.log.Debuggable.reThrowable;
 import static org.appdapter.core.log.Debuggable.toInfoStringArgV;
+import static org.appdapter.gui.util.PromiscuousClassUtilsA.findLoadedClassByName;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
@@ -93,7 +94,6 @@ abstract public class PromiscuousClassUtilsA {
 		}
 	}
 
-
 	public static void addLocationToSystemClassPath(String location) {
 		ClassLoader syscl = getSystemClassLoader();
 		scanLoadable(new AddToClassPath(syscl), location, true, false, null, true, null);
@@ -162,6 +162,12 @@ abstract public class PromiscuousClassUtilsA {
 					method.setAccessible(true);
 					try {
 						return (T) method.invoke(from, args);
+					} catch (IllegalArgumentException e) {
+						whyBroken = e;
+					} catch (SecurityException e) {
+						whyBroken = e;
+					} catch (IllegalAccessException e) {
+						whyBroken = e;
 					} catch (InvocationTargetException e) {
 						whyBroken = e.getCause();
 						throw e;
@@ -172,7 +178,7 @@ abstract public class PromiscuousClassUtilsA {
 				whyBroken = e;
 			} catch (SecurityException e) {
 				whyBroken = e;
-			} catch (IllegalAccessException e) {
+			} catch (Throwable e) {
 				whyBroken = e;
 			}
 			c = c.getSuperclass();
@@ -469,20 +475,20 @@ abstract public class PromiscuousClassUtilsA {
 	}
 
 	public static void ensureInstalledGUI() {
-/*
-		if (FeClipse.installManyClassloaderUtils) {
-			try {
-				overrideSCL();
-			} catch (Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		if (FeClipse.installAppClassUtils) {
-			if (ensureInstalledApplCL(FeClipseAppClassLoader.class, feClipseAppClassLoader))
-				return;
-		}
-		if (FeClipse.installPromiscuousClassUtils)
-			ensureInstalled(true, false, false);*/
+		/*
+				if (FeClipse.installManyClassloaderUtils) {
+					try {
+						overrideSCL();
+					} catch (Throwable e) {
+						e.printStackTrace();
+					}
+				}
+				if (FeClipse.installAppClassUtils) {
+					if (ensureInstalledApplCL(FeClipseAppClassLoader.class, feClipseAppClassLoader))
+						return;
+				}
+				if (FeClipse.installPromiscuousClassUtils)
+					ensureInstalled(true, false, false);*/
 	}
 
 	private static void overrideSCL() throws Throwable {
@@ -824,9 +830,12 @@ abstract public class PromiscuousClassUtilsA {
 
 	public static <T> Class<T> forName(String className, boolean initialize, ClassLoader loader) throws ClassNotFoundException, NoClassDefFoundError {
 		ClassNotFoundException cnf = null;
-		loader = getCorrectLoader(loader);
 		LinkageError ncde = null;
+		Class pl = findLoadedClassByName(className);
+		if (pl != null)
+			return pl;
 		try {
+			loader = getCorrectLoader(loader);
 			return (Class<T>) rememberClass(className, (Class<T>) Class.forName(className, initialize, loader));
 		} catch (VirtualMachineError e) {
 			throw e;
@@ -903,7 +912,7 @@ abstract public class PromiscuousClassUtilsA {
 		// CANT Circumvent security check
 		ClassLoader ccl = caller.getClassLoader();
 		if (ccl == null) {
-			warn("Class with no loader " + caller);
+			//	warn("Class with no loader " + caller);
 		}
 		return ccl;
 	}
@@ -923,14 +932,19 @@ abstract public class PromiscuousClassUtilsA {
 		if (loader == feClipseAppClassLoader && feClipseAppClassLoader != null)
 			return loader;
 
-	/*	if (FeClipse.installAppClassUtils && feClipseAppClassLoader != null) {
-			if (loader == null)
+		/*	if (FeClipse.installAppClassUtils && feClipseAppClassLoader != null) {
+				if (loader == null)
+					return feClipseAppClassLoader;
 				return feClipseAppClassLoader;
-			return feClipseAppClassLoader;
-		}
-*/
+			}
+		*/
 		if (loader == bootstrapClassLoader && bootstrapClassLoader != null)
 			return loader;
+
+		if (loader == null) {
+			return null;
+		}
+
 		if (loader == many && many != null)
 			return loader;
 

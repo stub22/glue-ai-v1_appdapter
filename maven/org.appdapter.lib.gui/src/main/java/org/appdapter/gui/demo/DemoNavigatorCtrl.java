@@ -1,9 +1,9 @@
 package org.appdapter.gui.demo;
 
-import java.lang.reflect.InvocationTargetException;
+import java.awt.Container;
+import java.awt.Window;
 
 import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
 import javax.swing.tree.TreeModel;
 
 import org.appdapter.api.trigger.BoxContext;
@@ -12,6 +12,7 @@ import org.appdapter.api.trigger.UserResult;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.DisplayContextProvider;
 import org.appdapter.gui.api.ScreenBoxTreeNode;
+import org.appdapter.gui.browse.BrowsePanel;
 import org.appdapter.gui.browse.Utility;
 
 public class DemoNavigatorCtrl extends BaseDemoNavigatorCtrl implements DisplayContext, org.appdapter.demo.DemoBrowserCtrl {
@@ -60,6 +61,28 @@ public class DemoNavigatorCtrl extends BaseDemoNavigatorCtrl implements DisplayC
 	}
 
 	@Override public void show() {
-		launchFrameBlocking(null);
+		Container myJFrame0 = Utility.appFrame;
+		if (myJFrame0 == null) {
+			launchFrameBlocking(null);
+		}
+		boolean doCenter = false;
+		BrowsePanel myBP = getBrowsePanel();
+		Container myJFrame = myBP.getTopLevelAncestor();
+		// we were started as a dwarf and maybe offscreen
+		if (myJFrame.getSize().width < 10 || myJFrame.getSize().height < 10) {
+			myJFrame.setSize(myJFrame.getPreferredSize());
+			doCenter = true;
+		}
+		if (myJFrame.getSize().width < 10 || myJFrame.getSize().height < 10) {
+			myJFrame.setSize(800, 600);
+			doCenter = true;
+		}
+		if (doCenter) {
+			if (myJFrame instanceof Window) {
+				Utility.centerWindow((Window) myJFrame);
+			}
+		}
+		myBP.setVisible(true);
+		myJFrame.setVisible(true);
 	}
 }

@@ -12,6 +12,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -37,6 +38,7 @@ import javax.swing.JTextField;
 import javax.swing.table.TableCellEditor;
 import javax.swing.tree.TreeCellEditor;
 
+import org.appdapter.api.trigger.GetObject;
 import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.core.convert.ToFromKeyConverter;
 import org.appdapter.core.log.Debuggable;
@@ -51,6 +53,7 @@ import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.editors.ValueEditor;
 import org.appdapter.gui.table.CellEditorComponent;
 import org.appdapter.gui.table.PropertyEditorToCellEditor;
+import org.appdapter.gui.trigger.TriggerMouseAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,9 +66,13 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 	/**
 	 * Displays a list of fixed values to choose from.
 	 */
-	class ComboBoxInputComponent extends JComboBox implements PropertyChangeListener, ActionListener, UserInputComponent, CellEditorComponent {
+	public class ComboBoxInputComponent extends JComboBox implements PropertyChangeListener, ActionListener, UserInputComponent, CellEditorComponent {
 		PropertyEditor editor;
 		private Class type;
+
+		@Override public Object getValue() {
+			return editor.getValue();
+		}
 
 		//final PropertyDescriptor property0;
 
@@ -77,6 +84,7 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 			editor.addPropertyChangeListener(this);
 			addActionListener(this);
 			setMaximumRowCount(1000);
+			TriggerMouseAdapter.installMouseAdapter(this);
 		}
 
 		@Override public void actionPerformed(ActionEvent evt) {
@@ -135,13 +143,14 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 		}
 	}
 
-	public class ReadOnlyObjectPanel extends JJPanel {
+	public class ReadOnlyObjectPanel extends JJPanel implements GetObject {
 		JLabel label = null;
 		SmallObjectView view = null;
 		Object shownObjectValue;
 
 		public ReadOnlyObjectPanel() {
 			setLayout(new BorderLayout());
+			TriggerMouseAdapter.installMouseAdapter(this);
 		}
 
 		public synchronized void updateReadonlyPanel(Object newValue) {
@@ -261,6 +270,7 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 					if (objectPanel == null) {
 						objectPanel = new ReadOnlyObjectPanel();
 						objectPanel.setLayout(new BorderLayout());
+						objectPanel.setPreferredSize(MAX_TEXTWIDTH);
 					}
 					updateShownValue(newValue);
 				}
@@ -325,13 +335,18 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 	class TextBasedInputComponent extends JTextField implements PropertyChangeListener, ActionListener, FocusListener, UserInputComponent, CellEditorComponent {
 		PropertyEditor editor;
 
+		@Override public Object getValue() {
+			return editor.getValue();
+		}
+
 		public TextBasedInputComponent(PropertyEditor editor) {
+			this.setPreferredSize(MAX_TEXTWIDTH);
 			this.editor = editor;
 			editor.addPropertyChangeListener(this);
 			addActionListener(this);
 			addFocusListener(this);
 			ObjectChoiceModel ocm = new ObjectChoiceModel(getNamedObjectCollection(), type, title, PropertyValueControl.this, this, null);
-
+			TriggerMouseAdapter.installMouseAdapter(this);
 			Object value;
 			try {
 				value = getBoundValue();
@@ -389,12 +404,20 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 		}
 	}
 
-	static class TextBasedViewComponent extends JLabel implements PropertyChangeListener, CellEditorComponent {
+	public static final Dimension MAX_TEXTWIDTH = new Dimension(600, 30);
+
+	class TextBasedViewComponent extends JLabel implements PropertyChangeListener, CellEditorComponent, IsReference {
 		PropertyEditor editor;
 
+		@Override public Object getValue() {
+			return editor.getValue();
+		}
+
 		public TextBasedViewComponent(PropertyEditor editor) {
+			this.setPreferredSize(MAX_TEXTWIDTH);
 			this.editor = editor;
 			editor.addPropertyChangeListener(this);
+			TriggerMouseAdapter.installMouseAdapter(this);
 			readValue();
 		}
 
@@ -436,7 +459,10 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 		JTextField getReadOnlyTextField() {
 			if (readOnly == null) {
 				readOnly = new JTextField(getText());
+				readOnly.setPreferredSize(MAX_TEXTWIDTH);
 				readOnly.setEditable(false);
+				readOnly.setName(title);
+				readOnly.setDropTarget(null);
 			}
 			return readOnly;
 		}
@@ -709,6 +735,8 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 
 	private Component getEditorComponent(PropertyEditor editor, boolean editable) {
 		Component comp = getEditorComponentNoCell(editor, getCurrentType(), editable);
+		MAX_TEXTWIDTH.height = 30;//comp.getHeight();
+		comp.setSize(MAX_TEXTWIDTH);
 		return comp;
 	}
 
@@ -734,7 +762,9 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 				comp = new TextBasedViewComponent(editor);
 			}
 		}
-		return comp.getCustomEditor();
+		Component compC = comp.getCustomEditor();
+		compC.setPreferredSize(MAX_TEXTWIDTH);
+		return compC;
 	}
 
 	/**
@@ -1004,6 +1034,8 @@ public class PropertyValueControl extends JVPanel implements PropertyChangeListe
 			if (showLabel && property != null) {
 				add("West", new JLabel(property.getDisplayName() + ": "));
 			}
+			comp.setPreferredSize(MAX_TEXTWIDTH);
+			TriggerMouseAdapter.installMouseAdapter(comp);
 			add("Center", comp);
 		}
 		if (currentEditor != null) {

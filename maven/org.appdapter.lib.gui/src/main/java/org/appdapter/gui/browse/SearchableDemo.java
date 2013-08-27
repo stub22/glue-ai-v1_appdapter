@@ -14,11 +14,8 @@ import java.awt.GraphicsEnvironment;
 import java.awt.GridLayout;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
-import javax.swing.AbstractListModel;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JCheckBox;
@@ -44,6 +41,7 @@ import javax.swing.tree.TreePath;
 import org.appdapter.api.trigger.AnyOper;
 import org.appdapter.api.trigger.AnyOper.UIHidden;
 import org.appdapter.api.trigger.AnyOper.UISalient;
+import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.gui.swing.VerticalLayout;
 
 import com.jidesoft.swing.AutoCompletion;
@@ -535,12 +533,15 @@ public class SearchableDemo implements AnyOper.Singleton, AnyOper.Autoload {
 
 	static public void initFontNames() {
 		_fontNames = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
-		_fontList = Arrays.asList(_fontNames);
+		_fontList = ReflectUtils.asList(_fontNames);
 	}
 
 	public static AutoCompletion createAutoCompleteForText(JTextComponent txtBox, ListModel col) {
 		SelectAllUtils.install(txtBox);
-		return new AutoCompletion(txtBox, new ListSearchable(new JList(col)));
+		AutoCompletion ac = new AutoCompletion(txtBox, new ListSearchable(new JList(col)));
+		ac.setStrict(false);
+		ac.setStrictCompletion(false);
+		return ac;
 
 	}
 }

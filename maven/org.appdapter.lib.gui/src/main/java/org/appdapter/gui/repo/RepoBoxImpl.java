@@ -128,7 +128,7 @@ public abstract class RepoBoxImpl<TT extends Trigger<? extends RepoBoxImpl<TT>>>
 
 	@Override public Repo getRepo() {
 		if (myRepo == null) {
-			theLogger.warn("Returning null (getRepo) from " + this.getClass() + "@");
+			//theLogger.warn("Returning null (getRepo) from " + this.getClass() + "@");
 			return null;
 		}
 		try {

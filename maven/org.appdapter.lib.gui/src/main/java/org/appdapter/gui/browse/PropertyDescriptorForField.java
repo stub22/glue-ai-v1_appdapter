@@ -38,9 +38,9 @@ public class PropertyDescriptorForField extends PropertyDescriptor implements Co
 	static Class[] STARTER_INTERFACES = new Class[] { FakeMethods.class, ProxyMethodClass.class, PropertyChangeListener.class, PropertyEditor.class, InvocationHandler.class };
 	static {
 		HashSet<Class> allInterfaces = new HashSet<Class>();
-		allInterfaces.addAll(Arrays.asList(STARTER_INTERFACES));
-		allInterfaces.addAll(Arrays.asList(ObjectFieldEditor.class.getInterfaces()));
-		allInterfaces.addAll(Arrays.asList(PropertyDescriptorForField.class.getInterfaces()));
+		allInterfaces.addAll(ReflectUtils.asList(STARTER_INTERFACES));
+		allInterfaces.addAll(ReflectUtils.asList(ObjectFieldEditor.class.getInterfaces()));
+		allInterfaces.addAll(ReflectUtils.asList(PropertyDescriptorForField.class.getInterfaces()));
 		STARTER_INTERFACES = allInterfaces.toArray(STARTER_INTERFACES);
 	}
 	//ObjectChoiceComboPanel choice = null;
@@ -452,12 +452,12 @@ public class PropertyDescriptorForField extends PropertyDescriptor implements Co
 	public Class<?>[] getInterfaces(Class clz) {
 		Class[] local = this.localInterfaces;
 		HashSet<Class> allInterfaces = new HashSet<Class>();
-		allInterfaces.addAll(Arrays.asList(local));
+		allInterfaces.addAll(ReflectUtils.asList(local));
 		if (clz.isInterface()) {
 			allInterfaces.add(clz);
 		}
-		allInterfaces.addAll(Arrays.asList(clz.getInterfaces()));
-		allInterfaces.addAll(Arrays.asList(STARTER_INTERFACES));
+		allInterfaces.addAll(ReflectUtils.asList(clz.getInterfaces()));
+		allInterfaces.addAll(ReflectUtils.asList(STARTER_INTERFACES));
 		local = allInterfaces.toArray(TriggerMenuFactory.CLASS0);
 		return local;
 	}

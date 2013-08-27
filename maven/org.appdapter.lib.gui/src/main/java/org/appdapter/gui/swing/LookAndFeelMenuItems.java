@@ -3,6 +3,7 @@ package org.appdapter.gui.swing;
 import java.awt.event.ActionEvent;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.HashMap;
 import java.util.Set;
 
 import javax.swing.AbstractAction;
@@ -37,38 +38,38 @@ public class LookAndFeelMenuItems extends SafeJMenu {
 	}
 
 	private void initGUI(boolean isOSGi) {
+
 		final LookAndFeelMenuItems menu = this;
 		for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-			menu.add(createLnfAction(info.getName(), info.getClassName()));
+			createLnfAction(info.getName(), info.getClassName());
 		}
-		if (isOSGi)
-			return;
-		menu.add(createLnfAction("Metal", "javax.swing.plaf.metal.MetalLookAndFeel"));
-		menu.add(createLnfAction("System", UIManager.getSystemLookAndFeelClassName()));
-		menu.add(createLnfAction("CrossPlatform", UIManager.getCrossPlatformLookAndFeelClassName()));
+		createLnfAction("Metal", "javax.swing.plaf.metal.MetalLookAndFeel");
+		createLnfAction("Metal Ocean", "Metal Ocean");
+		createLnfAction("System", UIManager.getSystemLookAndFeelClassName());
+		createLnfAction("CrossPlatform", UIManager.getCrossPlatformLookAndFeelClassName());
+		createLnfAction("NULL", "NULL");
+		add(new AbstractAction("Install JIDE Lafs") {
+			@Override public void actionPerformed(ActionEvent e) {
+				LookAndFeelFactory.installJideExtension();
+				LookAndFeelFactory.installDefaultLookAndFeelAndExtension();
+				installLAFClassItems(LookAndFeelFactory.class);
+			}
+		});
 
-		if (!isOSGi) {
-			menu.add(createLnfAction("NimbusLookAndFeel", "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel"));
-			menu.add(createLnfAction("GTKLookAndFeel", "com.sun.java.swing.plaf.gtk.GTKLookAndFeel"));
-			menu.add(createLnfAction("MotifLookAndFeel", "com.sun.java.swing.plaf.motif.MotifLookAndFeel"));
-		}
-		if (true)
-			return;
-
-		//JIDESOFT
-		if (!isOSGi)
-			LookAndFeelFactory.installDefaultLookAndFeelAndExtension();
+		createLnfAction("NimbusLookAndFeel", "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
+		createLnfAction("GTKLookAndFeel", "com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
+		createLnfAction("MotifLookAndFeel", "com.sun.java.swing.plaf.motif.MotifLookAndFeel");
 
 		this.findMoreLaf = new Thread() {
 			@Override public void run() {
-				addReflectiveLAndF(menu);
+				addReflectiveLAndF();
 			}
 		};
 
-		Class lafc = null;
-		if (!isOSGi)
-			lafc = LookAndFeelFactory.class;
+		findMoreLaf.start();
+	}
 
+	private void installLAFClassItems(Class lafc) {
 		if (lafc != null) {
 			for (Field fld : lafc.getDeclaredFields()) {
 				if (!Modifier.isStatic(fld.getModifiers()))
@@ -78,7 +79,7 @@ public class LookAndFeelMenuItems extends SafeJMenu {
 						String cn = (String) fld.get(null);
 						if (!cn.contains("."))
 							continue;
-						menu.add(createLnfAction(fld.getName().replace("_LNF", "") + " (" + cn + ")", cn));
+						createLnfAction(fld.getName().replace("_LNF", "") + " (" + cn + ")", cn);
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -87,7 +88,7 @@ public class LookAndFeelMenuItems extends SafeJMenu {
 				}
 				if (fld.getName().contains("EXTENSION_STYLE") && fld.getType() == int.class) {
 					try {
-						menu.add(setStyleAction(fld.getName().replace("EXTENSION_STYLE_", ""), fld.getInt(null)));
+						add(setStyleActionSetter(fld.getName().replace("EXTENSION_STYLE_", ""), fld.getInt(null)));
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -96,11 +97,21 @@ public class LookAndFeelMenuItems extends SafeJMenu {
 				}
 			}
 		}
-		if (!isOSGi)
-			findMoreLaf.start();
 	}
 
-	static void addReflectiveLAndF(JMenu menu) {
+	HashMap menuNames = new HashMap();
+
+	public void createLnfAction(String name, String cls) {
+		name = name.replace("LookAndFeel", "");
+		if (menuNames.containsKey(name))
+			return;
+		if (menuNames.containsValue(cls))
+			return;
+		menuNames.put(name, cls);
+		this.add(createLnfActionSetter(name, cls, false));
+	}
+
+	void addReflectiveLAndF() {
 
 		try {
 			if (!scanMoreClasses)
@@ -110,7 +121,7 @@ public class LookAndFeelMenuItems extends SafeJMenu {
 				for (Class c : lafs) {
 					if (Modifier.isAbstract(c.getModifiers()))
 						continue;
-					menu.add(createLnfAction(c.getSimpleName() + " (" + c + ")", c));
+					createLnfAction(c.getSimpleName() + " (" + c + ")", c);
 				}
 			}
 		} catch (Exception e1) {
@@ -119,7 +130,7 @@ public class LookAndFeelMenuItems extends SafeJMenu {
 
 	}
 
-	private static Action createLnfAction(String title, final String className) {
+	private static Action createLnfActionSetter(String title, final String className, final boolean installJIDE) {
 		return new AbstractAction(title) {
 			@Override public void actionPerformed(ActionEvent e) {
 				DemoBrowser.setLookAndFeel(className);
@@ -127,53 +138,20 @@ public class LookAndFeelMenuItems extends SafeJMenu {
 		};
 	}
 
-	private static Action createLnfAction(String title, final Class clazz) {
-		return new AbstractAction(title) {
-			@Override public void actionPerformed(ActionEvent e) {
-				try {
-					LookAndFeel laf = (LookAndFeel) clazz.newInstance();
-					setLookAndFeel(laf);
-				} catch (Exception e1) {
-				}
-			}
-		};
+	private void createLnfAction(String title, final Class clazz) {
+		createLnfAction(title, clazz.getName());
 	}
 
-	protected static void setLookAndFeel(LookAndFeel laf) {
-		try {
-			UIManager.setLookAndFeel(laf);
-			updateComponentTreeUI();
-		} catch (Exception e1) {
-		}
-	}
-
-	protected static void setLookAndFeel(String laf) {
-		try {
-			UIManager.setLookAndFeel((LookAndFeel) PromiscuousClassUtilsA.forName(laf, false, null).newInstance());
-			updateComponentTreeUI();
-		} catch (Exception e1) {
-			try {
-				UIManager.setLookAndFeel(new javax.swing.plaf.metal.MetalLookAndFeel());
-			} catch (UnsupportedLookAndFeelException e) {
-			}
-		}
-	}
-
-	protected static void updateComponentTreeUI() {
-		JFrame frame = Utility.getAppFrame();
-		SwingUtilities.updateComponentTreeUI(frame);
-		frame.pack();
-	}
-
-	private static Action setStyleAction(String title, final int style) {
+	private static Action setStyleActionSetter(String title, final int style) {
 		return new AbstractAction(title) {
 			@Override public void actionPerformed(ActionEvent e) {
 				try {
 					LookAndFeelFactory.installJideExtension();
 					LookAndFeelFactory.installJideExtension(style);
-				} catch (Exception e1) {
+					DemoBrowser.updateComponentTreeUI(true);
+				} catch (Throwable e1) {
+					Debuggable.UnhandledException(e1);
 				}
-				updateComponentTreeUI();
 			}
 		};
 	}

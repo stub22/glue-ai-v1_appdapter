@@ -1,12 +1,13 @@
 package org.appdapter.core.convert;
 
 import static org.appdapter.core.log.Debuggable.expectedToIgnore;
+import static org.appdapter.core.log.Debuggable.notImplemented;
 import static org.appdapter.core.log.Debuggable.printStackTrace;
 import static org.appdapter.core.log.Debuggable.reThrowable;
 import static org.appdapter.core.log.Debuggable.warn;
 
-import java.awt.Color;
 import java.awt.Component;
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Array;
@@ -38,24 +39,27 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeMap;
-import java.util.Vector;
+import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.jena.atlas.lib.Lib;
 import org.appdapter.api.trigger.AnyOper.AskIfEqual;
 import org.appdapter.api.trigger.AnyOper.DontAdd;
 import org.appdapter.api.trigger.AnyOper.HRKRefinement;
 import org.appdapter.api.trigger.AnyOper.UIHidden;
 import org.appdapter.api.trigger.AnyOper.UISalient;
 import org.appdapter.api.trigger.AnyOper.UtilClass;
+import org.appdapter.api.trigger.GetObject;
+import org.appdapter.api.trigger.SetObject;
 import org.appdapter.core.convert.Converter.ConverterMethod;
+import org.appdapter.core.log.Debuggable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.hp.hpl.jena.rdf.model.Model;
 //import com.google.inject.Inject;
 //import com.google.inject.TypeLiteral;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.sdb.util.Pair;
 
 @UIHidden
 abstract public class ReflectUtils implements UtilClass {
@@ -64,6 +68,7 @@ abstract public class ReflectUtils implements UtilClass {
 	final public static AggregateConverter DEFAULT_CONVERTER = new AggregateConverter(registeredConverters);
 	final public static Converter NO_CONVERTER = Converter.CASTING_ONLY;
 	private static final Class[] CLASS0 = new Class[0];
+	private static final List EMPTY_LIST = Collections.unmodifiableList(Collections.EMPTY_LIST);
 
 	public static void registerConverter(Converter conv) {
 		if (conv == DEFAULT_CONVERTER)
@@ -115,13 +120,19 @@ abstract public class ReflectUtils implements UtilClass {
 				return (T) o;
 			}
 		}
-		List<Object> except4 = Arrays.asList(exceptFor);
 		for (Object o : objs) {
 			if (o == null) {
 				continue;
 			}
-			if (except4.contains(o))
+			for (Object except4 : exceptFor) {
+				if (o == except4) {
+					o = null;
+					break;
+				}
+			}
+			if (o == null) {
 				continue;
+			}
 			if (o instanceof Convertable) {
 				Convertable oc = (Convertable) o;
 				if (oc.canConvert(c))
@@ -147,13 +158,19 @@ abstract public class ReflectUtils implements UtilClass {
 
 				return true;
 			}
-			List<Object> except4 = Arrays.asList(exceptFor);
 			for (Object o : objs) {
 				if (o == null) {
 					continue;
 				}
-				if (except4.contains(o))
+				for (Object except4 : exceptFor) {
+					if (o == except4) {
+						o = null;
+						break;
+					}
+				}
+				if (o == null) {
 					continue;
+				}
 				if (o instanceof Convertable) {
 					Convertable oc = (Convertable) o;
 					if (oc.canConvert(c))
@@ -261,6 +278,21 @@ abstract public class ReflectUtils implements UtilClass {
 	public static <E> List<E> copyOf(Collection<E> copyIt) {
 		synchronized (copyIt) {
 			return new ArrayList<E>(copyIt);
+		}
+	}
+
+	public static <E> E copyOfUC(E copyIt) {
+		synchronized (copyIt) {
+			if (copyIt instanceof Set) {
+				return (E) Collections.unmodifiableSet((Set) copyIt);
+			}
+			if (copyIt instanceof List) {
+				return (E) Collections.unmodifiableList((List) copyIt);
+			}
+			if (copyIt instanceof Collection) {
+				return (E) Collections.unmodifiableCollection((Collection) copyIt);
+			}
+			return copyIt;
 		}
 	}
 
@@ -424,26 +456,26 @@ abstract public class ReflectUtils implements UtilClass {
 			return invokeAVConstructors(converter, cons[0], args, optionalArgZ);
 		}
 
-		List<Pair<Constructor, Object[]>> constructors = new ArrayList<Pair<Constructor, Object[]>>();
+		List<PCons<Constructor, Object[]>> constructors = new ArrayList<PCons<Constructor, Object[]>>();
 
 		for (Constructor con : cons) {
 			try {
 				Object[] c = makeParams_canThrow(converter, getAllParameters(con), con.isVarArgs(), args, optionalArgZ);
 				if (c != null)
-					constructors.add(new Pair<Constructor, Object[]>(con, c));
+					constructors.add(new PCons<Constructor, Object[]>(con, c));
 			} catch (Throwable t) {
 
 			}
 		}
-		Collections.sort(constructors, new Comparator<Pair<Constructor, Object[]>>() {
-			@Override public int compare(Pair<Constructor, Object[]> o1, Pair<Constructor, Object[]> o2) {
+		Collections.sort(constructors, new Comparator<PCons<Constructor, Object[]>>() {
+			@Override public int compare(PCons<Constructor, Object[]> o1, PCons<Constructor, Object[]> o2) {
 				float f1 = evaluateAO(o1.getRight(), getAllParameters(o1.getLeft()));
 				float f2 = evaluateAO(o2.getRight(), getAllParameters(o2.getLeft()));
 				return f1 > f2 ? -1 : (f1 == f2 ? 0 : 1);
 			}
 
 		});
-		for (Pair<Constructor, Object[]> p : constructors) {
+		for (PCons<Constructor, Object[]> p : constructors) {
 			return invokeRealConstructor(p.getLeft(), p.getRight());
 		}
 		return null;
@@ -727,7 +759,12 @@ abstract public class ReflectUtils implements UtilClass {
 					Class searchMethods = obj0.getClass();
 					Method method2 = getDeclaredMethod(searchMethods, method.getName(), mts);
 					if (method2 != null && method2 != method) {
-						return invokeAV(obj0, converter, method, params, optionalArg);
+						if (!methodSame(method2, method)) {
+							return invokeAV(obj0, converter, method, params, optionalArg);
+						} else {
+							warn("lloop", method);
+							return invokeAV(obj0, converter, method, params, optionalArg);
+						}
 					}
 				}
 			}
@@ -812,6 +849,29 @@ abstract public class ReflectUtils implements UtilClass {
 		}
 		return invokeReal(method, obj0, mps);
 
+	}
+
+	private static boolean methodSame(Method method1, Method method2) {
+		if (method1 == method2) {
+			return true;
+		}
+		if (method1 == null || null == method2)
+			return false;
+		if (method1.getDeclaringClass() == method2.getDeclaringClass())
+			return false;
+		if (!method1.getName().equals(method2.getName())) {
+			return false;
+		}
+		Class[] ps1 = method1.getParameterTypes();
+		Class[] ps2 = method2.getParameterTypes();
+		if (ps1.length != ps2.length) {
+			return false;
+		}
+		for (int i = 0; i < ps1.length; i++) {
+			if (ps1[i] != ps2[i])
+				return false;
+		}
+		return true;
 	}
 
 	public static int countOfNulls(Object... mps) {
@@ -1311,6 +1371,7 @@ abstract public class ReflectUtils implements UtilClass {
 	public static int NONE = 0x0000;
 	public static int PUBLIC_ONLY = 0x1000;
 	public static int ANY_PublicPrivatePackageProtected = 0x1111;
+	private static Map<Class, Map<Object, Object>> cachedResults = new HashMap();
 
 	public static Method getDeclaredMethod(Class c, String name, boolean caseInsensitive, boolean checkOnlyName, int paramCount) throws SecurityException {
 		return getDeclaredMethod(c, name, caseInsensitive, checkOnlyName, TypeAssignable.ANY, paramCount, ANY_PublicPrivatePackageProtected);
@@ -1537,7 +1598,177 @@ abstract public class ReflectUtils implements UtilClass {
 		return getAllMethods(cls, false);
 	}
 
-	public static Collection<Method> getAllMethods(Class cls, boolean preferSuperclass) {
+	public static Collection<Method> getAllMethods(final Class cls, final boolean preferSuperclass) {
+		return cachedResult(new Callable() {
+			@Override public Object call() {
+				return getAllMethods0(cls, preferSuperclass);
+			}
+		}, cls, preferSuperclass);
+	}
+
+	public static <T> T cachedResult(Callable callable, Object... keys) {
+		Class k0 = callable.getClass();
+		Map<Object, Object> zalts;
+		synchronized (cachedResults) {
+			zalts = cachedResults.get(k0);
+			if (zalts == null) {
+				zalts = new HashMap<Object, Object>();
+				cachedResults.put(k0, zalts);
+			}
+		}
+		Object result;
+		final Object BUSY = k0;
+		boolean fromCache = false;
+		synchronized (zalts) {
+			Object key = pairsFromList0(keys);
+			final Object NULL = key;
+			result = zalts.get(key);
+			if (result == null) {
+				zalts.put(key, BUSY);
+				try {
+					result = callable.call();
+					if (result == null) {
+						result = NULL;
+					} else {
+
+					}
+					zalts.put(key, result);
+				} catch (Throwable e) {
+					zalts.put(key, null);
+					result = e;
+				}
+			} else {
+				fromCache = true;
+			}
+
+			if (result == NULL) {
+				return null;
+			}
+
+			if (result instanceof RuntimeException) {
+				throw (RuntimeException) result;
+			}
+			if (result instanceof Error) {
+				throw (Error) result;
+			}
+			if (result instanceof Throwable) {
+				throw new RuntimeException((Throwable) result);
+			}
+		}
+		if (result == BUSY) {
+			throw warn("In loop!");
+		}
+		if (result instanceof Collection) {
+			return (T) copyOfUC(result);
+		}
+		return (T) result;
+	}
+
+	final public static Object WILDCARD = new Number() {
+		public String toString() {
+			return "?";
+		}
+
+		public boolean equals(Object obj) {
+			return true;
+		}
+
+		@Override public int intValue() {
+			return (int) floatValue();
+		}
+
+		@Override public long longValue() {
+			return (long) floatValue();
+		}
+
+		@Override public float floatValue() {
+			return Float.NaN;
+		}
+
+		@Override public double doubleValue() {
+			return Double.NaN;
+		}
+	};
+
+	public static class PCons<A, B> {
+		A a;
+		B b;
+
+		public PCons(Object a, Object b) {
+			super();
+			this.a = (A) a;
+			this.b = (B) b;
+		}
+
+		public A getLeft() {
+			return this.a;
+		}
+
+		public B getRight() {
+			return this.b;
+		}
+
+		public A car() {
+			return this.a;
+		}
+
+		public B cdr() {
+			return this.b;
+		}
+
+		public int hashCode() {
+			return Lib.hashCodeObject(car()) ^ Lib.hashCodeObject(cdr()) << 1;
+		}
+
+		public boolean equals(Object other) {
+			if (this == other)
+				return true;
+			if (other == WILDCARD)
+				return true;
+			if (!(other instanceof PCons))
+				return false;
+			PCons p2 = (PCons) other;
+			return eq(car(), p2.car(), false) && eq(cdr(), p2.cdr(), false);
+		}
+
+		public String toString() {
+			return new StringBuilder().append("(").append(org.apache.jena.atlas.lib.StrUtils.str(this.a)).append(" . ").append(org.apache.jena.atlas.lib.StrUtils.str(this.b)).append(")").toString();
+		}
+	}
+
+	private static Object pairsFromList(Object k, Object... eys) {
+		return newPCons(k, pairsFromList0(eys));
+	}
+
+	private static Object pairsFromList0(Object[] keys) {
+		int index = keys.length - 1;
+		Object tail = newPCons(keys[index]);
+		while (index > 0) {
+			index--;
+			Object head = keys[index];
+			if (head instanceof Object[]) {
+				head = pairsFromList("Array", (Object[]) head);
+			}
+			tail = newPCons(head, tail);
+		}
+		return tail;
+	}
+
+	static boolean usePCONS = false;
+
+	private static Object newPCons(Object head, Object tail) {
+		if (usePCONS)
+			return new PCons(head, tail);
+		return "" + head + "|" + tail;
+	}
+
+	private static Object newPCons(Object head) {
+		if (usePCONS)
+			return head;
+		return "" + head;
+	}
+
+	public static Collection<Method> getAllMethods0(Class cls, boolean preferSuperclass) {
 		final Class gi = cls;
 		Map<String, Method> methods = new HashMap<String, Method>();
 		while (cls != null) {
@@ -1865,6 +2096,155 @@ abstract public class ReflectUtils implements UtilClass {
 		};
 	}
 
+	public static class TypeName {
+		Object[] nameargs;
+
+		public TypeName(Object... args) {
+			nameargs = args;
+		}
+
+		@Override public String toString() {
+			return Debuggable.toInfoStringA(nameargs, "", Integer.MAX_VALUE);
+		}
+	}
+
+	public static class RType implements Type, TypeVariable, GenericDeclaration, ParameterizedType, Serializable, java.lang.reflect.AnnotatedElement {
+
+		protected Type[] oneMustBeTrue;
+		protected Type[] allMustBeTrue;
+		protected Type[] noneMustBeTrue;
+		protected Type[] actualTypeArguments;
+		protected Type[] bounds;
+		protected TypeVariable[] typeParameters = new TypeVariable[0];
+		protected Type rawType = Object.class, ownerType = this;
+		protected TypeName typeName;
+		protected Type genericComponentType;
+
+		public RType(Object... namestring) {
+			typeName = new TypeName(namestring);
+		}
+
+		@Override public Type[] getBounds() {
+			return bounds;
+		}
+
+		@Override public GenericDeclaration getGenericDeclaration() {
+			return this;
+		}
+
+		@Override public String getName() {
+			return typeName.toString();
+		}
+
+		@Override public TypeVariable<?>[] getTypeParameters() {
+			return typeParameters;
+		}
+
+		public boolean isAssignableFrom(Type other) {
+			return other == this;
+		}
+
+		@Override public Type[] getActualTypeArguments() {
+			return actualTypeArguments;
+		}
+
+		@Override public Type getRawType() {
+			return rawType;
+		}
+
+		@Override public Type getOwnerType() {
+			return ownerType;
+		}
+
+		public Type getGenericComponentType() {
+			return this.genericComponentType;
+		}
+
+		public String toString() {
+			return getName();
+		}
+
+		static StringBuilder nameOrToString(Type nameIt, StringBuilder sbuf) {
+			if (nameIt instanceof Class)
+				sbuf.append(((Class) nameIt).getName());
+			else
+				sbuf.append(nameIt.toString());
+			return sbuf;
+		}
+
+		public boolean equals(Object pther) {
+			return toString().equals(pther.toString());
+		}
+
+		public int hashCode() {
+			return (this.genericComponentType == null ? 0 : this.genericComponentType.hashCode());
+		}
+
+		@Override public boolean isAnnotationPresent(Class<? extends Annotation> annotationClass) {
+			notImplemented();
+			return false;
+		}
+
+		@Override public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
+			notImplemented();
+			return null;
+		}
+
+		@Override public Annotation[] getAnnotations() {
+			notImplemented();
+			return null;
+		}
+
+		@Override public Annotation[] getDeclaredAnnotations() {
+			notImplemented();
+			return null;
+		}
+	}
+
+	public static RType typeAnd(final Type... allTrue) {
+		return new RType(new TypeName("allOf", allTrue)) {
+			{
+				allMustBeTrue = allTrue;
+			}
+		};
+	}
+
+	public static RType typeOr(final Type... oneTrue) {
+		return new RType(new TypeName("oneOf", oneTrue)) {
+			{
+				oneMustBeTrue = oneTrue;
+			}
+		};
+	}
+
+	public static RType typeNot(final Type... never) {
+		return new RType(new TypeName("not", never)) {
+			{
+				noneMustBeTrue = never;
+			}
+		};
+	}
+
+	public static Type makeArrayType(final Type t) {
+		if (false)
+			return makeParameterizedType(Iterable.class, t);
+		return new GenericArrayType() {
+			@Override public Type getGenericComponentType() {
+				return t;
+			}
+		};
+	}
+
+	public static Type makeAnyType() {
+		return new RType("?") {
+			{
+				noneMustBeTrue = new RType[0];
+				allMustBeTrue = new RType[0];
+				oneMustBeTrue = null;
+			}
+		};
+	}
+
 	private static boolean equalTypes(Type[] a, Type[] b) {
 		if (a == b)
 			return true;
@@ -1912,6 +2292,53 @@ abstract public class ReflectUtils implements UtilClass {
 	 */
 	@SuppressWarnings("unchecked") public static <T> T uncheckedCast(Object o) {
 		return (T) o;
+	}
+
+	public static class KeyReference extends Number implements SetObject, GetObject {
+		public transient Object eq;
+
+		public KeyReference(Object obj) {
+			eq = obj;
+		}
+
+		@Override public Object getValue() {
+			return eq;
+		}
+
+		@Override public void setObject(Object object) {
+			eq = object;
+		}
+
+		@Override public boolean equals(Object obj) {
+			if (obj instanceof KeyReference) {
+				obj = ((KeyReference) obj).getValue();
+			}
+			return eq(obj, eq, false);
+		}
+
+		@Override public int hashCode() {
+			return eq.hashCode();
+		}
+
+		@Override public int intValue() {
+			notImplemented();
+			return hashCode();
+		}
+
+		@Override public long longValue() {
+			notImplemented();
+			return hashCode();
+		}
+
+		@Override public float floatValue() {
+			notImplemented();
+			return hashCode();
+		}
+
+		@Override public double doubleValue() {
+			notImplemented();
+			return hashCode();
+		}
 	}
 
 	public static interface TypeArgumentDelegator {
@@ -2206,6 +2633,11 @@ abstract public class ReflectUtils implements UtilClass {
 	}
 
 	public static <T> List<T> asList(T... args) {
+		if (args.length == 0)
+			return EMPTY_LIST;
+		if (args[0].getClass().isArray()) {
+			warn("perhaps a bad list=", args);
+		}
 		return Arrays.asList(args);
 	}
 
@@ -2264,6 +2696,27 @@ abstract public class ReflectUtils implements UtilClass {
 		if (objNeedsToBe.isAssignableFrom(from))
 			return Converter.WILL;
 		return DEFAULT_CONVERTER.declaresConverts(null, from, objNeedsToBe, AggregateConverter.newMcvt());
+	}
+
+	public static boolean isAssignableFromMaybeConvert(Type mustBe, Type forTarget, boolean allowConversion) {
+		if (mustBe == forTarget)
+			return true;
+		if (!(mustBe instanceof Class)) {
+			return mustBe.equals(forTarget);
+		}
+		if (allowConversion) {
+			if (isAssignableFrom(mustBe, forTarget)) {
+				return true;
+			}
+			return false;
+		} else {
+			if (forTarget instanceof Class) {
+				if (((Class) mustBe).isAssignableFrom((Class) forTarget))
+					return true;
+				return false;
+			}
+			return true;
+		}
 	}
 
 	static Map<Class<? extends Annotation>, Map<AnnotatedElement, ? extends Annotation>> cachedAnonationsByAC = new HashMap<Class<? extends Annotation>, Map<AnnotatedElement, ? extends Annotation>>();
@@ -2337,7 +2790,7 @@ abstract public class ReflectUtils implements UtilClass {
 
 	public static boolean implementsAllClasses(Class cls, Class... classes) {
 		for (Class c : classes) {
-			if (!isAssignableFrom(c, cls))
+			if (!c.isAssignableFrom(cls))
 				return false;
 		}
 		return true;
@@ -2375,8 +2828,86 @@ abstract public class ReflectUtils implements UtilClass {
 		if (type == null)
 			return true;
 		if (Type.class.isAssignableFrom(type))
+			return true;
+		return !(isImmutable(type));
+	}
+
+	public static boolean isImmutable(Class yc) {
+		if (Number.class.isAssignableFrom(yc))
+			return true;
+		if (Boolean.class.isAssignableFrom(yc))
+			return true;
+		if (Character.class.isAssignableFrom(yc))
+			return true;
+		if (Void.class.isAssignableFrom(yc))
+			return true;
+		if (Type.class.isAssignableFrom(yc))
+			return true;
+		return yc == String.class;
+	}
+
+	public static Type[] getGenericInterfaces(Class odc) {
+		if (odc == null || odc == Object.class)
+			return CLASS0;
+		return joinArrays(odc.getGenericInterfaces(), getGenericInterfaces(odc.getSuperclass()));
+	}
+
+	public static <T> T[] joinArrays(T[] path, T[] ts) {
+		if (path == null || path.length == 0)
+			return ts;
+		if (ts == null || ts.length == 0)
+			return path;
+
+		ArrayList<T> sl = new ArrayList();
+		sl.addAll(asList(path));
+		sl.addAll(asList(ts));
+		try {
+			return sl.toArray(path);
+		} catch (java.lang.ArrayStoreException ase) {
+			return sl.toArray(ts);
+		}
+	}
+
+	static ThreadLocal<SetObject> objectKey = new ThreadLocal<SetObject>() {
+		protected SetObject<?> initialValue() {
+			return new KeyReference(CLASS0);
+		}
+	};
+
+	public static Object asObjectKey(Object value, boolean asReference) {
+		if (asReference)
+			return new KeyReference(value);
+		SetObject key = objectKey.get();
+		try {
+			key.setObject(value);
+		} catch (InvocationTargetException e) {
+		}
+		return key;
+	}
+
+	public static boolean eq(Object x, Object y, boolean mayUseEquals) {
+		if (x == y)
+			return true;
+		if (x == WILDCARD || y == WILDCARD)
+			return true;
+		if (x == null || y == null)
 			return false;
-		return !(String.class.isAssignableFrom(type) || Number.class.isAssignableFrom(type) || Boolean.class.isAssignableFrom(type) || Color.class.isAssignableFrom(type) || type.isPrimitive());
+		Class yc = y.getClass();
+		Class xc = x.getClass();
+		if (xc == yc) {
+			if (isImmutable(xc))
+				return x.equals(y);
+			if (!mayUseEquals)
+				return false;
+			return x.equals(y);
+		}
+		if (isTypeMutable(xc))
+			return x.equals(y);
+		if (isImmutable(yc))
+			return y.equals(x);
+		if (!mayUseEquals)
+			return false;
+		return x.equals(y);
 	}
 
 }

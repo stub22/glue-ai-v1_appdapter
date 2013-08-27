@@ -99,9 +99,7 @@ abstract public class BaseDemoNavigatorCtrl implements BrowserPanelGUI, org.appd
 		myBP = new BrowsePanel(myTM, myBoxCtx);
 		DisplayContext dc = myBP.getDisplayContext();
 		myRootBTN.setDisplayContext(dc);
-		TriggerMenuFactory tmf = TriggerMenuFactory.getInstance(myBoxCtx); // TODO: Needs type params
-		MouseAdapter menuMA = tmf.makePopupMouseAdapter();
-		myBP.addTreeMouseAdapter(menuMA);
+		myBP.addTreeMouseAdapter();
 	}
 
 	public void launchFrameBlocking(final String title) {
@@ -134,14 +132,7 @@ abstract public class BaseDemoNavigatorCtrl implements BrowserPanelGUI, org.appd
 			myJFrame.pack();
 		}
 
-		// we were started as a dwarf and maybe offscreen
-		if (myJFrame.getSize().width < 1) {
-			myJFrame.setSize(800, 600);
-			Utility.centerWindow(myJFrame);
-		}
-
-		myBP.setVisible(true);
-		myJFrame.setVisible(true);
+		show();
 	}
 
 	public void addBoxToRoot(MutableBox childBox, boolean reload) {
@@ -254,7 +245,7 @@ abstract public class BaseDemoNavigatorCtrl implements BrowserPanelGUI, org.appd
 	}
 
 	@Override public void initialize(String[] args) {
-
+		launchFrameBlocking(null);
 	}
 
 }

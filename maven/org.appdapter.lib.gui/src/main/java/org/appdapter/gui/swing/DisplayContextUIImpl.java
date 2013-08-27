@@ -23,6 +23,7 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
 
@@ -576,6 +577,13 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 
 		Utility.recordCreated(guiFor);
 
+		if (anyObject instanceof Window) {
+			Window win = (Window) anyObject;
+			Utility.centerWindow(win);
+			win.setVisible(true);
+			return Utility.asUserResult(anyObject);
+		}
+
 		JPanel pnl;
 		if (anyObject instanceof Component) {
 			Component comp = (Component) anyObject;
@@ -677,24 +685,35 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 
 		BoxPanelSwitchableView boxPanelDisplayContext = getBoxPanelTabPane();
 
+		boolean maYAdd = true;
+		if (SwingUtilities.getRootPane(component) == SwingUtilities.getRootPane(Utility.browserPanel)) {
+			bringToFront(component);
+			maYAdd = false;
+			return;
+		}
+
 		if (component instanceof JInternalFrame) {
 			JInternalFrame f = (JInternalFrame) component;
 			if (!DisplayContextUIImpl.ALLOW_MULTIPLE_WINDOWS) {
 				objectWindows.add(guiFor, f);
 			}
 			f.addInternalFrameListener(listener);
-			boxPanelDisplayContext.addComponent(f.getTitle(), f, DisplayType.FRAME);
+			if (maYAdd)
+				boxPanelDisplayContext.addComponent(f.getTitle(), f, DisplayType.FRAME);
 			if (showASAP) {
 				f.toFront();
 				f.show();
 			}
 		} else if (component instanceof JPanel) {
-			JPanel f = ComponentHost.asPanel(component, guiFor);
-			boxPanelDisplayContext.addComponent(name, f, DisplayType.PANEL);
-			if (showASAP) {
-				boxPanelDisplayContext.setSelectedComponent(f);
+			if (maYAdd) {
+				JPanel f = ComponentHost.asPanel(component, guiFor);
+
+				boxPanelDisplayContext.addComponent(name, f, DisplayType.PANEL);
+				if (showASAP) {
+					boxPanelDisplayContext.setSelectedComponent(f);
+				}
+				return;
 			}
-			return;
 		} else if (component instanceof JComponent) {
 			JInternalFrame f = new JInternalFrame(name, true, true, true, true);
 			//Object value = Utility.dref(object);

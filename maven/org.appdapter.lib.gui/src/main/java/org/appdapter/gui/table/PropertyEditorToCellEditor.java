@@ -36,12 +36,12 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
 import javax.swing.table.TableCellEditor;
 import javax.swing.text.JTextComponent;
 import javax.swing.tree.TreeCellEditor;
 
 import org.appdapter.gui.browse.Utility;
+import org.appdapter.gui.trigger.TriggerMouseAdapter;
 
 /**
  * Allows to use any PropertyEditor as a Table or Tree cell editor. <br>
@@ -93,7 +93,11 @@ public class PropertyEditorToCellEditor extends AbstractCellEditor implements Ta
 	public PropertyEditorToCellEditor(PropertyEditor editor) {
 		this.editor = editor;
 		this.custComponent = editor.getCustomEditor();
-		Component hookTo = custComponent;
+		if (custComponent == null) {
+			Utility.bug("no custom editor for " + editor);
+		}
+		hookTo = custComponent;
+		TriggerMouseAdapter.installMouseAdapter(custComponent);
 		if (hookTo instanceof JPanel) {
 			JPanel panel = (JPanel) custComponent;
 			for (Component c : panel.getComponents()) {
@@ -105,6 +109,7 @@ public class PropertyEditorToCellEditor extends AbstractCellEditor implements Ta
 		}
 		if (hookTo instanceof JTextField) {
 			JTextField field = (JTextField) hookTo;
+			TriggerMouseAdapter.installMouseAdapter(hookTo);
 			field.addFocusListener(new SelectOnFocus());
 			field.addActionListener(new CommitEditing());
 			field.registerKeyboardAction(new CancelEditing(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_FOCUSED);
@@ -188,6 +193,10 @@ public class PropertyEditorToCellEditor extends AbstractCellEditor implements Ta
 
 	@Override public Component getCustomEditor() {
 		return editor.getCustomEditor();
+	}
+
+	@Override public Object getValue() {
+		return editor.getValue();
 	}
 
 }

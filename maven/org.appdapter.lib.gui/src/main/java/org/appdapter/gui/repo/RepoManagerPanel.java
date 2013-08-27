@@ -231,7 +231,7 @@ public class RepoManagerPanel extends ScreenBoxPanel<MutableRepoBox> implements 
 		if (newValue instanceof MutableRepoBox) {
 			mrb = (MutableRepoBox) newValue;
 		} else {
-			mrb = new DefaultMutableRepoBoxImpl(Utility.getUniqueName(newValue), Utility.recastCC(newValue, Repo.WithDirectory.class));
+			mrb = new DefaultMutableRepoBoxImpl(Utility.getUniqueNameForKey(newValue), Utility.recastCC(newValue, Repo.WithDirectory.class));
 		}
 		focusOnBox((MutableRepoBox) mrb);
 		return true;

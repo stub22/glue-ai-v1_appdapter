@@ -21,9 +21,8 @@ public class UseEditor<BoxType extends Box> extends ScreenBoxPanel<BoxType> impl
 
 	}
 
-	public UseEditor(PropertyEditor editor, Class objectClass, GetSetObject getSetObject) {
+	public UseEditor(PropertyEditor editor, GetSetObject getSetObject) {
 		box = getSetObject;
-		objClass = objectClass;
 		ec = editor;
 		setObject(box.getValue());
 	}

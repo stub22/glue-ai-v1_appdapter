@@ -25,6 +25,7 @@ import org.appdapter.gui.api.GetSetObject;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.swing.ObjectTabsForTabbedView;
 import org.appdapter.gui.swing.ObjectView;
+import org.appdapter.gui.trigger.TriggerMouseAdapter;
 import org.slf4j.LoggerFactory;
 
 import com.jidesoft.swing.JideTabbedPane;
@@ -72,7 +73,7 @@ extends ObjectView<BoxType> implements Customizer, GetSetObject, ObjectPanelHost
 	}
 
 	@Override public String getName() {
-		return Utility.getUniqueName(getValue());
+		return Utility.getUniqueNameForKey(getValue());
 	}
 
 	final protected void objectValueChanged() {
@@ -163,6 +164,8 @@ extends ObjectView<BoxType> implements Customizer, GetSetObject, ObjectPanelHost
 
 	boolean initedGuiOnce = false;
 
+	private TriggerMouseAdapter mouseAdapter;
+
 	public final boolean initGUI() {
 		synchronized (valueLock) {
 			if (initedGuiOnce == true)
@@ -184,8 +187,20 @@ extends ObjectView<BoxType> implements Customizer, GetSetObject, ObjectPanelHost
 	public void initGUISetupNewObjectClass() {
 		removeAll();
 		setLayout(new BorderLayout());
+		if (this.mouseAdapter == null) {
+			this.mouseAdapter = TriggerMouseAdapter.installMouseAdapter(this);
+		} else {
+			if (tabs != null) {
+				tabs.removeMouseListener(mouseAdapter);
+			}
+		}
+		if (tabs != null) {
+			tabs.disable();
+			tabs.setVisible(false);
+		}
 		tabs = new JideTabbedPane();
 		add("Center", tabs);
+		//mouseAdapter.addToComponent(tabs, false);
 		objTabs = new ObjectTabsForTabbedView(tabs, false, this);
 		initedGuiOnce = false;
 	}

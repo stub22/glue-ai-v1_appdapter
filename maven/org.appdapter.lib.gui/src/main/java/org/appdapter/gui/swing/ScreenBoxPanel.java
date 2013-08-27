@@ -1,6 +1,10 @@
 package org.appdapter.gui.swing;
 
 import static org.appdapter.core.log.Debuggable.*;
+
+import java.beans.Customizer;
+import java.beans.PropertyEditor;
+
 import org.appdapter.api.trigger.Box;
 import org.appdapter.gui.api.BT;
 import org.appdapter.gui.api.BoxPanelSwitchableView;
@@ -10,16 +14,18 @@ import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.editors.ObjectPanel;
 
 /**
- * A Tabbed GUI component used to render
+ * A GUI component used to render
  *
  */
-abstract public class ScreenBoxPanel<BoxType extends Box> extends ObjectView<BoxType> implements GetSetObject, FocusOnBox<BoxType>, ObjectPanel {
+abstract public class ScreenBoxPanel<BoxType extends Box> extends ObjectView<BoxType> implements GetSetObject, FocusOnBox<BoxType>, ObjectPanel, Customizer {
 
-	protected abstract boolean reloadObjectGUI(Object obj) throws Throwable;
+	abstract @Override public Class<?> getClassOfBox();
 
-	protected abstract void initSubclassGUI() throws Throwable;
+	abstract protected boolean reloadObjectGUI(Object obj) throws Throwable;
 
-	protected abstract void completeSubClassGUI() throws Throwable;
+	abstract protected void initSubclassGUI() throws Throwable;
+
+	abstract protected void completeSubClassGUI() throws Throwable;
 
 	public void setTabHost(BoxPanelSwitchableView objectTabsForTabbedView) {
 		parentTabs = objectTabsForTabbedView;

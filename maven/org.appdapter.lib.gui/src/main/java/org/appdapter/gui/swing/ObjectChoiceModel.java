@@ -17,7 +17,7 @@ import org.appdapter.gui.api.NamedObjectCollection;
 import org.appdapter.gui.api.POJOCollectionListener;
 import org.appdapter.gui.browse.Utility;
 
-public class ObjectChoiceModel extends AbstractListModel implements ComboBoxModel, POJOCollectionListener {
+public class ObjectChoiceModel extends SortedComboBoxModel implements ComboBoxModel, POJOCollectionListener {
 	//Vector listeners = new Vector();
 
 	java.util.List<Object> objectValues;
@@ -55,6 +55,7 @@ public class ObjectChoiceModel extends AbstractListModel implements ComboBoxMode
 	}
 
 	@Override public synchronized void setSelectedItem(Object anItem) {
+		boolean firePropChange = true;
 		if (anItem instanceof String) {
 			if (useStringProxies) {
 				if (anItem.equals("")) {
@@ -63,6 +64,10 @@ public class ObjectChoiceModel extends AbstractListModel implements ComboBoxMode
 				}
 				anItem = this.stringToObject((String) anItem);
 			}
+		}
+		if (!selectedObjectEver) {
+			selectedObjectEver = true;
+			firePropChange = false;
 		}
 		if (!Debuggable.isRelease()) {
 			String title = this.objectToString(anItem);
@@ -75,20 +80,21 @@ public class ObjectChoiceModel extends AbstractListModel implements ComboBoxMode
 			Object oldValue = selectedObject;
 			selectedObject = anItem;
 			if (refeshComponet != null)
-				refeshComponet.setToolTipText(Utility.makeTooltipText(anItem));
-			if (!selectedObjectEver) {
-				selectedObjectEver = true;
-				return;
-			}
-			propSupport.firePropertyChange("selection", oldValue, anItem);
+				refeshComponet.setToolTipText(getToolTipText());
+			if (firePropChange && propSupport != null)
+				propSupport.firePropertyChange("selection", oldValue, anItem);
 		}
 	}
 
-	private String objectToString(Object anItem) {
+	private String getToolTipText() {
+		return propName + "  " + type + " " + Utility.makeTooltipText(selectedObject);
+	}
+
+	public String objectToString(Object anItem) {
 		return converter.toKey(anItem);
 	}
 
-	private Object stringToObject(String title) {
+	public Object stringToObject(String title) {
 		return converter.fromKey(title, type);
 	}
 
@@ -107,6 +113,8 @@ public class ObjectChoiceModel extends AbstractListModel implements ComboBoxMode
 	}
 
 	@Override public int getSize() {
+		if (type == null) //in super constructor
+			return 0;
 		ensureObjectValues();
 		if (objectValues == null)
 			return 0;
@@ -134,6 +142,7 @@ public class ObjectChoiceModel extends AbstractListModel implements ComboBoxMode
 	}
 
 	@Override public Object getElementAt(int index) {
+
 		ensureObjectValues();
 		try {
 			return objectValues.get(index);
