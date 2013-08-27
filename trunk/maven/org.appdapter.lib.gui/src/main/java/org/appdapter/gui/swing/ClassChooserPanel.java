@@ -113,7 +113,7 @@ public class ClassChooserPanel extends JPanel implements ActionListener, Documen
 					int lastSize = 0;
 					try {
 						ClassFinder.getClassNames("");
-					} catch (IOException e1) {
+					} catch (Exception e1) {
 					}
 					while (true) {
 						try {

@@ -61,15 +61,14 @@ public class PropertiesPanel<BoxType extends Box> extends ScreenBoxPanel<BoxType
 
 	// private LessString lessString = new LessString();
 	public PropertiesPanel() {
-		this(Utility.getDisplayContext(), null, null, false, true);
+		this(Utility.getDisplayContext(), null, null, true, true, true);
 	}
 
-	public PropertiesPanel(DisplayContext context, Object val, Class objClass, boolean staticOnly, boolean showFields) {
+	public PropertiesPanel(DisplayContext context, Object val, Class objClass, boolean showNonStatics, boolean showStatics, boolean showFields) {
 		this.context = context;
 		this.objClass = objClass;
-		if (staticOnly) {
-			showInstanceProps = false;
-		}
+		showInstanceProps = showNonStatics;
+		showStaticProps = showStatics;
 		this.showFields = showFields;
 		final Object val0 = val;
 		setObject(val0);
@@ -244,7 +243,7 @@ public class PropertiesPanel<BoxType extends Box> extends ScreenBoxPanel<BoxType
 					info = Utility.getBeanInfo(objClass, source);
 				}
 
-				java.util.List props = Arrays.asList(info.getPropertyDescriptors());
+				java.util.List props = ReflectUtils.asList(info.getPropertyDescriptors());
 				Collections.sort(props, propertyComparator);
 
 				Iterator it = props.iterator();

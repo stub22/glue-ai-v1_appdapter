@@ -130,7 +130,7 @@ public class TriggerMenuController implements POJOCollectionListener, Convertabl
 	}
 
 	private void initLabelText(final Object object) {
-		final String label = Utility.getUniqueName(object, localCollection, false, true);
+		final String label = Utility.getUniqueNamePretty(object);
 		if (this.myLabel.contains(label)) {
 			return;
 		}

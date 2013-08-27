@@ -16,9 +16,9 @@ import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.BT;
 import org.appdapter.gui.api.NamedObjectCollection;
 import org.appdapter.gui.api.POJOCollectionListener;
+import org.appdapter.gui.api.ScreenBoxTreeNode;
+import org.appdapter.gui.box.ScreenBoxTreeNodeImpl;
 import org.appdapter.gui.swing.CantankerousJob;
-
-import scala.collection.parallel.ParIterableLike.Foreach;
 
 public class AddToTreeListener implements POJOCollectionListener {
 
@@ -47,6 +47,13 @@ public class AddToTreeListener implements POJOCollectionListener {
 				col.addListener(AddToTreeListener.this, false);
 			}
 		});
+	}
+
+	public void selectInTree(Object anyObject) {
+		anyObject = Utility.dref(anyObject);
+		synchronized (this) {
+			pojoUpdateObjectWithClass(anyObject, false, true);
+		}
 	}
 
 	private void addboxes(NamedObjectCollection ctx) {
@@ -121,43 +128,59 @@ public class AddToTreeListener implements POJOCollectionListener {
 
 	void pojoUpdateObjectWithClass(Object obj, BT box0, boolean isRemoval) {
 		obj = Utility.drefO(obj);
-		pojoUpdateObjectWithClass(obj, isRemoval);
+		synchronized (this) {
+			pojoUpdateObjectWithClass(obj, isRemoval, false);
+		}
 	}
 
-	void pojoUpdateObjectWithClass(Object obj, boolean isRemoval) {
+	void pojoUpdateObjectWithClass(Object obj, boolean isRemoval, boolean forceShowing) {
 
 		Class oc = obj.getClass();
 		if (oc.isArray()) {
 			Class compType = oc.getComponentType();
 			if (Utility.isSystemPrimitive(compType))
-				return;
+				if (!forceShowing)
+					return;
 			for (Object o : (Object[]) obj) {
 				Utility.addObjectFeatures(o);
 			}
-			return;
+			if (!forceShowing)
+				return;
 		}
-
 		synchronized (this) {
 			if (obj instanceof Class) {
 				addFirstLevelClass((Class) obj, isRemoval);
-				return;
+				if (!forceShowing)
+					return;
+				else {
+
+				}
 			}
 		}
-		if (obj instanceof RandomAccess)
-			return;
+		if (!forceShowing) {
 
-		if (obj instanceof JMenu)
-			return;
+			if (obj instanceof RandomAccess)
+				return;
 
-		if (Utility.isSystemPrimitive(oc))
-			return;
+			if (obj instanceof JMenu)
+				return;
 
-		if (!isRemoval) {
-			//	Utility.addObjectFeatures(obj);
+			if (Utility.isSystemPrimitive(oc))
+				return;
+
+			if (!isRemoval) {
+				//	Utility.addObjectFeatures(obj);
+			}
 		}
 		synchronized (this) {
 			addFirstLevelClass(oc, isRemoval);
 			addSecondLevelObject(obj, isRemoval);
+			if (forceShowing) {
+				MutableBox rootBox = getFirstBox(null);
+				ScreenBoxTreeNodeImpl treenode = (ScreenBoxTreeNodeImpl) mybctx.findNodeForBox(rootBox, asMutable(oc));
+				ScreenBoxTreeNode tnc = treenode.findDescendantNodeForBox(asMutable(obj));
+
+			}
 		}
 
 	}
@@ -189,8 +212,9 @@ public class AddToTreeListener implements POJOCollectionListener {
 	}
 
 	private void addSecondLevelObject(Object o, boolean isRemoval) {
-		if (objectsAtSecondLevel.contains(o))
+		if (objectsAtSecondLevel.contains(o)) {
 			return;
+		}
 		objectsAtSecondLevel.add(o);
 		MutableBox rootBox = getFirstBox(null);
 		for (Class newClassMaybe : classesAtFirstLevel) {
@@ -289,6 +313,9 @@ public class AddToTreeListener implements POJOCollectionListener {
 
 	public void addChildObject(Object anyObject, String title, Object child) throws PropertyVetoException {
 		MutableBox parent = getFirstBox(anyObject);
+		if (title != null && title.contains("[")) {
+			title.toString();
+		}
 		MutableBox objectBox = (MutableBox) findOrCreateBox(title, child);
 		mybctx.contextualizeAndAttachChildBox((Box) parent, objectBox);
 	}

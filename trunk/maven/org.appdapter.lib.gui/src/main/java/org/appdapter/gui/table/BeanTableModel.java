@@ -96,7 +96,7 @@ public class BeanTableModel<T> extends RowTableModel<T> {
 	public void setOnlyColumns(String... colNames) {
 		this.onlyColumns = null;
 		if (colNames != null && colNames.length > 0) {
-			onlyColumns = Collections.unmodifiableList(Arrays.asList(colNames));
+			onlyColumns = Collections.unmodifiableList(ReflectUtils.asList(colNames));
 		}
 		buildReflectionInfoRetainColNames();
 	}

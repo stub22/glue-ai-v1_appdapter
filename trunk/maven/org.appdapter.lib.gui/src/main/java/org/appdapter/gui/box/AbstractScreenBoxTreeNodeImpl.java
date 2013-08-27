@@ -156,7 +156,6 @@ abstract public class AbstractScreenBoxTreeNodeImpl extends DefaultMutableTreeNo
 	}
 
 	public ScreenBoxTreeNode findDescendantNodeForBox(Box b) {
-		Debuggable.notImplemented();
 		return (ScreenBoxTreeNode) findTreeNodeDisplayContext(b);
 	}
 
@@ -351,7 +350,7 @@ abstract public class AbstractScreenBoxTreeNodeImpl extends DefaultMutableTreeNo
 		public void actionPerformed(ActionEvent e) {
 			removeAllChildren();
 			for (Map.Entry ent : map.entrySet()) {
-				attachChildObject(Utility.getUniqueName(ent.getKey()), ent.getValue());
+				attachChildObject(Utility.getUniqueName(ent.getKey(), getLocalBoxedChildren(), true, false, false), ent.getValue());
 			}
 		}
 	}

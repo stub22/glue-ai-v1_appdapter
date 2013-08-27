@@ -14,8 +14,11 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.Callable;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+
+import org.appdapter.core.convert.ReflectUtils;
 
 /**
  * This is a stateless utility class that contains code for looking up
@@ -88,7 +91,16 @@ public class ClassFinder {
 	 * All classes that have at least one modifier from <code>undesirableClassModifiers</code>
 	 * set are skipped.
 	 */
-	public static <T> Set<Class<? extends T>> getClasses(String packageName, Class<T> ancestor, ClassLoader classLoader0, String dirsString, int undesirableClassModifiers) throws IOException {
+	public static <T> Set<Class<? extends T>> getClasses(final String packageName, final Class<T> ancestor, final ClassLoader classLoader, final String dirsString, final int undesirableClassModifiers)
+			throws IOException {
+		return ReflectUtils.cachedResult(new Callable() {
+			@Override public Object call() throws Exception {
+				return getClassesImpl(packageName, ancestor, classLoader, dirsString, undesirableClassModifiers);
+			}
+		}, packageName, ancestor, classLoader, dirsString, undesirableClassModifiers);
+	}
+
+	public static <T> Set<Class<? extends T>> getClassesImpl(String packageName, Class<T> ancestor, ClassLoader classLoader0, String dirsString, int undesirableClassModifiers) throws IOException {
 		Set<Class<? extends T>> classes = new HashSet();
 
 		if (packageName == null) {
@@ -150,18 +162,22 @@ public class ClassFinder {
 	 * Returns a set of all class names within the given package,
 	 * recursively
 	 */
-	public static Set getClassNames(String packageName) throws IOException {
-		Set classNames = new HashSet();
+	public static Set getClassNames(final String packageName) {
+		return ReflectUtils.cachedResult(new Callable() {
+			@Override public Object call() throws Exception {
+				Set classNames = new HashSet();
 
-		Set allClassNames = getAllClassNames();
-		Iterator it = allClassNames.iterator();
-		while (it.hasNext()) {
-			String className = (String) it.next();
-			if (className.startsWith(packageName)) {
-				classNames.add(className);
+				Set allClassNames = getAllClassNames();
+				Iterator it = allClassNames.iterator();
+				while (it.hasNext()) {
+					String className = (String) it.next();
+					if (className.startsWith(packageName)) {
+						classNames.add(className);
+					}
+				}
+				return classNames;
 			}
-		}
-		return classNames;
+		}, packageName);
 	}
 
 	/**
@@ -188,10 +204,10 @@ public class ClassFinder {
 	static Map<String, Set> cachedClassNames = new HashMap<String, Set>();
 
 	public synchronized static Set getAllClassNames(String dirsString) throws IOException {
+		String key = dirsString;
+		if (key == null || key.length() == 0 || key.equals("$CLASSPATH"))
+			key = "";
 		synchronized (cachedClassNames) {
-			String key = dirsString;
-			if (key == null)
-				key = "$CLASSPATH";
 			Set fnd = cachedClassNames.get(key);
 			if (fnd != null)
 				return fnd;
@@ -306,7 +322,15 @@ public class ClassFinder {
 	 * @param packageName for example "com" or "java.lang"
 	 * @param rootDir the directory under which the classes are stored
 	 */
-	private static Set getClassNamesFromDirectory(String packageName, File rootDir) throws IOException {
+	private static Set getClassNamesFromDirectory(final String packageName, final File rootDir) throws IOException {
+		return ReflectUtils.cachedResult(new Callable() {
+			@Override public Object call() throws Exception {
+				return getClassNamesFromDirectoryImpl(packageName, rootDir);
+			}
+		}, packageName, rootDir);
+	}
+
+	private static Set getClassNamesFromDirectoryImpl(String packageName, File rootDir) throws IOException {
 		Set classNames = new HashSet();
 
 		File[] files = rootDir.listFiles();
@@ -326,7 +350,7 @@ public class ClassFinder {
 					nextPackageName = packageName + "." + dirName;
 				}
 
-				classNames.addAll(getClassNamesFromDirectory(nextPackageName, file));
+				classNames.addAll(getClassNamesFromDirectoryImpl(nextPackageName, file));
 
 			} else {
 				String fileName = file.getName();
@@ -345,25 +369,29 @@ public class ClassFinder {
 	 * Returns a set of the names of all classes stored
 	 * in the given JAR or ZIP file
 	 */
-	private static Set getClassNamesFromJar(File jarFile) throws IOException {
-		Set classNames = new HashSet();
+	private static Set getClassNamesFromJar(final File jarFile) throws IOException {
+		return ReflectUtils.cachedResult(new Callable() {
+			@Override public Object call() throws Exception {
+				Set classNames = new HashSet();
 
-		//Open the JAR file
-		ZipFile file = new ZipFile(jarFile);
+				//Open the JAR file
+				ZipFile file = new ZipFile(jarFile);
 
-		//Loop through the contents of the JAR
-		Enumeration enum0 = file.entries();
-		while (enum0.hasMoreElements()) {
-			ZipEntry entry = (ZipEntry) enum0.nextElement();
-			if (!entry.isDirectory()) {
-				String fileName = entry.getName();
-				if (fileName.endsWith(".class")) {
-					String className = getClassNameFromFileName(fileName);
-					classNames.add(className);
+				//Loop through the contents of the JAR
+				Enumeration enum0 = file.entries();
+				while (enum0.hasMoreElements()) {
+					ZipEntry entry = (ZipEntry) enum0.nextElement();
+					if (!entry.isDirectory()) {
+						String fileName = entry.getName();
+						if (fileName.endsWith(".class")) {
+							String className = getClassNameFromFileName(fileName);
+							classNames.add(className);
+						}
+					}
 				}
+				return classNames;
 			}
-		}
-		return classNames;
+		}, jarFile);
 	}
 
 	/**

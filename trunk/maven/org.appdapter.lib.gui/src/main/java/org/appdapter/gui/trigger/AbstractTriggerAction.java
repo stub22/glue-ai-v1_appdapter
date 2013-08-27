@@ -112,7 +112,7 @@ public abstract class AbstractTriggerAction extends AbstractAction implements KM
 		if (sr.contains("%o")) {
 			Object v = getValue("UserObject");
 			if (v != null) {
-				sr = sr.replace("%o", Utility.getUniqueName(v));
+				sr = sr.replace("%o", Utility.getUniqueNamePretty(v));
 			}
 		}
 		return sr;

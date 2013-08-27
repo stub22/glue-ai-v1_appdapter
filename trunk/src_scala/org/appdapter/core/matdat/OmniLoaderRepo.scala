@@ -39,7 +39,7 @@ class OmniLoaderRepo(myRepoSpecStart: RepoSpec, myDebugNameIn: String, myBasePat
 
   myRepoSpecForRef = myRepoSpecStart
   myDebugNameToStr = myDebugNameIn
-  myBasePath = myBasePathIn
+  //myBasePath = myBasePathIn
 
   def this(directoryModel: Model) =
     this(null, null, null, directoryModel, null)

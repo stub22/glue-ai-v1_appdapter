@@ -1,6 +1,5 @@
 package org.appdapter.gui.trigger;
 
-import static org.appdapter.core.log.Debuggable.*;
 import java.awt.event.ActionEvent;
 import java.beans.Customizer;
 import java.beans.PropertyEditor;
@@ -10,7 +9,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -35,7 +33,9 @@ import org.appdapter.gui.box.ScreenBoxImpl;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.editors.ObjectPanel;
 import org.appdapter.gui.repo.RepoManagerPanel;
+import org.appdapter.gui.swing.ScreenBoxPanel;
 import org.appdapter.gui.util.ClassFinder;
+import org.appdapter.gui.util.PromiscuousClassUtilsA;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,81 +53,148 @@ abstract public class UtilityMenuOptions implements UtilClass {
 	public static boolean useBeanIcons = false;
 	public static boolean usePropertyEditorManager = true;
 	public static boolean separateSlowThreads = true;
+	public static boolean scanForMissingScreenBoxPanels = true;
+	public static boolean doErrorCheckScanForMissingScreenBoxPanels = true;
 
-	interface VoidFunc<A> {
-		void call(A r);
+	interface VoidFunc2<A, B> {
+		void call(A a, B b);
 	}
 
 	public static void findAndloadMissingUtilityClasses() throws IOException {
 		Utility.addClassMethods(JenaModelUtils.class);
-		VoidFunc fw = new VoidFunc<Class>() {
-			@Override public void call(Class utilClass) {
-				//if (!utilClass.isInterface())
-				Utility.addClassMethods(utilClass);
+		VoidFunc2 fw = new VoidFunc2<Class, Class>() {
+			@Override public void call(Class cls, Class ancestor) {
+				Utility.addClassMethods(cls);
 			}
 		};
 
 		withSubclasses(KnownComponent.class, fw);
 		withSubclasses(Box.class, fw);
 		withSubclasses(Trigger.class, fw);
-		withSubclasses(ObjectPanel.class, fw);
 		withSubclasses(UtilClass.class, fw);
 		withSubclasses(AnyOper.class, fw);
-		withSubclasses(Customizer.class, fw);
-		withSubclasses(PropertyEditor.class, fw);
 		withSubclasses(ModelFactory.class, fw);
 		useScannedClasses("com.hp.hpl.jena.rdf.model.", fw);
 		createEnumClass(ReificationStyle.class);
 
 		loadAutoloads();
 		Utility.addClassMethods(RepoManagerPanel.class);
+
+		if (!scanForMissingScreenBoxPanels)
+			return;
+		
+		withSubclasses(Customizer.class, fw, false);
+		withSubclasses(PropertyEditor.class, fw, false);
+		withSubclasses(ObjectPanel.class, fw, true);
+		withSubclasses(ScreenBoxPanel.class, fw, true);
+	}
+
+	public static void ensurePanelsAllRegistered() {
+		if (!doErrorCheckScanForMissingScreenBoxPanels)
+			return;
+		VoidFunc2<Class, Class> fw = new VoidFunc2<Class, Class>() {
+			@Override public void call(Class cls, Class parent) {
+				if (!ReflectUtils.isCreatable(cls))
+					return;
+				if (!Utility.ensurePanelRegistered(cls)) {
+					theLogger.warn("ERROR unregistered PANEL " + cls + " will be ignored");
+				}
+			}
+		};
+
+		withSubclasses(Customizer.class, fw, false);
+		withSubclasses(PropertyEditor.class, fw, false);
+		withSubclasses(ObjectPanel.class, fw, true);
+		withSubclasses(ScreenBoxPanel.class, fw, true);
 	}
 
 	private static void createEnumClass(Class ec) {
 		Utility.addClassMethods(ec);
 	}
 
-	private static <T> void withSubclasses(Class<T> sc, VoidFunc<Class<? extends T>> func) {
+	private static <T> void withSubclasses(Class<T> ancestor, VoidFunc2<Class, Class> func, boolean onlyCore) {
 
-		for (Class utilClass : Utility.getCoreClasses(sc)) {
+		Collection<Class> which = getSubClasses("", ancestor, onlyCore);
+		for (Class cls : which) {
 			try {
-				func.call(utilClass);
+				func.call(cls, ancestor);
 			} catch (Throwable t) {
-				printStackTrace(t);
+				theLogger.error("With subclass " + cls + " of " + ancestor, t);
 			}
 		}
 	}
 
-	private static <T> void useScannedClasses(String packagePrefix, VoidFunc<Class<? extends T>> func) {
+	private static <T> Collection<Class> getSubClasses(String packagePrefix, Class<T> ancestor, boolean onlyCore) {
 
+		if (onlyCore) {
+			if (packagePrefix == null || packagePrefix.length() == 0) {
+				return (Collection) Utility.getCoreClasses(ancestor);
+			} else {
+				HashSet<Class> which = new HashSet<Class>();
+				for (Class c : Utility.getCoreClasses(ancestor)) {
+					if (("" + c).contains(packagePrefix)) {
+						which.add(c);
+					}
+				}
+				return which;
+			}
+		} else {
+			try {
+				return (Collection) ClassFinder.getClasses(packagePrefix, ancestor);
+			} catch (IOException e) {
+				e.printStackTrace();
+				if (packagePrefix == null || packagePrefix.length() == 0) {
+					return (Collection) PromiscuousClassUtilsA.getImplementingClasses(ancestor);
+				} else {
+					HashSet<Class> which = new HashSet<Class>();
+					for (Class c : PromiscuousClassUtilsA.getImplementingClasses(ancestor)) {
+						if (("" + c).contains(packagePrefix)) {
+							which.add(c);
+						}
+					}
+					return which;
+				}
+
+			}
+		}
+	}
+
+	private static <T> void withSubclasses(Class<T> ancestor, VoidFunc2<Class, Class> func) {
+		withSubclasses(ancestor, func, true);
+	}
+
+	private static <T> void useScannedClasses(String packagePrefix, VoidFunc2<Class, Class> func) {
+
+		final Class ancestor = Object.class;
 		try {
-			for (Class utilClass : ClassFinder.getClasses(packagePrefix, Object.class)) {
+			Collection<Class> which = getSubClasses(packagePrefix, ancestor, false);
+			for (Class cls : which) {
 				try {
-					func.call(utilClass);
+					func.call((Class) cls, ancestor);
 				} catch (Throwable t) {
-					printStackTrace(t);
+					theLogger.error("With subclass " + cls + " of " + ancestor, t);
 				}
 			}
-		} catch (IOException e) {
-			printStackTrace(e);
+		} catch (Throwable e) {
+			theLogger.error("With subclass " + packagePrefix + " of " + ancestor, e);
 		}
 	}
 
 	static @UISalient() public void loadAutoloads() {
-		VoidFunc fw = new VoidFunc<Class>() {
-			@Override public void call(Class utilClass) {
-				if (!utilClass.isInterface())
-					Utility.addClassMethods(utilClass);
+		VoidFunc2<Class, Class> fw = new VoidFunc2<Class, Class>() {
+			@Override public void call(Class cls, Class ancestor) {
+				if (!cls.isInterface())
+					Utility.addClassMethods(cls);
 			}
 		};
 		withSubclasses(Autoload.class, fw);
 	}
 
 	public static void findAndloadMissingTriggers() throws IOException {
-		VoidFunc fw = new VoidFunc<Class>() {
-			@Override public void call(Class utilClass) {
-				if (!utilClass.isInterface())
-					Utility.addClassMethods(utilClass);
+		VoidFunc2<Class, Class> fw = new VoidFunc2<Class, Class>() {
+			@Override public void call(Class cls, Class ancestor) {
+				if (!cls.isInterface())
+					Utility.addClassMethods(cls);
 			}
 		};
 		withSubclasses(Trigger.class, fw);
@@ -135,13 +202,13 @@ abstract public class UtilityMenuOptions implements UtilClass {
 
 	static private Set<Class> allBoxTypes = new HashSet<Class>();
 
-	public static Set<Class> getAllBoxTypes() throws IOException {
+	public static Collection<Class> getAllBoxTypes() throws IOException {
 		synchronized (allBoxTypes) {
 			if (allBoxTypes.size() == 0) {
-				for (Class utilClass : Utility.getCoreClasses(Box.class)) {
+				for (Class cls : Utility.getCoreClasses(Box.class)) {
 					try {
-						if (ReflectUtils.isCreatable(utilClass)) {
-							allBoxTypes.add(utilClass);
+						if (ReflectUtils.isCreatable(cls)) {
+							allBoxTypes.add(cls);
 						}
 					} catch (Throwable t) {
 						Debuggable.printStackTrace(t);
@@ -153,14 +220,14 @@ abstract public class UtilityMenuOptions implements UtilClass {
 
 	}
 
-	static Trigger createTrigger(Class utilClass, Object... params) throws IllegalArgumentException, SecurityException, InstantiationException, IllegalAccessException, InvocationTargetException {
-		for (Constructor c : utilClass.getDeclaredConstructors()) {
+	static Trigger createTrigger(Class cls, Object... params) throws IllegalArgumentException, SecurityException, InstantiationException, IllegalAccessException, InvocationTargetException {
+		for (Constructor c : cls.getDeclaredConstructors()) {
 			Class[] pt = c.getParameterTypes();
 			if (pt.length > 0 && pt.length == params.length) {
 				return (Trigger) c.newInstance(params);
 			}
 		}
-		return (Trigger) utilClass.getDeclaredConstructors()[0].newInstance();
+		return (Trigger) cls.getDeclaredConstructors()[0].newInstance();
 	}
 
 	static Collection skippedTypes = new HashSet() {
@@ -172,23 +239,23 @@ abstract public class UtilityMenuOptions implements UtilClass {
 			add(Trigger.class);
 			add(TriggerImpl.class);
 			add(Object.class);
-			addAll(Arrays.asList(TriggerImpl.class.getInterfaces()));
-			addAll(Arrays.asList(ScreenBoxImpl.class.getInterfaces()));
+			addAll(ReflectUtils.asList(TriggerImpl.class.getInterfaces()));
+			addAll(ReflectUtils.asList(ScreenBoxImpl.class.getInterfaces()));
 			add(java.io.Serializable.class);
 		}
 	};
 
-	private static void addTriggerClass(final Class utilClass) {
-		if (!ReflectUtils.isCreatable(utilClass))
+	private static void addTriggerClass(final Class cls) {
+		if (!ReflectUtils.isCreatable(cls))
 			return;
 		Class classOfBox;
 		boolean hasNoSideEffects = false;
 		Callable<Trigger> howto = new Callable<Trigger>() {
 			public Trigger call() throws IllegalArgumentException, SecurityException, InstantiationException, IllegalAccessException, InvocationTargetException {
-				return createTrigger(utilClass);
+				return createTrigger(cls);
 			}
 		};
-		String menuName = ReflectUtils.getCanonicalSimpleName(utilClass);
+		String menuName = ReflectUtils.getCanonicalSimpleName(cls);
 		if (menuName.endsWith("Trigger")) {
 			menuName = menuName.substring(0, menuName.length() - 7);
 		}
@@ -197,8 +264,8 @@ abstract public class UtilityMenuOptions implements UtilClass {
 
 		try {
 			// checks for some type and claims this will be good for it
-			if (TriggerForClass.class.isAssignableFrom(utilClass)) {
-				Utility.addTriggerForClassInst((TriggerForClass) utilClass.newInstance());
+			if (TriggerForClass.class.isAssignableFrom(cls)) {
+				Utility.addTriggerForClassInst((TriggerForClass) cls.newInstance());
 				return;
 			}
 		} catch (Throwable e) {
@@ -207,7 +274,7 @@ abstract public class UtilityMenuOptions implements UtilClass {
 
 		try {
 			// checks for a static final field of some type and claims this will be good for it
-			classOfBox = (Class) utilClass.getField("boxTargetClass").get(null);
+			classOfBox = (Class) cls.getField("boxTargetClass").get(null);
 			member = classOfBox.getDeclaredConstructors()[0];
 			addTriggerForClass(menuName, classOfBox, member, howto, isDeclNonStatic0, hasNoSideEffects);
 			return;
@@ -217,7 +284,7 @@ abstract public class UtilityMenuOptions implements UtilClass {
 
 		try {
 			// checks for a fire(WhatNotBox box) and claims this will be good for it
-			Method method = ReflectUtils.getDeclaredMethod(utilClass, "fire", false, false, 1);
+			Method method = ReflectUtils.getDeclaredMethod(cls, "fire", false, false, 1);
 			if (method != null) {
 				classOfBox = ReflectUtils.getTypeClass(method.getGenericParameterTypes()[0], null, new ArrayList(skippedTypes));
 				if (classOfBox != null) {
@@ -232,7 +299,7 @@ abstract public class UtilityMenuOptions implements UtilClass {
 
 		try {
 			// checks for a SomeTrigger(WhatNot classOfBox) and claims this will be good for it
-			Constructor method = ReflectUtils.getDeclaredConstructor(utilClass, TypeAssignable.ANY, 1);
+			Constructor method = ReflectUtils.getDeclaredConstructor(cls, TypeAssignable.ANY, 1);
 			if (method != null) {
 				classOfBox = ReflectUtils.getTypeClass(method.getGenericParameterTypes()[0], null, new ArrayList(skippedTypes));
 				if (classOfBox != null) {
@@ -247,7 +314,7 @@ abstract public class UtilityMenuOptions implements UtilClass {
 
 		try {
 			// checks for some type and claims this will be good for it
-			classOfBox = ReflectUtils.getTypeClass(utilClass.getTypeParameters(), null, new ArrayList(skippedTypes));
+			classOfBox = ReflectUtils.getTypeClass(cls.getTypeParameters(), null, new ArrayList(skippedTypes));
 			if (classOfBox != null) {
 				member = classOfBox.getDeclaredConstructors()[0];
 				//@todo ?
@@ -257,7 +324,7 @@ abstract public class UtilityMenuOptions implements UtilClass {
 			// otherwise look for another registration method
 		}
 
-		theLogger.warn("Unable to register triggers from: " + utilClass);
+		theLogger.warn("Unable to register triggers from: " + cls);
 	}
 
 	private static void addTriggerForClass(final String menuName, final Class classOfBox, final Member member, final Callable<Trigger> valueOf, final boolean isDeclNonStatic0,

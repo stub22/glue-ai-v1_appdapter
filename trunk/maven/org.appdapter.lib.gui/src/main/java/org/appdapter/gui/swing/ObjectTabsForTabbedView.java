@@ -30,6 +30,8 @@ public class ObjectTabsForTabbedView implements BoxPanelSwitchableView {
 		synchronized (lock) {
 			JideTabbedPane myBoxPanelTabPane = tabs = (JideTabbedPane) tbs;
 			myBoxPanelTabPane.setBoldActiveTab(true);
+			myBoxPanelTabPane.setAutoRequestFocus(true);
+			myBoxPanelTabPane.setInheritsPopupMenu(true);
 			myBoxPanelTabPane.setShowCloseButtonOnMouseOver(false);
 			myBoxPanelTabPane.setScrollSelectedTabOnWheel(true);
 			myBoxPanelTabPane.setTabEditingAllowed(false);

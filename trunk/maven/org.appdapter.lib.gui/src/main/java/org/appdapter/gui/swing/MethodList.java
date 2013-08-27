@@ -1,7 +1,9 @@
 package org.appdapter.gui.swing;
 
+import java.awt.Component;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
+import java.beans.Introspector;
 import java.beans.MethodDescriptor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -11,8 +13,13 @@ import java.util.LinkedList;
 import java.util.List;
 
 import javax.swing.AbstractListModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JList;
+import javax.swing.JTextField;
+import javax.swing.ListCellRenderer;
 
 import org.appdapter.core.convert.ReflectUtils;
+import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.browse.Utility;
 
 /**
@@ -29,7 +36,7 @@ public class MethodList extends JJList {
 			Method b = (Method) second;
 			String nameA = a.getName();
 			String nameB = b.getName();
-			return nameA.compareTo(nameB);
+			return nameA.compareToIgnoreCase(nameB);
 		}
 
 		@Override public boolean equals(Object o) {
@@ -43,12 +50,18 @@ public class MethodList extends JJList {
 	private Object object;
 	private Class objectClass;
 	private ModelFromMethods model;
+	protected boolean basicBeanInfo;
 
-	public MethodList(Object object, boolean isClass) throws Exception {
+	protected void reload() {
+		this.model = new ModelFromMethods();
+		setModel(model);
+	}
+
+	public MethodList(Object object, boolean isClass) {
 		this(object, isClass ? (Class) object : null, isClass, !isClass);
 	}
 
-	public MethodList(Object object, Class objCl, boolean showStatics, boolean showNonStatics) throws Exception {
+	public MethodList(Object object, Class objCl, boolean showStatics, boolean showNonStatics) {
 		this.object = object;
 		this.showStatic = showStatics;
 		this.showNonStatic = showNonStatics;
@@ -59,30 +72,70 @@ public class MethodList extends JJList {
 			objectClass = (Class) object;
 			object = null;
 		}
-		this.model = new ModelFromMethods();
-		setModel(model);
+		reload();
+	}
+
+	public ListCellRenderer getCellRenderer() {
+		ListCellRenderer lcr = super.getCellRenderer();
+		if (true) {
+			return new DefaultListCellRenderer() {
+
+				@Override public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+					DefaultListCellRenderer readOnly = (DefaultListCellRenderer) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+					//readOnly.setName("" + value);
+					readOnly.setDropTarget(null);
+					readOnly.setToolTipText("" + model.getMethodAt(index));
+					return readOnly;
+				}
+			};
+		}
+		return lcr;
 	}
 
 	class ModelFromMethods extends AbstractListModel {
 		final List methods = new LinkedList();
 
-		public ModelFromMethods() throws Exception {
+		public ModelFromMethods() {
 			fromGetMethods();
-			fromBeanInfo();
+			if (showNonPublic)
+				fromGetDeclaredMethods();
+			fromBasicBeanInfo();
+			if (!basicBeanInfo) {
+				fromExtBeanInfo();
+			}
+			Collections.sort(methods, new MethodComparator());
 		}
 
-		private void fromBeanInfo() throws IntrospectionException {
-			BeanInfo info = Utility.getBeanInfo(getObjectClass(), object);
-
-			MethodDescriptor[] descriptors;
-			descriptors = info.getMethodDescriptors();
-			for (int i = 0; i < descriptors.length; ++i) {
-				MethodDescriptor descriptor = descriptors[i];
-				Method method = descriptor.getMethod();
-				addMethod(method);
+		private void fromBasicBeanInfo() {
+			BeanInfo info;
+			try {
+				info = Introspector.getBeanInfo(getObjectClass());
+				MethodDescriptor[] descriptors;
+				descriptors = info.getMethodDescriptors();
+				for (int i = 0; i < descriptors.length; ++i) {
+					MethodDescriptor descriptor = descriptors[i];
+					Method method = descriptor.getMethod();
+					addMethod(method);
+				}
+			} catch (IntrospectionException e) {
+				Debuggable.UnhandledException(e);
 			}
+		}
 
-			Collections.sort(methods, new MethodComparator());
+		private void fromExtBeanInfo() {
+			try {
+				BeanInfo info = Utility.getBeanInfo(getObjectClass(), object);
+
+				MethodDescriptor[] descriptors;
+				descriptors = info.getMethodDescriptors();
+				for (int i = 0; i < descriptors.length; ++i) {
+					MethodDescriptor descriptor = descriptors[i];
+					Method method = descriptor.getMethod();
+					addMethod(method);
+				}
+			} catch (IntrospectionException e) {
+				Debuggable.UnhandledException(e);
+			}
 		}
 
 		private void addMethod(Method method) {
@@ -107,7 +160,15 @@ public class MethodList extends JJList {
 				addMethod(method);
 			}
 
-			Collections.sort(methods, new MethodComparator());
+		}
+
+		private void fromGetDeclaredMethods() {
+			Method[] methodsArray = objectClass.getDeclaredMethods();
+
+			for (int i = 0; i < methodsArray.length; ++i) {
+				Method method = methodsArray[i];
+				addMethod(method);
+			}
 
 		}
 

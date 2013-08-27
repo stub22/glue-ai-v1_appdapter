@@ -1,11 +1,13 @@
 package org.appdapter.gui.trigger;
 
-import static org.appdapter.gui.trigger.TriggerMenuFactory.*;
-import static org.appdapter.core.log.Debuggable.*;
-import static org.appdapter.core.convert.ReflectUtils.*;
+import static org.appdapter.core.convert.ReflectUtils.NO_CONVERTER;
+import static org.appdapter.core.convert.ReflectUtils.getInterfaceMethod;
+import static org.appdapter.core.convert.ReflectUtils.invokeA;
+import static org.appdapter.core.convert.ReflectUtils.isStatic;
+import static org.appdapter.core.log.Debuggable.printStackTrace;
+import static org.appdapter.gui.trigger.TriggerMenuFactory.describeMethod;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -16,9 +18,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.concurrent.Callable;
+import java.util.Collection;
 
 import javax.swing.AbstractButton;
 import javax.swing.JMenu;
@@ -82,6 +84,8 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 
 	private boolean isPasteAtPopup;
 
+	private boolean isStatic;
+
 	public TriggerForMember(boolean isTemplate, String menuName, DisplayContext ctx, Class cls, Object obj, Member fd, boolean isDeclNonStatic0, FeatureDescriptor feature, boolean hasNoSideEffects) {
 		isTemplateTrigger = isTemplate;
 		init(menuName, ctx, cls, obj, fd, isDeclNonStatic0, feature);
@@ -119,8 +123,21 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 	@Override public boolean appliesTarget(Class cls, Object anyObject) {
 		Class classOfBox = getDeclaringClass();
 		if (anyObject != null && classOfBox.isInstance(anyObject)) {
+			if (this.member instanceof Method) {
+				Collection col = ReflectUtils.getAllMethods(anyObject.getClass(), false);
+				if (col.contains(this.member)) {
+					return true;
+				}
+				if (this.isStatic) {
+					return true;
+				}
+				if (classOfBox.isInterface())
+					return true;
+				return false;
+			}
 			return true;
 		}
+
 		if (classOfBox.isAssignableFrom(cls)) {
 			return true;
 		}
@@ -366,6 +383,18 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 		Object o1 = Utility.dref(_object);
 		Class tdc = getDeclaringClass();
 		Class mdc = member.getDeclaringClass();
+		Class odc = mdc;
+		Class ifc = tdc;
+		if (o1 != null) {
+			ifc = odc = o1.getClass();
+		}
+		if (mdc.isInterface()) {
+			ifc = mdc;
+		}
+
+		Type[] gi = ReflectUtils.getGenericInterfaces(odc);
+		int ifcCont = gi.length;
+
 		Class getReturnType = getReturnType();
 		int missingParamsTotal = getMissingParametersAtPopup();
 		/*
@@ -397,8 +426,9 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 		}
 
 		boolean isIndirect = (o1 != null && !tdc.isInstance(o1));
+
 		if (s.contains("%c")) {
-			Class ifc = tdc;
+
 			if (false && !tdc.isInterface()) {
 				Member member = getMember();
 				if (member instanceof Method) {
@@ -424,11 +454,19 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 					}
 				}
 			}
+
+			if (ifc.isInterface()) {
+				if (ifcCont > 5) {
+					prefix = "* Interfaces|" + prefix;
+				} else {
+					prefix = "* " + prefix;
+				}
+			}
 			String strval = ReflectUtils.getCanonicalSimpleName(ifc);
 			if (isIndirect) {
 				isIndirect = true;
 				if (PrefixWithIndirectyWhenIndirect) {
-
+					suffix.append(" (" + strval + ")");
 					strval = "Indirectly";
 				}
 			}
@@ -445,11 +483,11 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 			s = replace(s, "%d", strval);
 		}
 		if (s.contains("%o")) {
-			String strval = Utility.getUniqueName(ReflectUtils.recastOrOtherwise(o1, tdc, "<NoConversion>"));
+			String strval = Utility.getUniqueNameForKey(ReflectUtils.recastOrOtherwise(o1, tdc, "<NoConversion>"));
 			s = replace(s, "%o", strval);
 		}
 		if (s.contains("%t")) {
-			String strval = Utility.getUniqueName(o1);
+			String strval = Utility.getUniqueNameForKey(o1);
 			s = replace(s, "%t", strval);
 		}
 		if (s.contains("%i")) {
@@ -505,7 +543,7 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 			try {
 				Object obj = valueOf(null, null, false, false);
 				if (obj != null) {
-					strval = strval + Utility.getUniqueName(obj);
+					strval = strval + Utility.getUniqueNamePretty(obj);
 				}
 			} catch (Exception e) {
 			}
@@ -521,6 +559,7 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 					strval = replace(strval, "is", "Show");
 				}
 			}
+			strval = Utility.spaceCase(Utility.properCase(strval));
 			if (nonPrimReturnType() == Void.class) {
 				strval = "* " + strval;
 			}
@@ -542,14 +581,14 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 							filledInParams[last] = paste;
 						}
 
-						strval = "Paste|" + strval + " with '" + Utility.getUniqueName(paste) + "'";
+						strval = "Paste|" + strval + " with '" + Utility.getUniqueNamePretty(paste) + "'";
 						isPasteAtPopup = true;
 						showMoreParamsNeeded = false;
 					}
 				} catch (NoSuchConversionException e) {
 				}
 			}
-			strval = Utility.spaceCase(Utility.properCase(strval));
+
 			if (missingParamsTotal > 0) {
 				//filledInParams = memb.filledInParams;
 				if (filledInParams != null) {
@@ -610,7 +649,7 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 									missingParamsTotal--;
 									if (debugBuf != null)
 										try {
-											debugBuf.append(" (arg" + i + "='" + Utility.getUniqueName(have) + "')");
+											debugBuf.append(" (arg" + i + "='" + Utility.getUniqueNamePretty(have) + "')");
 										} catch (IOException e) {
 										}
 								}
@@ -664,7 +703,7 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 			Member m = getMember();
 			ArrayList<Class> al = new ArrayList<Class>();
 			if (m != null) {
-				if (!ReflectUtils.isStatic(m))
+				if (!isStatic)
 					al.add(getDeclaringClass());
 
 				if (!(m instanceof Field)) {
@@ -714,7 +753,7 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 		featureDesc = feature;
 		_object = obj;
 		isDeclNonStatic = isDeclNonStatic0;
-		boolean isStatic = ReflectUtils.isStatic(member);
+		this.isStatic = ReflectUtils.isStatic(member);
 		if (isDeclNonStatic && !isStatic) {
 			theLogger.warn("isDeclNonStatic to non static " + member);
 		}
@@ -939,7 +978,7 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 	}
 
 	private void showSubMenuExtend(MouseEvent event, Object valueAtTip, Container from) {
-		String submenuName = Utility.getUniqueName(valueAtTip);
+		String submenuName = Utility.getUniqueNameForKey(valueAtTip);
 		JMenu tpm = new SafeJMenu(true, submenuName, valueAtTip);
 		TriggerMenuFactory.addTriggersToPopup(valueAtTip, tpm);
 		from.add(tpm);
