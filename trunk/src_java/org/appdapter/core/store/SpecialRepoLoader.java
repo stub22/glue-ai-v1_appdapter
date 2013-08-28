@@ -66,10 +66,12 @@ public class SpecialRepoLoader extends BasicDebugger {
 	}
 
 	@Override public String toString() {
-		StringBuilder sbuf = new StringBuilder();
-		int num = tasksWithsStatus(sbuf, true, SheetLoadStatus.loaded);
-		if (num > 0)
-			return sbuf.toString();
+		if (false) {
+			StringBuilder sbuf = new StringBuilder();
+			int num = tasksWithsStatus(sbuf, true, SheetLoadStatus.loaded);
+			if (num > 0)
+				return sbuf.toString();
+		}
 		return super.toString();
 	}
 
