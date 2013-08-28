@@ -67,6 +67,7 @@ abstract class SheetRepo(directoryModel: Model, var fileModelCLs: java.util.List
   // BEGIN NEXT DIFF
 
   final def loadDerivedModelsIntoMainDataset(clList: java.util.List[ClassLoader]): Unit = {
+    repoLoader.setSynchronous(true)
     val mainDset: Dataset = getMainQueryDataset().asInstanceOf[Dataset];
     var clListG = this.getClassLoaderList(clList)
     if (myDirectoryModel.size == 0) return ;
@@ -79,6 +80,7 @@ abstract class SheetRepo(directoryModel: Model, var fileModelCLs: java.util.List
   }
 
   final def loadFileModelsIntoMainDataset(clList: java.util.List[ClassLoader]) = {
+    repoLoader.setSynchronous(true)
     loadDerivedModelsIntoMainDataset(clList);
   }
 
@@ -91,9 +93,11 @@ abstract class SheetRepo(directoryModel: Model, var fileModelCLs: java.util.List
     val repo = myRepoSpecForRef.makeRepo();
     val myNewDirectoryModel = repo.getDirectoryModel();
     val myPNewMainQueryDataset = repo.getMainQueryDataset();
+    repoLoader.reset();
     RepoOper.replaceModelElements(oldDirModel, myNewDirectoryModel)
     RepoOper.replaceDatasetElements(oldDataset, myPNewMainQueryDataset)
-    //reloadMainDataset();
+    repoLoader.setLastJobSubmitted();
+    //reloadMainDataset();    
   }
 
   def getClassLoaderList(clList: java.util.List[ClassLoader] = null): java.util.List[ClassLoader] = {
@@ -120,8 +124,6 @@ abstract class SheetRepo(directoryModel: Model, var fileModelCLs: java.util.List
   var myRepoSpecForRef: RepoSpec = null;
   var myDebugNameToStr: String = null;
 
-  var isUpdatedFromDir = false
-
   override def callLoadingInLock(): Unit = {
     // Load the rest of the repo's initial *sheet* models, as instructed by the directory.
     getLogger().debug("Loading Sheet Models")
@@ -138,9 +140,9 @@ abstract class SheetRepo(directoryModel: Model, var fileModelCLs: java.util.List
       {
         beginLoading();
         finishLoading();
-        if (!this.isUpdatedFromDir) {
+        if (!this.isUpdatedFromDirModel) {
           trace("Loading OnmiRepo to make UpToDate")
-          this.isUpdatedFromDir = true;
+          this.isUpdatedFromDirModel = true;
           var dirModelSize = getDirectoryModel().size;
           // only load from non empty dir models
           // this is because we need to have non initalized repos at times
@@ -149,7 +151,7 @@ abstract class SheetRepo(directoryModel: Model, var fileModelCLs: java.util.List
           var newModelSize = getDirectoryModel().size;
           if (newModelSize != dirModelSize) {
             trace("OnmiRepo Dir.size changed!  " + dirModelSize + " -> " + newModelSize)
-            this.isUpdatedFromDir = false;
+            this.isUpdatedFromDirModel = false;
           }
         } else {
           //traceHere("OnmiRepo was UpToDate")
@@ -158,17 +160,19 @@ abstract class SheetRepo(directoryModel: Model, var fileModelCLs: java.util.List
     }
   }
 
-  def updateFromDirModel() {
+  def updateFromDirModel() {    
     val mainDset: Dataset = getMainQueryDataset().asInstanceOf[Dataset];
     val dirModel = getDirectoryModel;
     val fileModelCLs: java.util.List[ClassLoader] = this.getClassLoaderList(this.fileModelCLs);
     val dirModelLoaders: java.util.List[InstallableRepoReader] = SheetRepo.getDirModelLoaders();
     val dirModelLoaderIter = dirModelLoaders.listIterator();
+    repoLoader.setSynchronous(false)
     while (dirModelLoaderIter.hasNext()) {
       val irr = dirModelLoaderIter.next();
       trace("Loading ... " + irr.getContainerType + "/" + irr.getSheetType);
       irr.loadModelsIntoTargetDataset(this, mainDset, dirModel, fileModelCLs);
     }
+    repoLoader.setSynchronous(true)
   }
 
   def trace(fmt: String, args: Any*) = {
@@ -246,14 +250,18 @@ object FileModelRepoLoader extends BasicDebugger {
       getLogger().warn("Ready to read from [{}] / [{}]", Array[Object](rPath, mPath));
       val rdfURL = rPath + mPath;
 
-      try {
-        val graphURI = modelRes.getURI();
-        val fileModel = readModelSheetFromURL(rdfURL, nsJavaMap, clList);
-        getLogger.warn("Read fileModel: {}", fileModel)
-        PipelineRepoLoader.replaceOrUnion(mainDset, unionOrReplaceRes, graphURI, fileModel);
-      } catch {
-        case except: Throwable => getLogger().error("Caught error loading file {}", Array[Object](rdfURL, except))
-      }
+      repo.addLoadTask(rdfURL, new Runnable() {
+        def run() {
+          try {
+            val graphURI = modelRes.getURI();
+            val fileModel = readModelSheetFromURL(rdfURL, nsJavaMap, clList);
+            getLogger.warn("Read fileModel: {}", fileModel)
+            PipelineRepoLoader.replaceOrUnion(mainDset, unionOrReplaceRes, graphURI, fileModel);
+          } catch {
+            case except: Throwable => getLogger().error("Caught error loading file {}", Array[Object](rdfURL, except))
+          }
+        }
+      })
 
     }
   }

@@ -78,15 +78,18 @@ object CsvFileSheetLoader extends BasicDebugger {
 
       getLogger.info("Ready to read from [{}] / [{}]", Array[Object](rPath, mPath));
       val rdfURL = rPath + mPath;
-
-      try {
-        val graphURI = modelRes.getURI();
-        val fileModel = FileModelRepoLoader.readModelSheetFromURL(rdfURL, nsJavaMap, clList);
-        getLogger.info("Read fileModel: {}", Array[Object](fileModel))
-        PipelineRepoLoader.replaceOrUnion(mainDset, unionOrReplaceRes, graphURI, fileModel);
-      } catch {
-        case except: Throwable => getLogger.error("Caught error loading file {}", Array[Object]( rdfURL, except))
-      }
+      repo.addLoadTask(rdfURL, new Runnable() {
+        def run() {
+          try {
+            val graphURI = modelRes.getURI();
+            val fileModel = FileModelRepoLoader.readModelSheetFromURL(rdfURL, nsJavaMap, clList);
+            getLogger.info("Read fileModel: {}", Array[Object](fileModel))
+            PipelineRepoLoader.replaceOrUnion(mainDset, unionOrReplaceRes, graphURI, fileModel);
+          } catch {
+            case except: Throwable => getLogger.error("Caught error loading file {}", Array[Object](rdfURL, except))
+          }
+        }
+      })
     }
   }
 

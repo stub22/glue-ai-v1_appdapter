@@ -24,6 +24,7 @@ import org.appdapter.api.trigger.AnyOper.UIHidden;
 import org.appdapter.api.trigger.AnyOper.UtilClass;
 import org.appdapter.api.trigger.TriggerImpl;
 import org.appdapter.demo.DemoResources;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -108,8 +109,7 @@ public class RepoOper implements AnyOper, UtilClass {
 	@UISalient
 	private static boolean inPlaceReplacements;
 
-	@UISalient
-	public static void replaceModelElements(Model dest, Model src) {
+	@UISalient public static void replaceModelElements(Model dest, Model src) {
 		if (src == dest) {
 			return;
 		}
