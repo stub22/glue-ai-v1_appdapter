@@ -19,6 +19,9 @@ import com.hp.hpl.jena.rdf.model.Model;
   LogicMoo
 */
 public class SpecialRepoLoader extends BasicDebugger {
+	public enum SheetLoadStatus {
+		Pending, Loading, Loaded, Unloading, Unloaded, Cancelling, Cancelled, Error
+	}
 
 	public void logWarning(String msg) {
 		getLogger().warn(msg);
@@ -68,7 +71,7 @@ public class SpecialRepoLoader extends BasicDebugger {
 	@Override public String toString() {
 		if (false) {
 			StringBuilder sbuf = new StringBuilder();
-			int num = tasksWithsStatus(sbuf, true, SheetLoadStatus.loaded);
+			int num = tasksWithsStatus(sbuf, true, SheetLoadStatus.Loaded);
 			if (num > 0)
 				return sbuf.toString();
 		}
@@ -103,7 +106,6 @@ public class SpecialRepoLoader extends BasicDebugger {
 		while (origTaskSize != newTaskSize) {
 			for (Task task : ReflectUtils.copyOf(tasks)) {
 				Task sheetLoadResult = task.get();
-				log(sheetLoadResult);
 			}
 			origTaskSize = newTaskSize;
 			newTaskSize = tasks.size();
@@ -144,18 +146,10 @@ public class SpecialRepoLoader extends BasicDebugger {
 		}
 	}
 
-	public enum SheetLoadStatus {
-		pending, loading, loaded, unloading, unloaded, cancelling, cancelled, error
-	}
-
-	private static void log(Object aMsg) {
-		System.out.println(String.valueOf(aMsg));
-	}
-
 	/** Try to sheetLoad a URL. Return true only if successful. */
 	public final class Task implements Callable<Task> {
 		final String sheetName;
-		SheetLoadStatus sheetLoadStatus = SheetLoadStatus.unloaded;
+		SheetLoadStatus sheetLoadStatus = SheetLoadStatus.Unloaded;
 		Future<Task> future;
 		Runnable runIt;
 		long start = -1, end = -1;
@@ -163,13 +157,13 @@ public class SpecialRepoLoader extends BasicDebugger {
 
 		@Override public String toString() {
 			long soFar = (end == -1) ? System.currentTimeMillis() - start : end - start;
-			return "TASK: sheet=" + sheetName + " status=" + getLoadStatus() + " msecs=" + soFar + (lastException == null ? "" : " error=" + lastException);
+			return "TASK0: sheet=" + sheetName + " status=" + getLoadStatus() + " msecs=" + soFar + (lastException == null ? "" : " error=" + lastException);
 		}
 
 		public Task(String sheetNameURI, Runnable r) {
 			this.sheetName = sheetNameURI;
 			runIt = r;
-			postLoadStatus(SheetLoadStatus.pending, false);
+			postLoadStatus(SheetLoadStatus.Pending, false);
 		}
 
 		void error(Throwable t) {
@@ -184,19 +178,21 @@ public class SpecialRepoLoader extends BasicDebugger {
 				return future.get();
 			} catch (Throwable e) {
 				error(e);
-				postLoadStatus(SheetLoadStatus.error, true);
+				postLoadStatus(SheetLoadStatus.Error, true);
 			}
 			return this;
 		}
 
 		public Task call() {
-			postLoadStatus(SheetLoadStatus.loading, false);
+			postLoadStatus(SheetLoadStatus.Loading, false);
 			try {
+				if (end != -1)
+					return this;
 				runIt.run();
-				postLoadStatus(SheetLoadStatus.loaded, true);
+				postLoadStatus(SheetLoadStatus.Loaded, true);
 			} catch (Throwable e) {
 				error(e);
-				postLoadStatus(SheetLoadStatus.error, true);
+				postLoadStatus(SheetLoadStatus.Error, true);
 			}
 			return this;
 		}
@@ -217,11 +213,11 @@ public class SpecialRepoLoader extends BasicDebugger {
 			this.sheetLoadStatus = newLoadStatus;
 			Model saveEventsTo = loaderFor.getEventsModel();
 			Map eventProps = new HashMap();
-			eventProps.put(RepoModelEvent.loadStatus, saveEventsTo.createResource("ccrt" + newLoadStatus.toString()));
+			eventProps.put(RepoModelEvent.loadStatus, saveEventsTo.createResource("ccrt:" + newLoadStatus.toString()));
 			eventProps.put(RepoModelEvent.timestamp, curMS);
-			eventProps.put(RepoModelEvent.loadStatus, sheetName);
+			eventProps.put(RepoModelEvent.sheetName, sheetName);
 			RepoModelEvent.createEvent(saveEventsTo, eventProps);
-			//wow just a bit noisey? logWarning(toString());
+			logInfo(toString());
 		}
 	}
 }
