@@ -219,7 +219,7 @@ public class SpecialRepoLoader extends BasicDebugger {
 			eventProps.put(RepoModelEvent.timestamp, curMS);
 			eventProps.put(RepoModelEvent.loadStatus, sheetName);
 			RepoModelEvent.createEvent(saveEventsTo, eventProps);
-			logWarning(toString());
+			//wow just a bit noisey? logWarning(toString());
 		}
 	}
 }
