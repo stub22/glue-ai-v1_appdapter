@@ -108,10 +108,14 @@ object GoogSheetRepoLoader extends BasicDebugger {
 
       val sheetNum = sheetNum_Lit.getInt();
       val sheetKey = sheetKey_Lit.getString();
-      val sheetModel: Model = readModelSheet(sheetKey, sheetNum, nsJavaMap);
-      getLogger.debug("Read sheetModel: {}", sheetModel)
       val graphURI = sheetRes.getURI();
-      PipelineRepoLoader.replaceOrUnion(mainDset, unionOrReplaceRes, graphURI, sheetModel);
+      repo.addLoadTask(graphURI, new Runnable() {
+        def run() {
+          val sheetModel: Model = readModelSheet(sheetKey, sheetNum, nsJavaMap);
+          getLogger.debug("Read sheetModel: {}", sheetModel)
+          PipelineRepoLoader.replaceOrUnion(mainDset, unionOrReplaceRes, graphURI, sheetModel);
+        }
+      })
     }
   }
 

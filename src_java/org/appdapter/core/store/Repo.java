@@ -148,6 +148,8 @@ public interface Repo extends QueryProcessor {
 		public ModelClient getDirectoryModelClient();
 
 		public InitialBinding makeInitialBinding();
+		
+		public void addLoadTask(String str, Runnable r);
 
 		public List<QuerySolution> queryIndirectForAllSolutions(Ident qSrcGraphIdent, Ident queryIdent, QuerySolution qInitBinding);
 

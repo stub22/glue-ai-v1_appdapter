@@ -73,11 +73,15 @@ object XLSXSheetRepoLoader extends BasicDebugger {
         + sheetName_Lit + ", key=\"" + sheetLocation_Lit + "\", union= " + unionOrReplaceRes)
 
       val sheetName = sheetName_Lit.getString();
-      val sheetLocation = sheetLocation_Lit.getString();
-      val sheetModel: Model = readModelSheetX(sheetLocation, sheetName, nsJavaMap, fileModelCLs);
-      getLogger.debug("Read sheetModel: {}", sheetModel)
-      val graphURI = sheetRes.getURI();
-      PipelineRepoLoader.replaceOrUnion(mainDset, unionOrReplaceRes, graphURI, sheetModel);
+      repo.addLoadTask(sheetName, new Runnable() {
+        def run() {
+          val sheetLocation = sheetLocation_Lit.getString();
+          val sheetModel: Model = readModelSheetX(sheetLocation, sheetName, nsJavaMap, fileModelCLs);
+          getLogger.debug("Read sheetModel: {}", sheetModel)
+          val graphURI = sheetRes.getURI();
+          PipelineRepoLoader.replaceOrUnion(mainDset, unionOrReplaceRes, graphURI, sheetModel);
+        }
+      })
     }
 
 
