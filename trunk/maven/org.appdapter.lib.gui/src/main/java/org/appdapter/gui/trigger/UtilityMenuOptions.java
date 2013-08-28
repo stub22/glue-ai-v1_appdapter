@@ -53,8 +53,8 @@ abstract public class UtilityMenuOptions implements UtilClass {
 	public static boolean useBeanIcons = false;
 	public static boolean usePropertyEditorManager = true;
 	public static boolean separateSlowThreads = true;
-	public static boolean scanForMissingScreenBoxPanels = true;
-	public static boolean doErrorCheckScanForMissingScreenBoxPanels = true;
+	public static boolean scanForMissingScreenBoxPanels = false;
+	public static boolean doErrorCheckScanForMissingScreenBoxPanels = false;
 
 	interface VoidFunc2<A, B> {
 		void call(A a, B b);
