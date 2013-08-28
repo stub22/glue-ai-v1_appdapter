@@ -163,8 +163,9 @@ trait FancyRepo extends Repo.WithDirectory with ModelClientCore with Loggable {
 
 // class DirectRepo(val myDirectoryModel : Model) extends FancyRepo {
 
-class DirectRepo(val myDirectoryModel: Model) extends BasicRepoImpl with FancyRepo with Repo.Updatable {
+class DirectRepo(directoryModel: Model) extends BasicRepoImpl with FancyRepo with Repo.Updatable {
 
+  val myDirectoryModel: Model = directoryModel;
   override def getDirectoryModel: Model = myDirectoryModel;
 
   override def makeMainQueryDataset(): Dataset = {
