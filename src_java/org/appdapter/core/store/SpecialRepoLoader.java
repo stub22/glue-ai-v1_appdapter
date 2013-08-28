@@ -31,6 +31,7 @@ public class SpecialRepoLoader extends BasicDebugger {
 	boolean isSynchronous = true;
 	int taskNum = 0;
 	BasicRepoImpl loaderFor = null;
+	String repoStr = "REPO";
 	// sounds like a lot.. but it is over with quickly!
 	int numThreads = 32;
 	int howManyTasksBeforeStartingPool = 0;
@@ -112,7 +113,7 @@ public class SpecialRepoLoader extends BasicDebugger {
 		if (waslastJobSubmitted) {
 			if (executor == null)
 				return;
-			//logWarning("Shutting down executor for " + loaderFor);
+			//logWarning("Shutting down executor for " + repoStr);
 			//executor.shutdown();
 			//executor = null;
 		} else {
@@ -131,7 +132,7 @@ public class SpecialRepoLoader extends BasicDebugger {
 
 			if (executor == null) {
 				lastJobSubmitted = false;
-				logWarning("Creating executor for " + loaderFor);
+				logWarning("Creating executor for " + repoStr);
 				executor = Executors.newFixedThreadPool(numThreads);
 			}
 			synchronized (tasks) {
@@ -160,7 +161,7 @@ public class SpecialRepoLoader extends BasicDebugger {
 
 		@Override public String toString() {
 			long soFar = (end == -1) ? System.currentTimeMillis() - start : end - start;
-			return "TASK: sheet=" + sheetName + " status=" + getLoadStatus() + " msecs=" + soFar + lastException == null ? "" : " error=" + lastException;
+			return "TASK: sheet=" + sheetName + " status=" + getLoadStatus() + " msecs=" + soFar + (lastException == null ? "" : " error=" + lastException);
 		}
 
 		public Task(String sheetNameURI, Runnable r) {
