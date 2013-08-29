@@ -62,6 +62,25 @@ public abstract class BaseItem implements Item {
 			throw new RuntimeException("Found " + size + " items instead of expected 1 at " + linkName);
 		}
 	}
+
+    /**
+     * Returns one item or null if not available.
+     * 
+     * @param linkName
+     * @param linkDir
+     * @return The 'Item' or a null value
+     */
+	@Override public Item getOptionalSingleLinkedItem(Ident linkName, LinkDirection linkDir) {
+		Collection<Item> linkedItems = getLinkedItems(linkName, linkDir);
+		int size = linkedItems.size();
+		if (size > 0) {
+			Item items[] = new Item[1];
+			linkedItems.toArray(items);
+			return items[0];
+		} else {
+            return null;
+		}
+	}
 	/**
 	 * This implementation does not yet actually do the requested sorting.
 	 * To be fixed!
