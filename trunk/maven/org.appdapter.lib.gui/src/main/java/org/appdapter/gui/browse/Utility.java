@@ -1379,23 +1379,23 @@ public class Utility extends UtilityMenuOptions {
 		registerEditor(org.apache.activemq.util.StringArrayEditor.class, String[].class);
 		registerEditor(org.apache.taglibs.standard.lang.jstl.test.Bean2Editor.class, Bean2.class);*/
 
-		registerEditor(sun.beans.editors.BoolEditor.class, boolean.class);
-		registerEditor(sun.beans.editors.ByteEditor.class, byte.class);
-		registerEditor(sun.beans.editors.ColorEditor.class, Color.class);
-		registerEditor(sun.beans.editors.DoubleEditor.class, double.class);
-		registerEditor(sun.beans.editors.FloatEditor.class, float.class);
-		registerEditor(sun.beans.editors.FontEditor.class, Font.class);
-		registerEditor(sun.beans.editors.IntEditor.class, int.class);
-		registerEditor(sun.beans.editors.LongEditor.class, long.class);
-		registerEditor(sun.beans.editors.ShortEditor.class, short.class);
-		registerEditor(sun.beans.editors.StringEditor.class, String.class);
-		registerEditor(org.appdapter.gui.browse.PropertyDescriptorForField.ObjectFieldEditor.class, Object.class);
-		registerEditor(org.appdapter.gui.editors.BooleanEditor.class, boolean.class);
-		registerEditor(org.appdapter.gui.editors.ColorEditor.class, Color.class);
-		registerEditor(org.appdapter.gui.editors.DateEditor.class, Date.class);
-		registerEditor(org.appdapter.gui.editors.IntEditor.class, int.class);
-		registerEditor(org.appdapter.gui.editors.StringEditor.class, String.class);
-		registerEditor(org.appdapter.gui.swing.PropertyValueControl.ObjectReferenceEditor.class, Object.class);
+//		registerEditor(sun.beans.editors.BoolEditor.class, boolean.class);
+//		registerEditor(sun.beans.editors.ByteEditor.class, byte.class);
+//		registerEditor(sun.beans.editors.ColorEditor.class, Color.class);
+//		registerEditor(sun.beans.editors.DoubleEditor.class, double.class);
+//		registerEditor(sun.beans.editors.FloatEditor.class, float.class);
+//		registerEditor(sun.beans.editors.FontEditor.class, Font.class);
+//		registerEditor(sun.beans.editors.IntEditor.class, int.class);
+//		registerEditor(sun.beans.editors.LongEditor.class, long.class);
+//		registerEditor(sun.beans.editors.ShortEditor.class, short.class);
+//		registerEditor(sun.beans.editors.StringEditor.class, String.class);
+//		registerEditor(org.appdapter.gui.browse.PropertyDescriptorForField.ObjectFieldEditor.class, Object.class);
+//		registerEditor(org.appdapter.gui.editors.BooleanEditor.class, boolean.class);
+//		registerEditor(org.appdapter.gui.editors.ColorEditor.class, Color.class);
+//		registerEditor(org.appdapter.gui.editors.DateEditor.class, Date.class);
+//		registerEditor(org.appdapter.gui.editors.IntEditor.class, int.class);
+//		registerEditor(org.appdapter.gui.editors.StringEditor.class, String.class);
+//		registerEditor(org.appdapter.gui.swing.PropertyValueControl.ObjectReferenceEditor.class, Object.class);
 	}
 
 	private static void registerEditor(Class<? extends PropertyEditor> class1, Object object) {
