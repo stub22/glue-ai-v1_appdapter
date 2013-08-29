@@ -61,6 +61,7 @@ public interface Item {
 	public Set<Item> getLinkedItemSet(Ident linkIdent, LinkDirection linkDir);
 	public int getLinkedItemCount(Ident linkIdent, LinkDirection linkDir);
 	public Item getSingleLinkedItem(Ident linkIdent, LinkDirection linkDir);
+	public Item getOptionalSingleLinkedItem(Ident linkIdent, LinkDirection linkDir);
 
 	public static class SortKey {
 		public	Ident		mySortFieldIdent;
