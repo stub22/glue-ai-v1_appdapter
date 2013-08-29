@@ -18,8 +18,8 @@ package org.appdapter.osgi.felix.shell;
 
 import javax.swing.JFrame;
 
-import org.appdapter.gui.demo.DemoBrowser;
-import org.appdapter.gui.demo.DemoNavigatorCtrl;
+//import org.appdapter.gui.demo.DemoBrowser;
+//import org.appdapter.gui.demo.DemoNavigatorCtrl;
 import org.appdapter.osgi.core.BundleActivatorBase;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
@@ -44,9 +44,9 @@ public class AppdapterFelixShellBundleActivator extends BundleActivatorBase {
 		theLogger.info("Starting demo browser[");
 
 		String args[] = null;
-		DemoNavigatorCtrl dnc = DemoBrowser.makeDemoNavigatorCtrl(args);
-		dnc.launchFrame("org.appdapter.osgi.felix.shell - DemoBrowser");
-		myDemoJFrame = dnc.getFrame();
+//		DemoNavigatorCtrl dnc = DemoBrowser.makeDemoNavigatorCtrl(args);
+//		dnc.launchFrame("org.appdapter.osgi.felix.shell - DemoBrowser");
+//		myDemoJFrame = dnc.getFrame();
 		// DemoBrowser.main(null);
 		theLogger.info("]Finished starting browser, bundle activation .start() complete.");
 	}
