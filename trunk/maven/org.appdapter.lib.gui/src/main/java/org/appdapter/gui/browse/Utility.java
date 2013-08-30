@@ -1336,7 +1336,7 @@ public class Utility extends UtilityMenuOptions {
 
 		PropertyEditorManager.registerEditor(Date.class, DateEditor.class);
 
-		PropertyEditorManager.setEditorSearchPath(new String[] { AbstractCollectionBeanInfo.class.getPackage().getName() });
+		PropertyEditorManager.setEditorSearchPath(new String[] {  });
 		// ClassFinder.getClasses(PropertyEditor);
 
 		registerTabsCreator(ClassCustomizer.class, Class.class);
@@ -2136,7 +2136,7 @@ public class Utility extends UtilityMenuOptions {
 	public static Collection<Class> findPanelClasses(Class targetType) {
 		synchronized (panelClassesFromCached) {
 			Collection<Class> cc = (Collection<Class>) panelClassesFromCached.get(targetType);
-			if (cc == null || targetType == Class.class || true) {
+			if (cc == null) {
 				panelClassesFromCached.put(targetType, EMPTY_COLLECTION);
 				cc = findPanelClassesFromCached(targetType);
 				if (cc.size() == 0)
