@@ -45,6 +45,7 @@ import javax.swing.plaf.metal.OceanTheme;
 import javax.swing.tree.TreeModel;
 
 import org.appdapter.api.trigger.AnyOper;
+import org.appdapter.api.trigger.AnyOper.UISalient;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.CallableWithParameters;
 import org.appdapter.api.trigger.MutableBox;
@@ -336,6 +337,7 @@ final public class DemoBrowser implements AnyOper.Singleton {
 		setLookAndFeelFromProperty();
 	}
 
+	@UISalient
 	public static void addMoreExamples() {
 
 		showObject(appName, mainControl, false, false);
