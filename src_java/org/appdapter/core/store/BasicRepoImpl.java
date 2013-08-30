@@ -125,12 +125,12 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 			isLoadingLocked = true;
 			addLoadTask("directoryModel", new Runnable() {
 				@Override public void run() {
+					repoLoader.setSynchronous(false);
 					synchronized (loadingLock) {
 						callLoadingInLock();
 					}
 					isLoadingLocked = false;
 					repoLoader.setLastJobSubmitted();
-					repoLoader.waitUntilLastJobComplete();
 					repoLoader.waitUntilLastJobComplete();
 				}
 			}, true);
