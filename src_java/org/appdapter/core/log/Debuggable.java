@@ -45,14 +45,13 @@ public abstract class Debuggable extends BasicDebugger {
 
 		RuntimeException rte = warn(dstr);
 		// if (true) return null;
-		if (true) {
+		if (isDebugging()) {
 			throw rte;
 		}
 		return null;
 	}
 
 	public static boolean doBreak(Object... s) {
-
 		PrintStream v = System.out;
 		new Exception("" + s[0]).fillInStackTrace().printStackTrace(v);
 		for (int i = 0; i < s.length; i++) {
@@ -68,7 +67,8 @@ public abstract class Debuggable extends BasicDebugger {
 	public static RuntimeException warn(Object... objects) {
 		String dstr = Debuggable.toInfoStringA(objects, " : ", PRINT_DEPTH);
 		RuntimeException rte = new RuntimeException(dstr);
-		if (isNotShowingExceptions()) {
+
+		if (isNotShowingExceptions() || !isDebugging()) {
 			return rte;
 		}
 		rte.printStackTrace();
@@ -539,6 +539,8 @@ public abstract class Debuggable extends BasicDebugger {
 	}
 
 	public static boolean isDebugging() {
+		if (true)
+			return false;
 		return DEBUGGING.get() == Boolean.TRUE;
 	}
 
@@ -547,6 +549,8 @@ public abstract class Debuggable extends BasicDebugger {
 	}
 
 	public static boolean isRelease() {
+		if (true)
+			return true;
 		if (isDebugging())
 			return false;
 		if (isTesting())
