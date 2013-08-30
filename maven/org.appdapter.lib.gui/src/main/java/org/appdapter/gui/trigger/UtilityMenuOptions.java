@@ -31,6 +31,7 @@ import org.appdapter.gui.api.ScreenBox;
 import org.appdapter.gui.box.BoxImpl;
 import org.appdapter.gui.box.ScreenBoxImpl;
 import org.appdapter.gui.browse.Utility;
+import org.appdapter.gui.demo.DemoBrowser;
 import org.appdapter.gui.editors.ObjectPanel;
 import org.appdapter.gui.repo.RepoManagerPanel;
 import org.appdapter.gui.swing.ScreenBoxPanel;
@@ -69,6 +70,7 @@ abstract public class UtilityMenuOptions implements UtilClass {
 		};
 
 		withSubclasses(KnownComponent.class, fw);
+		withSubclasses(DemoBrowser.class, fw);
 		withSubclasses(Box.class, fw);
 		withSubclasses(Trigger.class, fw);
 		withSubclasses(UtilClass.class, fw);
@@ -180,6 +182,10 @@ abstract public class UtilityMenuOptions implements UtilClass {
 		}
 	}
 
+	static @UISalient() public void loadDemoObjects() {
+		DemoBrowser.addMoreExamples();
+	}
+	
 	static @UISalient() public void loadAutoloads() {
 		VoidFunc2<Class, Class> fw = new VoidFunc2<Class, Class>() {
 			@Override public void call(Class cls, Class ancestor) {

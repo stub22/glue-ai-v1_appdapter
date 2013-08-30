@@ -133,7 +133,7 @@ public class ModelMatrixPanel<BoxType extends Box> extends GenericBeansPanel {
 	public ToFromKeyConverter getCellConverter(Class valueClazz) {
 		if (RDFNode.class.isAssignableFrom(valueClazz)) {
 			if (mapping == null) {
-				mapping = new ResourceToFromString(getJenaModel());
+				mapping = Utility.RESOURCE_TO_FROM_STRING;
 			}
 			return mapping;
 		}
