@@ -1,5 +1,6 @@
 package org.appdapter.core.store;
 
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -7,6 +8,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
 
 import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.core.log.BasicDebugger;
@@ -18,7 +20,7 @@ import com.hp.hpl.jena.rdf.model.Model;
   
   LogicMoo
 */
-public class SpecialRepoLoader extends BasicDebugger {
+public class SpecialRepoLoader extends BasicDebugger implements UncaughtExceptionHandler {
 	public enum SheetLoadStatus {
 		Pending, Loading, Loaded, Unloading, Unloaded, Cancelling, Cancelled, Error
 	}
@@ -117,17 +119,18 @@ public class SpecialRepoLoader extends BasicDebugger {
 		if (waslastJobSubmitted) {
 			if (executor == null)
 				return;
-			//logWarning("Shutting down executor for " + repoStr);
-			//executor.shutdown();
+			logWarning("Shutting down executor for " + repoStr);
+			executor.shutdown();
 			//executor = null;
 		} else {
 			///logError("To Early to have called waitUntilLastJobComplete");
 		}
 	}
 
-	synchronized public void addTask(String sheetNameURI, Runnable r) {
+	public void addTask(String sheetNameURI, Runnable r) {
 		Task task = new Task(sheetNameURI, r);
-		synchronized (synchronousAdderLock) {
+		//synchronized (synchronousAdderLock) 
+		{
 			if (isSynchronous || taskNum < howManyTasksBeforeStartingPool) {
 				taskNum++;
 				task.call();
@@ -137,18 +140,36 @@ public class SpecialRepoLoader extends BasicDebugger {
 			if (executor == null) {
 				lastJobSubmitted = false;
 				logWarning("Creating executor for " + repoStr);
-				executor = Executors.newFixedThreadPool(numThreads);
+				executor = Executors.newFixedThreadPool(numThreads, new ThreadFactory() {
+					@Override public Thread newThread(final Runnable r) {
+						return new Thread("Worker " + ++workrNum + " for " + loaderFor) {
+							public void run() {
+								r.run();
+							}
+
+							@Override public UncaughtExceptionHandler getUncaughtExceptionHandler() {
+								return SpecialRepoLoader.this;
+							}
+						};
+
+					}
+
+				});
 			}
 			synchronized (tasks) {
 				tasks.add(task);
 			}
-			task.future = executor.submit(task);
+			task.future = (Future<Task>) executor.submit((Runnable) task);
 		}
 	}
 
+	public int totalTasks = 0;
+	public int workrNum = 0;
+
 	/** Try to sheetLoad a URL. Return true only if successful. */
-	public final class Task implements Callable<Task> {
+	public final class Task implements Callable<Task>, Runnable {
 		final String sheetName;
+		final int taskNum = totalTasks++;
 		SheetLoadStatus sheetLoadStatus = SheetLoadStatus.Unloaded;
 		Future<Task> future;
 		Runnable runIt;
@@ -157,7 +178,7 @@ public class SpecialRepoLoader extends BasicDebugger {
 
 		@Override public String toString() {
 			long soFar = (end == -1) ? System.currentTimeMillis() - start : end - start;
-			return "TASK0: sheet=" + sheetName + " status=" + getLoadStatus() + " msecs=" + soFar + (lastException == null ? "" : " error=" + lastException);
+			return "TASK-" + taskNum + ": sheet=" + sheetName + " status=" + getLoadStatus() + " msecs=" + soFar + (lastException == null ? "" : " error=" + lastException);
 		}
 
 		public Task(String sheetNameURI, Runnable r) {
@@ -169,6 +190,10 @@ public class SpecialRepoLoader extends BasicDebugger {
 		void error(Throwable t) {
 			lastException = t;
 			logError(toString(), t);
+		}
+
+		@Override public void run() {
+			call();
 		}
 
 		public Task get() {
@@ -217,7 +242,17 @@ public class SpecialRepoLoader extends BasicDebugger {
 			eventProps.put(RepoModelEvent.timestamp, curMS);
 			eventProps.put(RepoModelEvent.sheetName, sheetName);
 			RepoModelEvent.createEvent(saveEventsTo, eventProps);
-			logInfo(toString());
+			String info = toString();
+			Thread ct = Thread.currentThread();
+			if (ct.getUncaughtExceptionHandler() instanceof SpecialRepoLoader) {
+				ct.setName(info);
+			}
+			logInfo(info);
 		}
+	}
+
+	@Override public void uncaughtException(Thread t, Throwable e) {
+		logError(" uncaughtException on " + t, e);
+		e.printStackTrace();
 	}
 }
