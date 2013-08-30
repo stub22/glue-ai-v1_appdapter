@@ -24,11 +24,8 @@ import org.appdapter.bind.rdf.jena.model.JenaFileManagerUtils
 import org.appdapter.demo.DemoResources
 import org.appdapter.gui.box.ScreenBoxImpl
 
-class FullBox[FT <: FullTrigger[_ <: FullBox[FT]]] extends ScreenBoxImpl[FT] {}
 
-trait FullTrigger[FB <: FullBox[_ <: FullTrigger[FB]]] extends MutableTrigger[FB] {}
-
-class BoxOne extends FullBox[TriggerOne] {
+class BoxOne extends org.appdapter.scafun.FullBox[TriggerOne] {
   import collection.JavaConverters._
   def getOpenKidBoxes(bc: BoxContext): Seq[BoxOne] = {
     val kidBoxJL = bc.getOpenChildBoxesNarrowed(this, classOf[BoxOne], classOf[TriggerOne]).asInstanceOf[java.util.List[BoxOne]];
