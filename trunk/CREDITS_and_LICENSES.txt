@@ -8,10 +8,13 @@ Included Source Code (via svn:external mounting to trunk):
 
    Symja project - LGPL license
         https://code.google.com/p/symja/
+		(Formerly and sometimes still called "matheclipse")
 		
 		In turn includes
 		
 		JAS - Java Algebra System
+		
+		Apache Commons Math
 		
 
 Dependencies from Maven Central
@@ -40,5 +43,5 @@ Dependencies from Maven Central
 
 Other Jars Wrapped for Maven Distribution
 
-	JScience
+	JScience 
 		
