@@ -1,0 +1,22 @@
+Manifest-Version: 1.0
+Ant-Version: Apache Ant 1.6.5
+Created-By: 1.5.0_07-87 ("Apple Computer, Inc.")
+Main-Class: org.mindswap.swoop.Swoop
+Class-Path: GraphLayout.jar arq/arq.jar arq/stax-1.1.1-dev.jar arq/sta
+ x-api-1.0.jar commons-lang/commons-lang-2.1.jar dig.jar econn-owlapi/
+ abstractparser.jar econn-owlapi/api.jar econn-owlapi/examples.jar eco
+ nn-owlapi/impl.jar econn-owlapi/inference.jar econn-owlapi/io.jar eco
+ nn-owlapi/owl-servlet.jar econn-owlapi/owltest.jar econn-owlapi/rdfpa
+ rser.jar econn-owlapi/rules.jar econn-owlapi/validation.jar econn-owl
+ api/validation_test.jar ekit/ekit.jar ekit/ekitapplet.jar ekit/ekitap
+ pletspell.jar ekit/ekitspell.jar getopt.jar jakarta-slide-webdavclien
+ t-2.0/antlr.jar jakarta-slide-webdavclient-2.0/commons-httpclient.jar
+  jakarta-slide-webdavclient-2.0/commons-logging.jar jakarta-slide-web
+ davclient-2.0/jakarta-slide-commandline-2.0.jar jakarta-slide-webdavc
+ lient-2.0/jakarta-slide-webdavlib-2.0.jar jpl.jar jung/colt.jar jung/
+ commons-collections-3.1.jar jung/jung-1.6.0.jar junit-3.8.1/junit.jar
+  log4j.jar openrdf-model.jar openrdf-util.jar pellet-debug.jar pellet
+ /aterm-java-1.6.jar pellet/pellet.jar rdfapi.jar rhino1_6R1/js.jar ri
+ o.jar xercesImpl.jar xml-apis.jar xngr-browser.jar xngr.jar xsdlib/re
+ laxngDatatype.jar xsdlib/xsdlib.jar
+
