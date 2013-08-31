@@ -1,0 +1,44 @@
+Appdapter Credits and Licenses
+
+Updated for Appdapter Relse 1.1.1
+August 31, 2013
+
+
+Included Source Code (via svn:external mounting to trunk):
+
+   Symja project - LGPL license
+        https://code.google.com/p/symja/
+		
+		In turn includes
+		
+		JAS - Java Algebra System
+		
+
+Dependencies from Maven Central
+
+	Jena, including ARQ, SDB, Fuseki/Joseki.
+	
+		In turn includes many.
+
+    Dom4J
+	
+	SLF4J
+	
+	Javolution
+	
+	
+	Many apache projects, including
+		Maven
+		Felix
+		Xerces
+		Xalan
+		Log4J
+		
+		Avro
+		QPid
+		
+
+Other Jars Wrapped for Maven Distribution
+
+	JScience
+		
