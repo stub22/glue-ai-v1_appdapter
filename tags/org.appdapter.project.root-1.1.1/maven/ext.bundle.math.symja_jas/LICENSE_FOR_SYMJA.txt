@@ -1,0 +1,5 @@
+
+The Symja core is covered by the LGPL license.
+http://code.google.com/p/symja/#License
+
+Symja GUI code is GPL licensed, and is not currently used in this bundle.
