@@ -24,7 +24,6 @@ import org.appdapter.help.repo.{ RepoClient, RepoClientImpl, InitialBindingImpl,
 import org.appdapter.impl.store.{ FancyRepo }
 import com.hp.hpl.jena.rdf.model.Model
 import com.hp.hpl.jena.rdf.model.ModelFactory
-import sun.org.mozilla.javascript.internal.debug.Debugger
 import org.appdapter.core.log.Debuggable
 
 /**
