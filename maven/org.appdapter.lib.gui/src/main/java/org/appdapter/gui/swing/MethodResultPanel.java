@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 class MethodResultPanel extends JJPanel {
 	static Logger theLogger = LoggerFactory.getLogger(MethodResultPanel.class);
 
+	@Override
 	public Object getValue() {
 		return value;
 	}
@@ -69,6 +70,7 @@ class MethodResultPanel extends JJPanel {
 					remove(value);
 				}
 				value = new SmallObjectView(context, null, object) {
+					@Override
 					public boolean isRemovable(Object value) {
 						return false;
 					};

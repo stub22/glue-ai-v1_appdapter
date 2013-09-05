@@ -108,6 +108,7 @@ public class SortedComboBoxModel<E> extends DefaultComboBoxModel {
 	}
 
 	// implements javax.swing.MutableComboBoxModel
+	@Override
 	protected void fireIntervalAdded(Object source, int index0, int index1) {
 		//if (true) return;
 		Object[] listeners = listenerList.getListenerList();

@@ -1,47 +1,29 @@
 package org.appdapter.gui.swing;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTarget;
-import java.awt.dnd.DropTargetDragEvent;
-import java.awt.dnd.DropTargetDropEvent;
-import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyVetoException;
-import java.lang.reflect.Array;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Map;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTable;
 import javax.swing.OverlayLayout;
-import javax.swing.border.Border;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.appdapter.api.trigger.Box;
-import org.appdapter.core.convert.ReflectUtils;
-import org.appdapter.gui.api.BT;
 import org.appdapter.gui.api.BoxPanelSwitchableView;
 import org.appdapter.gui.api.Chooser;
 import org.appdapter.gui.api.DisplayContext;
-import org.appdapter.gui.api.NamedObjectCollection;
 import org.appdapter.gui.api.ValueChangeListener;
-import org.appdapter.gui.api.POJOCollectionListener;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.table.BeanTableModel;
 import org.appdapter.gui.table.SafeJTable;
-import static org.appdapter.core.convert.ReflectUtils.*;
 import static org.appdapter.core.convert.ReflectUtils.*;
 
 /**
@@ -98,6 +80,7 @@ extends CollectionContentsPanel<BoxType> implements ValueChangeListener, DropTar
 
 	}
 
+	@Override
 	public void reloadContents00() {
 
 		final Collection collection = getCollection();
@@ -141,6 +124,7 @@ extends CollectionContentsPanel<BoxType> implements ValueChangeListener, DropTar
 		view.addChangeListener(this);
 	}
 
+	@Override
 	public void completeSubClassGUI() {
 		setTitle(getName());
 		reloadContents();

@@ -21,6 +21,7 @@ public class SafeJCheckBoxMenuItem extends JCheckBoxMenuItem implements UISwingR
 	 *
 	 * @see JComponent#updateUI
 	 */
+	@Override
 	public void updateUI() {
 		MenuItemUI itemUI = null;
 		try {
@@ -33,6 +34,7 @@ public class SafeJCheckBoxMenuItem extends JCheckBoxMenuItem implements UISwingR
 		}
 	}
 
+	@Override
 	protected void fireActionPerformed(ActionEvent event) {
 		super.fireActionPerformed(event);
 	}
@@ -64,6 +66,7 @@ public class SafeJCheckBoxMenuItem extends JCheckBoxMenuItem implements UISwingR
 		return userObject;
 	}
 
+	@Override
 	public void setObject(Object object) {
 		userObject = object;
 	}

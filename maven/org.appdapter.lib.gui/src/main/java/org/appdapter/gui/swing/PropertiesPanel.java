@@ -9,13 +9,11 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 
-import javax.swing.ButtonModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -26,6 +24,7 @@ import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.GetSetObject;
 import org.appdapter.gui.browse.Utility;
+import org.appdapter.gui.trigger.TriggerMouseAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,6 +71,8 @@ public class PropertiesPanel<BoxType extends Box> extends ScreenBoxPanel<BoxType
 		this.showFields = showFields;
 		final Object val0 = val;
 		setObject(val0);
+		TriggerMouseAdapter.installMouseAdapter(this);
+
 	}
 
 	@Override public Object getValue() {
@@ -203,6 +204,7 @@ public class PropertiesPanel<BoxType extends Box> extends ScreenBoxPanel<BoxType
 				return super.getText();
 			}
 		});
+		TriggerMouseAdapter.installMouseAdapter(buttonPanel, objectValue);
 		removeAll();
 		setLayout(new BorderLayout());
 		add(BorderLayout.NORTH, buttonPanel);
@@ -252,6 +254,9 @@ public class PropertiesPanel<BoxType extends Box> extends ScreenBoxPanel<BoxType
 				countStaticFields = 0;
 				countInstFields = 0;
 				countInstanceProps = 0;
+
+				sheet.add("this: ", "" + source, new SmallObjectView(context, null, source));
+
 				while (it.hasNext()) {
 					PropertyDescriptor p = (PropertyDescriptor) it.next();
 					String attributeName = p.getDisplayName();
@@ -342,7 +347,7 @@ public class PropertiesPanel<BoxType extends Box> extends ScreenBoxPanel<BoxType
 		}
 
 		Utility.replaceRunnable(this, new Runnable() {
-			public void run() {
+			@Override public void run() {
 				if (objectValue != null) {
 					initSubclassGUI();
 					completeSubClassGUI();

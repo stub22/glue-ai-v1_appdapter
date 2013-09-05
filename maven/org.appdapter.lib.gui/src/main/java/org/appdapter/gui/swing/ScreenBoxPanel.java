@@ -1,11 +1,14 @@
 package org.appdapter.gui.swing;
 
-import static org.appdapter.core.log.Debuggable.*;
+import static org.appdapter.core.log.Debuggable.printStackTrace;
 
 import java.beans.Customizer;
-import java.beans.PropertyEditor;
+import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.appdapter.api.trigger.Box;
+import org.appdapter.core.store.Repo;
 import org.appdapter.gui.api.BT;
 import org.appdapter.gui.api.BoxPanelSwitchableView;
 import org.appdapter.gui.api.FocusOnBox;
@@ -13,11 +16,15 @@ import org.appdapter.gui.api.GetSetObject;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.editors.ObjectPanel;
 
+import com.hp.hpl.jena.rdf.model.Model;
+
 /**
  * A GUI component used to render
  *
  */
 abstract public class ScreenBoxPanel<BoxType extends Box> extends ObjectView<BoxType> implements GetSetObject, FocusOnBox<BoxType>, ObjectPanel, Customizer {
+	public static Map<String, Model> filenamesToGraph = new HashMap();
+	public static Map<String, Model> baseURIToGraph = new HashMap();
 
 	abstract @Override public Class<?> getClassOfBox();
 
@@ -27,7 +34,7 @@ abstract public class ScreenBoxPanel<BoxType extends Box> extends ObjectView<Box
 
 	abstract protected void completeSubClassGUI() throws Throwable;
 
-	public void setTabHost(BoxPanelSwitchableView objectTabsForTabbedView) {
+	@Override public void setTabHost(BoxPanelSwitchableView objectTabsForTabbedView) {
 		parentTabs = objectTabsForTabbedView;
 	}
 
@@ -53,7 +60,7 @@ abstract public class ScreenBoxPanel<BoxType extends Box> extends ObjectView<Box
 		}
 	}
 
-	final protected void reallySetValue(Object bean) {
+	@Override final protected void reallySetValue(Object bean) {
 		if (objClass == null)
 			objClass = bean.getClass();
 		{
@@ -64,7 +71,15 @@ abstract public class ScreenBoxPanel<BoxType extends Box> extends ObjectView<Box
 			try {
 				Object wasObjectValue = objectValue;
 				workingOnInGUI = bean;
-				reloadObjectGUI(bean);
+				try {
+					Object bean0 = Utility.recast(bean, getClassOfBox());
+					if (bean0 != null && bean0 != bean) {
+						bean = bean0;
+					}
+					reloadObjectGUI(bean);
+				} catch (Exception rr) {
+					reloadObjectGUI(bean);
+				}
 				if (objectValue == wasObjectValue) {
 					objectValue = bean;
 				}
@@ -87,7 +102,7 @@ abstract public class ScreenBoxPanel<BoxType extends Box> extends ObjectView<Box
 	boolean initedGuiOnce = false;
 	boolean completedGuiOnce = false;
 
-	public final boolean initGUI() throws Throwable {
+	@Override public final boolean initGUI() throws Throwable {
 		synchronized (valueLock) {
 			if (!initedGuiOnce) {
 				initedGuiOnce = true;
@@ -119,7 +134,7 @@ abstract public class ScreenBoxPanel<BoxType extends Box> extends ObjectView<Box
 	 * once, before the Customizer has been added to any parent AWT container.
 	 * @param bean  The object to be customized.
 	 */
-	public void setObject(Object bean) {
+	@Override public void setObject(Object bean) {
 		synchronized (valueLock) {
 			super.setObject(bean);
 			if (objectValue == null && bean != null) {

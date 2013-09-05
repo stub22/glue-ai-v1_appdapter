@@ -424,6 +424,13 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 			return;
 		}
 		final String lbl = checkForDash(path[idx].trim());
+		if (idx == 0) {
+			if (lbl.equals("<toplevel>")) {
+				Container cont = Utility.getMenuBar();
+				addTriggerToPoppup(cont, box, path, 1, trig);
+				return;
+			}
+		}
 		Component child = findChildNamed(popup, true, lbl.toLowerCase());
 		if (isLast) {
 			if (child == null) {

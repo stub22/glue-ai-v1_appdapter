@@ -3,12 +3,16 @@ package org.appdapter.gui.repo;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.HashMap;
@@ -20,20 +24,18 @@ import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
-import javax.swing.ScrollPaneConstants;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.text.BadLocationException;
 
-import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.editors.ObjectPanel;
 import org.appdapter.gui.swing.JJPanel;
@@ -46,8 +48,7 @@ import com.hp.hpl.jena.rdf.listeners.StatementListener;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Statement;
-import com.jidesoft.swing.AutoResizingTextArea;
-import com.jidesoft.swing.SearchableUtils;
+import com.hp.hpl.jena.shared.Lock;
 
 //import com.hp.hpl.jena.n3.N3Exception;
 
@@ -68,8 +69,14 @@ import com.jidesoft.swing.SearchableUtils;
  * 
  * @version $Id$
  * @author Richard Cyganiak (richard@cyganiak.de)
+ * @author LogicMoo
  */
 public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
+	public interface VoidFunc1<P> {
+		public void call(P boundModel);
+	}
+
+	String header = "";
 	static Logger theLogger = LoggerFactory.getLogger(ModelMatrixPanel.class);
 
 	public static Class[] EDITTYPE = new Class[] { Model.class, Graph.class };
@@ -123,9 +130,8 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 			System.out.println("Please specify one or more " + "RDF filenames or URLs.");
 			return;
 		}
-		Map filenamesToModels = new HashMap();
 		for (int i = 0; i < args.length; i++) {
-			if (!filenamesToModels.containsKey(args[i])) {
+			if (!filenamesToGraph.containsKey(args[i])) {
 				String url = args[i];
 				if (url.indexOf(":") == -1) {
 					url = "file:" + url;
@@ -133,9 +139,9 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 				Model m = ModelFactory.createDefaultModel();
 				String lang = (url.endsWith(".n3") || url.endsWith(".ttl")) ? "N3" : "RDF/XML";
 				m.read(url, lang);
-				filenamesToModels.put(args[i], m);
+				filenamesToGraph.put(args[i], m);
 			}
-			Model m = (Model) filenamesToModels.get(args[i]);
+			Model m = (Model) filenamesToGraph.get(args[i]);
 			open(m, args[i]);
 		}
 	}
@@ -143,10 +149,11 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 	/**
 	 * The model bound to the editor.
 	 */
-	private Model boundModel;
+	protected Model currentModel;
+	protected String currentName;
 
 	JFrame window;
-	AutoResizingTextArea turtleTextArea;
+	SimpleTextEditor turtleTextArea;
 	JLabel cursorPositionLabel;
 	JJPanel buttons;
 	StatementListener listener;
@@ -163,7 +170,21 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 	 * been caused by us.
 	 */
 	boolean weAreEditingTheModel = false;
-	private String titleShouldBe;
+	protected String titleShouldBe;
+
+	protected JComboBox combo;
+
+	private boolean inAddingModel;
+
+	public static String getBaseURI(Model defaultModel, String name) {
+		String baseURI = defaultModel.getNsPrefixURI("");
+		if (baseURI == null) {
+			baseURI = name;
+		}
+		if (baseURI == null)
+			baseURI = "http://modelToOntoModel/modelToOntoModel_model_" + System.identityHashCode(defaultModel) + "#";
+		return baseURI;
+	}
 
 	/**
 	 * Creates and displays new ModelEditor.
@@ -196,25 +217,28 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 	 * Displays an error message if the contents are invalid.
 	 */
 	protected synchronized void addTurtleToModel() {
-		lockModel();
-		Model contents = getContentsAsModel();
-		if (contents == null) { // Syntax error?
-			return;
-		}
+		inModelLock(false, new VoidFunc1<Model>() {
+			@Override public void call(Model boundModel) {
+				Model contents = getContentsAsModel();
+				if (contents == null) { // Syntax error?
+					return;
+				}
 
-		// Namespace prefixes
-		Iterator it = contents.getNsPrefixMap().keySet().iterator();
-		while (it.hasNext()) {
-			String prefix = (String) it.next();
-			String uri = contents.getNsPrefixURI(prefix);
-			if (!uri.equals(boundModel.getNsPrefixURI(prefix))) {
-				this.boundModel.setNsPrefix(prefix, uri);
+				// Namespace prefixes
+				Iterator it = contents.getNsPrefixMap().keySet().iterator();
+				while (it.hasNext()) {
+					String prefix = (String) it.next();
+					String uri = contents.getNsPrefixURI(prefix);
+					if (!uri.equals(boundModel.getNsPrefixURI(prefix))) {
+						boundModel.setNsPrefix(prefix, uri);
+					}
+				}
+
+				boundModel.add(contents);
+				turtleTextArea.requestFocusInWindow();
 			}
-		}
+		});
 
-		boundModel.add(contents);
-		this.turtleTextArea.requestFocusInWindow();
-		unlockModel();
 	}
 
 	/**
@@ -223,22 +247,27 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 	 * Displays an error message if the contents are invalid.
 	 */
 	protected synchronized void removeTurtleFromModel() {
-		lockModel();
-		Model contents = getContentsAsModel();
-		if (contents == null) { // syntax error?
-			return;
-		}
+		inModelLock(false, new VoidFunc1<Model>() {
+			@Override public void call(Model boundModel) {
 
-		// Namespace prefixes
-		Iterator it = contents.getNsPrefixMap().keySet().iterator();
-		while (it.hasNext()) {
-			String prefix = (String) it.next();
-			boundModel.removeNsPrefix(prefix);
-		}
+				Model contents = getContentsAsModel();
+				if (contents == null) { // syntax error?
+					return;
+				}
 
-		boundModel.remove(contents);
-		this.turtleTextArea.requestFocusInWindow();
-		unlockModel();
+				// Namespace prefixes
+				Iterator it = contents.getNsPrefixMap().keySet().iterator();
+				while (it.hasNext()) {
+					String prefix = (String) it.next();
+					if (prefix.length() > 0)
+						boundModel.removeNsPrefix(prefix);
+				}
+
+				boundModel.remove(contents);
+				turtleTextArea.requestFocusInWindow();
+			}
+		});
+
 	}
 
 	/**
@@ -248,28 +277,48 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 	 * Displays an error message if the contents are invalid.
 	 */
 	protected synchronized void replaceModelWithTurtle() {
-		lockModel();
-		Model contents = getContentsAsModel();
-		if (contents == null) { // syntax error?
-			return;
+		inModelLock(false, new VoidFunc1<Model>() {
+			@Override public void call(Model boundModel) {
+				Model contents = getContentsAsModel();
+				if (contents == null) { // syntax error?
+					return;
+				}
+
+				// Namespace prefixes
+				Iterator it = boundModel.getNsPrefixMap().keySet().iterator();
+				while (it.hasNext()) {
+					String prefix = (String) it.next();
+					boundModel.removeNsPrefix(prefix);
+				}
+				boundModel.setNsPrefixes(contents);
+
+				boundModel.removeAll();
+				boundModel.add(contents);
+
+				turtleTextArea.requestFocusInWindow();
+				// Model contains the contents of the text area so we're synced
+				outOfSync = false;
+				turtleTextArea.fileSaved = !outOfSync;
+			}
+		});
+	}
+
+	public void inModelLock(boolean readLockRequested, VoidFunc1 runnable) {
+		Lock mlock = null;
+		Model currentModel = this.currentModel;
+		if (currentModel != null) {
+			mlock = currentModel.getLock();
 		}
-
-		// Namespace prefixes
-		Iterator it = this.boundModel.getNsPrefixMap().keySet().iterator();
-		while (it.hasNext()) {
-			String prefix = (String) it.next();
-			this.boundModel.removeNsPrefix(prefix);
+		try {
+			this.weAreEditingTheModel = true;
+			if (mlock != null)
+				mlock.enterCriticalSection(readLockRequested);
+			runnable.call(currentModel);
+		} finally {
+			if (mlock != null)
+				mlock.leaveCriticalSection();
+			this.weAreEditingTheModel = false;
 		}
-		this.boundModel.setNsPrefixes(contents);
-
-		this.boundModel.removeAll();
-		this.boundModel.add(contents);
-
-		this.turtleTextArea.requestFocusInWindow();
-		unlockModel();
-
-		// Model contains the contents of the text area so we're synced
-		this.outOfSync = false;
 	}
 
 	/**
@@ -277,17 +326,32 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 	 * serialization of the model. 
 	 */
 	protected void fetchTurtleFromModel() {
+		inModelLock(true, new VoidFunc1<Model>() {
+			@Override public void call(Model boundModel) {
+				// Serialize model and update text area
+				StringWriter writer = new StringWriter();
+				Map<String, String> pmap = boundModel.getNsPrefixMap();
+				boundModel.write(writer, "TTL");
+				String turtle = writer.toString();
+				Iterator it = pmap.keySet().iterator();
+				while (it.hasNext()) {
+					String prefix = (String) it.next();
+					String uri = pmap.get(prefix);
+					if (prefix.length() > 0) {
+						String remove = "\\@prefix " + prefix + "\\:.*\\<" + uri + "\\> .\n";
+						turtle = turtle.replaceAll(remove, "");
+					}
+				}
+				setContents(turtle);
 
-		// Serialize model and update text area
-		StringWriter writer = new StringWriter();
-		this.boundModel.write(writer, "N3");
-		setContents(writer.toString());
+				turtleTextArea.requestFocusInWindow();
+				moveCursorTo(1, 1);
 
-		this.turtleTextArea.requestFocusInWindow();
-		moveCursorTo(1, 1);
-
-		// Text area now contains model so we're synced
-		this.outOfSync = false;
+				// Text area now contains model so we're synced
+				outOfSync = false;
+				turtleTextArea.fileSaved = !outOfSync;
+			}
+		});
 	}
 
 	/**
@@ -409,11 +473,12 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 	 * model and text area are already out of sync (then the
 	 * user has already seen the message earlier).
 	 */
-	protected synchronized void notifyConcurrentChange() {
+	protected synchronized void notifyConcurrentChange(Model m, Statement statement) {
 		if (this.weAreEditingTheModel || this.outOfSync) {
 			return;
 		}
 		this.outOfSync = true;
+		turtleTextArea.fileSaved = !outOfSync;
 
 		// This is called by the model's worker thread and
 		// the error dialog blocks the thread until the user
@@ -427,79 +492,82 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 		});
 	}
 
-	private void lockModel() {
-		this.weAreEditingTheModel = true;
-		boundModel.enterCriticalSection(false);
-	}
-
-	private void unlockModel() {
-		this.weAreEditingTheModel = false;
-		boundModel.leaveCriticalSection();
-	}
-
 	/**
 	 * Sets up the window.
 	 */
-	private void initGUIForReference() {
+	public void initGUIForReference() {
 
 		this.removeAll();
 
-		// set up Turtle text area
-		this.turtleTextArea = new AutoResizingTextArea();
-		this.turtleTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
-		this.turtleTextArea.addCaretListener(new CaretListener() {
-			public void caretUpdate(CaretEvent e) {
-				// update cursor position label
-				notifyCursorPositionChanged();
+		// set up the north-side panel with the buttons
+		JPanel theButtonsAndFlow = new JPanel(new BorderLayout());
+		this.buttons = new JJPanel();
+		this.buttons.setLayout(new FlowLayout());
+		this.buttons.setBorder(BorderFactory.createEmptyBorder(0, 12, 0, 16));
+		theButtonsAndFlow.add(BorderLayout.CENTER, buttons);
+		this.combo = new JComboBox();
+		//Dimension preferredSize = new Dimension(200, 24);
+		//this.combo.setMaximumSize(preferredSize);
+		//this.combo.setSize(preferredSize);
+		//this.combo.setPreferredSize(preferredSize);
+		combo.addItemListener(new ItemListener() {
+
+			@Override public void itemStateChanged(ItemEvent e) {
+				stateChange(e);
+
 			}
 		});
-		// make text area scrollable
-		JScrollPane scroller = new JScrollPane(this.turtleTextArea, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		scroller.setPreferredSize(new Dimension(600, 400));
-
-		// set up the right-side panel with the buttons
-		this.buttons = new JJPanel();
-		this.buttons.setLayout(new BoxLayout(this.buttons, BoxLayout.PAGE_AXIS));
-		this.buttons.setBorder(BorderFactory.createEmptyBorder(0, 12, 0, 16));
+		JPanel comboHolder = new JJPanel();
+		comboHolder.setLayout(new BorderLayout());
+		comboHolder.add(BorderLayout.CENTER, combo);
+		theButtonsAndFlow.add("South", comboHolder);
 
 		// buttons
-		makeButton("Add this to the model", new ActionListener() {
+		makeButton("Add To model", new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				addTurtleToModel();
 			}
 		});
-		makeButton("Remove this from the model", new ActionListener() {
+		makeButton("Remove From model", new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				removeTurtleFromModel();
 			}
 		});
-		makeButton("Fetch contents of the model", new ActionListener() {
+		makeButton("Fetch Model", new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				fetchTurtleFromModel();
 			}
 		});
-		makeButton("Replace contents of the model", new ActionListener() {
+		makeButton("Replace Model", new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				replaceModelWithTurtle();
+			}
+		});
+
+		makeButton("Save...", new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				turtleTextArea.fileSaveAs();
+			}
+		});
+
+		makeButton("Load...", new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				turtleTextArea.fileOpenAndRead();
 			}
 		});
 
 		// cursor position label
 		this.cursorPositionLabel = new JLabel("Status bar");
 		this.cursorPositionLabel.setFont(new Font("Dialog", Font.PLAIN, 10));
-		this.buttons.add(Box.createVerticalGlue());
 		this.buttons.add(this.cursorPositionLabel);
 
-		// put pieces together and add some borders
-		Container contentPane = this;//.getContentPane();
-		contentPane.add(scroller, BorderLayout.CENTER);
-		contentPane.add(this.buttons, BorderLayout.EAST);
-		contentPane.add(Box.createRigidArea(new Dimension(16, 0)), BorderLayout.WEST);
-		contentPane.add(Box.createRigidArea(new Dimension(0, 12)), BorderLayout.NORTH);
-		contentPane.add(Box.createRigidArea(new Dimension(0, 12)), BorderLayout.SOUTH);
+		Container contentPane = getContentPane();
+		turtleTextArea = getTurtleTextArea();
 
-		SearchableUtils.installSearchable(turtleTextArea);
-
+		contentPane.removeAll();
+		contentPane.setLayout(new BorderLayout());
+		contentPane.add(BorderLayout.NORTH, theButtonsAndFlow);
+		contentPane.add(BorderLayout.CENTER, turtleTextArea.getContentPane());
 		if (Utility.getAppFrame() == window)
 			return;
 
@@ -541,12 +609,55 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 
 	}
 
+	protected void stateChange(final ItemEvent e) {
+		theLogger.warn(" " + e);
+		final String mname = "" + e.getItem();
+		final Model focusModel = namesToGraph.get(mname);
+
+		inModelLock(true, new VoidFunc1<Model>() {
+			@Override public void call(Model boundModel) {
+				if (currentModel == null && focusModel != null) {
+					setCurrentModel(mname, focusModel);
+				} else {
+					if (e.getStateChange() == ItemEvent.SELECTED && !inAddingModel) {
+						if (!turtleTextArea.confirmSaved()) {
+							combo.setSelectedItem(currentName);
+						} else {
+							setCurrentModel(mname, focusModel);
+						}
+					}
+				}
+			}
+		});
+	}
+
+	protected void setCurrentModel(String name, Model focusModel) {
+		currentModel = focusModel;
+		currentName = name;
+		fetchTurtleFromModel();
+	}
+
+	private SimpleTextEditor getTurtleTextArea() {
+		// set up Turtle text area
+		if (this.turtleTextArea == null) {
+			this.turtleTextArea = new SimpleTextEditor();
+			this.turtleTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+			this.turtleTextArea.addCaretListener(new CaretListener() {
+				public void caretUpdate(CaretEvent e) {
+					// update cursor position label
+					notifyCursorPositionChanged();
+				}
+			});
+		}
+		return this.turtleTextArea;
+	}
+
 	/**
 	 * Helper function that creates a button
 	 * @param label The button's label
 	 * @param action
 	 */
-	private void makeButton(String label, ActionListener action) {
+	public void makeButton(String label, ActionListener action) {
 		JButton newButton = new JButton(label) {
 			// Try to cover the whole width of its parent container.
 			// We use this because we want all buttons to have the
@@ -562,9 +673,8 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 		this.buttons.add(Box.createRigidArea(new Dimension(0, 6)));
 	}
 
-	@Override public Class<Model> getClassOfBox() {
-		// TODO Auto-generated method stub
-		return Model.class;
+	@Override public Class<?> getClassOfBox() {
+		return EDITTYPE[0];
 	}
 
 	@Override protected boolean reloadObjectGUI(Object obj) throws Throwable {
@@ -581,7 +691,7 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 	}
 
 	void setModelObject(final Model boundModel) {
-		this.boundModel = boundModel;
+		this.currentModel = boundModel;
 		super.setObject(boundModel);
 		Utility.addShutdownHook(new Runnable() {
 			@Override public void run() {
@@ -592,14 +702,52 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 		// Add listener to the model
 		this.listener = new StatementListener() {
 			public void addedStatement(Statement s) {
-				notifyConcurrentChange();
+				notifyConcurrentChange(boundModel, s);
 			}
 
 			public void removedStatement(Statement s) {
-				notifyConcurrentChange();
+				notifyConcurrentChange(boundModel, s);
 			}
 		};
 		boundModel.register(this.listener);
-		fetchTurtleFromModel();
+		add(boundModel, getBaseURI(boundModel, null));
 	}
+
+	public static Map<Model, StatementListener> listeners = new HashMap();
+	public Map<String, Model> namesToGraph = new HashMap();
+
+	public void add(final Model m, String name) {
+		this.inAddingModel = true;
+		if (!namesToGraph.containsKey(name)) {
+			if (name.indexOf(":") == -1) {
+				name = "file:" + name;
+			}
+			namesToGraph.put(name, m);
+		} else {
+			Model m2 = namesToGraph.get(name);
+			if (m2 == m)
+				return;
+			// have a problem!
+			name = name + " " + System.identityHashCode(m);
+		}
+		try {
+			combo.addItem(name);
+			StatementListener sl = listeners.get(m);
+			if (sl == null) {
+				sl = new StatementListener() {
+					public void addedStatement(Statement s) {
+						notifyConcurrentChange(m, s);
+					}
+
+					public void removedStatement(Statement s) {
+						notifyConcurrentChange(m, s);
+					}
+				};
+				listeners.put(m, sl);
+			}
+		} finally {
+			this.inAddingModel = false;
+		}
+	}
+
 }

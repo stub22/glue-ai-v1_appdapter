@@ -2,12 +2,17 @@ package org.appdapter.gui.editors;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.FlowLayout;
 import java.beans.Customizer;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
 import java.lang.reflect.InvocationTargetException;
 
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
 import org.appdapter.api.trigger.Box;
+import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.GetSetObject;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.swing.ScreenBoxPanel;
@@ -52,8 +57,23 @@ public class UseEditor<BoxType extends Box> extends ScreenBoxPanel<BoxType> impl
 	@Override protected void completeSubClassGUI() throws Throwable {
 		removeAll();
 		setLayout(new BorderLayout());
-		this.custEditor = ec.getCustomEditor();
-		add(this.custEditor);
+		tryCreatePropertyEditor();
+		if (ec == null) {
+			add(new JLabel("Unable to Find UI Editor for " + objClass));
+			return;
+		}
+		try {
+			if (this.custEditor == null) {
+				this.custEditor = ec.getCustomEditor();
+			}
+			if (this.custEditor == null) {
+				add(new JLabel("Unable to Get Custom UI Editor from " + ec.getClass()));
+				return;
+			}
+			add("North", this.custEditor);
+		} catch (Exception e) {
+
+		}
 	}
 
 	@Override protected boolean reloadObjectGUI(Object object) {
@@ -61,27 +81,36 @@ public class UseEditor<BoxType extends Box> extends ScreenBoxPanel<BoxType> impl
 			if (box != null) {
 				try {
 					box.setObject(object);
-				} catch (InvocationTargetException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				} catch (Throwable e) {
+					Debuggable.printStackTrace(e);
 				}
 			}
 			objClass = object.getClass();
-		}
-		if (ec == null && objClass != null) {
-			ec = Utility.findEditor(objClass);
+			tryCreatePropertyEditor();
 		}
 		return false;
 	}
 
-	@Override protected void initSubclassGUI() throws Throwable {
-		if (ec == null && objClass != null) {
-			ec = Utility.findEditor(objClass);
+	private void tryCreatePropertyEditor() {
+		if (objClass == null) {
+			Object val = getValue();
+			if (val != null && val != box) {
+				objClass = val.getClass();
+			}
 		}
+		if (ec == null && objClass != null) {
+			ec = Utility.findEditor(objClass, true, true, true);
+			theLogger.warn("using editor " + ec + " for " + objClass);
+		}
+	}
 
+	@Override protected void initSubclassGUI() throws Throwable {
+		tryCreatePropertyEditor();
 	}
 
 	@Override public Class<? extends Object> getClassOfBox() {
+		if (objClass != null)
+			return objClass;
 		return Object.class;
 	}
 

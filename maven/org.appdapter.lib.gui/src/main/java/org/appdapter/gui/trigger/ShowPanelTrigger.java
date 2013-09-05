@@ -40,7 +40,7 @@ public class ShowPanelTrigger<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 	}
 
 	public String makeMenuPath() {
-		return "Show " + Utility.spaceCase(Utility.getShortClassName(panelClass));
+		return "* Panels|Show " + Utility.spaceCase(Utility.getShortClassName(panelClass));
 	}
 
 	@Override public String getDescription() {
@@ -130,6 +130,6 @@ public class ShowPanelTrigger<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 
 	@Override public Trigger createTrigger(String menuFmt, DisplayContext ctx, Object poj) {
 		// TODO Auto-generated method stub
-		return null;
+		return new ShowPanelTrigger(ctx, arg0Clazz, _object, panelClass);
 	}
 }

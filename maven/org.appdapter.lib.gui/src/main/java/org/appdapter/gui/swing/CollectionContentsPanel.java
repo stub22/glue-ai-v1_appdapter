@@ -47,6 +47,7 @@ extends BaseCollectionContentsPanel<BoxType> implements ValueChangeListener, Dro
 		reloadContents();
 	}
 
+	@Override
 	public void reloadContents00() {
 
 		Collection collection = getCollection();
@@ -80,12 +81,14 @@ extends BaseCollectionContentsPanel<BoxType> implements ValueChangeListener, Dro
 
 	}
 
+	@Override
 	protected void removeObject(Object oldValue, int i) {
 		Collection collection = getCollection();
 		collection.remove(oldValue);
 		reloadContents();
 	}
 
+	@Override
 	protected void replaceValue(Object oldValue, Object newValue) {
 		Collection collection = getCollection();
 		Iterator it = collection.iterator();
@@ -99,6 +102,7 @@ extends BaseCollectionContentsPanel<BoxType> implements ValueChangeListener, Dro
 		}
 	}
 
+	@Override
 	public void addObject(Object o, int i) {
 		Collection collection = getCollection();
 		collection.add(o);

@@ -41,8 +41,8 @@ public class RepoGraphTableModel extends RowTableModel {
 	}
 
 	static Logger theLogger = LoggerFactory.getLogger(RepoGraphTableModel.class);
-	static String theColNames[] = { "x", "name", "size", "age-update", "strength/status", "content summary" };
-	static Class theColClasses[] = { Component.class, String.class, Long.class, Double.class, String.class, String.class };
+	static String theColNames[] = { "x", "name", "size", "type",/*"age-update", "strength/status", "content summary"*/};
+	static Class theColClasses[] = { Component.class, String.class, Long.class, String.class /*Double.class, String.class, String.class*/};
 
 	//private List<GraphStat> modelData = new ArrayList<GraphStat>();
 

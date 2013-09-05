@@ -1,13 +1,14 @@
 package org.appdapter.gui.swing;
 
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Map;
 
+import org.apache.log4j.spi.LoggerFactory;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.gui.api.GetSetObject;
+import org.slf4j.Logger;
 
 /**
  * A GUI component used to render a Box in a user interface. The standard
@@ -18,6 +19,8 @@ import org.appdapter.gui.api.GetSetObject;
 abstract public class ObjectView<BoxType extends Box>
 
 extends JJPanel implements GetSetObject {
+
+	protected static Logger theLogger = org.slf4j.LoggerFactory.getLogger(ObjectView.class);
 
 	protected static Type collectionOf(final Class c) {
 		return makeParameterizedType(Collection.class, c);
@@ -51,7 +54,7 @@ extends JJPanel implements GetSetObject {
 
 	public Object objectValue;
 
-	public void setObject(Object newpojObject) {
+	@Override public void setObject(Object newpojObject) {
 		synchronized (valueLock) {
 			Object oldpojObject = objectValue;
 			if (oldpojObject != newpojObject) {

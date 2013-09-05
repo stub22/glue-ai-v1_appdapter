@@ -9,8 +9,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.NotSerializableException;
-import java.util.Arrays;
-
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JFrame;
@@ -18,7 +16,6 @@ import javax.swing.JMenuBar;
 import javax.swing.JToolBar;
 
 import org.appdapter.demo.DemoBrowserCtrl;
-import org.appdapter.gui.api.BT;
 import org.appdapter.gui.api.BoxPanelSwitchableView;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.NamedObjectCollection;

@@ -12,7 +12,8 @@ import javax.swing.event.EventListenerList;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.event.TableModelListener;
-import javax.swing.table.AbstractTableModel;
+
+import org.appdapter.gui.swing.SmallObjectView;
 
 /**
  *  A TableModel that better supports the processing of rows of data. That
@@ -29,9 +30,9 @@ import javax.swing.table.AbstractTableModel;
  *  by using the various constructors, or indirectly.
  *
  */
-abstract public class RowTableModel<T> extends AbstractTableModel implements ListModel {
+abstract public class RowTableModel<T> extends DefaultTableModel2 implements ListModel {
 	protected List<T> modelData;
-	protected List<String> columnNames;
+	//protected Vector<String> columnIdentifiers;
 	protected Class[] columnClasses;
 	protected Boolean[] isColumnEditable;
 	private Class rowClass = Object.class;
@@ -57,6 +58,7 @@ abstract public class RowTableModel<T> extends AbstractTableModel implements Lis
 	 * @param rowClass  the class of row data to be added to the model
 	 */
 	protected RowTableModel(Class rowClass) {
+		//	setRowDefaults();
 		setRowClass(rowClass);
 	}
 
@@ -73,7 +75,7 @@ abstract public class RowTableModel<T> extends AbstractTableModel implements Lis
 	 * @param columnNames	   <code>List</code> containing the names
 	 *							of the new columns
 	 */
-	protected RowTableModel(List<String> columnNames) {
+	protected RowTableModel(Vector<String> columnNames) {
 		this(new ArrayList<T>(), columnNames);
 	}
 
@@ -95,7 +97,7 @@ abstract public class RowTableModel<T> extends AbstractTableModel implements Lis
 	 * @param columnNames	   <code>List</code> containing the names
 	 *							of the new columns
 	 */
-	protected RowTableModel(List<T> modelData, List<String> columnNames) {
+	protected RowTableModel(List<T> modelData, Vector<String> columnNames) {
 		setDataAndColumnNames(modelData, columnNames);
 	}
 
@@ -114,9 +116,82 @@ abstract public class RowTableModel<T> extends AbstractTableModel implements Lis
 	 *						of the new columns
 	 *  @param rowClass     the class of row data to be added to the model
 	 */
-	protected RowTableModel(List<T> modelData, List<String> columnNames, Class rowClass) {
+	protected RowTableModel(List<T> modelData, Vector<String> columnNames, Class rowClass) {
 		setDataAndColumnNames(modelData, columnNames);
 		setRowClass(rowClass);
+	}
+
+	public RowTableModel(Object[][] data, Object[] columnNs) {
+		setDataAndColumnNames(data, columnNs);
+	}
+
+	void setDataAndColumnNames(Object[][] data, Object[] columnNs) {
+		if (columnNs != null) {
+			int getColumnCount = columnNs.length;
+			columnIdentifiers = new Vector(getColumnCount);
+			columnIdentifiers.setSize(getColumnCount);
+			columnClasses = new Class[getColumnCount];
+			isColumnEditable = new Boolean[getColumnCount];
+			int index = 0;
+			for (Object cn : columnNs) {
+				setColumnInfo(index, cn);
+				index++;
+			}
+			if (data != null) {
+				this.modelData = new ArrayList();
+				for (Object[] fs : data) {
+					addRowFields(fs);
+				}
+			}
+			fireTableStructureChanged();
+		}
+	}
+
+	private void setColumnInfo(int index, Object cn) {
+		if (cn == null)
+			return;
+		if (cn instanceof Boolean) {
+			setColumnEditable(index, (Boolean) cn);
+			return;
+		}
+		if (cn instanceof Object[]) {
+			for (Object c : (Object[]) cn) {
+				setColumnInfo(index, c);
+			}
+			return;
+		}
+		if (cn instanceof Class) {
+			setColumnClass(index, (Class) cn);
+			return;
+		}
+		setColumnName(index, "" + cn);
+	}
+
+	public void setColumnName(int index, String string) {
+		columnIdentifiers.set(index, string);
+	}
+
+	public void setRowDefaults() {
+		Object[] def = new Object[] {//
+		new Object[] { "x", Boolean.class },//
+				new Object[] { "this", SmallObjectView.class },//
+				new Object[] { "toString", String.class },//
+		};
+		setDataAndColumnNames((Object[][]) null, def);
+	}
+
+	private void addRowFields(Object[] fs) {
+		if (fs == null)
+			return;
+		for (Object c : fs) {
+			if (rowClass != Object.class) {
+				if (rowClass.isInstance(c)) {
+					addRow((T) c);
+					return;
+				}
+			}
+		}
+		addRow((T) fs);
 	}
 
 	/**
@@ -128,9 +203,10 @@ abstract public class RowTableModel<T> extends AbstractTableModel implements Lis
 	 * @param columnNames	   <code>List</code> containing the names
 	 *							of the new columns
 	 */
-	protected void setDataAndColumnNames(List<T> modelData, List<String> columnNames) {
+	protected void setDataAndColumnNames(List<T> modelData, Vector<String> columnNames) {
 		this.modelData = modelData;
-		this.columnNames = columnNames;
+		this.columnIdentifiers.clear();
+		columnIdentifiers = (columnNames);
 		columnClasses = new Class[getColumnCount()];
 		isColumnEditable = new Boolean[getColumnCount()];
 		fireTableStructureChanged();
@@ -166,14 +242,19 @@ abstract public class RowTableModel<T> extends AbstractTableModel implements Lis
 
 		//  Get the class, if set, for the specified column
 
-		if (column < columnClasses.length)
+		if (columnClasses != null && column < columnClasses.length)
 			columnClass = columnClasses[column];
 
 		//  Get the default class
-
-		if (columnClass == null)
+		if (columnClass == null) {
 			columnClass = super.getColumnClass(column);
-
+		}
+		if ((columnClass == null || columnClass == Object.class) && getRowCount() > 0) {
+			Object val = getValueAt(0, column);
+			if (val != null && val != SafeJTable.WAS_NULL) {
+				return val.getClass();
+			}
+		}
 		return columnClass;
 	}
 
@@ -183,7 +264,7 @@ abstract public class RowTableModel<T> extends AbstractTableModel implements Lis
 	 * @return the number of columns in the model
 	 */
 	public int getColumnCount() {
-		return columnNames.size();
+		return columnIdentifiers.size();
 	}
 
 	/**
@@ -197,8 +278,8 @@ abstract public class RowTableModel<T> extends AbstractTableModel implements Lis
 	public String getColumnName(int column) {
 		Object columnName = null;
 
-		if (column < columnNames.size()) {
-			columnName = columnNames.get(column);
+		if (columnIdentifiers != null && column < columnIdentifiers.size()) {
+			columnName = columnIdentifiers.get(column);
 		}
 
 		return (columnName == null) ? super.getColumnName(column) : columnName.toString();
