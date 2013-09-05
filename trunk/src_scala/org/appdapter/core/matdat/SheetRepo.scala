@@ -28,6 +28,7 @@ import org.appdapter.core.store.{ FileStreamUtils }
 
 import com.hp.hpl.jena.query.{ Dataset, QuerySolution }
 import com.hp.hpl.jena.rdf.model.{ Literal, Model, Resource }
+
 /**
  * @author Stu B. <www.texpedient.com>
  *
@@ -44,8 +45,10 @@ object SheetRepo extends BasicDebugger {
         dirModelLoaders.add(new XLSXSheetRepoLoader());
         dirModelLoaders.add(new CsvFileSheetLoader());
         dirModelLoaders.add(new FileModelRepoLoader());
-        // dirModelLoaders.add(new PipelineRepoLoader());
-        dirModelLoaders.add(new DerivedRepoLoader());
+        //this should be made to work so far Doug hadnt done it
+        //dirModelLoaders.add(new DerivedModelLoader());
+        // the next is loaded loadDerivedModelsIntoMainDataset (which are pipeline models)
+        //dirModelLoaders.add(new PipelineModelLoader());
 
       }
       return new ArrayList[InstallableRepoReader](dirModelLoaders);
@@ -71,8 +74,9 @@ abstract class SheetRepo(directoryModel: Model, var fileModelCLs: java.util.List
     val mainDset: Dataset = getMainQueryDataset().asInstanceOf[Dataset];
     var clListG = this.getClassLoaderList(clList)
     if (myDirectoryModel.size == 0) return ;
-    FileModelRepoLoader.loadSheetModelsIntoTargetDataset(this, mainDset, myDirectoryModel, clListG)
-    DerivedRepoLoader.loadSheetModelsIntoTargetDataset(this, mainDset, myDirectoryModel, clListG)
+    //FileModelRepoLoader.loadSheetModelsIntoTargetDataset(this, mainDset, myDirectoryModel, clListG)
+    //DerivedModelLoader.loadSheetModelsIntoTargetDataset(this, mainDset, myDirectoryModel, clListG)
+    //PipelineModelLoader.loadSheetModelsIntoTargetDataset(this, mainDset, myDirectoryModel, clListG)
   }
 
   def loadSheetModelsIntoMainDataset() {
@@ -105,10 +109,12 @@ abstract class SheetRepo(directoryModel: Model, var fileModelCLs: java.util.List
   }
   override def toString(): String = {
     val dm = getDirectoryModel();
-    if (isLoadingLocked) {
-      getClass.getSimpleName + "[name=" + myDebugNameToStr + ", dir=" + dm.size() + " setof=Loading...]";
+    var dmstr = "noDirModel";
+    if (dm != null) dmstr = "dir=" + dm.size();
+    if (isLoadingLocked || !isLoadingStarted) {
+      getClass.getSimpleName + "[name=" + myDebugNameToStr + "  " + dmstr + " setof=Loading...]";
     } else {
-      getClass.getSimpleName + "[name=" + myDebugNameToStr + ", dir=" + dm.size() + " setof=" + RepoOper.setOF(getMainQueryDataset.listNames) + "]";
+      getClass.getSimpleName + "[name=" + myDebugNameToStr + "  " + dmstr + " setof=" + RepoOper.setOF(getMainQueryDataset.listNames) + "]";
     }
   }
 
@@ -170,9 +176,21 @@ abstract class SheetRepo(directoryModel: Model, var fileModelCLs: java.util.List
     while (dirModelLoaderIter.hasNext()) {
       val irr = dirModelLoaderIter.next();
       trace("Loading ... " + irr.getContainerType + "/" + irr.getSheetType);
+      try {
+        if (irr.isDerivedLoader) {
+          // this means what we are doing might need previous requests to complete
+          repoLoader.setSynchronous(true)
+        } else {
+          repoLoader.setSynchronous(false)
+        }
       irr.loadModelsIntoTargetDataset(this, mainDset, dirModel, fileModelCLs);
+      } catch {
+        case except: Throwable =>
+          getLogger().error("Caught loading error in {}", Array[Object](irr, except))
+      }
     }
-    repoLoader.setSynchronous(true)
+    // not done until the last task completes
+          repoLoader.setSynchronous(true)
   }
 
   def trace(fmt: String, args: Any*) = {
@@ -196,130 +214,4 @@ abstract class SheetRepo(directoryModel: Model, var fileModelCLs: java.util.List
       case except: Throwable =>
     }
   }
-}
-
-/**
- * @author Stu B. <www.texpedient.com>
- * @author Douglas R. Miles <www.logicmoo.org>
- *
- * This is a DirModel Loader it contains static method for loading FileRepos
- */
-
-/// this is a registerable loader
-class FileModelRepoLoader extends InstallableRepoReader {
-  override def getContainerType() = "ccrt:FileRepo"
-  override def getSheetType() = "ccrt:FileModel"
-  override def loadModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
-    FileModelRepoLoader.loadSheetModelsIntoTargetDataset(repo, mainDset, dirModel, fileModelCLs)
-  }
-}
-
-object FileModelRepoLoader extends BasicDebugger {
-
-  def loadSheetModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: Dataset,
-    myDirectoryModel: Model, clList: java.util.List[ClassLoader]): Unit = {
-
-    if (myDirectoryModel.size == 0) return
-    val nsJavaMap: java.util.Map[String, String] = myDirectoryModel.getNsPrefixMap()
-
-    val msqText = """
-			select ?repo ?repoPath ?model ?modelPath ?unionOrReplace
-				{
-					?repo  a ccrt:FileRepo; ccrt:sourcePath ?repoPath.
-					?model a ccrt:FileModel; ccrt:sourcePath ?modelPath; ccrt:repo ?repo.
-      				OPTIONAL { ?model a ?unionOrReplace. FILTER (?unionOrReplace = ccrt:UnionModel) }
-				}
-		"""
-
-    val msRset = QueryHelper.execModelQueryWithPrefixHelp(myDirectoryModel, msqText);
-    import scala.collection.JavaConversions._;
-    while (msRset.hasNext()) {
-      val qSoln: QuerySolution = msRset.next();
-
-      val repoRes: Resource = qSoln.getResource("repo");
-      val modelRes: Resource = qSoln.getResource("model");
-      val unionOrReplaceRes: Resource = qSoln.getResource("unionOrReplace");
-      val repoPath_Lit: Literal = qSoln.getLiteral("repoPath")
-      val modelPath_Lit: Literal = qSoln.getLiteral("modelPath")
-      val dbgArray = Array[Object](repoRes, repoPath_Lit, modelRes, modelPath_Lit);
-      getLogger.warn("repo={}, repoPath={}, model={}, modelPath={}", dbgArray);
-
-      val rPath = repoPath_Lit.getString();
-      val mPath = modelPath_Lit.getString();
-
-      getLogger().warn("Ready to read from [{}] / [{}]", Array[Object](rPath, mPath));
-      val rdfURL = rPath + mPath;
-
-      repo.addLoadTask(rdfURL, new Runnable() {
-        def run() {
-          try {
-            val graphURI = modelRes.getURI();
-            val fileModel = readModelSheetFromURL(rdfURL, nsJavaMap, clList);
-            getLogger.warn("Read fileModel: {}", fileModel)
-            PipelineRepoLoader.replaceOrUnion(mainDset, unionOrReplaceRes, graphURI, fileModel);
-          } catch {
-            case except: Throwable => getLogger().error("Caught error loading file {}", Array[Object](rdfURL, except))
-          }
-        }
-      })
-
-    }
-  }
-
-  // Makes directory models (ussualy still unloaded)
-  def readDirectoryModelFromURL(rdfURL: String, nsJavaMap: java.util.Map[String, String], fileModelCLs: java.util.List[ClassLoader]): Model = {
-    try {
-      getLogger.debug("readDirectoryModelFromURL - start {}", rdfURL)
-      val ext: java.lang.String = FileStreamUtils.getFileExt(rdfURL);
-      if (ext != null && (ext.equals("xlsx") || ext.equals("xls"))) {
-        XLSXSheetRepoLoader.readDirectoryModelFromXLSX(rdfURL, "Nspc", "Dir", fileModelCLs);
-      } else if (ext != null && (ext.equals("csv"))) {
-        CsvFileSheetLoader.readModelSheet(rdfURL, nsJavaMap, fileModelCLs);
-      } else FileModelRepoLoader.readModelSheetFromURL(rdfURL, nsJavaMap, fileModelCLs);
-    } catch {
-      case except: Throwable => {
-        getLogger().error("Caught error loading file {}", Array[Object](rdfURL, except))
-        throw except
-      }
-    }
-  }
-
-  // Makes single Models from xlsx/cvs/jenaURLs
-  def readModelSheetFromURL(rdfURL: String, nsJavaMap: java.util.Map[String, String], clList: java.util.List[ClassLoader]): Model = {
-    try {
-      val ext: java.lang.String = FileStreamUtils.getFileExt(rdfURL);
-      if (ext != null && (ext.equals("xlsx") || ext.equals("xls"))) {
-        XLSXSheetRepoLoader.loadXLSXSheetRepo(rdfURL, "Nspc", "Dir", clList, null).
-          getMainQueryDataset().asInstanceOf[Dataset].getDefaultModel
-      } else if (ext != null && (ext.equals("csv"))) {
-        CsvFileSheetLoader.readModelSheet(rdfURL, nsJavaMap, clList);
-      } else {
-        import com.hp.hpl.jena.util.FileManager;
-        val jenaFileMgr = JenaFileManagerUtils.getDefaultJenaFM
-        JenaFileManagerUtils.ensureClassLoadersRegisteredWithJenaFM(jenaFileMgr, clList)
-        jenaFileMgr.loadModel(rdfURL);
-      }
-    } catch {
-      case except: Throwable => {
-        getLogger().error("Caught error loading file {}", Array[Object](rdfURL, except))
-        throw except
-      }
-    }
-  }
-
-  ///. Modeled on SheetRepo.loadTestSheetRepo
-  def loadDetectedFileSheetRepo(rdfURL: String, nsJavaMap: java.util.Map[String, String], fileModelCLs: java.util.List[ClassLoader], repoSpec: RepoSpec): SheetRepo = {
-    // Read the namespaces and directory sheets into a single directory model.
-    val dirModel: Model = readDirectoryModelFromURL(rdfURL, nsJavaMap, fileModelCLs)
-    // Construct a repo around that directory
-    val shRepo = SpecialRepoLoader.makeSheetRepo(repoSpec, dirModel, fileModelCLs)
-    // Load the rest of the repo's initial *sheet* models, as instructed by the directory.
-    shRepo.loadSheetModelsIntoMainDataset()
-    // Load the rest of the repo's initial *file/resource* models, as instructed by the directory.
-    shRepo.loadDerivedModelsIntoMainDataset(fileModelCLs)
-    shRepo
-  }
-
-  // END NEXT DIFF
-
 }

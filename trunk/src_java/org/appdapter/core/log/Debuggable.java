@@ -151,7 +151,9 @@ public abstract class Debuggable extends BasicDebugger {
 			toStr = declaresToString(oc, "toString");
 		if (toStr != null) {
 			try {
-				return "" + toStr.invoke(o);
+				synchronized (o) {
+					return "" + toStr.invoke(o);
+				}
 			} catch (Throwable e) {
 			}
 		}
@@ -456,6 +458,8 @@ public abstract class Debuggable extends BasicDebugger {
 		Throwable e = ex;
 		if (isNotShowingExceptions())
 			return;
+		if (isRelease())
+			return;
 		while (e != null) {
 			printStackTraceLocal(e, ps, 100);
 			ps.println("\n Caused by... ");
@@ -524,6 +528,8 @@ public abstract class Debuggable extends BasicDebugger {
 	static InheritableThreadLocal<Boolean> INTESTS = new InheritableThreadLocal<Boolean>();
 
 	public static boolean isNotShowingExceptions() {
+		if (isRelease())
+			return true;
 		return QUITELY.get() == Boolean.TRUE;
 	}
 
@@ -549,13 +555,11 @@ public abstract class Debuggable extends BasicDebugger {
 	}
 
 	public static boolean isRelease() {
-		if (true)
-			return true;
 		if (isDebugging())
 			return false;
 		if (isTesting())
 			return false;
-		if (false // change this to true if you dare
+		if (true // change this to true if you dare
 		)
 			return false;
 		return true;

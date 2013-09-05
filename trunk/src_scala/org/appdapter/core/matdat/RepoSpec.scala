@@ -47,6 +47,11 @@ abstract class RepoSpec {
 
   def makeRepo(): Repo.WithDirectory
 
+  def makeRepoClient(repo: Repo.WithDirectory, getDfltQrySrcGraphQName: String): RepoClientImpl = {
+    new RepoClientImpl(repo, getDfltTgtGraphSparqlVarName, getDfltQrySrcGraphQName);
+  }
+
+  //depricated("uses hardcoded query sheet like ccrt:qry_sheet_77")
   def makeRepoClient(repo: Repo.WithDirectory): RepoClientImpl = {
     new RepoClientImpl(repo, getDfltTgtGraphSparqlVarName, getDfltQrySrcGraphQName);
   }
@@ -98,8 +103,8 @@ class CSVFileRepoSpec(dirSheet: String, namespaceSheet: String = null,
 
 class DatabaseRepoSpec(configPath: String, optConfResCL: ClassLoader, dirGraphID: Ident) extends RepoSpec {
   def this(cPath: String, optCL: ClassLoader, dirGraphUriPrefix: String, dirGraphLocalName: String) = this(cPath, optCL, new FreeIdent(dirGraphUriPrefix + dirGraphLocalName, dirGraphLocalName))
-  override def makeRepo(): Repo.WithDirectory = {
-    SpecialRepoLoader.loadDatabaseRepo(configPath, optConfResCL, dirGraphID)
+  override def makeRepo(): DatabaseRepo = {
+    FancyRepoLoader.loadDatabaseRepo(configPath, optConfResCL, dirGraphID)
   }
 }
 
@@ -128,7 +133,7 @@ class URLRepoSpec(var dirModelURL: String, var fileModelCLs: java.util.List[Clas
 
 class URLDirModelRepoSpec(dirModelURL: String, fileModelCLs: java.util.List[ClassLoader]) extends RepoSpec {
   override def makeRepo(): SheetRepo = {
-    FileModelRepoLoader.loadDetectedFileSheetRepo(dirModelURL, null, fileModelCLs, this)
+    FancyRepoLoader.loadDetectedFileSheetRepo(dirModelURL, null, fileModelCLs, this)
   }
   override def toString = dirModelURL
 }

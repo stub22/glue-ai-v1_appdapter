@@ -82,9 +82,9 @@ object CsvFileSheetLoader extends BasicDebugger {
         def run() {
           try {
             val graphURI = modelRes.getURI();
-            val fileModel = FileModelRepoLoader.readModelSheetFromURL(rdfURL, nsJavaMap, clList);
+            val fileModel = FancyRepoLoader.readModelSheetFromURL(rdfURL, nsJavaMap, clList);
             getLogger.info("Read fileModel: {}", Array[Object](fileModel))
-            PipelineRepoLoader.replaceOrUnion(mainDset, unionOrReplaceRes, graphURI, fileModel);
+            FancyRepoLoader.replaceOrUnion(mainDset, unionOrReplaceRes, graphURI, fileModel);
           } catch {
             case except: Throwable => getLogger.error("Caught error loading file {}", Array[Object](rdfURL, except))
           }
@@ -98,7 +98,7 @@ object CsvFileSheetLoader extends BasicDebugger {
     // Read the namespaces and directory sheets into a single directory model.
     val dirModel: Model = readDirectoryModelFromCsvFile(dirSheet, fileModelCLs, nsSheetLocation)
     // Construct a repo around that directory
-    val shRepo = SpecialRepoLoader.makeSheetRepo(repoSpec, dirModel, fileModelCLs)
+    val shRepo = FancyRepoLoader.makeRepoWithDirectory(repoSpec, dirModel, fileModelCLs)
     // Load the rest of the repo's initial *sheet* models, as instructed by the directory.
     shRepo.loadSheetModelsIntoMainDataset()
     // Load the rest of the repo's initial *file/resource* models, as instructed by the directory.
