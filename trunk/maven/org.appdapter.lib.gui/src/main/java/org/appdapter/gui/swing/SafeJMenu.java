@@ -15,6 +15,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.MenuElement;
+import javax.swing.SwingConstants;
 
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.GetSetObject;
@@ -26,6 +27,7 @@ public class SafeJMenu extends JMenu implements UISwingReplacement, GetSetObject
 
 	//It also looks better if you're ignoring case sensitivity:
 	final protected static Comparator nodeComparator = new TriggerMenuFactory.TriggerSorter() {
+		@Override
 		public int compare(Object o1, Object o2) {
 			return super.compare(o1, o2);
 		}
@@ -50,6 +52,7 @@ public class SafeJMenu extends JMenu implements UISwingReplacement, GetSetObject
 	 * @param a the <code>Action</code> for the menu item to be added
 	 * @see Action
 	 */
+	@Override
 	final public JMenuItem add(Action a) {
 		JMenuItem mi = createActionComponent(a);
 		mi.setAction(a);
@@ -80,6 +83,7 @@ public class SafeJMenu extends JMenu implements UISwingReplacement, GetSetObject
 	 * @see	  #remove
 	 * @see java.awt.Container#add(Component, int)
 	 */
+	@Override
 	final public Component add(Component c, int index) {
 		ensureUnequelyNamed(c);
 		Component r = null;
@@ -113,10 +117,12 @@ public class SafeJMenu extends JMenu implements UISwingReplacement, GetSetObject
 	 *  
 	 * @param s the string for the menu item to be added
 	 */
+	@Override
 	final public JMenuItem add(String s) {
 		return add(new SafeJMenuItem(this, true, s));
 	}
 
+	@Override
 	protected void addImpl(Component comp, Object constraints, int index) {
 		warn("calling addImpl");
 		mcomps.add(index, comp);
@@ -153,7 +159,7 @@ public class SafeJMenu extends JMenu implements UISwingReplacement, GetSetObject
 		if (moreMenu == null) {
 			moreMenu = new SafeJMenu(true, "More... ", userObject);
 		}
-		addSuper((SafeJMenu) moreMenu, 0);
+		addSuper(moreMenu, 0);
 		return this.moreMenu;
 	}
 
@@ -236,6 +242,7 @@ public class SafeJMenu extends JMenu implements UISwingReplacement, GetSetObject
 
 	}
 
+	@Override
 	public JMenuItem insert(JMenuItem mi, int pos) {
 		int last = getMenuComponentCount();
 		int newchildIndex = findBestLocation(mi, pos);
@@ -253,8 +260,10 @@ public class SafeJMenu extends JMenu implements UISwingReplacement, GetSetObject
 	 * @return the <code>Component</code> added
 	 */
 
+	@Override
 	protected JMenuItem createActionComponent(Action a) {
 		JMenuItem mi = new SafeJMenuItem(userObject, true) {
+			@Override
 			protected PropertyChangeListener createActionPropertyChangeListener(Action a) {
 				PropertyChangeListener pcl = createActionChangeListener(this);
 				if (pcl == null) {
@@ -263,8 +272,8 @@ public class SafeJMenu extends JMenu implements UISwingReplacement, GetSetObject
 				return pcl;
 			}
 		};
-		mi.setHorizontalTextPosition(JButton.TRAILING);
-		mi.setVerticalTextPosition(JButton.CENTER);
+		mi.setHorizontalTextPosition(SwingConstants.TRAILING);
+		mi.setVerticalTextPosition(SwingConstants.CENTER);
 		return mi;
 	}
 
@@ -276,6 +285,7 @@ public class SafeJMenu extends JMenu implements UISwingReplacement, GetSetObject
 	 *
 	 * @see WinListener
 	 */
+	@Override
 	protected WinListener createWinListener(JPopupMenu p) {
 		if (!(p instanceof UISwingReplacement)) {
 			// complain complain
@@ -329,6 +339,7 @@ public class SafeJMenu extends JMenu implements UISwingReplacement, GetSetObject
 		//warn("found=" + found + " for " + fnd);
 	}
 
+	@Override
 	protected void fireActionPerformed(ActionEvent event) {
 		super.fireActionPerformed(event);
 	}
@@ -337,6 +348,7 @@ public class SafeJMenu extends JMenu implements UISwingReplacement, GetSetObject
 		return super.getText();
 	}
 
+	@Override
 	public Object getValue() {
 		return userObject;
 	}
@@ -347,6 +359,7 @@ public class SafeJMenu extends JMenu implements UISwingReplacement, GetSetObject
 	 * @param text the text of the <code>JMenuItem</code>
 	 * @param icon the icon of the <code>JMenuItem</code>
 	 */
+	@Override
 	protected void init(String text, Icon icon) {
 		ensureSafePopupMenuCreated();
 		super.init(text, icon);
@@ -361,6 +374,7 @@ public class SafeJMenu extends JMenu implements UISwingReplacement, GetSetObject
 		super.removeAll();
 	}
 
+	@Override
 	public void setObject(Object object) {
 		userObject = object;
 	}
@@ -382,6 +396,7 @@ public class SafeJMenu extends JMenu implements UISwingReplacement, GetSetObject
 	 *
 	 * @see JComponent#updateUI
 	 */
+	@Override
 	public void updateUI() {
 		ensureSafePopupMenuCreated();
 		try {

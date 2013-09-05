@@ -26,7 +26,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
 import java.util.Collection;
 import java.util.LinkedList;
 
@@ -47,6 +46,7 @@ import org.appdapter.api.trigger.AnyOper.UIHidden;
 import org.appdapter.api.trigger.AnyOper.UISalient;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContext;
+import org.appdapter.api.trigger.CallableWithParameters;
 import org.appdapter.api.trigger.MutableBox;
 import org.appdapter.api.trigger.UserResult;
 import org.appdapter.core.convert.NoSuchConversionException;
@@ -58,8 +58,7 @@ import org.appdapter.gui.api.DisplayType;
 import org.appdapter.gui.api.IShowObjectMessageAndErrors;
 import org.appdapter.gui.api.NamedObjectCollection;
 import org.appdapter.gui.box.AbstractScreenBoxTreeNodeImpl;
-import org.appdapter.gui.box.ScreenBoxContextImpl;
-import org.appdapter.gui.box.ScreenBoxImpl;
+import org.appdapter.gui.editors.DnDTabbedPane;
 import org.appdapter.gui.swing.CollectionEditorUtil;
 import org.appdapter.gui.swing.DisplayContextUIImpl;
 import org.appdapter.gui.swing.LookAndFeelMenuItems;
@@ -75,6 +74,9 @@ import com.jidesoft.tree.StyledTreeCellRenderer;
 @UIHidden
 public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessageAndErrors {
 
+	static {
+		TriggerMouseAdapter.installMouseListeners();
+	}
 	public TreeModel myTreeModel;
 	public DisplayContextUIImpl app;
 	public AddToTreeListener addToTreeListener;
@@ -120,7 +122,7 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 	}
 
 	public void setDividerLocation(double proportionalLocation) {
-		myBrowserSplitPane.setDividerLocation(proportionalLocation);
+		myBrowserSplitPane.setDividerLocation(Math.max((int) ((double) (myBrowserSplitPane.getWidth() - myBrowserSplitPane.getDividerSize()) * proportionalLocation), 100));
 		invalidate();
 	}
 
@@ -314,7 +316,7 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 		myTree = new javax.swing.JTree();
 		myContentPanel = new javax.swing.JPanel();
 		myBoxPanelStatus = new javax.swing.JTextField();
-		myBoxPanelTabPane = new com.jidesoft.swing.JideTabbedPane();
+		myBoxPanelTabPane = new DnDTabbedPane();
 		myHomeBoxPanel = new javax.swing.JPanel();
 		myLowerPanel = new javax.swing.JPanel();
 		myCmdInputTextField = new javax.swing.JTextField();
@@ -375,7 +377,7 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 		myContentPanel.add(myBoxPanelTabPane, java.awt.BorderLayout.CENTER);
 
 		myBrowserSplitPane.add(myContentPanel, JSplitPane.RIGHT);
-		myBrowserSplitPane.setDividerLocation(0.33);
+		setDividerLocation(0.33);
 
 		add(myBrowserSplitPane, java.awt.BorderLayout.CENTER);
 	}// </editor-fold>
@@ -391,7 +393,13 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 	}//GEN-LAST:event_myBoxPanelStatusActionPerformed
 
 	public void addTreeMouseAdapter() {
-		MouseAdapter ma = TriggerMouseAdapter.installMouseAdapter(myTree);
+		TriggerMouseAdapter ma = TriggerMouseAdapter.installMouseAdapter(myTree);
+		ma.setDoubleClick("Properties", new CallableWithParameters() {
+			@Override public Object call(Object box, Object... params) {
+				Utility.showProperties(box);
+				return box;
+			}
+		});
 		addMouseListener(ma);
 	}
 
@@ -402,7 +410,7 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 	//GEN-BEGIN:variables
 	// Variables declaration - do not modify
 	private javax.swing.JTextField myBoxPanelStatus;
-	private com.jidesoft.swing.JideTabbedPane myBoxPanelTabPane;
+	private DnDTabbedPane myBoxPanelTabPane;
 	private javax.swing.JSplitPane myBrowserSplitPane;
 	private javax.swing.JTextField myCmdInputTextField;
 	private javax.swing.JPanel myContentPanel;

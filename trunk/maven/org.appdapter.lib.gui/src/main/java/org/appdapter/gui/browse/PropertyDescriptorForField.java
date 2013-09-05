@@ -29,6 +29,7 @@ import org.appdapter.core.convert.NoSuchConversionException;
 import org.appdapter.core.convert.ProxyMethodClass;
 import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.core.log.Debuggable;
+import org.appdapter.gui.editors.GoodPropertyEditorSupport;
 import org.appdapter.gui.trigger.TriggerMenuFactory;
 
 public class PropertyDescriptorForField extends PropertyDescriptor implements Converter {
@@ -46,7 +47,7 @@ public class PropertyDescriptorForField extends PropertyDescriptor implements Co
 	//ObjectChoiceComboPanel choice = null;
 	public Object targetObject;
 
-	public class ObjectFieldEditor extends PropertyEditorSupport implements PropertyChangeListener, PropertyEditor, InvocationHandler {
+	private class ObjectFieldEditor extends PropertyEditorSupport implements PropertyChangeListener, PropertyEditor, InvocationHandler {
 
 		/**
 		 * 
@@ -117,10 +118,6 @@ public class PropertyDescriptorForField extends PropertyDescriptor implements Co
 			return tags;
 		}
 
-		@Override public Component getCustomEditor() {
-			return super.getCustomEditor();
-		}
-
 		public Object getObject() {
 			return getValue();
 		}
@@ -187,7 +184,6 @@ public class PropertyDescriptorForField extends PropertyDescriptor implements Co
 		}
 
 		@Override public void setSource(Object source) {
-			// TODO Auto-generated method stub
 			super.setSource(source);
 		}
 	}

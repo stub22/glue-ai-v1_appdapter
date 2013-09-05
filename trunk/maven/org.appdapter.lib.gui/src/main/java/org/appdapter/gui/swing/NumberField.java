@@ -37,6 +37,7 @@ public class NumberField extends JVPanel implements ActionListener, KeyListener,
 	Class type;
 	JTextField textfield;
 
+	@Override
 	public void setObject(Object object) throws java.lang.reflect.InvocationTargetException {
 		value = Utility.recast(object, Number.class);
 	}
@@ -113,6 +114,7 @@ public class NumberField extends JVPanel implements ActionListener, KeyListener,
 		}
 	}
 
+	@Override
 	public Number getValue() {
 		return value;
 	}

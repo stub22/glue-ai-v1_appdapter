@@ -8,18 +8,11 @@ import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JFrame;
-import javax.swing.JMenu;
 import javax.swing.LookAndFeel;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
-
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.demo.DemoBrowser;
-import org.appdapter.gui.util.PromiscuousClassUtilsA;
-
 import com.jidesoft.plaf.LookAndFeelFactory;
 
 public class LookAndFeelMenuItems extends SafeJMenu {

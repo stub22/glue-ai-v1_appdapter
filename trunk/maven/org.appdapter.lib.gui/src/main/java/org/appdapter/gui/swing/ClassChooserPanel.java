@@ -11,7 +11,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyEditor;
-import java.io.IOException;
 import java.util.*;
 
 import javax.swing.DefaultComboBoxModel;
@@ -27,7 +26,6 @@ import javax.swing.text.JTextComponent;
 
 import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.gui.api.BT;
-import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.POJOCollectionListener;
 import org.appdapter.gui.browse.SearchableDemo;
 import org.appdapter.gui.browse.Utility;
@@ -108,6 +106,7 @@ public class ClassChooserPanel extends JPanel implements ActionListener, Documen
 
 		if (classGroveler == null) {
 			classGroveler = new Thread("Class groveler") {
+				@Override
 				public void run() {
 
 					int lastSize = 0;
@@ -159,6 +158,7 @@ public class ClassChooserPanel extends JPanel implements ActionListener, Documen
 	public static void main(String[] args) {
 		try {
 			JFrame frame = new JFrame("Test") {
+				@Override
 				public java.awt.Dimension getPreferredSize() {
 					return new Dimension(400, 400);
 				};

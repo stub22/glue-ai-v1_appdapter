@@ -28,7 +28,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.appdapter.api.trigger.Box;
-import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.BoxPanelSwitchableView;
 import org.appdapter.gui.api.Chooser;
@@ -68,6 +67,7 @@ extends ScreenBoxPanel<BoxType> implements ValueChangeListener, DropTargetListen
 		this(null, null, null, null, null, false);
 	}
 
+	@Override
 	public void valueChanged(Object context2, Object oldValue, Object newValue) {
 		if (context2 == this)
 			return;
@@ -225,6 +225,7 @@ extends ScreenBoxPanel<BoxType> implements ValueChangeListener, DropTargetListen
 		add("Center", stack);
 	}
 
+	@Override
 	public void completeSubClassGUI() {
 		setTitle(getName());
 		reloadContents();

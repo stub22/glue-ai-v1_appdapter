@@ -15,7 +15,6 @@ import org.appdapter.gui.api.BrowserPanelGUI;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.NamedObjectCollection;
 import org.appdapter.gui.api.POJOCollectionListener;
-import org.appdapter.gui.api.ScreenBox;
 import org.appdapter.gui.box.BoxedCollectionImpl;
 import org.appdapter.gui.box.ScreenBoxImpl;
 import org.appdapter.gui.browse.Utility;
@@ -35,14 +34,17 @@ public class EmptyDisplayContext extends BoxedCollectionImpl implements BrowserP
 	 *
 	 * @returns true if the value was removed, false if that value wasn't in this context
 	 */
+	@Override
 	public boolean removeObject(Object value) {
 		return false;
 	}
 
+	@Override
 	public Collection findObjectsByType(Class type) {
 		return new Vector();
 	}
 
+	@Override
 	public boolean containsObject(Object value) {
 		return false;
 	}
@@ -50,6 +52,7 @@ public class EmptyDisplayContext extends BoxedCollectionImpl implements BrowserP
 	public void addListener(POJOCollectionListener o) {
 	}
 
+	@Override
 	public void removeListener(POJOCollectionListener o) {
 	}
 
@@ -61,10 +64,12 @@ public class EmptyDisplayContext extends BoxedCollectionImpl implements BrowserP
 		return null;
 	}
 
+	@Override
 	public String getTitleOf(Object value) {
 		return "" + value;
 	}
 
+	@Override
 	public UserResult showError(String msg, Throwable e) {
 		return Utility.showError(null, msg, e);
 	}
@@ -74,6 +79,7 @@ public class EmptyDisplayContext extends BoxedCollectionImpl implements BrowserP
 		value.setUniqueName(newName);
 	}
 
+	@Override
 	public BT findOrCreateBox(String newName, Object obj) throws PropertyVetoException {
 		throw new PropertyVetoException("Cant create objects in " + this, new PropertyChangeEvent(this, "objects", null, obj));
 	}
@@ -123,6 +129,7 @@ public class EmptyDisplayContext extends BoxedCollectionImpl implements BrowserP
 		return null;
 	}
 
+	@Override
 	public UserResult addObject(String title, Object value, boolean showASAP) throws Exception {
 		return Utility.browserPanel.addObject(title, value, showASAP, false);
 	}

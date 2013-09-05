@@ -75,16 +75,12 @@ public class SafeJTable extends JTable implements GetSetObject {
 	private boolean isSelectAllForKeyEvent = false;
 	private boolean isSelectAllForMouseEvent = false;
 
-	protected javax.swing.JTable myTable;
+	protected javax.swing.JTable myTable = this;
 
-	private CellConversions listFromH;
-
-	private Class matrixClass;
-
-	private Class rowClass;
-
-	private String[] colNamesPredef;
-
+	CellConversions listFromH;
+	Class matrixClass;
+	Class rowClass;
+	String[] colNamesPredef;
 	protected Object objectValue;
 	protected List listOfRows;
 
@@ -117,12 +113,14 @@ public class SafeJTable extends JTable implements GetSetObject {
 	}
 
 	public Object getRowObject(int rowIndex) {
+		if (rowIndex < 0)
+			return getModel().getValueAt(rowIndex, -1);
 		List list = getList();
 		return list.get(rowIndex);
 	}
 
 	protected TableModel createDefaultDataModel() {
-		return new CustomTableModel();
+		return new CustomTableModel(listFromH, rowClass, rowClass, getList(), colNamesPredef);
 	}
 
 	//
@@ -538,7 +536,6 @@ public class SafeJTable extends JTable implements GetSetObject {
 		}
 
 	}
-
 
 	static public void setupRenderAndEditors(JTable table, int i, Class clz, TableColumn objColumn, CellConversions conv) {
 		TableCellRenderer renderer = objColumn.getCellRenderer();

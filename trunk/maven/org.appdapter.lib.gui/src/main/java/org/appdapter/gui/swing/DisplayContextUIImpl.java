@@ -13,7 +13,6 @@ import java.awt.event.WindowEvent;
 import java.beans.IntrospectionException;
 import java.beans.PropertyVetoException;
 import java.util.Collection;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -27,7 +26,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
 
-import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.UserResult;
 import org.appdapter.core.convert.NoSuchConversionException;
 import org.appdapter.core.log.Debuggable;
@@ -39,7 +37,6 @@ import org.appdapter.gui.api.IShowObjectMessageAndErrors;
 import org.appdapter.gui.api.NamedObjectCollection;
 import org.appdapter.gui.api.POJOCollection;
 import org.appdapter.gui.api.POJOCollectionListener;
-import org.appdapter.gui.api.WrapperValue;
 import org.appdapter.gui.box.ScreenBoxImpl;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.editors.Icons;
@@ -49,8 +46,6 @@ import org.appdapter.gui.trigger.TriggerMenuFactory;
 import org.appdapter.gui.util.PairTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.hp.hpl.jena.rdf.model.Container;
 
 /**
  * A POJOCollectionContext implementation that uses a ObjectNavigator.
@@ -401,6 +396,7 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 		return collection.getObjects();
 	}
 
+	@Override
 	public String getTitleOf(Object object) {
 		return getCurrentCollection().getTitleOf(object);
 	}
@@ -552,10 +548,12 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 		Debuggable.notImplemented();
 	}
 
+	@Override
 	public UserResult showScreenBox(String title, Object object) {
 		return showScreenBoxAsResult(title, object, null);
 	}
 
+	@Override
 	public UserResult showScreenBox(Object object) {
 
 		return showScreenBox(null, object);
@@ -622,6 +620,7 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 	/**
 	 * Opens up a GUI to show the details of the given value
 	 */
+	@Override
 	public UserResult addObject(String label, Object value, boolean showASAP) throws Exception {
 
 		if (value instanceof Component) {

@@ -26,8 +26,8 @@ import java.lang.reflect.Type;
 import java.util.List;
 
 import org.appdapter.api.trigger.Box;
+import org.appdapter.api.trigger.CallableWithParameters;
 import org.appdapter.core.convert.ToFromKeyConverter;
-import org.appdapter.gui.browse.ResourceToFromString;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.swing.CantankerousJob;
 import org.appdapter.gui.table.GenericBeansPanel;
@@ -37,7 +37,6 @@ import org.slf4j.LoggerFactory;
 import com.hp.hpl.jena.graph.Graph;
 import com.hp.hpl.jena.rdf.listeners.StatementListener;
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelChangedListener;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Statement;
 
@@ -70,6 +69,30 @@ public class ModelMatrixPanel<BoxType extends Box> extends GenericBeansPanel {
 		if (o == null)
 			return null;
 		return Utility.recastCC(o, Model.class);
+	}
+
+	@Override public void populateActionPanel(Object object, Class rowClass2) {
+		addAction("add", new CallableWithParameters() {
+
+			@Override public Object call(Object box, Object... params) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+		});
+		addAction("Remove selected", new CallableWithParameters() {
+
+			@Override public Object call(Object box, Object... params) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+		});
+		addAction("Query", new CallableWithParameters() {
+			@Override public Object call(Object box, Object... params) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+		});
+		super.populateActionPanel(object, rowClass2);
 	}
 
 	@Override public void objectValueChanged(Object oval, Object bean) {

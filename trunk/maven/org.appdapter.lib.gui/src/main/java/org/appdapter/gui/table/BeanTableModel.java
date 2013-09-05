@@ -7,8 +7,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-
-import javax.swing.event.ListDataListener;
+import java.util.Vector;
 
 import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.core.log.Debuggable;
@@ -36,12 +35,12 @@ import org.appdapter.core.log.Debuggable;
 public class BeanTableModel<T> extends RowTableModel<T> {
 	//  Map "type" to "class". Class is needed for the getColumnClass() method.
 
-
 	private Class beanClass;
 	private Class ancestorClass;
 
 	private List<ColumnInformation> columns = new ArrayList<ColumnInformation>();
-	private List<String> onlyColumns;
+
+	//private List<String> columnIdentifiers;
 
 	/**
 	 *  Constructs an empty <code>BeanTableModel</code> for the specified bean.
@@ -88,24 +87,85 @@ public class BeanTableModel<T> extends RowTableModel<T> {
 		this.beanClass = beanClass;
 		this.ancestorClass = ancestorClass;
 		this.modelData = modelData;
-		//  Initialize the column name List to the proper size. The actual
-		//  column names will be reset in the resetModelDefaults() method.
-		setOnlyColumns(colNames);
+		if (getClass() == BeanTableModel.class) {
+			//  Initialize the column name List to the proper size. The actual
+			//  column names will be reset in the resetModelDefaults() method.
+			setOnlyColumns(colNames);
+		} else {
+			if (colNames.length > 0) {
+				setOnlyColumns(colNames);
+			}
+		}
+	}
+
+	public BeanTableModel(Object[][] data, Object[] columnNames) {
+		super(data, columnNames);
 	}
 
 	public void setOnlyColumns(String... colNames) {
-		this.onlyColumns = null;
+		this.columnIdentifiers = null;
 		if (colNames != null && colNames.length > 0) {
-			onlyColumns = Collections.unmodifiableList(ReflectUtils.asList(colNames));
+			columnIdentifiers = new Vector(Collections.unmodifiableList(ReflectUtils.asList(colNames)));
 		}
-		buildReflectionInfoRetainColNames();
+		if (getClass() == BeanTableModel.class) {
+			buildReflectionInfoRetainColNames();
+		}
+	}
+
+	@Override public Class<?> getColumnClass(int columnIndex) {
+		Class columnClass = null;
+
+		//  Get the class, if set, for the specified column
+		if (columnClasses != null && columnIndex < columnClasses.length)
+			columnClass = columnClasses[columnIndex];
+
+		if (columnClass == null && columns != null && columnIndex < columns.size()) {
+			ColumnInformation columnInfo = columns.get(columnIndex);
+			if (columnInfo != null) {
+				columnClass = columnInfo.getReturnType();
+			}
+		}
+		//  Get the default class
+		if (columnClass == null) {
+			columnClass = super.getColumnClass(columnIndex);
+		}
+		if ((columnClass == null || columnClass == Object.class) && getRowCount() > 0) {
+			Object val = getValueAt(0, columnIndex);
+			if (val != null && val != SafeJTable.WAS_NULL) {
+				return val.getClass();
+			}
+		}
+		return columnClass;
+	}
+
+	/**
+	 * Returns the column name.
+	 *
+	 * @return a name for this column using the string value of the
+	 * appropriate member in <code>columnNames</code>. If
+	 * <code>columnNames</code> does not have an entry for this index
+	 * then the default name provided by the superclass is returned
+	 */
+	public String getColumnName(int column) {
+		Object columnName = null;
+
+		if (columnIdentifiers != null && column < columnIdentifiers.size()) {
+			columnName = columnIdentifiers.get(column);
+		}
+		if (columnName == null && columns != null && column < columns.size()) {
+			ColumnInformation columnInfo = columns.get(column);
+			if (columnInfo != null) {
+				columnName = columnInfo.getName();
+			}
+		}
+		return (columnName == null) ? super.getColumnName(column) : columnName.toString();
 	}
 
 	private void buildReflectionInfoRetainColNames() {
 		//  Use reflection on the beanClass and ancestorClass to find properties
 		//  to add to the TableModel
 
-		List<String> columnNames = new ArrayList<String>();
+		Vector<String> columnNames = new Vector<String>();
 
 		createColumnInformation();
 
@@ -129,10 +189,10 @@ public class BeanTableModel<T> extends RowTableModel<T> {
 
 		if (usesColumnFilter()) {
 
-			for (String thePropName : onlyColumns) {
-				buildColumnInformation(thePropName);
+			for (Object thePropName : columnIdentifiers) {
+				buildColumnInformation("" + thePropName);
 			}
-			if (columns.size() == onlyColumns.size()) {
+			if (columns.size() == columnIdentifiers.size()) {
 				// we did good!
 				return;
 			}
@@ -169,7 +229,7 @@ public class BeanTableModel<T> extends RowTableModel<T> {
 	}
 
 	public boolean usesColumnFilter() {
-		return onlyColumns != null && onlyColumns.size() > 0;
+		return columnIdentifiers != null && columnIdentifiers.size() > 0;
 	}
 
 	/*
@@ -254,7 +314,7 @@ public class BeanTableModel<T> extends RowTableModel<T> {
 	 *  Use information collected from the bean to set model default values.
 	 */
 	protected void resetModelDefaults() {
-		columnNames.clear();
+		columnIdentifiers.clear();
 		int skipped = 0;
 		int cs = columns.size();
 		if (cs == 0) {
@@ -281,13 +341,15 @@ public class BeanTableModel<T> extends RowTableModel<T> {
 		for (int i = 0; i < cs; i++) {
 			ColumnInformation info = columns.get(i);
 			String name = info.getName();
-			columnNames.add(name);
+			if (columnIdentifiers.contains(name)) {
+				columnIdentifiers.add(name);
+			}
 			setColumnInfo(i, info);
 		}
 
 		if (skipped > 0) {
-			if (columnNames.size() == 0) {
-				onlyColumns = null;
+			if (columnIdentifiers.size() == 0) {
+				columnIdentifiers = null;
 				resetModelDefaults();
 			}
 		}
@@ -299,8 +361,8 @@ public class BeanTableModel<T> extends RowTableModel<T> {
 	}
 
 	protected boolean onlyColumnsAllow(String name) {
-		if (onlyColumns != null && onlyColumns.size() > 0) {
-			return onlyColumns.contains(name);
+		if (columnIdentifiers != null && columnIdentifiers.size() > 0) {
+			return columnIdentifiers.contains(name);
 		}
 		return true;
 	}
@@ -415,12 +477,17 @@ public class BeanTableModel<T> extends RowTableModel<T> {
 		private Class returnType;
 		private Method getter;
 		private Method setter;
+		private Boolean isReadOnly = true;
 
 		public ColumnInformation(String name, Class returnType, Method getter, Method setter) {
 			this.name = name;
 			this.returnType = returnType;
 			this.getter = getter;
 			this.setter = setter;
+		}
+
+		public boolean isEditable() {
+			return this.setter != null;
 		}
 
 		/*

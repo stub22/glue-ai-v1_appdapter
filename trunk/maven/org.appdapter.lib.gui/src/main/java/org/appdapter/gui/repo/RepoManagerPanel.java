@@ -67,6 +67,7 @@ public class RepoManagerPanel extends ScreenBoxPanel<MutableRepoBox> implements 
 
 	@Override protected void initSubclassGUI() throws Throwable {
 		initComponents();
+		
 	}
 
 	@Override protected void completeSubClassGUI() {
@@ -91,7 +92,7 @@ public class RepoManagerPanel extends ScreenBoxPanel<MutableRepoBox> implements 
 			Utility.makeTablePopupHandler(myGraphTable);
 		}
 	}
-
+	
 	/** This method is called from within the constructor to
 	 * initialize the form.
 	 * WARNING: Do NOT modify this code. The content of this method is

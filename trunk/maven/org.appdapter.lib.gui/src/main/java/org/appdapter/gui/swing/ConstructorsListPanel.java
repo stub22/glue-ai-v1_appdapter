@@ -5,10 +5,7 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.reflect.Constructor;
-import java.util.Collection;
 import java.util.Hashtable;
-import java.util.Map;
-
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.border.EtchedBorder;
@@ -78,6 +75,7 @@ public class ConstructorsListPanel<BoxType extends Box> extends ScreenBoxPanel<B
 	/**
 	 * Creates the GUI
 	 */
+	@Override
 	protected void completeSubClassGUI() {
 		setLayout(new VerticalLayout(VerticalLayout.LEFT, true));
 

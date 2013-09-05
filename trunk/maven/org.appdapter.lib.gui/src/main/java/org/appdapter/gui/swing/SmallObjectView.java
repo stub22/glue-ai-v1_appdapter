@@ -25,10 +25,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Arrays;
-
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -132,10 +129,10 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 	boolean showIcon;
 	boolean showLabel;
 	boolean showPropButton;
-	boolean showRemoveButton;
+	boolean showRemoveButton = true;
 	boolean showToString;
 	protected NamedObjectCollection nameMaker;
-	protected boolean isRemoved;
+	protected boolean isRemoved = false;
 	protected String title;
 
 	/**
@@ -153,6 +150,7 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 		this.showIcon = showIcon;
 		this.showPropButton = showPropButton;
 		this.showToString = showToString;
+		this.title = title;
 		initGUI();
 		this.addMouseListener(this);
 		checkColor();
@@ -163,6 +161,7 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 
 	public SmallObjectView(DisplayContext context, NamedObjectCollection namer, Object object) {
 		this(context, namer, object, null, true, true, true, true);
+		showRemoveButton = false;
 	}
 
 	@Override public void actionPerformed(ActionEvent evt) {
@@ -189,12 +188,10 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 	//==== Drag/drop methods ==========================
 
 	public void actionShowProperties() {
-		if (context != null) {
-			try {
-				Utility.browserPanel.showScreenBox(getValue());
-			} catch (Throwable err) {
-				Utility.browserPanel.showError("An error occurred while creating an interface for " + getValue(), err);
-			}
+		try {
+			Utility.showProperties(getValue());
+		} catch (Throwable err) {
+			Utility.showError(context, "An error occurred while creating an interface for " + getValue(), err);
 		}
 	}
 
@@ -208,10 +205,10 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 		//}
 	}
 
-	public void dragDropEnd(DragSourceDropEvent dsde) {
+	@Override public void dragDropEnd(DragSourceDropEvent dsde) {
 	}
 
-	public void dragEnter(DragSourceDragEvent dsde) {
+	@Override public void dragEnter(DragSourceDragEvent dsde) {
 	}
 
 	@Override public void dragEnter(DropTargetDragEvent dtde) {
@@ -219,7 +216,7 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 
 	}
 
-	public void dragExit(DragSourceEvent dse) {
+	@Override public void dragExit(DragSourceEvent dse) {
 	}
 
 	@Override public void dragExit(DropTargetEvent dte) {
@@ -229,12 +226,12 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 
 	//==== Drag/drop methods ==========================
 
-	public void dragGestureRecognized(DragGestureEvent event) {
+	@Override public void dragGestureRecognized(DragGestureEvent event) {
 		theLogger.debug("source dragGestureRecognized");
 		dragSource.startDrag(event, DragSource.DefaultMoveDrop, this, this);
 	}
 
-	public void dragOver(DragSourceDragEvent dsde) {
+	@Override public void dragOver(DragSourceDragEvent dsde) {
 	}
 
 	@Override public void dragOver(DropTargetDragEvent dtde) {
@@ -242,7 +239,7 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 
 	}
 
-	public void drop(DropTargetDropEvent event) {
+	@Override public void drop(DropTargetDropEvent event) {
 		Transferable t = event.getTransferable();
 		try {
 			Object o = t.getTransferData(new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType));
@@ -253,7 +250,7 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 
 	}
 
-	public void dropActionChanged(DragSourceDragEvent dsde) {
+	@Override public void dropActionChanged(DragSourceDragEvent dsde) {
 	}
 
 	@Override public void dropActionChanged(DropTargetDragEvent dtde) {
@@ -282,7 +279,7 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 		return objectValue;
 	}
 
-	public boolean initGUI() {
+	@Override public boolean initGUI() {
 
 		if (nameMaker == null)
 			nameMaker = Utility.getTreeBoxCollection();
@@ -314,13 +311,13 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 				}
 				String labelname = title;
 				if ((title == null || title.equals("<null>")) && object != null && !(object instanceof String)) {
-					Utility.bug("title for" + object);
+					Utility.bug("title for " + object);
 				} else {
-					if (labelname.length() > 128) {
-						labelname = labelname.substring(0, 128);
-					}
+					//if (labelname.length() > 128) {
+					//labelname = labelname.substring(0, 128);
+					//}
 				}
-				label = new JLabel(labelname);
+				label = new JLabel("<html><pre>" + labelname + "</pre></html>");
 				panel.add(label);
 			}
 			if (showPropButton && !objectClass.isPrimitive()) {
@@ -336,10 +333,7 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 			String tooltip = Utility.makeTooltipText(object);
 			setToolTipText(tooltip);
 			if (showToString) {
-				if (tooltip.length() > 128) {
-					tooltip = tooltip.substring(0, 128);
-				}
-				panel.add(new JLabel(tooltip));
+				panel.add(new JLabel("<html><pre>" + tooltip + "</pre></html>"));
 			}
 		} else {
 			panel.add(new JLabel("null"));
@@ -355,7 +349,7 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 	}
 
 	public boolean isRemovable(Object value) {
-		return false && !isRemoved;
+		return !isRemoved && showRemoveButton;
 	}
 
 	public void valueChanged(Object sender, Object oldObject, Object newObject) {

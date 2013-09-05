@@ -23,7 +23,6 @@ import javax.swing.JFrame;
 import javax.swing.JTextField;
 
 import org.appdapter.core.convert.NoSuchConversionException;
-import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.gui.browse.Utility;
 
 /**

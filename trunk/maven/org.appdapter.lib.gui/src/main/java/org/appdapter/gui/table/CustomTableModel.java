@@ -3,7 +3,6 @@ package org.appdapter.gui.table;
 import static org.appdapter.core.log.Debuggable.printStackTrace;
 
 import java.util.List;
-import java.util.Map;
 
 import javax.swing.JComponent;
 import javax.swing.table.TableModel;
@@ -14,13 +13,18 @@ import org.appdapter.gui.browse.Utility;
 
 public class CustomTableModel extends BeanTableModel implements TableModel {
 
+	private static final String THIS = "this";
 
 	public CustomTableModel() {
-		this(Map.Entry.class);
+		this(Object.class);
 	}
 
 	public CustomTableModel(Class rowClass) {
 		this(null, rowClass, rowClass, null, null);
+	}
+
+	public CustomTableModel(Object[][] data, Object[] columnNames) {
+		super(data, columnNames);
 	}
 
 	public CustomTableModel(CellConversions conversions, Class rowClass, Class ancestorClass, List modelData, String[] colNames) {
@@ -29,21 +33,29 @@ public class CustomTableModel extends BeanTableModel implements TableModel {
 	}
 
 	@Override public Class<?> getColumnClass(int columnIndex) {
+		Class columnClass = null;
 		if (columnClasses != null && columnIndex < columnClasses.length) {
-			Class cc = columnClasses[columnIndex];
-			if (cc != null)
-				return cc;
+			columnClass = columnClasses[columnIndex];
+			if (columnClass != null)
+				return columnClass;
 		}
-		if (isEmpty()) {
-			return Object.class;
+		//  Get the default class
+		if (columnClass == null) {
+			columnClass = super.getColumnClass(columnIndex);
 		}
-		return getValueAt(0, columnIndex).getClass();
+		if ((columnClass == null || columnClass == Object.class) && getRowCount() > 0) {
+			Object val = getValueAt(0, columnIndex);
+			if (val != null && val != SafeJTable.WAS_NULL) {
+				return val.getClass();
+			}
+		}
+		return columnClass;
 	}
 
 	@Override public int getColumnCount() {
-		if (columnNames == null)
+		if (columnIdentifiers == null)
 			return 0;
-		int size = columnNames.size();
+		int size = columnIdentifiers.size();
 		if (size == 0) {
 			return 0;
 		}
@@ -51,10 +63,20 @@ public class CustomTableModel extends BeanTableModel implements TableModel {
 	}
 
 	@Override public String getColumnName(int columnIndex) {
-		return "" + columnNames.get(columnIndex);
+		if (columnIndex < 0)
+			return THIS;
+		Object columnName = null;
+
+		if (columnIdentifiers != null && columnIndex < columnIdentifiers.size()) {
+			columnName = columnIdentifiers.get(columnIndex);
+		}
+
+		return (columnName == null) ? super.getColumnName(columnIndex) : columnName.toString();
 	}
 
 	protected Object getNamedValue(Object statement, String namedProp) throws NoSuchConversionException, SecurityException, NoSuchFieldException, Throwable {
+		if (namedProp == THIS)
+			return statement;
 		String localName = ".*" + namedProp.toUpperCase() + ".*";
 		try {
 			Object r = ReflectUtils.getObjectPropertyValue(statement, statement.getClass(), localName, null, false);
@@ -74,6 +96,12 @@ public class CustomTableModel extends BeanTableModel implements TableModel {
 	}
 
 	public Object getRowObject(int rowIndex) {
+		if (rowIndex < 0) {
+			return null;
+		}
+		int rc = getRowCount();
+		if (rowIndex >= rc)
+			return null;
 		return getRows().get(rowIndex);
 	}
 
@@ -82,14 +110,18 @@ public class CustomTableModel extends BeanTableModel implements TableModel {
 			return SafeJTable.WAS_NULL;
 		Object statement = getRowObject(rowIndex);
 		try {
-			Object ele = getNamedValue(statement, getColumnName(columnIndex));
-			if (ele instanceof JComponent) {
-				ele = Utility.dref(ele);
+			String cn = getColumnName(columnIndex);
+			if (cn == null) {
+				return super.getValueAt(columnIndex, columnIndex);
 			}
+			Object ele = getNamedValue(statement, cn);
+			/*if (ele instanceof JComponent) {
+				ele = Utility.dref(ele);
+			}*/
 			return ele;
 		} catch (Throwable e) {
 			printStackTrace(e);
-			return statement;
+			return super.getValueAt(columnIndex, columnIndex);
 		}
 	}
 

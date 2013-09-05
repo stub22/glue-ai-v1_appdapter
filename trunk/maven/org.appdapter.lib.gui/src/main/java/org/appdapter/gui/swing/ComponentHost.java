@@ -3,12 +3,20 @@ package org.appdapter.gui.swing;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.FlowLayout;
+import java.awt.LayoutManager;
 import java.util.Collection;
 
+import javax.swing.AbstractButton;
+import javax.swing.CellEditor;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDesktopPane;
-import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSlider;
+import javax.swing.JTextField;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.GetObject;
@@ -28,7 +36,7 @@ public class ComponentHost extends JJPanel implements DisplayContext, GetObject,
 	public JComponent jcomponet;
 	public Object objectValue;
 
-	public void updateUI() {
+	@Override public void updateUI() {
 		if (jcomponet != null) {
 			jcomponet.updateUI();
 		}
@@ -53,9 +61,19 @@ public class ComponentHost extends JJPanel implements DisplayContext, GetObject,
 	void initGUI() {
 		removeAll();
 		adjustSize();
-		setLayout(new BorderLayout());
-		add(componet);
+		LayoutManager layout = getPreferedComponetLayout(componet);
+		setLayout(layout);
+		add("West", componet);
 		setName(componet.getName());
+	}
+
+	public static java.awt.LayoutManager getPreferedComponetLayout(Component c) {
+		if (c instanceof JVPanel || c instanceof JTextField || c instanceof JLabel //
+				|| c instanceof JSlider || c instanceof JComboBox || //
+				c instanceof AbstractButton || c instanceof CellEditor) {
+			return new FlowLayout();
+		}
+		return new BorderLayout();
 	}
 
 	private void adjustSize() {
