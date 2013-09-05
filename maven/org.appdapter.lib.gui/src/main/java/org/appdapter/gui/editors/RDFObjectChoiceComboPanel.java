@@ -286,7 +286,7 @@ public class RDFObjectChoiceComboPanel extends JJPanel implements MouseListener,
 		if (title == null || title.equals(NULLOBJECT.toString()))
 			return null;
 		Object obj = stringToObjectImpl(title);
-		if (obj == null || (rdfRestriction != null && !JenaModelUtils.isInstance(rdfRestriction, obj))) {
+		if (obj == null || (rdfRestriction != null &&  !RDFObjectChoiceModel.isInstance(rdfRestriction, obj))) {
 			obj = stringToObjectImpl(title);
 			Utility.bug("stringToObjectImpl producing inccorect " + rdfRestriction + ": " + obj);
 		}
