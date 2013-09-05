@@ -221,9 +221,13 @@ public class Utility extends UtilityMenuOptions {
 	static {
 		TriggerMouseAdapter.installMouseListeners();
 	}
+	@UISalient
+	public static boolean GuiDebugTracing = false;
 
-	// warnings that should never happen 
+	// warnings that should never happen and only useful to   
 	public static void bug(Object... params) {
+		if (!GuiDebugTracing)
+			return;
 		String msg = Debuggable.toInfoStringArgV(params);
 		theLogger.warn("\n-----------------\nDUG BUG: " + msg + "\n");
 		if (!Debuggable.isRelease() && false) {
