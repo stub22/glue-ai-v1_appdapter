@@ -75,6 +75,15 @@ class OmniLoaderRepo(myRepoSpecStart: RepoSpec, myDebugNameIn: String, myBasePat
 */
 }
 
+class SimplistRepoSpec(val wd: Repo.WithDirectory) extends RepoSpec {
+  override def makeRepo(): Repo.WithDirectory = {
+    wd;
+  }
+  override def toString(): String = {
+    "SimplestSpec[" + wd + "]";
+  }
+}
+
 object OmniLoaderRepoTest {
 
   // These constants are used to test the ChanBinding model found in "GluePuma_BehavMasterDemo"
