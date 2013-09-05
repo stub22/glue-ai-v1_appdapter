@@ -69,6 +69,7 @@ abstract public class UtilityMenuOptions implements UtilClass {
 			}
 		};
 
+		Utility.taskEqueue.setSynchronous(false);
 		withSubclasses(KnownComponent.class, fw);
 		withSubclasses(DemoBrowser.class, fw);
 		withSubclasses(Box.class, fw);
@@ -79,12 +80,13 @@ abstract public class UtilityMenuOptions implements UtilClass {
 		useScannedClasses("com.hp.hpl.jena.rdf.model.", fw);
 		createEnumClass(ReificationStyle.class);
 
+		Utility.taskEqueue.waitUntilLastJobComplete();
 		loadAutoloads();
 		Utility.addClassMethods(RepoManagerPanel.class);
 
 		if (!scanForMissingScreenBoxPanels)
 			return;
-		
+
 		withSubclasses(Customizer.class, fw, false);
 		withSubclasses(PropertyEditor.class, fw, false);
 		withSubclasses(ObjectPanel.class, fw, true);
@@ -114,16 +116,21 @@ abstract public class UtilityMenuOptions implements UtilClass {
 		Utility.addClassMethods(ec);
 	}
 
-	private static <T> void withSubclasses(Class<T> ancestor, VoidFunc2<Class, Class> func, boolean onlyCore) {
+	private static <T> void withSubclasses(final Class<T> ancestor, final VoidFunc2<Class, Class> func, final boolean onlyCore) {
 
-		Collection<Class> which = getSubClasses("", ancestor, onlyCore);
-		for (Class cls : which) {
-			try {
-				func.call(cls, ancestor);
-			} catch (Throwable t) {
-				theLogger.error("With subclass " + cls + " of " + ancestor, t);
+		Utility.runTask(new Runnable() {
+
+			@Override public void run() {
+				Collection<Class> which = getSubClasses("", ancestor, onlyCore);
+				for (Class cls : which) {
+					try {
+						func.call(cls, ancestor);
+					} catch (Throwable t) {
+						theLogger.error("With subclass " + cls + " of " + ancestor, t);
+					}
+				}
 			}
-		}
+		});
 	}
 
 	private static <T> Collection<Class> getSubClasses(String packagePrefix, Class<T> ancestor, boolean onlyCore) {
@@ -184,8 +191,9 @@ abstract public class UtilityMenuOptions implements UtilClass {
 
 	static @UISalient() public void loadDemoObjects() {
 		DemoBrowser.addMoreExamples();
+		Utility.updateToolsMenu();
 	}
-	
+
 	static @UISalient() public void loadAutoloads() {
 		VoidFunc2<Class, Class> fw = new VoidFunc2<Class, Class>() {
 			@Override public void call(Class cls, Class ancestor) {

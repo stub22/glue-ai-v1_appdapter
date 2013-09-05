@@ -1,19 +1,21 @@
 package org.appdapter.gui.swing;
 
-import java.awt.Dimension;
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.FlowLayout;
 import java.awt.LayoutManager;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
+import javax.swing.JFrame;
+import javax.swing.JMenuBar;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JTabbedPane;
+import javax.swing.WindowConstants;
 
-import org.appdapter.core.convert.NoSuchConversionException;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.browse.Utility;
-import org.appdapter.gui.trigger.TriggerMouseAdapter;
 
-public class JJPanel extends JPanel implements UISwingReplacement, IsReference {
+public class JJPanel extends JPanel implements UISwingReplacement, IsReference, WindowConstants {
 	public JJPanel() {
 		this(new FlowLayout());
 	}
@@ -48,7 +50,7 @@ public class JJPanel extends JPanel implements UISwingReplacement, IsReference {
 
 	}
 
-	public Object getValue() {
+	@Override public Object getValue() {
 		if (getClass() != JJPanel.class && !Debuggable.isNotShowingExceptions())
 			Debuggable.warn("getValue not Implemented (returning null)");
 		return null;
@@ -60,6 +62,40 @@ public class JJPanel extends JPanel implements UISwingReplacement, IsReference {
 		} catch (Throwable t) {
 
 		}
+	}
+
+	public Container getContentPane() {
+		return this;
+	}
+
+	// these methods are so one can use JFrame code in  a JJPanel
+	public void setJMenuBar(JMenuBar mBar) {
+		synchronized (mBar) {
+			int mc = mBar.getMenuCount();
+			for (int i = 0; i < mc; i++) {
+				Utility.getMenuBar().add(mBar.getMenu(i));
+			}
+		}
+	}
+
+	public void setTitle(String string) {
+		if (getParent() instanceof JTabbedPane) {
+
+		}
+	}
+
+	public void setDefaultCloseOperation(int doNothingOnClose) {
+		// TODO Auto-generated method stub
+
+	}
+
+	public boolean contains(Container cont) {
+		if (cont == this)
+			return true;
+		if (cont instanceof Component) {
+			return getParent() == this;
+		}
+		return false;
 	}
 
 }

@@ -61,7 +61,8 @@ public class SpecificObjectCustomizers extends TabPanelMaker {
 			if (cmd == SetTabTo.ADD) {
 				Component cp = null;
 				try {
-
+					if (!Component.class.isAssignableFrom(comp))
+						continue;
 					Throwable why = null;
 					Utility.theLogger.warn("Creating " + planinfo);
 					try {

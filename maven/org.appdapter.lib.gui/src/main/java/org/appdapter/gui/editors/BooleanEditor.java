@@ -11,7 +11,7 @@ import javax.swing.event.ChangeListener;
 * JavaBeansCollection PropertyEditor implementation for boolean values.
 * Basically a checkbox...
 */
-public class BooleanEditor extends PropertyEditorSupport {
+public class BooleanEditor extends GoodPropertyEditorSupport {
 	GUI gui = null;
 
 	public BooleanEditor() {

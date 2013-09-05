@@ -97,15 +97,21 @@ VetoableChangeListener, PropertyChangeListener, Serializable, Set {
 		}
 
 		@Override public Set<String> keySet() {
-			return nameIndex.keySet();
+			synchronized (nameIndex) {
+				return nameIndex.keySet();
+			}
 		}
 
 		@Override public Collection<Object> values() {
-			return objectsToWrappers.keySet();
+			synchronized (objectsToWrappers) {
+				return objectsToWrappers.keySet();
+			}
 		}
 
 		@Override public Set<java.util.Map.Entry<String, Object>> entrySet() {
-			return new HashSet(boxList);
+			synchronized (boxList) {
+				return new HashSet(boxList);
+			}
 		}
 
 		@Override public int size() {
@@ -217,7 +223,7 @@ VetoableChangeListener, PropertyChangeListener, Serializable, Set {
 			} else {
 				BT prev = findBoxByObject(val);
 				if (prev != null && prev != wrapper) {
-					Debuggable.notImplemented("Already existing object: " + prev);
+					Utility.bug("Already existing item: " + title, prev, "when wanting to add ", val, "wrapper=", wrapper);
 				}
 				if (prev == null) {
 					notify = true;
@@ -233,7 +239,7 @@ VetoableChangeListener, PropertyChangeListener, Serializable, Set {
 			} else {
 				BT prev = findBoxByName(title);
 				if (prev != null && prev != wrapper) {
-					Debuggable.notImplemented("Already existing name: " + title);
+					Utility.bug("Already existing name: " + title, prev, "when wanting to add ", val, "wrapper=", wrapper);
 				}
 			}
 			if (title != null && nameIndex != null) {
@@ -359,12 +365,15 @@ VetoableChangeListener, PropertyChangeListener, Serializable, Set {
 					if (boxl instanceof BT)
 						return (BT) boxl;
 				}
-				return null;
 			}
 		}
 		for (BT wrapper : getScreenBoxes()) {
 			if (wrapper.isNamed(name)) {
-				return wrapper;
+				synchronized (syncObject) {
+					if (nameIndex != null) {
+						nameIndex.put(name, wrapper);
+					}
+				}
 			}
 		}
 		return null;
@@ -390,11 +399,13 @@ VetoableChangeListener, PropertyChangeListener, Serializable, Set {
 		if (value instanceof String) {
 			return findBoxByName((String) value);
 		}
-
-		BT w = objectsToWrappers.get(ReflectUtils.asObjectKey(value, false));
-		if (w != null)
-			return w;
-
+		synchronized (syncObject) {
+			synchronized (objectsToWrappers) {
+				BT w = objectsToWrappers.get(ReflectUtils.asObjectKey(value, false));
+				if (w != null)
+					return w;
+			}
+		}
 		for (BT wrapper : getScreenBoxes()) {
 			if (wrapper.representsObject(value))
 				return wrapper;
@@ -578,26 +589,22 @@ VetoableChangeListener, PropertyChangeListener, Serializable, Set {
 	 */
 	public Iterator getObjects() {
 		synchronized (syncObject) {
-			return new ArrayList(objectsToWrappers.keySet()).iterator();
+			synchronized (objectsToWrappers) {
+				return new ArrayList(objectsToWrappers.keySet()).iterator();
+			}
 		}
 	}
 
 	public Iterable<BT> getScreenBoxes() {
 		synchronized (syncObject) {
-			return new ArrayList<BT>(boxList);
+			return (Iterable<BT>) ReflectUtils.copyOf(boxList);
 		}
 	}
 
 	public Iterable<BT> getScreenBoxes(DisplayType attachType) {
-		//	LinkedList boxList = getBoxListFrom(attachType);
-		LinkedList list = new LinkedList();
 		synchronized (syncObject) {
-			Iterator it = boxList.iterator();
-			while (it.hasNext()) {
-				list.add(it.next());
-			}
+			return (Iterable<BT>) ReflectUtils.copyOf(boxList).iterator();
 		}
-		return list;
 	}
 
 	/**

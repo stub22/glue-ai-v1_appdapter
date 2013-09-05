@@ -28,7 +28,7 @@ public class ObjectTabsForTabbedView implements BoxPanelSwitchableView {
 		this.rootValue = rootValue;
 		lock = tbs;
 		synchronized (lock) {
-			JideTabbedPane myBoxPanelTabPane = tabs = (JideTabbedPane) tbs;
+			JideTabbedPane myBoxPanelTabPane = tabs = tbs;
 			myBoxPanelTabPane.setBoldActiveTab(true);
 			myBoxPanelTabPane.setAutoRequestFocus(true);
 			myBoxPanelTabPane.setInheritsPopupMenu(true);
@@ -81,6 +81,7 @@ public class ObjectTabsForTabbedView implements BoxPanelSwitchableView {
 		}
 	}
 
+	@Override
 	public int indexOf(String title, Component view) {
 		synchronized (lock) {
 			int index = unverifiedIndex(title, view);

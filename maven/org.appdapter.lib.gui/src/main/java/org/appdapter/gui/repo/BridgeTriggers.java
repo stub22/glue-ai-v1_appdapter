@@ -45,9 +45,14 @@ import com.hp.hpl.jena.rdf.model.Model;
  */
 public class BridgeTriggers implements UtilClass {
 
-	@UISalient(MenuName = "External Tools|Startup Twinkle main")//
+	@UISalient(MenuName = "<toplevel>|External Tools|Startup Twinkle main")//
 	public static void startTwinkle() throws Throwable {
 		Class.forName("twinkle.Twinkle").getMethod("main", String[].class).invoke(null, (Object) new String[0]);
+	}
+
+	@UISalient(MenuName = "<toplevel>|External Tools|Startup Swoop main")//
+	public static void startSwoop() throws Throwable {
+		Class.forName("org.mindswap.swoop.Swoop").getMethod("main", String[].class).invoke(null, (Object) new String[0]);
 	}
 
 	@UISalient(MenuName = "External Tools|Run Twinkle On Model %t", IsNotSideEffectSafe = true)//

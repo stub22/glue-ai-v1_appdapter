@@ -363,6 +363,8 @@ public class SearchableDemo implements AnyOper.Singleton, AnyOper.Autoload {
 	}
 
 	public static AutoCompletion installSearchable(final JComboBox combo) {
+		boolean wasEditable = combo.isEditable();
+		combo.setEditable(false);
 		ComboBoxSearchable searchable = SearchableUtils.installSearchable(combo);
 		searchable.setCaseSensitive(false);
 		searchable.setWildcardEnabled(true);
@@ -377,6 +379,7 @@ public class SearchableDemo implements AnyOper.Singleton, AnyOper.Autoload {
 		autoCompletion.setStrict(false);
 		autoCompletion.setStrictCompletion(false);
 		autoCompletion.installListeners();
+		combo.setEditable(wasEditable);
 		return autoCompletion;
 
 	}

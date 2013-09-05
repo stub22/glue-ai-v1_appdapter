@@ -15,7 +15,6 @@ import java.util.List;
 import javax.swing.AbstractListModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
-import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 
 import org.appdapter.core.convert.ReflectUtils;
@@ -75,6 +74,7 @@ public class MethodList extends JJList {
 		reload();
 	}
 
+	@Override
 	public ListCellRenderer getCellRenderer() {
 		ListCellRenderer lcr = super.getCellRenderer();
 		if (true) {

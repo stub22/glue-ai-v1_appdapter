@@ -1,10 +1,8 @@
 package org.appdapter.gui.editors;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyEditorSupport;
 import java.lang.reflect.Type;
 
 import javax.swing.JLabel;
@@ -12,14 +10,14 @@ import javax.swing.JLabel;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.swing.NumberField;
 
-public class IntEditor extends PropertyEditorSupport implements PropertyChangeListener {
+public class IntEditor extends GoodPropertyEditorSupport implements PropertyChangeListener {
 	NumberField field = null;
 
 	public IntEditor() {
 	}
 
 	public static Type[] EDITTYPE = new Type[] { int.class, Integer.class };
-	
+
 	@Override public void setAsText(String text) throws IllegalArgumentException {
 		setValue(Integer.valueOf(text));
 	}

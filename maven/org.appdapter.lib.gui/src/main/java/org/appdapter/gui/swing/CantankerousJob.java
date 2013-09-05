@@ -41,6 +41,7 @@ abstract public class CantankerousJob implements Runnable {
 
 		skipped++;
 		slow = new Thread(toString()) {
+			@Override
 			public void run() {
 				while (skipped > 0) {
 					skipped = 0;

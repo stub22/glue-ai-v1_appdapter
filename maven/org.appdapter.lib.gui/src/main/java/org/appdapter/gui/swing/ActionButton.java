@@ -30,6 +30,7 @@ public class ActionButton extends JButton {
 		setAction(action);
 	}
 
+	@Override
 	public void setAction(Action newAction) {
 		Action oldAction = action;
 		if (newAction != oldAction) {
@@ -44,6 +45,7 @@ public class ActionButton extends JButton {
 		}
 	}
 
+	@Override
 	public Action getAction() {
 		return action;
 	}
@@ -63,6 +65,7 @@ public class ActionButton extends JButton {
 	}
 
 	class PropertyAdapter implements PropertyChangeListener {
+		@Override
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (action != null)
 				updateView();
@@ -70,6 +73,7 @@ public class ActionButton extends JButton {
 	}
 
 	class ActionAdapter implements ActionListener {
+		@Override
 		public void actionPerformed(ActionEvent evt) {
 			if (action != null)
 				action.actionPerformed(evt);

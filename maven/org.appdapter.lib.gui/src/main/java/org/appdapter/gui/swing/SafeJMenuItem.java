@@ -9,7 +9,6 @@ import javax.swing.JMenuItem;
 import javax.swing.UIManager;
 import javax.swing.plaf.MenuItemUI;
 
-import org.appdapter.api.trigger.AnyOper.UISalient;
 import org.appdapter.gui.api.GetSetObject;
 
 public class SafeJMenuItem extends JMenuItem implements UISwingReplacement, GetSetObject, IsReference {
@@ -22,6 +21,7 @@ public class SafeJMenuItem extends JMenuItem implements UISwingReplacement, GetS
 	 *
 	 * @see JComponent#updateUI
 	 */
+	@Override
 	public void updateUI() {
 		MenuItemUI itemUI = null;
 		try {
@@ -34,6 +34,7 @@ public class SafeJMenuItem extends JMenuItem implements UISwingReplacement, GetS
 		}
 	}
 
+	@Override
 	protected void fireActionPerformed(ActionEvent event) {
 		super.fireActionPerformed(event);
 	}

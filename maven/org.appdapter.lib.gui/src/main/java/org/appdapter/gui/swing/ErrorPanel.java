@@ -20,6 +20,7 @@ import org.appdapter.gui.browse.Utility;
 
 public class ErrorPanel extends JJPanel {
 
+	@Override
 	public Object getValue() {
 		return Utility.dref(error, message);
 	}

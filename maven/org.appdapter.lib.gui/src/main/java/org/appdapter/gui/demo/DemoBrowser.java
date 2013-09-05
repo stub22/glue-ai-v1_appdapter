@@ -37,7 +37,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.LookAndFeel;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.plaf.metal.DefaultMetalTheme;
 import javax.swing.plaf.metal.MetalLookAndFeel;
@@ -55,6 +54,7 @@ import org.appdapter.core.log.BasicDebugger;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.core.matdat.OfflineXlsSheetRepoSpec;
 import org.appdapter.core.store.Repo;
+import org.appdapter.core.store.Repo.WithDirectory;
 import org.appdapter.core.store.RepoBox;
 import org.appdapter.demo.DemoBrowserUI;
 import org.appdapter.demo.DemoNavigatorCtrlFactory;
@@ -74,6 +74,7 @@ import org.appdapter.gui.repo.RepoModelBoxImpl;
 import org.appdapter.gui.repo.RepoTriggers;
 import org.appdapter.gui.trigger.BootstrapTriggerFactory;
 import org.appdapter.gui.trigger.SysTriggers;
+import org.appdapter.gui.trigger.TriggerMouseAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,6 +84,9 @@ import com.jidesoft.swing.JideTabbedPane;
  * @author Stu B. <www.texpedient.com>
  */
 final public class DemoBrowser implements AnyOper.Singleton {
+	static {
+		TriggerMouseAdapter.installMouseListeners();
+	}
 	public static Logger theLogger = getLogger();
 
 	public static DemoNavigatorCtrl mainControl;
@@ -337,59 +341,12 @@ final public class DemoBrowser implements AnyOper.Singleton {
 		setLookAndFeelFromProperty();
 	}
 
-	@UISalient
-	public static void addMoreExamples() {
+	@UISalient public static void addMoreExamples() {
 
 		showObject(appName, mainControl, false, false);
 		registerToolsTrigger("System.exit(3)", new Trigger() {
 			@Override public void fire(Box targetBox) {
 				System.exit(3);
-			}
-		});
-
-		registerFactoryForClass(File.class, "Browse for File", new CallableWithParameters<Class<File>, File>() {
-
-			@Override public File call(Class box, Object... params) {
-				FileDialog dialog = new FileDialog(Utility.getAppFrame(), "Load... ", FileDialog.LOAD);
-				dialog.show();
-				String fileName = dialog.getFile();
-				String directory = dialog.getDirectory();
-				if (directory == null && fileName == null)
-					return null;
-				return new File(directory, fileName);
-			}
-
-		});
-		registerToolsTrigger("Load Repo From|Google Doc GluePuma_BehavMasterDemo", new Trigger() {
-			@Override public void fire(Box targetBox) {
-				Utility.showResult(new org.appdapter.core.matdat.GoogSheetRepoSpec(BMC_SHEET_KEY, BMC_NAMESPACE_SHEET_NUM, BMC_DIRECTORY_SHEET_NUM));
-			}
-		});
-		registerToolsTrigger("Load Repo From|GluePuma_HRKR50_TestFull", new TriggerImpl() {
-			@Override public void fire(Box targetBox) {
-				Utility.showResult(new org.appdapter.core.matdat.GoogSheetRepoSpec(GluePuma_HRKR50_TestFull_SHEET_KEY, GluePuma_HRKR50_TestFull_NAMESPACE_SHEET_NUM,
-						GluePuma_HRKR50_TestFull_DIRECTORY_SHEET_NUM));
-			}
-		});
-		registerToolsTrigger("Load Repo From|" + BMC_WORKBOOK_PATH, new Trigger() {
-			@Override public void fire(Box targetBox) {
-				Utility.showResult(new org.appdapter.core.matdat.OfflineXlsSheetRepoSpec(BMC_WORKBOOK_PATH, BMC_NAMESPACE_SHEET_NAME, BMC_DIRECTORY_SHEET_NAME, null));
-			}
-		});
-		registerToolsTrigger("Load Repo From|A Choosen a File", new Trigger() {
-			@Override public void fire(Box targetBox) {
-				try {
-					File myFile = Utility.createNewFromUI(File.class);
-					if (myFile == null) {
-						Utility.showResult("No file was selected");
-						return;
-					}
-					Utility.showResult(new OfflineXlsSheetRepoSpec(myFile.getAbsolutePath(), BMC_NAMESPACE_SHEET_NAME, BMC_DIRECTORY_SHEET_NAME, null));
-				} catch (Exception error) {
-					Utility.showError(null, "ERROR While trying to load a file repo...", error);
-				}
-
-				new org.appdapter.core.matdat.GoogSheetRepoSpec(BMC_SHEET_KEY, BMC_NAMESPACE_SHEET_NUM, BMC_DIRECTORY_SHEET_NUM);
 			}
 		});
 
@@ -431,6 +388,56 @@ final public class DemoBrowser implements AnyOper.Singleton {
 				}
 			}
 		});
+	}
+
+	public static void addRepoLoaderMenu() {
+
+		registerFactoryForClass(File.class, "Browse for File", new CallableWithParameters<Class<File>, File>() {
+
+			@Override public File call(Class box, Object... params) {
+				FileDialog dialog = new FileDialog(Utility.getAppFrame(), "Load... ", FileDialog.LOAD);
+				dialog.show();
+				String fileName = dialog.getFile();
+				String directory = dialog.getDirectory();
+				if (directory == null && fileName == null)
+					return null;
+				return new File(directory, fileName);
+			}
+
+		});
+		registerToolsTrigger("<toplevel>|Load Repo From|Google Doc GluePuma_BehavMasterDemo", new Trigger() {
+			@Override public void fire(Box targetBox) {
+				Utility.showResult(new org.appdapter.core.matdat.GoogSheetRepoSpec(BMC_SHEET_KEY, BMC_NAMESPACE_SHEET_NUM, BMC_DIRECTORY_SHEET_NUM).makeRepo());
+			}
+		});
+		registerToolsTrigger("<toplevel>|Load Repo From|GluePuma_HRKR50_TestFull", new TriggerImpl() {
+			@Override public void fire(Box targetBox) {
+				Utility.showResult(new org.appdapter.core.matdat.GoogSheetRepoSpec(GluePuma_HRKR50_TestFull_SHEET_KEY, GluePuma_HRKR50_TestFull_NAMESPACE_SHEET_NUM,
+						GluePuma_HRKR50_TestFull_DIRECTORY_SHEET_NUM).makeRepo());
+			}
+		});
+		registerToolsTrigger("<toplevel>|Load Repo From|" + BMC_WORKBOOK_PATH, new Trigger() {
+			@Override public void fire(Box targetBox) {
+				Utility.showResult(new org.appdapter.core.matdat.OfflineXlsSheetRepoSpec(BMC_WORKBOOK_PATH, BMC_NAMESPACE_SHEET_NAME, BMC_DIRECTORY_SHEET_NAME, null).makeRepo());
+			}
+		});
+		registerToolsTrigger("<toplevel>|Load Repo From|A Choosen a File", new Trigger() {
+			@Override public void fire(Box targetBox) {
+				try {
+					File myFile = Utility.createNewFromUI(File.class);
+					if (myFile == null) {
+						Utility.showResult("No file was selected");
+						return;
+					}
+					Utility.showResult(new OfflineXlsSheetRepoSpec(myFile.getAbsolutePath(), BMC_NAMESPACE_SHEET_NAME, BMC_DIRECTORY_SHEET_NAME, null).makeRepo());
+				} catch (Exception error) {
+					Utility.showError(null, "ERROR While trying to load a file repo...", error);
+				}
+
+				new org.appdapter.core.matdat.GoogSheetRepoSpec(BMC_SHEET_KEY, BMC_NAMESPACE_SHEET_NUM, BMC_DIRECTORY_SHEET_NUM).makeRepo();
+			}
+		});
+
 	}
 
 	static public class AsApplet extends JApplet {
@@ -772,6 +779,10 @@ final public class DemoBrowser implements AnyOper.Singleton {
 				updateComponentTreeUI0(children[i], defaults);
 			}
 		}
+	}
+
+	public static WithDirectory getDemoRepo() {
+		return new org.appdapter.core.matdat.GoogSheetRepoSpec(BMC_SHEET_KEY, BMC_NAMESPACE_SHEET_NUM, BMC_DIRECTORY_SHEET_NUM).makeRepo();
 	}
 
 	/*

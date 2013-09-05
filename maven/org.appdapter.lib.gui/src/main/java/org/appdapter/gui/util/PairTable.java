@@ -81,4 +81,9 @@ public class PairTable<K, V> {
 		else
 			return (o1.equals(o2));
 	}
+
+	public void clear() {
+		hash.clear();
+
+	}
 }

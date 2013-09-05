@@ -5,8 +5,6 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collection;
-
 import javax.swing.border.TitledBorder;
 
 import org.appdapter.api.trigger.Box;
@@ -15,7 +13,6 @@ import org.appdapter.gui.api.FocusOnBox;
 import org.appdapter.gui.api.GetSetObject;
 import org.appdapter.gui.api.NamedObjectCollection;
 import org.appdapter.gui.browse.Utility;
-import org.appdapter.gui.util.PromiscuousClassUtilsA;
 
 public class NamedItemChooserPanel extends JJPanel implements GetSetObject, FocusOnBox<Box> {
 
@@ -23,6 +20,7 @@ public class NamedItemChooserPanel extends JJPanel implements GetSetObject, Focu
 	 * @deprecated As of JDK version 1.1,
 	 * replaced by <code>getPreferredSize()</code>.
 	 */
+	@Override
 	@Deprecated public Dimension preferredSize() {
 		Dimension dim = getSize();
 		if (dim != null) {
