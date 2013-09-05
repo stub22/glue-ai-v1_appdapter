@@ -75,8 +75,15 @@ object ModelProviderFactory extends BasicDebugger {
 		upstreamNMP.makeDirectBoundModelProvider(graphID);
 	}
 	def makeOneDerivedModelProvider (rc : RepoClient, pqs : PipelineQuerySpec, outGraphID: Ident) : BoundModelProvider = {
+	   try {
 		val dgSpec = DerivedGraphSpecReader.findOneDerivedGraphSpec(rc, pqs, outGraphID)
 		// Assume we want to read from same repo-client as was used to fetch the spec.
 		dgSpec.makeDerivedModelProvider(rc)
-	}	
+	   }   catch {    case except: Throwable => {
+        getLogger().error("Caught error makeOneDerivedModelProvider {}", Array[Object](pqs, except))
+        throw except
+	   } 
+	   }
+	}
+		
 }

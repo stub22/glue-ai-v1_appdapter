@@ -156,6 +156,9 @@ public class RepoOper implements AnyOper, UtilClass {
 		}
 	}
 
+	public static void readDatasetFromURL(String source, Dataset target, Resource unionOrReplace) {
+	}
+
 	public static void replaceNamedModel(Dataset dest, String urlModel, Model model, Resource unionOrReplace) {
 		Lock lock = dest.getLock();
 		lock.enterCriticalSection(Lock.WRITE);

@@ -15,8 +15,10 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.GenericDeclaration;
+import java.lang.reflect.GenericSignatureFormatError;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.MalformedParameterizedTypeException;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -2075,25 +2077,10 @@ abstract public class ReflectUtils implements UtilClass {
 			//bind(new TypeLiteral<Dao<Foo>>(){}).to(GenericDAO.class);
 			//return new com.google.inject.util.Modules.newParameterizedType(raw, typeArguments);
 		}
-		return new ParameterizedType() {
-			@Override public boolean equals(Object obj) {
-				if (!(obj instanceof Type))
-					return false;
-				return equalTypes(this, (Type) obj);
-			}
-
-			@Override public Type getRawType() {
-				return raw;
-			}
-
-			@Override public Type getOwnerType() {
-				return null;
-			}
-
-			@Override public Type[] getActualTypeArguments() {
-				return typeArguments;
-			}
-		};
+		RType type = makeRType(ParameterizedType.class, raw, "<", typeArguments, ">");
+		type.actualTypeArguments = typeArguments;
+		type.rawType = raw;
+		return type;
 	}
 
 	public static class TypeName {
@@ -2103,12 +2090,34 @@ abstract public class ReflectUtils implements UtilClass {
 			nameargs = args;
 		}
 
+		@Override public boolean equals(Object obj) {
+			if (obj == null)
+				return false;
+			return toString().equals(obj.toString());
+		}
+
 		@Override public String toString() {
 			return Debuggable.toInfoStringA(nameargs, "", Integer.MAX_VALUE);
 		}
 	}
 
-	public static class RType implements Type, TypeVariable, GenericDeclaration, ParameterizedType, Serializable, java.lang.reflect.AnnotatedElement {
+	final public static class RType implements Type, TypeVariable, GenericDeclaration, //
+			WildcardType, ParameterizedType, Serializable, java.lang.reflect.AnnotatedElement, GenericArrayType {
+
+		private static final Map<TypeName, RType> typeName2RType = new HashMap<ReflectUtils.TypeName, ReflectUtils.RType>();
+
+		public static RType makeRType(Class profession, Object... namestring) {
+			TypeName typeName = new TypeName(namestring);
+			RType found;
+			synchronized (typeName2RType) {
+				found = typeName2RType.get(typeName);
+				if (found == null) {
+					found = new RType(profession, namestring);
+					typeName2RType.put(typeName, found);
+				}
+			}
+			return found;
+		}
 
 		protected Type[] oneMustBeTrue;
 		protected Type[] allMustBeTrue;
@@ -2116,46 +2125,224 @@ abstract public class ReflectUtils implements UtilClass {
 		protected Type[] actualTypeArguments;
 		protected Type[] bounds;
 		protected TypeVariable[] typeParameters = new TypeVariable[0];
-		protected Type rawType = Object.class, ownerType = this;
+		protected Class rawType = null;
+		final protected Type ownerType = null;
 		protected TypeName typeName;
 		protected Type genericComponentType;
+		private Class professesToBe;
 
-		public RType(Object... namestring) {
+		private RType(Class profession, Object... namestring) {
+			this.professesToBe = profession;
 			typeName = new TypeName(namestring);
 		}
 
+		/**
+		 * Returns an array of <tt>Type</tt> objects representing the 
+		 * upper bound(s) of this type variable.  Note that if no upper bound is
+		 * explicitly declared, the upper bound is <tt>Object</tt>.
+		 *
+		 * <p>For each upper bound B: <ul> <li>if B is a parameterized
+		 * type or a type variable, it is created, (see {@link
+		 * java.lang.reflect.ParameterizedType ParameterizedType} for the
+		 * details of the creation process for parameterized types).
+		 * <li>Otherwise, B is resolved.  </ul>
+		 *
+		 * @throws TypeNotPresentException  if any of the
+		 *     bounds refers to a non-existent type declaration
+		 * @throws MalformedParameterizedTypeException if any of the 
+		 *     bounds refer to a parameterized type that cannot be instantiated 
+		 *     for any reason
+		 * @return an array of <tt>Type</tt>s representing the upper
+		 *     bound(s) of this type variable
+		*/
 		@Override public Type[] getBounds() {
 			return bounds;
 		}
 
+		/**
+		 * Returns the <tt>GenericDeclaration</tt> object representing the 
+		 * generic declaration declared this type variable.
+		 *
+		 * @return the generic declaration declared for this type variable.
+		 *
+		 * @since 1.5
+		 */
 		@Override public GenericDeclaration getGenericDeclaration() {
 			return this;
 		}
 
+		/**
+		 * Returns the name of this type variable, as it occurs in the source code.
+		 *
+		 * @return the name of this type variable, as it appears in the source code
+		 */
 		@Override public String getName() {
 			return typeName.toString();
 		}
 
+		/**
+		 * Returns an array of <tt>TypeVariable</tt> objects that
+		 * represent the type variables declared by the generic
+		 * declaration represented by this <tt>GenericDeclaration</tt>
+		 * object, in declaration order.  Returns an array of length 0 if
+		 * the underlying generic declaration declares no type variables.
+		 *
+		 * @return an array of <tt>TypeVariable</tt> objects that represent
+		 *     the type variables declared by this generic declaration
+		 * @throws GenericSignatureFormatError if the generic
+		 *     signature of this generic declaration does not conform to
+		 *     the format specified in the Java Virtual Machine Specification,
+		 *     3rd edition
+		 */
 		@Override public TypeVariable<?>[] getTypeParameters() {
 			return typeParameters;
 		}
 
+		/**
+		 * Determines if the class or interface represented by this
+		 * <code>Class</code> object is either the same as, or is a superclass or
+		 * superinterface of, the class or interface represented by the specified
+		 * <code>Class</code> parameter. It returns <code>true</code> if so;
+		 * otherwise it returns <code>false</code>. If this <code>Class</code>
+		 * object represents a primitive type, this method returns
+		 * <code>true</code> if the specified <code>Class</code> parameter is
+		 * exactly this <code>Class</code> object; otherwise it returns
+		 * <code>false</code>.
+		 *
+		 * <p> Specifically, this method tests whether the type represented by the
+		 * specified <code>Class</code> parameter can be converted to the type
+		 * represented by this <code>Class</code> object via an identity conversion
+		 * or via a widening reference conversion. See <em>The Java Language
+		 * Specification</em>, sections 5.1.1 and 5.1.4 , for details.
+		 * 
+		 * @param cls the <code>Class</code> object to be checked
+		 * @return the <code>boolean</code> value indicating whether objects of the
+		 * type <code>cls</code> can be assigned to objects of this class
+		 * @exception NullPointerException if the specified Class parameter is
+		 *            null.
+		 * @since JDK1.1
+		 */
 		public boolean isAssignableFrom(Type other) {
-			return other == this;
+			boolean testedSomething = false;
+			if (allMustBeTrue != null) {
+				testedSomething = true;
+				if (!implementsAllClasses(other, allMustBeTrue)) {
+					return false;
+				}
+			}
+			if (noneMustBeTrue != null) {
+				testedSomething = true;
+				if (implementsAnyClasses(other, noneMustBeTrue)) {
+					return false;
+				}
+			}
+			if (oneMustBeTrue != null) {
+				testedSomething = true;
+				if (!implementsAnyClasses(other, oneMustBeTrue)) {
+					return false;
+				}
+			}
+
+			if (other instanceof Class && rawType instanceof Class) {
+				testedSomething = true;
+				if (!((Class) rawType).isAssignableFrom((Class) other))
+					return false;
+			}
+			if (genericComponentType != null) {
+				if (other instanceof GenericArrayType) {
+					testedSomething = true;
+					if (!ReflectUtils.isAssignableFrom(getGenericComponentType(), ((GenericArrayType) other).getGenericComponentType()))
+						return false;
+				} else if (other instanceof Class) {
+					testedSomething = true;
+					if (!ReflectUtils.isAssignableFrom(getGenericComponentType(), ((Class) other).getComponentType()))
+						return false;
+				}
+			}
+			if (equalTypes(this, other, false))
+				return true;
+			if (!testedSomething) {
+				Debuggable.warn("cant test " + this + " and " + other);
+			}
+			return testedSomething;
 		}
 
+		/**
+		 * Returns an array of <tt>Type</tt> objects representing the actual type
+		 * arguments to this type.
+		 * 
+		 * <p>Note that in some cases, the returned array be empty. This can occur
+		 * if this type represents a non-parameterized type nested within
+		 * a parameterized type.
+		 *
+		 * @return an array of <tt>Type</tt> objects representing the actual type
+		 *     arguments to this type
+		 * @throws <tt>TypeNotPresentException</tt> if any of the
+		 *     actual type arguments refers to a non-existent type declaration
+		 * @throws <tt>MalformedParameterizedTypeException</tt> if any of the 
+		 *     actual type parameters refer to a parameterized type that cannot
+		 *     be instantiated for any reason
+		 * @since 1.5
+		 */
 		@Override public Type[] getActualTypeArguments() {
 			return actualTypeArguments;
 		}
 
+		/**
+		 * Returns the <tt>Type</tt> object representing the class or interface
+		 * that declared this type.
+		 *
+		 * @return the <tt>Type</tt> object representing the class or interface
+		 *     that declared this type
+		 * @since 1.5
+		 */
 		@Override public Type getRawType() {
+			if (rawType == null) {
+				if (false)
+					return null;
+				return Object.class;
+			}
 			return rawType;
 		}
 
+		/**
+		 * Returns a <tt>Type</tt> object representing the type that this type
+		 * is a member of.  For example, if this type is {@code O<T>.I<S>},
+		 * return a representation of {@code O<T>}.
+		 *
+		 * <p>If this type is a top-level type, <tt>null</tt> is returned.
+		 *
+		 * @return a <tt>Type</tt> object representing the type that 
+		 *     this type is a member of. If this type is a top-level type, 
+		 *     <tt>null</tt> is returned
+		 * @throws <tt>TypeNotPresentException</tt> if the owner type
+		 *     refers to a non-existent type declaration
+		 * @throws <tt>MalformedParameterizedTypeException</tt> if the owner type
+		 *     refers to a parameterized type that cannot be instantiated 
+		 *     for any reason
+		 * @since 1.5
+		 */
 		@Override public Type getOwnerType() {
 			return ownerType;
 		}
 
+		/**
+		 * Returns a <tt>Type</tt> object representing the component type
+		 * of this array. This method creates the component type of the
+		 * array.  See the declaration of {@link
+		 * java.lang.reflect.ParameterizedType ParameterizedType} for the
+		 * semantics of the creation process for parameterized types and
+		 * see {@link java.lang.reflect.TypeVariable TypeVariable} for the
+		 * creation process for type variables.
+		 *
+		 * @return  a <tt>Type</tt> object representing the component type
+		 *     of this array
+		 * @throws TypeNotPresentException if the underlying array type's
+		 *     component type refers to a non-existent type declaration
+		 * @throws MalformedParameterizedTypeException if  the
+		 *     underlying array type's component type refers to a
+		 *     parameterized type that cannot be instantiated for any reason
+		 */
 		public Type getGenericComponentType() {
 			return this.genericComponentType;
 		}
@@ -2199,53 +2386,56 @@ abstract public class ReflectUtils implements UtilClass {
 			notImplemented();
 			return null;
 		}
+
+		@Override public Type[] getUpperBounds() {
+			notImplemented();
+			return null;
+		}
+
+		@Override public Type[] getLowerBounds() {
+			notImplemented();
+			return null;
+		}
 	}
 
-	public static RType typeAnd(final Type... allTrue) {
-		return new RType(new TypeName("allOf", allTrue)) {
-			{
-				allMustBeTrue = allTrue;
-			}
-		};
+	public static TypeVariable typeAnd(final Type... allTrue) {
+		RType type = makeRType(RType.class, new TypeName("oneOf", allTrue));
+		type.allMustBeTrue = allTrue;
+		return type;
 	}
 
-	public static RType typeOr(final Type... oneTrue) {
-		return new RType(new TypeName("oneOf", oneTrue)) {
-			{
-				oneMustBeTrue = oneTrue;
-			}
-		};
+	public static TypeVariable typeOr(final Type... oneTrue) {
+		RType type = makeRType(RType.class, new TypeName("oneOf", oneTrue));
+		type.oneMustBeTrue = oneTrue;
+		return type;
+
+	}
+
+	private static RType makeRType(Class<? extends Type> profession, Object... typeName) {
+		return RType.makeRType(profession, typeName);
 	}
 
 	public static RType typeNot(final Type... never) {
-		return new RType(new TypeName("not", never)) {
-			{
-				noneMustBeTrue = never;
-			}
-		};
+		RType type = makeRType(RType.class, new TypeName("not", never));
+		type.noneMustBeTrue = never;
+		return type;
 	}
 
-	public static Type makeArrayType(final Type t) {
-		if (false)
-			return makeParameterizedType(Iterable.class, t);
-		return new GenericArrayType() {
-			@Override public Type getGenericComponentType() {
-				return t;
-			}
-		};
+	public static GenericArrayType makeArrayType(final Type t) {
+		RType type = makeRType(GenericArrayType.class, t, "[]");
+		type.genericComponentType = t;
+		return type;
 	}
 
 	public static Type makeAnyType() {
-		return new RType("?") {
-			{
-				noneMustBeTrue = new RType[0];
-				allMustBeTrue = new RType[0];
-				oneMustBeTrue = null;
-			}
-		};
+		RType type = makeRType(TypeVariable.class, "<?>");
+		type.noneMustBeTrue = new RType[0];
+		type.allMustBeTrue = new RType[0];
+		type.oneMustBeTrue = null;
+		return type;
 	}
 
-	private static boolean equalTypes(Type[] a, Type[] b) {
+	private static boolean equalTypes(Type[] a, Type[] b, boolean allowRTypeCalls) {
 		if (a == b)
 			return true;
 		if (a == null || b == null)
@@ -2254,25 +2444,25 @@ abstract public class ReflectUtils implements UtilClass {
 			return false;
 		int al = a.length;
 		for (int i = 0; i < al; i++) {
-			if (!equalTypes(a[i], b[i]))
+			if (!equalTypes(a[i], b[i], allowRTypeCalls))
 				return false;
 		}
 		return true;
 	}
 
-	public static boolean equalTypes(Type a, Type b) {
+	public static boolean equalTypes(Type a, Type b, boolean allowRTypeCalls) {
 		if (a.getClass() != b.getClass()) {
 			if (a instanceof ParameterizedType) {
 				if (b instanceof ParameterizedType) {
-					if (!equalTypes(((ParameterizedType) a).getRawType(), ((ParameterizedType) b).getRawType()))
+					if (!equalTypes(((ParameterizedType) a).getRawType(), ((ParameterizedType) b).getRawType(), allowRTypeCalls))
 						return false;
-					return equalTypes(((ParameterizedType) a).getActualTypeArguments(), ((ParameterizedType) b).getActualTypeArguments());
+					return equalTypes(((ParameterizedType) a).getActualTypeArguments(), ((ParameterizedType) b).getActualTypeArguments(), allowRTypeCalls);
 				} else {
-					return equalTypes(b, a);
+					return equalTypes(b, a, allowRTypeCalls);
 				}
 			} else {
 				if (b instanceof ParameterizedType) {
-					return equalTypes(a, ((ParameterizedType) b).getRawType());
+					return equalTypes(a, ((ParameterizedType) b).getRawType(), allowRTypeCalls);
 				} else {
 					//
 				}
@@ -2297,7 +2487,9 @@ abstract public class ReflectUtils implements UtilClass {
 	public static class KeyReference extends Number implements SetObject, GetObject {
 		public transient Object eq;
 
-		public KeyReference(Object obj) {
+		private KeyReference(Object obj) {
+			if (obj instanceof KeyReference)
+				throw new NullPointerException();
 			eq = obj;
 		}
 
@@ -2317,6 +2509,8 @@ abstract public class ReflectUtils implements UtilClass {
 		}
 
 		@Override public int hashCode() {
+			if (eq == this)
+				return super.hashCode();
 			return eq.hashCode();
 		}
 
@@ -2370,6 +2564,9 @@ abstract public class ReflectUtils implements UtilClass {
 	public static boolean isAssignableFrom(Type type1, Type type2) {
 		if (type1 instanceof Class<?> && type2 instanceof Class<?>) {
 			return ((Class<?>) type1).isAssignableFrom((Class<?>) type2);
+		}
+		if (type1 instanceof RType) {
+			return ((RType) type1).isAssignableFrom(type2);
 		} else {
 			return type1.equals(type2);
 		}
@@ -2788,12 +2985,20 @@ abstract public class ReflectUtils implements UtilClass {
 		return on;
 	}
 
-	public static boolean implementsAllClasses(Class cls, Class... classes) {
-		for (Class c : classes) {
-			if (!c.isAssignableFrom(cls))
+	public static boolean implementsAllClasses(Type cls, Type... classes) {
+		for (Type c : classes) {
+			if (!isAssignableFrom(c, cls))
 				return false;
 		}
 		return true;
+	}
+
+	public static boolean implementsAnyClasses(Type cls, Type... classes) {
+		for (Type c : classes) {
+			if (isAssignableFrom(c, cls))
+				return true;
+		}
+		return false;
 	}
 
 	public static boolean isSynthetic(Member theMethod) {

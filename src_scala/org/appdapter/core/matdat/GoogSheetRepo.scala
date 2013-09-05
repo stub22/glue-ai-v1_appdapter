@@ -65,7 +65,7 @@ object GoogSheetRepoLoader extends BasicDebugger {
     fileModelCLs: java.util.List[ClassLoader], repoSpec: RepoSpec): SheetRepo = {
     // Read the namespaces and directory sheets into a single directory model.
     val dirModel: Model = readModelFromGoog(sheetLocation, namespaceSheetName, dirSheetName)
-    SpecialRepoLoader.makeSheetRepo(repoSpec, dirModel);
+    FancyRepoLoader.makeRepoWithDirectory(repoSpec, dirModel);
   }
 
   /////////////////////////////////////////
@@ -113,7 +113,7 @@ object GoogSheetRepoLoader extends BasicDebugger {
         def run() {
           val sheetModel: Model = readModelSheet(sheetKey, sheetNum, nsJavaMap);
           getLogger.debug("Read sheetModel: {}", sheetModel)
-          PipelineRepoLoader.replaceOrUnion(mainDset, unionOrReplaceRes, graphURI, sheetModel);
+          FancyRepoLoader.replaceOrUnion(mainDset, unionOrReplaceRes, graphURI, sheetModel);
         }
       })
     }

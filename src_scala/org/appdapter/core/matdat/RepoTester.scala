@@ -15,19 +15,13 @@
  */
 
 package org.appdapter.core.matdat
-import org.appdapter.core.name.{ Ident, FreeIdent }
+import org.appdapter.core.log.BasicDebugger
+import org.appdapter.core.name.Ident
 import org.appdapter.core.store.{ Repo, InitialBinding }
-import org.appdapter.help.repo.{ RepoClient, RepoClientImpl, InitialBindingImpl }
-import org.appdapter.impl.store.{ FancyRepo, DatabaseRepo, FancyRepoFactory }
+
 import com.hp.hpl.jena.query.{ QuerySolution }
 import com.hp.hpl.jena.rdf.model.{ Model }
-import org.appdapter.core.log.BasicDebugger;
-// Currently we're on   Jena 2.6.4, ARQ 2.8.7, SDB 1.3.4
-import com.hp.hpl.jena.sparql.sse.SSE
-import com.hp.hpl.jena.sparql.modify.request.{ UpdateCreate, UpdateLoad }
-import com.hp.hpl.jena.update.{ GraphStore, GraphStoreFactory, UpdateAction, UpdateRequest }
-import com.hp.hpl.jena.sdb.{ Store, SDBFactory };
-import com.sun.org.apache.bcel.internal.classfile.Deprecated
+
 /**
  * @author Stu B. <www.texpedient.com>
  */
@@ -76,7 +70,7 @@ object RepoTester extends BasicDebugger {
   }
 
   def loadDatabaseRepo(configPath: String, optConfigResolveCL: ClassLoader, dirGraphID: Ident): DatabaseRepo = {
-    val dbRepo = FancyRepoFactory.makeDatabaseRepo(configPath, optConfigResolveCL, dirGraphID)
+    val dbRepo = DatabaseRepoLoader.makeDatabaseRepo(configPath, optConfigResolveCL, dirGraphID)
     dbRepo;
   }
 
@@ -92,48 +86,7 @@ object RepoTester extends BasicDebugger {
     println("Found solutions for " + queryQName + " in " + tgtGraphQName + " : " + solnJavaList)
   }
 
-  def copyAllRepoModels(sourceRepo: Repo.WithDirectory, targetRepo: Repo.WithDirectory): Unit = {
-  }
-}
-class BetterDatabaseRepo(sdbStore: Store, dirGraphID: Ident) extends DatabaseRepo(sdbStore, dirGraphID) {
-  //	Current docs for GraphStoreFactory (more recent than the code version we're using) say,
-  //	regarding   GraphStoreFactory. reate(Dataset dataset)
-  //	 Create a GraphStore from a dataset so that updates apply to the graphs in the dataset.
-  //	 Throws UpdateException (an ARQException) if the GraphStore can not be created. This 
-  //	 is not the way to get a GraphStore for SDB or TDB - an SDB Store object is a GraphStore 
-  //	 no conversion necessary.
-  //	 
-  //	 
-  def graphStoreStuff() = {
-    val graphName = "http://example/namedGraph";
-
-    // Create an empty GraphStore (has an empty default graph and no named graphs) 
-    // val graphStore : GraphStore  = GraphStoreFactory.create() ;
-    // 
-
-    val readStore: Store = getStore();
-    val sdbUpdateGraphStore: GraphStore = SDBFactory.connectGraphStore(readStore);
-
-    // A sequence of operations
-    val upSpec: UpdateRequest = new UpdateRequest();
-
-    // Create a named graph
-    val creReq: UpdateCreate = new UpdateCreate(graphName);
-
-    // Load a file into a named graph - NB order of arguments (both strings).
-    val loadReq: UpdateLoad = new UpdateLoad("etc/update-data.ttl", graphName);
-
-    // Add the two operations and execute the request
-    //@SuppressWarnings Deprecated
-    upSpec.add(creReq)
-    upSpec.add(loadReq)
-
-    // Execute 
-    UpdateAction.execute(upSpec, sdbUpdateGraphStore);
-
-    // Print it out (format is SSE <http://jena.hpl.hp.com/wiki/SSE>)
-    // used to represent a dataset.
-    // Note the empty default, unnamed graph
-    SSE.write(sdbUpdateGraphStore);
-  }
+  /*  Commented out to ensure not using (ever) 
+ *   def copyAllRepoModels(sourceRepo: Repo.WithDirectory, targetRepo: Repo.WithDirectory): Unit = {
+  }*/
 }
