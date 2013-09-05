@@ -19,7 +19,6 @@ package org.appdapter.test.repo
 import org.appdapter.core.name.{ Ident, FreeIdent }
 import org.appdapter.core.store.{ Repo, InitialBinding }
 import org.appdapter.help.repo.{ RepoClient, RepoClientImpl, InitialBindingImpl }
-import org.appdapter.impl.store.{ FancyRepo, DatabaseRepo, FancyRepoFactory }
 import org.appdapter.core.matdat.{ GoogSheetRepo }
 import com.hp.hpl.jena.query.{ QuerySolution }
 import com.hp.hpl.jena.rdf.model.{ Model }
