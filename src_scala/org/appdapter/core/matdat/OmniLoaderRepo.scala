@@ -67,81 +67,12 @@ class OmniLoaderRepo(myRepoSpecStart: RepoSpec, myDebugNameIn: String, myBasePat
     ensureUpdatedPrivate
     super.getMainQueryDataset();
   }
-
+  /*
   def loadPipeline(pplnGraphQN: String) = {
     val mainDset: Dataset = getMainQueryDataset().asInstanceOf[Dataset];
-    PipelineRepoLoader.loadPipeline(pplnGraphQN, this, mainDset);
+    PipelineRepoLoaderD.loadPipeline(pplnGraphQN, this, mainDset);
   }
-
-}
-
-/// this is a registerable loader
-class PipelineRepoLoader extends InstallableRepoReader {
-  override def getContainerType() = "cc:PipelineModel"
-  override def getSheetType() = "ccrt:UnionModel"
-  override def isDerivedLoader() = true
-  override def loadModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
-    PipelineRepoLoader.loadSheetModelsIntoTargetDataset(repo, mainDset, dirModel, fileModelCLs)
-  }
-}
-
-object PipelineRepoLoader extends BasicDebugger {
-
-  def loadSheetModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: Dataset, myDirectoryModel: Model, fileModelCLs: java.util.List[ClassLoader]) = {
-
-    val nsJavaMap: java.util.Map[String, String] = myDirectoryModel.getNsPrefixMap()
-
-    val msqText = """
-			select ?model 
-				{
-					?model a cc:PipelineModel;
-				}
-		"""
-
-    val msRset = QueryHelper.execModelQueryWithPrefixHelp(myDirectoryModel, msqText);
-    import scala.collection.JavaConversions._;
-    while (msRset.hasNext()) {
-      val qSoln: QuerySolution = msRset.next();
-
-      //val repoRes : Resource = qSoln.getResource("repo");
-      val modelRes = qSoln.get("model");
-      val modelName = modelRes.asResource().asNode().getURI
-
-      val dbgArray = Array[Object](modelRes, modelName);
-      loadPipeline(modelName, repo, mainDset);
-      getLogger.warn("DerivedModelsIntoMainDataset modelRes={}, modelName={}", dbgArray);
-      //val msRset = QueryHelper.execModelQueryWithPrefixHelp(mainDset.getNamedModel(modelName), msqText2);
-
-      // DerivedGraphSpecReader.queryDerivedGraphSpecs(getRepoClient,DerivedGraphSpecReader.PIPELINE_QUERY_QN,modelName)
-    }
-  }
-
-  def loadPipeline(pplnGraphQN: String, repo: Repo.WithDirectory, mainDset: Dataset) = {
-
-    val rc = new RepoClientImpl(repo, RepoSpecDefaultNames.DFLT_TGT_GRAPH_SPARQL_VAR, RepoSpecDefaultNames.DFLT_QRY_SRC_GRAPH_QN)
-    val pqs = new PipelineQuerySpec(RepoSpecDefaultNames.PIPE_ATTR_QQN, RepoSpecDefaultNames.PIPE_SOURCE_QQN, pplnGraphQN);
-    val dgSpecSet: Set[DerivedGraphSpec] = DerivedGraphSpecReader.queryDerivedGraphSpecs(rc, pqs);
-
-    for (dgSpec <- dgSpecSet) {
-      val derivedModelProvider = dgSpec.makeDerivedModelProvider(repo);
-      val derivedModel = derivedModelProvider.getModel()
-      // null for now
-      replaceOrUnion(mainDset, null, pplnGraphQN, derivedModel)
-    }
-  }
-
-  def replaceOrUnion(mainDset: Dataset, unionOrReplaceRes: Resource, graphURI: String, sheetModel: Model) {
-    RepoOper.replaceNamedModel(mainDset, graphURI, sheetModel, unionOrReplaceRes)
-  }
-}
-
-class SimplistRepoSpec(val wd: Repo.WithDirectory) extends RepoSpec {
-  override def makeRepo(): Repo.WithDirectory = {
-    wd;
-  }
-  override def toString(): String = {
-    "SimplestSpec[" + wd + "]";
-  }
+*/
 }
 
 object OmniLoaderRepoTest {
@@ -159,7 +90,6 @@ object OmniLoaderRepoTest {
   final val BMC_NAMESPACE_SHEET_NAME = "Nspc"
   final val BMC_DIRECTORY_SHEET_NAME = "Dir"
 
-  final val QUERY_SOURCE_GRAPH_QN = "ccrt:qry_sheet_77";
   final val CHAN_BIND_GRAPH_QN = "csi:chan_sheet_77";
 
   final val GROUP_KEY_CHAN_BIND = "ChannelBindingGroupId";
@@ -171,8 +101,9 @@ object OmniLoaderRepoTest {
   final val BEHAV_SCENE_GRAPH_QN = "csi:behavScene_sheet_77";
   final val DERIVED_BEHAV_GRAPH_QN = "csi:merged_model_5001";
 
-  final val PIPELINE_GRAPH_QN = "csi:pipeline_sheet_77";
-  final val PIPELINE_QUERY_QN = "ccrt:find_pipes_77";
+  final val QUERY_SOURCE_GRAPH_QN_FOR_TEST = "ccrt:qry_sheet_77";
+  final val PIPELINE_GRAPH_QN_FOR_TEST = "csi:pipeline_sheet_77";
+  final val PIPELINE_QUERY_QN_FOR_TEST = "ccrt:find_pipes_77";
 
   final val GROUP_KEY_SCENE_SPEC = "SceneSpecGroupId";
   final val SCENE_GROUP_QN = "csi:scene_group_33";
@@ -192,3 +123,4 @@ object OmniLoaderRepoTest {
   }
 
 }
+

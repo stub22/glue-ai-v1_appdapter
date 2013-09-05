@@ -35,10 +35,10 @@ import com.hp.hpl.jena.rdf.model.Literal;
  */
 public abstract class BaseItem implements Item {
 	static Logger theLogger = LoggerFactory.getLogger(BaseItem.class);
+
 	protected abstract Literal getLiteralVal(Ident fieldID, boolean throwOnFailure);
 
 	protected abstract List<Item> getLinkedItems(Ident linkName, LinkDirection linkDir);
-
 
 	@Override public int getLinkedItemCount(Ident linkName, LinkDirection linkDir) {
 		Collection<Item> linkedItems = getLinkedItems(linkName, linkDir);
@@ -59,17 +59,17 @@ public abstract class BaseItem implements Item {
 			linkedItems.toArray(items);
 			return items[0];
 		} else {
-			throw new RuntimeException("Found " + size + " items instead of expected 1 at " + linkName);
+			throw new RuntimeException("Found " + size + " items instead of expected 1 for property " + (linkName == null ? "NULL" : linkName.getAbsUriString()) + " while assembling " + this);
 		}
 	}
 
-    /**
-     * Returns one item or null if not available.
-     * 
-     * @param linkName
-     * @param linkDir
-     * @return The 'Item' or a null value
-     */
+	/**
+	 * Returns one item or null if not available.
+	 * 
+	 * @param linkName
+	 * @param linkDir
+	 * @return The 'Item' or a null value
+	 */
 	@Override public Item getOptionalSingleLinkedItem(Ident linkName, LinkDirection linkDir) {
 		Collection<Item> linkedItems = getLinkedItems(linkName, linkDir);
 		int size = linkedItems.size();
@@ -78,9 +78,10 @@ public abstract class BaseItem implements Item {
 			linkedItems.toArray(items);
 			return items[0];
 		} else {
-            return null;
+			return null;
 		}
 	}
+
 	/**
 	 * This implementation does not yet actually do the requested sorting.
 	 * To be fixed!
@@ -92,6 +93,7 @@ public abstract class BaseItem implements Item {
 		// theLogger.warn("These items are not yet really sorted by linkName: " + linkName);
 		return getLinkedItems(linkName, linkDir);
 	}
+
 	public Ident getValIdent(Ident fieldName) {
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
@@ -100,6 +102,7 @@ public abstract class BaseItem implements Item {
 		Literal lit = getLiteralVal(fieldID, true);
 		return lit.getDatatypeURI();
 	}
+
 	@Override public Date getValDate(Ident fieldID, Date defaultVal) {
 		throw new UnsupportedOperationException("Date literals not supported yet.");
 		//Literal lit = getLiteralVal(fieldID, false);
@@ -111,13 +114,13 @@ public abstract class BaseItem implements Item {
 		Literal lit = getLiteralVal(fieldID, false);
 		if (lit != null) {
 			return lit.getDouble();
-		}  else {
+		} else {
 			return defaultVal;
 		}
 	}
 
 	@Override public Long getValLong(Ident fieldID, Long defaultVal) {
-		Literal lit = getLiteralVal(fieldID, false); 
+		Literal lit = getLiteralVal(fieldID, false);
 		if (lit != null) {
 			return lit.getLong();
 		} else {
@@ -126,7 +129,7 @@ public abstract class BaseItem implements Item {
 	}
 
 	@Override public Integer getValInteger(Ident fieldID, Integer defaultVal) {
-		Literal lit = getLiteralVal(fieldID, false); 
+		Literal lit = getLiteralVal(fieldID, false);
 		if (lit != null) {
 			return lit.getInt();
 		} else {
@@ -134,7 +137,6 @@ public abstract class BaseItem implements Item {
 		}
 	}
 
-	
 	@Override public String getValString(Ident fieldID, String defaultVal) {
 		Literal lit = getLiteralVal(fieldID, false);
 		if (lit != null) {
@@ -143,8 +145,9 @@ public abstract class BaseItem implements Item {
 			return defaultVal;
 		}
 	}
+
 	@Override public Boolean getValBoolean(Ident fieldID, Boolean defaultVal) {
-		Literal lit = getLiteralVal(fieldID, false); 
+		Literal lit = getLiteralVal(fieldID, false);
 		if (lit != null) {
 			return lit.getBoolean();
 		} else {

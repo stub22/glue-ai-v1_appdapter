@@ -33,6 +33,7 @@ public class SpecialRepoLoader extends BasicDebugger implements UncaughtExceptio
 	LinkedList<Task> tasks = new LinkedList<Task>();
 	boolean lastJobSubmitted = false;
 	Object synchronousAdderLock = new Object();
+	Object executorLock = new Object();
 	boolean isSynchronous = true;
 	int taskNum = 0;
 	BasicRepoImpl loaderFor = null;
@@ -105,9 +106,26 @@ public class SpecialRepoLoader extends BasicDebugger implements UncaughtExceptio
 
 		int origTaskSize = 0;
 		int newTaskSize = tasks.size();
-		while (origTaskSize != newTaskSize) {
+		boolean isComplete = false;
+		while (origTaskSize != newTaskSize || !isComplete) {
+			isComplete = true;
 			for (Task task : ReflectUtils.copyOf(tasks)) {
+				// tast.get // makes the call happen
 				Task sheetLoadResult = task.get();
+				if (sheetLoadResult == null) {
+					synchronized (tasks) {
+						tasks.remove(task);
+					}
+					continue;
+				}
+				if (!sheetLoadResult.isComplete()) {
+					isComplete = false;
+				} else {
+					// my report if the complition was bad?
+					synchronized (tasks) {
+						tasks.remove(task);
+					}
+				}
 			}
 			origTaskSize = newTaskSize;
 			newTaskSize = tasks.size();
@@ -116,13 +134,14 @@ public class SpecialRepoLoader extends BasicDebugger implements UncaughtExceptio
 		synchronized (synchronousAdderLock) {
 			waslastJobSubmitted = lastJobSubmitted;
 		}
-		if (waslastJobSubmitted) {
+		if (executor == null)
+			return;
+		synchronized (executorLock) {
 			if (executor == null)
 				return;
 			logWarning("Shutting down executor for " + repoStr);
 			executor.shutdown();
-			//executor = null;
-		} else {
+			executor = null;
 			///logError("To Early to have called waitUntilLastJobComplete");
 		}
 	}
@@ -136,9 +155,11 @@ public class SpecialRepoLoader extends BasicDebugger implements UncaughtExceptio
 				task.call();
 				return;
 			}
+		}
+		lastJobSubmitted = false;
 
+		synchronized (executorLock) {
 			if (executor == null) {
-				lastJobSubmitted = false;
 				logWarning("Creating executor for " + repoStr);
 				executor = Executors.newFixedThreadPool(numThreads, new ThreadFactory() {
 					@Override public Thread newThread(final Runnable r) {
@@ -156,11 +177,11 @@ public class SpecialRepoLoader extends BasicDebugger implements UncaughtExceptio
 
 				});
 			}
-			synchronized (tasks) {
-				tasks.add(task);
-			}
-			task.future = (Future<Task>) executor.submit((Runnable) task);
 		}
+		synchronized (tasks) {
+			tasks.add(task);
+		}
+		task.future = (Future<Task>) executor.submit((Runnable) task);
 	}
 
 	public int totalTasks = 0;
@@ -179,6 +200,10 @@ public class SpecialRepoLoader extends BasicDebugger implements UncaughtExceptio
 		@Override public String toString() {
 			long soFar = (end == -1) ? System.currentTimeMillis() - start : end - start;
 			return "TASK-" + taskNum + ": sheet=" + sheetName + " status=" + getLoadStatus() + " msecs=" + soFar + (lastException == null ? "" : " error=" + lastException);
+		}
+
+		public boolean isComplete() {
+			return end != -1;
 		}
 
 		public Task(String sheetNameURI, Runnable r) {

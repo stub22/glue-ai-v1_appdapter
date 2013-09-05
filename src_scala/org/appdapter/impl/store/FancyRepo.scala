@@ -192,20 +192,3 @@ class DirectRepo(directoryModel: Model) extends BasicRepoImpl with FancyRepo wit
   }
   
 }
-import com.hp.hpl.jena.sdb.Store;
-
-class DatabaseRepo(store: Store, val myDirGraphID: Ident)
-  extends BasicStoredMutableRepoImpl(store) with FancyRepo with Repo.Mutable with Repo.Stored {
-
-  formatRepoIfNeeded();
-
-  override def getDirectoryModel: Model = getNamedModel(myDirGraphID);
-
-}
-
-object FancyRepoFactory extends org.appdapter.core.log.BasicDebugger {
-  def makeDatabaseRepo(repoConfResPath: String, optCL: ClassLoader, dirGraphID: Ident): DatabaseRepo = {
-    val s: Store = SdbStoreFactory.connectSdbStoreFromResPath(repoConfResPath, optCL);
-    new DatabaseRepo(s, dirGraphID);
-  }
-}

@@ -79,12 +79,10 @@ object XLSXSheetRepoLoader extends BasicDebugger {
           val sheetModel: Model = readModelSheetX(sheetLocation, sheetName, nsJavaMap, fileModelCLs);
           getLogger.debug("Read sheetModel: {}", sheetModel)
           val graphURI = sheetRes.getURI();
-          PipelineRepoLoader.replaceOrUnion(mainDset, unionOrReplaceRes, graphURI, sheetModel);
+          FancyRepoLoader.replaceOrUnion(mainDset, unionOrReplaceRes, graphURI, sheetModel);
         }
       })
     }
-
-
 
   }
 
@@ -96,7 +94,7 @@ object XLSXSheetRepoLoader extends BasicDebugger {
     fileModelCLs: java.util.List[ClassLoader], repoSpec: RepoSpec): SheetRepo = {
     // Read the namespaces and directory sheets into a single directory model.
     val dirModel: Model = readDirectoryModelFromXLSX(sheetLocation, namespaceSheetName ?? nsSheetName22, dirSheetName ?? dirSheetName22, fileModelCLs: java.util.List[ClassLoader])
-    SpecialRepoLoader.makeSheetRepo(repoSpec, dirModel);
+    FancyRepoLoader.makeRepoWithDirectory(repoSpec, dirModel);
   }
 
   def readModelSheetX(sheetLocation: String, sheetName: String, nsJavaMap: java.util.Map[String, String], fileModelCLs: java.util.List[ClassLoader]): Model = {
