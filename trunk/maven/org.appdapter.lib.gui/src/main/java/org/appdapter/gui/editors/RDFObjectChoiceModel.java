@@ -22,6 +22,9 @@ import com.hp.hpl.jena.rdf.model.Resource;
 public class RDFObjectChoiceModel extends SortedComboBoxModel implements ComboBoxModel, POJOCollectionListener {
 	//Vector listeners = new Vector();
 
+	public static boolean isInstance(Object o, Object c) {
+	    return true;
+	}
 	java.util.List<Object> objectValues;
 	Object selectedObject;
 	boolean selectedObjectEver = false;
@@ -162,7 +165,7 @@ public class RDFObjectChoiceModel extends SortedComboBoxModel implements ComboBo
 	}
 
 	@Override public void pojoAdded(Object obj, BT box, Object senderCollection) {
-		if (!JenaModelUtils.isInstance(rdfRestriction, obj))
+		if (!isInstance(rdfRestriction, obj))
 			return;
 		ensureObjectValues();
 		if (objectValues != null && !objectValues.contains(obj)) {
@@ -175,7 +178,7 @@ public class RDFObjectChoiceModel extends SortedComboBoxModel implements ComboBo
 	@Override public void pojoRemoved(Object obj, BT box, Object senderCollection) {
 		if (senderCollection == this)
 			return;
-		if (!JenaModelUtils.isInstance(rdfRestriction, obj))
+		if (!isInstance(rdfRestriction, obj))
 			return;
 		ensureObjectValues();
 		if (objectValues != null)
