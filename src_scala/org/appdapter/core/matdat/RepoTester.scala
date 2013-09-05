@@ -18,6 +18,7 @@ package org.appdapter.core.matdat
 import org.appdapter.core.log.BasicDebugger
 import org.appdapter.core.name.Ident
 import org.appdapter.core.store.{ Repo, InitialBinding }
+import org.appdapter.impl.store._
 
 import com.hp.hpl.jena.query.{ QuerySolution }
 import com.hp.hpl.jena.rdf.model.{ Model }

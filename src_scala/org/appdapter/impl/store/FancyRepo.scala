@@ -18,24 +18,23 @@ package org.appdapter.impl.store
 
 import com.hp.hpl.jena.rdf.model.{ Model, Statement, Resource, Property, Literal, RDFNode, ModelFactory, InfModel }
 import com.hp.hpl.jena.datatypes.xsd.XSDDatatype
-import com.hp.hpl.jena.query.{ Query, QueryFactory, QueryExecution, QueryExecutionFactory, QuerySolution, QuerySolutionMap, Syntax };
-import com.hp.hpl.jena.query.{ Dataset, DatasetFactory };
-import com.hp.hpl.jena.query.{ ResultSet, ResultSetFormatter, ResultSetRewindable, ResultSetFactory };
-
+import com.hp.hpl.jena.query.{ Query, QueryFactory, QueryExecution, QueryExecutionFactory, QuerySolution, QuerySolutionMap, Syntax }
+import com.hp.hpl.jena.query.{ Dataset, DatasetFactory }
+import com.hp.hpl.jena.query.{ ResultSet, ResultSetFormatter, ResultSetRewindable, ResultSetFactory }
 import com.hp.hpl.jena.ontology.{ OntProperty, ObjectProperty, DatatypeProperty }
 import com.hp.hpl.jena.datatypes.{ RDFDatatype, TypeMapper }
 import com.hp.hpl.jena.datatypes.xsd.{ XSDDatatype }
 import com.hp.hpl.jena.shared.{ PrefixMapping }
-
-import com.hp.hpl.jena.rdf.listeners.{ ObjectListener };
-
-import org.appdapter.bind.rdf.jena.model.{ ModelStuff, JenaModelUtils };
-import org.appdapter.bind.rdf.jena.query.{ JenaArqQueryFuncs, JenaArqResultSetProcessor };
+import com.hp.hpl.jena.rdf.listeners.{ ObjectListener }
+import org.appdapter.bind.rdf.jena.model.{ ModelStuff, JenaModelUtils }
+import org.appdapter.bind.rdf.jena.query.{ JenaArqQueryFuncs, JenaArqResultSetProcessor }
 import org.appdapter.bind.rdf.jena.sdb.{ SdbStoreFactory }
-import org.appdapter.core.store.{ Repo, BasicRepoImpl, BasicStoredMutableRepoImpl, QueryProcessor, InitialBinding, ModelClient };
-import org.appdapter.core.name.Ident;
-import org.appdapter.help.repo.InitialBindingImpl;
-import org.appdapter.core.log.Loggable;
+import org.appdapter.core.store.{ Repo, BasicRepoImpl, BasicStoredMutableRepoImpl, QueryProcessor, InitialBinding, ModelClient }
+import org.appdapter.core.name.Ident
+import org.appdapter.help.repo.InitialBindingImpl
+import org.appdapter.core.log.Loggable
+import org.appdapter.core.log.BasicDebugger
+import com.hp.hpl.jena.sdb.Store
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -191,4 +190,12 @@ class DirectRepo(directoryModel: Model) extends BasicRepoImpl with FancyRepo wit
     ds;
   }
   
+}
+
+// for appdapter 1.1.1 compatiblity  
+/// if kept, maybe make this a big make every kind of repo one stop shop
+object FancyRepoFactory extends BasicDebugger {
+    def makeDatabaseRepo(repoConfResPath: String, optCL: ClassLoader, dirGraphID: Ident): DatabaseRepo = {
+    DatabaseRepoLoader.makeDatabaseRepo(repoConfResPath, optCL, dirGraphID)
+  }
 }

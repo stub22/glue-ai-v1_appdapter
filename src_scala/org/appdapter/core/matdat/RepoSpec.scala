@@ -38,6 +38,7 @@ import org.appdapter.core.store.{ Repo }
 import org.appdapter.help.repo.RepoClientImpl
 import org.osgi.framework.BundleContext
 import com.hp.hpl.jena.rdf.model.Model
+import org.appdapter.impl.store._
 
 /**
  * @author Stu B. <www.texpedient.com>
