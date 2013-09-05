@@ -108,7 +108,9 @@ trait FancyRepo extends Repo.WithDirectory with ModelClientCore with Loggable {
     val ib = makeInitialBinding
     ib.bindQName(QUERY_QUERY_GRAPH_INPUT_VAR, querySourceGraphQName)
     ib.bindQName(QUERY_QUERY_URI_RESULT_VAR, queryParentQName)
-    resolveIndirectQueryText(ib)
+    val qText = resolveIndirectQueryText(ib)
+    checkQueryText(qText, querySourceGraphQName, queryParentQName, false)
+    qText
   }
   /**
    * Alternate form using full URIs, from any Ident.
@@ -117,7 +119,9 @@ trait FancyRepo extends Repo.WithDirectory with ModelClientCore with Loggable {
     val ib = makeInitialBinding
     ib.bindIdent(QUERY_QUERY_GRAPH_INPUT_VAR, querySourceGraphID)
     ib.bindIdent(QUERY_QUERY_URI_RESULT_VAR, queryID)
-    resolveIndirectQueryText(ib)
+    val qText = resolveIndirectQueryText(ib)
+    checkQueryText(qText, querySourceGraphID, queryID, true)
+    qText
   }
 
   private def resolveIndirectQueryText(queryResIB: InitialBinding): String = {
@@ -137,13 +141,27 @@ trait FancyRepo extends Repo.WithDirectory with ModelClientCore with Loggable {
   }
   override def queryIndirectForAllSolutions(qSrcGraphIdent: Ident, queryIdent: Ident, qInitBinding: QuerySolution): java.util.List[QuerySolution] = {
     val qText = resolveIndirectQueryText(qSrcGraphIdent, queryIdent)
+    checkQueryText(qText, qSrcGraphIdent, queryIdent, true)
     queryDirectForAllSolutions(qText, qInitBinding)
   }
 
   override def queryIndirectForAllSolutions(qSrcGraphQN: String, queryQN: String, qInitBinding: QuerySolution): java.util.List[QuerySolution] = {
 
     val qText = resolveIndirectQueryText(qSrcGraphQN, queryQN)
+    checkQueryText(qText, qSrcGraphQN, queryQN, true)
     queryDirectForAllSolutions(qText, qInitBinding)
+  }
+  def checkQueryText(qText :String, qSrcGraphQN:Object,queryQN:Object, showStackTrace: Boolean) : Unit = {
+    if (qText == null || qText.length == 0) {
+      val msg = "Unable to find Query Called " + queryQN + " in Model " + qSrcGraphQN;
+      val rte = new RuntimeException(msg);
+      logError(msg);
+      if (showStackTrace) {
+        rte.printStackTrace
+        // maybe we should just throw now?
+        // rather then letting subsequent calls fail with obscure EOFs 
+      }
+    }
   }
   override def queryDirectForAllSolutions(qText: String, qInitBinding: QuerySolution): java.util.List[QuerySolution] = {
     import scala.collection.immutable.StringOps
