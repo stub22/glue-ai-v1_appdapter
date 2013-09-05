@@ -338,7 +338,7 @@ final public class DemoBrowser implements AnyOper.Singleton {
 			// some more test code
 			addMoreExamples();
 		}
-		setLookAndFeelFromProperty();
+		///setLookAndFeelFromProperty();
 	}
 
 	@UISalient public static void addMoreExamples() {
@@ -610,6 +610,7 @@ final public class DemoBrowser implements AnyOper.Singleton {
 	}
 
 	public static void setLookAndFeelFromProperty() {
+	     if(true) return;
 		String LOOKANDFEEL = System.getProperty("swing.defaultlaf");
 		if (LOOKANDFEEL == null) {
 			return;
