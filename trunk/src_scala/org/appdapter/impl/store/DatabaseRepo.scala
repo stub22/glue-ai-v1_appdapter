@@ -14,17 +14,15 @@
  *  limitations under the License.
  */
 
-package org.appdapter.core.matdat
+package org.appdapter.impl.store
 
 import org.appdapter.bind.rdf.jena.sdb.SdbStoreFactory
 import org.appdapter.core.log.BasicDebugger
 import org.appdapter.core.log.BasicDebugger
 import org.appdapter.core.name.FreeIdent
 import org.appdapter.core.name.Ident
-import org.appdapter.core.store.BasicStoredMutableRepoImpl
-import org.appdapter.core.store.Repo
-import org.appdapter.impl.store.FancyRepo
-import org.appdapter.impl.store.QueryHelper
+import org.appdapter.core.store._
+import org.appdapter.core.matdat._
 
 // Currently we're on   Jena 2.6.4, ARQ 2.8.7, SDB 1.3.4
 import com.hp.hpl.jena.query.{ ResultSet, Dataset, QuerySolution, QuerySolutionMap }
