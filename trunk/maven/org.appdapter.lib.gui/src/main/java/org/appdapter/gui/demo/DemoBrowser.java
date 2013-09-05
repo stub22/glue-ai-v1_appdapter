@@ -21,6 +21,7 @@ import static org.appdapter.core.log.Debuggable.printStackTrace;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.EventQueue;
 import java.awt.FileDialog;
 import java.io.File;
 import java.util.concurrent.Callable;
@@ -674,11 +675,16 @@ final public class DemoBrowser implements AnyOper.Singleton {
 	}
 
 	public static boolean setLookAndFeelUnsafely(String className) {
+		if (!EventQueue.isDispatchThread()) {
+			theLogger.error("Set In AWT.THREAD LAF = >" + className);
+			return false;
+		}
 		LookAndFeel prevlaf = UIManager.getLookAndFeel();
 		try {
 			if (prevlaf != null && className != null) {
 
 			}
+			
 			UIManager.setLookAndFeel(className);
 			// make sure we can still set things
 			updateComponentTreeUI(true);
