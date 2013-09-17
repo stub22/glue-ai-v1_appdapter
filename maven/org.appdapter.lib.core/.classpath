@@ -6,11 +6,8 @@
 	<classpathentry including="**/*.java" kind="src" path="src/main/java"/>
 	<classpathentry excluding="**/*.java" kind="src" path="src/main/resources"/>
 	<classpathentry kind="src" path="src/main/scala"/>
-
-	<classpathentry kind="output" path="target/eclipse-classes"/>
-	<classpathentry kind="con" path="org.scala-ide.sdt.launching.SCALA_CONTAINER"/>
+	<classpathentry exported="true" kind="con" path="org.scala-ide.sdt.launching.SCALA_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-
 	<classpathentry excluding="org/appdapter/test/samples/scalatest.scala|org/appdapter/test/samples/specs.scala" kind="src" path="src/test/scala"/>
 	<classpathentry exported="true" kind="src" path="/ext.bundle.jena_all_2_10_1"/>
 	<classpathentry exported="true" kind="var" path="M2_REPO/org/slf4j/slf4j-log4j12/1.7.5/slf4j-log4j12-1.7.5.jar"/>
@@ -38,5 +35,6 @@
 	<classpathentry exported="true" kind="var" path="M2_REPO/log4j/log4j/1.2.17/log4j-1.2.17.jar"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/ScalaLiftDeps"/>
 	<classpathentry exported="true" kind="var" path="M2_REPO/org/apache/servicemix/bundles/org.apache.servicemix.bundles.commons-beanutils/1.8.2_1/org.apache.servicemix.bundles.commons-beanutils-1.8.2_1.jar"/>
-	<classpathentry kind="var" path="M2_REPO/com/google/guava/guava/12.0/guava-12.0.jar"/>
+	<classpathentry exported="true" kind="var" path="M2_REPO/com/google/guava/guava/12.0/guava-12.0.jar"/>
+	<classpathentry kind="output" path="target/eclipse-classes"/>
 </classpath>
