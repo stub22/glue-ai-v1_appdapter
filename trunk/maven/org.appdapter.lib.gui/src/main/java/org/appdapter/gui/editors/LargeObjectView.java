@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import javax.swing.JLabel;
+import javax.swing.JTabbedPane;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.SetObject;
@@ -23,6 +24,7 @@ import org.appdapter.gui.api.BoxPanelSwitchableView;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.GetSetObject;
 import org.appdapter.gui.browse.Utility;
+import org.appdapter.gui.swing.JTabbedPaneWithCloseIcons;
 import org.appdapter.gui.swing.ObjectTabsForTabbedView;
 import org.appdapter.gui.swing.ObjectView;
 import org.appdapter.gui.trigger.TriggerMouseAdapter;
@@ -198,7 +200,7 @@ extends ObjectView<BoxType> implements Customizer, GetSetObject, ObjectPanelHost
 			tabs.disable();
 			tabs.setVisible(false);
 		}
-		tabs = new JideTabbedPane();
+		tabs = new DnDTabbedPane(JTabbedPane.BOTTOM);
 		add("Center", tabs);
 		//mouseAdapter.addToComponent(tabs, false);
 		objTabs = new ObjectTabsForTabbedView(tabs, false, this);
@@ -266,6 +268,7 @@ extends ObjectView<BoxType> implements Customizer, GetSetObject, ObjectPanelHost
 	}
 
 	@Override public void setObject(Object bean) {
+		Utility.checkSource(bean);
 		bean = Utility.dref(bean);
 		if (objectValue != bean) {
 			objectValueChanged(objectValue, bean);

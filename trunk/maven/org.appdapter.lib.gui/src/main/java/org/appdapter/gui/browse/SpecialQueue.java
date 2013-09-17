@@ -36,7 +36,7 @@ public class SpecialQueue extends BasicDebugger implements UncaughtExceptionHand
 	boolean isSynchronous = true;
 	int taskNum = 0;
 	Object loaderFor = null;
-	String repoStr = "REPO";
+	String repoStr = "Utility Special Queue";
 	// sounds like a lot.. but it is over with quickly!
 	int numThreads = 32;
 	int howManyTasksBeforeStartingPool = 0;

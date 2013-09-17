@@ -13,6 +13,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Type;
 import java.util.*;
 
 import org.appdapter.api.trigger.Box;
@@ -58,6 +59,15 @@ import org.slf4j.LoggerFactory;
 public class BoxedCollectionImpl implements NamedObjectCollection,
 
 VetoableChangeListener, PropertyChangeListener, Serializable, Set {
+
+	public class ScreenBoxImplMade extends ScreenBoxImpl implements BT {
+
+		ScreenBoxImplMade(NamedObjectCollection noc, String title, Object value) {
+			notWrapper = false;
+			setNameValue(noc, title, value);
+		}
+
+	}
 
 	@ConverterMethod//
 	public Map asMap() {
@@ -156,7 +166,6 @@ VetoableChangeListener, PropertyChangeListener, Serializable, Set {
 	//private List objectsToWrappers.keySet() = new LinkedList();
 	protected List boxList = new LinkedList<BT>();
 	//private LinkedList objectsToWrappers.keySet() = new LinkedList();
-	transient public Object syncObject = boxList;
 
 	// ============ Constructors
 	// ==================================================
@@ -166,13 +175,15 @@ VetoableChangeListener, PropertyChangeListener, Serializable, Set {
 	private DisplayContext displayContext;
 
 	//Maps value wrapper name to value wrapper
-	private Map<String, BT> nameIndex = new Hashtable<String, BT>();
+	public Map<String, BT> nameIndex = new Hashtable<String, BT>();
 
 	//private LinkedList<Object> objectsToWrappers.keySet() = new LinkedList<Object>();
 
 	// ===== Serializable instance variables ================
 	// Maps objects to their boxes
 	private Map<Object, BT> objectsToWrappers = new HashMap();
+
+	transient public Object syncObject = boxList;
 
 	// ==== Queries ========================
 
@@ -215,12 +226,18 @@ VetoableChangeListener, PropertyChangeListener, Serializable, Set {
 	public boolean addNameValueBoxed(String title, Object val, BT wrapper) {
 
 		boolean notify = false;
-		Object value = val;
-
+		if (val == wrapper) {
+			val = null;
+		}
+		if (val == null) {
+			val = wrapper.getValueOrThis();
+		}
+		if (val == wrapper) {
+			val = null;
+		}
 		synchronized (syncObject) {
-			if (val == null) {
-				value = wrapper.getValueOrThis();
-			} else {
+
+			if (val != null) {
 				BT prev = findBoxByObject(val);
 				if (prev != null && prev != wrapper) {
 					Utility.bug("Already existing item: " + title, prev, "when wanting to add ", val, "wrapper=", wrapper);
@@ -230,21 +247,23 @@ VetoableChangeListener, PropertyChangeListener, Serializable, Set {
 				}
 				if (objectsToWrappers != null) {
 					synchronized (objectsToWrappers) {
-						objectsToWrappers.put(value, wrapper);
+						objectsToWrappers.put(val, wrapper);
 					}
 				}
 			}
+
 			if (title == null) {
 				title = getTitleOf(wrapper);
-			} else {
+			}
+			if (title != null) {
 				BT prev = findBoxByName(title);
 				if (prev != null && prev != wrapper) {
-					Utility.bug("Already existing name: " + title, prev, "when wanting to add ", val, "wrapper=", wrapper);
+					//Utility.bug("Already existing name: " + title, prev, "when wanting to add ", val, "wrapper=", wrapper);
 				}
-			}
-			if (title != null && nameIndex != null) {
-				synchronized (nameIndex) {
-					nameIndex.put(title, wrapper);
+				if (nameIndex != null) {
+					synchronized (nameIndex) {
+						nameIndex.put(title, wrapper);
+					}
 				}
 			}
 
@@ -257,7 +276,7 @@ VetoableChangeListener, PropertyChangeListener, Serializable, Set {
 
 		}
 		if (notify)
-			notifyCollectionListeners(value, wrapper, false);
+			notifyCollectionListeners(val, wrapper, false);
 		return notify;
 	}
 
@@ -394,7 +413,7 @@ VetoableChangeListener, PropertyChangeListener, Serializable, Set {
 			return utilityBT;
 		}
 
-		value = Utility.dref(value, value);
+		//value = Utility.dref(value, value);
 
 		if (value instanceof String) {
 			return findBoxByName((String) value);
@@ -478,33 +497,46 @@ VetoableChangeListener, PropertyChangeListener, Serializable, Set {
 	public BT findOrCreateBox(String title, Object value) throws PropertyVetoException {
 		BT wrapper = Utility.asBTNoCreate(value);
 		if (wrapper != null) {
-			value = wrapper.getValueOrThis();
+			///value = wrapper.getValueOrThis();
+			if (title != null && title.length() > 0) {
+				wrapper.addTitle(title);
+			}
+			return wrapper;
 		}
 		boolean notify = false;
 		synchronized (syncObject) {
-			if (wrapper == null && value != null) {
-				wrapper = findBoxByObject(value);
-			}
-			if (wrapper == null && title != null) {
-				wrapper = findBoxByName(title);
-			}
-			if (title == null) {
-				if (wrapper != null) {
-					title = wrapper.getShortLabel();
-					labelCheck(title);
+			synchronized (nameIndex) {
+				synchronized (boxList) {
+					synchronized (objectsToWrappers) {
+						if (wrapper == null && value != null) {
+							wrapper = findBoxByObject(value);
+						}
+						if (wrapper == null && title != null) {
+							wrapper = findBoxByName(title);
+						}
+						if (title == null) {
+							if (wrapper != null) {
+								title = wrapper.getShortLabel();
+								labelCheck(title);
+							}
+							if (title == null) {
+								title = Utility.generateUniqueName_sug(value, title, getNameToBoxIndex(), false, true);
+								labelCheck(title);
+							}
+						}
+						if (wrapper == null) {
+							wrapper = (BT) makeWrapper(title, value);
+							nameIndex.put(title, wrapper);
+							wrapper.addValue(value);
+						}
+					}
+					notify = addNameValueBoxed(title, value, wrapper);
+
+					return wrapper;
 				}
-				if (title == null) {
-					title = Utility.generateUniqueName_sug(value, title, getNameToBoxIndex(), false, true);
-					labelCheck(title);
-				}
-			}
-			if (wrapper == null) {
-				wrapper = (BT) makeWrapper(title, value);
 			}
 		}
-		notify = addNameValueBoxed(title, value, wrapper);
 
-		return wrapper;
 	}
 
 	public static void labelCheck(String shortLabel) {
@@ -532,7 +564,9 @@ VetoableChangeListener, PropertyChangeListener, Serializable, Set {
 		//LinkedList boxList = getBoxListFrom(DisplayType.TOSTRING);
 		LinkedList list = new LinkedList();
 		synchronized (syncObject) {
-			list.addAll(boxList);
+			synchronized (boxList) {
+				list.addAll(boxList);
+			}
 			if (true)
 				return list.iterator();
 			else {
@@ -550,7 +584,9 @@ VetoableChangeListener, PropertyChangeListener, Serializable, Set {
 	 */
 	public int getBoxesCount() {
 		synchronized (syncObject) {
-			return boxList.size();
+			synchronized (boxList) {
+				return boxList.size();
+			}
 		}
 	}
 
@@ -569,7 +605,9 @@ VetoableChangeListener, PropertyChangeListener, Serializable, Set {
 
 	@Override public Map<String, BT> getNameToBoxIndex() {
 		synchronized (syncObject) {
-			return nameIndex;
+			synchronized (nameIndex) {
+				return nameIndex;
+			}
 		}
 	}
 
@@ -580,7 +618,9 @@ VetoableChangeListener, PropertyChangeListener, Serializable, Set {
 	 */
 	private int getObjectCount() {
 		synchronized (syncObject) {
-			return objectsToWrappers.size();
+			synchronized (objectsToWrappers) {
+				return objectsToWrappers.size();
+			}
 		}
 	}
 
@@ -681,7 +721,12 @@ VetoableChangeListener, PropertyChangeListener, Serializable, Set {
 	}
 
 	protected ScreenBoxImpl makeWrapper(String title, Object value) throws PropertyVetoException {
-		ScreenBoxImpl wrapper = new ScreenBoxImpl(this, title, value);
+		ScreenBoxImpl wrapper = new ScreenBoxImplMade(this, title, value);
+		/**
+		 * Creates a new ScreenBox for the given value
+		 * and assigns it a default name.
+		 */
+
 		return wrapper;
 	}
 
@@ -778,7 +823,13 @@ VetoableChangeListener, PropertyChangeListener, Serializable, Set {
 		notifyCollectionListeners(value, wrapper, true);
 
 		synchronized (syncObject) {
-			return removeObject0(value, wrapper);
+			synchronized (nameIndex) {
+				synchronized (boxList) {
+					synchronized (objectsToWrappers) {
+						return removeObject0(value, wrapper);
+					}
+				}
+			}
 		}
 	}
 
@@ -811,7 +862,10 @@ VetoableChangeListener, PropertyChangeListener, Serializable, Set {
 		//Remove it
 		//objectsToWrappers.remove(value);
 		for (Object o : wrapper.getObjects(null)) {
-			objectsToWrappers.keySet().remove(o);
+			synchronized (objectsToWrappers) {
+				objectsToWrappers.keySet().remove(o);
+			}
+			;
 		}
 
 		boxList.remove(wrapper);
@@ -829,19 +883,25 @@ VetoableChangeListener, PropertyChangeListener, Serializable, Set {
 
 	}
 
-	private void notifyCollectionListeners(Object value, BT wrapper, boolean isRemoval) {
-		Iterator it = ReflectUtils.copyOf(colListeners).iterator();
+	private void notifyCollectionListeners(final Object value, final BT wrapper, final boolean isRemoval) {
+		final Iterator it = ReflectUtils.copyOf(colListeners).iterator();
 		while (it.hasNext()) {
-			POJOCollectionListener listener = ((POJOCollectionListener) it.next());
-			try {
-				if (isRemoval) {
-					listener.pojoRemoved(value, wrapper, this);
-				} else {
-					listener.pojoAdded(value, wrapper, this);
-				}
-			} catch (Throwable uncaught) {
+			final POJOCollectionListener listener = ((POJOCollectionListener) it.next());
+			Utility.invokeAfterLoader(new Runnable() {
+				@Override public void run() {
 
-			}
+					try {
+						if (isRemoval) {
+							listener.pojoRemoved(value, wrapper, this);
+						} else {
+							listener.pojoAdded(value, wrapper, this);
+						}
+					} catch (Throwable uncaught) {
+
+					}
+				}
+
+			});
 		}
 	}
 
@@ -1044,4 +1104,16 @@ VetoableChangeListener, PropertyChangeListener, Serializable, Set {
 		return boxMap;
 	}
 
+	@Override public Collection findObjectsByName(String txt, Type mustBe) {
+		ArrayList<Object> objects = new ArrayList<Object>();
+		for (BT wrapper2 : getScreenBoxes()) {
+			if (wrapper2.isNamed(txt)) {
+				for (Object o : wrapper2.getObjects(null)) {
+					if (ReflectUtils.isInstance(mustBe, o))
+						objects.add(o);
+				}
+			}
+		}
+		return objects;
+	}
 }

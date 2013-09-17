@@ -20,7 +20,6 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.BeanInfo;
 import java.beans.EventSetDescriptor;
@@ -44,14 +43,20 @@ import java.util.Map;
 
 import javax.swing.AbstractButton;
 import javax.swing.Action;
+import javax.swing.JCheckBox;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
 import javax.swing.MenuElement;
 import javax.swing.text.JTextComponent;
+import javax.swing.tree.DefaultMutableTreeNode;
 
+import org.appdapter.api.trigger.AnyOper.HasIdent;
 import org.appdapter.api.trigger.AnyOper.UIHidden;
 import org.appdapter.api.trigger.AnyOper.UISalient;
 import org.appdapter.api.trigger.Box;
@@ -60,17 +65,20 @@ import org.appdapter.api.trigger.Trigger;
 import org.appdapter.core.component.KnownComponent;
 import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.core.log.Debuggable;
+import org.appdapter.core.name.Ident;
 import org.appdapter.gui.api.BT;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.UIAware;
-import org.appdapter.gui.box.ScreenBoxImpl;
 import org.appdapter.gui.browse.PropertyDescriptorForField;
+import org.appdapter.gui.browse.SearchableDemo;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.swing.SafeJMenu;
 import org.appdapter.gui.swing.SafeJMenuItem;
 import org.appdapter.gui.util.CollectionSetUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.hp.hpl.jena.rdf.model.RDFNode;
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -92,7 +100,7 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 			if (o1 instanceof Trigger && o2 instanceof Trigger) {
 				return compareTrigger((Trigger) o1, (Trigger) o2);
 			}
-			return getLabel(o1, 2).compareToIgnoreCase(getLabel(o2, 2));
+			return getLabel(o1, 2, true).compareToIgnoreCase(getLabel(o2, 2, true));
 		}
 
 		private int compareTrigger(Trigger o1, Trigger o2) {
@@ -564,7 +572,7 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 		for (Component c : comps) {
 			if (c == fnd)
 				return c;
-			String name = getLabel(c, 1);
+			String name = getLabel(c, 1, false);
 			if (name == null)
 				continue;
 			int v = fnd.compareTo(name);
@@ -611,30 +619,60 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 		return triggerMenuFactory;
 	}
 
-	public static String getLabel(Object c, int maxDepth) {
+	public static String getLabel(Component view, int maxDepth) {
+		return getLabel(view, maxDepth, false);
+	}
+
+	public static String getLabel(Object c, int maxDepth, boolean includeParent) {
+		String sl = txtlabelName(c);
+		if (sl != null)
+			return sl;
+		if (c instanceof Component) {
+			return getLabelWithParent((Component) c, maxDepth, includeParent);
+		}
+		return "" + c;
+	}
+
+	private static String txtlabelName(Object c) {
 		if (c instanceof Trigger) {
 			return getTriggerSortName((Trigger) c);
+		}
+		if (c instanceof KnownComponent) {
+			Ident shortLabel = ((KnownComponent) c).getIdent();
+			if (shortLabel != null)
+				return shortLabel.getAbsUriString();
+		}
+		if (c instanceof HasIdent) {
+			Ident shortLabel = ((HasIdent) c).getIdent();
+			if (shortLabel != null)
+				return shortLabel.getAbsUriString();
+		}
+		if (c instanceof RDFNode) {
+			String shortLabel = ((RDFNode) c).toString();
+			if (shortLabel != null)
+				return shortLabel;
 		}
 		if (c instanceof KnownComponent) {
 			String shortLabel = ((KnownComponent) c).getShortLabel();
 			if (shortLabel != null)
 				return shortLabel;
 		}
-		if (c instanceof Component) {
-			return getLabelC((Component) c, maxDepth);
-		}
-		return "" + c;
+		return null;
 	}
 
-	public static String getLabelC(Component c, int maxDepth) {
-		String s = getLabelC0(c, maxDepth);
-		String ss = getLabelC0(c.getParent(), 0);
+	public static String getLabelWithParent(Component c, int maxDepth, boolean includeParent) {
+		String s = getComponentLabelNoParent(c, maxDepth);
+		if (!includeParent)
+			return s;
+		String ss = getComponentLabelNoParent(c.getParent(), 0);
 		if (ss != null)
 			return ss + "|" + s;
 		return s;
 	}
 
-	public static String getLabelC0(Component c, int maxDepth) {
+	public static String getComponentLabelNoParent(Component c, int maxDepth) {
+		if (c == null)
+			return null;
 
 		if (c instanceof JPopupMenu) {
 			return ((JPopupMenu) c).getLabel();
@@ -648,6 +686,9 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 		if (c instanceof JLabel) {
 			return ((JLabel) c).getText();
 		}
+		if (c instanceof JCheckBox) {
+			return ((JCheckBox) c).getText();
+		}
 		if (c instanceof AbstractButton) {
 			return ((AbstractButton) c).getText();
 		}
@@ -657,18 +698,32 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 		if (c instanceof MenuElement) {
 			Component c2 = ((MenuElement) c).getComponent();
 			if (c != c2) {
-				String text = getLabel(c2, maxDepth);
+				String text = getLabel(c2, maxDepth, false);
 				if (text != null)
 					return text;
 			}
 		}
-		if (maxDepth <= 0)
-			return null;
+		Container p = c.getParent();
+		if (p instanceof JTabbedPane) {
+			JTabbedPane tabbed = (JTabbedPane) p;
+			int index = SearchableDemo.getComponentIndex(p, tabbed);
+			if (index != -1) {
+				String title = tabbed.getTitleAt(index);
+				if (title != null)
+					return title;
+			}
+		}
+		if (maxDepth <= 0) {
+			String text = c.getName();
+			if (text != null)
+				return text;
+			return text;
+		}
 
 		if (c instanceof Container) {
 			int mustBeWithin = 2;
 			for (Component c2 : ((Container) c).getComponents()) {
-				String text = getLabel(c2, maxDepth - 1);
+				String text = getLabel(c2, maxDepth - 1, false);
 				if (text != null)
 					return text;
 				mustBeWithin--;
@@ -837,6 +892,9 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 				theLogger.warn("Popup adder cannot add to " + popup.getClass() + " = " + popup);
 			}
 		}
+		if (box instanceof Trigger) {
+			addTriggerToPoppup(popup, box, (Trigger) box);
+		}
 		if (popup instanceof TriggerPopupMenu) {
 			// Allready added the items?
 			//return;
@@ -870,6 +928,10 @@ public class TriggerMenuFactory<TT extends Trigger<Box<TT>> & KnownComponent> {
 	}
 
 	static public TriggerPopupMenu buildPopupMenuAndShow(MouseEvent e, boolean show, Object... boxes) {
+		return buildPopupMenuAndShowC(e, show, Arrays.asList(boxes));
+	}
+
+	static public TriggerPopupMenu buildPopupMenuAndShowC(MouseEvent e, boolean show, Collection<Object> boxes) {
 		TriggerPopupMenu popup = new TriggerPopupMenu(null, e, null);
 		for (Object o : boxes) {
 			if (o instanceof Box) {

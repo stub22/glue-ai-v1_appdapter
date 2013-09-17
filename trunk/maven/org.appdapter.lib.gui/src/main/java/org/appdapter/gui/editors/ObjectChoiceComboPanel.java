@@ -5,21 +5,18 @@ import static org.appdapter.gui.browse.Utility.isEqual;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.swing.ComboBoxEditor;
 import javax.swing.ComboBoxModel;
@@ -37,8 +34,8 @@ import javax.swing.event.ListDataListener;
 import javax.swing.table.TableCellEditor;
 import javax.swing.tree.TreeCellEditor;
 
-import org.appdapter.api.trigger.GetObject;
 import org.appdapter.api.trigger.AnyOper.UserInputComponent;
+import org.appdapter.api.trigger.GetObject;
 import org.appdapter.core.convert.NoSuchConversionException;
 import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.core.convert.ToFromKeyConverter;
@@ -54,7 +51,6 @@ import org.appdapter.gui.swing.SmallObjectView;
 import org.appdapter.gui.table.CellEditorComponent;
 import org.appdapter.gui.table.PropertyEditorToCellEditor;
 import org.appdapter.gui.trigger.TriggerMouseAdapter;
-import org.appdapter.gui.trigger.TriggerPopupMenu;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,8 +66,10 @@ import org.slf4j.LoggerFactory;
  */
 public class ObjectChoiceComboPanel extends JJPanel implements PropertyEditor, PropertyChangeListener, ActionListener, //
 		UserInputComponent, CellEditorComponent, //
-		MouseListener, ToFromKeyConverter<Object, String>, ListDataListener, GetObject {
+		ToFromKeyConverter<Object, String>, ListDataListener, GetObject {
 
+	// got this workaround from the following bug: 
+	//	      http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4618607 
 	public class ComboBoxWithNamingModel extends JComboBox {
 		public ComboBoxWithNamingModel(ComboBoxModel aModel) {
 			super(aModel);
@@ -83,6 +81,24 @@ public class ObjectChoiceComboPanel extends JJPanel implements PropertyEditor, P
 				return editor;
 			ListCellRenderer cbo = new ObjectComboPrettyRender();
 			return cbo;
+		}
+
+		private boolean layingOut = false;
+
+		public void doLayout() {
+			try {
+				layingOut = true;
+				super.doLayout();
+			} finally {
+				layingOut = false;
+			}
+		}
+
+		public Dimension getSize() {
+			Dimension dim = super.getSize();
+			if (!layingOut)
+				dim.width = Math.max(dim.width, getPreferredSize().width);
+			return dim;
 		}
 
 		/**
@@ -118,7 +134,7 @@ public class ObjectChoiceComboPanel extends JJPanel implements PropertyEditor, P
 				//return null;
 				//throw new IllegalArgumentException("setSelectedIndex: " + anIndex + " out of bounds");
 			} else {
-				
+
 				setSelectedItem(model.getElementAt(anIndex));
 			}
 		}
@@ -141,6 +157,10 @@ public class ObjectChoiceComboPanel extends JJPanel implements PropertyEditor, P
 			JComponent view = this;
 			if (value != null && value == NULLOBJECT) {
 				value = null;
+			}
+			if (value == null) {
+				setText("<null>");
+				return this;
 			}
 			if (value != null && !isStringChooser && !useStringProxies && value instanceof String) {
 				value = stringToObject((String) value);
@@ -322,8 +342,8 @@ public class ObjectChoiceComboPanel extends JJPanel implements PropertyEditor, P
 			useStringProxies = Utility.isToStringType(type) && !isStringChooser;
 		}
 		useSmallObjectViewInLists = !useStringProxies && !isStringChooser;
-		model = new ObjectChoiceModel(context, type, title, this, this, propSupport);
-		model.setSelectedItem(value);
+		model = new ObjectChoiceModel(context, type, title, this, this, propSupport, value);
+		//model.setSelectedItem(value);
 		model.addListDataListener(this);
 		combo = new ComboBoxWithNamingModel(model);
 		//combo.setEditable(false);
@@ -331,7 +351,7 @@ public class ObjectChoiceComboPanel extends JJPanel implements PropertyEditor, P
 		combo.setEditor(new SynthComboBoxEditor(model));
 		setLayout(new BorderLayout());
 		add("Center", combo);
-		combo.addMouseListener(this);
+		//combo.addMouseListener(this);
 		combo.setEditable(false);
 		model.lockSelection = true;
 		try {
@@ -472,32 +492,33 @@ public class ObjectChoiceComboPanel extends JJPanel implements PropertyEditor, P
 		return false;
 	}
 
-	@Override public void mouseClicked(MouseEvent e) {
-		if (e.isPopupTrigger()) {
-			showMenu(e.getX() + 5, e.getY() + 5, e);
+	/*
+		@Override public void mouseClicked(MouseEvent e) {
+			if (e.isPopupTrigger()) {
+				showMenu(e.getX() + 5, e.getY() + 5, e);
+			}
 		}
-	}
 
-	@Override public void mouseEntered(MouseEvent e) {
-		//@temp
-		//label.setForeground(Color.blue);
-	}
-
-	@Override public void mouseExited(MouseEvent e) {
-		//label.setForeground(Color.black);
-	}
-
-	@Override public void mousePressed(MouseEvent e) {
-		if (e.isPopupTrigger()) {
-			showMenu(e.getX() + 5, e.getY() + 5, e);
+		@Override public void mouseEntered(MouseEvent e) {
+			//@temp
+			//label.setForeground(Color.blue);
 		}
-	}
 
-	@Override public void mouseReleased(MouseEvent e) {
-		if (e.isPopupTrigger()) {
-			showMenu(e.getX() + 5, e.getY() + 5, e);
+		@Override public void mouseExited(MouseEvent e) {
+			//label.setForeground(Color.black);
 		}
-	}
+
+		@Override public void mousePressed(MouseEvent e) {
+			if (e.isPopupTrigger()) {
+				showMenu(e.getX() + 5, e.getY() + 5, e);
+			}
+		}
+
+		@Override public void mouseReleased(MouseEvent e) {
+			if (e.isPopupTrigger()) {
+				showMenu(e.getX() + 5, e.getY() + 5, e);
+			}
+		}*/
 
 	public String objectToString(Object object) {
 		if (object == null || object == NULLOBJECT)
@@ -601,18 +622,19 @@ public class ObjectChoiceComboPanel extends JJPanel implements PropertyEditor, P
 				updateShownValue(newValue);
 			}
 		}
-	}
+	}/*
 
-	private void showMenu(int x, int y, MouseEvent e) {
-		Object object = model.getSelectedItem();
-		if (object != null) {
-			TriggerPopupMenu menu = new TriggerPopupMenu(null, e, null);
-			menu.addMenuFromObject(object);
-			add(menu);
-			menu.show(this, x, y);
-			e.consume();
-		}
-	}
+	 private void showMenu(int x, int y, MouseEvent e) {
+	 Object object = model.getSelectedItem();
+	 if (object != null) {
+	 	TriggerPopupMenu menu = new TriggerPopupMenu(null, e, null);
+	 	menu.addMenuFromObject(object);
+	 	add(menu);
+	 	menu.show(this, x, y);
+	 	e.consume();
+	 }
+	 }
+	 */
 
 	public Object stringToObject(String title) {
 		if (title == null || title.equals(NULLOBJECT.toString()))

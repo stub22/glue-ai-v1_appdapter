@@ -1,4 +1,4 @@
-package org.appdapter.gui.repo;
+package org.appdapter.gui.swing;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -19,7 +19,6 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -29,8 +28,12 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Vector;
 
+import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
+import javax.swing.Action;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -39,20 +42,23 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.WindowConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.UndoableEditEvent;
+import javax.swing.event.UndoableEditListener;
+import javax.swing.undo.UndoManager;
 
+import org.appdapter.api.trigger.AnyOper.UISalient;
 import org.appdapter.gui.browse.Utility;
-import org.appdapter.gui.swing.JJPanel;
+import org.appdapter.gui.repo.ModelAsTurtleEditor;
+import org.appdapter.gui.trigger.MouseAdapterWithAppendablePopup;
 
-import com.jidesoft.swing.AutoResizingTextArea;
 import com.jidesoft.swing.SearchableUtils;
 
-public class SimpleTextEditor extends AutoResizingTextArea implements ActionListener, DocumentListener, WindowConstants, ClipboardOwner {
+public class SimpleTextEditor extends JAutoResizingTextArea implements ActionListener, DocumentListener, WindowConstants, ClipboardOwner {
 
 	/**
 	* Empty implementation of the ClipboardOwner interface.
@@ -69,6 +75,104 @@ public class SimpleTextEditor extends AutoResizingTextArea implements ActionList
 		StringSelection stringSelection = new StringSelection(aString);
 		Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 		clipboard.setContents(stringSelection, this);
+	}
+
+	private UndoManager undoManager = new UndoManager();
+	private UndoAction undoAction = new UndoAction();
+	private RedoAction redoAction = new RedoAction();
+
+	public class EditKeysAdapter extends KeyAdapter {
+		boolean ctrlPressed = false;
+
+		@Override public void keyPressed(KeyEvent e) {
+			switch (e.getKeyCode()) {
+
+			case KeyEvent.VK_CONTROL:
+				ctrlPressed = true;
+				break;
+			}
+
+			if (ctrlPressed) {
+				handleKey(e, true);
+			}
+		}
+
+		@Override public void keyReleased(KeyEvent e) {
+			switch (e.getKeyCode()) {
+			case KeyEvent.VK_CONTROL:
+				ctrlPressed = false;
+				break;
+			}
+
+			if (ctrlPressed) {
+				//handleKey(e, true);
+			}
+		}
+	}
+
+	class UndoListener implements UndoableEditListener {
+		public void undoableEditHappened(UndoableEditEvent e) {
+			undoManager.addEdit(e.getEdit());
+			undoAction.update();
+			redoAction.update();
+		}
+	}
+
+	class UndoAction extends AbstractAction {
+		public UndoAction() {
+			update();
+		}
+
+		public Object getValue(String key) {
+			update();
+			return super.getValue(key);
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			if (this.isEnabled()) {
+				undo();
+			}
+		}
+
+		public void update() {
+			this.putValue(Action.NAME, undoManager.getUndoPresentationName());
+			this.setEnabled(undoManager.canUndo());
+		}
+	}
+
+	class RedoAction extends AbstractAction {
+		public RedoAction() {
+			update();
+		}
+
+		public Object getValue(String key) {
+			update();
+			return super.getValue(key);
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			if (this.isEnabled()) {
+				redo();
+			}
+		}
+
+		public void update() {
+			this.putValue(Action.NAME, undoManager.getRedoPresentationName());
+			this.setEnabled(undoManager.canRedo());
+		}
+
+	}
+
+	public void redo() {
+		undoManager.redo();
+		undoAction.update();
+		redoAction.update();
+	}
+
+	public void undo() {
+		undoManager.redo();
+		undoAction.update();
+		redoAction.update();
 	}
 
 	/**
@@ -109,7 +213,7 @@ public class SimpleTextEditor extends AutoResizingTextArea implements ActionList
 	//private JMenuItem cutItem, copyItem, pasteItem, selectItem;
 	//private JMenuItem quitItem, openItem; // File items
 	//private JMenuItem saveItem, saveAsItem, saveExitItem; // more File items
-	private JTextArea display = this;
+	private SimpleTextEditor display = this;
 	private Vector<String> recentCuts = new Vector<String>();
 
 	private File currentFile = null;//new File("Untitled");
@@ -131,6 +235,18 @@ public class SimpleTextEditor extends AutoResizingTextArea implements ActionList
 	private int defaultTabSize;
 	private String[] colorValues = { "red", "green", "blue", "black", "orange", "cyan", "magenta" };
 	public JJPanel contentPane = new JJPanel();
+	private MouseAdapterWithAppendablePopup appendablePopup = new MouseAdapterWithAppendablePopup() {
+		@Override public void mouseReleased(MouseEvent e) {
+			this.lastEvent = e;
+			mouseEvent(e);
+		}
+
+		@Override public void mousePressed(MouseEvent e) {
+			this.lastEvent = e;
+			mouseEvent(e);
+		}
+
+	};
 
 	/**
 	  SimpleTextEditor() constructor sets the layout for the GUI
@@ -149,34 +265,7 @@ public class SimpleTextEditor extends AutoResizingTextArea implements ActionList
 
 		display.setLineWrap(true);
 		display.getDocument().addDocumentListener(this);
-		display.addKeyListener(new KeyAdapter() {
-			boolean ctrlPressed = false;
-
-			@Override public void keyPressed(KeyEvent e) {
-				switch (e.getKeyCode()) {
-
-				case KeyEvent.VK_CONTROL:
-					ctrlPressed = true;
-					break;
-				}
-
-				if (ctrlPressed) {
-					handleKey(e, true);
-				}
-			}
-
-			@Override public void keyReleased(KeyEvent e) {
-				switch (e.getKeyCode()) {
-				case KeyEvent.VK_CONTROL:
-					ctrlPressed = false;
-					break;
-				}
-
-				if (ctrlPressed) {
-					//handleKey(e, true);
-				}
-			}
-		});
+		display.addKeyListener(new EditKeysAdapter());
 		contentPane.add("South", statusLine);
 		statusLine.setEditable(false);
 
@@ -193,18 +282,9 @@ public class SimpleTextEditor extends AutoResizingTextArea implements ActionList
 		saveFileChooser = new JFileChooser(startDir);
 		saveFileChooser.setDialogTitle("Save As");
 
-		addMouseListener(new MouseAdapter() {
-			@Override public void mouseReleased(MouseEvent e) {
-				mouseEvent(e);
-			}
-
-			@Override public void mousePressed(MouseEvent e) {
-
-				mouseEvent(e);
-			}
-
-		});
+		addMouseListener(appendablePopup);
 		SearchableUtils.installSearchable(this);
+		getDocument().addUndoableEditListener(new UndoListener());
 	}
 
 	protected void handleKey(KeyEvent e, boolean ctrl) {
@@ -218,6 +298,23 @@ public class SimpleTextEditor extends AutoResizingTextArea implements ActionList
 				paste();
 				return;
 			}
+			case 'x': {
+				cut();
+				return;
+			}
+			case 'z': {
+				undo();
+				return;
+			}
+			case 'y': {
+				redo();
+				return;
+			}
+			case 'a': {
+				selectAll();
+				return;
+			}
+
 			case 's': {
 				fileSave();
 				return;
@@ -226,10 +323,7 @@ public class SimpleTextEditor extends AutoResizingTextArea implements ActionList
 				fileOpenAndRead();
 				return;
 			}
-			case 'x': {
-				cut();
-				return;
-			}
+
 			default: {
 			}
 			}
@@ -247,11 +341,29 @@ public class SimpleTextEditor extends AutoResizingTextArea implements ActionList
 	}
 
 	public void showMenu(int x, int y, MouseEvent e) {
-		JPopupMenu popup = new JPopupMenu();
-		for (Component m : initEditMenu(true).getMenuComponents()) {
+		JPopupMenu popup = new JPopupMenu("appendable..");
+		appendablePopup.setPopup(popup);
+		for (Action m : getActions()) {
 			popup.add(m);
 		}
 		popup.show(e.getComponent(), x, y);
+	}
+
+	public Action[] getActions() {
+		ArrayList actions = new ArrayList<Action>();
+		for (Component c : initEditMenu(true).getMenuComponents()) {
+			Action act = null;
+			if (c instanceof JMenuItem) {
+				JMenuItem mi = (JMenuItem) c;
+				act = mi.getAction();
+			} else if (c instanceof AbstractButton) {
+				AbstractButton mi = (AbstractButton) c;
+				act = mi.getAction();
+			}
+			if (act != null)
+				actions.add(act);
+		}
+		return (Action[]) actions.toArray(new Action[actions.size()]);
 	}
 
 	/**
@@ -273,6 +385,12 @@ public class SimpleTextEditor extends AutoResizingTextArea implements ActionList
 		editMenu.addSeparator();
 
 		addMenuItem(editMenu, "Select All"); // Select item
+
+		editMenu.addSeparator();
+
+		addMenuItem(editMenu, "Undo", new UndoAction());
+
+		addMenuItem(editMenu, "Redo", new RedoAction());
 
 		editMenu.addSeparator();
 
@@ -318,6 +436,13 @@ public class SimpleTextEditor extends AutoResizingTextArea implements ActionList
 	public JMenuItem addMenuItem(JMenu editMenu, String label) {
 		JMenuItem pasteItem = new JMenuItem(label);
 		pasteItem.addActionListener(this);
+		editMenu.add(pasteItem);
+		return pasteItem;
+	}
+
+	public JMenuItem addMenuItem(JMenu editMenu, String label, Action act) {
+		JMenuItem pasteItem = new JMenuItem(act);
+		pasteItem.setText(label);
 		editMenu.add(pasteItem);
 		return pasteItem;
 	}
@@ -450,13 +575,13 @@ public class SimpleTextEditor extends AutoResizingTextArea implements ActionList
 			fileSaveAs();
 		} else if (mn.startsWith("cut")) {
 			// Cut the selected text
-			setScratchPad(display.getSelectedText());
-			display.replaceRange("", display.getSelectionStart(), display.getSelectionEnd());
-			addRecentCut(getScratchPad());
+			display.cut();
 		} else if (mn.startsWith("copy")) {
-			setScratchPad(display.getSelectedText());
+			display.copy();
+			//setScratchPad(display.getSelectedText());
 		} else if (mn.startsWith("paste")) {
-			display.insert(getScratchPad(), display.getCaretPosition());
+			display.paste();
+			//display.insert(getScratchPad(), display.getCaretPosition());
 		} else if (mn.startsWith("select")) {
 			display.selectAll();
 		} else {
@@ -464,6 +589,13 @@ public class SimpleTextEditor extends AutoResizingTextArea implements ActionList
 			setScratchPad(item.getActionCommand());
 		}
 
+	}
+
+	public void menu_Cut() {
+		//display.cut();
+		setScratchPad(display.getSelectedText());
+		display.replaceRange("", display.getSelectionStart(), display.getSelectionEnd());
+		addRecentCut(getScratchPad());
 	}
 
 	/**
@@ -519,6 +651,7 @@ public class SimpleTextEditor extends AutoResizingTextArea implements ActionList
 	/**
 		Confirm with the user  to save modified file before quitting the editor.
 	*/
+	@UISalient(MenuName = "Quit")//
 	public void fileClose() {
 		if (!confirmSaved()) {
 			return;
@@ -543,6 +676,7 @@ public class SimpleTextEditor extends AutoResizingTextArea implements ActionList
 		</li>
 		</ul>
 	*/
+	@UISalient(MenuName = "Open")//
 	public boolean fileOpenAndRead() {
 		if (!confirmSaved())
 			return false;
@@ -749,4 +883,5 @@ public class SimpleTextEditor extends AutoResizingTextArea implements ActionList
 		});
 
 	}
+
 }

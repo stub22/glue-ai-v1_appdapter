@@ -291,6 +291,8 @@ abstract public class RowTableModel<T> extends DefaultTableModel2 implements Lis
 	 * @return the number of rows in the model
 	 */
 	public int getRowCount() {
+		if (modelData == null)
+			return 0;
 		return modelData.size();
 	}
 

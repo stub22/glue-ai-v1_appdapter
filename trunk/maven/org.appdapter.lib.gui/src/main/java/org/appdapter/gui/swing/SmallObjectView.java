@@ -1,9 +1,12 @@
 package org.appdapter.gui.swing;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Graphics;
+import java.awt.Insets;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -25,11 +28,15 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.OverlayLayout;
+import javax.swing.SwingUtilities;
+import javax.swing.border.Border;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.core.log.Debuggable;
@@ -41,6 +48,9 @@ import org.appdapter.gui.editors.ObjectPanelHost;
 import org.appdapter.gui.trigger.TriggerPopupMenu;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jidesoft.icons.IconsFactory;
+import com.sun.org.apache.bcel.internal.classfile.Unknown;
 
 /**
  * A panel containing a very minimal GUI for an object
@@ -64,11 +74,15 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 		return ttt;
 	}
 
+	static ImageIcon imageIconPropertyButton;
+
 	class PropertyButton extends JButton {
 		public PropertyButton() {
 			super();
 			try {
-				setIcon(Utility.getImageIcon(IconView.class.getResource("PropertyButton.gif")));
+				if (imageIconPropertyButton == null)
+					imageIconPropertyButton = Utility.getImageIcon(IconView.class.getResource("PropertyButton.gif"), ":.:", Color.blue);
+				setIcon(imageIconPropertyButton);
 			} catch (Throwable err) {
 				setText("...");
 			}
@@ -85,11 +99,16 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 		}
 	}
 
+	static ImageIcon imageIconRemoveButton;
+
 	class RemoveButton extends JButton {
 		public RemoveButton() {
 			super();
 			try {
-				setIcon(Utility.getImageIcon(IconView.class.getResource("RemoveButton.gif")));
+				if (imageIconRemoveButton == null) {
+					imageIconRemoveButton = Utility.getImageIcon(IconView.class.getResource("RemoveButton.gif"), "x", Color.red);
+				}
+				setIcon(imageIconRemoveButton);
 			} catch (Throwable err) {
 				setText("x");
 				setForeground(Color.red);
@@ -285,7 +304,8 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 			nameMaker = Utility.getTreeBoxCollection();
 		setLayout(new OverlayLayout(this));
 
-		JPanel panel = new JPanel();
+		JPanel panel = this;
+		panel.setBorder(null);
 		frontGlass = new JPanel();
 		frontGlass.setOpaque(false);
 
@@ -339,7 +359,7 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 			panel.add(new JLabel("null"));
 		}
 		add(frontGlass);
-		add(panel);
+		//add(panel);
 		return true;
 	}
 
@@ -438,12 +458,12 @@ implements PropertyChangeListener, MouseListener, ActionListener, DragGestureLis
 		if (object == null) {
 			object = this;
 		}
-		if (true || !object.getClass().isPrimitive()) {
+		/*if (true || !object.getClass().isPrimitive()) {
 			TriggerPopupMenu menu = new TriggerPopupMenu(context, e, nameMaker);
 			menu.addMenuFromObject(object);
 			frontGlass.add(menu);
 			menu.show(frontGlass, x, y);
-		}
+		}*/
 	}
 
 }

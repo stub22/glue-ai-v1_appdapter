@@ -14,6 +14,7 @@ import java.util.Queue;
 import org.appdapter.bind.rdf.jena.model.JenaLiteralUtils;
 import org.appdapter.bind.rdf.jena.model.ModelStuff;
 import org.appdapter.core.component.KnownComponent;
+import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.core.item.JenaResourceItem;
 import org.appdapter.core.name.ModelIdent;
 
@@ -25,6 +26,7 @@ import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.RDFReader;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.impl.ResourceImpl;
+import com.jidesoft.utils.ReflectionUtils;
 
 public class ResourceToFromString extends ToFromKeyConverterImpl<Object, String> {
 
@@ -66,7 +68,7 @@ public class ResourceToFromString extends ToFromKeyConverterImpl<Object, String>
 				str = "" + literalOrNode_URI;
 			}
 		}
-		if (str.startsWith("http")) {
+		if (str.startsWith("http") || str.startsWith("urn:") || str.contains(":")) {
 			return str;
 		}
 		return str;
@@ -110,7 +112,8 @@ public class ResourceToFromString extends ToFromKeyConverterImpl<Object, String>
 				Node node = ModelStuff.create(model, title);
 				if (further.isInstance(node))
 					return node;
-				return new ResourceImpl(node, (EnhGraph) model);
+				Object oo = new ResourceImpl(node, (EnhGraph) model);
+				return ReflectUtils.recastRU(oo, further);
 			}
 			RDFReader reader = model.getReader("N3");
 			reader.read(model, new StringInputStream("<#pat> <#knows> " + title + " .", Charset.defaultCharset()), "http://noprefix.com/noprefix#");

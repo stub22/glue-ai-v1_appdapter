@@ -1,5 +1,6 @@
 package org.appdapter.gui.browse;
 
+import java.awt.Component;
 import java.awt.Container;
 import java.beans.PropertyVetoException;
 import java.util.HashSet;
@@ -23,7 +24,7 @@ import org.appdapter.gui.swing.CantankerousJob;
 public class AddToTreeListener implements POJOCollectionListener {
 
 	public String toString() {
-		return Debuggable.toInfoStringF(this);
+		return "AddToTreeListener for " + col;
 	}
 
 	NamedObjectCollection col;
@@ -136,6 +137,8 @@ public class AddToTreeListener implements POJOCollectionListener {
 	void pojoUpdateObjectWithClass(Object obj, boolean isRemoval, boolean forceShowing) {
 
 		Class oc = obj.getClass();
+		if (Component.class.isAssignableFrom(oc))
+			return;
 		if (oc.isArray()) {
 			Class compType = oc.getComponentType();
 			if (Utility.isSystemPrimitive(compType))
