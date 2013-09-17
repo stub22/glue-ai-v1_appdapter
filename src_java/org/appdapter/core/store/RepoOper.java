@@ -15,22 +15,32 @@
  */
 package org.appdapter.core.store;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.appdapter.api.trigger.AnyOper;
 import org.appdapter.api.trigger.AnyOper.UIHidden;
 import org.appdapter.api.trigger.AnyOper.UtilClass;
 import org.appdapter.api.trigger.TriggerImpl;
 import org.appdapter.demo.DemoResources;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.hp.hpl.jena.query.Dataset;
+import com.hp.hpl.jena.query.DatasetFactory;
+import com.hp.hpl.jena.rdf.listeners.StatementListener;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.shared.Lock;
 
 // import com.hp.hpl.jena.query.DataSource;
@@ -121,11 +131,28 @@ public class RepoOper implements AnyOper, UtilClass {
 		///dest.setNsPrefix("#", src.getNsPrefixURI("#"));
 	}
 
+	@UISalient public static void replaceModelElements(Model dest, Model src, Resource unionOrReplace) {
+		if (src == dest) {
+			return;
+		}
+		dest.removeAll();
+		dest.add(src);
+		dest.setNsPrefixes(src.getNsPrefixMap());
+		// dest.getGraph().getPrefixMapping().equals(obj)
+		//if (src.getGraph() )dest.setNsPrefix("", src.getNsPrefixURI(""));
+		///dest.setNsPrefix("#", src.getNsPrefixURI("#"));
+	}
+
 	public static void replaceDatasetElements(Dataset dest, Dataset src, String onlyModel) {
+		replaceDatasetElements(dest, src, onlyModel, null);
+	}
+
+	public static void replaceDatasetElements(Dataset dest, Dataset src, String onlyModel, Resource unionOrReplace) {
 		if (!(dest instanceof Dataset)) {
 			theLogger.error("Destination is not a datasource! " + dest.getClass() + " " + dest);
 			return;
 		}
+		boolean isReplace = isReplace(unionOrReplace);
 		Dataset sdest = (Dataset) dest;
 		boolean onSrc = true, onDest = true;
 		if (!dest.containsNamedModel(onlyModel)) {
@@ -140,7 +167,7 @@ public class RepoOper implements AnyOper, UtilClass {
 		if (onSrc && onDest) {
 			Model destModel = src.getNamedModel(onlyModel);
 			Model srcModel = dest.getNamedModel(onlyModel);
-			replaceModelElements(destModel, srcModel);
+			replaceModelElements(destModel, srcModel, unionOrReplace);
 			theLogger.info("Replaced model " + onlyModel);
 			return;
 		}
@@ -150,13 +177,66 @@ public class RepoOper implements AnyOper, UtilClass {
 			return;
 		}
 		if (onDest) {
-			dest.getNamedModel(onlyModel).removeAll();
-			theLogger.info("clearing model " + onlyModel);
+			if (isReplace) {
+				dest.getNamedModel(onlyModel).removeAll();
+				theLogger.info("clearing model " + onlyModel);
+			}
 			return;
 		}
 	}
 
-	public static void readDatasetFromURL(String source, Dataset target, Resource unionOrReplace) {
+	public static void readDatasetFromURL(String srcPath, Dataset target, Resource unionOrReplace) throws IOException {
+		final Model loaderModel = ModelFactory.createDefaultModel();
+		final Dataset loaderDataset = DatasetFactory.createMem();
+		Model m = loaderDataset.getDefaultModel();
+		if (m == null)
+			m = ModelFactory.createDefaultModel();
+		final Model[] currentModel = new Model[] { m, null, null };
+		final String[] modelName = new String[] { "" };
+		final Map<String, Model> constits = new HashMap();
+		loaderModel.register(new StatementListener() {
+
+			@Override public void addedStatement(Statement arg0) {
+				System.out.println("Adding statement: " + arg0);
+				String subjStr = "" + arg0.getSubject();
+				if (subjStr.equals("self")) {
+					// processing directive
+					RDFNode r = arg0.getObject();
+					if (r.isLiteral()) {
+						// is a model start declaration;
+						String baseURI = modelName[0] = r.asLiteral().getString();
+						Model newModel = currentModel[0] = ModelFactory.createDefaultModel();
+						currentModel[0].setNsPrefix("", baseURI);
+					} else if (r.isResource()) {
+						// is a model ending declaration (we dont clear)
+						Resource rs = r.asResource();
+						String type = rs.getLocalName();
+						Model newModel = currentModel[0];
+						newModel.setNsPrefixes(loaderModel.getNsPrefixMap());
+						if (type.equals("DirectoryModel")) {
+							currentModel[1] = currentModel[0];
+						} else if (type.equals("RepoSheetModel")) {
+							constits.put(modelName[0], currentModel[0]);
+						} else if (type.equals("DatasetDefaultModel")) {
+							currentModel[2] = currentModel[0];
+						}
+					}
+				} else {
+					currentModel[0].add(arg0);
+				}
+			}
+		});
+		InputStream fis = FileStreamUtils.openInputStream(srcPath, null);
+		InputStreamReader isr = new InputStreamReader(fis, Charset.defaultCharset().name());
+		loaderModel.read(isr, null, "TTL");
+
+		if (currentModel[2] != null)
+			loaderDataset.setDefaultModel(currentModel[2]);
+
+		for (Map.Entry<String, Model> entry : constits.entrySet()) {
+			loaderDataset.addNamedModel(entry.getKey(), entry.getValue());
+		}
+		replaceDatasetElements(target, loaderDataset, null, unionOrReplace);
 	}
 
 	public static void replaceNamedModel(Dataset dest, String urlModel, Model model, Resource unionOrReplace) {
@@ -165,10 +245,7 @@ public class RepoOper implements AnyOper, UtilClass {
 		Lock oldLock = null;
 		model.enterCriticalSection(Lock.READ);
 		try {
-			boolean isReplace = true;
-			if (unionOrReplace != null) {
-				theLogger.warn("Found union/replace = " + unionOrReplace + " on " + urlModel);
-			}
+			boolean isReplace = isReplace(unionOrReplace);
 			boolean onDest = true;
 			if (!dest.containsNamedModel(urlModel)) {
 				onDest = false;
@@ -214,7 +291,21 @@ public class RepoOper implements AnyOper, UtilClass {
 		}
 	}
 
+	private static boolean isReplace(Resource unionOrReplace) {
+		boolean isReplace = true;
+		if (unionOrReplace != null) {
+			theLogger.warn("Found union/replace = " + unionOrReplace);
+			if (unionOrReplace.getLocalName().equals("Union"))
+				isReplace = false;
+		}
+		return isReplace;
+	}
+
 	public static void replaceDatasetElements(Dataset dest, Dataset src) {
+		replaceDatasetElements(dest, src, (Resource) null);
+	}
+
+	public static void replaceDatasetElements(Dataset dest, Dataset src, Resource unionOrReplace) {
 		if (!(dest instanceof Dataset)) {
 			theLogger.error("Destination is not a datasource! " + dest.getClass() + " " + dest);
 			return;
@@ -222,17 +313,18 @@ public class RepoOper implements AnyOper, UtilClass {
 		Dataset sdest = (Dataset) dest;
 		Model defDestModel = dest.getDefaultModel();
 		Model defSrcModel = src.getDefaultModel();
-		replaceModelElements(defDestModel, defSrcModel);
+		replaceModelElements(defDestModel, defSrcModel, unionOrReplace);
 		HashSet<String> dnames = setOF(sdest.listNames());
 		HashSet<String> snames = setOF(src.listNames());
 		HashSet<String> replacedModels = new HashSet<String>();
+		boolean isReplace = isReplace(unionOrReplace);
 
 		for (String nym : snames) {
 			Model getsrc = src.getNamedModel(nym);
 			if (dest.containsNamedModel(nym)) {
 				Model getdest = dest.getNamedModel(nym);
 				replacedModels.add(nym);
-				replaceModelElements(getdest, getsrc);
+				replaceModelElements(getdest, getsrc, unionOrReplace);
 				dnames.remove(nym);
 				continue;
 			}
@@ -257,15 +349,19 @@ public class RepoOper implements AnyOper, UtilClass {
 			if (snames.size() == 0) {
 				// some graphs might need cleared?
 				for (String nym : dnames) {
-					sdest.getNamedModel(nym).removeAll();
-					sdest.removeNamedModel(nym);
+					if (isReplace) {
+						sdest.getNamedModel(nym).removeAll();
+						sdest.removeNamedModel(nym);
+					}
 				}
 				return;
 			} else {
 				// New names to add AND graphs might need cleared
 				for (String nym : dnames) {
-					sdest.getNamedModel(nym).removeAll();
-					sdest.removeNamedModel(nym);
+					if (isReplace) {
+						sdest.getNamedModel(nym).removeAll();
+						sdest.removeNamedModel(nym);
+					}
 				}
 				for (String nym : snames) {
 					sdest.addNamedModel(nym, src.getNamedModel(nym));
