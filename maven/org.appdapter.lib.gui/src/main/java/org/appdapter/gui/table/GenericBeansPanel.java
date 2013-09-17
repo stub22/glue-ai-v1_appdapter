@@ -38,8 +38,8 @@ import org.appdapter.api.trigger.CallableWithParameters;
 import org.appdapter.core.convert.ToFromKeyConverter;
 import org.appdapter.gui.api.WrapperValue;
 import org.appdapter.gui.browse.Utility;
-import org.appdapter.gui.repo.SimpleTextEditor;
 import org.appdapter.gui.swing.ScreenBoxPanel;
+import org.appdapter.gui.swing.SimpleTextEditor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

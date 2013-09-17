@@ -160,6 +160,7 @@ import org.appdapter.gui.api.NamedObjectCollection;
 import org.appdapter.gui.api.POJOCollection;
 import org.appdapter.gui.api.WrapperValue;
 import org.appdapter.gui.box.BoxedCollectionImpl;
+import org.appdapter.gui.box.BoxedCollectionImpl.ScreenBoxImplMade;
 import org.appdapter.gui.box.ScreenBoxImpl;
 import org.appdapter.gui.demo.DemoBrowser;
 import org.appdapter.gui.editors.AbstractCollectionBeanInfo;
@@ -229,30 +230,45 @@ public class Utility extends UtilityMenuOptions {
 		if (!GuiDebugTracing)
 			return;
 		String msg = Debuggable.toInfoStringArgV(params);
-		theLogger.warn("\n-----------------\nDUG BUG: " + msg + "\n");
-		if (!Debuggable.isRelease() && false) {
-			Debuggable.warn(params);
+		theLogger.warn("DUG BUG: ");
+		if (!Debuggable.isRelease()) {
+			Debuggable.warn(msg);
+		}
+	}
+
+	public static void checkSource(final Object source) {
+		if (source == null) {
+			Utility.bug("NULL in checkSource");
+		} else if (source instanceof JComponent) {
+			Utility.bug("checkSource a " + source.getClass());
+		} else if (source instanceof ScreenBoxImplMade) {
+			Utility.bug("checkSource a " + source.getClass());
+		} else if (source instanceof TableModel) {
+			Utility.bug("checkSource a " + source.getClass());
 		}
 	}
 
 	public final static ToFromStringNotSpecialized FROM_STRING_NOT_SPECIALIZED = new ToFromStringNotSpecialized();
 	public static SpecialQueue taskEqueue = new SpecialQueue("SpecialQueueForUtility");
 
-	public static class TriggerAdderForInstance<TrigType> implements TriggerAdder {
+	public static class TriggerAdderForInstance<TrigType> implements org.appdapter.gui.trigger.TriggerAdder {
 		@Override public String toString() {
 			// TODO Auto-generated method stub
 			return getClass().getSuperclass() + " addTriggersForObjectInstance";
 		}
 
-		@Override public <TrigType> void addTriggersForObjectInstance(DisplayContext ctx, Class cls, List<TrigType> tgs, Object poj, TriggerFilter rulesOfAdd, String menuFmt) {
+		@Override public void addTriggersForObjectInstance(DisplayContext ctx, Class cls, List tgs, Object poj, TriggerFilter rulesOfAdd, String menuFmt) {
 			//TriggerMenuFactory.addTriggersForObjectInstanceMaster(ctx, cls, tgs, poj, ADD_ALL, menuFmt, false);
 			if (cls != null && poj != null && !cls.isInstance(poj) && poj instanceof BT) {
 				bug("addTriggersForObjectInstance = " + poj);
 			}
 			Object also = dref(poj);
-			//if (also != null && also != poj) {
-			TriggerMenuFactory.addTriggersForObjectInstanceMaster(false, ctx, also.getClass(), tgs, also, ADD_ALL, menuFmt, false);
-			//}
+			if (also == null) {
+				also = poj;
+			}
+			if (also != null) {
+				TriggerMenuFactory.addTriggersForObjectInstanceMaster(false, ctx, also.getClass(), tgs, also, ADD_ALL, menuFmt, false);
+			}
 			//Object also2 = drefO(poj);
 			//if (also2 != null && also2 != poj && also2 != also) {
 			//TriggerMenuFactory.addTriggersForObjectInstanceMaster(ctx, also2.getClass(), tgs, also2, ADD_ALL, menuFmt, false);
@@ -275,8 +291,7 @@ public class Utility extends UtilityMenuOptions {
 		}
 
 		@Override public String toKey(Object toBecomeAKey) {
-
-			return getUniqueName(toBecomeAKey, uiObjects, true, false, true);
+			return getUniqueName(toBecomeAKey, uiObjects, true, true, true);
 		}
 
 	}
@@ -449,7 +464,7 @@ public class Utility extends UtilityMenuOptions {
 
 	// ==== Instance variables ==========
 	public static BrowsePanel browserPanel;
-	public static NamedObjectCollection uiObjects = new BoxedCollectionImpl("All UI Objects", null);
+	final public static NamedObjectCollection uiObjects = new BoxedCollectionImpl("All UI Objects", null);
 	public static NamedObjectCollection clipboardCollection = new BoxedCollectionImpl("Clipboard", null);
 	@UISalient(ResultIsSingleton = true)
 	//
@@ -1071,6 +1086,7 @@ public class Utility extends UtilityMenuOptions {
 
 	final public static ResourceToFromString RESOURCE_TO_FROM_STRING = new ResourceToFromString(null);
 	static AssemblerCacheGrabber singletAssemblerCacheGrabber = new AssemblerCacheGrabber();
+	private static Map<Class, ToFromKeyConverter> toFrmKeyCnv = null;
 	static {
 		addObjectFeatures(singletAssemblerCacheGrabber);
 		JenaLiteralUtils.addIdListener(new IdentToObjectListener() {
@@ -1087,7 +1103,7 @@ public class Utility extends UtilityMenuOptions {
 		addClassMethods(UtilityMenuOptions.class);
 		addClassMethods(Utility.class);
 		registerConverter(new UtilityConverter());
-		Map<Class, ToFromKeyConverter> toFrmKeyCnv = getKeyConvMap(String.class, true);
+		Utility.toFrmKeyCnv = getKeyConvMap(String.class, true);
 
 		toFrmKeyCnv.put(Ident.class, new ToFromKeyConverterImpl<Ident, String>(Ident.class, String.class) {
 
@@ -1099,14 +1115,20 @@ public class Utility extends UtilityMenuOptions {
 				return new FreeIdent(title);
 			}
 		});
-		toFrmKeyCnv.put(Resource.class, RESOURCE_TO_FROM_STRING);
-		toFrmKeyCnv.put(FrontsNode.class, RESOURCE_TO_FROM_STRING);
-		toFrmKeyCnv.put(Literal.class, RESOURCE_TO_FROM_STRING);
-		toFrmKeyCnv.put(RDFNode.class, RESOURCE_TO_FROM_STRING);
-		toFrmKeyCnv.put(Node.class, RESOURCE_TO_FROM_STRING);
-		toFrmKeyCnv.put(JenaResourceItem.class, RESOURCE_TO_FROM_STRING);
-		toFrmKeyCnv.put(FreeIdent.class, RESOURCE_TO_FROM_STRING);
-		//toFrmKeyCnv.put(KnownComponent.class, RESOURCE_TO_FROM_STRING);
+
+		addJenaResourceClass(JenaResourceItem.class);
+		addJenaResourceClass(FreeIdent.class);
+
+		addJenaResourceClass(Resource.class);
+		addJenaResourceClass(FrontsNode.class);
+		addJenaResourceClass(Literal.class);
+		addJenaResourceClass(RDFNode.class);
+		addJenaResourceClass(Node.class);
+		//addJenaResourceClass(KnownComponent.class, RESOURCE_TO_FROM_STRING);
+	}
+
+	private static void addJenaResourceClass(Class cls) {
+		toFrmKeyCnv.put(cls, RESOURCE_TO_FROM_STRING);
 	}
 
 	private static Map<Class, ToFromKeyConverter> getKeyConvMap(Class keyType, boolean createIfMissing) {
@@ -1327,9 +1349,10 @@ public class Utility extends UtilityMenuOptions {
 	/**
 	 * Sets the global objects context
 	 */
+	/*
 	public static void setInstancesOfObjects(NamedObjectCollection newValue) {
 		uiObjects = newValue;
-	}
+	}*/
 
 	/*
 	 * public static void setDefaultContext(POJOCollectionWithSwizzler c) {
@@ -1524,8 +1547,32 @@ public class Utility extends UtilityMenuOptions {
 		return ReflectUtils.noSuchConversion(val, objNeedsToBe, null);
 	}
 
+	public static HashSet<Type> toStringTypes = new HashSet();
+	public static HashSet<Type> notToStringTypes = new HashSet();
+
 	static public boolean isToStringType(Class type) {
-		return DisplayType.TOSTRING == getDisplayType(type);
+		for (Type t : notToStringTypes) {
+			if (ReflectUtils.isAssignableFrom(t, type))
+				return false;
+		}
+		for (Type t : toStringTypes) {
+			if (ReflectUtils.isAssignableFrom(t, type))
+				return true;
+		}
+		if (DisplayType.TOSTRING == getDisplayType(type)) {
+			toStringTypes.add(type);
+			return true;
+		}
+		ToFromKeyConverter cvt = getToFromStringConverter(type);
+		if (cvt != null && cvt != FROM_STRING_NOT_SPECIALIZED) {
+			toStringTypes.add(type);
+			return true;
+		}
+		if (ReflectUtils.roundTrips(String.class, type)) {
+			toStringTypes.add(type);
+			return true;
+		}
+		return false;
 	}
 
 	public static <T> T recast(Object obj, Class<T> objNeedsToBe) throws NoSuchConversionException {
@@ -1550,24 +1597,42 @@ public class Utility extends UtilityMenuOptions {
 		}
 	}
 
+	static Map<String, Object> stringToObjectCache = new HashMap();
+
 	public static Object fromString(Object title, Class type, List maxCvt) throws NoSuchConversionException {
-		//List maxCvt = Converter.MCVT;
+		if (title == null)
+			return null;
+		//List maxCvt = Converter.MCVT;	
 		Class keyClass = title.getClass();
 		if (keyClass != String.class) {
 			title = makeToString(title);
 			return fromString(title, type, maxCvt);
 		}
-		if (title instanceof String) {
-			String stitle = (String) title;
-			stitle = Utility.unquote(stitle);
-			Convertable box = getTreeBoxCollection().findBoxByName(stitle);
-			if (box != null) {
-				if (box.canConvert(type))
-					return box.convertTo(type);
-			} else {
-				// trouble!?
+
+		String stitle = (String) title;
+		stitle = Utility.unquote(stitle);
+		if (stringToObjectCache != null) {
+			synchronized (stringToObjectCache) {
+				if (stringToObjectCache.containsKey(stitle)) {
+					Object o = stringToObjectCache.get(stitle);
+					if (type.isInstance(o))
+						return o;
+				}
 			}
 		}
+		Convertable box = getTreeBoxCollection().findBoxByName(stitle);
+		if (box != null) {
+			if (box.canConvert(type))
+				return box.convertTo(type);
+		} else {
+			//		bug(" trouble!? " + stitle);
+		}
+		NamedObjectCollection noc = getTreeBoxCollection();
+		for (Object o : noc.findObjectsByName(stitle, type)) {
+			if (type.isInstance(o))
+				return o;
+		}
+
 		ToFromKeyConverter conv = getToFromKeyConverter(type, keyClass);
 		if (conv != null) {
 			Object o = null;
@@ -1583,11 +1648,14 @@ public class Utility extends UtilityMenuOptions {
 				}
 			}
 		}
-
-		if (!isToStringType(type)) {
-			warn("!isToStrType=", type);
+		try {
+			return convertUsingReflection(title, type);
+		} catch (NoSuchConversionException nsc) {
+			if (!isToStringType(type)) {
+				warn("!isToStrType=", type);
+			}
+			throw nsc;
 		}
-		return convertUsingReflection(title, type);
 	}
 
 	static final String[] quotingPairs = new String[] { "\"\"", "''", "()" };
@@ -1756,11 +1824,26 @@ public class Utility extends UtilityMenuOptions {
 	}
 
 	public static String getSpecialClassName(Class c) {
+		String str = getSpecialClassName0(c);
+		try {
+			BT bt = getTreeBoxCollection().findOrCreateBox(str, c);
+			bt.addTitle(str);
+			Object c2 = getTreeBoxCollection().findObjectByName(str);
+			if (c2 != c) {
+				bug("Not using SpecialClassName names ? " + c);
+			}
+		} catch (PropertyVetoException e) {
+			printStackTrace(e);
+		}
+		return str;
+	}
+
+	public static String getSpecialClassName0(Class c) {
 		if (c.isArray()) {
-			return getSpecialClassName(c.getComponentType()) + "Array";
+			return getSpecialClassName0(c.getComponentType()) + "Array";
 		}
 		if (c.isPrimitive()) {
-			return getSpecialClassName(nonPrimitiveTypeFor(c)) + "+Primitive";
+			return getSpecialClassName0(nonPrimitiveTypeFor(c)) + "+Primitive";
 		}
 		String name = getCanonicalSimpleName(c, true);
 		int i = name.indexOf(".");
@@ -1974,7 +2057,14 @@ public class Utility extends UtilityMenuOptions {
 	private static <T> void registerPair(Class<T> mustBe, Type objClass) {
 		if (objClass instanceof Class) {
 			if (PropertyEditor.class.isAssignableFrom(mustBe)) {
-				PropertyEditorManager.registerEditor((Class) objClass, mustBe);
+				try {
+					if (mustBe.getDeclaredConstructor() != null) {
+						PropertyEditorManager.registerEditor((Class) objClass, mustBe);
+					}
+				} catch (SecurityException e) {
+					e.printStackTrace();
+				} catch (Exception e) {
+				}
 			}
 		}
 		synchronized (classToClassRegistry) {
@@ -2241,6 +2331,11 @@ public class Utility extends UtilityMenuOptions {
 	private static Collection<Class> findPanelClassesFromCached(Class targetType) {
 		HashSet<Class> panelClass = new HashSet<Class>();
 		PropertyEditor ped = null;
+		addIfNew(panelClass, findImplmentingForMatch(PropertyEditor.class, targetType), false);
+		addIfNew(panelClass, findImplmentingForMatch(Customizer.class, targetType), false);
+		addIfNew(panelClass, findImplmentingForMatch(Component.class, targetType), false);
+		addIfNew(panelClass, findImplmentingForMatch(Object.class, targetType), false);
+		addIfNew(panelClass, makeCustomizerFromEditor(targetType), false);
 		boolean wasInClassloaderPing = isInClassLoadPing();
 		try {
 			if (usePropertyEditorManager) {
@@ -2255,14 +2350,6 @@ public class Utility extends UtilityMenuOptions {
 		} finally {
 			isInClassLoadPing(wasInClassloaderPing);
 		}
-		if (targetType == Class.class) {
-			//Debuggable.breakpoint();
-		}
-		addIfNew(panelClass, findImplmentingForMatch(PropertyEditor.class, targetType), false);
-		addIfNew(panelClass, findImplmentingForMatch(Customizer.class, targetType), false);
-		addIfNew(panelClass, findImplmentingForMatch(Component.class, targetType), false);
-		addIfNew(panelClass, findImplmentingForMatch(Object.class, targetType), false);
-		addIfNew(panelClass, makeCustomizerFromEditor(targetType), false);
 		if (panelClass.size() == 0) {
 			return EMPTY_COLLECTION;
 		}
@@ -2541,6 +2628,9 @@ public class Utility extends UtilityMenuOptions {
 	public static String getUniqueNamePretty(Object object) {
 		if (object == null)
 			return "<null>";
+		if (object instanceof BT) {
+			return ((BT) object).getShortLabel();
+		}
 		NamedObjectCollection noc = getTreeBoxCollection();
 		String un = getUniqueName(object, noc, false, true, false);
 		BT box = noc.findOrCreateBox(object);
@@ -2600,8 +2690,19 @@ public class Utility extends UtilityMenuOptions {
 		if (object == null)
 			return "<null>";
 		String title = hasDefaultName(object, wantsPretty, reReadable);
-		if (isTitled(title))
-			return title;
+		if (isTitled(title)) {
+			Class objNeedsToBe = object.getClass();
+			try {
+				Object o2 = fromString(title, objNeedsToBe);
+				if (o2 != null && o2.equals(object)) {
+					return title;
+				} else {
+
+				}
+			} catch (NoSuchConversionException e) {
+				e.printStackTrace();
+			}
+		}
 		BT newBox = null;
 		if (noc == null) {
 			noc = getTreeBoxCollection();
@@ -2637,6 +2738,9 @@ public class Utility extends UtilityMenuOptions {
 	}
 
 	public static String getDefaultName(Object object, boolean wantsPretty, boolean reReadable) {
+		if (object == null) {
+			return object.toString();
+		}
 		String title = hasDefaultName(object, wantsPretty, reReadable);
 		if (title == null) {
 			return object.getClass().getCanonicalName() + "@" + identityHashCode(object);
@@ -2648,7 +2752,7 @@ public class Utility extends UtilityMenuOptions {
 		if (object == null)
 			return "<null>";
 		if (object instanceof Class) {
-			return getSpecialClassName((Class) object);
+			return getSpecialClassName0((Class) object);
 		}
 		if (object instanceof KnownComponent) {
 			String str = ((KnownComponent) object).getShortLabel();
@@ -2740,8 +2844,16 @@ public class Utility extends UtilityMenuOptions {
 
 		Class type = object.getClass();
 
-		if (type == Class.class)
-			return getSpecialClassName(((Class) object));
+		if (type == Class.class) {
+			String stitle = getSpecialClassName0(((Class) object));
+			if (stringToObjectCache != null) {
+				synchronized (stringToObjectCache) {
+					if (!stringToObjectCache.containsKey(stitle)) {
+						stringToObjectCache.put(stitle, object);
+					}
+				}
+			}
+		}
 
 		String title;
 
@@ -2806,6 +2918,20 @@ public class Utility extends UtilityMenuOptions {
 	}
 
 	static public org.appdapter.gui.api.DisplayType getDisplayType(Class expected) {
+		if (JPanel.class.isAssignableFrom(expected)) {
+			return DisplayType.PANEL;
+		}
+		if (TreeNode.class.isAssignableFrom(expected)) {
+			return DisplayType.TREE;
+		}
+		if (expected == Object.class) {
+			return DisplayType.PANEL;
+		}
+
+		ToFromKeyConverter cvt = getToFromStringConverter(expected);
+		if (cvt != null && cvt != FROM_STRING_NOT_SPECIALIZED) {
+			return DisplayType.TOSTRING;
+		}
 		if (expected.isPrimitive()) {
 			return DisplayType.TOSTRING;
 		}
@@ -2821,25 +2947,13 @@ public class Utility extends UtilityMenuOptions {
 		if (Enum.class.isAssignableFrom(expected)) {
 			return DisplayType.TOSTRING;
 		}
-		if (JPanel.class.isAssignableFrom(expected)) {
-			return DisplayType.PANEL;
-		}
-		if (TreeNode.class.isAssignableFrom(expected)) {
-			return DisplayType.TREE;
-		}
 		if (expected == String.class || CharSequence.class.isAssignableFrom(expected)) {
 			return DisplayType.TOSTRING;
 		}
 		if (expected == Boolean.class) {
 			return DisplayType.TOSTRING;
 		}
-		if (expected == Object.class) {
-			return DisplayType.PANEL;
-		}
-		ToFromKeyConverter cvt = getToFromStringConverter(expected);
-		if (cvt != null) {
-			return DisplayType.TOSTRING;
-		}
+
 		return DisplayType.PANEL;
 	}
 
@@ -3064,9 +3178,9 @@ public class Utility extends UtilityMenuOptions {
 				oc = toInfoStringO(gv);
 			}
 			if (oc == null) {
-				oc = getSpecialClassName(((Class) gv));
+				oc = getSpecialClassName0(((Class) gv));
 			}
-			String gvStr = getSpecialClassName(gv.getClass()) + ".this.toString: " + oc;
+			String gvStr = getSpecialClassName0(gv.getClass()) + ".this.toString: " + oc;
 			if (gvStr.length() > 2048) {
 				gvStr = gvStr.substring(0, 2048);
 				gv = gvStr;
@@ -3224,12 +3338,12 @@ public class Utility extends UtilityMenuOptions {
 			}
 
 			if (image == null) {
-				icon = new UnknownIcon();
+				icon = new UnknownIcon("B");
 			} else {
 				icon = new ImageIcon(image);
 			}
 		} catch (Exception err) {
-			icon = new UnknownIcon();
+			icon = new UnknownIcon("E");
 		}
 		return icon;
 	}
@@ -3240,13 +3354,13 @@ public class Utility extends UtilityMenuOptions {
 
 	public static ImageIcon getImageIcon(Image url) {
 		if (url == null)
-			return null;
+			return new ImageIcon(new UnknownIcon("I").asImage());
 		return new ImageIcon(url);
 	}
 
-	public static ImageIcon getImageIcon(URL url) {
+	public static ImageIcon getImageIcon(URL url, String text, Color elseC) {
 		if (url == null)
-			return null;
+			return new ImageIcon(new UnknownIcon(text, elseC).asImage());
 		return new ImageIcon(url);
 	}
 
@@ -3257,11 +3371,11 @@ public class Utility extends UtilityMenuOptions {
 	public static Image getImage(URL uri) {
 		try {
 			if (uri == null)
-				return null;
+				return new UnknownIcon("?").asImage();
 			return ImageIO.read(uri);
 		} catch (IOException e) {
 			printStackTrace(e);
-			return null;
+			return new UnknownIcon("?").asImage();
 		}
 	}
 
@@ -3695,8 +3809,35 @@ public class Utility extends UtilityMenuOptions {
 		return;
 	}
 
-	public static void invokeLater(Runnable runnable) {
+	public static UserResult invokeLater(Runnable runnable) {
 		SwingUtilities.invokeLater(runnable);
+		return UserResult.SUCCESS;
+	}
+
+	public static UserResult invokeLater(final Callable runnable) {
+		invokeLater(new Runnable() {
+			@Override public void run() {
+				try {
+					runnable.call();
+				} catch (Exception e) {
+					printStackTrace(e);
+				}
+			}
+		});
+		return UserResult.SUCCESS;
+	}
+
+	public static UserResult invokeAfterLoader(final Callable<UserResult> callable) {
+		invokeAfterLoader(new Runnable() {
+			@Override public void run() {
+				try {
+					callable.call();
+				} catch (Exception e) {
+					printStackTrace(e);
+				}
+			}
+		});
+		return UserResult.SUCCESS;
 	}
 
 	protected static void runLoadComplete() {
@@ -4233,8 +4374,8 @@ public class Utility extends UtilityMenuOptions {
 
 	}
 
-	public static ObjectChoiceModel getObjectChoiceModel(Class type, JComponent comp, PropertyChangeSupport ps) {
-		return new ObjectChoiceModel(getTreeBoxCollection(), type, "some " + type.getName(), getToFromStringConverter(type), comp, ps);
+	public static ObjectChoiceModel getObjectChoiceModel(Class type, JComponent comp, PropertyChangeSupport ps, Object valueToStart) {
+		return new ObjectChoiceModel(getTreeBoxCollection(), type, "some " + type.getName(), getToFromStringConverter(type), comp, ps, valueToStart);
 	}
 
 	public static void showProperties(Object value) {
@@ -4243,6 +4384,20 @@ public class Utility extends UtilityMenuOptions {
 		} catch (Throwable err) {
 			Utility.showError(null, "An error occurred while creating an interface for " + value, err);
 		}
+	}
+
+	public static boolean isAfterLoader = false;
+	static {
+		invokeAfterLoader(new Runnable() {
+
+			@Override public void run() {
+				isAfterLoader = true;
+			}
+		});
+	}
+
+	public static boolean isAppReady() {
+		return isAfterLoader && controlApp != null && browserPanel != null;
 	}
 
 }

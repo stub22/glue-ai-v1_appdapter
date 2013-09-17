@@ -1,12 +1,20 @@
 package org.appdapter.gui.swing;
 
+import java.awt.AWTKeyStroke;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.KeyboardFocusManager;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.Icon;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
+import javax.swing.JTabbedPane;
+import javax.swing.KeyStroke;
 import javax.swing.event.ChangeListener;
 
 import org.appdapter.core.log.Debuggable;
@@ -24,10 +32,31 @@ public class ObjectTabsForTabbedView implements BoxPanelSwitchableView {
 	final Object lock;
 	final Object rootValue;
 
+	private static void setupTabTraversalKeys(JideTabbedPane tabbedPane) {
+		KeyStroke ctrlTab = KeyStroke.getKeyStroke("ctrl TAB");
+		KeyStroke ctrlShiftTab = KeyStroke.getKeyStroke("ctrl shift TAB");
+
+		// Remove ctrl-tab from normal focus traversal
+		Set<AWTKeyStroke> forwardKeys = new HashSet<AWTKeyStroke>(tabbedPane.getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS));
+		forwardKeys.remove(ctrlTab);
+		tabbedPane.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, forwardKeys);
+
+		// Remove ctrl-shift-tab from normal focus traversal
+		Set<AWTKeyStroke> backwardKeys = new HashSet<AWTKeyStroke>(tabbedPane.getFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS));
+		backwardKeys.remove(ctrlShiftTab);
+		tabbedPane.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, backwardKeys);
+
+		// Add keys to the tab's input map
+		InputMap inputMap = tabbedPane.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+		inputMap.put(ctrlTab, "navigateNext");
+		inputMap.put(ctrlShiftTab, "navigatePrevious");
+	}
+
 	public ObjectTabsForTabbedView(JideTabbedPane tbs, boolean closableTabs, Object rootValue) {
 		this.rootValue = rootValue;
 		lock = tbs;
 		synchronized (lock) {
+			setupTabTraversalKeys(tbs);
 			JideTabbedPane myBoxPanelTabPane = tabs = tbs;
 			myBoxPanelTabPane.setBoldActiveTab(true);
 			myBoxPanelTabPane.setAutoRequestFocus(true);
@@ -81,8 +110,7 @@ public class ObjectTabsForTabbedView implements BoxPanelSwitchableView {
 		}
 	}
 
-	@Override
-	public int indexOf(String title, Component view) {
+	@Override public int indexOf(String title, Component view) {
 		synchronized (lock) {
 			int index = unverifiedIndex(title, view);
 			if (index == -1)

@@ -23,6 +23,7 @@ public class TriggerPopupMenu extends JPopupMenu {
 	final TriggerMenuController controller;
 
 	public TriggerPopupMenu(DisplayContext context, MouseEvent e, NamedObjectCollection noc) {
+		setLabel("TPM");
 		controller = new TriggerMenuController(context, e, noc, this);
 	}
 

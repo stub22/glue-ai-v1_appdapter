@@ -6,18 +6,23 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
 import java.beans.IntrospectionException;
 import java.beans.PropertyVetoException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
@@ -185,7 +190,12 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 	 * A rather ugly but workable default icon used in cases where there is no
 	 * known icon for the object.
 	 */
-	public static class UnknownIcon implements Icon, java.io.Serializable {
+	public static class UnknownIcon extends ImageIcon implements Icon, java.io.Serializable {
+		private String str;
+		BufferedImage image;
+		private Color foreColor = Color.blue;
+		private Color bgColor = Color.white;
+
 		@Override public int getIconHeight() {
 			return 16;
 		}
@@ -194,10 +204,35 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 			return 16;
 		}
 
+		public UnknownIcon() {
+			this("@");
+		}
+
+		public UnknownIcon(String string) {
+			str = string;
+		}
+
+		public UnknownIcon(String string, Color fgc) {
+			str = string;
+			foreColor = fgc;
+		}
+
 		@Override public void paintIcon(Component c, Graphics g, int x, int y) {
-			g.setColor(Color.blue);
+			g.clearRect(0, 0, 16, 16);
+			g.setColor(foreColor);
 			g.setFont(new Font("serif", Font.BOLD, 12));
-			g.drawString("@", x, y + 12);
+			g.drawString(str, x, y + 12);
+		}
+
+		public BufferedImage asImage() {
+			if (image == null) {
+				image = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
+				Graphics2D g = image.createGraphics();
+				g.setColor(Color.blue);
+				g.setFont(new Font("serif", Font.BOLD, 12));
+				g.drawString(str, 0, 0 + 12);
+			}
+			return image;
 		}
 	}
 
@@ -396,8 +431,7 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 		return collection.getObjects();
 	}
 
-	@Override
-	public String getTitleOf(Object object) {
+	@Override public String getTitleOf(Object object) {
 		return getCurrentCollection().getTitleOf(object);
 	}
 
@@ -548,13 +582,11 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 		Debuggable.notImplemented();
 	}
 
-	@Override
-	public UserResult showScreenBox(String title, Object object) {
+	@Override public UserResult showScreenBox(String title, Object object) {
 		return showScreenBoxAsResult(title, object, null);
 	}
 
-	@Override
-	public UserResult showScreenBox(Object object) {
+	@Override public UserResult showScreenBox(Object object) {
 
 		return showScreenBox(null, object);
 	}
@@ -562,7 +594,15 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 	/**
 	 * Opens up a GUI to show the details of the given object
 	 */
-	public UserResult showScreenBoxAsResult(String title, Object anyObject, Class typeWhenNull) {
+	public UserResult showScreenBoxAsResult(final String title, final Object anyObject, final Class typeWhenNull) {
+		return Utility.invokeAfterLoader(new Callable<UserResult>() {
+			@Override public UserResult call() throws Exception {
+				return showScreenBoxAsResult0(title, anyObject, typeWhenNull);
+			}
+		});
+	}
+
+	private UserResult showScreenBoxAsResult0(String title, Object anyObject, Class typeWhenNull) {
 
 		if (anyObject == null) {
 			return Utility.browserPanel.showMessage("(" + typeWhenNull + ")null", typeWhenNull);
@@ -620,8 +660,7 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 	/**
 	 * Opens up a GUI to show the details of the given value
 	 */
-	@Override
-	public UserResult addObject(String label, Object value, boolean showASAP) throws Exception {
+	@Override public UserResult addObject(String label, Object value, boolean showASAP) throws Exception {
 
 		if (value instanceof Component) {
 			showObjectGUI(label, null, (Component) value, showASAP);

@@ -61,11 +61,13 @@ import org.appdapter.gui.box.AbstractScreenBoxTreeNodeImpl;
 import org.appdapter.gui.editors.DnDTabbedPane;
 import org.appdapter.gui.swing.CollectionEditorUtil;
 import org.appdapter.gui.swing.DisplayContextUIImpl;
+import org.appdapter.gui.swing.JTabbedPaneWithCloseIcons;
 import org.appdapter.gui.swing.LookAndFeelMenuItems;
 import org.appdapter.gui.swing.ObjectTabsForTabbedView;
 import org.appdapter.gui.swing.SafeJMenu;
 import org.appdapter.gui.trigger.TriggerMouseAdapter;
 
+import com.jidesoft.swing.JideTabbedPane;
 import com.jidesoft.tree.StyledTreeCellRenderer;
 
 /**
@@ -316,7 +318,7 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 		myTree = new javax.swing.JTree();
 		myContentPanel = new javax.swing.JPanel();
 		myBoxPanelStatus = new javax.swing.JTextField();
-		myBoxPanelTabPane = new DnDTabbedPane();
+		myBoxPanelTabPane = new DnDTabbedPane(JTabbedPane.TOP);
 		myHomeBoxPanel = new javax.swing.JPanel();
 		myLowerPanel = new javax.swing.JPanel();
 		myCmdInputTextField = new javax.swing.JTextField();
@@ -410,7 +412,7 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 	//GEN-BEGIN:variables
 	// Variables declaration - do not modify
 	private javax.swing.JTextField myBoxPanelStatus;
-	private DnDTabbedPane myBoxPanelTabPane;
+	private JideTabbedPane myBoxPanelTabPane;
 	private javax.swing.JSplitPane myBrowserSplitPane;
 	private javax.swing.JTextField myCmdInputTextField;
 	private javax.swing.JPanel myContentPanel;
@@ -469,13 +471,11 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 		final UserResult[] res = new UserResult[1];
 		try {
 			Utility.invokeAfterLoader(new Runnable() {
+
 				@Override public void run() {
-					Utility.invokeLater(new Runnable() {
-						@Override public void run() {
-							res[0] = addObjectWorker(title, anyObject, attachType, showASAP, expandChildren);
-						}
-					});
+					res[0] = addObjectWorker(title, anyObject, attachType, showASAP, expandChildren);
 				}
+
 			});
 		} catch (Throwable e) {
 		}

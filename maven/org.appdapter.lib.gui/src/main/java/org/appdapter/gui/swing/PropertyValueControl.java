@@ -523,7 +523,7 @@ public class PropertyValueControl extends JVPanel implements PropertyEditor, Pro
 			editor.addPropertyChangeListener(this);
 			addActionListener(this);
 			addFocusListener(this);
-			ObjectChoiceModel ocm = Utility.getObjectChoiceModel(type, comp, null);
+			ObjectChoiceModel ocm = Utility.getObjectChoiceModel(type, comp, null, initalValue);
 			SearchableDemo.createAutoCompleteForText(this, ocm);
 			ocm.setSelectedItem(initalValue);
 			TriggerMouseAdapter.installMouseAdapter(this);
@@ -899,7 +899,7 @@ public class PropertyValueControl extends JVPanel implements PropertyEditor, Pro
 	 */
 
 	private PropertyEditor getEditor(Class type, boolean editable) {
-		PropertyEditor editor = findEditor(type, true, true, true, ReflectUtils.typeNot(getClass()));
+		PropertyEditor editor = findEditor(type, false, true, true, ReflectUtils.typeNot(getClass()));
 		if (editor instanceof PropertyValueControl) {
 			if (editor instanceof StringEditor && type != String.class) {
 				bug("");
@@ -1185,9 +1185,10 @@ public class PropertyValueControl extends JVPanel implements PropertyEditor, Pro
 				comp = getEditorComponent(currentEditor, editable);
 			}
 		} else {
-			Utility.addObjectToValues(value);
+			//
 			if (editable && type == Ident.class) {
 				// The type is fixed
+				Utility.addObjectToValues(value);
 				currentEditor = getEditor(type, editable);
 				//currentEditor.setValue(value);
 				comp = getEditorComponent(currentEditor, editable);
@@ -1295,7 +1296,7 @@ public class PropertyValueControl extends JVPanel implements PropertyEditor, Pro
 		if (!isEqual(newValue, oldValue)) {
 			Class oldType = getCurrentType();
 			value = newValue;
-			Utility.addObjectToValues(value);
+			//Utility.addObjectToValues(value);
 			Class newType = getCurrentType();
 
 			// @warning !!!! the code below was commented out

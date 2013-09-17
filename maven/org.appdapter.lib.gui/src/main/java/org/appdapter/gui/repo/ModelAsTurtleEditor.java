@@ -5,7 +5,6 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -13,6 +12,8 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.File;
+import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.HashMap;
@@ -36,10 +37,12 @@ import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.text.BadLocationException;
 
+import org.appdapter.core.convert.NoSuchConversionException;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.editors.ObjectPanel;
 import org.appdapter.gui.swing.JJPanel;
 import org.appdapter.gui.swing.ScreenBoxPanel;
+import org.appdapter.gui.swing.SimpleTextEditor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,8 +89,8 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 	}
 
 	static {
-		Utility.registerPanel(ModelAsTurtleEditor.class, Model.class);
-		Utility.addClassMethods(ModelAsTurtleEditor.class);
+		//Utility.registerPanel(ModelAsTurtleEditor.class, Model.class);
+		//Utility.addClassMethods(ModelAsTurtleEditor.class);
 	}
 
 	private final static int WINDOW_MIN_WIDTH = 400;
@@ -328,20 +331,7 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 	protected void fetchTurtleFromModel() {
 		inModelLock(true, new VoidFunc1<Model>() {
 			@Override public void call(Model boundModel) {
-				// Serialize model and update text area
-				StringWriter writer = new StringWriter();
-				Map<String, String> pmap = boundModel.getNsPrefixMap();
-				boundModel.write(writer, "TTL");
-				String turtle = writer.toString();
-				Iterator it = pmap.keySet().iterator();
-				while (it.hasNext()) {
-					String prefix = (String) it.next();
-					String uri = pmap.get(prefix);
-					if (prefix.length() > 0) {
-						String remove = "\\@prefix " + prefix + "\\:.*\\<" + uri + "\\> .\n";
-						turtle = turtle.replaceAll(remove, "");
-					}
-				}
+				String turtle = getModelSource(boundModel);
 				setContents(turtle);
 
 				turtleTextArea.requestFocusInWindow();
@@ -370,8 +360,10 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 	 */
 	protected Model getContentsAsModel() {
 		Model result = ModelFactory.createDefaultModel();
+
 		StringReader reader = new StringReader(getContentsAsTurtle());
 		try {
+			xferPrefixes(currentModel, result);
 			result.read(reader, "", "N3");
 			return result;
 		} catch (Throwable ex) { // syntax error?
@@ -392,6 +384,21 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 
 			// null return means there was a syntax error
 			return null;
+		}
+	}
+
+	Map<String, String> prefixes = new HashMap<String, String>();
+
+	private void xferPrefixes(Model from, Model to) {
+		if (from != null) {
+			prefixes.putAll(from.getNsPrefixMap());
+		}
+		if (to != null) {
+			String s = to.getNsPrefixURI("");
+			to.getNsPrefixMap().putAll(prefixes);
+			if (s != null) {
+				to.setNsPrefix("", s);
+			}
 		}
 	}
 
@@ -544,13 +551,13 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 			}
 		});
 
-		makeButton("Save...", new ActionListener() {
+		makeButton("Save Model", new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				turtleTextArea.fileSaveAs();
 			}
 		});
 
-		makeButton("Load...", new ActionListener() {
+		makeButton("Load Model", new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				turtleTextArea.fileOpenAndRead();
 			}
@@ -748,6 +755,35 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 		} finally {
 			this.inAddingModel = false;
 		}
+	}
+
+	public String getModelSource(Model boundModel) {
+		// Serialize model and update text area
+		StringWriter writer = new StringWriter();
+		xferPrefixes(boundModel, null);
+		Map<String, String> pmap = boundModel.getNsPrefixMap();
+		boundModel.write(writer, "TTL");
+		String turtle = writer.toString();
+		Iterator it = pmap.keySet().iterator();
+		while (it.hasNext()) {
+			String prefix = (String) it.next();
+			String uri = pmap.get(prefix);
+			if (prefix.length() > 0) {
+				String remove = "\\@prefix " + prefix + "\\:.*\\<" + uri + "\\> .\n";
+				turtle = turtle.replaceAll(remove, "");
+			}
+		}
+		return turtle;
+	}
+
+	public void loadTTL(File file) throws IOException, NoSuchConversionException {
+		// TODO Auto-generated method stub
+
+	}
+
+	public void saveTTL(File file) throws IOException, NoSuchConversionException {
+		// TODO Auto-generated method stub
+
 	}
 
 }

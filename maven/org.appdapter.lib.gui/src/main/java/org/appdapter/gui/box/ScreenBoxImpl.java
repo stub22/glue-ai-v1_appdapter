@@ -23,6 +23,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -36,11 +37,13 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 import org.appdapter.api.trigger.ABoxImpl;
+import org.appdapter.api.trigger.AnyOper.HasIdent;
 import org.appdapter.api.trigger.AnyOper.UIHidden;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContextImpl;
 import org.appdapter.api.trigger.SetObject;
 import org.appdapter.api.trigger.Trigger;
+import org.appdapter.core.component.KnownComponent;
 import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.core.name.Ident;
@@ -63,6 +66,11 @@ import org.appdapter.gui.trigger.TriggerMenuFactory;
 import org.appdapter.gui.util.PromiscuousClassUtilsA;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.hp.hpl.jena.graph.FrontsNode;
+import com.hp.hpl.jena.graph.Node;
+import com.hp.hpl.jena.rdf.model.RDFNode;
+import com.hp.hpl.jena.rdf.model.Resource;
 
 /**
 /**  Base implementation of our demo Swing Panel boxes.
@@ -121,15 +129,6 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 		if (isSelfTheValue)
 			valueSetAs = this;
 		Utility.recordCreated(this);
-	}
-
-	/**
-	 * Creates a new ScreenBox for the given value
-	 * and assigns it a default name.
-	 */
-	ScreenBoxImpl(NamedObjectCollection noc, String title, Object value) {
-		notWrapper = false;
-		setNameValue(noc, title, value);
 	}
 
 	public Box asBox() {
@@ -441,10 +440,32 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 		return this;
 	}
 
-	public boolean isNamed(String test) {
-		for (String name : getNames()) {
-			if (Utility.stringsEqual(test, name)) {
-				return true;
+	/**
+	 * This whole "isNamed" thing is a ruse allowing us generality 
+	 * When these mechanisms mature, we will look at more than just local names
+	 * @return
+	 */
+	public boolean isNamed(String... test) {
+		if (test.length == 1) {
+			String stest = test[0];
+			if (stest.contains(":") || stest.contains("#")) {
+				String stest2 = getLocalName(stest, stest.length());
+				if (stest != null) {
+					return isNamed(stest, stest);
+				}
+			}
+			for (String name : getNames()) {
+				if (Utility.stringsEqual(stest, name)) {
+					return true;
+				}
+			}
+		} else {
+			for (String name : getNames()) {
+				for (String stest : test) {
+					if (Utility.stringsEqual(stest, name)) {
+						return true;
+					}
+				}
 			}
 		}
 		return false;
@@ -458,12 +479,80 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	List<String> names;
 
 	Collection<String> getNames() {
-		if (names == null) {
-			names = new ArrayList<String>();
-			names.add(getShortLabel());
-			names.add(super_getShortLabel());
+		if (addObjectName(getValue())) {
 		}
+		addObjectName(getShortLabel());
+		addObjectName(getIdent());
+		addObjectName(super_getShortLabel());
 		return names;
+	}
+
+	private boolean addObjectName(Object o) {
+		if (o == this)
+			return false;
+		if (o == null)
+			return false;
+		if (o instanceof String) {
+			if (names == null) {
+				names = new ArrayList<String>();
+			}
+			String s = (String) o;
+			int l = s.length();
+			if (l == 0)
+				return false;
+			boolean otherAdded = false;
+			String ln = getLocalName(s, l);
+			if (ln != null) {
+				otherAdded = addObjectName(ln);
+			}
+			return addIfNew(names, s) || otherAdded;
+		}
+
+		if (o instanceof Class) {
+			return addObjectName(((Class) o).getName()) || addObjectName(Utility.getSpecialClassName0((Class) o));
+		}
+		if (o instanceof Number) {
+			return addObjectName("" + o);
+		}
+		if (o instanceof RDFNode) {
+			if (((RDFNode) o).isURIResource()) {
+				return addObjectName(((RDFNode) o).asResource().getURI());
+			}
+			return addObjectName("" + o);
+		}
+		if (o instanceof Ident) {
+			return addObjectName(((Ident) o).getAbsUriString());
+		} else if (o instanceof URI) {
+			return addObjectName(((URI) o).toString());
+		} else if (o instanceof HasIdent) {
+			return addObjectName(((HasIdent) o).getIdent());
+		} else if (o instanceof KnownComponent) {
+			return addObjectName(((KnownComponent) o).getIdent());
+		}
+		if (o instanceof FrontsNode) {
+			FrontsNode fn = (FrontsNode) o;
+			Node node = fn.asNode();
+			if (node != o)
+				return addObjectName(node);
+
+		}
+		return addObjectName(Utility.hasDefaultName(o, false, false));
+	}
+
+	private String getLocalName(String s, int l) {
+		if (l == 0)
+			return null;
+		int lh = s.lastIndexOf('#');
+		boolean otherAdded = false;
+		if (lh > 1 && lh != (l - 1)) {
+			return s.substring(lh + 1);
+		} else {
+			lh = s.lastIndexOf(':');
+			if (lh > 1 && lh != (l - 1)) {
+				return s.substring(lh + 1);
+			}
+		}
+		return null;
 	}
 
 	public boolean isTypeOf(Class type) {
@@ -659,6 +748,8 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	}
 
 	protected void setPanelBox(JPanel bp) {
+		getObjects();
+		addIfNew(objects, bp);
 		boolean needSet = true;
 		if (needSet && bp instanceof FocusOnBox) {
 			try {
@@ -683,11 +774,9 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	}
 
 	public void reallySetValue(Object newObject) {
-		if (newObject == valueSetAs || newObject == this)
+		if (newObject == valueSetAs || newObject == this || newObject == null)
 			return;
-		if (newObject == null) {
-			Utility.bug("setting this to null?");
-		}
+
 		Object value = newObject;
 		String ds = getDescription();
 		if (ds == null) {
@@ -772,6 +861,7 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 			}
 			col2Name.put(noc, uniqueName);
 		}
+
 		setShortLabel(uniqueName);
 
 		try {
@@ -890,16 +980,13 @@ public class ScreenBoxImpl<TrigType extends Trigger<? extends ScreenBoxImpl<Trig
 	}
 
 	@Override public void addValue(Object val) {
-		if (val == this)
+		if (val == this || val == null)
 			return;
 		if (addIfNew(objects, val)) {
 			for (NamedObjectCollection noc : getNOCs()) {
-				BT prev = noc.findBoxByObject(val);
-				if (prev != null && prev != this) {
-					Debuggable.notImplemented("Already existing value: " + prev);
-				}
 				noc.addValueBoxed(val, this);
 			}
+			addObjectName(val);
 		}
 
 	}

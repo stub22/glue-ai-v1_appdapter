@@ -38,11 +38,11 @@ public class ObjectChoiceModel extends SortedComboBoxModel implements ComboBoxMo
 	public boolean lockSelection;
 
 	@SuppressWarnings("unchecked")//
-	public ObjectChoiceModel(NamedObjectCollection noc, final Class cls, final String title, ToFromKeyConverter<Object, String> convert, JComponent comp, PropertyChangeSupport ps) {
-		this(new Vector(), noc, cls, title, convert, comp, ps);
+	public ObjectChoiceModel(NamedObjectCollection noc, final Class cls, final String title, ToFromKeyConverter<Object, String> convert, JComponent comp, PropertyChangeSupport ps, Object valueToStart) {
+		this(new Vector(), noc, cls, title, convert, comp, ps, valueToStart);
 	}
 
-	public ObjectChoiceModel(Vector vect, NamedObjectCollection noc, final Class cls, final String title, ToFromKeyConverter<Object, String> convert, JComponent comp, PropertyChangeSupport ps) {
+	public ObjectChoiceModel(Vector vect, NamedObjectCollection noc, final Class cls, final String title, ToFromKeyConverter<Object, String> convert, JComponent comp, PropertyChangeSupport ps, Object valueToStart) {
 		super(vect);
 		names = vect;
 		propName = title;
@@ -52,7 +52,7 @@ public class ObjectChoiceModel extends SortedComboBoxModel implements ComboBoxMo
 		useStringProxies = convert != null && type != String.class;
 		refeshComponet = comp;
 		propSupport = ps;
-		selected = null;/*new Object() {
+		selected = valueToStart;/*new Object() {
 						@Override public String toString() {
 						return "No selected object for " + title + " of type " + type;
 						}
@@ -233,6 +233,8 @@ public class ObjectChoiceModel extends SortedComboBoxModel implements ComboBoxMo
 			Object obj = stringToObject(title);
 			if (obj != anItem) {
 				Utility.bug("Not round tripping " + anItem);
+				String title2 = this.objectToString(anItem);
+				Object obj2 = stringToObject(title2);
 			}
 		}
 
