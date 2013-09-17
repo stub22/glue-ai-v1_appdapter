@@ -3,52 +3,57 @@
 	<classpathentry exported="true" kind="src" path="/org.appdapter.lib.core"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/ClientRepoSpec"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/FeClipse"/>
-	<classpathentry excluding="**/*.java" including="**/*.properties|**/*.gif|**/*.jpg|**/*.png|**/*.java" kind="src" path="src/main/resources"/>
-	<classpathentry excluding="**/*.java" including="**/*.java" kind="src" output="target/test-classes" path="src/test/resources"/>
-	<classpathentry kind="src" output="target/test-classes" path="src/test/java">
-		<attributes>
-			<attribute name="optional" value="true"/>
-			<attribute name="maven.pomderived" value="true"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="src" output="target/classes" path="src/main/java">
-		<attributes>
-			<attribute name="optional" value="true"/>
-			<attribute name="maven.pomderived" value="true"/>
-		</attributes>
-	</classpathentry>
 	<classpathentry kind="src" path="src/main/scala"/>
 	<classpathentry kind="src" path="src/test/scala"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6">
-		<attributes>
-			<attribute name="maven.pomderived" value="true"/>
-		</attributes>
-	</classpathentry>
+	<classpathentry excluding="org/protege/owl/model/entity/|org/protege/owl/jena/SPARQLViewComponent.java" kind="src" path="pj/owl-1.1/owl/src"/>
 	<classpathentry exported="true" kind="src" path="/ext.bundle.jena_all_2_10_1"/>
 	<classpathentry exported="true" kind="src" path="/ext.bundle.osgi.common"/>
 	<classpathentry exported="true" kind="src" path="/ext.bundle.xml.dom4j_161"/>
 	<classpathentry exported="true" kind="src" path="/org.appdapter.lib.registry"/>
-	<classpathentry exported="true" kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
+	<classpathentry exported="true" kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER"/>
+	<classpathentry including="**/*.*" kind="src" path="src/main/resources"/>
+	<classpathentry kind="src" output="target/eclipse-classes" path="src/main/java">
 		<attributes>
-			<attribute name="maven.pomderived" value="true"/>
+			<attribute name="optional" value="true"/>
+			<attribute name="maven.pomderived" value="false"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry exported="true" kind="lib" path="lib/openrdf/openrdf-model.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/openrdf/openrdf-util.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/openrdf/rio.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/pellet/pellet-debug.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/arq/stax-1.1.1-dev.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/arq/stax-api-1.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/commons-lang/commons-lang-2.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/xsdlib/relaxngDatatype.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/xsdlib/xsdlib.jar"/>
+	<classpathentry kind="src" path="src_hexidec"/>
+	<classpathentry kind="src" path="src_swoop"/>
+	<classpathentry excluding="org/mindswap/swoop/debugger/" kind="src" path="src_swoop_test"/>
+	<classpathentry exported="true" kind="lib" path="lib/GraphLayout.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jpl.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/pellet-debug.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/econn-owlapi/api.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/pellet/aterm-java-1.6.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/econn-owlapi/impl.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/econn-owlapi/io.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/econn-owlapi/inference.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/econn-owlapi/rdfparser.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/econn-owlapi/rules.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/econn-owlapi/validation.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/dig.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/getopt.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/log4j.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/openrdf-model.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/openrdf-util.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/rdfapi.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/rio.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/xercesImpl.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/xml-apis.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/xngr-browser.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/xngr.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/econn-owlapi/abstractparser.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/ekit/ekitspell.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/rhino1_6R1/js.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/xsdlib/relaxngDatatype.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/xsdlib/xsdlib.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jung/colt.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jung/commons-collections-3.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jung/jung-1.6.0.jar"/>
-	<classpathentry kind="lib" path="lib/pellet/pellet.jar"/>
-	<classpathentry exported="true" kind="con" path="org.scala-ide.sdt.launching.SCALA_CONTAINER"/>
-	<classpathentry kind="output" path="target/classes"/>
+	<classpathentry exported="true" kind="lib" path="lib/pellet/pellet.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jakarta-slide-webdavclient-2.0/jakarta-slide-commandline-2.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jakarta-slide-webdavclient-2.0/jakarta-slide-webdavlib-2.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/qtag.jar"/>
+	<classpathentry kind="con" path="org.scala-ide.sdt.launching.SCALA_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="target/eclipse-classes"/>
 </classpath>
