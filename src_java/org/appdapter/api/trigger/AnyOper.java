@@ -124,6 +124,8 @@ public interface AnyOper {
 		boolean IsFactoryMethod() default false;
 		
 		String Tooltip() default "";
+		
+		String Editor() default "";
 
 		String Description() default "";
 
