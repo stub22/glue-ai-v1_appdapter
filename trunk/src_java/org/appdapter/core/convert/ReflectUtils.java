@@ -3097,22 +3097,51 @@ abstract public class ReflectUtils implements UtilClass {
 			return true;
 		if (x == null || y == null)
 			return false;
+		if (x instanceof GetObject) {
+			Object o = ((GetObject) x).getValue();
+			if (o != x && o != null) {
+				return eq(o, y, mayUseEquals);
+			}
+		}
+		if (y instanceof GetObject) {
+			Object o = ((GetObject) y).getValue();
+			if (o != y && o != null) {
+				return eq(x, o, mayUseEquals);
+			}
+		}
 		Class yc = y.getClass();
 		Class xc = x.getClass();
-		if (xc == yc) {
+		try {
+			if (xc == yc) {
+				if (isImmutable(xc))
+					return x.equals(y);
+				if (!mayUseEquals)
+					return false;
+				return x.equals(y);
+			}
 			if (isImmutable(xc))
 				return x.equals(y);
+			if (isImmutable(yc))
+				return y.equals(x);
 			if (!mayUseEquals)
 				return false;
 			return x.equals(y);
-		}
-		if (isTypeMutable(xc))
-			return x.equals(y);
-		if (isImmutable(yc))
-			return y.equals(x);
-		if (!mayUseEquals)
+		} catch (Throwable t) {
 			return false;
-		return x.equals(y);
+		}
 	}
 
+	public static boolean isInstance(Type mustBe, Object o) {
+		if (o == null)
+			return mustBe == null;
+		if (mustBe instanceof Class) {
+			return ((Class) mustBe).isInstance(o);
+		}
+		return isAssignableFrom(mustBe, o.getClass());
+	}
+
+	public static boolean roundTrips(Class k, Class v) {
+		int which = TypeAssignable.WILL;
+		return getConverters(null, k, v, which).size() > 1 && getConverters(null, v, k, which).size() > 1;
+	}
 }
