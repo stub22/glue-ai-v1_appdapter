@@ -142,7 +142,7 @@ public interface BT<TT extends Trigger<? extends ScreenBox<TT>>> //
 
 	public boolean representsObject(Object test);
 
-	public boolean isNamed(String test);
+	public boolean isNamed(String... test);
 
 	//public JPanel getPropertiesPanel();
 

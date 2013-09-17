@@ -473,7 +473,7 @@ public class TriggerForMember<BT extends Box<TriggerImpl<BT>>> extends TriggerFo
 			s = replace(s, "%c", strval);
 		}
 		if (s.contains("%d")) {
-			String strval = Utility.getSpecialClassName(mdc);
+			String strval = Utility.getSpecialClassName0(mdc);
 			if (isIndirect) {
 				if (PrefixWithIndirectyWhenIndirect) {
 					suffix.append(" (" + strval + ")");

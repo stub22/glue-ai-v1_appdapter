@@ -16,13 +16,16 @@ import java.util.Iterator;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JToggleButton;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.core.convert.ReflectUtils;
+import org.appdapter.gui.api.BT;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.GetSetObject;
+import org.appdapter.gui.box.BoxedCollectionImpl.ScreenBoxImplMade;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.trigger.TriggerMouseAdapter;
 import org.slf4j.Logger;
@@ -282,6 +285,7 @@ public class PropertiesPanel<BoxType extends Box> extends ScreenBoxPanel<BoxType
 							continue;
 						si = "";
 					}
+					Utility.checkSource(source);
 					PropertyValueControl pvc = new PropertyValueControl(context, attributeName, source, p);
 					String tip = type + ":" + p.getReadMethod() + "/" + p.getWriteMethod();
 					pvc.setToolTipText(tip);

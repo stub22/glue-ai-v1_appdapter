@@ -7,15 +7,47 @@ package org.appdapter.gui.editors;
  * eed3si9n.
  */
 
-import java.awt.*;
-import java.awt.datatransfer.*;
-import java.awt.dnd.*;
-import java.awt.geom.*;
-import java.awt.image.*;
+import java.awt.AlphaComposite;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DragGestureEvent;
+import java.awt.dnd.DragGestureListener;
+import java.awt.dnd.DragSource;
+import java.awt.dnd.DragSourceContext;
+import java.awt.dnd.DragSourceDragEvent;
+import java.awt.dnd.DragSourceDropEvent;
+import java.awt.dnd.DragSourceEvent;
+import java.awt.dnd.DragSourceListener;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetListener;
+import java.awt.dnd.InvalidDnDOperationException;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseEvent;
+import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
 
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
+import javax.swing.SwingUtilities;
 
+import org.appdapter.api.trigger.CallableWithParameters;
 import org.appdapter.core.log.Debuggable;
+import org.appdapter.gui.browse.Utility;
+import org.appdapter.gui.swing.JJPanel;
+import org.appdapter.gui.swing.JTabbedPaneWithCloseIcons;
 
 import com.jidesoft.swing.JideTabbedPane;
 
@@ -32,8 +64,8 @@ public class DnDTabbedPane extends JideTabbedPane {
 	private final Color m_lineColor = new Color(0, 100, 255);
 	private TabAcceptor m_acceptor = null;
 
-	public DnDTabbedPane() {
-		super();
+	public DnDTabbedPane(int dir) {
+		super(dir);
 		final DragSourceListener dsl = new DragSourceListener() {
 			public void dragEnter(DragSourceDragEvent e) {
 				e.getDragSourceContext().setCursor(DragSource.DefaultMoveDrop);
@@ -86,14 +118,27 @@ public class DnDTabbedPane extends JideTabbedPane {
 				m_isDrawRect = false;
 				m_lineRect.setRect(0, 0, 0, 0);
 				// m_dragTabIndex = -1;
-				Component c = getTabComponentAt(s_glassPane.tagIndexWas);
+				final int tagIndexWas = s_glassPane.tagIndexWas;
+				final Component c = getComponentAt(s_glassPane.tagIndexWas);
 
 				if (hasGhost()) {
 					s_glassPane.setVisible(false);
 					s_glassPane.setImage(null);
 				}
+				final Component was = s_glassPane.componentWas;
+				final String oldTitle = getTitleAt(tagIndexWas);
+				if (was instanceof JPanel) {
+					convertPanelToJFrame(oldTitle, (JPanel) was, new CallableWithParameters<JPanel, Boolean>() {
+						@Override public Boolean call(JPanel pnl, Object... moreparams) {
+							removeTabAt(tagIndexWas);
+							addTab(oldTitle, pnl);
+							return true;
+
+						}
+					});
+					return;
+				}
 				if (!e.getDropSuccess()) {
-					Component was = s_glassPane.componentWas;
 					String dsc = Debuggable.toInfoStringF(e.getDragSourceContext());
 					System.out.println(dsc);
 				} else {
@@ -134,6 +179,39 @@ public class DnDTabbedPane extends JideTabbedPane {
 				return true;
 			}
 		};
+	}
+
+	static void convertPanelToJFrame(final String title, final JPanel was, final CallableWithParameters<JPanel, Boolean> insertionMethod) {
+		JJPanel proxy = new JJPanel();
+		final JFrame top = new JFrame(title);
+
+		insertionMethod.call(proxy);
+		proxy.add(new JButton(new AbstractAction("Find Window called: " + title) {
+
+			@Override public void actionPerformed(ActionEvent e) {
+				Utility.centerWindow(top);
+				top.toFront();
+
+			}
+		}));
+		proxy.add(new JButton(new AbstractAction("Close Window called: " + title) {
+
+			@Override public void actionPerformed(ActionEvent e) {
+				insertionMethod.call(was);
+				top.dispose();
+			}
+		}));
+
+		top.getContentPane().add(was);
+		top.addWindowListener(new java.awt.event.WindowAdapter() {
+			@Override public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+				insertionMethod.call(was);
+				top.dispose();
+			}
+		});
+		top.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		top.setVisible(true);
+		Utility.centerWindow(top);
 	}
 
 	public TabAcceptor getAcceptor() {
@@ -334,7 +412,8 @@ public class DnDTabbedPane extends JideTabbedPane {
 			} // if
 
 			TabTransferData data = getTabTransferData(e);
-
+			if (data == null)
+				return false;
 			if (DnDTabbedPane.this == data.getTabbedPane() && data.getTabIndex() >= 0) {
 				return true;
 			} // if
@@ -587,8 +666,9 @@ public class DnDTabbedPane extends JideTabbedPane {
 
 	private void initGlassPane(Component c, Point tabPt, int a_tabIndex) {
 		//Point p = (Point) pt.clone();
-		final Component sub = getTabComponentAt(a_tabIndex);
-
+		final Component sub1 = getTabComponentAt(a_tabIndex);
+		final Component sub2 = getComponentAt(a_tabIndex);
+		final Component sub = sub2 != null ? sub2 : sub1;
 		getRootPane().setGlassPane(s_glassPane);
 		if (hasGhost()) {
 			Rectangle rect = getBoundsAt(a_tabIndex);
@@ -675,4 +755,5 @@ public class DnDTabbedPane extends JideTabbedPane {
 			g2.drawImage(m_draggingGhost, (int) m_location.getX(), (int) m_location.getY(), null);
 		}
 	}
+
 }

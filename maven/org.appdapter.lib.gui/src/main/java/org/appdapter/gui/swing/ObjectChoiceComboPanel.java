@@ -47,7 +47,7 @@ import org.appdapter.gui.trigger.TriggerPopupMenu;
  * of a certain type.
  *
  */
-public class ObjectChoiceComboPanel extends JJPanel implements MouseListener, ToFromKeyConverter<Object, String>, ListDataListener, GetObject {
+public class ObjectChoiceComboPanel extends JJPanel implements ToFromKeyConverter<Object, String>, ListDataListener, GetObject {
 
 	public static final Object NULLOBJECT = "<null>";
 
@@ -220,50 +220,11 @@ public class ObjectChoiceComboPanel extends JJPanel implements MouseListener, To
 		combo.setRenderer(new ObjectComboPrettyRender());
 		setLayout(new BorderLayout());
 		add("Center", combo);
-		combo.addMouseListener(this);
 		combo.setEditable(isStringChooser || useStringProxies);
-	}
-
-	@Override public void mouseClicked(MouseEvent e) {
-		if (e.isPopupTrigger()) {
-			showMenu(e.getX() + 5, e.getY() + 5, e);
-		}
-	}
-
-	@Override public void mousePressed(MouseEvent e) {
-		if (e.isPopupTrigger()) {
-			showMenu(e.getX() + 5, e.getY() + 5, e);
-		}
-	}
-
-	@Override public void mouseReleased(MouseEvent e) {
-		if (e.isPopupTrigger()) {
-			showMenu(e.getX() + 5, e.getY() + 5, e);
-		}
-	}
-
-	@Override public void mouseEntered(MouseEvent e) {
-		//@temp
-		//label.setForeground(Color.blue);
-	}
-
-	@Override public void mouseExited(MouseEvent e) {
-		//label.setForeground(Color.black);
 	}
 
 	public Object getSelection() {
 		return model.getSelectedItem();
-	}
-
-	private void showMenu(int x, int y, MouseEvent e) {
-		Object object = model.getSelectedBean();
-		if (object != null) {
-			TriggerPopupMenu menu = new TriggerPopupMenu(null, e, null);
-			menu.addMenuFromObject(object);
-			add(menu);
-			menu.show(this, x, y);
-			e.consume();
-		}
 	}
 
 	public String objectToString(Object object) {

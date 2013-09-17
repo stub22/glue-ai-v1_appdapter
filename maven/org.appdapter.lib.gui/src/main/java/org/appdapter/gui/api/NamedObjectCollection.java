@@ -6,6 +6,7 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.io.NotSerializableException;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -183,5 +184,7 @@ public interface NamedObjectCollection //
 	Set getLiveCollection();
 
 	Map<String, Object> getLiveMap();
+
+	Collection findObjectsByName(String txt, java.lang.reflect.Type mustBe);
 
 }

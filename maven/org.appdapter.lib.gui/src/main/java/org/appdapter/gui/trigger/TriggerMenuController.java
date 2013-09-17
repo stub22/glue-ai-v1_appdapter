@@ -46,7 +46,7 @@ public class TriggerMenuController implements POJOCollectionListener, Convertabl
 	JMenu menu = null;
 	public MouseEvent originalMouseEvent;
 	private String myLabel = "";
-	private List triggers;
+	private List moreTriggers;
 
 	private TriggerMenuController(DisplayContext context0, MouseEvent e, NamedObjectCollection noc) {
 		this.originalMouseEvent = e;
@@ -95,7 +95,7 @@ public class TriggerMenuController implements POJOCollectionListener, Convertabl
 			return;
 		if (!objects.contains(o))
 			objects.add(o);
-		initLabelText(o);
+		//initLabelText(o);
 		if (o instanceof Action) {
 			addAction((Action) o);
 			return;
@@ -233,7 +233,7 @@ public class TriggerMenuController implements POJOCollectionListener, Convertabl
 	}
 
 	@Override public List getTriggers() {
-		return this.triggers;
+		return this.moreTriggers;
 	}
 
 	@Override public Object getValue() {
@@ -241,8 +241,12 @@ public class TriggerMenuController implements POJOCollectionListener, Convertabl
 	}
 
 	public void addTriggers(Collection<Trigger> trigs) {
-		// TODO Auto-generated method stub
-
+		if (this.moreTriggers == null)
+			moreTriggers = new ArrayList();
+		moreTriggers.addAll(trigs);
+		for (Object o : trigs) {
+			addMenuFromObject(o);
+		}
 	}
 
 }

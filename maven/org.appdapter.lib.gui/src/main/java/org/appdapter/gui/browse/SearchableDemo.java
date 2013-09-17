@@ -347,7 +347,7 @@ public class SearchableDemo implements AnyOper.Singleton, AnyOper.Autoload {
 		gparent.add(r, i);
 	}
 
-	private static int getComponentIndex(Container gparent, Component child) {
+	public static int getComponentIndex(Container gparent, Component child) {
 		int len = gparent.getComponentCount();
 		for (int i = 0; i < len; i++) {
 			Component other = gparent.getComponent(i);
