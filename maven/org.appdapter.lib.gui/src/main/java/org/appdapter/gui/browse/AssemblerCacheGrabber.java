@@ -67,6 +67,7 @@ public class AssemblerCacheGrabber extends BasicDebugger implements AnyOper.Sing
 					clzes = cmap.values().toArray();
 				}
 				for (Object c : clzes) {
+					if (c == null) continue;
 					Map<Ident, Object> map = (Map<Ident, Object>) ((ComponentCache) c).getCompCache();
 					synchronized (map) {
 						for (Map.Entry<Ident, Object> me : map.entrySet()) {
