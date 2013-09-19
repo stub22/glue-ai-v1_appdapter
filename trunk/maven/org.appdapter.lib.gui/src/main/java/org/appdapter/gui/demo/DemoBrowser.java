@@ -54,6 +54,8 @@ import org.appdapter.api.trigger.TriggerImpl;
 import org.appdapter.core.log.BasicDebugger;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.core.matdat.OfflineXlsSheetRepoSpec;
+import org.appdapter.core.matdat.RepoSpec;
+import org.appdapter.core.matdat.URLRepoSpec;
 import org.appdapter.core.store.Repo;
 import org.appdapter.core.store.Repo.WithDirectory;
 import org.appdapter.core.store.RepoBox;
@@ -430,7 +432,9 @@ final public class DemoBrowser implements AnyOper.Singleton {
 						Utility.showResult("No file was selected");
 						return;
 					}
-					Utility.showResult(new OfflineXlsSheetRepoSpec(myFile.getAbsolutePath(), BMC_NAMESPACE_SHEET_NAME, BMC_DIRECTORY_SHEET_NAME, null).makeRepo());
+					RepoSpec repoSpec = new URLRepoSpec(myFile.getAbsolutePath(),null);
+					Object resultRepo = repoSpec.makeRepo();
+					Utility.showResult(resultRepo);
 				} catch (Exception error) {
 					Utility.showError(null, "ERROR While trying to load a file repo...", error);
 				}

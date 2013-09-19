@@ -378,8 +378,11 @@ public class FileStreamUtils {
 
 			if (s == null || s.length() < 1) {
 				if (!debugString) {
-					Debuggable.doBreak(t + " really? " + c, "cell=" + cell, "cellAsString=" + s, "row.getClass= " + row.getClass(), "sheet=" + cell.getSheet().getSheetName(), "row=" + cell.getRow(),
-							"rowstr = " + getRowDebugString(row, width));
+					String msg = Debuggable.toInfoStringArgV(t + " really? " + c, "cell=" + cell, "cellAsString=" + s, //
+							"row.getClass= " + row.getClass(), "sheet=" + cell.getSheet().getSheetName(), //
+							"row=" + cell.getRow(), "rowstr = " + getRowDebugString(row, width));
+					if (!Debuggable.isRelease())
+						Debuggable.doBreak(msg);
 				}
 			}
 			c = s;
