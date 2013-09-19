@@ -245,6 +245,7 @@ public class RepoOper implements AnyOper, UtilClass {
 		Lock oldLock = null;
 		model.enterCriticalSection(Lock.READ);
 		try {
+			long size = model.size();
 			boolean isReplace = isReplace(unionOrReplace);
 			boolean onDest = true;
 			if (!dest.containsNamedModel(urlModel)) {
@@ -252,13 +253,13 @@ public class RepoOper implements AnyOper, UtilClass {
 			}
 			if (!onDest) {
 				dest.addNamedModel(urlModel, model);
-				theLogger.warn("Added new model " + urlModel);
+				theLogger.warn("Added new model " + urlModel + " size=" + size);
 				return;
 			}
 			Model old = dest.getNamedModel(urlModel);
 			if (old == model) {
 				old = null;
-				theLogger.warn("Nothing to do.. same model " + urlModel);
+				theLogger.warn("Nothing to do.. same model " + urlModel + " size=" + size);
 				return;
 			}
 			oldLock = old.getLock();

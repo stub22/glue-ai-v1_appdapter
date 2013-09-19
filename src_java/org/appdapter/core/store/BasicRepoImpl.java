@@ -65,6 +65,10 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 	}
 
 	public void addLoadTask(String nym, Runnable r, boolean forGround) {
+		if (forGround) {
+			r.run();
+			return;
+		}
 		repoLoader.addTask(nym, r);
 	}
 
