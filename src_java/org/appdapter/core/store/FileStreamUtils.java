@@ -350,7 +350,17 @@ public class FileStreamUtils {
 			}
 			case Cell.CELL_TYPE_FORMULA: {
 				t = "CELL_TYPE_FORMULA";
-				c = cell.getCellFormula();
+				try {
+					c = cell.getCellFormula();
+				} catch (org.apache.poi.ss.formula.FormulaParseException e) {					
+					if (Debuggable.isRelease())
+						theLogger.warn("" + e);
+					else {
+						theLogger.error("" + e, e);
+					}
+					cell.setCellType(Cell.CELL_TYPE_STRING);
+					c = cell.getStringCellValue();
+				}
 				break;
 			}
 			case Cell.CELL_TYPE_BOOLEAN: {
@@ -420,11 +430,11 @@ public class FileStreamUtils {
 		if (field.length() == 0)
 			return field;
 
-		// If the fields contents should be formatted to confrom with Excel's
+		// If the fields contents should be formatted to conform with Excel's
 		// convention....
 
 		// Firstly, check if there are any speech marks (") in the field;
-		// each occurrence must be escaped with another set of spech marks
+		// each occurrence must be escaped with another set of speech marks
 		// and then the entire field should be enclosed within another
 		// set of speech marks. Thus, "Yes" he said would become
 		// """Yes"" he said"
