@@ -1,39 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-  <classpathentry exported="true" kind="src" path="src/test/java" output="target/eclipse-classes" including="**/*.java"/>
-  <classpathentry exported="true" kind="src" path="src/main/java" including="**/*.java"/>
-  <classpathentry exported="true" kind="src" path="src/main/resources" excluding="**/*.java"/>
-  <classpathentry kind="output" path="target/eclipse-classes"/>
-  <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-  <classpathentry exported="true" kind="src" path="/org.appdapter.lib.core"/>
-  <classpathentry exported="true" kind="src" path="/ext.bundle.jena_all_2_10_1"/>
-  <classpathentry exported="true" kind="var" path="M2_REPO/org/slf4j/slf4j-log4j12/1.7.5/slf4j-log4j12-1.7.5.jar"/>
-  <classpathentry exported="true" kind="var" path="M2_REPO/org/slf4j/slf4j-api/1.7.5/slf4j-api-1.7.5.jar"/>
-  <classpathentry exported="true" kind="var" path="M2_REPO/org/apache/log4j/com.springsource.org.apache.log4j/1.2.16/com.springsource.org.apache.log4j-1.2.16.jar"/>
-  <classpathentry exported="true" kind="var" path="M2_REPO/org/apache/servicemix/bundles/org.apache.servicemix.bundles.xmlresolver/1.2_3/org.apache.servicemix.bundles.xmlresolver-1.2_3.jar"/>
-  <classpathentry exported="true" kind="var" path="M2_REPO/commons-codec/commons-codec/1.6/commons-codec-1.6.jar"/>
-  <classpathentry exported="true" kind="var" path="M2_REPO/com/ibm/icu/com.springsource.com.ibm.icu/3.4.5/com.springsource.com.ibm.icu-3.4.5.jar"/>
-  <classpathentry exported="true" kind="var" path="M2_REPO/org/apache/servicemix/bundles/org.apache.servicemix.bundles.lucene/3.0.3_2/org.apache.servicemix.bundles.lucene-3.0.3_2.jar"/>
-  <classpathentry exported="true" kind="var" path="M2_REPO/org/apache/servicemix/bundles/org.apache.servicemix.bundles.xerces/2.9.1_5/org.apache.servicemix.bundles.xerces-2.9.1_5.jar"/>
-  <classpathentry exported="true" kind="var" path="M2_REPO/org/apache/servicemix/bundles/org.apache.servicemix.bundles.javax.mail/1.4.1_4/org.apache.servicemix.bundles.javax.mail-1.4.1_4.jar"/>
-  <classpathentry exported="true" kind="var" path="M2_REPO/org/apache/servicemix/specs/org.apache.servicemix.specs.activation-api-1.1/1.8.0/org.apache.servicemix.specs.activation-api-1.1-1.8.0.jar"/>
-  <classpathentry exported="true" kind="src" path="/ext.bundle.xml.dom4j_161"/>
-  <classpathentry exported="true" kind="src" path="/ext.bundle.osgi.common"/>
-  <classpathentry exported="true" kind="var" path="M2_REPO/net/sf/opencsv/opencsv/2.3/opencsv-2.3.jar"/>
-  <classpathentry exported="true" kind="var" path="M2_REPO/com/h2database/h2/1.3.157/h2-1.3.157.jar"/>
-  <classpathentry exported="true" kind="var" path="M2_REPO/org/appdapter/ext.bundle.math.jscience_50SNAP/1.0.9/ext.bundle.math.jscience_50SNAP-1.0.9.jar"/>
-  <classpathentry exported="true" kind="var" path="M2_REPO/org/apache/poi/poi-ooxml/3.9/poi-ooxml-3.9.jar"/>
-  <classpathentry exported="true" kind="var" path="M2_REPO/org/apache/poi/poi/3.9/poi-3.9.jar"/>
-  <classpathentry exported="true" kind="var" path="M2_REPO/org/apache/poi/poi-ooxml-schemas/3.9/poi-ooxml-schemas-3.9.jar"/>
-  <classpathentry exported="true" kind="var" path="M2_REPO/dom4j/dom4j/1.6.1/dom4j-1.6.1.jar"/>
-  <classpathentry exported="true" kind="var" path="M2_REPO/xml-apis/xml-apis/1.0.b2/xml-apis-1.0.b2.jar"/>
-  <classpathentry exported="true" kind="src" path="/org.appdapter.lib.registry"/>
-  <classpathentry exported="true" kind="src" path="/org.appdapter.lib.gui"/>
-  <classpathentry exported="true" kind="var" path="M2_REPO/com/jidesoft/jide-oss/3.5.5/jide-oss-3.5.5.jar"/>
-  <classpathentry exported="true" kind="var" path="M2_REPO/org/ow2/bundles/ow2-bundles-externals-commons-logging/1.0.33/ow2-bundles-externals-commons-logging-1.0.33.jar"/>
-  <classpathentry exported="true" kind="var" path="M2_REPO/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar"/>
-  <classpathentry exported="true" kind="var" path="M2_REPO/org/apache/servicemix/bundles/org.apache.servicemix.bundles.commons-codec/1.3_3/org.apache.servicemix.bundles.commons-codec-1.3_3.jar"/>
-  <classpathentry exported="true" kind="var" path="M2_REPO/org/openl/rules/org.openl.lib.poi.dev/5.9.4.1/org.openl.lib.poi.dev-5.9.4.1.jar"/>
-  <classpathentry exported="true" kind="var" path="M2_REPO/junit/junit/4.6/junit-4.6.jar"/>
-  <classpathentry exported="true" kind="var" path="M2_REPO/org/apache/poi/ooxml-schemas/1.1/ooxml-schemas-1.1.jar"/>
+	<classpathentry including="**/*.java" kind="src" output="target/eclipse-classes" path="src/test/java"/>
+	<classpathentry including="**/*.java" kind="src" path="src/main/java"/>
+	<classpathentry excluding="**/*.java" kind="src" path="src/main/resources"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry exported="true" kind="src" path="/org.appdapter.lib.core"/>
+	<classpathentry exported="true" kind="src" path="/ext.bundle.jena_all_2_10_1"/>
+	<classpathentry exported="true" kind="var" path="M2_REPO/org/slf4j/slf4j-log4j12/1.7.5/slf4j-log4j12-1.7.5.jar"/>
+	<classpathentry exported="true" kind="var" path="M2_REPO/org/slf4j/slf4j-api/1.7.5/slf4j-api-1.7.5.jar"/>
+	<classpathentry exported="true" kind="var" path="M2_REPO/org/apache/log4j/com.springsource.org.apache.log4j/1.2.16/com.springsource.org.apache.log4j-1.2.16.jar"/>
+	<classpathentry exported="true" kind="var" path="M2_REPO/org/apache/servicemix/bundles/org.apache.servicemix.bundles.xmlresolver/1.2_3/org.apache.servicemix.bundles.xmlresolver-1.2_3.jar"/>
+	<classpathentry exported="true" kind="var" path="M2_REPO/commons-codec/commons-codec/1.6/commons-codec-1.6.jar"/>
+	<classpathentry exported="true" kind="var" path="M2_REPO/com/ibm/icu/com.springsource.com.ibm.icu/3.4.5/com.springsource.com.ibm.icu-3.4.5.jar"/>
+	<classpathentry exported="true" kind="var" path="M2_REPO/org/apache/servicemix/bundles/org.apache.servicemix.bundles.lucene/3.0.3_2/org.apache.servicemix.bundles.lucene-3.0.3_2.jar"/>
+	<classpathentry exported="true" kind="var" path="M2_REPO/org/apache/servicemix/bundles/org.apache.servicemix.bundles.xerces/2.9.1_5/org.apache.servicemix.bundles.xerces-2.9.1_5.jar"/>
+	<classpathentry exported="true" kind="var" path="M2_REPO/org/apache/servicemix/bundles/org.apache.servicemix.bundles.javax.mail/1.4.1_4/org.apache.servicemix.bundles.javax.mail-1.4.1_4.jar"/>
+	<classpathentry exported="true" kind="var" path="M2_REPO/org/apache/servicemix/specs/org.apache.servicemix.specs.activation-api-1.1/1.8.0/org.apache.servicemix.specs.activation-api-1.1-1.8.0.jar"/>
+	<classpathentry exported="true" kind="src" path="/ext.bundle.xml.dom4j_161"/>
+	<classpathentry exported="true" kind="src" path="/ext.bundle.osgi.common"/>
+	<classpathentry exported="true" kind="var" path="M2_REPO/net/sf/opencsv/opencsv/2.3/opencsv-2.3.jar"/>
+	<classpathentry exported="true" kind="var" path="M2_REPO/com/h2database/h2/1.3.157/h2-1.3.157.jar"/>
+	<classpathentry exported="true" kind="var" path="M2_REPO/org/appdapter/ext.bundle.math.jscience_50SNAP/1.0.9/ext.bundle.math.jscience_50SNAP-1.0.9.jar"/>
+	<classpathentry exported="true" kind="var" path="M2_REPO/org/apache/poi/poi-ooxml/3.9/poi-ooxml-3.9.jar"/>
+	<classpathentry exported="true" kind="var" path="M2_REPO/org/apache/poi/poi/3.9/poi-3.9.jar"/>
+	<classpathentry exported="true" kind="var" path="M2_REPO/org/apache/poi/poi-ooxml-schemas/3.9/poi-ooxml-schemas-3.9.jar"/>
+	<classpathentry exported="true" kind="var" path="M2_REPO/dom4j/dom4j/1.6.1/dom4j-1.6.1.jar"/>
+	<classpathentry exported="true" kind="var" path="M2_REPO/xml-apis/xml-apis/1.0.b2/xml-apis-1.0.b2.jar"/>
+	<classpathentry exported="true" kind="src" path="/org.appdapter.lib.registry"/>
+	<classpathentry exported="true" kind="src" path="/org.appdapter.lib.gui"/>
+	<classpathentry exported="true" kind="var" path="M2_REPO/com/jidesoft/jide-oss/3.5.5/jide-oss-3.5.5.jar"/>
+	<classpathentry exported="true" kind="var" path="M2_REPO/org/ow2/bundles/ow2-bundles-externals-commons-logging/1.0.33/ow2-bundles-externals-commons-logging-1.0.33.jar"/>
+	<classpathentry exported="true" kind="var" path="M2_REPO/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar"/>
+	<classpathentry exported="true" kind="var" path="M2_REPO/org/apache/servicemix/bundles/org.apache.servicemix.bundles.commons-codec/1.3_3/org.apache.servicemix.bundles.commons-codec-1.3_3.jar"/>
+	<classpathentry exported="true" kind="var" path="M2_REPO/org/openl/rules/org.openl.lib.poi.dev/5.9.4.1/org.openl.lib.poi.dev-5.9.4.1.jar"/>
+	<classpathentry exported="true" kind="var" path="M2_REPO/junit/junit/4.6/junit-4.6.jar"/>
+	<classpathentry exported="true" kind="var" path="M2_REPO/org/apache/poi/ooxml-schemas/1.1/ooxml-schemas-1.1.jar"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/ext.bundle.math.symja_jas"/>
+	<classpathentry kind="output" path="target/eclipse-classes"/>
 </classpath>
