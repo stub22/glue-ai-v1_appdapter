@@ -18,7 +18,6 @@
 	<classpathentry exported="true" kind="var" path="M2_REPO/org/apache/servicemix/bundles/org.apache.servicemix.bundles.xerces/2.9.1_5/org.apache.servicemix.bundles.xerces-2.9.1_5.jar"/>
 	<classpathentry exported="true" kind="var" path="M2_REPO/org/apache/servicemix/bundles/org.apache.servicemix.bundles.javax.mail/1.4.1_4/org.apache.servicemix.bundles.javax.mail-1.4.1_4.jar"/>
 	<classpathentry exported="true" kind="var" path="M2_REPO/org/apache/servicemix/specs/org.apache.servicemix.specs.activation-api-1.1/1.8.0/org.apache.servicemix.specs.activation-api-1.1-1.8.0.jar"/>
-	<classpathentry exported="true" kind="var" path="M2_REPO/org/appdapter/ext.bundle.math.jscience_50SNAP/1.0.9/ext.bundle.math.jscience_50SNAP-1.0.9.jar"/>
 	<classpathentry exported="true" kind="src" path="/ext.bundle.xml.dom4j_161"/>
 	<classpathentry exported="true" kind="var" path="M2_REPO/org/ow2/bundles/ow2-bundles-externals-commons-logging/1.0.33/ow2-bundles-externals-commons-logging-1.0.33.jar"/>
 	<classpathentry exported="true" kind="var" path="M2_REPO/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar"/>
@@ -29,6 +28,6 @@
 	<classpathentry exported="true" kind="var" path="M2_REPO/dom4j/dom4j/1.6.1/dom4j-1.6.1.jar"/>
 	<classpathentry exported="true" kind="var" path="M2_REPO/xml-apis/xml-apis/1.0.b2/xml-apis-1.0.b2.jar"/>
 	<classpathentry exported="true" kind="src" path="/ext.bundle.felix.shell"/>
-	<classpathentry kind="src" path="/org.appdapter.lib.gui"/>
+	<classpathentry exported="true" kind="src" path="/org.appdapter.lib.gui"/>
 	<classpathentry kind="output" path="target/eclipse-classes"/>
 </classpath>

@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry exported="true" kind="src" path="/org.appdapter.lib.core"/>
-	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/ClientRepoSpec"/>
-	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/FeClipse"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/org.storychat.bundle.osgi"/>
 	<classpathentry kind="src" path="src/main/scala"/>
 	<classpathentry kind="src" path="src/test/scala"/>
 	<classpathentry excluding="org/protege/owl/model/entity/|org/protege/owl/jena/SPARQLViewComponent.java" kind="src" path="pj/owl-1.1/owl/src"/>
@@ -10,7 +9,6 @@
 	<classpathentry exported="true" kind="src" path="/ext.bundle.osgi.common"/>
 	<classpathentry exported="true" kind="src" path="/ext.bundle.xml.dom4j_161"/>
 	<classpathentry exported="true" kind="src" path="/org.appdapter.lib.registry"/>
-	<classpathentry exported="true" kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER"/>
 	<classpathentry including="**/*.*" kind="src" path="src/main/resources"/>
 	<classpathentry kind="src" output="target/eclipse-classes" path="src/main/java">
 		<attributes>
@@ -55,5 +53,6 @@
 	<classpathentry exported="true" kind="lib" path="lib/qtag.jar"/>
 	<classpathentry kind="con" path="org.scala-ide.sdt.launching.SCALA_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry exported="true" kind="var" path="M2_REPO/com/jidesoft/jide-oss/3.5.5/jide-oss-3.5.5.jar"/>
 	<classpathentry kind="output" path="target/eclipse-classes"/>
 </classpath>
