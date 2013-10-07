@@ -1,12 +1,12 @@
 /*
  *  Copyright 2012 by The Cogchar Project (www.cogchar.org).
- * 
+ *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
  *  You may obtain a copy of the License at
- * 
+ *
  *       http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  *  Unless required by applicable law or agreed to in writing, software
  *  distributed under the License is distributed on an "AS IS" BASIS,
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,13 +16,13 @@
 
 /*
  *  Copyright 2012 by The Appdapter Project (www.appdapter.org).
- * 
+ *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
  *  You may obtain a copy of the License at
- * 
+ *
  *       http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  *  Unless required by applicable law or agreed to in writing, software
  *  distributed under the License is distributed on an "AS IS" BASIS,
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -114,15 +114,31 @@ class DatabaseRepoSpec(configPath: String, optConfResCL: ClassLoader, dirGraphID
  */
 class URLRepoSpec(var dirModelURL: String, var fileModelCLs: java.util.List[ClassLoader] = null)
   extends RepoSpec {
+
+  def trimString(str: String, outers: String*): String = {
+    var tmp = str;
+    for (s0 <- outers) {
+      var s: String = s0
+      while (tmp.startsWith(s)) {
+        tmp = tmp.substring(s.length);
+      }
+      while (tmp.endsWith(s)) {
+        tmp = tmp.substring(0, tmp.length - s.length);
+      }
+    }
+    tmp
+  }
   def detectedRepoSpec: RepoSpec = {
-    val colon = dirModelURL.indexOf(":/");
-    val proto = dirModelURL.substring(0, colon + 1);
-    val path = dirModelURL.substring(colon + 1);
-    val v3: Array[String] = path.split('/')
-    if (proto.equals("goog:")) {
-      (new GoogSheetRepoSpec(v3(1), v3(2).toInt, v3(3).toInt, fileModelCLs))
-    } else if (proto.equals("xlsx:")) {
-      (new OfflineXlsSheetRepoSpec(v3(1), v3(2), v3(3), fileModelCLs))
+
+    var dirModelURLParse = dirModelURL.trim().replace("//", "/").trim();
+    val colon = dirModelURLParse.indexOf(":/");
+    val proto = trimString(dirModelURLParse.substring(0, colon + 1), "/", ":", " ")
+    val path = trimString(dirModelURLParse.substring(colon + 1), "/", " ")
+    val v3: Array[String] = (path + "//").split('/')
+    if (proto.equals("goog")) {
+      (new GoogSheetRepoSpec(v3(0), v3(1).toInt, v3(2).toInt, fileModelCLs))
+    } else if (proto.equals("xlsx")) {
+      (new OfflineXlsSheetRepoSpec(v3(0), v3(1), v3(3), fileModelCLs))
     } else {
       (new URLDirModelRepoSpec(dirModelURL, fileModelCLs))
     }
@@ -141,11 +157,11 @@ class URLDirModelRepoSpec(dirModelURL: String, fileModelCLs: java.util.List[Clas
 
 object RepoSpecDefaultNames {
 
-  // These 2 string constants establish repo-client wrapper defaults, giving a default 
+  // These 2 string constants establish repo-client wrapper defaults, giving a default
   // query context to easily fetch from.
-  // Either value may be bypassed/overidden using either 
-  //      A) Overrides of the RepoSpec methods below 
-  //   or B) The more general forms of queryIndirect_. 
+  // Either value may be bypassed/overidden using either
+  //      A) Overrides of the RepoSpec methods below
+  //   or B) The more general forms of queryIndirect_.
   // 1) Default query *source* graph QName used in directory model (Sheet or RDF).
   // We read SPARQL text from this graph, which we use to query *other* graphs.
   // This graph is typically not used as a regular data graph by  other low-order
@@ -167,9 +183,9 @@ object RepoSpecDefaultNames {
   // they will be moved!
   //===============================================================================================
 
-  // Formal prefix for Robokind 2012 runtime 
+  // Formal prefix for Robokind 2012 runtime
   val RKRT_NS_PREFIX = "urn:ftd:robokind.org:2012:runtime#"
-  // Formal prefix for Cogchar 2012 runtime 
+  // Formal prefix for Cogchar 2012 runtime
   val NS_CCRT_RT = "urn:ftd:cogchar.org:2012:runtime#"
   // Formal prefix for Cogchar 2012 goody
   val GOODY_NS = "urn:ftd:cogchar.org:2012:goody#"
