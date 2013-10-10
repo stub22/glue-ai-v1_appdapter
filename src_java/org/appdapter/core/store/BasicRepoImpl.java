@@ -1,12 +1,12 @@
 /*
  *  Copyright 2012 by The Appdapter Project (www.appdapter.org).
- * 
+ *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
  *  You may obtain a copy of the License at
- * 
+ *
  *       http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  *  Unless required by applicable law or agreed to in writing, software
  *  distributed under the License is distributed on an "AS IS" BASIS,
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -108,7 +108,14 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 		}
 	}
 
-	protected abstract Dataset makeMainQueryDataset();
+	protected Dataset makeMainQueryDataset() {
+		Dataset ds = RepoOper.createMem(); // becomes   createMem() in later Jena versions.
+		return ds;
+	}
+
+	public void setMyMainQueryDataset(Dataset myMainQueryDataset) {
+		this.myMainQueryDataset = myMainQueryDataset;
+	}
 
 	@Override public Dataset getMainQueryDataset() {
 		beginLoading();

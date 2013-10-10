@@ -34,7 +34,7 @@ import com.hp.hpl.jena.sdb.util.StoreUtils;
 /**
  * @author Stu B. <www.texpedient.com>
  *
- * This impl uses a Jena SDB "Store". 
+ * This impl uses a Jena SDB "Store".
  *
  * http://jena.apache.org/documentation/javadoc/sdb/com/hp/hpl/jena/sdb/Store.html
  */
@@ -43,8 +43,8 @@ public class BasicStoredMutableRepoImpl extends BasicRepoImpl implements Repo.St
 	private Store myStore;
 
 	/**
-	 * 
-	 * @param aStore 
+	 *
+	 * @param aStore
 	 */
 	protected BasicStoredMutableRepoImpl(Store aStore) {
 		myStore = aStore;
@@ -90,7 +90,7 @@ public class BasicStoredMutableRepoImpl extends BasicRepoImpl implements Repo.St
 	/**
 	 * Uses a "GraphUploadTask" to read the contents of sourceURL into tgtGraph (named or default),
 	 * with copious debug output.
-	 * 
+	 *
 	 * @param tgtGraphName - resolved to a model using  SDBFactory.connectNamedModel.  If null, uses connectDefaultModel.
 	 * @param sourceURL
 	 * @param replaceTgtFlag - If true, model will first be cleared using tgtStoreModel.removeAll();
@@ -144,13 +144,13 @@ public class BasicStoredMutableRepoImpl extends BasicRepoImpl implements Repo.St
 	}
 
 	/**
-	 * For unit testing, this static convenience method constructs the "basic" version of Store repo.  
-	 * See details in SdbStoreFactory.  
-	 * For real application use cases, we instead usually  go through the FancyRepoFactory object defined in Scala Packages of 
+	 * For unit testing, this static convenience method constructs the "basic" version of Store repo.
+	 * See details in SdbStoreFactory.
+	 * For real application use cases, we instead usually  go through the FancyRepoFactory object defined in Scala Packages of
 	 * this proj.
 	 * @param storeConfigPath
 	 * @param optCL
-	 * @return 
+	 * @return
 	 */
 	public static BasicStoredMutableRepoImpl openBasicRepoFromConfigPath(String storeConfigPath, ClassLoader optCL) {
 		getLoggerForClass(BasicStoredMutableRepoImpl.class).info("Getting Muttable Model from SdbStoreFactory: " + storeConfigPath);
@@ -161,11 +161,11 @@ public class BasicStoredMutableRepoImpl extends BasicRepoImpl implements Repo.St
 
 	/**
 	 * Old sample store-iterator code, replaced by Dataset-level impls. in BasicRepoImpl.getGraphStats.
-	 * Iterating the store's graphs directly, rather than thru Dataset. 
+	 * Iterating the store's graphs directly, rather than thru Dataset.
 	 * Will give absolutely equivalent results?
-	 * 
+	 *
 	 * @param store
-	 * @return 
+	 * @return
 	 */
 	protected List<GraphStat> unusedDirectGraphStatFetcher(Store store) {
 		List<GraphStat> stats = new ArrayList<GraphStat>();

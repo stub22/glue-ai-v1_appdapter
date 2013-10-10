@@ -4,6 +4,6 @@
 	<classpathentry including="**/*.java" kind="src" path="src/main/java"/>
 	<classpathentry excluding="**/*.java" kind="src" path="src/main/resources"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/org.storychat.bundle.osgi"/>
+
 	<classpathentry kind="output" path="target/eclipse-classes"/>
-</classpath>
+<classpathentry exported="true" kind="src" path="/org.storychat.bundle.osgi"/></classpath>
