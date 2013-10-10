@@ -1,12 +1,12 @@
 /*
  *  Copyright 2012 by The Appdapter Project (www.appdapter.org).
- * 
+ *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
  *  You may obtain a copy of the License at
- * 
+ *
  *       http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  *  Unless required by applicable law or agreed to in writing, software
  *  distributed under the License is distributed on an "AS IS" BASIS,
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,6 +35,7 @@ import org.appdapter.help.repo.InitialBindingImpl
 import org.appdapter.core.log.Loggable
 import org.appdapter.core.log.BasicDebugger
 import com.hp.hpl.jena.sdb.Store
+import org.appdapter.core.store.RepoOper
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -59,7 +60,7 @@ trait FancyRepo extends Repo.WithDirectory with ModelClientCore with Loggable {
   final val QUERY_QUERY_TEXT = """
 			SELECT ?g ?qRes ?queryTxt WHERE {
 				GRAPH ?g {
-					?qRes  a ccrt:SparqlQuery ; ccrt:queryText ?queryTxt .			
+					?qRes  a ccrt:SparqlQuery ; ccrt:queryText ?queryTxt .
 				}
 			}
 		"""
@@ -158,7 +159,7 @@ trait FancyRepo extends Repo.WithDirectory with ModelClientCore with Loggable {
       if (showStackTrace) {
         rte.printStackTrace
         // maybe we should just throw now?
-        // rather then letting subsequent calls fail with obscure EOFs 
+        // rather then letting subsequent calls fail with obscure EOFs
       }
     }
   }
@@ -185,14 +186,9 @@ class DirectRepo(directoryModel: Model) extends BasicRepoImpl with FancyRepo wit
   val myDirectoryModel: Model = directoryModel;
   override def getDirectoryModel: Model = myDirectoryModel;
 
-  override def makeMainQueryDataset(): Dataset = {
-    val ds: Dataset = DatasetFactory.create() // becomes   createMem() in later Jena versions.
-    ds;
-  }
-  
 }
 
-// for appdapter 1.1.1 compatiblity  
+// for appdapter 1.1.1 compatiblity
 /// if kept, maybe make this a big make every kind of repo one stop shop
 object FancyRepoFactory extends BasicDebugger {
     def makeDatabaseRepo(repoConfResPath: String, optCL: ClassLoader, dirGraphID: Ident): DatabaseRepo = {

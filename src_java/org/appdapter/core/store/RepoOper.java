@@ -23,12 +23,14 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.appdapter.api.trigger.AnyOper;
 import org.appdapter.api.trigger.AnyOper.UIHidden;
 import org.appdapter.api.trigger.AnyOper.UtilClass;
 import org.appdapter.api.trigger.TriggerImpl;
+import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.demo.DemoResources;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +43,7 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
+import com.hp.hpl.jena.sdb.SDBFactory;
 import com.hp.hpl.jena.shared.Lock;
 
 // import com.hp.hpl.jena.query.DataSource;
@@ -65,6 +68,25 @@ public class RepoOper implements AnyOper, UtilClass {
 		@UISalient() void reloadSingleModel(String modelName);
 
 		@UISalient(ToValueMethod = "toString") Dataset getMainQueryDataset();
+
+		/**
+		 * Causes a repo to replace its mainQueryDataset with the 'ds' param
+		 *
+		 *  To switch from a file repo to a database repo
+		 *
+		 *     Reloadable myRepo = new URLRepoSpec("myturtle.ttl").makeRepo();
+		 *
+		 *     Dataset old = myRepo.mainQueryDataset();
+		 *
+		 *     Dataset newDs = SDB.store();
+		 *
+		 *
+		 *
+		 *
+		 * @param ds
+		 * @return
+		 */
+		@UISalient(ToValueMethod = "toString") void setMyMainQueryDataset(Dataset ds);
 	}
 
 	// static class ConcBootstrapTF extends
@@ -117,7 +139,15 @@ public class RepoOper implements AnyOper, UtilClass {
 	static Logger theLogger = LoggerFactory.getLogger(RepoOper.class);
 
 	@UISalient
-	private static boolean inPlaceReplacements;
+	public static boolean inPlaceReplacements;
+
+	/**
+	 *  To share Repos between JVM instances
+	 *   alwaysShareDataset = true;
+	 */
+	public static boolean alwaysShareDataset = false;
+	public static String DEFAULT_DATASET_TYPE = "default";
+	public static String DEFAULT_DATASET_SHARE_NAME = "shared";
 
 	@UISalient public static void replaceModelElements(Model dest, Model src) {
 		if (src == dest) {
@@ -129,6 +159,131 @@ public class RepoOper implements AnyOper, UtilClass {
 		// dest.getGraph().getPrefixMapping().equals(obj)
 		//if (src.getGraph() )dest.setNsPrefix("", src.getNsPrefixURI(""));
 		///dest.setNsPrefix("#", src.getNsPrefixURI("#"));
+	}
+
+	@UISalient public static Dataset createMem() {
+		if (alwaysShareDataset) {
+			return createShared();
+		}
+		return createDataset(DEFAULT_DATASET_TYPE);
+	}
+
+	@UISalient public static Dataset createShared() {
+		Dataset memDataset = DatasetFactory.createMem();
+		return linkWithShared(memDataset);
+	}
+
+	public static Dataset linkWithShared(Dataset memDataset) {
+		addDatasetSync(memDataset, getGlobalDS());
+		return memDataset;
+	}
+
+	@UISalient public static Dataset createDataset(String typeOf) {
+		return createDataset(typeOf, DEFAULT_DATASET_SHARE_NAME);
+	}
+
+	public static void registerDatasetFactory(String datasetTypeName, UserDatasetFactory udf) {
+		Map<String, UserDatasetFactory> dsfMap = UserDatasetFactory.registeredUserDatasetFactoryByName;
+		synchronized (dsfMap) {
+			dsfMap.put(datasetTypeName, udf);
+		}
+		List<UserDatasetFactory> lst = UserDatasetFactory.registeredUserDatasetFactorys;
+		synchronized (lst) {
+			lst.remove(udf);
+			lst.add(0, udf);
+		}
+	}
+
+	@UISalient public static Dataset createDataset(String typeOf, String sharedNameIgnoredPresently) {
+		if (typeOf == null) {
+			typeOf = DEFAULT_DATASET_TYPE;
+		} else {
+			typeOf = typeOf.toLowerCase();
+		}
+		Map<String, UserDatasetFactory> dsfMap = UserDatasetFactory.registeredUserDatasetFactoryByName;
+		UserDatasetFactory udsf0 = null;
+		synchronized (dsfMap) {
+			udsf0 = dsfMap.get(typeOf);
+		}
+		if (udsf0 != null) {
+			return udsf0.createType(typeOf, sharedNameIgnoredPresently);
+		}
+		for (UserDatasetFactory udsf : getRegisteredUserDatasetFactories()) {
+			if (udsf.canCreateType(typeOf, sharedNameIgnoredPresently)) {
+				return udsf.createType(typeOf, sharedNameIgnoredPresently);
+			}
+		}
+		return UserDatasetFactory.jenaDatasetFactory.createType(typeOf, sharedNameIgnoredPresently);
+	}
+
+	private static List<UserDatasetFactory> getRegisteredUserDatasetFactories() {
+		return ReflectUtils.copyOf(UserDatasetFactory.registeredUserDatasetFactorys);
+	}
+
+	@UISalient public static void replaceWithDB(Reloadable myRepo, Resource unionOrReplace) {
+		Dataset oldDs = myRepo.getMainQueryDataset();
+		Dataset newDs = getGlobalDS();
+		myRepo.setMyMainQueryDataset(newDs);
+		replaceDatasetElements(newDs, oldDs, unionOrReplace);
+	}
+
+	@UISalient public static void replaceViaFactory(Reloadable myRepo, UserDatasetFactory factory, Resource unionOrReplace) {
+		Dataset oldDs = myRepo.getMainQueryDataset();
+		Dataset newDs = factory.create(oldDs);
+		myRepo.setMyMainQueryDataset(newDs);
+		replaceDatasetElements(newDs, oldDs, unionOrReplace);
+	}
+
+	@UISalient public static void replaceWitMemory(Reloadable myRepo, Resource unionOrReplace) {
+		Dataset oldDs = myRepo.getMainQueryDataset();
+		Dataset newDs = DatasetFactory.createMem();
+		myRepo.setMyMainQueryDataset(newDs);
+		replaceDatasetElements(newDs, oldDs, unionOrReplace);
+	}
+
+	@UISalient public static void addModelSync(Model m1, Model m2) {
+		StatementSync ss = StatementSync.getStatementSyncerOfModels(m1, m2);
+		ss.enableSync();
+		ss.completeSync();
+	}
+
+	@UISalient public static void addDatasetSync(Dataset d1, Dataset d2) {
+		HashSet<String> nameSet = new HashSet<String>();
+		ReflectUtils.addAllNew(nameSet, d1.listNames());
+		ReflectUtils.addAllNew(nameSet, d2.listNames());
+		for (String uri : nameSet) {
+			addModelSync(uri, d1, d2);
+		}
+	}
+
+	private static void addModelSync(String uri, Dataset... dsDatasets) {
+		Model model = findOrCreateGlobalModel(uri);
+		for (Dataset newDs : dsDatasets) {
+			addModelSync(model, findOrCreateModel(newDs, uri));
+		}
+	}
+
+	private static Model findOrCreateModel(Dataset newDs, String uri) {
+		if (!newDs.containsNamedModel(uri)) {
+			newDs.addNamedModel(uri, createModelForDataset(uri, newDs));
+		}
+		return newDs.getNamedModel(uri);
+	}
+
+	private static Model createModelForDataset(String uri, Dataset newDs) {
+		return ModelFactory.createDefaultModel();
+	}
+
+	static Dataset globalDS = null;
+
+	public static Model findOrCreateGlobalModel(String uri) {
+		return findOrCreateModel(getGlobalDS(), uri);
+	}
+
+	public synchronized static Dataset getGlobalDS() {
+		if (globalDS == null)
+			globalDS = SDBFactory.connectDataset(DemoResources.STORE_CONFIG_PATH);
+		return globalDS;
 	}
 
 	@UISalient public static void replaceModelElements(Model dest, Model src, Resource unionOrReplace) {

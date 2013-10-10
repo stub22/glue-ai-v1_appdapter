@@ -2137,7 +2137,7 @@ abstract public class ReflectUtils implements UtilClass {
 		}
 
 		/**
-		 * Returns an array of <tt>Type</tt> objects representing the 
+		 * Returns an array of <tt>Type</tt> objects representing the
 		 * upper bound(s) of this type variable.  Note that if no upper bound is
 		 * explicitly declared, the upper bound is <tt>Object</tt>.
 		 *
@@ -2149,8 +2149,8 @@ abstract public class ReflectUtils implements UtilClass {
 		 *
 		 * @throws TypeNotPresentException  if any of the
 		 *     bounds refers to a non-existent type declaration
-		 * @throws MalformedParameterizedTypeException if any of the 
-		 *     bounds refer to a parameterized type that cannot be instantiated 
+		 * @throws MalformedParameterizedTypeException if any of the
+		 *     bounds refer to a parameterized type that cannot be instantiated
 		 *     for any reason
 		 * @return an array of <tt>Type</tt>s representing the upper
 		 *     bound(s) of this type variable
@@ -2160,7 +2160,7 @@ abstract public class ReflectUtils implements UtilClass {
 		}
 
 		/**
-		 * Returns the <tt>GenericDeclaration</tt> object representing the 
+		 * Returns the <tt>GenericDeclaration</tt> object representing the
 		 * generic declaration declared this type variable.
 		 *
 		 * @return the generic declaration declared for this type variable.
@@ -2214,7 +2214,7 @@ abstract public class ReflectUtils implements UtilClass {
 		 * represented by this <code>Class</code> object via an identity conversion
 		 * or via a widening reference conversion. See <em>The Java Language
 		 * Specification</em>, sections 5.1.1 and 5.1.4 , for details.
-		 * 
+		 *
 		 * @param cls the <code>Class</code> object to be checked
 		 * @return the <code>boolean</code> value indicating whether objects of the
 		 * type <code>cls</code> can be assigned to objects of this class
@@ -2270,7 +2270,7 @@ abstract public class ReflectUtils implements UtilClass {
 		/**
 		 * Returns an array of <tt>Type</tt> objects representing the actual type
 		 * arguments to this type.
-		 * 
+		 *
 		 * <p>Note that in some cases, the returned array be empty. This can occur
 		 * if this type represents a non-parameterized type nested within
 		 * a parameterized type.
@@ -2279,7 +2279,7 @@ abstract public class ReflectUtils implements UtilClass {
 		 *     arguments to this type
 		 * @throws <tt>TypeNotPresentException</tt> if any of the
 		 *     actual type arguments refers to a non-existent type declaration
-		 * @throws <tt>MalformedParameterizedTypeException</tt> if any of the 
+		 * @throws <tt>MalformedParameterizedTypeException</tt> if any of the
 		 *     actual type parameters refer to a parameterized type that cannot
 		 *     be instantiated for any reason
 		 * @since 1.5
@@ -2312,13 +2312,13 @@ abstract public class ReflectUtils implements UtilClass {
 		 *
 		 * <p>If this type is a top-level type, <tt>null</tt> is returned.
 		 *
-		 * @return a <tt>Type</tt> object representing the type that 
-		 *     this type is a member of. If this type is a top-level type, 
+		 * @return a <tt>Type</tt> object representing the type that
+		 *     this type is a member of. If this type is a top-level type,
 		 *     <tt>null</tt> is returned
 		 * @throws <tt>TypeNotPresentException</tt> if the owner type
 		 *     refers to a non-existent type declaration
 		 * @throws <tt>MalformedParameterizedTypeException</tt> if the owner type
-		 *     refers to a parameterized type that cannot be instantiated 
+		 *     refers to a parameterized type that cannot be instantiated
 		 *     for any reason
 		 * @since 1.5
 		 */
@@ -2765,6 +2765,24 @@ abstract public class ReflectUtils implements UtilClass {
 
 		while (elements.hasMoreElements()) {
 			ET t0 = elements.nextElement();
+			T t;
+			try {
+				t = (T) t0;
+			} catch (ClassCastException cce) {
+				cce.printStackTrace();
+				continue;
+			}
+			if (addIfNew(list, t))
+				changed = true;
+		}
+		return changed;
+	}
+
+	public static <T, ET> boolean addAllNew(Collection<T> list, Iterator<ET> elements) {
+		boolean changed = false;
+
+		while (elements.hasNext()) {
+			ET t0 = elements.next();
 			T t;
 			try {
 				t = (T) t0;

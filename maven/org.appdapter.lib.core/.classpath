@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry combineaccessrules="false" kind="src" path="/ext.bundle.math.jscience_50SNAP"/>
+	<classpathentry excluding="org/appdapter/test/samples/scalatest.scala|org/appdapter/test/samples/specs.scala" kind="src" path="src/test/scala"/>
 	<classpathentry including="**/*.java" kind="src" output="target/eclipse-classes" path="src/test/java"/>
 	<classpathentry including="**/*.java" kind="src" path="src/main/java"/>
 	<classpathentry excluding="**/*.java" kind="src" path="src/main/resources"/>
 	<classpathentry kind="src" path="src/main/scala"/>
-	<classpathentry exported="true" kind="con" path="org.scala-ide.sdt.launching.SCALA_CONTAINER"/>
+	<classpathentry kind="con" path="org.scala-ide.sdt.launching.SCALA_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry excluding="org/appdapter/test/samples/scalatest.scala|org/appdapter/test/samples/specs.scala" kind="src" path="src/test/scala"/>
-	<classpathentry exported="true" kind="src" path="/ext.bundle.jena_all_2_10_1"/>	<classpathentry exported="true" kind="src" path="/ext.bundle.xml.dom4j_161"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/ext.bundle.math.jscience_50SNAP"/>
+	<classpathentry exported="true" kind="src" path="/ext.bundle.jena_all_2_10_1"/>
+	<classpathentry exported="true" kind="src" path="/ext.bundle.xml.dom4j_161"/>
 	<classpathentry exported="true" kind="src" path="/ext.bundle.osgi.common"/>
-	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/org.storychat.bundle.osgi"/>
+	<classpathentry exported="true" kind="src" path="/org.storychat.bundle.osgi"/>
 	<classpathentry kind="output" path="target/eclipse-classes"/>
 </classpath>

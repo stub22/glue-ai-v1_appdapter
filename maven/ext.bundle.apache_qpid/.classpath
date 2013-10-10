@@ -4,12 +4,4 @@
   <classpathentry exported="true" kind="src" path="src/main/java" including="**/*.java"/>
   <classpathentry kind="output" path="target/eclipse-classes"/>
   <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-  <classpathentry exported="true" kind="var" path="M2_REPO/org/apache/geronimo/specs/geronimo-jms_1.1_spec/1.1.1/geronimo-jms_1.1_spec-1.1.1.jar"/>
-  <classpathentry exported="true" kind="var" path="M2_REPO/org/apache/qpid/qpid-client/0.10/qpid-client-0.10.jar"/>
-  <classpathentry exported="true" kind="var" path="M2_REPO/org/apache/qpid/qpid-common/0.10/qpid-common-0.10.jar"/>
-  <classpathentry exported="true" kind="var" path="M2_REPO/org/slf4j/slf4j-api/1.7.5/slf4j-api-1.7.5.jar"/>
-  <classpathentry exported="true" kind="var" path="M2_REPO/backport-util-concurrent/backport-util-concurrent/2.2/backport-util-concurrent-2.2.jar"/>
-  <classpathentry exported="true" kind="var" path="M2_REPO/org/apache/mina/mina-core/1.0.1/mina-core-1.0.1.jar"/>
-  <classpathentry exported="true" kind="var" path="M2_REPO/org/apache/mina/mina-filter-ssl/1.0.1/mina-filter-ssl-1.0.1.jar"/>
-  <classpathentry exported="true" kind="var" path="M2_REPO/org/apache/activemq/activemq-all/5.4.2/activemq-all-5.4.2.jar"/>
-</classpath>
+<classpathentry exported="true" kind="src" path="/org.storychat.bundle.osgi"/></classpath>
