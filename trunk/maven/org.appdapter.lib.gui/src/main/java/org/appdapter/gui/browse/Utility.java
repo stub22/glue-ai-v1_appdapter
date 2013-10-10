@@ -225,7 +225,7 @@ public class Utility extends UtilityMenuOptions {
 	@UISalient
 	public static boolean GuiDebugTracing = false;
 
-	// warnings that should never happen and only useful to   
+	// warnings that should never happen and only useful to
 	public static void bug(Object... params) {
 		if (!GuiDebugTracing)
 			return;
@@ -1602,7 +1602,7 @@ public class Utility extends UtilityMenuOptions {
 	public static Object fromString(Object title, Class type, List maxCvt) throws NoSuchConversionException {
 		if (title == null)
 			return null;
-		//List maxCvt = Converter.MCVT;	
+		//List maxCvt = Converter.MCVT;
 		Class keyClass = title.getClass();
 		if (keyClass != String.class) {
 			title = makeToString(title);
@@ -2689,26 +2689,33 @@ public class Utility extends UtilityMenuOptions {
 	public static String getUniqueName(Object object, NamedObjectCollection noc, boolean mayCreate, boolean wantsPretty, boolean reReadable) {
 		if (object == null)
 			return "<null>";
-		String title = hasDefaultName(object, wantsPretty, reReadable);
-		if (isTitled(title)) {
+		String title = getUniqueName00(object, noc, mayCreate, wantsPretty, reReadable);
+		if (reReadable) {
+			// confirm re-readable
 			Class objNeedsToBe = object.getClass();
 			try {
+
 				Object o2 = fromString(title, objNeedsToBe);
 				if (o2 != null && o2.equals(object)) {
 					return title;
 				} else {
-
+					bug("title " + title + " returns wrong object: " + o2);
 				}
 			} catch (NoSuchConversionException e) {
 				e.printStackTrace();
 			}
 		}
+		return title;
+	}
+
+	private static String getUniqueName00(Object object, NamedObjectCollection noc, boolean mayCreate, boolean wantsPretty, boolean reReadable) {
+
+		String title = hasDefaultName(object, wantsPretty, reReadable);
 		BT newBox = null;
 		if (noc == null) {
 			noc = getTreeBoxCollection();
 		}
 		if (mayCreate) {
-
 			newBox = noc.findOrCreateBox(object);
 		} else {
 			if (noc != uiObjects) {

@@ -26,7 +26,7 @@ import org.appdapter.demo.DemoDatabase;
  */
 public class DatabaseTriggers {
 
-	
+
 	public enum Kind {
 		OPEN,
 		CLOSE
@@ -36,6 +36,7 @@ public class DatabaseTriggers {
 		@Override public void fire(BT targetBox) {
 			logInfo(toString() + "-initing");
 			DatabaseConnector dbc = DemoDatabase.initConnector();
+			org.appdapter.gui.browse.Utility.showResult(dbc);
 		}
 	}
 }

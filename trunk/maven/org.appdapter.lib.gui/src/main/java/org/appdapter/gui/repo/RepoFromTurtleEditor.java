@@ -50,16 +50,16 @@ import com.hp.hpl.jena.rdf.model.StmtIterator;
  * editor and inspector for Jena models. Useful for debugging GUI
  * and web applications. To open an editor window, pass the model
  * instance to the static {@link RepoFromTurtleEditor#open(Repo)} method.</p>
- * 
+ *
  * <p>The editor has basic reporting of Turtle syntax errors.
  * It also updates the namespace prefixes of the model.
  * Several windows for different models may be open at the same
  * time. Concurrent changes to the model are reported.</p>
- * 
+ *
  * <p>The class has a {@link #main} method for demonstration purposes.
  * It loads one or more RDF files into Jena models and displays an editor
  * for each.</p>
- * 
+ *
  * @version $Id$
  * @author Richard Cyganiak (richard@cyganiak.de)
  * @author LogicMoo
@@ -291,6 +291,8 @@ public class RepoFromTurtleEditor extends ModelAsTurtleEditor implements ObjectP
 	}
 
 	@Override public void loadTTL(File file) throws IOException, NoSuchConversionException {
+		if (file == null)
+			return;
 		final Model loaderModel = ModelFactory.createDefaultModel();
 		final Model[] currentModel = new Model[] { ModelFactory.createDefaultModel(), null, null };
 		final String[] modelName = new String[] { "" };

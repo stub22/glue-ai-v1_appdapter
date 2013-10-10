@@ -4,7 +4,6 @@
 	<classpathentry including="**/*.java" kind="src" path="src/main/java"/>
 	<classpathentry excluding="**/*.java" kind="src" path="src/main/resources"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry exported="true" kind="var" path="M2_REPO/dom4j/dom4j/1.6.1/dom4j-1.6.1.jar"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/ext.bundle.osgi.common"/>
 	<classpathentry kind="output" path="target/eclipse-classes"/>
-</classpath>
+<classpathentry exported="true" kind="src" path="/org.storychat.bundle.osgi"/></classpath>

@@ -53,7 +53,6 @@ import org.appdapter.api.trigger.Trigger;
 import org.appdapter.api.trigger.TriggerImpl;
 import org.appdapter.core.log.BasicDebugger;
 import org.appdapter.core.log.Debuggable;
-import org.appdapter.core.matdat.OfflineXlsSheetRepoSpec;
 import org.appdapter.core.matdat.RepoSpec;
 import org.appdapter.core.matdat.URLRepoSpec;
 import org.appdapter.core.store.Repo;
@@ -432,7 +431,7 @@ final public class DemoBrowser implements AnyOper.Singleton {
 						Utility.showResult("No file was selected");
 						return;
 					}
-					RepoSpec repoSpec = new URLRepoSpec(myFile.getAbsolutePath(),null);
+					RepoSpec repoSpec = new URLRepoSpec(myFile.getAbsolutePath(), null);
 					Object resultRepo = repoSpec.makeRepo();
 					Utility.showResult(resultRepo);
 				} catch (Exception error) {
@@ -615,7 +614,8 @@ final public class DemoBrowser implements AnyOper.Singleton {
 	}
 
 	public static void setLookAndFeelFromProperty() {
-	     if(true) return;
+		if (true)
+			return;
 		String LOOKANDFEEL = System.getProperty("swing.defaultlaf");
 		if (LOOKANDFEEL == null) {
 			return;
@@ -688,7 +688,7 @@ final public class DemoBrowser implements AnyOper.Singleton {
 			if (prevlaf != null && className != null) {
 
 			}
-			
+
 			UIManager.setLookAndFeel(className);
 			// make sure we can still set things
 			updateComponentTreeUI(true);
