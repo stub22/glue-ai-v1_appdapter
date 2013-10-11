@@ -5,12 +5,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.appdapter.demo.DemoResources;
+
 import com.hp.hpl.jena.assembler.Assembler;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.sdb.SDBFactory;
+import com.hp.hpl.jena.sdb.Store;
 import com.hp.hpl.jena.sparql.ARQException;
 import com.hp.hpl.jena.sparql.core.DatasetGraph;
 import com.hp.hpl.jena.sparql.core.DatasetGraphFactory;
@@ -23,14 +26,28 @@ import com.hp.hpl.jena.util.FileManager;
 
 public interface UserDatasetFactory {
 
-	public class JenaSDBWrappedDatasetFactory extends JenaDatasetFactory implements UserDatasetFactory {
+	public class JenaSDBWrappedDatasetFactory extends AbstractDatasetFactory implements UserDatasetFactory {
 
-		/** Create a dataset
-		 * @param dataset
-		 * @return Dataset
-		 */
-		public Dataset create(Dataset dataset) {
-			return RepoOper.linkWithShared(dataset);
+		public Dataset createDefault() {
+			if (true)
+				return createRemotePeer();
+			return create(createMem());
+		}
+
+		public Dataset createMem() {
+			return create(createMem());
+		}
+
+		public Dataset create(Dataset peer) {
+			Dataset remote = createRemotePeer();
+			RepoOper.addDatasetSync(peer, remote);
+			return peer;
+		}
+
+		@Override public Dataset createRemotePeer() {
+			Store store = SDBFactory.connectStore(DemoResources.STORE_CONFIG_PATH);
+			Dataset ds = SDBFactory.connectDataset(store);
+			return ds;
 		}
 
 	}
@@ -51,15 +68,6 @@ public interface UserDatasetFactory {
 		 */
 		public Dataset createMemFixed() {
 			return create(DatasetGraphFactory.createMemFixed());
-		}
-
-		/** Create an in-memory, modifable Dataset
-		 * @deprecated Use createMem
-		 */
-		@Deprecated public Dataset create() {
-			// This may not be a defaultJena model - during testing,
-			// we use a graph that is not value-aware for xsd:String vs plain literals.
-			return new DatasetImpl(ModelFactory.createModelForGraph(GraphFactory.createDefaultGraph()));
 		}
 
 		/** Create a dataset with the given model as the default graph
@@ -86,16 +94,10 @@ public interface UserDatasetFactory {
 			return DatasetImpl.wrap(dataset);
 		}
 
-		@Override public boolean canCreateType(String typeOf, String sharedNameIgnoredPresently) {
-			if (typeOf != null && registeredUserDatasetFactoryByName.get(typeOf) == this)
-				return true;
-			if (sharedNameIgnoredPresently != null && registeredUserDatasetFactoryByName.get(sharedNameIgnoredPresently) == this)
-				return true;
-			return false;
-		}
-
-		@Override public Dataset createType(String typeOf, String sharedNameIgnoredPresently) {
-			return createDefault();
+		@Override public Dataset createRemotePeer() {
+			Store store = SDBFactory.connectStore(DemoResources.STORE_CONFIG_PATH);
+			Dataset ds = SDBFactory.connectDataset(store);
+			return ds;
 		}
 
 	}
@@ -121,7 +123,7 @@ public interface UserDatasetFactory {
 		/** Create an in-memory, modifable Dataset
 		 * @deprecated Use createMem
 		 */
-		@Deprecated public Dataset create() {
+		final @Deprecated public Dataset create() {
 			// This may not be a defaultJena model - during testing,
 			// we use a graph that is not value-aware for xsd:String vs plain literals.
 			return create(ModelFactory.createModelForGraph(GraphFactory.createDefaultGraph()));
@@ -132,7 +134,15 @@ public interface UserDatasetFactory {
 		 * @return Dataset
 		 */
 		public Dataset create(Model model) {
-			return create(new DatasetImpl(model));
+			return new DatasetImpl(model);
+		}
+
+		/** Create a dataset
+		 * @param dataset
+		 * @return Dataset
+		 */
+		public Dataset create(Dataset dataset) {
+			return new DatasetImpl(dataset);
 		}
 
 		/** Wrap a datasetgraph to make a mutable dataset
@@ -140,8 +150,7 @@ public interface UserDatasetFactory {
 		 * @return Dataset
 		 */
 		public Dataset create(DatasetGraph dataset) {
-			Dataset ds = DatasetImpl.wrap(dataset);
-			return create(ds);
+			return DatasetImpl.wrap(dataset);
 		}
 
 		/** Create a named graph container based on two list of URIs.
@@ -334,6 +343,18 @@ public interface UserDatasetFactory {
 			return ds;
 		}
 
+		@Override public boolean canCreateType(String typeOf, String sharedNameIgnoredPresently) {
+			if (typeOf != null && registeredUserDatasetFactoryByName.get(typeOf) == this)
+				return true;
+			if (sharedNameIgnoredPresently != null && registeredUserDatasetFactoryByName.get(sharedNameIgnoredPresently) == this)
+				return true;
+			return false;
+		}
+
+		@Override public Dataset createType(String typeOf, String sharedNameIgnoredPresently) {
+			return createDefault();
+		}
+
 	}
 
 	UserDatasetFactory jenaDatasetFactory = new JenaDatasetFactory();
@@ -351,6 +372,8 @@ public interface UserDatasetFactory {
 
 	/** Create an in-memory, modifiable Dataset */
 	public Dataset createMem();
+
+	Dataset createRemotePeer();
 
 	/** Create an in-memory, modifiable Dataset.
 	 * New graphs must be explicitly added using .addGraph.
