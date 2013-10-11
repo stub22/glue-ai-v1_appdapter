@@ -141,14 +141,6 @@ public class RepoOper implements AnyOper, UtilClass {
 	@UISalient
 	public static boolean inPlaceReplacements;
 
-	/**
-	 *  To share Repos between JVM instances
-	 *   alwaysShareDataset = true;
-	 */
-	public static boolean alwaysShareDataset = false;
-	public static String DEFAULT_DATASET_TYPE = "default";
-	public static String DEFAULT_DATASET_SHARE_NAME = "shared";
-
 	@UISalient public static void replaceModelElements(Model dest, Model src) {
 		if (src == dest) {
 			return;
@@ -161,25 +153,44 @@ public class RepoOper implements AnyOper, UtilClass {
 		///dest.setNsPrefix("#", src.getNsPrefixURI("#"));
 	}
 
+	/**
+	 *  To share Repos between JVM instances
+	 *   alwaysShareDataset = true;
+	 */
+	final public static String DATASET_TYPE_DEFAULT_MEMFILE_TYPE = "memory";
+	final public static String DATASET_TYPE_DEFAULT_SHARE_TYPE = "shared";
+	public static boolean alwaysShareDataset = false;
+	public static boolean alwaysShareDatasetHack = false;
+	public static String DATASET_TYPE_SHARED = DATASET_TYPE_DEFAULT_SHARE_TYPE;
+	public static String DATASET_TYPE_DEFAULT = DATASET_TYPE_DEFAULT_MEMFILE_TYPE;
+	public static String DATASET_SHARE_NAME = "robot01";
+
 	@UISalient public static Dataset createMem() {
-		if (alwaysShareDataset) {
-			return createShared();
-		}
-		return createDataset(DEFAULT_DATASET_TYPE);
+		if (alwaysShareDatasetHack)
+			return getGlobalDShared();
+		return createDataset(DATASET_TYPE_DEFAULT_MEMFILE_TYPE);
+	}
+
+	@UISalient public static Dataset createDefault() {
+		if (alwaysShareDatasetHack)
+			return getGlobalDShared();
+		return createDataset(DATASET_TYPE_DEFAULT);
 	}
 
 	@UISalient public static Dataset createShared() {
+		if (alwaysShareDatasetHack)
+			return getGlobalDShared();
 		Dataset memDataset = DatasetFactory.createMem();
 		return linkWithShared(memDataset);
 	}
 
 	public static Dataset linkWithShared(Dataset memDataset) {
-		addDatasetSync(memDataset, getGlobalDS());
+		addDatasetSync(memDataset, getGlobalDShared());
 		return memDataset;
 	}
 
 	@UISalient public static Dataset createDataset(String typeOf) {
-		return createDataset(typeOf, DEFAULT_DATASET_SHARE_NAME);
+		return createDataset(typeOf, DATASET_SHARE_NAME);
 	}
 
 	public static void registerDatasetFactory(String datasetTypeName, UserDatasetFactory udf) {
@@ -196,7 +207,7 @@ public class RepoOper implements AnyOper, UtilClass {
 
 	@UISalient public static Dataset createDataset(String typeOf, String sharedNameIgnoredPresently) {
 		if (typeOf == null) {
-			typeOf = DEFAULT_DATASET_TYPE;
+			typeOf = DATASET_TYPE_DEFAULT;
 		} else {
 			typeOf = typeOf.toLowerCase();
 		}
@@ -222,7 +233,7 @@ public class RepoOper implements AnyOper, UtilClass {
 
 	@UISalient public static void replaceWithDB(Reloadable myRepo, Resource unionOrReplace) {
 		Dataset oldDs = myRepo.getMainQueryDataset();
-		Dataset newDs = getGlobalDS();
+		Dataset newDs = getGlobalDShared();
 		myRepo.setMyMainQueryDataset(newDs);
 		replaceDatasetElements(newDs, oldDs, unionOrReplace);
 	}
@@ -274,13 +285,13 @@ public class RepoOper implements AnyOper, UtilClass {
 		return ModelFactory.createDefaultModel();
 	}
 
-	static Dataset globalDS = null;
+	public static Dataset globalDS = null;
 
 	public static Model findOrCreateGlobalModel(String uri) {
-		return findOrCreateModel(getGlobalDS(), uri);
+		return findOrCreateModel(getGlobalDShared(), uri);
 	}
 
-	public synchronized static Dataset getGlobalDS() {
+	public synchronized static Dataset getGlobalDShared() {
 		if (globalDS == null)
 			globalDS = SDBFactory.connectDataset(DemoResources.STORE_CONFIG_PATH);
 		return globalDS;
