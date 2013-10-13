@@ -41,6 +41,12 @@
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>org.appdapter.lib.remote</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>ext.bundle.osgi.common</artifactId>
@@ -177,9 +183,9 @@
 				<configuration>
 					<instructions>
 						<!-- org.gjt.*;resolution:='optional', -->
-						<Import-Package>sun.*;resolution:='optional', com.sun.*;resolution:='optional', org.apache.*;resolution:='optional', org.h2, apple.laf.*;resolution:='optional', com.apple.laf.*;resolution:='optional', *</Import-Package>
+						<Import-Package>sun.*;resolution:='optional', com.sun.*;resolution:='optional', org.apache.*;resolution:='optional', org.h2, apple.laf.*;resolution:='optional', com.apple.laf.*;resolution:='optional', *;resolution:='optional'</Import-Package>
 						<Bundle-Activator>org.appdapter.osgi.core.AppdapterCoreBundleActivator</Bundle-Activator>
-						<Export-Package>org.appdapter.*, au.com.bytecode.opencsv.*, org.apache.xmlbeans.*</Export-Package>
+						<Export-Package>org.appdapter.*, au.com.bytecode.opencsv.*, org.apache.xmlbeans.*,com.hp.hpl.jena.graph.query</Export-Package>
 						<!-- Horrid workaround for Class.forName() used in DynamicCachingComponentAssembler, could widen it to "*",
 							but better to get Jena code fixed to allow classloader setup.
 						-->
@@ -190,7 +196,7 @@
 						
 						<Private-Package>org.xmldb.*,riotcmd.*</Private-Package>
 						-->						
-                        <Private-Package>org.apache.poi.*, com.jidesoft.*, org.openxmlformats.*, schemaorg_apache_xmlbeans.*, schemasMicrosoftComOfficeExcel.*, schemasMicrosoftComOfficeOffice.*, schemasMicrosoftComVml.*</Private-Package>
+                        <Private-Package>org.apache.poi.*, com.jidesoft.*, org.openxmlformats.*, schemaorg_apache_xmlbeans.*, schemasMicrosoftComOfficeExcel.*, schemasMicrosoftComOfficeOffice.*, schemasMicrosoftComVml.*,org.joda.*</Private-Package>
 					</instructions>
 				</configuration>
 			</plugin>

@@ -82,6 +82,13 @@ central repo.
             <version>${project.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>org.appdapter.lib.remote</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>ext.bundle.jena_all_2_10_1</artifactId>
