@@ -7,11 +7,32 @@
 		<version>1.1.2-SNAPSHOT</version>
 		<relativePath>../org.appdapter.modules.core/pom.xml</relativePath>
 	</parent>
+
+	<properties>
+		<jena.version>2.10.1</jena.version>
+		<jena-sdb.version>1.4.0</jena-sdb.version>
+		<jena-tdb.version>1.0.0</jena-tdb.version>
+		<sesame.version>2.7.4</sesame.version>
+	</properties>
+
 	<!-- Artifact ID updated on 2013-07-17 from ext.bundle.jena_all_264 to what you see on next line (v 2.10.1) -->
     <artifactId>ext.bundle.jena_all_2_10_1</artifactId>
     <packaging>bundle</packaging>
     <name>${artifactId} - OSGi - Jena wrapper</name>
-	<description>Jena 2.10.1, ARQ + SDB</description>
+	<description>Jena ${jena.version}, ARQ + SDB ${jena-sdb.version} + Sesame ${sesame.version}</description>
+
+    <repositories>
+			<repository>
+				<id>apache-repo-snapshots</id>
+				<url>https://repository.apache.org/content/repositories/snapshots/</url>
+				<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			</repository>
+      </repositories>
   <dependencies>
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -116,7 +137,7 @@
             <groupId>org.apache.jena</groupId>
             <artifactId>apache-jena-libs</artifactId>
             <type>pom</type>
-            <version>2.10.1</version>
+            <version>${jena.version}</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
@@ -149,11 +170,125 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
+   <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>jena-arq</artifactId>
+      <version>${jena.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>jena-arq</artifactId>
+      <version>${jena.version}</version>
+      <classifier>sources</classifier>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>jena-arq</artifactId>
+      <version>${jena.version}</version>
+      <classifier>javadoc</classifier>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>jena-core</artifactId>
+      <version>${jena.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>jena-core</artifactId>
+      <version>${jena.version}</version>
+      <classifier>sources</classifier>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>jena-core</artifactId>
+      <version>${jena.version}</version>
+      <classifier>javadoc</classifier>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>jena-tdb</artifactId>
+      <version>${jena-tdb.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>jena-tdb</artifactId>
+      <version>${jena-tdb.version}</version>
+      <classifier>sources</classifier>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>jena-tdb</artifactId>
+      <version>${jena-tdb.version}</version>
+      <classifier>javadoc</classifier>
+    </dependency>
+
+
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>jena-sdb</artifactId>
+      <version>${jena-sdb.version}</version>
+      <classifier>sources</classifier>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>jena-sdb</artifactId>
+      <version>${jena-sdb.version}</version>
+      <classifier>javadoc</classifier>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>jena-iri</artifactId>
+      <version>${jena-tdb.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>jena-iri</artifactId>
+      <version>${jena-tdb.version}</version>
+      <classifier>sources</classifier>
+    </dependency>
+
+    <dependency>
+		<groupId>org.openrdf.sesame</groupId>
+		<artifactId>sesame-console</artifactId>
+		<version>${sesame.version}</version>
+	</dependency>
+	<dependency>
+		<groupId>org.openrdf.sesame</groupId>
+		<artifactId>sesame-repository-api</artifactId>
+		<version>${sesame.version}</version>
+	</dependency>
+                        
+    <!--
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>jena-fuseki</artifactId>
+      <version>${ver.fuseki}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>jena-fuseki</artifactId>
+      <version>${ver.fuseki}</version>
+      <classifier>sources</classifier>
+    </dependency>
+   -->
         <dependency>
             <groupId>org.apache.jena</groupId>
             <artifactId>jena-sdb</artifactId>
             <type>jar</type>
-            <version>1.3.6</version>
+            <version>${jena-sdb.version}</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
@@ -362,10 +497,10 @@
 						<!-- Horrid workaround for Class.forName() used in AssemberHelp, could widen it to "*",
 							but better to get Jena code fixed to allow classloader setup.
 						-->
-						<DynamicImport-Package>org.appdapter.*,org.cogchar.*</DynamicImport-Package>
+						<DynamicImport-Package>org.appdapter.*,org.cogchar.*,org.storychat.*, org.semplex.*</DynamicImport-Package>
                         <Bundle-Activator>org.appdapter.ext.bundle.jena.full.Activator</Bundle-Activator>
 						<!-- The sdb.* packages require Junit -->
-						<Export-Package>org.appdapter.*,arq.*,tdb.*,com.hp.hpl.jena.*,etc.*,org.openjena.*,vocabularies.*, jena.*, org.apache.jena.*</Export-Package>
+						<Export-Package>org.appdapter.*,arq.*,tdb.*,com.hp.hpl.jena.*,etc.*,org.openjena.*,vocabularies.*, jena.*, org.apache.jena.*, org.openrdf.*</Export-Package>
 						<Private-Package>riotcmd, org.apache.http.*</Private-Package>
                     </instructions>
                 </configuration>
