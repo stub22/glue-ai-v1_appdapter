@@ -170,13 +170,13 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
+ <!--
    <dependency>
       <groupId>org.apache.jena</groupId>
       <artifactId>jena-arq</artifactId>
       <version>${jena.version}</version>
     </dependency>
-
+ -->
     <dependency>
       <groupId>org.apache.jena</groupId>
       <artifactId>jena-arq</artifactId>
@@ -245,31 +245,32 @@
       <version>${jena-sdb.version}</version>
       <classifier>javadoc</classifier>
     </dependency>
-
+<!--
     <dependency>
       <groupId>org.apache.jena</groupId>
       <artifactId>jena-iri</artifactId>
       <version>${jena-tdb.version}</version>
     </dependency>
-
+-->
     <dependency>
       <groupId>org.apache.jena</groupId>
       <artifactId>jena-iri</artifactId>
       <version>${jena-tdb.version}</version>
       <classifier>sources</classifier>
     </dependency>
-
+ <!--
     <dependency>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-console</artifactId>
 		<version>${sesame.version}</version>
 	</dependency>
+
 	<dependency>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-repository-api</artifactId>
 		<version>${sesame.version}</version>
 	</dependency>
-                        
+     -->                   
     <!--
     <dependency>
       <groupId>org.apache.jena</groupId>
@@ -497,10 +498,10 @@
 						<!-- Horrid workaround for Class.forName() used in AssemberHelp, could widen it to "*",
 							but better to get Jena code fixed to allow classloader setup.
 						-->
-						<DynamicImport-Package>org.appdapter.*,org.cogchar.*,org.storychat.*, org.semplex.*</DynamicImport-Package>
+						<DynamicImport-Package>org.appdapter.*,org.cogchar.*</DynamicImport-Package>
                         <Bundle-Activator>org.appdapter.ext.bundle.jena.full.Activator</Bundle-Activator>
 						<!-- The sdb.* packages require Junit -->
-						<Export-Package>org.appdapter.*,arq.*,tdb.*,com.hp.hpl.jena.*,etc.*,org.openjena.*,vocabularies.*, jena.*, org.apache.jena.*, org.openrdf.*</Export-Package>
+						<Export-Package>org.appdapter.*,arq.*,tdb.*,com.hp.hpl.jena.*,etc.*,org.openjena.*,vocabularies.*, jena.*, org.apache.jena.*</Export-Package>
 						<Private-Package>riotcmd, org.apache.http.*</Private-Package>
                     </instructions>
                 </configuration>
