@@ -2,8 +2,8 @@
 <projectDescription>
 	<name>org.appdapter.lib.agent</name>
 	<comment></comment>
-  <projects>
-  </projects>
+  <projects/>
+  
 	<buildSpec>
 		<buildCommand>
 			<name>org.scala-ide.sdt.core.scalabuilder</name>
