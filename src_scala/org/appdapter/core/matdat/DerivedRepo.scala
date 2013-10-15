@@ -1,12 +1,12 @@
 /*
  *  Copyright 2012 by The Appdapter Project (www.appdapter.org).
- * 
+ *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
  *  You may obtain a copy of the License at
- * 
+ *
  *       http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  *  Unless required by applicable law or agreed to in writing, software
  *  distributed under the License is distributed on an "AS IS" BASIS,
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -52,7 +52,7 @@ class DerivedRepoSpec(val myDGSpecs: Set[DerivedGraphSpec], val mySrcRepo: Repo.
 }
 
 // @TODO to be moved to org.appdapter.lib.core
-class DerivedRepo(emptyDirModel: Model, val myRepoSpec: DerivedRepoSpec) extends DirectRepo(emptyDirModel) with RepoOper.Reloadable {
+class DerivedRepo(emptyDirModel: Model, val myRepoSpec: DerivedRepoSpec) extends DirectRepo(emptyDirModel) with RepoOper.ReloadableDataset {
 
   def reloadAllModels() = {
     //myRepoSpec.makeRepo
@@ -93,7 +93,7 @@ object PipelineModelLoader extends BasicDebugger {
     val nsJavaMap: java.util.Map[String, String] = myDirectoryModel.getNsPrefixMap()
 
     val msqText = """
-			select ?model 
+			select ?model
 				{
 					?model a cc:PipelineModel;
 				}
@@ -149,7 +149,7 @@ object DerivedModelLoader extends BasicDebugger {
     val nsJavaMap: java.util.Map[String, String] = myDirectoryModel.getNsPrefixMap()
 
     val msqText = """
-			select ?model 
+			select ?model
 				{
 					?model a ccrt:DerivedModel;
 				}

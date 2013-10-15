@@ -11,6 +11,9 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.hp.hpl.jena.rdf.listeners.StatementListener;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelChangedListener;
@@ -19,6 +22,8 @@ import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.shared.Lock;
 
 public class StatementSync {
+
+	static Logger theLogger = LoggerFactory.getLogger(RepoDatasetFactory.class);
 
 	public class BulkStatement implements Runnable {
 		public final Model dataModel;
@@ -268,6 +273,7 @@ public class StatementSync {
 			StatementSync mcl = syncPairs.get(key);
 			if (mcl == null) {
 				Collection<Lock> locks = enterCriticalSections(false, m1, m2);
+				theLogger.info("Making modelSync = " + key);
 				try {
 					Model memmodel = ModelFactory.createDefaultModel();
 					memmodel.add(m1);

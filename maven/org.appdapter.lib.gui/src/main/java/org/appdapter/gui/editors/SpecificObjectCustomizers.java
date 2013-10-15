@@ -52,10 +52,8 @@ public class SpecificObjectCustomizers extends TabPanelMaker {
 			if (tabs.containsComponentOfClass(comp).size() > 0)
 				continue;
 
-			String planinfo = ("instanceof " + comp + " for (" + objClass.getName() + ")" + object);
-
 			if (!Utility.getEditsObject(object, objClass, comp)) {
-				Utility.theLogger.warn("Wont use " + planinfo);
+				Utility.theLogger.warn("Wont use " + planInfo(object, objClass, comp));
 				continue;
 			}
 			if (cmd == SetTabTo.ADD) {
@@ -64,7 +62,7 @@ public class SpecificObjectCustomizers extends TabPanelMaker {
 					if (!Component.class.isAssignableFrom(comp))
 						continue;
 					Throwable why = null;
-					Utility.theLogger.warn("Creating " + planinfo);
+					Utility.theLogger.warn("Creating " + planInfo(object, objClass, comp));
 					try {
 						cp = (Component) comp.newInstance();
 					} catch (Throwable e1) {
@@ -79,7 +77,7 @@ public class SpecificObjectCustomizers extends TabPanelMaker {
 						}
 					}
 					if (cp == null) {
-						Utility.theLogger.error("Did not create " + planinfo, why);
+						Utility.theLogger.error("Did not create " + planInfo(object, objClass, comp), why);
 						continue;
 					}
 					if (cp instanceof SetObject) {
@@ -94,7 +92,7 @@ public class SpecificObjectCustomizers extends TabPanelMaker {
 
 				} catch (Throwable e) {
 					e.printStackTrace();
-					Utility.theLogger.error("Did not add to " + planinfo, e);
+					Utility.theLogger.error("Did not add to " + planInfo(object, objClass, comp), e);
 				}
 
 			}
@@ -102,6 +100,11 @@ public class SpecificObjectCustomizers extends TabPanelMaker {
 				tabs.removeTab(prefix, null);
 			}
 		}
+	}
+
+	private String planInfo(Object object, Class objClass, Class comp) {
+		String planinfo = ("instanceof " + comp + " for (" + objClass.getName() + ")" + object);
+		return planinfo;
 	}
 
 	static public class BasicObjectCustomizer extends TabPanelMaker {

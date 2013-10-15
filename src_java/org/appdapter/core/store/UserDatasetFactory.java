@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.appdapter.demo.DemoResources;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.hp.hpl.jena.assembler.Assembler;
 import com.hp.hpl.jena.query.Dataset;
@@ -26,6 +28,8 @@ import com.hp.hpl.jena.util.FileManager;
 
 public interface UserDatasetFactory {
 
+	static Logger theLogger = LoggerFactory.getLogger(RepoDatasetFactory.class);
+
 	public class JenaSDBWrappedDatasetFactory extends AbstractDatasetFactory implements UserDatasetFactory {
 
 		public Dataset createDefault() {
@@ -40,7 +44,7 @@ public interface UserDatasetFactory {
 
 		public Dataset create(Dataset peer) {
 			Dataset remote = createRemotePeer();
-			RepoOper.addDatasetSync(peer, remote);
+			RepoDatasetFactory.addDatasetSync(peer, remote);
 			return peer;
 		}
 
@@ -364,9 +368,9 @@ public interface UserDatasetFactory {
 
 	Object lock = new Object() {
 		{
-			RepoOper.registerDatasetFactory("default", jenaDatasetFactory);
-			RepoOper.registerDatasetFactory("jena", jenaDatasetFactory);
-			RepoOper.registerDatasetFactory("shared", jenaSDBDatasetFactory);
+			RepoDatasetFactory.registerDatasetFactory("default", jenaDatasetFactory);
+			RepoDatasetFactory.registerDatasetFactory("jena", jenaDatasetFactory);
+			RepoDatasetFactory.registerDatasetFactory("shared", jenaSDBDatasetFactory);
 		}
 	};
 
