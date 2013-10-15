@@ -2,8 +2,8 @@
 <projectDescription>
 	<name>org.appdapter.modules.math</name>
 	<comment></comment>
-	<projects>
-	</projects>
+	<projects/>
+	
 	<buildSpec>
 		<buildCommand>
 			<name>org.eclipse.m2e.core.maven2Builder</name>

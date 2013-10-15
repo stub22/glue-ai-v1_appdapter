@@ -2,8 +2,8 @@
 <projectDescription>
 	<name>ext.bundle.math.jscience_50SNAP</name>
 	<comment></comment>
-	<projects>
-	</projects>
+	<projects/>
+	
 	<buildSpec>
 		<buildCommand>
 			<name>org.eclipse.jdt.core.javabuilder</name>

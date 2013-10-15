@@ -2,14 +2,8 @@
 <projectDescription>
   <name>org.appdapter.bundle.felix.shell</name>
   <comment>Appdapter bundle for runnable OSGi deployment from local maven repo, including Felix gogo shell and concrete SLF4J binding. NO_M2ECLIPSE_SUPPORT: Project files created with the maven-eclipse-plugin are not supported in M2Eclipse.</comment>
-  <projects>
-    <project>org.appdapter.bundle.core</project>
-    <project>ext.bundle.osgi.common</project>
-    <project>ext.bundle.jena_all_2_10_1</project>
-    <project>ext.bundle.xml.dom4j_161</project>
-    <project>ext.bundle.felix.shell</project>
-  </projects>
-  <buildSpec>
+  <projects/>
+      <buildSpec>
     <buildCommand>
       <name>org.eclipse.jdt.core.javabuilder</name>
     </buildCommand>
