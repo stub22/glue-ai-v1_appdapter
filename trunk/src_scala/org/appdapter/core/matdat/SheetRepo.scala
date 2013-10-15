@@ -101,13 +101,14 @@ abstract class SheetRepo(directoryModel: Model, var fileModelCLs: java.util.List
     RepoOper.replaceModelElements(oldDirModel, myNewDirectoryModel)
     RepoOper.replaceDatasetElements(oldDataset, myPNewMainQueryDataset)
     repoLoader.setLastJobSubmitted();
-    //reloadMainDataset();    
+    //reloadMainDataset();
   }
 
   def getClassLoaderList(clList: java.util.List[ClassLoader] = null): java.util.List[ClassLoader] = {
     ClassLoaderUtils.getFileResourceClassLoaders(ClassLoaderUtils.ALL_RESOURCE_CLASSLOADER_TYPES, fileModelCLs, clList);
   }
   override def toString(): String = {
+    if (myDebugNameToStr != null) return myDebugNameToStr;
     val dm = getDirectoryModel();
     var dmstr = "noDirModel";
     if (dm != null) dmstr = "dir=" + dm.size();
@@ -142,7 +143,7 @@ abstract class SheetRepo(directoryModel: Model, var fileModelCLs: java.util.List
 
   def ensureUpdatedPrivate() = {
     {
-      //this.synchronized 
+      //this.synchronized
       {
         beginLoading();
         finishLoading();
@@ -166,7 +167,7 @@ abstract class SheetRepo(directoryModel: Model, var fileModelCLs: java.util.List
     }
   }
 
-  def updateFromDirModel() {    
+  def updateFromDirModel() {
     val mainDset: Dataset = getMainQueryDataset().asInstanceOf[Dataset];
     val dirModel = getDirectoryModel;
     val fileModelCLs: java.util.List[ClassLoader] = this.getClassLoaderList(this.fileModelCLs);
