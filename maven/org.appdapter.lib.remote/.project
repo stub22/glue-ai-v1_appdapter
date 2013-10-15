@@ -2,12 +2,8 @@
 <projectDescription>
 	<name>org.appdapter.lib.remote</name>
 	<comment>Appdapter Maven project including Java and Scala, produces jar, not bundle.  Excludes concrete SLF4J binding. NO_M2ECLIPSE_SUPPORT: Project files created with the maven-eclipse-plugin are not supported in M2Eclipse.</comment>
-	<projects>
-		<project>ext.bundle.jena_all_2_10_1</project>
-		<project>ext.bundle.xml.dom4j_161</project>
-		<project>ext.bundle.osgi.common</project>
-	</projects>
-	<buildSpec>
+	<projects/>
+			<buildSpec>
 		<buildCommand>
 			<name>org.eclipse.jdt.core.javabuilder</name>
 			<arguments>
