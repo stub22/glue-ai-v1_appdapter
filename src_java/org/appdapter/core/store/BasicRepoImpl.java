@@ -109,7 +109,7 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 	}
 
 	protected Dataset makeMainQueryDataset() {
-		Dataset ds = RepoOper.createMem(); // becomes   createMem() in later Jena versions.
+		Dataset ds = RepoDatasetFactory.createDefault(); // becomes   createMem() in later Jena versions.
 		return ds;
 	}
 

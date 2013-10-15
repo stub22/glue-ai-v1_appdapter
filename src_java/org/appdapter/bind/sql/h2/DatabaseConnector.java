@@ -15,12 +15,15 @@
  */
 
 package org.appdapter.bind.sql.h2;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 
 import org.h2.tools.Server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.hp.hpl.jena.sdb.SDB;
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -29,19 +32,21 @@ import org.slf4j.LoggerFactory;
 public class DatabaseConnector {
 
 	public static class Config {
-		public		String	dbFilePath;
-		public		String	dbUser;
-		public		String  dbPassword;
-		public		String	tcpPort;
-		public		String	webPort;
+		public String dbFilePath;
+		public String dbUser;
+		public String dbPassword;
+		public String tcpPort;
+		public String webPort;
+		public boolean forQuads = true;
 	}
 
 	static Logger theLogger = LoggerFactory.getLogger(DatabaseConnector.class);
-	private		Connection		myConn;
-	private		Server			myTcpServer;
-	private		Server			myWebServer;
+	private Connection myConn;
+	private Server myTcpServer;
+	private Server myWebServer;
 
 	public void init(Config conf) throws Throwable {
+		SDB.init();
 		myTcpServer = makeTcpServer(conf.tcpPort);
 		myWebServer = makeWebServer(conf.webPort);
 
@@ -49,20 +54,24 @@ public class DatabaseConnector {
 		myTcpServer.start();
 		myWebServer.start();
 	}
+
 	protected void stop() throws Throwable {
 		myTcpServer.stop();
 		myConn.close();
 	}
+
 	protected Connection makeConnection(String dbFilePath, String dbUser, String dbPassword) throws Throwable {
 		// Load the driver
 		Class.forName("org.h2.Driver").newInstance();
 		Connection conn = DriverManager.getConnection("jdbc:h2:file:" + dbFilePath, dbUser, dbPassword);
 		return conn;
 	}
+
 	protected Server makeTcpServer(String tcpPort) throws Throwable {
 		Server tcpServer = Server.createTcpServer("-tcpAllowOthers", "true", "-tcpPort", tcpPort);
 		return tcpServer;
 	}
+
 	protected Server makeWebServer(String webPort) throws Throwable {
 		Server tcpServer = Server.createTcpServer("-webAllowOthers", "false", "-webPort", webPort);
 		return tcpServer;

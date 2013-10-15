@@ -51,6 +51,7 @@ public interface AnyOper {
 
 	}
 
+
 	/**
 		 * @author Administrator
 		 *
@@ -63,53 +64,53 @@ public interface AnyOper {
 	@Retention(RetentionPolicy.RUNTIME)
 	static public @interface UISalient {
 		/**
-		 * "" == do nothing to the result 
+		 * "" == do nothing to the result
 		 * "toString" .. call the toString method on Result
 		 * Before return the result call the method name
-		 * @return 
+		 * @return
 		 */
 		public String ToValueMethod() default "";
 
 		/**
 		 *  "" = use the splitted of camelcase for Menu Item Name
-		 * @return 
+		 * @return
 		 */
 		public String MenuName() default "";
 
 		/**
 		 *  true if the last argument is the dropped/pasted item
-		 * @return 
+		 * @return
 		 */
 		public boolean PasteDropTarget() default false;
 
 		/**
-		 *  How the missing (rest of the) arguments (beyond the first) is pulled from App's optional Arg space 
-		 * @return 
+		 *  How the missing (rest of the) arguments (beyond the first) is pulled from App's optional Arg space
+		 * @return
 		 */
 		public short UseOptionalArgs() default OptionalArg.OPTIONAL_FROM_DEFAULTS;
 
 		/**
-		 *  true if member when called produces an App Singleton (as well as a Result) 
-		 * @return 
+		 *  true if member when called produces an App Singleton (as well as a Result)
+		 * @return
 		 */
 		public boolean ResultIsSingleton() default false;
-		
-		
+
+
 		/**
 		 *  "" = use the splitted of camelcase for methodname
-		 * @return 
+		 * @return
 		 */
 		public String CastingMethod() default "";
 
 		/**
 		 *  true if the first argument into target method will be the menuSourceItem
-		 * @return 
+		 * @return
 		 */
 		public boolean TreatLikeStatic() default false;
 
 		/**
 		 *  "" = use the splitted of camelcase for methodname
-		 * @return 
+		 * @return
 		 */
 		public String ApplyToClass() default "";
 
@@ -120,11 +121,11 @@ public interface AnyOper {
 		public boolean IsPanel() default false;
 
 		boolean IsNotSideEffectSafe() default false;
-		
+
 		boolean IsFactoryMethod() default false;
-		
+
 		String Tooltip() default "";
-		
+
 		String Editor() default "";
 
 		String Description() default "";
