@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.appdapter.api.trigger.TriggerImpl;
 import org.appdapter.core.store.Repo.GraphStat;
+import org.appdapter.core.store.dataset.RepoDatasetFactory;
 import org.appdapter.core.store.RepoBox;
 import org.appdapter.demo.DemoResources;
 import org.appdapter.gui.browse.Utility;
@@ -30,7 +31,7 @@ import org.appdapter.gui.browse.Utility;
 public class RepoTriggers {
 
 	public static class OpenTrigger<MRB extends MutableRepoBox<TriggerImpl<MRB>>> extends TriggerImpl<MRB> {
-		String storeConfigResolvedPath = DemoResources.STORE_CONFIG_PATH; // DemoResources.resolveResourcePathToURL_WhichJenaCantUseInCaseOfJarFileRes(DemoResources.STORE_CONFIG_PATH);
+		String storeConfigResolvedPath = RepoDatasetFactory.STORE_CONFIG_PATH; // DemoResources.resolveResourcePathToURL_WhichJenaCantUseInCaseOfJarFileRes(DemoResources.STORE_CONFIG_PATH);
 
 		@Override public void fire(MRB targetBox) {
 			// Model data = FileManager.get().loadModel(dataPath.toString());

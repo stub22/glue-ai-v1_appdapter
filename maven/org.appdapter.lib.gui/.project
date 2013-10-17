@@ -13,6 +13,5 @@
 	<natures>
 		<nature>org.scala-ide.sdt.core.scalanature</nature>
 		<nature>org.eclipse.jdt.core.javanature</nature>
-		<nature>com.jpl.inform7.i7Nature</nature>
 	</natures>
 </projectDescription>

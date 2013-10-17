@@ -1,9 +1,9 @@
 package org.appdapter.core.remote.sparql;
 
-import org.appdapter.core.store.RepoDatasetFactory;
 import org.appdapter.core.store.RepoOper;
-import org.appdapter.core.store.UserDatasetFactory;
-import org.appdapter.core.store.UserDatasetFactory.JenaSDBWrappedDatasetFactory;
+import org.appdapter.core.store.dataset.JenaSDBWrappedDatasetFactory;
+import org.appdapter.core.store.dataset.RepoDatasetFactory;
+import org.appdapter.core.store.dataset.UserDatasetFactory;
 import org.appdapter.demo.DemoResources;
 
 import com.hp.hpl.jena.query.Dataset;
