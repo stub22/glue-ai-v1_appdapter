@@ -16,12 +16,12 @@
 
 package org.appdapter.api.trigger;
 
-import org.appdapter.core.component.KnownComponent;
-import org.appdapter.core.component.MutableKnownComponent;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
 public interface MutableTrigger<BoxType extends Box<? extends MutableTrigger<BoxType>>> extends Trigger<BoxType> {
+
+	@Override public void fire(BoxType targetBox);
 
 }
