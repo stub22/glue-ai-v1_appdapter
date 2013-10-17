@@ -15,7 +15,6 @@
  */
 package org.appdapter.module.basic;
 
-import org.appdapter.module.basic.BasicModule;
 
 /**
  * Here we log the timing of each callback exec, and also make the parent modulator's 

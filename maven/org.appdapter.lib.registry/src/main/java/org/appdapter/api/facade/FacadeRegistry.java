@@ -16,7 +16,6 @@
 
 package org.appdapter.api.facade;
 
-import org.appdapter.api.registry.VerySimpleRegistry;
 import org.appdapter.registry.basic.BasicRegistry;
 
 /**
