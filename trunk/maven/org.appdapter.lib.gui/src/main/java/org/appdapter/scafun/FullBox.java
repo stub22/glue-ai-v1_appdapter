@@ -1,8 +1,5 @@
 package org.appdapter.scafun;
 
-import org.appdapter.api.trigger.ABoxImpl;
-import org.appdapter.api.trigger.MutableTrigger;
-import org.appdapter.api.trigger.Trigger;
 import org.appdapter.gui.box.ScreenBoxImpl;
 
 // class FullBox[FT <: FullTrigger[_ <: FullBox[FT]]] extends ScreenBoxImpl[FT] {}
