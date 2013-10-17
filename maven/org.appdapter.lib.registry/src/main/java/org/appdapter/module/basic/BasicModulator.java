@@ -17,12 +17,10 @@ package org.appdapter.module.basic;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.appdapter.api.module.Modulator;
 import org.appdapter.api.module.Module;
-import org.appdapter.api.module.Module.State.*;
 import org.appdapter.core.log.BasicDebugger;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 /**
  * @author Stu B. <www.texpedient.com>
  */

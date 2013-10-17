@@ -1,12 +1,12 @@
 /*
  *  Copyright 2012 by The Appdapter Project (www.appdapter.org).
- * 
+ *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
  *  You may obtain a copy of the License at
- * 
+ *
  *       http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  *  Unless required by applicable law or agreed to in writing, software
  *  distributed under the License is distributed on an "AS IS" BASIS,
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,7 +15,6 @@
  */
 package org.appdapter.module.basic;
 
-import org.appdapter.api.module.Modulator;
 import org.appdapter.api.module.Module;
 import org.appdapter.core.component.KnownComponentImpl;
 
@@ -23,10 +22,10 @@ import org.appdapter.core.component.KnownComponentImpl;
  * @author Stu B. <www.texpedient.com>
  */
 public abstract class BasicModule<Ctx> extends KnownComponentImpl implements Module<Ctx> {
-	
+
 	private		Ctx				myContext;
 	private		State			myState = State.PRE_INIT;
-	
+
 	private		boolean			myStopRequestedFlag = false;
 
 
@@ -36,8 +35,8 @@ public abstract class BasicModule<Ctx> extends KnownComponentImpl implements Mod
 	}
 	/**
 	 * Correct way for application to ask the module to stop.
-	 * @return 
-	 */	
+	 * @return
+	 */
 	@Override public void markStopRequested() {
 		myStopRequestedFlag = true;
 	}
@@ -52,7 +51,7 @@ public abstract class BasicModule<Ctx> extends KnownComponentImpl implements Mod
 	@Override public synchronized void setContext(Ctx m) {
 		myContext = m;
 	}
-	protected void notifyStateViolation(String detectingMethod, String expectedStateDesc, boolean throExcept) { 
+	protected void notifyStateViolation(String detectingMethod, String expectedStateDesc, boolean throExcept) {
 		String msg = "[" + detectingMethod + "] found illegal state [" + myState + " instead of expected [" + expectedStateDesc + "]";
 		logInfo(IMPO_HI, msg);
 		if (throExcept) {
@@ -61,7 +60,7 @@ public abstract class BasicModule<Ctx> extends KnownComponentImpl implements Mod
 	}
 	/**
 	 * Ensure we are in an allowed state, will notifyStateViolation if not.
-	 * 
+	 *
 	 */
 	protected void verifyStoredState(String checkingMethod, boolean throExcept, State... allowedStates) {
 		for (State s : allowedStates) {
@@ -72,25 +71,25 @@ public abstract class BasicModule<Ctx> extends KnownComponentImpl implements Mod
 			}
 		}
 		notifyStateViolation(checkingMethod, allowedStates.toString(), throExcept);
-	}	
+	}
 
-	
+
 	@Override public synchronized void failDuringInitOrStartup() {
 		verifyStoredState("failDuringInitOrStartup", true, State.PRE_INIT, State.IN_INIT, State.WAIT_TO_START, State.IN_START);
 		myState = State.FAILED_STARTUP;
 	}
-		
-		
+
+
 	/*
 	 * Optionally verifies that pre-state is PRE_INIT.
 	 */
 	protected synchronized void enterBasicInitModule(boolean verifyPreInitState) {
-		if (verifyPreInitState) { 
+		if (verifyPreInitState) {
 			verifyStoredState("basicPreInitModule", true, State.PRE_INIT);
 		}
 		myState = State.IN_INIT;
 	}
-	protected synchronized void exitBasicInitModule(boolean verifyInInitState) { 
+	protected synchronized void exitBasicInitModule(boolean verifyInInitState) {
 		if (verifyInInitState) {
 			verifyStoredState("basicPostInitModule", true, State.IN_INIT);
 		}
@@ -130,10 +129,10 @@ public abstract class BasicModule<Ctx> extends KnownComponentImpl implements Mod
 	protected synchronized void exitBasicReleaseModule() {
 		verifyStoredState("exitBasicReleaseModule", true, State.POST_STOP, State.FAILED_STARTUP);
 	}
-	
-	@Override public String getFieldSummary() { 
+
+	@Override public String getFieldSummary() {
 		return super.getFieldSummary() + ", state=" + myState + ", stopRQ=" + myStopRequestedFlag;
 	}
 
-	
+
 }
