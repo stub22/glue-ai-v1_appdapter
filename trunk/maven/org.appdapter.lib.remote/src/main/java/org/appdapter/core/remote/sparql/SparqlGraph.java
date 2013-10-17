@@ -43,7 +43,7 @@ import com.hp.hpl.jena.util.iterator.ExtendedIterator;
 import com.hp.hpl.jena.util.iterator.SingletonIterator;
 import com.hp.hpl.jena.util.iterator.WrappedIterator;
 
-public class SparqlGraph extends JenaWrappedGraph implements GraphWithPerform {
+public class SparqlGraph extends JenaWrappedGraph implements GraphWithPerform, Graph {
 
 	private String endpointURI;
 	private String graphURI;

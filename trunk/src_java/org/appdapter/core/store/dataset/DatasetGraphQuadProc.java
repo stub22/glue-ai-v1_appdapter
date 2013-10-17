@@ -60,7 +60,7 @@ abstract public class DatasetGraphQuadProc extends DatasetGraphQuad implements D
 	}
 
 	@Override public Iterator<Quad> findNG(Node g, Node s, Node p, Node o) {
-		return findNG(g, s, p, o);
+		return find(g, s, p, o);
 	}
 	/*
 		@Override public Graph getDefaultGraph() {

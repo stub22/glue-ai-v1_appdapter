@@ -14,6 +14,7 @@
  *  limitations under the License.
  */
 package org.appdapter.core.store.dataset;
+
 /**
  * @author Logicmoo. <www.logicmoo.org>
  *
@@ -30,6 +31,7 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.sparql.ARQException;
+import com.hp.hpl.jena.sparql.core.DatasetGraph;
 import com.hp.hpl.jena.sparql.core.DatasetGraphFactory;
 import com.hp.hpl.jena.sparql.core.DatasetImpl;
 import com.hp.hpl.jena.sparql.core.assembler.DatasetAssembler;
@@ -44,9 +46,21 @@ public abstract class AbstractDatasetFactory implements UserDatasetFactory {
 		return canCreateType(typeOf, sharedNameIgnoredPresently);
 	}
 
-	@Override public Dataset createDefault() {
-		return createMemFixed();
-	}
+	@Override abstract public Dataset createDefault();
+
+	@Override abstract public Dataset createType(String typeOf, String sharedNameIgnoredPresently);
+
+	@Override abstract public Dataset createRemotePeer();
+
+	@Override abstract public Dataset create(Model model);
+
+	@Override abstract public Dataset create(Dataset dataset);
+
+	@Override abstract public Dataset create(DatasetGraph dataset);
+
+	@Override abstract public Model createModelOfType(String typeOf, String sharedNameIgnoredPresently);
+
+	@Override abstract public String getDatasetType();
 
 	/** Create an in-memory, modifiable Dataset */
 	public Dataset createMem() {
@@ -260,7 +274,7 @@ public abstract class AbstractDatasetFactory implements UserDatasetFactory {
 	}
 
 	@Override public boolean canCreateType(String typeOf, String sharedNameIgnoredPresently) {
-		Map registeredUserDatasetFactoryByName = RepoDatasetFactory.registeredUserDatasetFactoryByName;
+		Map<String, UserDatasetFactory> registeredUserDatasetFactoryByName = RepoDatasetFactory.registeredUserDatasetFactoryByName;
 		synchronized (registeredUserDatasetFactoryByName) {
 			if (typeOf != null && registeredUserDatasetFactoryByName.get(typeOf) == this)
 				return true;
@@ -268,10 +282,6 @@ public abstract class AbstractDatasetFactory implements UserDatasetFactory {
 				return true;
 		}
 		return false;
-	}
-
-	@Override public Dataset createType(String typeOf, String sharedNameIgnoredPresently) {
-		return createDefault();
 	}
 
 }

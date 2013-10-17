@@ -18,6 +18,7 @@ package org.appdapter.core.store.dataset;
 import org.appdapter.core.store.Repo.DatasetProvider;
 
 import com.hp.hpl.jena.query.Dataset;
+
 /**
  * @author Logicmoo. <www.logicmoo.org>
  *

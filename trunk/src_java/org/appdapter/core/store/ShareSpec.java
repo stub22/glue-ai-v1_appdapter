@@ -2,6 +2,7 @@ package org.appdapter.core.store;
 
 import org.appdapter.core.name.Ident;
 import org.appdapter.core.store.BasicRepoImpl.TaskState;
+import org.appdapter.core.store.Repo.DatasetProvider;
 import org.appdapter.core.store.dataset.RemoteDatasetProviderSpec;
 
 /*
@@ -27,7 +28,7 @@ public interface ShareSpec {
 
 	boolean sameOutcome(ShareSpec shareSpecImpl);
 
-	Runnable requiredWork(BasicRepoImpl basicRepoImpl, ShareSpec shareSpec, RemoteDatasetProviderSpec remoteDatasetProvider);
+	Runnable requiredWork(DatasetProvider basicRepoImpl, ShareSpec shareSpec, RemoteDatasetProviderSpec remoteDatasetProvider);
 
 	Ident getLocalModelId();
 

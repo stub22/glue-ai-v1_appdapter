@@ -92,8 +92,8 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 	final public Object loadingLock = new Object();
 	public boolean isLoadingStarted = false;
 	public boolean isLoadingLocked = false;
-	private UserDatasetFactory datasetProvider;
-	private String datasetType;
+	protected UserDatasetFactory datasetProvider;
+	public String datasetType;
 
 	public void replaceNamedModel(Ident modelID, Model jenaModel) {
 		Dataset repoDset = getMainQueryDataset();
