@@ -70,6 +70,7 @@ abstract class SheetRepo(directoryModel: Model, var fileModelCLs: java.util.List
   // BEGIN NEXT DIFF
 
   final def loadDerivedModelsIntoMainDataset(clList: java.util.List[ClassLoader]): Unit = {
+    val repoLoader = getRepoLoader();
     repoLoader.setSynchronous(true)
     val mainDset: Dataset = getMainQueryDataset().asInstanceOf[Dataset];
     var clListG = this.getClassLoaderList(clList)
@@ -84,6 +85,7 @@ abstract class SheetRepo(directoryModel: Model, var fileModelCLs: java.util.List
   }
 
   final def loadFileModelsIntoMainDataset(clList: java.util.List[ClassLoader]) = {
+    val repoLoader = getRepoLoader();
     repoLoader.setSynchronous(true)
     loadDerivedModelsIntoMainDataset(clList);
   }
@@ -97,6 +99,7 @@ abstract class SheetRepo(directoryModel: Model, var fileModelCLs: java.util.List
     val repo = myRepoSpecForRef.makeRepo();
     val myNewDirectoryModel = repo.getDirectoryModel();
     val myPNewMainQueryDataset = repo.getMainQueryDataset();
+    val repoLoader = getRepoLoader();
     repoLoader.reset();
     RepoOper.replaceModelElements(oldDirModel, myNewDirectoryModel)
     RepoOper.replaceDatasetElements(oldDataset, myPNewMainQueryDataset)
@@ -168,6 +171,7 @@ abstract class SheetRepo(directoryModel: Model, var fileModelCLs: java.util.List
   }
 
   def updateFromDirModel() {
+    val repoLoader = getRepoLoader();
     val mainDset: Dataset = getMainQueryDataset().asInstanceOf[Dataset];
     val dirModel = getDirectoryModel;
     val fileModelCLs: java.util.List[ClassLoader] = this.getClassLoaderList(this.fileModelCLs);

@@ -1,12 +1,12 @@
 /*
  *  Copyright 2012 by The Appdapter Project (www.appdapter.org).
- * 
+ *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
  *  You may obtain a copy of the License at
- * 
+ *
  *       http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  *  Unless required by applicable law or agreed to in writing, software
  *  distributed under the License is distributed on an "AS IS" BASIS,
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,9 +22,9 @@ import java.util.Set;
 
 import org.appdapter.api.trigger.GetObject;
 import org.appdapter.api.trigger.SetObject;
-import org.appdapter.core.convert.NoSuchConversionException;
 import org.appdapter.core.name.FreeIdent;
 import org.appdapter.core.name.Ident;
+import org.appdapter.core.store.dataset.RemoteDatasetProviderSpec;
 
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.query.QuerySolution;
@@ -38,28 +38,28 @@ import com.hp.hpl.jena.sdb.Store;
 public interface Repo extends QueryProcessor {
 
 	/**
-	 * Access an arbitrary "main" Jena-ARQ dataset 
-	 * @return 
+	 * Access an arbitrary "main" Jena-ARQ dataset
+	 * @return
 	 */
 	public Dataset getMainQueryDataset();
 
 	/**
 	 * Get summary information about the graphs in this repo.
-	 * @return 
+	 * @return
 	 */
 	public List<GraphStat> getGraphStats();
 
 	/**
 	 * Get named graph as Jena "Model" object, for direct API access.
 	 * @param graphNameIdent
-	 * @return 
+	 * @return
 	 */
 	public Model getNamedModel(Ident graphNameIdent);
 
 	/**
 	 * Use the Jena "assembler" vocabulary to build a set of objects from a given model.
 	 * @param graphNameIdent
-	 * @return 
+	 * @return
 	 */
 	public Set<Object> assembleRootsFromNamedModel(Ident graphNameIdent);
 
@@ -128,6 +128,33 @@ public interface Repo extends QueryProcessor {
 
 	}
 
+	public interface DatasetProvider {
+		public Dataset getMainQueryDataset();
+
+		public boolean isRemote();
+
+		public Model getNamedModel(Ident remoteModelID, boolean b);
+	}
+
+	// for sharing operations
+	public static interface SharedModels extends Repo.DatasetProvider {
+		/**
+		 * @param modelIDs   The Dataset's ModelIDs    such as: taChan_77, taChan_78 ....  null= ALL
+		 * @param shareName    "robot01"    (this makes the remote share Effectively  robot01-taChan_77 if there was a global namespace)
+		 * @param clearRemote  - upon call this will clear the remote Model
+		 * @param clearLocal  - upon call this will clear the local Model
+		 * @param mergeAfterClear - after remote or local is cleared there may be data on both ends.. this says to add the theres data to both ends
+		 * @param isSharedAfterMerge - set true if the model will now be using what is on the remote end
+		 * @param remoteDatasetProviderSpec (new SparqlDatasetProvider("http://localhost:3030/sparql") or .. new SDBDatasetProvider("foo.ttl");  new RepoDatasetProvider(myOtherRepo); new RealDatasetProvider(DatsetFactory.createMem());
+		 */
+		public void setNamedModelShareType(List<Ident> modelIDs, String shareName, boolean clearRemote, boolean clearLocal, boolean mergeAfterClear, boolean isSharedAfterMerge,
+				RemoteDatasetProviderSpec remoteDatasetProviderSpec);
+
+		public void setNamedModelShareType(List<ShareSpec> shareSpecs, RemoteDatasetProviderSpec remoteDatasetProviderSpec);
+
+		public Map<Ident, ShareSpec> getSharedModelSpecs();
+	}
+
 	public static interface Mutable extends Repo, Updatable {
 
 		public void importGraphFromURL(String tgtGraphName, String sourceURL, boolean replaceTgtFlag);
@@ -148,7 +175,7 @@ public interface Repo extends QueryProcessor {
 		public ModelClient getDirectoryModelClient();
 
 		public InitialBinding makeInitialBinding();
-		
+
 		public void addLoadTask(String str, Runnable r);
 
 		public List<QuerySolution> queryIndirectForAllSolutions(Ident qSrcGraphIdent, Ident queryIdent, QuerySolution qInitBinding);
@@ -156,5 +183,6 @@ public interface Repo extends QueryProcessor {
 		public List<QuerySolution> queryIndirectForAllSolutions(String qSrcGraphQN, String queryQN, QuerySolution qInitBinding);
 
 		public List<QuerySolution> queryDirectForAllSolutions(String qText, QuerySolution qInitBinding);
+
 	}
 }
