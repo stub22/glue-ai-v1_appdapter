@@ -23,6 +23,7 @@ import com.hp.hpl.jena.sdb.SDBFactory;
 import com.hp.hpl.jena.sdb.Store;
 import com.hp.hpl.jena.sparql.core.DatasetGraph;
 import com.hp.hpl.jena.sparql.core.DatasetImpl;
+
 /**
  * @author Logicmoo. <www.logicmoo.org>
  *
@@ -70,6 +71,10 @@ public class JenaSDBWrappedDatasetFactory extends AbstractDatasetFactory impleme
 		Dataset remote = createRemotePeer();
 		RepoDatasetFactory.addDatasetSync(peer, remote);
 		return peer;
+	}
+
+	@Override public Dataset createType(String typeOf, String sharedNameIgnoredPresently) {
+		return createDefault();
 	}
 
 	@Override public Dataset createRemotePeer() {

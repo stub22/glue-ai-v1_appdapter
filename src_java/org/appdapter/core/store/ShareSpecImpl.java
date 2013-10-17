@@ -3,6 +3,7 @@ package org.appdapter.core.store;
 import org.appdapter.core.name.FreeIdent;
 import org.appdapter.core.name.Ident;
 import org.appdapter.core.store.BasicRepoImpl.TaskState;
+import org.appdapter.core.store.Repo.DatasetProvider;
 import org.appdapter.core.store.dataset.RemoteDatasetProvider;
 import org.appdapter.core.store.dataset.RemoteDatasetProviderSpec;
 import org.appdapter.core.store.dataset.RepoDatasetFactory;
@@ -26,7 +27,8 @@ public class ShareSpecImpl implements Runnable, ShareSpec {
 	 * @param taskStarted  true = task doesn't need to be started
 	 * @param taskComplete  true = post-merge state
 	 */
-	public ShareSpecImpl(Ident modelID, String shareName, boolean clearRemote, boolean clearLocal, boolean mergedAfterClear, boolean isSharedAfterMerge, RemoteDatasetProviderSpec remoteSpec,
+	public ShareSpecImpl(Ident modelID, String shareName, boolean clearRemote, boolean clearLocal, boolean mergedAfterClear,
+			boolean isSharedAfterMerge, RemoteDatasetProviderSpec remoteSpec,
 			TaskState taskState) {
 		this.localModelID = modelID;
 		this.shareName = shareName;
@@ -35,7 +37,7 @@ public class ShareSpecImpl implements Runnable, ShareSpec {
 		this.mergedAfterClear = mergedAfterClear;
 		this.isSharedAfterMerge = isSharedAfterMerge;
 		this.isUnsharedAfterMerge = !isSharedAfterMerge;
-		this.remoteSpec = remoteSpec;
+		this.remoteSpec = remoteSpec.getRemoteDatasetProvider();
 		this.taskState = taskState;
 	}
 
@@ -45,15 +47,15 @@ public class ShareSpecImpl implements Runnable, ShareSpec {
 	boolean clearLocal;
 	boolean mergedAfterClear;
 	boolean isSharedAfterMerge;
-	RemoteDatasetProviderSpec remoteSpec;
 	Runnable nextDoRunnable = null;
 	Runnable beforeDoRunnable = null;
 	private Model localModel;
 	private Model remoteModel;
 	private Ident remoteModelID;
-	private RemoteDatasetProvider localSpec;
+	public DatasetProvider localSpec;
+	public RemoteDatasetProvider remoteSpec;
 
-	public Runnable requiredWork(BasicRepoImpl basicStoredMutableRepoImpl, ShareSpec goalShareSpec, RemoteDatasetProviderSpec remoteDatasetProvider) {
+	public Runnable requiredWork(DatasetProvider local, ShareSpec goalShareSpec, RemoteDatasetProviderSpec remoteDatasetProvider) {
 		if (goalShareSpec.getTaskState() != TaskState.TaskNeedsStart)
 			return null;
 		if (goalShareSpec.sameOutcome(this)) {
@@ -63,6 +65,8 @@ public class ShareSpecImpl implements Runnable, ShareSpec {
 			}
 		}
 		// request this to be ran via run();
+		localSpec = local;
+		remoteSpec = remoteDatasetProvider.getRemoteDatasetProvider();
 		return this;
 	}
 
@@ -125,14 +129,8 @@ public class ShareSpecImpl implements Runnable, ShareSpec {
 	}
 
 	public String getGlobalName() {
-		String plString = getProviderBase();
+		String plString = remoteSpec.getProviderBase();
 		return plString + "-" + shareName + "@" + localModelID.getAbsUriString();
-	}
-
-	public String getProviderBase() {
-		if (remoteSpec == null)
-			return "local";
-		return remoteSpec.getProviderBase();
 	}
 
 	public Model getLocalModel(boolean createIfMissing) {
@@ -188,16 +186,12 @@ public class ShareSpecImpl implements Runnable, ShareSpec {
 	}
 
 	public Dataset getRemoteDataset() {
-		return getRemoteDatasetProvider().getRemoteDataset(shareName);
-	}
-
-	private RemoteDatasetProvider getRemoteDatasetProvider() {
-		return remoteSpec.getRemoteDatasetProvider();
+		return remoteSpec.getMainQueryDataset();
 	}
 
 	public Model createEmptyRemoteModel(Ident remoteModelID) {
 		String dsType = getDatasetType(getRemoteDataset());
-		return getRemoteDatasetProvider().getNamedModel(new FreeIdent(remoteModelID), true);
+		return remoteSpec.getNamedModel(new FreeIdent(remoteModelID), true);
 	}
 
 	@Override public TaskState getTaskState() {

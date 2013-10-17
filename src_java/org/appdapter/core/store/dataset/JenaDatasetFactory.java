@@ -23,13 +23,14 @@ import com.hp.hpl.jena.sdb.Store;
 import com.hp.hpl.jena.sparql.core.DatasetGraph;
 import com.hp.hpl.jena.sparql.core.DatasetGraphFactory;
 import com.hp.hpl.jena.sparql.core.DatasetImpl;
+
 /**
  * @author Logicmoo. <www.logicmoo.org>
  *
  * Handling for a local *or* some 'remote'/'shared' model/dataset impls.
  *
  */
-public class JenaDatasetFactory extends AbstractDatasetFactory {
+public class JenaDatasetFactory extends AbstractDatasetFactory implements UserDatasetFactory {
 
 	@Override public String getDatasetType() {
 		return "memory";
@@ -83,6 +84,10 @@ public class JenaDatasetFactory extends AbstractDatasetFactory {
 
 	@Override public Model createModelOfType(String typeOf, String sharedNameIgnoredPresently) {
 		return ModelFactory.createDefaultModel();
+	}
+
+	@Override public Dataset createType(String typeOf, String sharedNameIgnoredPresently) {
+		return createDefault();
 	}
 
 }
