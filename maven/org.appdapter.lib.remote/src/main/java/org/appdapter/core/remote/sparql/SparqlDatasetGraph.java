@@ -7,7 +7,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.appdapter.core.store.DatasetGraphQuadProc;
+import org.appdapter.core.store.dataset.DatasetGraphQuadProc;
 import org.openrdf.model.Resource;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;

@@ -8,7 +8,8 @@
 	<classpathentry kind="con" path="org.scala-ide.sdt.launching.SCALA_CONTAINER"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/ext.bundle.jena_all_2_10_1"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/org.appdapter.lib.core"/>
-	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/org.appdapter.lib.registry"/>
 	<classpathentry exported="true" kind="src" path="/org.storychat.bundle.osgi"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/ext.bundle.math.symja_jas"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/ext.bundle.xml.dom4j_161"/>
 	<classpathentry kind="output" path="eclipse-classes"/>
 </classpath>

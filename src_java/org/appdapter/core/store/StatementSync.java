@@ -1,3 +1,19 @@
+/*
+ *  Copyright 2011 by The Appdapter Project (www.appdapter.org).
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
 package org.appdapter.core.store;
 
 import java.util.ArrayList;
@@ -10,7 +26,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
+import org.appdapter.core.store.dataset.RepoDatasetFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,6 +41,7 @@ import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.shared.Lock;
 
 public class StatementSync {
+	private ReentrantLock pauseLock = new ReentrantLock();
 
 	static Logger theLogger = LoggerFactory.getLogger(RepoDatasetFactory.class);
 
@@ -268,6 +288,11 @@ public class StatementSync {
 	}
 
 	public static StatementSync getStatementSyncerOfModels(Model m1, Model m2) {
+		StatementSync statementSync = getModelsSyncer(m1, m2);
+		return statementSync;
+	}
+
+	private static StatementSync getModelsSyncer(Model m1, Model m2) {
 		Pair key = makeKey(m1, m2);
 		synchronized (syncPairs) {
 			StatementSync mcl = syncPairs.get(key);
@@ -291,7 +316,7 @@ public class StatementSync {
 
 					return mcl;
 				} finally {
-					unlockCurrentModels(locks);
+					exitCriticalSections(locks);
 				}
 			}
 			return mcl;
@@ -336,19 +361,28 @@ public class StatementSync {
 		return x.toString();
 	}
 
-	public static void syncTwoModels(Model m1, Model m2) {
+	public static StatementSync syncTwoModels(Model m1, Model m2) {
 		StatementSync mcl = getStatementSyncerOfModels(m1, m2);
-
+		mcl.completeSync();
+		return mcl;
 	}
 
-	static void unlockCurrentModels(Collection<Lock> locks) {
+	public static StatementSync resyncTwoModels(Model m1, Model m2) {
+		StatementSync mcl = getStatementSyncerOfModels(m1, m2);
+		mcl.resyncNow();
+		return mcl;
+	}
+
+	static void exitCriticalSections(Collection<Lock> locks) {
 		for (Lock l : locks) {
 			l.leaveCriticalSection();
 		}
 	}
 
 	Map<Object, ModelChangedListener> listenerMap = new HashMap();
-	Set<Lock> trackedModels = new HashSet(3);
+	Set<Model> sourceModels = new HashSet(3);
+
+	Set<Model> destModels = new HashSet(3);
 
 	List<StatementSync.StatementOpListener> notifierList = new ArrayList();
 	Map<Object, StatementSync.StatementOpListener> destMap = new HashMap();
@@ -356,6 +390,7 @@ public class StatementSync {
 	ScheduledThreadPoolExecutor executor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1);
 
 	void shutDown() {
+		isSyncDisabled = true;
 		if (shutDownRequested)
 			return;
 		shutDownRequested = true;
@@ -366,7 +401,7 @@ public class StatementSync {
 	private Model memoryCache;
 
 	boolean shutDownRequested = false;
-
+	boolean isSyncDisabled = false;
 	private boolean setAsForegorund;
 
 	public StatementSync(Model createDefaultModel) {
@@ -382,9 +417,10 @@ public class StatementSync {
 				mcl = new ChangeListener(keyModel);
 				isNew = true;
 				listenerMap.put(keyModel, mcl);
-				trackedModels.add(keyModel);
+				sourceModels.add(keyModel);
 				keyModel.register(mcl);
-				unlockCurrentModels(locks);
+				exitCriticalSections(locks);
+				pauseLock.unlock();
 			}
 		}
 		return isNew;
@@ -399,9 +435,10 @@ public class StatementSync {
 				mcl = new StatementOpListenerForModel(keyModel);
 				isNew = true;
 				destMap.put(keyModel, mcl);
-				trackedModels.add(keyModel);
+				sourceModels.add(keyModel);
 				notifierList.add(mcl);
-				unlockCurrentModels(locks);
+				exitCriticalSections(locks);
+				pauseLock.unlock();
 			}
 		}
 		return isNew;
@@ -424,11 +461,18 @@ public class StatementSync {
 			runnable.run();
 			return;
 		}
+		pauseLock.lock();
 		executor.submit(runnable);
+		pauseLock.unlock();
 	}
 
 	private boolean isForeground() {
-		return setAsForegorund || executor == null || executor.isShutdown() || executor.isTerminated() || executor.isTerminating();
+		if (setAsForegorund)
+			return true;
+		if (executor == null || executor.isShutdown() || executor.isTerminated() || executor.isTerminating()) {
+			throw new RuntimeException("!isForground");
+		}
+		return false;
 	}
 
 	public void addTodo(ChangeListener changeListener, Statement s, Runnable runnable) {
@@ -436,10 +480,11 @@ public class StatementSync {
 	}
 
 	private Collection<Lock> enterCriticalSection(boolean readLockRequested) {
+		pauseLock.lock();
 
 		HashSet<Lock> locks = null;
-		synchronized (trackedModels) {
-			locks = new HashSet<Lock>(trackedModels);
+		synchronized (sourceModels) {
+			locks = new HashSet<Lock>(sourceModels);
 		}
 		for (Lock l : locks) {
 			l.enterCriticalSection(readLockRequested);
@@ -448,6 +493,8 @@ public class StatementSync {
 	}
 
 	public boolean isDisabled() {
+		if (isSyncDisabled)
+			return true;
 		return shutDownRequested;
 	}
 
@@ -473,13 +520,55 @@ public class StatementSync {
 	}
 
 	public void enableSync() {
-		// TODO Auto-generated method stub
+		isSyncDisabled = false;
 
+	}
+
+	public void disableSync() {
+		isSyncDisabled = true;
+
+	}
+
+	public void resyncNow() {
+		Collection<Lock> locks = enterCriticalSection(false);
+		boolean wasSyncDisabled = isSyncDisabled;
+		try {
+			isSyncDisabled = true;
+			StatementSync mcl = this;
+			Model memmodel = ModelFactory.createDefaultModel();
+			synchronized (sourceModels) {
+				for (Model m1 : sourceModels) {
+					memmodel.add(m1);
+				}
+			}
+			synchronized (destModels) {
+				for (Model m1 : destModels) {
+					m1.add(memmodel);
+				}
+			}
+			this.memoryCache = memmodel;
+		} finally {
+			isSyncDisabled = wasSyncDisabled;
+			exitCriticalSections(locks);
+			pauseLock.unlock();
+		}
 	}
 
 	public void completeSync() {
-		// TODO Auto-generated method stub
-
+		catchup();
 	}
 
+	private void catchup() {
+		pauseLock.lock();
+		ScheduledThreadPoolExecutor exec = executor;
+		executor = new ScheduledThreadPoolExecutor(1);
+		pauseLock.unlock();
+
+		exec.shutdown();
+		try {
+			exec.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+		} catch (InterruptedException e) {
+
+		}
+	}
 }
