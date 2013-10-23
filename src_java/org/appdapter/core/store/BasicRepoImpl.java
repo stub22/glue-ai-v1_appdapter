@@ -88,11 +88,11 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 		repoLoader.addTask(nym, r);
 	}
 
-	private Dataset myMainQueryDataset;
+	protected Dataset myMainQueryDataset;
 	final public Object loadingLock = new Object();
 	public boolean isLoadingStarted = false;
 	public boolean isLoadingLocked = false;
-	protected UserDatasetFactory datasetProvider;
+	protected UserDatasetFactory datasetProvider = RepoDatasetFactory.DEFAULT;
 	public String datasetType;
 
 	public void replaceNamedModel(Ident modelID, Model jenaModel) {
@@ -183,7 +183,11 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 	}
 
 	public Model createLocalNamedModel(Ident modelID) {
-		return RepoDatasetFactory.createModel(getDatasetType(), modelID.getAbsUriString());
+		return RepoDatasetFactory.createModel(getDatasetType(), modelID.getAbsUriString(), getShareName());
+	}
+
+	public String getShareName() {
+		return RepoDatasetFactory.DATASET_SHARE_NAME;
 	}
 
 	public String getDatasetType() {

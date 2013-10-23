@@ -16,6 +16,7 @@
 package org.appdapter.core.store.dataset;
 
 import com.hp.hpl.jena.query.Dataset;
+import com.hp.hpl.jena.query.DatasetFactory;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.sdb.SDBFactory;
@@ -52,6 +53,11 @@ public class JenaDatasetFactory extends AbstractDatasetFactory implements UserDa
 		return create(DatasetGraphFactory.createMemFixed());
 	}
 
+
+	public Dataset createMemFixedDS() {
+		return create(DatasetFactory.createMemFixed());
+	}
+
 	/** Create a dataset with the given model as the default graph
 	 * @param model
 	 * @return Dataset
@@ -82,12 +88,16 @@ public class JenaDatasetFactory extends AbstractDatasetFactory implements UserDa
 		return ds;
 	}
 
-	@Override public Model createModelOfType(String typeOf, String sharedNameIgnoredPresently) {
-		return ModelFactory.createDefaultModel();
-	}
-
 	@Override public Dataset createType(String typeOf, String sharedNameIgnoredPresently) {
 		return createDefault();
+	}
+
+	@Override public Model createModelOfType(String typeOf, String sharedNameIgnoredPresently) throws Throwable {
+		return createModelOfType(typeOf, null, sharedNameIgnoredPresently);
+	}
+
+	@Override public Model createModelOfType(String typeOf, String modelName, String shareName) {
+		return ModelFactory.createDefaultModel();
 	}
 
 }
