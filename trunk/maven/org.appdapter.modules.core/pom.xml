@@ -17,8 +17,10 @@
         <module>../org.appdapter.lib.registry</module>		
         <module>../org.appdapter.lib.remote</module>		
         <module>../org.appdapter.lib.gui</module>		
-		<module>../org.appdapter.bundle.core</module>
-		<module>../ext.bundle.jena.full</module>
+        <module>../org.appdapter.bundle.core</module>
+        <module>../org.appdapter.bundle.gui</module>
+        <module>../ext.bundle.jena.full</module>
+        <module>../ext.bundle.openconverters</module>
 		<module>../ext.bundle.xml.dom4j</module>
 	</modules>
 	

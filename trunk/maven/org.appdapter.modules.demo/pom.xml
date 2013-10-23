@@ -15,6 +15,7 @@
 	<modules>
 		<module>../org.appdapter.demo.standalone</module>
 		<module>../org.appdapter.demo.noscala</module>
+        <module>../org.appdapter.demo.gui</module>
 		<!--
 		<module>../org.appdapter.demo.legacy</module>
 		-->		

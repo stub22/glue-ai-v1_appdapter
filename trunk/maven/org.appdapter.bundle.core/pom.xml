@@ -37,21 +37,20 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>org.appdapter.lib.gui</artifactId>
+            <artifactId>org.appdapter.lib.remote</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>org.appdapter.lib.remote</artifactId>
+            <artifactId>ext.bundle.osgi.common</artifactId>
             <version>${project.version}</version>
-            <scope>provided</scope>
         </dependency>
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>ext.bundle.osgi.common</artifactId>
-			<version>${project.version}</version>
-		</dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>ext.bundle.openconverters</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
 		<dependency>
 			<groupId>org.osgi</groupId>
@@ -183,20 +182,21 @@
 				<configuration>
 					<instructions>
 						<!-- org.gjt.*;resolution:='optional', -->
-						<Import-Package>sun.*;resolution:='optional', com.sun.*;resolution:='optional', org.apache.*;resolution:='optional', org.h2, apple.laf.*;resolution:='optional', com.apple.laf.*;resolution:='optional', *;resolution:='optional'</Import-Package>
+                        <!--Import-Package>sun.*;resolution:='optional', com.sun.*;resolution:='optional', org.apache.*;resolution:='optional', org.h2, apple.laf.*;resolution:='optional', com.apple.laf.*;resolution:='optional', *;resolution:='optional'</Import-Package-->
+                        <Import-Package>*;resolution:='optional'</Import-Package>
 						<Bundle-Activator>org.appdapter.osgi.core.AppdapterCoreBundleActivator</Bundle-Activator>
-						<Export-Package>org.appdapter.*, au.com.bytecode.opencsv.*, org.apache.xmlbeans.*,com.hp.hpl.jena.graph.query</Export-Package>
+                        <Export-Package>*;-split-package:=merge-first</Export-Package>
+						<!--Export-Package>org.appdapter.*, org.apache.xmlbeans.*,com.hp.hpl.jena.graph.query</Export-Package-->
 						<!-- Horrid workaround for Class.forName() used in DynamicCachingComponentAssembler, could widen it to "*",
 							but better to get Jena code fixed to allow classloader setup.
 						-->
-						<DynamicImport-Package>org.cogchar.*</DynamicImport-Package>
-                        						
+						<DynamicImport-Package>org.cogchar.*</DynamicImport-Package>                        						
 						<!--
-						arq.*,com.hp.hpl.jena.*,org.openjena.*,etc.*,vocabularies.*
-						
+						arq.*,com.hp.hpl.jena.*,org.openjena.*,etc.*,vocabularies.*						
 						<Private-Package>org.xmldb.*,riotcmd.*</Private-Package>
-						-->						
                         <Private-Package>org.apache.poi.*, com.jidesoft.*, org.openxmlformats.*, schemaorg_apache_xmlbeans.*, schemasMicrosoftComOfficeExcel.*, schemasMicrosoftComOfficeOffice.*, schemasMicrosoftComVml.*,org.joda.*</Private-Package>
+                        -->						
+
 					</instructions>
 				</configuration>
 			</plugin>
