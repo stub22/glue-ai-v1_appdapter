@@ -95,23 +95,36 @@
 		<dependency>
 			<artifactId>ext.bundle.jena_all_2_10_1</artifactId>
 			<groupId>${project.groupId}</groupId>
-			<!-- TODO:  Review and make explicit - What are all the impacts of "type = jar"? -->
+			<!-- TODO:  Review and make explicit - What are all the impacts of "type = jar"? 
+				Stu 2013-10-23  let's try it without this
 			<type>jar</type>
+			-->
 			<version>${project.version}</version>
+			<!-- This is currently a "runtime" depdendency so that the code we export from o.c.lib.core 
+					can be wired properly at runtime, but at compile time users can *choose* whether
+					to bring the ext.Jena bundle into their compile scope.  In principle, users could
+					choose to use a different compatible OSGi-bundling of Jena at runtime or compile time.
+					Is this flexibility worth the fact that our consumers need to make a separate 
+					dependency if they want to code against Jena directly?   Debatable.
+			-->
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>ext.bundle.math.jscience_50SNAP</artifactId>
+			<!-- Stu 2013-10-23  let's try it without this
 			<type>jar</type>
+			-->
 			<!-- This external component bundle-snapshot version is now fixed -->
 			<version>1.0.9</version>
+			<!-- See explanation above under Jena dep about why this is "runtime" -->
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>ext.bundle.xml.dom4j_161</artifactId>
 			<version>${project.version}</version>
+			<!-- See explanation above under Jena dep about why this is "runtime" -->
 			<scope>runtime</scope>
 		</dependency>
         <!-- 
