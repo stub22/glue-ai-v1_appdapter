@@ -17,17 +17,15 @@
 package org.appdapter.core.matdat
 
 import java.util.ArrayList
-
-import org.appdapter.bind.rdf.jena.model.JenaFileManagerUtils
 import org.appdapter.core.boot.ClassLoaderUtils
 import org.appdapter.core.log.BasicDebugger
 import org.appdapter.core.name.Ident
 import org.appdapter.core.store.{ Repo, RepoOper }
-import org.appdapter.impl.store.{ DirectRepo, QueryHelper }
-import org.appdapter.core.store.{ FileStreamUtils }
-
-import com.hp.hpl.jena.query.{ Dataset, QuerySolution }
-import com.hp.hpl.jena.rdf.model.{ Literal, Model, Resource }
+import org.appdapter.impl.store.DirectRepo
+import com.hp.hpl.jena.query.Dataset
+import com.hp.hpl.jena.rdf.model.Model
+import org.appdapter.core.store.dataset.RepoDatasetFactory
+import org.appdapter.core.store.dataset.SpecialRepoLoader
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -82,6 +80,7 @@ abstract class SheetRepo(directoryModel: Model, var fileModelCLs: java.util.List
 
   def loadSheetModelsIntoMainDataset() {
     ensureUpdatedPrivate();
+
   }
 
   final def loadFileModelsIntoMainDataset(clList: java.util.List[ClassLoader]) = {
@@ -93,18 +92,17 @@ abstract class SheetRepo(directoryModel: Model, var fileModelCLs: java.util.List
   var myBasePath0: String = null;
   var myIdent0: Ident = null;
 
-  def reloadAllModelsFromDir() = {
-    val oldDataset = getMainQueryDataset();
-    val oldDirModel = getDirectoryModel();
+  def reloadDirModel = {
     val repo = myRepoSpecForRef.makeRepo();
     val myNewDirectoryModel = repo.getDirectoryModel();
-    val myPNewMainQueryDataset = repo.getMainQueryDataset();
-    val repoLoader = getRepoLoader();
-    repoLoader.reset();
+    val oldDirModel = getDirectoryModel();
     RepoOper.replaceModelElements(oldDirModel, myNewDirectoryModel)
-    RepoOper.replaceDatasetElements(oldDataset, myPNewMainQueryDataset)
-    repoLoader.setLastJobSubmitted();
-    //reloadMainDataset();
+  }
+
+  def reloadAllModelsFromDir() = {
+    val newDS = makeDatasetFromDirModel();
+    val mainDS = getMainQueryDataset();
+    RepoOper.replaceDatasetElements(mainDS, newDS);
   }
 
   def getClassLoaderList(clList: java.util.List[ClassLoader] = null): java.util.List[ClassLoader] = {
@@ -148,33 +146,50 @@ abstract class SheetRepo(directoryModel: Model, var fileModelCLs: java.util.List
     {
       //this.synchronized
       {
-        beginLoading();
-        finishLoading();
-        if (!this.isUpdatedFromDirModel) {
+        val reloadTries = 2;
+        val dirModel = getDirectoryModel();
+        while (!this.isUpdatedFromDirModel && reloadTries > 0) {
           trace("Loading OnmiRepo to make UpToDate")
           this.isUpdatedFromDirModel = true;
-          var dirModelSize = getDirectoryModel().size;
+          var dirModelSize = dirModel.size;
           // only load from non empty dir models
-          // this is because we need to have non initalized repos at times
-          if (dirModelSize > 0) updateFromDirModel
-
-          var newModelSize = getDirectoryModel().size;
-          if (newModelSize != dirModelSize) {
-            trace("OnmiRepo Dir.size changed!  " + dirModelSize + " -> " + newModelSize)
-            this.isUpdatedFromDirModel = false;
+          // this is because we need to have non initialized repos at times
+          if (dirModelSize == 0) {
+            if (myMainQueryDataset != null) {
+              RepoOper.clearAll(myMainQueryDataset);
+            }
+          } else {
+            reloadAllModelsFromDir
+            var newModelSize = dirModel.size;
+            if (newModelSize != dirModelSize && dirModel == getDirectoryModel) {
+              warn("OnmiRepo Dir.size changed durring load!  " + dirModelSize + " -> " + newModelSize)
+              this.isUpdatedFromDirModel = false;
+              // we should just should call updateFromDirModel function again
+              // but likely there is already a bug that cause the size changed
+              // and we'd be in an infinate loop if we didn't use reloadTries
+              // Not that this even is happening but could start with either a new feature or a new bug
+            }
           }
-        } else {
-          //traceHere("OnmiRepo was UpToDate")
         }
       }
     }
   }
 
-  def updateFromDirModel() {
+  def makeDatasetFromDirModel(): Dataset = {
     val repoLoader = getRepoLoader();
-    val mainDset: Dataset = getMainQueryDataset().asInstanceOf[Dataset];
+    val dirModelLoaders: java.util.List[InstallableRepoReader] = SheetRepo.getDirModelLoaders();
+    val dirModelLoaderIter = dirModelLoaders.listIterator();
+    val mainDset: Dataset = RepoDatasetFactory.createPrivateMem();
+    repoLoader.setSynchronous(false)
     val dirModel = getDirectoryModel;
     val fileModelCLs: java.util.List[ClassLoader] = this.getClassLoaderList(this.fileModelCLs);
+    updateDatasetFromDirModel(repoLoader, mainDset, dirModel, fileModelCLs);
+    // not done until the last task completes
+    repoLoader.setSynchronous(true)
+    mainDset
+  }
+
+  def updateDatasetFromDirModel(repoLoader: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
     val dirModelLoaders: java.util.List[InstallableRepoReader] = SheetRepo.getDirModelLoaders();
     val dirModelLoaderIter = dirModelLoaders.listIterator();
     repoLoader.setSynchronous(false)
@@ -188,16 +203,16 @@ abstract class SheetRepo(directoryModel: Model, var fileModelCLs: java.util.List
         } else {
           repoLoader.setSynchronous(false)
         }
-      irr.loadModelsIntoTargetDataset(this, mainDset, dirModel, fileModelCLs);
+        irr.loadModelsIntoTargetDataset(this, mainDset, dirModel, fileModelCLs);
       } catch {
         case except: Throwable =>
           getLogger().error("Caught loading error in {}", Array[Object](irr, except))
       }
     }
     // not done until the last task completes
-          repoLoader.setSynchronous(true)
-  }
+    repoLoader.setSynchronous(true)
 
+  }
   def trace(fmt: String, args: Any*) = {
     try {
       getLogger.warn(fmt, args);

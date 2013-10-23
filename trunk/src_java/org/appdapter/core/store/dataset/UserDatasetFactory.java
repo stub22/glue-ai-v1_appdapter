@@ -21,6 +21,7 @@ import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.sparql.core.DatasetGraph;
 import com.hp.hpl.jena.util.FileManager;
+
 /**
  * @author Logicmoo. <www.logicmoo.org>
  *
@@ -85,13 +86,15 @@ public interface UserDatasetFactory {
 
 	public Dataset createDefault();
 
-	public boolean canCreateType(String typeOf, String sharedNameIgnoredPresently);
+	public boolean canCreateType(String typeOf, String shareName);
 
-	public Dataset createType(String typeOf, String sharedNameIgnoredPresently);
+	public Dataset createType(String typeOf, String shareName);
 
-	public boolean canCreateModelOfType(String typeOf, String sharedNameIgnoredPresently);
+	public boolean canCreateModelOfType(String typeOf, String shareName);
 
-	public Model createModelOfType(String typeOf, String sharedNameIgnoredPresently);
+	public Model createModelOfType(String typeOf, String modelName) throws Throwable;
+
+	public Model createModelOfType(String typeOf, String modelName, String shareName);
 
 	public String getDatasetType();
 

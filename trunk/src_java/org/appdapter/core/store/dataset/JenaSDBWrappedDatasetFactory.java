@@ -19,6 +19,7 @@ import org.appdapter.core.store.StatementSync;
 
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.sdb.SDBFactory;
 import com.hp.hpl.jena.sdb.Store;
 import com.hp.hpl.jena.sparql.core.DatasetGraph;
@@ -83,9 +84,13 @@ public class JenaSDBWrappedDatasetFactory extends AbstractDatasetFactory impleme
 		return ds;
 	}
 
-	@Override public Model createModelOfType(String typeOf, String modelNameIgnoredPresently) {
+	@Override public Model createModelOfType(String typeOf, String sharedNameIgnoredPresently) throws Throwable {
+		return createModelOfType(typeOf, null, sharedNameIgnoredPresently);
+	}
+
+	@Override public Model createModelOfType(String typeOf, String modelName, String shareName) {
 		Store store = SDBFactory.connectStore(RepoDatasetFactory.STORE_CONFIG_PATH);
-		return SDBFactory.connectNamedModel(store, modelNameIgnoredPresently);
+		return SDBFactory.connectNamedModel(store, RepoDatasetFactory.getGlobalName(modelName , shareName));
 	}
 
 }

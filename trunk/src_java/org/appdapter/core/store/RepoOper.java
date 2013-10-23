@@ -313,6 +313,23 @@ public class RepoOper implements AnyOper, UtilClass {
 		}
 	}
 
+	public static void clearAll(Dataset ds) {
+		Model dModel = ds.getDefaultModel();
+		removeAll(dModel);
+		Iterator<String> sIterator = ds.listNames();
+		while (sIterator.hasNext()) {
+			String mName = sIterator.next();
+			Model model = ds.getNamedModel(mName);
+			removeAll(model);
+		}
+	}
+
+	private static void removeAll(Model model) {
+		if (model == null || model.size() == 0)
+			return;
+		model.removeAll();
+	}
+
 	private static boolean isReplace(Resource unionOrReplace) {
 		boolean isReplace = true;
 		if (unionOrReplace != null) {
