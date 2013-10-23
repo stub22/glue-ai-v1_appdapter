@@ -58,7 +58,7 @@ public abstract class AbstractDatasetFactory implements UserDatasetFactory {
 
 	@Override abstract public Dataset create(DatasetGraph dataset);
 
-	@Override abstract public Model createModelOfType(String typeOf, String sharedNameIgnoredPresently);
+	@Override abstract public Model createModelOfType(String typeOf, String sharedNameIgnoredPresently) throws Throwable;
 
 	@Override abstract public String getDatasetType();
 

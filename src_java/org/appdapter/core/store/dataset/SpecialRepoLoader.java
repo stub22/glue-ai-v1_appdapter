@@ -16,14 +16,17 @@
 package org.appdapter.core.store.dataset;
 
 import java.lang.Thread.UncaughtExceptionHandler;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.core.log.BasicDebugger;
@@ -31,6 +34,8 @@ import org.appdapter.core.store.BasicRepoImpl;
 import org.appdapter.core.store.RepoModelEvent;
 
 import com.hp.hpl.jena.rdf.model.Model;
+import com.sun.rsasign.n;
+
 /**
  * @author Logicmoo. <www.logicmoo.org>
  *
@@ -55,7 +60,7 @@ public class SpecialRepoLoader extends BasicDebugger implements UncaughtExceptio
 	boolean isSynchronous = true;
 	int taskNum = 0;
 	BasicRepoImpl loaderFor = null;
-	String repoStr = "REPO";
+	public String repoStr = "REPO";
 	// sounds like a lot.. but it is over with quickly!
 	int numThreads = 32;
 	int howManyTasksBeforeStartingPool = 0;
@@ -165,6 +170,9 @@ public class SpecialRepoLoader extends BasicDebugger implements UncaughtExceptio
 	}
 
 	public void addTask(String sheetNameURI, Runnable r) {
+		if (lastJobSubmitted) {
+			logWarning("AddTask " + sheetNameURI + " when lastJobSubmitted for " + repoStr);
+		}
 		Task task = new Task(sheetNameURI, r);
 		//synchronized (synchronousAdderLock)
 		{
@@ -297,5 +305,29 @@ public class SpecialRepoLoader extends BasicDebugger implements UncaughtExceptio
 	@Override public void uncaughtException(Thread t, Throwable e) {
 		logError(" uncaughtException on " + t, e);
 		e.printStackTrace();
+	}
+
+	public void cancelAll() {
+		executor.shutdown();
+	}
+
+	public int getRealTodo() {
+		return tasks.size();
+
+	}
+
+	public boolean isSynchronous() {
+		return isSynchronous;
+	}
+
+	public void addTaskFirst(String n, Runnable v) {
+		ArrayList<? extends Runnable> drainedArrayList = new ArrayList();
+		BlockingQueue queue = ((ThreadPoolExecutor) executor).getQueue();
+		queue.drainTo(drainedArrayList);
+		addTask(n, v);
+		for (Runnable e : drainedArrayList) {
+			queue.add(e);
+		}
+
 	}
 }
