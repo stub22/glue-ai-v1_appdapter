@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry including="**/*.java" kind="src" path="src/main/java"/>
+	<classpathentry including="**/*.*" kind="src" path="src/main/resources"/>
+	<classpathentry including="**/*.java" kind="src" path="src/test/java"/>
+	<classpathentry including="**/*.*" kind="src" path="src/test/resources"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry exported="true" kind="src" path="/org.appdapter.bundle.core"/>
+	<classpathentry exported="true" kind="src" path="/org.appdapter.lib.gui"/>
+	<classpathentry exported="true" kind="src" path="/ext.bundle.jena_all_2_10_1"/>
+	<classpathentry exported="true" kind="src" path="/ext.bundle.xml.dom4j_161"/>
+	<classpathentry exported="true" kind="src" path="/ext.bundle.osgi.common"/>
+	<classpathentry exported="true" kind="src" path="/org.storychat.bundle.osgi"/>
+	<classpathentry kind="src" path="/ext.bundle.openconverters"/>
+	<classpathentry kind="output" path="target/eclipse-classes"/>
+</classpath>
