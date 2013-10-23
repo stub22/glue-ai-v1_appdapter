@@ -17,7 +17,6 @@
 package org.appdapter.core.boot;
 
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -34,6 +33,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
+import org.osgi.framework.wiring.BundleWiring;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,7 +76,7 @@ public class ClassLoaderUtils {
 		for (ClassLoader cl : cLoaders) {
 			allSeenEverLoaders.add(cl);
 			// This method will first search the parent class loader for the resource; if the parent is null the path of
-			// the class loader built-in to the virtual machine is searched. That failing, this method will invoke 
+			// the class loader built-in to the virtual machine is searched. That failing, this method will invoke
 			// findResource(String) to find the resource.
 			URL res = cl.getResource(path);
 			if (res != null) {
@@ -91,7 +91,7 @@ public class ClassLoaderUtils {
 		for (ClassLoader cl : cLoaders) {
 			allSeenEverLoaders.add(cl);
 			// This method will first search the parent class loader for the resource; if the parent is null the path of
-			// the class loader built-in to the virtual machine is searched. That failing, this method will invoke 
+			// the class loader built-in to the virtual machine is searched. That failing, this method will invoke
 			// findResource(String) to find the resource.
 			URL res = cl.getResource(path);
 			if (res != null) {
@@ -207,10 +207,10 @@ public class ClassLoaderUtils {
 			resourceClassLoaderType = ALL_RESOURCE_CLASSLOADER_TYPES;
 			isNamed = false;
 		}/*
-		theLogger.info(Debuggable.toInfoStringCompound("registerClassLoader", 
-				context, loader, resourceClassLoaderType, "contextOptional=", 
-				contextOptional, "isRemoval=", isRemoval,
-				"isNamed=", isNamed));*/
+		 theLogger.info(Debuggable.toInfoStringCompound("registerClassLoader",
+		 	context, loader, resourceClassLoaderType, "contextOptional=",
+		 	contextOptional, "isRemoval=", isRemoval,
+		 	"isNamed=", isNamed));*/
 		synchronized (namedLoaders) {
 			if (isRemoval) {
 				allSeenEverLoaders.remove(loader);
@@ -269,7 +269,9 @@ public class ClassLoaderUtils {
 	}
 
 	public static ClassLoader getClasssLoader(Bundle bundle) {
-		return null;
+		BundleWiring bundleWiring = bundle.adapt(BundleWiring.class);
+		ClassLoader classLoader = bundleWiring.getClassLoader();
+		return classLoader;
 	}
 
 	public static URL getFileResource(String resourceClassLoaderType, String resourceName) {
