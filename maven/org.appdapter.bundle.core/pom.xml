@@ -21,6 +21,9 @@
            <groupId>${project.groupId}</groupId>
            <artifactId>org.appdapter.lib.core</artifactId>
            <version>${project.version}</version>
+		   <!-- We use "provided" scope for the code we are exporting, because we don't want our dependency on the
+				lib to propagate out to users of this bundle.
+			-->
            <scope>provided</scope>
            <exclusions>
                <exclusion>
