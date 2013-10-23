@@ -141,6 +141,10 @@
 			<artifactId>apache-jena-libs</artifactId>
 			<type>pom</type>
 			<version>${jena.version}</version>
+			<!-- We use "provided" scope because we are exporting the contents of these libraries, and we don't want our
+				bundle consumers to see and be confused by these additional copies of the classes, as transitive
+				dependencies.  "provided" prevents that from happening.
+			-->
 			<scope>provided</scope>
 			<exclusions>
 				<exclusion>
