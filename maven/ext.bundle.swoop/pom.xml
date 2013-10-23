@@ -109,14 +109,14 @@
        	<dependency>
        		<groupId>org.appdapter</groupId>
        		<artifactId>ext.bundle.jena_all_2_10_1</artifactId>
-       		<version>1.1.1-SNAPSHOT</version>
+            <version>${appdapter.version}</version>
        		<type>bundle</type>
        		<scope>provided</scope>
        	</dependency>
        	<dependency>
        		<groupId>org.appdapter</groupId>
        		<artifactId>org.appdapter.lib.core</artifactId>
-       		<version>1.1.1-SNAPSHOT</version>
+            <version>${appdapter.version}</version>
        	</dependency>
 	</dependencies>
 
