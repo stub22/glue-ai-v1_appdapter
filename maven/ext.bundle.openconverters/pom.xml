@@ -198,7 +198,7 @@
                         org.apache.avalon.framework.logger, org.apache.crimson.jaxp, org.apache.log, org.apache.tools.ant, 
                         org.apache.tools.ant.taskdefs, org.apache.tools.ant.types, org.apache.xml.resolver, org.apache.xml.resolver.tools, org.gjt.xpp, org.jaxen,
                         org.jaxen.dom4j, org.jaxen.pattern, org.jaxen.saxpath, org.relaxng.datatype, org.slf4j.impl, org.xmlpull.v1,
-                        schemasMicrosoftComOfficeVml,schemaorg_apache_xmlbeans,org.openxmlformats.schemas.drawingml.x2006.chart.impl,org.openxmlformats</Import-Package>
+                        schemasMicrosoftComOfficeVml,schemaorg_apache_xmlbeans,org.openxmlformats.schemas.drawingml.x2006.chart.impl,org.openxmlformats,com.sun.*;resolution:=optional,javax.*;resolution:=optional</Import-Package>
                         <Embed-Dependency>*;scope=compile|runtime;inline=true</Embed-Dependency>
                         <!-- we refer also to these classes:
 
