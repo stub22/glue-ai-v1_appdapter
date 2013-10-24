@@ -34,7 +34,6 @@ import org.appdapter.core.store.BasicRepoImpl;
 import org.appdapter.core.store.RepoModelEvent;
 
 import com.hp.hpl.jena.rdf.model.Model;
-import com.sun.rsasign.n;
 
 /**
  * @author Logicmoo. <www.logicmoo.org>
