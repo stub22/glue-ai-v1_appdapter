@@ -124,7 +124,33 @@
 
 
         <dependency>
-			<!-- Stu asks:  What features in o.a.b.core require this dep? -->
+			<!-- Stu asks:  What features in o.a.b.core require this dep? 
+            
+             Douglas:
+             o.a.lib.remote needs for the sparql client I belived
+             It is proabably true that any ext.*.* of ours that we bundle here
+             we will need to re-include its reqirements at least at the runtime level
+             But not have to re-export it's packages in these exports (that is take classloader responsiibity).
+             Since we'd want downstreams to be able to take classloader reponsibility (First before a differnt activator (of ours) takes ownership (Of course this bundle still may take it when no override happens )).               
+             Then if they dont take on the responsibility, still be able to supply the ones we picked out that we know work even with class isolation.
+             
+             Another real goal (only slightly related) is to ensure we get them using and owning <artifactId>ext.bundle.apache_httpclient</artifactId>
+             
+             IF
+                they (they=startable bundle) want this use bundle 
+                AND want/need (jena OR dom4j OR httpclient)
+             THEN 
+                they will themselves will depend directly on our ext.b.*s
+             ELSE  
+                  give them a wiring error that "there are more than one way to resolve org.apache.client"
+                  [ if they have a valid reason for not using ours.. let them isolate theirs, not ours]
+             
+             We do this visibly with Jena (not on purpose for the IF/THEN/ELSE)
+
+             When we didn't want this, then we need to make sure we give them jena only at compile time and we'd need to hide it from exports, but not runtime correct?  
+            
+                        
+            -->
             <groupId>${project.groupId}</groupId>
             <artifactId>ext.bundle.apache_httpclient</artifactId>
             <version>${project.version}</version>
