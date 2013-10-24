@@ -187,11 +187,14 @@
                         sun.*;resolution:='optional',
                         schemasMicrosoftComVml,org.joda,com.jidesoft, schemasMicrosoftComOfficeExcel,schemaorg_apache_xmlbeans.*,org.openxmlformats.schemas.drawingml.x2006.chart.impl,org.openxmlformats.*,org.apache.poi.*,
                         org.apache.*;resolution:='optional',com.sun.*;resolution:='optional',com.apple.laf.*;resolution:='optional',apple.laf.*;resolution:='optional',
+						
+
+						*;resolution:='optional'
+
                         -->
-                        <Import-Package>schemasMicrosoftComOfficeOffice,schemasMicrosoftComOfficeExcel,*;resolution:='optional',org.apache.poi</Import-Package>		
+                        <Import-Package>schemasMicrosoftComOfficeOffice,schemasMicrosoftComOfficeExcel,org.apache.poi,schemasMicrosoftComOfficeVml,schemaorg_apache_xmlbeans,org.openxmlformats.schemas.drawingml.x2006.chart.impl,org.openxmlformats</Import-Package>
                         <Bundle-Activator>${project.groupId}.${artifactId}.osgi.Activator</Bundle-Activator>
                         <Export-Package>*;-split-package:=merge-first</Export-Package>
-                        <Private-Package>org.apache.http.*,slf4j-api.*</Private-Package>
                     </instructions>
 				</configuration>
 			</plugin>
