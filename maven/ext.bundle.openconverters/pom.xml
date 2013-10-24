@@ -211,7 +211,7 @@
                         <Embed-Transitive>true</Embed-Transitive>
 						-->
 						<!-- Stu is dubious of the *, but it may work OK because the imports above are so specific -->
-                        <Export-Package>*;-split-package:=merge-first</Export-Package>
+                        <Export-Package>*</Export-Package>
                     </instructions>
 				</configuration>
 			</plugin>
