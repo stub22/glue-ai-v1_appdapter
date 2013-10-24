@@ -50,7 +50,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.jidesoft.icons.IconsFactory;
-import com.sun.org.apache.bcel.internal.classfile.Unknown;
 
 /**
  * A panel containing a very minimal GUI for an object
