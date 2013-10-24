@@ -26,7 +26,6 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkEvent;
 import org.osgi.framework.FrameworkListener;
 
-import com.sun.org.apache.bcel.internal.generic.NEW;
 
 /**
  * Note:  Appdapter client bundles are *not* required to use this class, or to use
