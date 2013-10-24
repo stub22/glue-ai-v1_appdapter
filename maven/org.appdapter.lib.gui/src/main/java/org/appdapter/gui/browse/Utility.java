@@ -219,9 +219,7 @@ import com.hp.hpl.jena.rdf.model.Resource;
 
 @UIHidden
 public class Utility extends UtilityMenuOptions {
-	static {
-		TriggerMouseAdapter.installMouseListeners();
-	}
+
 	@UISalient
 	public static boolean GuiDebugTracing = false;
 
@@ -3539,52 +3537,6 @@ public class Utility extends UtilityMenuOptions {
 		}
 	}
 
-	static {
-		new Thread("Init GUI") {
-			@Override public void run() {
-				DemoBrowser.addRepoLoaderMenu();
-
-				try {
-					findAndloadMissingUtilityClasses();
-				} catch (Throwable e) {
-					printStackTrace(e);
-				}
-				try {
-					findAndloadMissingTriggers();
-				} catch (Throwable e) {
-					printStackTrace(e);
-				}
-				taskEqueue.addTask("loadAssemblerInstances", new Runnable() {
-					public void run() {
-						try {
-							singletAssemblerCacheGrabber.loadAssemblerInstances();
-						} catch (Throwable e) {
-							printStackTrace(e);
-						}
-					}
-				});
-
-				taskEqueue.addTask("loadAddedBoxes", new Runnable() {
-					public void run() {
-						try {
-							singletAssemblerCacheGrabber.loadAddedBoxes();
-						} catch (Throwable e) {
-							printStackTrace(e);
-						}
-					}
-				});
-
-				registerPanel(ModelAsTurtleEditor.class, Model.class);
-
-				unqueueFeatures();
-				taskEqueue.waitUntilLastJobComplete();
-				taskEqueue.setSynchronous(false);
-				runLoadComplete();
-			}
-		}.start();
-
-	}
-
 	public static HashSet<String> localPackagePrefixs = new HashSet<String>();
 
 	static {
@@ -3597,6 +3549,12 @@ public class Utility extends UtilityMenuOptions {
 		localPackagePrefixs.add("java.util.");
 		localPackagePrefixs.add("java.b");
 	}
+
+	static Thread threadInitGUI = new Thread("Init GUI") {
+		@Override public void run() {
+			initGUI();
+		}
+	};
 
 	public static <T> Set<Class<? extends T>> getCoreClasses(final Class<T> ancestor) {
 		return ReflectUtils.cachedResult(new Callable() {
@@ -3613,6 +3571,47 @@ public class Utility extends UtilityMenuOptions {
 				return cls;
 			}
 		}, ancestor);
+	}
+
+	static void initGUI() {
+		DemoBrowser.addRepoLoaderMenu();
+
+		try {
+			findAndloadMissingUtilityClasses();
+		} catch (Throwable e) {
+			printStackTrace(e);
+		}
+		try {
+			findAndloadMissingTriggers();
+		} catch (Throwable e) {
+			printStackTrace(e);
+		}
+		taskEqueue.addTask("loadAssemblerInstances", new Runnable() {
+			public void run() {
+				try {
+					singletAssemblerCacheGrabber.loadAssemblerInstances();
+				} catch (Throwable e) {
+					printStackTrace(e);
+				}
+			}
+		});
+
+		taskEqueue.addTask("loadAddedBoxes", new Runnable() {
+			public void run() {
+				try {
+					singletAssemblerCacheGrabber.loadAddedBoxes();
+				} catch (Throwable e) {
+					printStackTrace(e);
+				}
+			}
+		});
+
+		registerPanel(ModelAsTurtleEditor.class, Model.class);
+
+		unqueueFeatures();
+		taskEqueue.waitUntilLastJobComplete();
+		taskEqueue.setSynchronous(false);
+		UtilityBoot.runLoadComplete();
 	}
 
 	private static <T> T recastUtilFirst(Object obj, Class<T> objNeedsToBe) throws NoSuchConversionException {
@@ -3642,8 +3641,8 @@ public class Utility extends UtilityMenuOptions {
 	}
 
 	public static HashSet<Class> localInterfaces = new HashSet<Class>();
-	private static boolean isLoadComplete = false;
-	private static List<Runnable> onLoadComplete = new LinkedList<Runnable>();
+	static boolean isLoadComplete = false;
+	static List<Runnable> onLoadComplete = new LinkedList<Runnable>();
 
 	static {
 		invokeAfterLoader(new Runnable() {
@@ -3845,19 +3844,6 @@ public class Utility extends UtilityMenuOptions {
 			}
 		});
 		return UserResult.SUCCESS;
-	}
-
-	protected static void runLoadComplete() {
-		LinkedList<Runnable> todo = new LinkedList<Runnable>();
-		synchronized (onLoadComplete) {
-			isLoadComplete = true;
-			todo.addAll(onLoadComplete);
-			onLoadComplete.clear();
-		}
-		for (Runnable td : todo) {
-			runTask(td);
-		}
-
 	}
 
 	private static void runNow(Runnable td) {
