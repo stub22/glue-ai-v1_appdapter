@@ -24,7 +24,9 @@ import java.awt.Container;
 import java.awt.EventQueue;
 import java.awt.FileDialog;
 import java.io.File;
+import java.net.URL;
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
 
 import javax.swing.BoxLayout;
 import javax.swing.JApplet;
@@ -76,7 +78,6 @@ import org.appdapter.gui.repo.RepoModelBoxImpl;
 import org.appdapter.gui.repo.RepoTriggers;
 import org.appdapter.gui.trigger.BootstrapTriggerFactory;
 import org.appdapter.gui.trigger.SysTriggers;
-import org.appdapter.gui.trigger.TriggerMouseAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,10 +87,8 @@ import com.jidesoft.swing.JideTabbedPane;
  * @author Stu B. <www.texpedient.com>
  */
 final public class DemoBrowser implements AnyOper.Singleton {
-	static {
-		TriggerMouseAdapter.installMouseListeners();
-	}
-	public static Logger theLogger = getLogger();
+
+	public static Logger theLogger = null;
 
 	public static DemoNavigatorCtrl mainControl;
 
@@ -151,7 +150,17 @@ final public class DemoBrowser implements AnyOper.Singleton {
 
 	public static Logger getLogger() {
 		try {
-			theLogger = LoggerFactory.getLogger(DemoBrowser.class);
+			if (theLogger == null) {
+				//System.setProperty("log4j.defaultInitOverride", "true");
+				System.setProperty("log4j.debug", "true");
+				String loc = "mylog4j.properties";
+				URL url = DemoBrowser.class.getResource("mylog4j.properties");
+				if (url != null) {
+					loc = url.toExternalForm();
+				}
+				System.setProperty("log4j.configuration", loc);
+				theLogger = LoggerFactory.getLogger(DemoBrowser.class);
+			}
 		} catch (Throwable t) {
 			printStackTrace(t);
 		}
@@ -160,7 +169,7 @@ final public class DemoBrowser implements AnyOper.Singleton {
 
 	public static void testLoggingSetup() {
 		//System.out.println("[System.out] - DemoBrowser.pretendToBeAwesome()");
-		theLogger.info("[SLF4J] - DemoBrowser.pretendToBeAwesome()");
+		getLogger().info("[SLF4J] - DemoBrowser.pretendToBeAwesome()");
 	}
 
 	static public boolean defaultExampleCode = false;
@@ -330,6 +339,15 @@ final public class DemoBrowser implements AnyOper.Singleton {
 	// ==== Main method ==========================
 	public static void main(String[] args) throws InterruptedException {
 		testLoggingSetup();
+		java.util.logging.Logger.getAnonymousLogger().setLevel(Level.ALL);
+		System.err.println("Seeing system.err");
+		System.out.println("Seeing system.out");
+		theLogger.trace("Here is some TRACE");
+		theLogger.debug("Here is some DEBUG");
+		theLogger.info("Here is some INFO");
+		theLogger.warn("Here is some WARN");
+		theLogger.error("Here is some ERROR");
+		java.util.logging.Logger.global.setLevel(Level.ALL);
 		// we set 'defaultExampleCode' from main
 		defaultExampleCode = true;
 		ensureRunning(true, args);
