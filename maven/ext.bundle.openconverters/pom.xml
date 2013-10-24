@@ -9,11 +9,10 @@
 		<relativePath>../org.appdapter.modules.core/pom.xml</relativePath>
 	</parent>
 
-	<!-- Artifact ID updated on 2013-07-17 from ext.bundle.jena_all_264 to what
-		you see on next line (v 2.10.1) -->
 	<artifactId>ext.bundle.openconverters</artifactId>
 	<packaging>bundle</packaging>
-	<name>${artifactId} - OSGi - Open Converters Bundler</name>
+	<name>${project.artifactId} - OSGi - Open Converters Bundler</name>
+    <description>${project.artifactId} - OSGi - Open Converters Bundler</description>
 
 	<dependencies>
 		<dependency>
@@ -192,8 +191,24 @@
 						*;resolution:='optional'
 
                         -->
-                        <Import-Package>schemasMicrosoftComOfficeOffice,schemasMicrosoftComOfficeExcel,org.apache.poi,schemasMicrosoftComOfficeVml,schemaorg_apache_xmlbeans,org.openxmlformats.schemas.drawingml.x2006.chart.impl,org.openxmlformats</Import-Package>
-                        <Bundle-Activator>${project.groupId}.${artifactId}.osgi.Activator</Bundle-Activator>
+                        <Import-Package>schemasMicrosoftComOfficeOffice,
+                        schemasMicrosoftComOfficeExcel,org.apache.poi,
+                        org.openxmlformats.schemas.spreadsheetml.x2006,
+                        com.ibm.uvm.tools,                     
+                        org.apache.avalon.framework.logger, org.apache.crimson.jaxp, org.apache.log, org.apache.tools.ant, 
+                        org.apache.tools.ant.taskdefs, org.apache.tools.ant.types, org.apache.xml.resolver, org.apache.xml.resolver.tools, org.gjt.xpp, org.jaxen,
+                        org.jaxen.dom4j, org.jaxen.pattern, org.jaxen.saxpath, org.relaxng.datatype, org.slf4j.impl, org.xmlpull.v1,
+                        schemasMicrosoftComOfficeVml,schemaorg_apache_xmlbeans,org.openxmlformats.schemas.drawingml.x2006.chart.impl,org.openxmlformats</Import-Package>
+                        <Embed-Dependency>*;scope=compile|runtime;inline=true</Embed-Dependency>
+                        <!-- we refer also to these classes:
+
+                        javax.crypto, javax.crypto.spec,javax.imageio, javax.imageio.metadata, javax.imageio.stream, javax.jmdns, javax.jms, javax.mail, javax.mail.internet, javax.management, javax.microedition.io, javax.naming,
+                        javax.security.auth.x500, javax.servlet, javax.servlet.http, javax.swing, javax.swing.border, javax.swing.event, javax.swing.table, javax.swing.text, javax.swing.tree, javax.xml.bind, javax.xml.validation, javax.xml.xpath, 
+
+                        com.sun.javadoc, com.sun.jdmk.comm, com.sun.msv.datatype, com.sun.msv.datatype.xsd, com.sun.tools.javadoc, 
+            -->
+                        <Bundle-Activator>${project.groupId}.${project.artifactId}.osgi.Activator</Bundle-Activator>
+                        <Embed-Transitive>true</Embed-Transitive>
                         <Export-Package>*;-split-package:=merge-first</Export-Package>
                     </instructions>
 				</configuration>
