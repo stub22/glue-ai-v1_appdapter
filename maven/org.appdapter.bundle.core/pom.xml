@@ -113,11 +113,23 @@
             <version>${project.version}</version>
         </dependency>
 
+				
+		<dependency>
+			<!-- However, this one is OK, because it's not as messy as POI -->
+			<groupId>net.sf.opencsv</groupId>
+			<artifactId>opencsv</artifactId>
+			<version>2.3</version>
+			<scope>runtime</scope>
+		</dependency>
+
+
         <dependency>
+			<!-- Stu asks:  What features in o.a.b.core require this dep? -->
             <groupId>${project.groupId}</groupId>
             <artifactId>ext.bundle.apache_httpclient</artifactId>
             <version>${project.version}</version>
-        </dependency>		
+        </dependency>	
+			
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>ext.bundle.math.jscience_50SNAP</artifactId>
