@@ -32,13 +32,6 @@
 			<version>4.2.0</version>
 		</dependency>
 		<dependency>
-			<artifactId>slf4j-api</artifactId>
-			<groupId>org.slf4j</groupId>
-			<type>jar</type>
-			<version>1.7.5</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>ext.bundle.xml.dom4j_161</artifactId>
 			<version>${project.version}</version>
@@ -117,7 +110,9 @@
 			<groupId>org.apache.log4j</groupId>
 			<artifactId>com.springsource.org.apache.log4j</artifactId>
 			<version>1.2.16</version>
+			<!--   Wrong, we want this one to propagate.   Default "compile" scope is good.
 			<scope>provided</scope>
+			-->
 		</dependency>
 
 
@@ -126,7 +121,6 @@
 			<artifactId>slf4j-api</artifactId>
 			<version>1.7.5</version>
 		</dependency>
-
 
 		<!-- Problems in Felix, because A) System Bundle #0 supplies the JAXP APIs
 			at version 0.0., B) Dom4J specifies broad "uses" constraints on its exports.
