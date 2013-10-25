@@ -27,4 +27,4 @@ see CREDITS_and_LICENSES.txt.
  
 To build the (now obsolete) ext.bundle.math.jscience project, 
 you must temporarily disable its dependency on the 
-jscience.jar.    See notes in that pom.xml file.
+jscience.jar.    See notes in that pom.xml file. 
