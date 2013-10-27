@@ -133,7 +133,8 @@
 	
                         <Export-Package>
 							au.com.bytecode.opencsv.*,
-							org.apache.poi.*;-split-package:=merge-first
+							org.apache.poi.*;-split-package:=merge-first,
+							org.appdapter.ext.bundle.openconverters.*
 						</Export-Package>
 						
 						<Private-Package>
