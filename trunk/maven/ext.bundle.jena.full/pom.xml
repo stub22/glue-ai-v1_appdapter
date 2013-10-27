@@ -206,20 +206,6 @@
 			<scope>provided</scope>
 		</dependency>
                
-    <!--
-    <dependency>
-    	<groupId>org.apache.jena</groupId>
-    	<artifactId>jena-fuseki</artifactId>
-      <version>${ver.fuseki}</version>
-    </dependency>
-
-		<dependency>
-			<groupId>org.apache.jena</groupId>
-      <artifactId>jena-fuseki</artifactId>
-      <version>${ver.fuseki}</version>
-      <classifier>sources</classifier>
-    </dependency>
-   -->
 	<dependency>
             <groupId>org.apache.jena</groupId>
 			<artifactId>jena-sdb</artifactId>
@@ -257,22 +243,7 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.7.5</version>
-			<!-- Changed from runtime to test - we do not want this binding to propagate! -->
-			<scope>test</scope>
-			<exclusions>
-				<!-- We exclude the normally embedded Log4J version, because it is not OSGi friendly.
-					We instead use the bundled version supplied by SpringSource below.
-				-->			
-				<exclusion>
-					<artifactId>log4j</artifactId>
-					<groupId>log4j</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>	
+
 		
 		<dependency>
 			<groupId>org.apache.servicemix.bundles</groupId>
@@ -324,7 +295,24 @@
 			<artifactId>org.apache.servicemix.specs.activation-api-1.1</artifactId>
 			<version>1.8.0</version>
 			<scope>runtime</scope>
-		</dependency>				
+		</dependency>		
+		
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.7.5</version>
+			<!-- Changed from runtime to test - we do not want this binding to propagate! -->
+			<scope>test</scope>
+			<exclusions>
+				<!-- We exclude the normally embedded Log4J version, because it is not OSGi friendly.
+					We instead use the bundled version supplied by SpringSource below.
+				-->			
+				<exclusion>
+					<artifactId>log4j</artifactId>
+					<groupId>log4j</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>							
 	</dependencies>
 
 			
@@ -342,10 +330,10 @@
 							but better to get Jena code fixed to allow classloader setup.
 						-->
 						<DynamicImport-Package>org.appdapter.*,org.cogchar.*</DynamicImport-Package>
-						<Bundle-Activator>org.appdapter.ext.bundle.jena.full.Activator</Bundle-Activator>
+						<Bundle-Activator>ext.bundle.jena.full.Activator</Bundle-Activator>
 	
 						<Export-Package>
-							org.appdapter.ext.bundle.jena.full,
+							ext.bundle.jena.full,
 							arq.*,
 							tdb.*;-split-package:=merge-first,
 							com.hp.hpl.jena.*;-split-package:=merge-first,

@@ -14,12 +14,12 @@
  *  limitations under the License.
  */
 
-package org.appdapter.ext.bundle.apache.httpclient;
+package ext.bundle.apache.httpclient;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
 
-public class Activator extends org.appdapter.ext.osgi.common.ExtBundleActivatorBase {
+public class Activator extends ext.osgi.common.ExtBundleActivatorBase {
 
 }

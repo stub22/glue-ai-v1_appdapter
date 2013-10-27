@@ -1,8 +1,8 @@
-package org.appdapter.ext.bundle.openconverters.osgi;
+package ext.bundle.openconverters.osgi;
 
 import org.osgi.framework.BundleContext;
 
-public class Activator extends org.appdapter.ext.osgi.common.ExtBundleActivatorBase {
+public class Activator extends ext.osgi.common.ExtBundleActivatorBase {
 
 	public static void ensureConvertersClassesAreFindable() {
 		debugLoaders(org.apache.poi.common.usermodel.Hyperlink.class);

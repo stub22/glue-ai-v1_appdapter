@@ -1,6 +1,6 @@
 package org.appdapter.demo.gui.osgi;
 
-import org.appdapter.ext.osgi.common.ExtBundleActivatorBase;
+import ext.osgi.common.ExtBundleActivatorBase;
 import org.osgi.framework.BundleContext;
 
 public class Activator extends ExtBundleActivatorBase {

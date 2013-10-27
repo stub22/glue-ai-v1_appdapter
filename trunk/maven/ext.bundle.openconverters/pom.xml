@@ -123,18 +123,19 @@
                     <instructions>
 
                         <Import-Package>
-							<!-- Either of these actually needed by the fileconv ? -->
+							<!-- Either of these actually needed by the fileconv ? 
 							com.sun.*;resolution:=optional,
 							javax.*;resolution:=optional,
+							-->
 							*
 						</Import-Package>
 
                         <Bundle-Activator>${project.groupId}.${project.artifactId}.osgi.Activator</Bundle-Activator>
 	
                         <Export-Package>
+							ext.bundle.openconverters.*,
 							au.com.bytecode.opencsv.*,
-							org.apache.poi.*;-split-package:=merge-first,
-							org.appdapter.ext.bundle.openconverters.*
+							org.apache.poi.*;-split-package:=merge-first
 						</Export-Package>
 						
 						<Private-Package>

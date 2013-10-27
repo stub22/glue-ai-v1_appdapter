@@ -94,9 +94,9 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Bundle-Activator>org.appdapter.ext.osgi.common.ExtOSGiCommonBundleActivator</Bundle-Activator>
-                        <Export-Package>org.appdapter.ext.osgi.common</Export-Package>
-                        <Private-Package>org.appdapter.ext.osgi.common.*</Private-Package>
+                        <Bundle-Activator>ext.osgi.common.ExtOSGiCommonBundleActivator</Bundle-Activator>
+                        <Export-Package>ext.osgi.common</Export-Package>
+
                     </instructions>
                 </configuration>
             </plugin>

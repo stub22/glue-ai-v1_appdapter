@@ -1,4 +1,4 @@
-package org.appdapter.ext.bundle.jena.full;
+package ext.bundle.jena.full;
 
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
