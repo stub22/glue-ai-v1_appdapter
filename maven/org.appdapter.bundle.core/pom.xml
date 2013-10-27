@@ -50,37 +50,9 @@
             <artifactId>ext.bundle.osgi.common</artifactId>
             <version>${project.version}</version>
         </dependency>
-		<dependency>
-			<groupId>org.osgi</groupId>
-			<artifactId>org.osgi.core</artifactId>
-			<version>4.2.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.osgi</groupId>
-			<artifactId>org.osgi.compendium</artifactId>
-			<version>4.2.0</version>
-		</dependency>
 
-		<dependency>
-			<artifactId>slf4j-api</artifactId>
-			<groupId>org.slf4j</groupId>
-			<version>1.7.5</version>
-		</dependency>
-		<dependency>
-			<groupId>org.scala-lang</groupId>
-			<artifactId>scala-library</artifactId>
-			<version>2.10.2</version>
-		</dependency>
-		<dependency>
-			<groupId>org.scala-lang</groupId>
-			<artifactId>scala-reflect</artifactId>
-			<version>2.10.2</version>
-		</dependency>
-		<dependency>
-			<groupId>org.scala-lang</groupId>
-			<artifactId>scala-compiler</artifactId>
-			<version>2.10.2</version>
-		</dependency>
+
+
 		<dependency>
 			<artifactId>ext.bundle.jena_all_2_10_1</artifactId>
 			<groupId>${project.groupId}</groupId>
@@ -112,15 +84,6 @@
             <artifactId>ext.bundle.openconverters</artifactId>
             <version>${project.version}</version>
         </dependency>
-
-				
-		<dependency>
-			<!-- However, this one is OK, because it's not as messy as POI -->
-			<groupId>net.sf.opencsv</groupId>
-			<artifactId>opencsv</artifactId>
-			<version>2.3</version>
-			<scope>runtime</scope>
-		</dependency>
 
 
         <dependency>
