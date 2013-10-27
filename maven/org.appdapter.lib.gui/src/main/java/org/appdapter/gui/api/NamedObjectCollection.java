@@ -11,8 +11,10 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import org.appdapter.api.trigger.AnyOper.UIProvider;
+
+
 import org.appdapter.gui.box.ScreenBoxImpl;
+import org.appdapter.gui.util.Annotations.UIProvider;
 
 /**
 * A container of objects and corresponding Boxes, which

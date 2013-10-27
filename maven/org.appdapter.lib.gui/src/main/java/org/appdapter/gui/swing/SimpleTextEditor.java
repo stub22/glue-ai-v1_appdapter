@@ -51,7 +51,7 @@ import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.undo.UndoManager;
 
-import org.appdapter.api.trigger.AnyOper.UISalient;
+import org.appdapter.core.debug.UIAnnotations.UISalient;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.repo.ModelAsTurtleEditor;
 import org.appdapter.gui.trigger.MouseAdapterWithAppendablePopup;

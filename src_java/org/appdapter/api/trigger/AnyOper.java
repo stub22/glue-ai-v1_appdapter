@@ -15,128 +15,21 @@
  */
 package org.appdapter.api.trigger;
 
+
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-
 import org.appdapter.core.component.KnownComponent;
-import org.appdapter.core.convert.OptionalArg;
+
+import org.appdapter.core.debug.UIAnnotations;
 import org.appdapter.core.name.Ident;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
 // / Dmiles needed something in java to cover Dmiles's Scala blindspots
-public interface AnyOper {
+public interface AnyOper extends UIAnnotations {
 
-	public interface UtilClass {
-
-	}
-
-	public interface Singleton {
-
-	}
-
-	public interface Autoload {
-
-	}
-
-	/**
-		 * @author Administrator
-		 *
-		 */
-	@UISalient
-	public static interface Reloadable {
-
-		void reload();
-
-	}
-
-
-	/**
-		 * @author Administrator
-		 *
-		 */
-	@Retention(RetentionPolicy.RUNTIME)
-	public @interface UIHidden {
-
-	}
-
-	@Retention(RetentionPolicy.RUNTIME)
-	static public @interface UISalient {
-		/**
-		 * "" == do nothing to the result
-		 * "toString" .. call the toString method on Result
-		 * Before return the result call the method name
-		 * @return
-		 */
-		public String ToValueMethod() default "";
-
-		/**
-		 *  "" = use the splitted of camelcase for Menu Item Name
-		 * @return
-		 */
-		public String MenuName() default "";
-
-		/**
-		 *  true if the last argument is the dropped/pasted item
-		 * @return
-		 */
-		public boolean PasteDropTarget() default false;
-
-		/**
-		 *  How the missing (rest of the) arguments (beyond the first) is pulled from App's optional Arg space
-		 * @return
-		 */
-		public short UseOptionalArgs() default OptionalArg.OPTIONAL_FROM_DEFAULTS;
-
-		/**
-		 *  true if member when called produces an App Singleton (as well as a Result)
-		 * @return
-		 */
-		public boolean ResultIsSingleton() default false;
-
-
-		/**
-		 *  "" = use the splitted of camelcase for methodname
-		 * @return
-		 */
-		public String CastingMethod() default "";
-
-		/**
-		 *  true if the first argument into target method will be the menuSourceItem
-		 * @return
-		 */
-		public boolean TreatLikeStatic() default false;
-
-		/**
-		 *  "" = use the splitted of camelcase for methodname
-		 * @return
-		 */
-		public String ApplyToClass() default "";
-
-		public boolean NonPublicMethods() default true;
-
-		public boolean IsSideEffectSafe() default false;
-
-		public boolean IsPanel() default false;
-
-		boolean IsNotSideEffectSafe() default false;
-
-		boolean IsFactoryMethod() default false;
-
-		String Tooltip() default "";
-
-		String Editor() default "";
-
-		String Description() default "";
-
-		String HelpText() default "";
-
-	}
-
-	static interface ApplyToClassInterfaces {
-
-	}
 
 	@UISalient(ApplyToClass = "HASIDENT")
 	static public interface HasIdent extends ApplyToClassInterfaces {
@@ -144,6 +37,5 @@ public interface AnyOper {
 
 		Class HASIDENT = KnownComponent.class;
 	}
-
 
 }

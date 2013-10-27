@@ -39,8 +39,8 @@ import javax.swing.text.Position;
 import javax.swing.tree.TreePath;
 
 import org.appdapter.api.trigger.AnyOper;
-import org.appdapter.api.trigger.AnyOper.UIHidden;
-import org.appdapter.api.trigger.AnyOper.UISalient;
+import org.appdapter.core.debug.UIAnnotations.UIHidden;
+import org.appdapter.core.debug.UIAnnotations.UISalient;
 import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.gui.swing.VerticalLayout;
 

@@ -23,7 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import org.appdapter.api.trigger.AnyOper.UIHidden;
+import org.appdapter.core.debug.UIAnnotations.UIHidden;
 import org.appdapter.core.convert.Converter;
 import org.appdapter.core.convert.NoSuchConversionException;
 import org.appdapter.core.convert.ProxyMethodClass;

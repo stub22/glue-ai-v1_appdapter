@@ -15,9 +15,9 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 
 import org.appdapter.api.trigger.AnyOper;
-import org.appdapter.api.trigger.AnyOper.Autoload;
-import org.appdapter.api.trigger.AnyOper.UISalient;
-import org.appdapter.api.trigger.AnyOper.UtilClass;
+import org.appdapter.core.debug.UIAnnotations.Autoload;
+import org.appdapter.core.debug.UIAnnotations.UISalient;
+import org.appdapter.core.debug.UIAnnotations.UtilClass;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.api.trigger.TriggerImpl;

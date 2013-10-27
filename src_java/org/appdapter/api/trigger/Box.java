@@ -20,7 +20,7 @@ import org.appdapter.core.jvm.GetObject;
 import java.awt.Component;
 import java.util.List;
 
-import org.appdapter.api.trigger.AnyOper.UIHidden;
+import org.appdapter.core.debug.UIAnnotations.UIHidden;
 
 /**
  * A Box is some entity displayable (perhaps in pieces) and interactable in GUI.

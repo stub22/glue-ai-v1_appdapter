@@ -47,7 +47,7 @@ import javax.swing.plaf.metal.OceanTheme;
 import javax.swing.tree.TreeModel;
 
 import org.appdapter.api.trigger.AnyOper;
-import org.appdapter.api.trigger.AnyOper.UISalient;
+import org.appdapter.core.debug.UIAnnotations.UISalient;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.core.jvm.CallableWithParameters;
 import org.appdapter.api.trigger.MutableBox;

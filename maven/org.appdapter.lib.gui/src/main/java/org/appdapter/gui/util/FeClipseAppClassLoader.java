@@ -16,8 +16,8 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Vector;
 
-import org.appdapter.api.trigger.AnyOper.DontAdd;
-import org.appdapter.api.trigger.AnyOper.HRKRefinement;
+import org.appdapter.core.debug.UIAnnotations.DontAdd;
+import org.appdapter.core.debug.UIAnnotations.HRKRefinement;
 import org.appdapter.core.log.Debuggable;
 //import static org.appdapter.gui.util.CollectionSetUtils.*;
 //import org.appdapter.api.trigger.AnyOper.*;
