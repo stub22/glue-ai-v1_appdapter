@@ -21,28 +21,36 @@
 			<artifactId>org.appdapter.lib.core</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>3.8.1</version>
-			<scope>test</scope>
-		</dependency>
 		<!--
-			Enable to see SLF4J debug output (instead of System.out.println) in local tests.
-			We don't bundle this dep, because SLF4J is based on user choosing *their own* 
+			We don't propagate the slf4j dep, because SLF4J is based on user choosing *their own* 
 			impl jar.  Unfortunately, the SLF4J default impl is NOPLogger, which does nothing,
 			which is why we supply the Sys.out.println fallback in BasicDebugger. 
 			
 			Better policy would be to use scope=test, but currently we aren't using the whole
 			"test" rigamarole of Maven / Junit / ScalaSpecs, etc...
-		
+		-->
+		<dependency>
+			<groupId>org.apache.servicemix.bundles</groupId>
+			<artifactId>org.apache.servicemix.bundles.junit</artifactId>
+			<version>4.7_3</version>
+			<scope>test</scope>
+		</dependency>		
 		<dependency>
 			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-simple</artifactId>
+			<artifactId>slf4j-log4j12</artifactId>
 			<version>1.7.5</version>
-			<scope>runtime</scope>
+			<scope>test</scope>
+			<exclusions>
+				<!-- This embedded Log4J version is not OSGi friendly, so we exclude it.
+					The "good" one is already inherited from ext.bundle.osgi.common.
+				-->				
+				<exclusion>
+					<artifactId>log4j</artifactId>
+					<groupId>log4j</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
-		-->
+
 	</dependencies>
     <build>
         <plugins>
