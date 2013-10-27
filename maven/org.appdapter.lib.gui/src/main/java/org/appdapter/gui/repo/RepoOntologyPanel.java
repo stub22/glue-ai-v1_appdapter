@@ -31,8 +31,8 @@ import javax.swing.JFileChooser;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.core.jvm.GetObject;
-import org.appdapter.api.trigger.AnyOper.UISalient;
-import org.appdapter.api.trigger.AnyOper.UtilClass;
+import org.appdapter.core.debug.UIAnnotations.UISalient;
+import org.appdapter.core.debug.UIAnnotations.UtilClass;
 import org.appdapter.core.convert.ToFromKeyConverter;
 import org.appdapter.core.matdat.OmniLoaderRepo;
 import org.appdapter.core.name.Ident;

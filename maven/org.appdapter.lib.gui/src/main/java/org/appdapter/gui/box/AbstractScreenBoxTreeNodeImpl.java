@@ -29,7 +29,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 
-import org.appdapter.api.trigger.AnyOper.UIProvider;
+
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContext;
 import org.appdapter.api.trigger.UserResult;
@@ -46,6 +46,7 @@ import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.trigger.PopupAdder;
 import org.appdapter.gui.trigger.TriggerAdder;
 import org.appdapter.gui.trigger.TriggerPopupMenu;
+import org.appdapter.gui.util.Annotations.UIProvider;
 
 /**
  * @author Stu B. <www.texpedient.com>

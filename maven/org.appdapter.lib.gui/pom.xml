@@ -38,7 +38,7 @@ bundle, with or without embedded dependencies.
 Both plain jar and OSGi forms should be available from Maven 
 central repo.   
 
--->
+	-->
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.appdapter</groupId>
@@ -52,13 +52,7 @@ central repo.
 
 	<description>Appdapter Maven project including Java and Scala, produces jar, not bundle.  Excludes concrete SLF4J binding.</description>
 
-    	<dependencies>
-		<dependency>
-			<groupId>org.apache.felix</groupId>
-			<artifactId>org.osgi.core</artifactId>
-			<version>1.4.0</version>
-			<scope>provided</scope>
-		</dependency>
+	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -66,32 +60,33 @@ central repo.
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-           <groupId>${project.groupId}</groupId>
-           <artifactId>org.appdapter.bundle.core</artifactId>
-           <version>${project.version}</version>
-       </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>org.appdapter.lib.remote</artifactId>
-            <version>${project.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>ext.bundle.osgi.common</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>ext.bundle.openconverters</artifactId>
-            <version>${project.version}</version>
-            <scope>provided</scope>
-        </dependency>
-       <dependency>
-            <groupId>com.jidesoft</groupId>
-            <artifactId>jide-oss</artifactId>
-            <version>3.5.5</version>
-        </dependency>	
+			<groupId>${project.groupId}</groupId>
+			<artifactId>org.appdapter.bundle.core</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>org.appdapter.lib.remote</artifactId>
+			<version>${project.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>ext.bundle.jena_all_2_10_1</artifactId>
+			<version>${project.version}</version>
+		</dependency>	
+		<!--
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>ext.bundle.openconverters</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		-->
+		<dependency>
+			<groupId>com.jidesoft</groupId>
+			<artifactId>jide-oss</artifactId>
+			<version>3.5.5</version>
+		</dependency>	
 		
 		
 		<dependency>
@@ -107,14 +102,19 @@ central repo.
 				</exclusion>
 			</exclusions>
 		</dependency>
-	
+		<dependency>
+			<groupId>org.apache.servicemix.bundles</groupId>
+			<artifactId>org.apache.servicemix.bundles.junit</artifactId>
+			<version>4.7_3</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 	
 	<build>
-	  <!--
-    <sourceDirectory>src/main/scala</sourceDirectory>
-    <testSourceDirectory>src/test/scala</testSourceDirectory>
-	  -->
+		<!--
+	  <sourceDirectory>src/main/scala</sourceDirectory>
+	  <testSourceDirectory>src/test/scala</testSourceDirectory>
+		-->
 		<plugins>
 			<plugin>
 				<groupId>org.scala-tools</groupId>
@@ -130,11 +130,11 @@ central repo.
 						</goals>
 						<configuration>
 
-<!--			This works for compiling, but not for displaying the source folders in Netbeans.
-				So we are instead using SVN externals to create a tree in Maven-preferred form.
-							<sourceDir>../../src_scala</sourceDir>
-							<sourceDir>../../src_java</sourceDir>
--->
+							<!--			This works for compiling, but not for displaying the source folders in Netbeans.
+											So we are instead using SVN externals to create a tree in Maven-preferred form.
+														<sourceDir>../../src_scala</sourceDir>
+														<sourceDir>../../src_java</sourceDir>
+							-->
 						</configuration>
 						
 					</execution>
@@ -142,11 +142,11 @@ central repo.
 			</plugin>
 
 			<!--
-			 <plugin> <groupId>org.codehaus.mojo</groupId> <artifactId>build-helper-maven-plugin</artifactId> 
-				<executions> <execution> <id>add-source</id> <phase>generate-sources</phase> 
-				<goals> <goal>add-source</goal> </goals> <configuration> <sources> <source>src/main/scala</source> 			
-			</sources> </configuration> </execution> </executions> </plugin> 
-				-->
+		 <plugin> <groupId>org.codehaus.mojo</groupId> <artifactId>build-helper-maven-plugin</artifactId> 
+			<executions> <execution> <id>add-source</id> <phase>generate-sources</phase> 
+			<goals> <goal>add-source</goal> </goals> <configuration> <sources> <source>src/main/scala</source> 			
+		</sources> </configuration> </execution> </executions> </plugin> 
+			-->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
@@ -157,8 +157,8 @@ central repo.
 					
 					<useFile>false</useFile>
 					<disableXmlReport>true</disableXmlReport>
-          <!-- If you have classpath issue like NoDefClassError,... -->
-          <!-- useManifestOnlyJar>false</useManifestOnlyJar -->
+					<!-- If you have classpath issue like NoDefClassError,... -->
+					<!-- useManifestOnlyJar>false</useManifestOnlyJar -->
 					<includes>
 						
 						<include>**/*Test.*</include>

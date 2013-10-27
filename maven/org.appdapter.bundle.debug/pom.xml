@@ -47,7 +47,14 @@
                 <configuration>
                     <instructions>
                         <Bundle-Activator>org.appdapter.bundle.debug.Activator</Bundle-Activator>
-						<Export-Package>org.appdapter.*</Export-Package>
+						<!-- If we are not specific enough in our Export-Package, BND will re-export imported packages 
+							(e.g. the Activator packages it finds in the ext-bundles).
+						-->
+						<Export-Package>
+							org.appdapter.core.*, 
+							org.appdapter.bundle.debug, 
+							org.appdapter.bind.log4j
+						</Export-Package>
                     </instructions>
                 </configuration>
             </plugin>

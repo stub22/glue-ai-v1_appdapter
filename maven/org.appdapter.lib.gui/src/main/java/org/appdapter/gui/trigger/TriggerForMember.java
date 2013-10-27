@@ -26,8 +26,8 @@ import javax.swing.AbstractButton;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 
-import org.appdapter.api.trigger.AnyOper.AskIfEqual;
-import org.appdapter.api.trigger.AnyOper.UISalient;
+import org.appdapter.core.debug.UIAnnotations.AskIfEqual;
+import org.appdapter.core.debug.UIAnnotations.UISalient;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.api.trigger.TriggerImpl;

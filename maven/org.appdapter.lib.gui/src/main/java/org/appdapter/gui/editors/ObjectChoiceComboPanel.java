@@ -34,7 +34,7 @@ import javax.swing.event.ListDataListener;
 import javax.swing.table.TableCellEditor;
 import javax.swing.tree.TreeCellEditor;
 
-import org.appdapter.api.trigger.AnyOper.UserInputComponent;
+
 import org.appdapter.core.jvm.GetObject;
 import org.appdapter.core.convert.NoSuchConversionException;
 import org.appdapter.core.convert.ReflectUtils;
@@ -51,6 +51,7 @@ import org.appdapter.gui.swing.SmallObjectView;
 import org.appdapter.gui.table.CellEditorComponent;
 import org.appdapter.gui.table.PropertyEditorToCellEditor;
 import org.appdapter.gui.trigger.TriggerMouseAdapter;
+import org.appdapter.gui.util.Annotations.UserInputComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

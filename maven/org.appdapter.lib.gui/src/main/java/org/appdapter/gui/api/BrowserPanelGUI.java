@@ -3,7 +3,7 @@ package org.appdapter.gui.api;
 import java.beans.PropertyVetoException;
 import java.util.Iterator;
 
-import org.appdapter.api.trigger.AnyOper.UIProvider;
+import org.appdapter.gui.util.Annotations.UIProvider;
 
 public interface BrowserPanelGUI extends DisplayContext, IShowObjectMessageAndErrors, UIProvider {
 	

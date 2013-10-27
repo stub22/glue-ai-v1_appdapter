@@ -18,17 +18,16 @@ package org.appdapter.core.debug;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-//  Now I woud have to have KnownComponent to have UI annotations, 
-// which I must have in order to log anything...
-// So the class 
-// import org.appdapter.core.component.KnownComponent;
+
 import org.appdapter.core.convert.OptionalArg;
-// import org.appdapter.core.name.Ident;
+
+
 
 /**
+ * @author logicmoo
  * @author Stu B. <www.texpedient.com>
  * 
- * This was copied from AnyOper, which appeared to be 
+ * Contains annotations used at the debug layer, and out.
  */
 
 public interface UIAnnotations {
@@ -142,9 +141,7 @@ public interface UIAnnotations {
 	static interface ApplyToClassInterfaces {
 
 	}
-	public interface UIProvider {
 
-	}
 	// Used by Don'tAdd, which is used in ReflectUtils
 	public interface OntoPriority extends UIAnnotations { // AnyOper {
 	}
@@ -152,11 +149,9 @@ public interface UIAnnotations {
 	// Used in ReflectUTils.	
 	public interface HRKRefinement extends  UIAnnotations {  // AnyOper {
 	}
+
+
 /*
-	public interface HRKAdded extends AnyOper {
-
-	}
-
 	public interface NamedClassObservable extends AnyOper {
 
 	}
@@ -167,11 +162,9 @@ public interface UIAnnotations {
 	public interface NamedClassValue extends AnyOper {
 
 	}
+*/
 
-	public interface UserInputComponent {
-
-	}
-
+/*
 	public interface NamedClassServiceFactory extends NamedClassService {
 
 	}

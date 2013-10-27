@@ -1,17 +1,12 @@
 package org.appdapter.gui.api;
 
 import java.awt.Component;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
-import java.beans.VetoableChangeListener;
 import java.util.Map;
-import java.util.Set;
 
-import javax.swing.JPanel;
 
-import org.appdapter.api.trigger.AnyOper.UIHidden;
-import org.appdapter.api.trigger.AnyOper.UIProvider;
+import org.appdapter.core.debug.UIAnnotations.UIHidden;
+
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.api.trigger.UserResult;

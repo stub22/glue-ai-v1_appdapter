@@ -7,7 +7,7 @@ import java.lang.reflect.Method;
 
 import javax.swing.AbstractButton;
 
-import org.appdapter.api.trigger.AnyOper.UISalient;
+import org.appdapter.core.debug.UIAnnotations.UISalient;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.api.trigger.TriggerImpl;

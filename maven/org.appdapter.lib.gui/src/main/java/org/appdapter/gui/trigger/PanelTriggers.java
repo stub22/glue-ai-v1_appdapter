@@ -16,20 +16,17 @@
 
 package org.appdapter.gui.trigger;
 
-import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import org.appdapter.api.trigger.AnyOper.UtilClass;
+
 import org.appdapter.api.trigger.TriggerImpl;
-import org.appdapter.core.store.Repo;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.ScreenBox;
 import org.appdapter.gui.api.ScreenBox.Kind;
 import org.appdapter.gui.browse.BrowseTabFuncs;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import com.hp.hpl.jena.query.Dataset;
-import com.hp.hpl.jena.rdf.model.Model;
+
 
 /**
  * @author Stu B. <www.texpedient.com>

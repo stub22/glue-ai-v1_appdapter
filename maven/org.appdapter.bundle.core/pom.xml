@@ -113,7 +113,8 @@
              
              We do this visibly with Jena (not on purpose for the IF/THEN/ELSE)
 
-             When we didn't want this, then we need to make sure we give them jena only at compile time and we'd need to hide it from exports, but not runtime correct?  
+             When we didn't want this, then we need to make sure we give them jena only at compile time and 
+			we'd need to hide it from exports, but not runtime correct?  
             
                         
             -->

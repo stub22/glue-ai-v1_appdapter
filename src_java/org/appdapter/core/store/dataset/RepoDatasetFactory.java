@@ -23,8 +23,8 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.appdapter.api.trigger.AnyOper;
-import org.appdapter.api.trigger.AnyOper.UIHidden;
-import org.appdapter.api.trigger.AnyOper.UtilClass;
+import org.appdapter.core.debug.UIAnnotations.UIHidden;
+import org.appdapter.core.debug.UIAnnotations.UtilClass;
 import org.appdapter.bind.rdf.jena.model.JenaFileManagerUtils;
 import org.appdapter.bind.rdf.jena.sdb.SdbStoreFactory;
 import org.appdapter.core.convert.ReflectUtils;

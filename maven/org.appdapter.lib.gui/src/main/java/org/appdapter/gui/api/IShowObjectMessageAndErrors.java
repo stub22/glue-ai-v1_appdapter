@@ -1,7 +1,8 @@
 package org.appdapter.gui.api;
 
-import org.appdapter.api.trigger.AnyOper.UIProvider;
+
 import org.appdapter.api.trigger.UserResult;
+import org.appdapter.gui.util.Annotations.UIProvider;
 
 public interface IShowObjectMessageAndErrors extends UIProvider {
 

@@ -60,6 +60,9 @@ import org.slf4j.LoggerFactory;
 
 import com.hp.hpl.jena.shared.JenaException;
 
+import org.appdapter.gui.util.Annotations.UserInputComponent;
+
+
 @SuppressWarnings({ "serial" })
 public class PropertyValueControl extends JVPanel implements PropertyEditor, PropertyChangeListener, IValidate, GetSetObject, ValueEditor, CellEditorComponent,
 		org.appdapter.core.convert.ToFromKeyConverter<Object, String> {

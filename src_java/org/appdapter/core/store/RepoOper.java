@@ -27,8 +27,8 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.appdapter.api.trigger.AnyOper;
-import org.appdapter.api.trigger.AnyOper.UIHidden;
-import org.appdapter.api.trigger.AnyOper.UtilClass;
+import org.appdapter.core.debug.UIAnnotations.UIHidden;
+import org.appdapter.core.debug.UIAnnotations.UtilClass;
 import org.appdapter.api.trigger.TriggerImpl;
 import org.appdapter.core.store.dataset.RepoDatasetFactory;
 import org.appdapter.core.store.dataset.UserDatasetFactory;

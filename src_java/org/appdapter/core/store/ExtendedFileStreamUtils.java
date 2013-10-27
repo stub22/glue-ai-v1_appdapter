@@ -27,7 +27,7 @@ import java.net.URL;
 import java.util.Iterator;
 import org.appdapter.fileconv.FileStreamUtils;
 
-import org.appdapter.api.trigger.AnyOper.UISalient;
+import org.appdapter.core.debug.UIAnnotations.UISalient;
 import org.appdapter.bind.rdf.jena.model.JenaFileManagerUtils;
 import org.appdapter.core.boot.ClassLoaderUtils;
 import org.appdapter.core.log.Debuggable;
