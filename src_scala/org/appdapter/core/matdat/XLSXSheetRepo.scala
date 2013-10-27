@@ -19,7 +19,7 @@ package org.appdapter.core.matdat
 import com.hp.hpl.jena.query.{ ResultSetFactory, ResultSet, QuerySolution, Dataset }
 import com.hp.hpl.jena.rdf.model.{ Resource, RDFNode, ModelFactory, Model, Literal }
 import java.io.Reader
-import org.appdapter.core.store.{ FileStreamUtils }
+import org.appdapter.core.store.{ ExtendedFileStreamUtils }
 import org.appdapter.impl.store.QueryHelper
 import scala.collection.JavaConversions.asScalaBuffer
 import org.appdapter.impl.store.DirectRepo
@@ -101,7 +101,8 @@ object XLSXSheetRepoLoader extends BasicDebugger {
     val tgtModel: Model = ModelFactory.createDefaultModel();
     tgtModel.setNsPrefixes(nsJavaMap)
     val modelInsertProc = new SemSheet.ModelInsertSheetProc(tgtModel);
-    val reader: Reader = FileStreamUtils.getWorkbookSheetCsvReaderAt(sheetLocation, sheetName, fileModelCLs);
+	val efsu = new ExtendedFileStreamUtils()
+    val reader: Reader = efsu.getWorkbookSheetCsvReaderAt(sheetLocation, sheetName, fileModelCLs);
     MatrixData.processSheetR(reader, modelInsertProc.processRow);
     getLogger.debug("tgtModel=" + tgtModel)
     tgtModel;
@@ -109,7 +110,8 @@ object XLSXSheetRepoLoader extends BasicDebugger {
 
   def readDirectoryModelFromXLSX(sheetLocation: String, namespaceSheetName: String, dirSheetName: String, fileModelCLs: java.util.List[ClassLoader] = null): Model = {
     getLogger.debug("readDirectoryModelFromXLSX - start")
-    val namespaceSheetReader = FileStreamUtils.getWorkbookSheetCsvReaderAt(sheetLocation, namespaceSheetName, fileModelCLs);
+	val efsu = new ExtendedFileStreamUtils()
+    val namespaceSheetReader = efsu.getWorkbookSheetCsvReaderAt(sheetLocation, namespaceSheetName, fileModelCLs);
     val nsJavaMap: java.util.Map[String, String] = MatrixData.readJavaMapFromSheetR(namespaceSheetReader);
     getLogger.debug("Got NS map: " + nsJavaMap)
     val dirModel: Model = readModelSheetX(sheetLocation, dirSheetName, nsJavaMap, fileModelCLs);

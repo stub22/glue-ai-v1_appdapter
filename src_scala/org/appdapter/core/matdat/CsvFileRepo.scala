@@ -19,7 +19,7 @@ package org.appdapter.core.matdat
 import java.io.{ InputStreamReader, Reader }
 
 import org.appdapter.core.log.BasicDebugger
-import org.appdapter.core.store.{ FileStreamUtils, Repo }
+import org.appdapter.core.store.{ ExtendedFileStreamUtils, Repo }
 import org.appdapter.impl.store.QueryHelper
 
 import com.hp.hpl.jena.query.{ Dataset, QuerySolution, ResultSet, ResultSetFactory }
@@ -107,7 +107,8 @@ object CsvFileSheetLoader extends BasicDebugger {
   }
 
   def getCsvReaderAt(dirSheet: String, fileModelCLs: java.util.List[ClassLoader]): Reader = {
-    val is = FileStreamUtils.openInputStreamOrNull(dirSheet, fileModelCLs);
+	val efsu = new ExtendedFileStreamUtils();
+    val is = efsu.openInputStreamOrNull(dirSheet, fileModelCLs);
     if (is == null) {
       getLogger.error("Cant get getCsvReaderAt =" + dirSheet)
       return null;

@@ -24,7 +24,7 @@ import org.appdapter.core.log.BasicDebugger
 import org.appdapter.core.name.Ident
 import org.appdapter.core.store.{ Repo, RepoOper }
 import org.appdapter.impl.store.{ DirectRepo, QueryHelper }
-import org.appdapter.core.store.{ FileStreamUtils }
+import org.appdapter.core.store.{ ExtendedFileStreamUtils }
 
 import com.hp.hpl.jena.query.{ Dataset, QuerySolution }
 import com.hp.hpl.jena.rdf.model.{ Literal, Model, Resource }

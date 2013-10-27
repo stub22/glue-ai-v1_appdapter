@@ -25,7 +25,7 @@ import org.appdapter.impl.store.QueryHelper
 import com.hp.hpl.jena.query.{ Dataset, QuerySolution, ResultSetFactory, ResultSet }
 import com.hp.hpl.jena.rdf.model.{ Resource, RDFNode, ModelFactory, Model, Literal }
 import java.io.Reader
-import org.appdapter.core.store.{ FileStreamUtils }
+import org.appdapter.core.store.{ ExtendedFileStreamUtils }
 import org.appdapter.impl.store.QueryHelper
 import scala.collection.JavaConversions.asScalaBuffer
 import org.appdapter.impl.store.DirectRepo
