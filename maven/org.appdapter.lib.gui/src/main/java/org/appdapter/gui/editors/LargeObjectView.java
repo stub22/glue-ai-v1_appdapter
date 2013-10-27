@@ -15,7 +15,7 @@ import javax.swing.JLabel;
 import javax.swing.JTabbedPane;
 
 import org.appdapter.api.trigger.Box;
-import org.appdapter.api.trigger.SetObject;
+import org.appdapter.core.jvm.SetObject;
 import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.AddTabFrames;

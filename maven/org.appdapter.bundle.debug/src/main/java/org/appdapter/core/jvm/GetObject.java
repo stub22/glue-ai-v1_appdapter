@@ -1,4 +1,4 @@
-package org.appdapter.api.trigger;
+package org.appdapter.core.jvm;
 
 public interface GetObject<T> {
 	T getValue();

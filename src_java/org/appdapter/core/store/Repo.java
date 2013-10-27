@@ -20,8 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.appdapter.api.trigger.GetObject;
-import org.appdapter.api.trigger.SetObject;
+import org.appdapter.core.jvm.GetObject;
+import org.appdapter.core.jvm.SetObject;
 import org.appdapter.core.name.FreeIdent;
 import org.appdapter.core.name.Ident;
 import org.appdapter.core.store.dataset.RemoteDatasetProviderSpec;

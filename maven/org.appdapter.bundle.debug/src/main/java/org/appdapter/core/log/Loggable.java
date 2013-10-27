@@ -15,12 +15,12 @@
  */
 package org.appdapter.core.log;
 
-import org.appdapter.api.trigger.AnyOper.UIHidden;
+// import org.appdapter.api.trigger.AnyOper.UIHidden;
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
-@UIHidden
+// @UIHidden
 public interface Loggable {
 	public static int			IMPO_NORM		= 0;
 	public static int			IMPO_LO			= -10;

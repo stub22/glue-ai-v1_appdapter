@@ -17,7 +17,7 @@ import javax.swing.JComponent;
 import org.appdapter.api.trigger.AnyOper.AskIfEqual;
 import org.appdapter.api.trigger.AnyOper.UISalient;
 import org.appdapter.api.trigger.Box;
-import org.appdapter.api.trigger.GetObject;
+import org.appdapter.core.jvm.GetObject;
 import org.appdapter.api.trigger.MutableTrigger;
 import org.appdapter.api.trigger.TriggerImpl;
 import org.appdapter.core.convert.Convertable;

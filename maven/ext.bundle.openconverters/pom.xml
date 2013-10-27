@@ -31,6 +31,7 @@
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi</artifactId>
 			<version>3.9</version>
+			<!-- For all these POI inputs, we are exporting the contents, so we don't want the dep to propagate -->
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -73,11 +74,13 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<!-- We excluded XMLBeans above.  Here we add an OSGi friendly version, which we private-packe below -->
+		<!-- We excluded XMLBeans above.  Here we add an OSGi friendly version, which we private-package below -->
 		<dependency>
 			<groupId>org.apache.xmlbeans</groupId>
 			<artifactId>xmlbeans</artifactId>
 			<version>2.5.0</version>
+			<!-- We do not want this dep to propagate! -->
+			<scope>provided</scope>
 		</dependency>
 
 		<!-- TODO: Let's move the POI-dependent features into their own bundle
@@ -118,26 +121,36 @@
 				<extensions>true</extensions>
 				<configuration>
                     <instructions>
-                        <!-- org.gjt.*;resolution:='optional', 
-                        sun.*;resolution:='optional',
-                        schemasMicrosoftComVml,org.joda,com.jidesoft, schemasMicrosoftComOfficeExcel,schemaorg_apache_xmlbeans.*,org.openxmlformats.schemas.drawingml.x2006.chart.impl,org.openxmlformats.*,org.apache.poi.*,
-                        org.apache.*;resolution:='optional',com.sun.*;resolution:='optional',com.apple.laf.*;resolution:='optional',apple.laf.*;resolution:='optional',
-						*;resolution:='optional'
 
-                        -->
-                        <Import-Package>com.sun.*;resolution:=optional,javax.*;resolution:=optional,*</Import-Package>
-                        <!-- we refer also to these classes:
-                        javax.crypto, javax.crypto.spec,javax.imageio, javax.imageio.metadata, javax.imageio.stream, javax.jmdns, javax.jms, javax.mail, javax.mail.internet, javax.management, javax.microedition.io, javax.naming,
-                        javax.security.auth.x500, javax.servlet, javax.servlet.http, javax.swing, javax.swing.border, javax.swing.event, javax.swing.table, javax.swing.text, javax.swing.tree, javax.xml.bind, javax.xml.validation, javax.xml.xpath, 
-                        com.sun.javadoc, com.sun.jdmk.comm, com.sun.msv.datatype, com.sun.msv.datatype.xsd, com.sun.tools.javadoc, 
-            -->
+                        <Import-Package>
+							<!-- Either of these actually needed by the fileconv ? -->
+							com.sun.*;resolution:=optional,
+							javax.*;resolution:=optional,
+							*
+						</Import-Package>
+
                         <Bundle-Activator>${project.groupId}.${project.artifactId}.osgi.Activator</Bundle-Activator>
 	
                         <Export-Package>
-						au.com.bytecode.opencsv.*,
-						org.apache.poi.*;-split-package:=merge-first
+							au.com.bytecode.opencsv.*,
+							org.apache.poi.*;-split-package:=merge-first
+						</Export-Package>
+						
+						<Private-Package>
+							<!-- These special-purpose facilities will be used nowhere outside the impl of this bundle -->
+							org.apache.xmlbeans.*,
+							schemasMicrosoftComOfficeOffice;-split-package:=merge-first,
+							schemasMicrosoftComOfficeExcel;-split-package:=merge-first,							
+							schemaorg_apache_xmlbeans.*;-split-package:=merge-first
+						</Private-Package>
+                    </instructions>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 
-				<!--							
+</project>
+				<!--		Might need a couple of these back at runtime, don't know yet.					
                         org.openxmlformats.schemas.spreadsheetml.x2006,
 					
                         com.ibm.uvm.tools,                     
@@ -163,21 +176,6 @@
 						org.openxmlformats.schemas.drawingml.x2006.chart.impl,
 						org.openxmlformats
 					-->
-						</Export-Package>
-						<Private-Package>
-						<!-- These special-purpose facilities will be used nowhere outside the impl of this bundle -->
-						org.apache.xmlbeans.*,
-						schemasMicrosoftComOfficeOffice;-split-package:=merge-first,
-                        schemasMicrosoftComOfficeExcel;-split-package:=merge-first,							
-						schemaorg_apache_xmlbeans.*;-split-package:=merge-first
-						</Private-Package>
-                    </instructions>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
-
-</project>
 <!--
 /*
  *  Copyright 2013 by The Appdapter Project (www.appdapter.org).

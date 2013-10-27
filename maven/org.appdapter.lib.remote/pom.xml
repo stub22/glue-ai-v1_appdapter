@@ -13,14 +13,7 @@
 	<description>Appdapter Maven project including Java/SPARQL Client, produces jar, not bundle.  Excludes concrete SLF4J binding.</description>
 
 	<dependencies>
-		<!--  Was using this for compile-edit workarounds, but now it's gone!
-		<dependency>
-			<groupId>org.jscience</groupId>
-			<artifactId>jscience-mathematics</artifactId>
-			<version>5.0-SNAPSHOT</version>
-			<scope>provided</scope>
-		</dependency>		
-		-->
+
 		<!-- *************** Compile Deps - mostly OSGi-friendly versions *********************** -->
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -40,12 +33,14 @@
 			<groupId>${project.groupId}</groupId>
 			<artifactId>ext.bundle.jena_all_2_10_1</artifactId>
 			<version>${project.version}</version>
+			<!-- Hmmmm - what's up with this?
 			<exclusions>
 				<exclusion>
 					<artifactId>org.osgi.core</artifactId>
 					<groupId>org.apache.felix</groupId>
 				</exclusion>
 			</exclusions>
+			-->
 		</dependency>
 
         <dependency>
@@ -61,11 +56,6 @@
             <version>${project.version}</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.5</version>
-        </dependency>
 	 
 	</dependencies>
 	

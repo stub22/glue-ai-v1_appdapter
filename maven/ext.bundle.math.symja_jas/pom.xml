@@ -12,12 +12,7 @@
     <name>${project.artifactId} - OSGi Bundle</name>
 
     <dependencies>
-        <dependency>
-            <groupId>org.apache.felix</groupId>
-            <artifactId>org.osgi.core</artifactId>
-            <version>1.4.0</version>
-            <scope>provided</scope>
-        </dependency>
+
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-math3</artifactId>
@@ -32,15 +27,6 @@
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
 			<version>11.0</version>
-		</dependency>
-		<dependency>
-			<!-- Log4J is used directly by some JAS classes -->
-			<groupId>org.apache.log4j</groupId>
-			<artifactId>com.springsource.org.apache.log4j</artifactId>
-			<version>1.2.16</version>
-			<!--
-			<scope>provided</scope>
-			-->
 		</dependency>
 		<dependency>
 			<!-- JAS has some embedded JUnit tests -->

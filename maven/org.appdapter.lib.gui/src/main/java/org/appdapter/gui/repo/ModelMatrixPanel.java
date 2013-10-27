@@ -26,7 +26,7 @@ import java.lang.reflect.Type;
 import java.util.List;
 
 import org.appdapter.api.trigger.Box;
-import org.appdapter.api.trigger.CallableWithParameters;
+import org.appdapter.core.jvm.CallableWithParameters;
 import org.appdapter.core.convert.ToFromKeyConverter;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.swing.CantankerousJob;

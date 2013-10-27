@@ -21,7 +21,7 @@ import java.util.WeakHashMap;
 import javax.swing.JPanel;
 
 import org.appdapter.api.trigger.Box;
-import org.appdapter.api.trigger.ObjectKey;
+import org.appdapter.core.jvm.ObjectKey;
 import org.appdapter.core.component.KnownComponent;
 import org.appdapter.gui.api.BoxPanelSwitchableView;
 import org.appdapter.gui.api.DisplayContext;

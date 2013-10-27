@@ -49,7 +49,7 @@ import javax.swing.tree.TreeModel;
 import org.appdapter.api.trigger.AnyOper;
 import org.appdapter.api.trigger.AnyOper.UISalient;
 import org.appdapter.api.trigger.Box;
-import org.appdapter.api.trigger.CallableWithParameters;
+import org.appdapter.core.jvm.CallableWithParameters;
 import org.appdapter.api.trigger.MutableBox;
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.api.trigger.TriggerImpl;
