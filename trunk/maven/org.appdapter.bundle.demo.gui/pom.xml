@@ -9,7 +9,7 @@
 
 	<!-- Since this is a bundle, it should have the word bundle in the artifactId -->
 
-	<artifactId>org.appdapter.demo.gui</artifactId>
+	<artifactId>org.appdapter.bundle.demo.gui</artifactId>
 	<packaging>bundle</packaging>
 	<name>${project.artifactId} - OSGi</name>
     <description>Appdapter GUI  Demo OSGi Bundle</description>	
@@ -20,6 +20,11 @@
             <artifactId>org.appdapter.bundle.gui</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>org.appdapter.bundle.fileconv</artifactId>
+            <version>${project.version}</version>
+        </dependency>		
 		<dependency>
 			<groupId>org.apache.servicemix.bundles</groupId>
 			<artifactId>org.apache.servicemix.bundles.junit</artifactId>
