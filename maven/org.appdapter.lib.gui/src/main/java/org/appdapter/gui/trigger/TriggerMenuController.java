@@ -13,7 +13,7 @@ import javax.swing.JPopupMenu;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContext;
-import org.appdapter.api.trigger.GetObject;
+import org.appdapter.core.jvm.GetObject;
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.core.convert.Convertable;
 import org.appdapter.core.convert.ReflectUtils;

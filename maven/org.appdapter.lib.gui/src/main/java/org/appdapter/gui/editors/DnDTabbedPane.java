@@ -43,7 +43,7 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
 
-import org.appdapter.api.trigger.CallableWithParameters;
+import org.appdapter.core.jvm.CallableWithParameters;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.swing.JJPanel;

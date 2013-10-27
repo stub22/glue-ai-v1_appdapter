@@ -17,6 +17,11 @@
 	</description>	
 
 	<dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>ext.bundle.osgi.common</artifactId>
+            <version>${project.version}</version>
+        </dependency>		
 		<dependency>
            <groupId>${project.groupId}</groupId>
            <artifactId>org.appdapter.lib.core</artifactId>
@@ -25,12 +30,14 @@
 				lib to propagate out to users of this bundle.
 			-->
            <scope>provided</scope>
+		  <!--  Should no longer be needed. 
            <exclusions>
                <exclusion>
                    <artifactId>xmlbeans</artifactId>
                    <groupId>org.apache.xmlbeans</groupId>
                </exclusion>
            </exclusions>
+		   -->
        </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -45,11 +52,7 @@
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency-->
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>ext.bundle.osgi.common</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+
 
 
 

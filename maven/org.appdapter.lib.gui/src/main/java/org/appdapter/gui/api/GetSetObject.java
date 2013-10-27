@@ -1,7 +1,7 @@
 package org.appdapter.gui.api;
 
-import org.appdapter.api.trigger.GetObject;
-import org.appdapter.api.trigger.SetObject;
+import org.appdapter.core.jvm.GetObject;
+import org.appdapter.core.jvm.SetObject;
 
 
 

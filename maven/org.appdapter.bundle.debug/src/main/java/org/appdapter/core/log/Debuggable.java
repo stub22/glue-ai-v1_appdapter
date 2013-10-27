@@ -12,8 +12,9 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.logging.Logger;
 
-import org.appdapter.api.trigger.AnyOper.UIHidden;
-import org.appdapter.api.trigger.AnyOper.UISalient;
+
+import org.appdapter.core.debug.UIAnnotations.UIHidden;
+import org.appdapter.core.debug.UIAnnotations.UISalient;
 import org.appdapter.core.convert.ReflectUtils;
 
 @UIHidden
@@ -199,9 +200,9 @@ public abstract class Debuggable extends BasicDebugger {
 		}
 	};
 
-	@UISalient
+//	@UISalient
 	public static boolean useDebuggableToString = true;
-	@UISalient
+//	@UISalient
 	public static boolean useSystemConsoleBreaks = false;
 
 	public static String toInfoStringF(Object o) {

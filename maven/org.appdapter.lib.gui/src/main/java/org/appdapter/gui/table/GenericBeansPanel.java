@@ -34,7 +34,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 
 import org.appdapter.api.trigger.Box;
-import org.appdapter.api.trigger.CallableWithParameters;
+import org.appdapter.core.jvm.CallableWithParameters;
 import org.appdapter.core.convert.ToFromKeyConverter;
 import org.appdapter.gui.api.WrapperValue;
 import org.appdapter.gui.browse.Utility;

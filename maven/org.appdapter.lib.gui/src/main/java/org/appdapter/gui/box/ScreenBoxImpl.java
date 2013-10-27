@@ -41,7 +41,7 @@ import org.appdapter.api.trigger.AnyOper.HasIdent;
 import org.appdapter.api.trigger.AnyOper.UIHidden;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContextImpl;
-import org.appdapter.api.trigger.SetObject;
+import org.appdapter.core.jvm.SetObject;
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.core.component.KnownComponent;
 import org.appdapter.core.convert.ReflectUtils;

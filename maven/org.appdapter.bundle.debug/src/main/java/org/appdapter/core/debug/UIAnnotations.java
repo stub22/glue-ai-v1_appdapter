@@ -13,20 +13,25 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.appdapter.api.trigger;
+package org.appdapter.core.debug;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-import org.appdapter.core.component.KnownComponent;
+//  Now I woud have to have KnownComponent to have UI annotations, 
+// which I must have in order to log anything...
+// So the class 
+// import org.appdapter.core.component.KnownComponent;
 import org.appdapter.core.convert.OptionalArg;
-import org.appdapter.core.name.Ident;
+// import org.appdapter.core.name.Ident;
 
 /**
  * @author Stu B. <www.texpedient.com>
+ * 
+ * This was copied from AnyOper, which appeared to be 
  */
-// / Dmiles needed something in java to cover Dmiles's Scala blindspots
-public interface AnyOper {
+
+public interface UIAnnotations {
 
 	public interface UtilClass {
 
@@ -137,13 +142,54 @@ public interface AnyOper {
 	static interface ApplyToClassInterfaces {
 
 	}
+	public interface UIProvider {
 
-	@UISalient(ApplyToClass = "HASIDENT")
-	static public interface HasIdent extends ApplyToClassInterfaces {
-		@UISalient(MenuName = "Show Ident", ToValueMethod = "toString") Ident getIdent();
-
-		Class HASIDENT = KnownComponent.class;
+	}
+	// Used by Don'tAdd, which is used in ReflectUtils
+	public interface OntoPriority extends UIAnnotations { // AnyOper {
 	}
 
+	// Used in ReflectUTils.	
+	public interface HRKRefinement extends  UIAnnotations {  // AnyOper {
+	}
+/*
+	public interface HRKAdded extends AnyOper {
 
+	}
+
+	public interface NamedClassObservable extends AnyOper {
+
+	}
+
+	public interface NamedClassService extends AnyOper {
+	}
+
+	public interface NamedClassValue extends AnyOper {
+
+	}
+
+	public interface UserInputComponent {
+
+	}
+
+	public interface NamedClassServiceFactory extends NamedClassService {
+
+	}
+
+	public interface LegacyClass extends AnyOper {
+
+	}
+
+	public interface UseLast extends OntoPriority {
+	}
+
+	public interface UseFirst extends OntoPriority {
+	}
+*/
+	public interface DontAdd extends OntoPriority {
+	}
+
+	public interface AskIfEqual {
+		public boolean same(Object obj);
+	}
 }

@@ -29,7 +29,7 @@ import java.lang.reflect.Type;
 import javax.swing.JFileChooser;
 
 import org.appdapter.api.trigger.AnyOper.UtilClass;
-import org.appdapter.api.trigger.GetObject;
+import org.appdapter.core.jvm.GetObject;
 import org.appdapter.core.matdat.OmniLoaderRepo;
 import org.appdapter.core.name.Ident;
 import org.appdapter.core.store.Repo;

@@ -30,7 +30,7 @@ import java.util.List;
 import javax.swing.JFileChooser;
 
 import org.appdapter.api.trigger.Box;
-import org.appdapter.api.trigger.GetObject;
+import org.appdapter.core.jvm.GetObject;
 import org.appdapter.api.trigger.AnyOper.UISalient;
 import org.appdapter.api.trigger.AnyOper.UtilClass;
 import org.appdapter.core.convert.ToFromKeyConverter;

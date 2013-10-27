@@ -4,7 +4,7 @@ import java.awt.Component;
 import java.util.Collection;
 import java.util.Map;
 
-import org.appdapter.api.trigger.SetObject;
+import org.appdapter.core.jvm.SetObject;
 import org.appdapter.core.convert.OptionalArg;
 import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.gui.api.AddTabFrames.SetTabTo;

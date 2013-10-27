@@ -19,7 +19,7 @@ import javax.swing.JSlider;
 import javax.swing.JTextField;
 
 import org.appdapter.api.trigger.Box;
-import org.appdapter.api.trigger.GetObject;
+import org.appdapter.core.jvm.GetObject;
 import org.appdapter.api.trigger.UserResult;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.BoxPanelSwitchableView;

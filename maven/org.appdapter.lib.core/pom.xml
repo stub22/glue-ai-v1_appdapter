@@ -47,7 +47,7 @@ central repo.
 	</parent>		
 	<artifactId>org.appdapter.lib.core</artifactId>
 	<packaging>jar</packaging>
-	<name>${artifactId} - POJO + Scala</name>
+	<name>${project.artifactId} - POJO + Scala</name>
 
 	<description>Appdapter Maven project including Java and Scala, produces jar, not bundle.  Excludes concrete SLF4J binding.</description>
 
@@ -62,11 +62,13 @@ central repo.
             <version>${project.version}</version>
 		</dependency>		
 
+
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>ext.bundle.openconverters</artifactId>
+			<artifactId>org.appdapter.bundle.debug</artifactId>
             <version>${project.version}</version>
-		</dependency>	
+		</dependency>
+
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>org.appdapter.bundle.fileconv</artifactId>
