@@ -15,7 +15,8 @@ public class Activator extends ExtBundleActivatorBase {
 		debugLoaders(org.appdapter.core.boot.ClassLoaderUtils.class);
 		debugLoaders(org.appdapter.gui.demo.DemoBrowser.class);
 		debugLoaders(org.appdapter.gui.browse.Utility.class);
-		org.appdapter.ext.bundle.openconverters.osgi.Activator.ensureConvertersClassesAreFindable();
+		//   moved to o.a.bundle.fileconv Activator.
+		//	ext.bundle.openconverters.osgi.Activator.ensureConvertersClassesAreFindable();
 		org.appdapter.gui.demo.DemoBrowser.main(args);
 		System.out.println("[System.out] ...all done!");
 	}

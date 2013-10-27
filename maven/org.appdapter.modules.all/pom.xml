@@ -36,7 +36,8 @@ Version less parent will be allowed in Maven 3.1.
 		<module>../org.appdapter.modules.felix</module>
 		<module>../org.appdapter.modules.demo</module>
 		<module>../org.appdapter.modules.network</module>
-		<module>../org.appdapter.modules.math</module>		
+		<module>../org.appdapter.modules.math</module>	
+		<module>../org.appdapter.modules.gui</module>
 	</modules>
 	<properties>
 		<maven.compiler.source>1.6</maven.compiler.source>

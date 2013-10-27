@@ -1,16 +1,12 @@
 package org.appdapter.bundle.fileconv;
 
-import org.osgi.framework.BundleActivator;
+import ext.osgi.common.ExtBundleActivatorBase;
 import org.osgi.framework.BundleContext;
 
-public class Activator implements BundleActivator {
+public class Activator  extends ExtBundleActivatorBase {
 
-    public void start(BundleContext context) throws Exception {
-        // TODO add activation code here
-    }
-
-    public void stop(BundleContext context) throws Exception {
-        // TODO add deactivation code here
-    }
-
+	@Override protected void handleFrameworkStartedEvent(BundleContext bundleCtx) throws Exception {
+		super.handleFrameworkStartedEvent(bundleCtx);
+		ext.bundle.openconverters.osgi.Activator.ensureConvertersClassesAreFindable();
+	}
 }
