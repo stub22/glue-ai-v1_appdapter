@@ -28,7 +28,7 @@ public class FirstStandaloneTest extends TestCase {
 	 * Rigourous Test :-)
 	 */
 	public void testApp() {
-		org.appdapter.ext.bundle.openconverters.osgi.Activator.ensureConvertersClassesAreFindable();
+		ext.bundle.openconverters.osgi.Activator.ensureConvertersClassesAreFindable();
 		assertTrue(true);
 	}
 }
