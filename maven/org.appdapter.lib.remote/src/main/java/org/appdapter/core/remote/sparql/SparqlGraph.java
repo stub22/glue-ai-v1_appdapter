@@ -8,14 +8,6 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.Update;
-import org.openrdf.query.UpdateExecutionException;
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.http.HTTPRepository;
 
 import com.hp.hpl.jena.graph.BulkUpdateHandler;
 import com.hp.hpl.jena.graph.Capabilities;
@@ -53,7 +45,7 @@ public class SparqlGraph extends JenaWrappedGraph implements GraphWithPerform, G
 	private PrefixMapping prefixMapping = new PrefixMappingImpl();
 	private GraphEventManager eventManager;
 
-	private Repository repository;
+	SparqlEndpointClient repository;
 
 	/**
 	 * Returns a SparqlGraph for the union of named graphs in a remote repository
@@ -71,7 +63,7 @@ public class SparqlGraph extends JenaWrappedGraph implements GraphWithPerform, G
 	public SparqlGraph(String endpointURI, String graphURI) {
 		this.endpointURI = endpointURI;
 		this.graphURI = graphURI;
-		this.repository = new HTTPRepository(endpointURI);
+		this.repository = new SparqlEndpointClient(endpointURI);
 	}
 
 	public String getEndpointURI() {
@@ -82,10 +74,10 @@ public class SparqlGraph extends JenaWrappedGraph implements GraphWithPerform, G
 		return graphURI;
 	}
 
-	public RepositoryConnection getConnection() {
+	public SparqlEndpointClient getConnection() {
 		try {
 			return this.repository.getConnection();
-		} catch (RepositoryException e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -95,22 +87,14 @@ public class SparqlGraph extends JenaWrappedGraph implements GraphWithPerform, G
 	}
 
 	public void executeUpdate(String updateString) {
+
+		SparqlEndpointClient conn = getConnection();
 		try {
-			RepositoryConnection conn = getConnection();
-			try {
-				Update u = conn.prepareUpdate(QueryLanguage.SPARQL, updateString);
-				u.execute();
-			} catch (MalformedQueryException e) {
-				throw new RuntimeException(e);
-			} catch (UpdateExecutionException e) {
-				log.error(e, e);
-				log.error("Update command: \n" + updateString);
-				throw new RuntimeException(e);
-			} finally {
-				conn.close();
-			}
-		} catch (RepositoryException re) {
-			throw new RuntimeException(re);
+			conn.executeUpdate(updateString);
+		} catch (Exception e) {
+			log.error(e, e);
+			log.error("Update command: \n" + updateString);
+			throw new RuntimeException(e);
 		}
 	}
 
