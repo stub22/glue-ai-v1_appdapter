@@ -34,10 +34,11 @@ import org.appdapter.core.convert.ReflectUtils;
  *    <li> 20.01.2001/Bartlomiej Niechwiej - a classLoader parameter added to getClasses methods, additional API provided </li>
  *  </ul>
  *
- * 
+ *
  */
 public class ClassFinder {
 
+	public static boolean DISABLE_CLASS_FINDER = true;
 	/**
 	 * Class with these modifiers are skipped while searching the JVM classes.
 	 */
@@ -48,6 +49,8 @@ public class ClassFinder {
 	 * the given class, directly or indirectly.
 	 */
 	public static <T> Set<Class<? extends T>> getClasses(Class<T> ancestor) throws IOException {
+		if (DISABLE_CLASS_FINDER)
+			return new HashSet();
 		///.trace("Scaning for subclasses of " + ancestor);
 		if (class_Cache != null && class_Cache.size() > 10) {
 			return (Set<Class<? extends T>>) getImplementingClasses(ancestor);
@@ -102,6 +105,8 @@ public class ClassFinder {
 
 	public static <T> Set<Class<? extends T>> getClassesImpl(String packageName, Class<T> ancestor, ClassLoader classLoader0, String dirsString, int undesirableClassModifiers) throws IOException {
 		Set<Class<? extends T>> classes = new HashSet();
+		if (DISABLE_CLASS_FINDER)
+			return classes;
 
 		if (packageName == null) {
 			packageName = "";
@@ -223,6 +228,8 @@ public class ClassFinder {
 
 	public synchronized static Set getAllClassNames0(String dirsString) throws IOException {
 		Set classNames = new HashSet();
+		if (DISABLE_CLASS_FINDER)
+			return classNames;
 		Set classPathFiles = getClassPathFiles();
 		if (dirsString != null)
 			classPathFiles.addAll(getFilesFromExtDirs(dirsString));
