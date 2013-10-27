@@ -1,18 +1,19 @@
 package org.appdapter.core.remote.sparql;
 
 import org.appdapter.core.matdat.OmniLoaderRepo;
+import org.appdapter.help.repo.RepoClient;
 
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Model;
 
-public class SparqlRepo extends OmniLoaderRepo {
+public class RepoFromClient extends OmniLoaderRepo {
 
-	private String endpointURI;
+	private RepoClient rc;
 	private String dirModelName;
 
-	public SparqlRepo(String endpointURI, String dirModelName) {
+	public RepoFromClient(RepoClient rc, String dirModelName) {
 		super(null);
-		this.endpointURI = endpointURI;
+		this.rc = rc;
 		this.dirModelName = dirModelName;
 	}
 
@@ -21,6 +22,10 @@ public class SparqlRepo extends OmniLoaderRepo {
 	}
 
 	@Override protected Dataset makeMainQueryDataset() {
-		return new SparqlDataset(new SparqlDatasetGraph(endpointURI));
+		return rc.getRepo().getMainQueryDataset();
+	}
+
+	@Override public Dataset getMainQueryDataset() {
+		return rc.getRepo().getMainQueryDataset();
 	}
 }
