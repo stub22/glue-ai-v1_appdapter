@@ -12,24 +12,30 @@
     <name>${project.artifactId} - OSGi Bundle</name>
 
     <dependencies>
-
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>ext.bundle.osgi.common</artifactId>
+            <version>${project.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-math3</artifactId>
 			<version>3.1.1</version>
 		</dependency>
+		<!--  Is a proper subset of "guava"? 
 		<dependency>
 			<groupId>com.google.collections</groupId>
 			<artifactId>google-collections</artifactId>
 			<version>1.0</version>
 		</dependency>
+		-->
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
 			<version>11.0</version>
 		</dependency>
 		<dependency>
-			<!-- JAS has some embedded JUnit tests -->
+			<!-- JAS has some embedded JUnit tests.  We absorb junit into our Private-Packages below. -->
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.6</version>
@@ -48,7 +54,12 @@
                     <instructions>
                         <Bundle-Activator>ext.bundle.math.symja.Activator</Bundle-Activator>
 						<!-- The following packages appear to not be exported by manifests of our deps above -->
-						<Private-Package>com.google.common.*,junit.*, org.junit.*, org.hamcrest.*</Private-Package>						
+						<Private-Package>
+							com.google.common.*,
+							junit.*, 
+							org.junit.*, 
+							org.hamcrest.*
+						</Private-Package>						
                     </instructions>
                 </configuration>
             </plugin>
