@@ -1,4 +1,4 @@
-package org.appdapter.ext.osgi.common;
+package ext.osgi.common;
 
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
