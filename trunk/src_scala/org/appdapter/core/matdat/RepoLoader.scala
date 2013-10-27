@@ -16,23 +16,26 @@
 
 package org.appdapter.core.matdat
 
+//  Booo - no promiscuous imports
 import java.util._
 
 import org.appdapter.bind.rdf.jena.model.JenaFileManagerUtils
 import org.appdapter.core.log.BasicDebugger
 import org.appdapter.core.name.Ident
 import org.appdapter.core.store.{ InitialBinding, Repo }
-import org.appdapter.core.store.FileStreamUtils
+import org.appdapter.core.store.ExtendedFileStreamUtils
 import org.appdapter.core.store.RepoOper
 
 import com.hp.hpl.jena.query.{ Dataset, QuerySolution }
 import com.hp.hpl.jena.rdf.model.Model
 import com.hp.hpl.jena.rdf.model.Resource
+//  Booo - no promiscuous imports
 import org.appdapter.impl.store._
 import org.appdapter.core.log.BasicDebugger
 
 /**
  * @author Stu B. <www.texpedient.com>
+ * @author logicmoo
  */
 
 abstract class InstallableRepoReader {
@@ -94,7 +97,7 @@ object FancyRepoLoader extends BasicDebugger {
   def readDirectoryModelFromURL(rdfURL: String, nsJavaMap: java.util.Map[String, String], fileModelCLs: java.util.List[ClassLoader]): Model = {
     try {
       getLogger.debug("readDirectoryModelFromURL - start {}", rdfURL)
-      val ext: java.lang.String = FileStreamUtils.getFileExt(rdfURL);
+      val ext: java.lang.String = org.appdapter.fileconv.FileStreamUtils.getFileExt(rdfURL);
       if (ext != null && (ext.equals("xlsx") || ext.equals("xls"))) {
         XLSXSheetRepoLoader.readDirectoryModelFromXLSX(rdfURL, "Nspc", "Dir", fileModelCLs);
       } else if (ext != null && (ext.equals("csv"))) {
@@ -111,7 +114,8 @@ object FancyRepoLoader extends BasicDebugger {
   // Makes single Models from xlsx/cvs/jenaURLs
   def readModelSheetFromURL(rdfURL: String, nsJavaMap: java.util.Map[String, String], clList: java.util.List[ClassLoader]): Model = {
     try {
-      val ext: java.lang.String = FileStreamUtils.getFileExt(rdfURL);
+		val efsu = new ExtendedFileStreamUtils()
+      val ext: java.lang.String = org.appdapter.fileconv.FileStreamUtils.getFileExt(rdfURL);
       if (ext != null && (ext.equals("xlsx") || ext.equals("xls"))) {
         XLSXSheetRepoLoader.loadXLSXSheetRepo(rdfURL, "Nspc", "Dir", clList, null).
           getMainQueryDataset().asInstanceOf[Dataset].getDefaultModel

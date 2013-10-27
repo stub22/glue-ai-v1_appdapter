@@ -16,7 +16,7 @@
 
 package org.appdapter.core.matdat
 
-import org.appdapter.core.store.{ FileStreamUtils }
+import org.appdapter.core.store.{ ExtendedFileStreamUtils }
 import java.io.Reader
 import java.util.Iterator
 import org.appdapter.bind.csv.datmat.TestSheetReadMain
@@ -119,7 +119,8 @@ class MapSheetProc(headerRowCount: Int, val keyColIdx: Int, val vColIdx: Int) ex
 object MatrixData extends BasicDebugger {
 
   def processSheet(url: String, processor: MatrixRow => Unit) {
-    val rawReader: Reader = FileStreamUtils.makeSheetURLDataReader(url);
+
+    val rawReader: Reader = org.appdapter.fileconv.FileStreamUtils.makeSheetURLDataReader(url);
     if (rawReader == null) {
     	getLogger().error("No sheet found: " + url, new FileNotFoundException(url))
     } else {
