@@ -8,11 +8,12 @@
 	</parent>
     <artifactId>ext.bundle.osgi.common</artifactId>
     <packaging>bundle</packaging>
-	<name>${project.artifactId} - OSGi - platform wrapper - IGNORE</name>
+	<name>${project.artifactId} - OSGi + Logging - platform wrapper</name>
 	
-	<description>OSGi platform dependency wrapper - of dubious value, so far!  This bundle sets up dependencies on specific versions of OSGi common components.
-				It doesn't really work right yet, since the deps are marked "provided" and are not propagated
-				to client projects.  You can pretty much ignore this project!</description>
+	<description>OSGi platform dependency wrapper - of dubious value, so far!  
+				This bundle sets up dependencies on specific versions of OSGi common components,
+				and our core logging infrastructure.
+	</description>
 				
     <dependencies>
         <dependency>
@@ -25,8 +26,24 @@
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.compendium</artifactId>
             <version>4.2.0</version>
+			<!--
 			<scope>provided</scope>
+			-->
         </dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.7.5</version>
+		</dependency>		
+		<dependency>
+			<!-- We supply Log4J itself, but *not* an SLF4J-Log4J binding -->
+			<!-- Needed at compile time so we can provide a utility to force the properties
+				resource URL in, due to TCCL issues with Log4J's default startup in OSGi
+				environment. -->
+			<groupId>org.apache.log4j</groupId>
+			<artifactId>com.springsource.org.apache.log4j</artifactId>
+			<version>1.2.16</version>
+		</dependency>		
     </dependencies>
 
     <build>

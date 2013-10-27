@@ -22,20 +22,9 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.osgi</groupId>
-			<artifactId>org.osgi.core</artifactId>
-			<version>4.2.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.osgi</groupId>
-			<artifactId>org.osgi.compendium</artifactId>
-			<version>4.2.0</version>
-		</dependency>
-		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>ext.bundle.xml.dom4j_161</artifactId>
 			<version>${project.version}</version>
-			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.poi</groupId>
@@ -115,29 +104,10 @@
 			<groupId>net.sf.opencsv</groupId>
 			<artifactId>opencsv</artifactId>
 			<version>2.3</version>
-		</dependency>
-		
-		
-		<dependency>
-			<!-- Needed at compile time so we can provide a utility to force the properties
-				resource URL in, due to TCCL issues with Log4J's default startup in OSGi
-				environment. -->
-
-			<groupId>org.apache.log4j</groupId>
-			<artifactId>com.springsource.org.apache.log4j</artifactId>
-			<version>1.2.16</version>
-			<!--   Wrong, we want this one to propagate.   Default "compile" scope is good.
 			<scope>provided</scope>
-			-->
 		</dependency>
-
-
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>1.7.5</version>
-		</dependency>
-
+		
+		
 		<!-- Problems in Felix, because A) System Bundle #0 supplies the JAXP APIs
 			at version 0.0., B) Dom4J specifies broad "uses" constraints on its exports.
 			C) Dom4J specifies version number >1.0 on SOME of its imports. [java] javax.xml.parsers;
@@ -186,32 +156,54 @@
                         sun.*;resolution:='optional',
                         schemasMicrosoftComVml,org.joda,com.jidesoft, schemasMicrosoftComOfficeExcel,schemaorg_apache_xmlbeans.*,org.openxmlformats.schemas.drawingml.x2006.chart.impl,org.openxmlformats.*,org.apache.poi.*,
                         org.apache.*;resolution:='optional',com.sun.*;resolution:='optional',com.apple.laf.*;resolution:='optional',apple.laf.*;resolution:='optional',
-						
-
 						*;resolution:='optional'
 
                         -->
-                        <Import-Package>schemasMicrosoftComOfficeOffice,
-                        schemasMicrosoftComOfficeExcel,org.apache.poi,
-                        org.openxmlformats.schemas.spreadsheetml.x2006,
-                        com.ibm.uvm.tools,                     
-                        org.apache.avalon.framework.logger, org.apache.crimson.jaxp, org.apache.log, org.apache.tools.ant, 
-                        org.apache.tools.ant.taskdefs, org.apache.tools.ant.types, org.apache.xml.resolver, org.apache.xml.resolver.tools, org.gjt.xpp, org.jaxen,
-                        org.jaxen.dom4j, org.jaxen.pattern, org.jaxen.saxpath, org.relaxng.datatype, org.slf4j.impl, org.xmlpull.v1,
-                        schemasMicrosoftComOfficeVml,schemaorg_apache_xmlbeans,org.openxmlformats.schemas.drawingml.x2006.chart.impl,org.openxmlformats,com.sun.*;resolution:=optional,javax.*;resolution:=optional</Import-Package>
+                        <Import-Package>com.sun.*;resolution:=optional,javax.*;resolution:=optional,*</Import-Package>
                         <!-- we refer also to these classes:
-
                         javax.crypto, javax.crypto.spec,javax.imageio, javax.imageio.metadata, javax.imageio.stream, javax.jmdns, javax.jms, javax.mail, javax.mail.internet, javax.management, javax.microedition.io, javax.naming,
                         javax.security.auth.x500, javax.servlet, javax.servlet.http, javax.swing, javax.swing.border, javax.swing.event, javax.swing.table, javax.swing.text, javax.swing.tree, javax.xml.bind, javax.xml.validation, javax.xml.xpath, 
-
                         com.sun.javadoc, com.sun.jdmk.comm, com.sun.msv.datatype, com.sun.msv.datatype.xsd, com.sun.tools.javadoc, 
             -->
                         <Bundle-Activator>${project.groupId}.${project.artifactId}.osgi.Activator</Bundle-Activator>
-						<!-- We are getting rid of the "Embed" approach
-                        <Embed-Transitive>true</Embed-Transitive>
+	
+                        <Export-Package>
+						schemasMicrosoftComOfficeOffice,
+                        schemasMicrosoftComOfficeExcel,
+						<!--
+						org.apache.poi,
 						-->
-						<!-- Stu is dubious of the *, but it may work OK because the imports above are so specific -->
-                        <Export-Package>*</Export-Package>
+                        org.openxmlformats.schemas.spreadsheetml.x2006,
+				<!--						
+                        com.ibm.uvm.tools,                     
+
+                        org.apache.avalon.framework.logger, 
+						org.apache.crimson.jaxp, 
+						org.apache.log, 
+						org.apache.tools.ant, 
+						
+                        org.apache.tools.ant.taskdefs, 
+						org.apache.tools.ant.types, 
+						org.apache.xml.resolver, 
+						org.apache.xml.resolver.tools, 
+						org.gjt.xpp, 
+						org.jaxen,
+                        org.jaxen.dom4j, 
+						org.jaxen.pattern, 
+						org.jaxen.saxpath, 
+						org.relaxng.datatype, 
+						org.xmlpull.v1,
+                        schemasMicrosoftComOfficeVml,
+						schemaorg_apache_xmlbeans,
+						org.openxmlformats.schemas.drawingml.x2006.chart.impl,
+						org.openxmlformats
+					-->
+						</Export-Package>
+						<Private-Package>
+						org.apache.xmlbeans.*,
+						org.w3c.dom,
+						schemaorg_apache_xmlbeans.*
+						</Private-Package>
                     </instructions>
 				</configuration>
 			</plugin>
