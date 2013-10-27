@@ -30,15 +30,13 @@
 				lib to propagate out to users of this bundle.
 			-->
            <scope>provided</scope>
-		  <!--  Should no longer be needed. 
-           <exclusions>
-               <exclusion>
-                   <artifactId>xmlbeans</artifactId>
-                   <groupId>org.apache.xmlbeans</groupId>
-               </exclusion>
-           </exclusions>
-		   -->
        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>org.appdapter.lib.bind.jena</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>	   
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>org.appdapter.lib.registry</artifactId>
@@ -52,9 +50,6 @@
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency-->
-
-
-
 
 		<dependency>
 			<artifactId>ext.bundle.jena_all_2_10_1</artifactId>
@@ -71,7 +66,7 @@
 			-->
 			<scope>runtime</scope>
 		</dependency>
-         <!-- jena provides this.. is it still needed? -->	
+         <!-- jena (used to? still?) provides this transitively. is it still needed? -->	
 		<!--dependency>
 			<artifactId>h2</artifactId>
 			<groupId>com.h2database</groupId>
@@ -79,14 +74,6 @@
 			<version>1.3.157</version>
 			<scope>runtime</scope>			
 		</dependency-->		
-        <dependency>
-			<!-- Appdapter bundle.core shouldn't need this.  Instead, our code that depends on it should go into its 
-					own new bundle :  org.appdapter.bundle.fileconv
-			-->
-            <groupId>${project.groupId}</groupId>
-            <artifactId>ext.bundle.openconverters</artifactId>
-            <version>${project.version}</version>
-        </dependency>
 
 
         <dependency>
@@ -150,14 +137,23 @@
 				<extensions>true</extensions>
 				<configuration>
 					<instructions>
-						<!-- org.gjt.*;resolution:='optional', -->
-                        <!--Import-Package>sun.*;resolution:='optional', com.sun.*;resolution:='optional', org.apache.*;resolution:='optional', org.h2, apple.laf.*;resolution:='optional', com.apple.laf.*;resolution:='optional', *;resolution:='optional'</Import-Package-->
+						<!-- 
+						org.gjt.*;resolution:='optional',
+                        sun.*;resolution:='optional', 
+						com.sun.*;resolution:='optional', 
+						org.apache.*;resolution:='optional', 
+						org.h2, 
+						apple.laf.*;resolution:='optional', 
+						com.apple.laf.*;resolution:='optional', 
+						*;resolution:='optional'</Import-Package
+						-->
                         <Import-Package>*;resolution:='optional'</Import-Package>
 						<Bundle-Activator>org.appdapter.osgi.core.AppdapterCoreBundleActivator</Bundle-Activator>
+						<!-- This full wildcard is a bit too broad, since it allows in some ext.bundle activators,
+						which is a good reason to change the package on those.
+						-->
 						<Export-Package>org.appdapter.*</Export-Package>
-<!--					We prefer the above specific form.
-						<Export-Package>*;-split-package:=merge-first</Export-Package>
--->
+
 						<!--Export-Package>org.appdapter.*, org.apache.xmlbeans.*,com.hp.hpl.jena.graph.query</Export-Package-->
 						<!-- Horrid workaround for Class.forName() used in DynamicCachingComponentAssembler, could widen it to "*",
 							but better to get Jena code fixed to allow classloader setup.

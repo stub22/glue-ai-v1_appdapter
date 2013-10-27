@@ -15,6 +15,7 @@
 	</properties>
 
 	<dependencies>
+		<!-- These are all proper OGSi bundles, so we can let them propagate as full dependencies -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>ext.bundle.osgi.common</artifactId>
@@ -45,8 +46,6 @@
 						<Import-Package>*</Import-Package>
 						<!-- The bundles we depend on are good enough, we don't need to do any exporting -->
 						<Export-Package/>
-						<!-- org.appdapter.ext.bundle.apache.httpclient</Export-Package>
-						-->
 					</instructions>
 				</configuration>
 			</plugin>

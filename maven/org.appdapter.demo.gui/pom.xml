@@ -20,6 +20,12 @@
             <artifactId>org.appdapter.bundle.gui</artifactId>
             <version>${project.version}</version>
         </dependency>
+		<dependency>
+			<groupId>org.apache.servicemix.bundles</groupId>
+			<artifactId>org.apache.servicemix.bundles.junit</artifactId>
+			<version>4.7_3</version>
+			<scope>test</scope>
+		</dependency>		
 	</dependencies>
 
 	<build>

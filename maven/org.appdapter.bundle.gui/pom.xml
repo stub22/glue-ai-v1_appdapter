@@ -25,6 +25,12 @@
 			<!-- We are exporting these contents, hence we don't need to propagate our dependency on them. -->
 			<scope>provided</scope>
         </dependency>
+		<dependency>
+			<groupId>org.apache.servicemix.bundles</groupId>
+			<artifactId>org.apache.servicemix.bundles.junit</artifactId>
+			<version>4.7_3</version>
+			<scope>test</scope>
+		</dependency>		
 	</dependencies>
 
 	<build>
@@ -37,13 +43,10 @@
 				<configuration>
                     <instructions>
                         <Bundle-Activator>org.appdapter.bundle.gui.osgi.Activator</Bundle-Activator>
-						<Export-Package>org.appdapter.gui.*,org.appdapter.scafun.*</Export-Package>
-						<!--
-                        <Export-Package>*;-split-package:=merge-first</Export-Package>
-						-->
-						<!-- Boo!!!
-                        <Private-Package>org.apache.http.*,slf4j-api.*</Private-Package>
-						-->
+						<Export-Package>
+							org.appdapter.gui.*,
+							org.appdapter.scafun.*
+						</Export-Package>
                     </instructions>
 				</configuration>
 			</plugin>
