@@ -59,7 +59,7 @@ public class ExtendedFileStreamUtils extends FileStreamUtils {
 			return null;
 		}
 	}	
-	public static InputStream openInputStream(String srcPath, java.util.List<ClassLoader> cls) throws IOException {
+	@Override public InputStream openInputStream(String srcPath, java.util.List<ClassLoader> cls) throws IOException {
 
 		if (cls == null) {
 			cls = ClassLoaderUtils.getCurrentClassLoaderList();
@@ -123,7 +123,7 @@ public class ExtendedFileStreamUtils extends FileStreamUtils {
 
 		return null;
 	}
-	public static InputStream openInputStreamOrNull(String srcPath, java.util.List<ClassLoader> cls) {
+	@Override public InputStream openInputStreamOrNull(String srcPath, java.util.List<ClassLoader> cls) {
 		try {
 			return openInputStream(srcPath, cls);
 		} catch (Throwable e) {
