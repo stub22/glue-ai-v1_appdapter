@@ -42,8 +42,8 @@ import javax.swing.JTree;
 import javax.swing.ToolTipManager;
 import javax.swing.tree.TreeModel;
 
-import org.appdapter.api.trigger.AnyOper.UIHidden;
-import org.appdapter.api.trigger.AnyOper.UISalient;
+import org.appdapter.core.debug.UIAnnotations.UIHidden;
+import org.appdapter.core.debug.UIAnnotations.UISalient;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContext;
 import org.appdapter.core.jvm.CallableWithParameters;

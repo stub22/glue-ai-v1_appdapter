@@ -115,11 +115,11 @@ import javax.swing.tree.TreeNode;
 import javax.tools.FileObject;
 
 import org.appdapter.api.trigger.AnyOper;
-import org.appdapter.api.trigger.AnyOper.Autoload;
-import org.appdapter.api.trigger.AnyOper.Singleton;
-import org.appdapter.api.trigger.AnyOper.UIHidden;
-import org.appdapter.api.trigger.AnyOper.UISalient;
-import org.appdapter.api.trigger.AnyOper.UtilClass;
+import org.appdapter.core.debug.UIAnnotations.Autoload;
+import org.appdapter.core.debug.UIAnnotations.Singleton;
+import org.appdapter.core.debug.UIAnnotations.UIHidden;
+import org.appdapter.core.debug.UIAnnotations.UISalient;
+import org.appdapter.core.debug.UIAnnotations.UtilClass;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContext;
 import org.appdapter.core.jvm.CallableWithParameters;

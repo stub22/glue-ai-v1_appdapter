@@ -4,8 +4,11 @@ import java.beans.PropertyVetoException;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.appdapter.api.trigger.AnyOper.UIProvider;
+
+
 import org.appdapter.gui.box.ScreenBoxImpl;
+
+import org.appdapter.gui.util.Annotations.UIProvider;
 
 public interface POJOCollection extends UIProvider {
 

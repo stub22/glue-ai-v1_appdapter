@@ -19,8 +19,8 @@ package org.appdapter.gui.repo;
 import java.net.URL;
 import java.util.*;
 
-import org.appdapter.api.trigger.AnyOper.UISalient;
-import org.appdapter.api.trigger.AnyOper.UtilClass;
+import org.appdapter.core.debug.UIAnnotations.UISalient;
+import org.appdapter.core.debug.UIAnnotations.UtilClass;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContext;
 import org.appdapter.api.trigger.MutableBox;

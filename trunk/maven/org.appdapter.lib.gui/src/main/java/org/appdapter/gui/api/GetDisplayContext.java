@@ -1,6 +1,6 @@
 package org.appdapter.gui.api;
 
-import org.appdapter.api.trigger.AnyOper.UIProvider;
+import org.appdapter.gui.util.Annotations.UIProvider;
 
 
 

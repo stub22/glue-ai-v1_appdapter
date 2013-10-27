@@ -57,8 +57,8 @@ import javax.swing.text.JTextComponent;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.appdapter.api.trigger.AnyOper.HasIdent;
-import org.appdapter.api.trigger.AnyOper.UIHidden;
-import org.appdapter.api.trigger.AnyOper.UISalient;
+import org.appdapter.core.debug.UIAnnotations.UIHidden;
+import org.appdapter.core.debug.UIAnnotations.UISalient;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.MenuName;
 import org.appdapter.api.trigger.Trigger;

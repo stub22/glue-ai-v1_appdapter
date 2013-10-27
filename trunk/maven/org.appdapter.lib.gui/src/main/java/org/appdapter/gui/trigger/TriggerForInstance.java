@@ -14,14 +14,15 @@ import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.JComponent;
 
-import org.appdapter.api.trigger.AnyOper.AskIfEqual;
-import org.appdapter.api.trigger.AnyOper.UISalient;
+
 import org.appdapter.api.trigger.Box;
 import org.appdapter.core.jvm.GetObject;
 import org.appdapter.api.trigger.MutableTrigger;
 import org.appdapter.api.trigger.TriggerImpl;
-import org.appdapter.core.convert.Convertable;
-import org.appdapter.core.convert.Converter;
+
+import org.appdapter.core.debug.UIAnnotations.UISalient;
+import org.appdapter.core.debug.UIAnnotations.AskIfEqual;
+
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.core.name.Ident;
 import org.appdapter.gui.api.DisplayContext;

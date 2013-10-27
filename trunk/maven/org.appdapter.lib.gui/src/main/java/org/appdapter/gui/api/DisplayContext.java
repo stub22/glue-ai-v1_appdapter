@@ -18,9 +18,10 @@ package org.appdapter.gui.api;
 
 import java.util.Collection;
 
-import org.appdapter.api.trigger.AnyOper.UIProvider;
 import org.appdapter.api.trigger.Trigger;
 import org.appdapter.api.trigger.UserResult;
+import org.appdapter.gui.util.Annotations.UIProvider;
+
 
 /**
  * @author Stu B. <www.texpedient.com>

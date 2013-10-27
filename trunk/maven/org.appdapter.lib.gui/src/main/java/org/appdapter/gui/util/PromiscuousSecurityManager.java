@@ -6,7 +6,7 @@ import java.security.Permission;
 import java.security.PrivilegedAction;
 import java.util.logging.Logger;
 
-import org.appdapter.api.trigger.AnyOper.HRKRefinement;
+import org.appdapter.core.debug.UIAnnotations.HRKRefinement;
 
 public class PromiscuousSecurityManager extends RMISecurityManager implements HRKRefinement {
 	@Override

@@ -44,7 +44,7 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import org.appdapter.api.trigger.AnyOper.HRKRefinement;
+import org.appdapter.core.debug.UIAnnotations.HRKRefinement;
 import org.appdapter.core.log.Debuggable;
 
 import sun.reflect.Reflection;

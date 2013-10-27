@@ -18,7 +18,7 @@ import javax.naming.NamingException;
 import javax.naming.NoInitialContextException;
 import javax.naming.spi.NamingManager;
 
-import org.appdapter.api.trigger.AnyOper.HRKRefinement;
+import org.appdapter.core.debug.UIAnnotations.HRKRefinement;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.util.NamingResolver.SavedFromResolverMap;
 import org.appdapter.gui.util.ObjectFinder.Found;

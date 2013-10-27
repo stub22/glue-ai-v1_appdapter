@@ -15,7 +15,10 @@ import java.net.URLStreamHandlerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.appdapter.api.trigger.AnyOper.*;
+// import org.appdapter.api.trigger.AnyOper.*;
+import org.appdapter.core.debug.UIAnnotations.HRKRefinement;
+
+import org.appdapter.gui.util.Annotations.HRKAdded;
 
 abstract public class URLClassLoaderBase extends URLClassLoader implements HRKRefinement, HRKAdded, IsolatingClassLoaderBase {
 
