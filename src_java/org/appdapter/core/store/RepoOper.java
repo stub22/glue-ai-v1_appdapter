@@ -248,7 +248,7 @@ public class RepoOper implements AnyOper, UtilClass {
 				}
 			}
 		});
-		InputStream fis = FileStreamUtils.openInputStream(srcPath, null);
+		InputStream fis = (new FileStreamUtils).openInputStream(srcPath, null);
 		InputStreamReader isr = new InputStreamReader(fis, Charset.defaultCharset().name());
 		loaderModel.read(isr, null, "TTL");
 

@@ -46,6 +46,7 @@ import org.slf4j.LoggerFactory;
 
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.util.FileManager;
+import org.appdapter.core.log.BasicDebugger;
 import org.appdapter.core.log.Debuggable;
 
 /**
@@ -54,8 +55,9 @@ import org.appdapter.core.log.Debuggable;
  * @author logicmoo
  */
 
-public class FileStreamUtils {
+public abstract class FileStreamUtils  {
 
+	static private Logger theLogger = LoggerFactory.getLogger(FileStreamUtils.class);
 
 	public static boolean SheetURLDataReaderMayReturnNullOnError = true;
 
@@ -71,7 +73,7 @@ public class FileStreamUtils {
 		}
 	}
 
-	static Logger theLogger = LoggerFactory.getLogger(FileStreamUtils.class);
+	
 
 	public static Workbook getWorkbook(InputStream is, String extHint) throws IOException, InvalidFormatException {
 		if (is == null)
@@ -96,15 +98,20 @@ public class FileStreamUtils {
 			}
 		}
 	}
-
-	public static Workbook getWorkbook(String sheetLocation, java.util.List<ClassLoader> fileModelCLs) throws InvalidFormatException, IOException {
+	
+	
+	abstract public InputStream openInputStream(String srcPath, java.util.List<ClassLoader> cls) throws IOException;
+	abstract public InputStream openInputStreamOrNull(String srcPath, java.util.List<ClassLoader> cls);
+	
+	
+	public Workbook getWorkbook(String sheetLocation, java.util.List<ClassLoader> fileModelCLs) throws InvalidFormatException, IOException {
 		InputStream stream = openInputStreamOrNull(sheetLocation, fileModelCLs);
 		if (stream == null)
 			throw new IOException("Location not found: " + sheetLocation);
 		return getWorkbook(stream, getFileExt(sheetLocation));
 	}
 
-	public static Reader getSheetReaderAt(String sheetLocation, String sheetName, java.util.List<ClassLoader> fileModelCLs) {
+	public Reader getSheetReaderAt(String sheetLocation, String sheetName, java.util.List<ClassLoader> fileModelCLs) {
 		try {
 			theLogger.info("getSheetReaderAt: " + sheetLocation + "!" + sheetName);
 			return getWorkbookSheetCsvReaderAt(sheetLocation, sheetName, fileModelCLs);
@@ -151,7 +158,7 @@ public class FileStreamUtils {
 		return combined;
 	}
 
-	public static Reader getWorkbookSheetCsvReaderAt(String sheetLocation, String sheetName, java.util.List<ClassLoader> fileModelCLs) throws InvalidFormatException, IOException {
+	public Reader getWorkbookSheetCsvReaderAt(String sheetLocation, String sheetName, java.util.List<ClassLoader> fileModelCLs) throws InvalidFormatException, IOException {
 		boolean missingSheetLocation = isNullOrEmptyString(sheetLocation);
 		boolean missingSheetName = isNullOrEmptyString(sheetName);
 		if (missingSheetLocation && missingSheetName) {
@@ -262,7 +269,7 @@ public class FileStreamUtils {
 		}
 	}
 
-	private static Logger getLogger() {
+	protected static Logger getLogger() {
 		return theLogger;
 	}
 
