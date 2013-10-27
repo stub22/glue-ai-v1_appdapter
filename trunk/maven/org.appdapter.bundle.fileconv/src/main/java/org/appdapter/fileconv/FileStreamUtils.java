@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.appdapter.core.store;
+package org.appdapter.fileconv;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
