@@ -1,14 +1,14 @@
 package org.appdapter.gui.util;
 
-import static org.appdapter.core.convert.ReflectUtils.*;
+import static org.appdapter.core.convert.ReflectUtils.addIfNew;
+import static org.appdapter.core.convert.ReflectUtils.getFieldValue;
 import static org.appdapter.core.convert.ReflectUtils.setField;
-import static org.appdapter.core.log.Debuggable.*;
+import static org.appdapter.core.log.Debuggable.LOGGER;
 import static org.appdapter.core.log.Debuggable.NoSuchClassImpl;
 import static org.appdapter.core.log.Debuggable.UnhandledException;
 import static org.appdapter.core.log.Debuggable.notImplemented;
 import static org.appdapter.core.log.Debuggable.reThrowable;
 import static org.appdapter.core.log.Debuggable.toInfoStringArgV;
-import static org.appdapter.gui.util.PromiscuousClassUtilsA.findLoadedClassByName;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Properties;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -65,7 +66,7 @@ abstract public class PromiscuousClassUtilsA {
 	public static ArrayList<ClassLoader> allClassLoaders = new ArrayList<ClassLoader>();
 	public static FeClipseAppClassLoader feClipseAppClassLoader = new FeClipseAppClassLoader(allClassLoaders, originalSystemClassLoader);
 
-	public static HashSet<Class> classesSeen = new HashSet<Class>();
+	public static Set<Class> classesSeen = new HashSet<Class>();
 	public static Map<String, Class> classnameToClass = new HashMap();
 	private static Map<String, Throwable> classNotFoundYet = new HashMap<String, Throwable>();
 
