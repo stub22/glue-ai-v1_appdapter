@@ -31,12 +31,10 @@
 				<extensions>true</extensions>
 				<configuration>
                     <instructions>
-                        <Bundle-Activator>${project.groupId}.${artifactId}.osgi.Activator</Bundle-Activator>
-						<!-- We want to use explicit packages. -->
-                        <Export-Package>*;-split-package:=merge-first</Export-Package>
-						<!-- Boo
-                        <Private-Package>org.apache.http.*,slf4j-api.*</Private-Package>
-						-->
+                        <Bundle-Activator>org.appdapter.demo.gui.osgi.Activator</Bundle-Activator>
+						<!-- We want to use explicit packages.    *;-split-package:=merge-first  -->
+                        <Export-Package></Export-Package>
+
                     </instructions>
 				</configuration>
 			</plugin>

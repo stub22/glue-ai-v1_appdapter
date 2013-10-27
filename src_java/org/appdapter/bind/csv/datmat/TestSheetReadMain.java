@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.appdapter.core.log.BasicDebugger;
-import org.appdapter.core.store.FileStreamUtils;
+import org.appdapter.fileconv.FileStreamUtils;
 
 import au.com.bytecode.opencsv.CSVReader;
 

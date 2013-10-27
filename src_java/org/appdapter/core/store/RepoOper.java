@@ -15,6 +15,7 @@
  */
 package org.appdapter.core.store;
 
+import org.appdapter.fileconv.FileStreamUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;

@@ -26,25 +26,30 @@
 			<artifactId>ext.bundle.xml.dom4j_161</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		
 		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi</artifactId>
 			<version>3.9</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>ooxml-schemas</artifactId>
 			<version>1.0</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi-ooxml-schemas</artifactId>
 			<version>3.9</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi-ooxml</artifactId>
 			<version>3.9</version>
+			<scope>provided</scope>
 			<exclusions>
 				<!-- Exclude Dom4J and use our nice Bundled version -->
 				<exclusion>
@@ -54,16 +59,8 @@
 			</exclusions>
 		</dependency>				
 
-		<!-- for the GUI -->
-		<!--dependency> <groupId>com.jidesoft</groupId> <artifactId>jide-oss</artifactId>
-			<version>3.5.5</version> </dependency -->
 
-		<!-- Included servicemix bundle to export apache.commons.codec. Needed
-			by org.apache.poi ... but this sorta conflicts with direct commons-codec
-			dep required by Jena ARQ, which uses a different version numbering stream,
-			numerically *higher* than this one, so let's try taking this one out. -->
-		<!-- <dependency> <groupId>org.apache.servicemix.bundles</groupId> <artifactId>org.apache.servicemix.bundles.commons-codec</artifactId>
-			<version>1.3_3</version> <scope>runtime</scope> </dependency> -->
+
 		<dependency>
 			<groupId>org.openl.rules</groupId>
 			<artifactId>org.openl.lib.poi.dev</artifactId>
@@ -76,7 +73,7 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<!-- We excluded XMLBeans above.  Here we add an OSGi friendly version. -->
+		<!-- We excluded XMLBeans above.  Here we add an OSGi friendly version, which we private-packe below -->
 		<dependency>
 			<groupId>org.apache.xmlbeans</groupId>
 			<artifactId>xmlbeans</artifactId>
@@ -90,6 +87,9 @@
 			<groupId>org.ow2.bundles</groupId>
 			<artifactId>ow2-bundles-externals-commons-logging</artifactId>
 			<version>1.0.33</version>
+			<!-- This bundle does not need re-exporting, and is not needed at compile time, but users will need it
+					at runtime.
+			-->
 			<scope>runtime</scope>
 			<exclusions>
 				<exclusion>
@@ -106,40 +106,6 @@
 			<version>2.3</version>
 			<scope>provided</scope>
 		</dependency>
-		
-		
-		<!-- Problems in Felix, because A) System Bundle #0 supplies the JAXP APIs
-			at version 0.0., B) Dom4J specifies broad "uses" constraints on its exports.
-			C) Dom4J specifies version number >1.0 on SOME of its imports. [java] javax.xml.parsers;
-			version=0.0.0.1_006_JavaSE imported by: [java] org.apache.servicemix.bundles.dom4j
-			[255] [java] org.apache.servicemix.bundles.xpp3 [283] [java] org.apache.servicemix.bundles.xmlresolver
-			[342] [java] org.apache.servicemix.bundles.xerces [256] [java] com.springsource.org.apache.log4j
-			[273] [java] scala-library [249] <dependency> <groupId>org.apache.servicemix.bundles</groupId>
-			<artifactId>org.apache.servicemix.bundles.dom4j</artifactId> <version>1.6.1_4</version>
-			<exclusions> <exclusion> <artifactId>xml-apis</artifactId> <groupId>xml-apis</groupId>
-			</exclusion> </exclusions> </dependency> -->
-		<!-- *************** Runtime Deps *********************** -->
-
-
-		<!-- <dependency> <groupId>org.apache.servicemix.specs</groupId> <artifactId>org.apache.servicemix.specs.jaxp-api-1.4</artifactId>
-			<version>1.6.0</version> <scope>runtime</scope> </dependency> -->
-
-
-
-		<!-- ************************** Test Deps *********************** -->
-
-		<dependency>
-			<groupId>org.apache.servicemix.bundles</groupId>
-			<artifactId>org.apache.servicemix.bundles.junit</artifactId>
-			<version>4.7_3</version>
-			<scope>test</scope>
-		</dependency>
-
-
-		<!-- SLF4J Test Bindings. We can change the scope during unit testing,
-			but don't commit to SVN with scope other than "test" -->
-		<!-- <dependency> <groupId>org.slf4j</groupId> <artifactId>slf4j-simple</artifactId>
-			<version>1.6.2</version> <scope>test</scope> </dependency> -->
 
 	</dependencies>
 
@@ -168,13 +134,12 @@
                         <Bundle-Activator>${project.groupId}.${project.artifactId}.osgi.Activator</Bundle-Activator>
 	
                         <Export-Package>
-						schemasMicrosoftComOfficeOffice,
-                        schemasMicrosoftComOfficeExcel,
-						<!--
-						org.apache.poi,
-						-->
+						au.com.bytecode.opencsv.*,
+						org.apache.poi.*;-split-package:=merge-first
+
+				<!--							
                         org.openxmlformats.schemas.spreadsheetml.x2006,
-				<!--						
+					
                         com.ibm.uvm.tools,                     
 
                         org.apache.avalon.framework.logger, 
@@ -200,9 +165,11 @@
 					-->
 						</Export-Package>
 						<Private-Package>
+						<!-- These special-purpose facilities will be used nowhere outside the impl of this bundle -->
 						org.apache.xmlbeans.*,
-						org.w3c.dom,
-						schemaorg_apache_xmlbeans.*
+						schemasMicrosoftComOfficeOffice;-split-package:=merge-first,
+                        schemasMicrosoftComOfficeExcel;-split-package:=merge-first,							
+						schemaorg_apache_xmlbeans.*;-split-package:=merge-first
 						</Private-Package>
                     </instructions>
 				</configuration>

@@ -67,22 +67,9 @@ central repo.
 		</dependency>
 		<dependency>
            <groupId>${project.groupId}</groupId>
-           <artifactId>org.appdapter.lib.core</artifactId>
+           <artifactId>org.appdapter.bundle.core</artifactId>
            <version>${project.version}</version>
-           <scope>provided</scope>
-           <exclusions>
-               <exclusion>
-                   <artifactId>xmlbeans</artifactId>
-                   <groupId>org.apache.xmlbeans</groupId>
-               </exclusion>
-           </exclusions>
        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>org.appdapter.lib.registry</artifactId>
-            <version>${project.version}</version>
-            <scope>provided</scope>
-        </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>org.appdapter.lib.remote</artifactId>
@@ -93,7 +80,6 @@ central repo.
             <groupId>${project.groupId}</groupId>
             <artifactId>ext.bundle.osgi.common</artifactId>
             <version>${project.version}</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -105,17 +91,14 @@ central repo.
             <groupId>com.jidesoft</groupId>
             <artifactId>jide-oss</artifactId>
             <version>3.5.5</version>
-        </dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>1.7.5</version>
-		</dependency>		
+        </dependency>	
+		
+		
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
 			<version>1.7.5</version>
-			<scope>runtime</scope>
+			<scope>test</scope>
 			<exclusions>
 				<!-- This embedded Log4J version is not OSGi friendly, so we exclude it.  -->				
 				<exclusion>
@@ -124,13 +107,7 @@ central repo.
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<dependency>
-			<!-- Here is the happy Log4J bundle that we like instead of one excluded above.  -->
-			<groupId>org.apache.log4j</groupId>
-			<artifactId>com.springsource.org.apache.log4j</artifactId>
-			<version>1.2.16</version>
-			<scope>compile</scope>			
-		</dependency>		
+	
 	</dependencies>
 	
 	<build>

@@ -36,13 +36,33 @@
 			<version>1.7.5</version>
 		</dependency>		
 		<dependency>
-			<!-- We supply Log4J itself, but *not* an SLF4J-Log4J binding -->
-			<!-- Needed at compile time so we can provide a utility to force the properties
-				resource URL in, due to TCCL issues with Log4J's default startup in OSGi
-				environment. -->
+			<!-- We supply Log4J itself, but *not* an SLF4J-Log4J binding..
+
+				 Here is an OSGi-friendly Log4J bundle, which we presume can be initialized through
+				the methods provided by Appdapter, which assumes a log4j.properties file at
+				root of this bundle.  We can also do any Log4J config using code, e.g.
+				using "BasicConfigurator".
+			-->			
+
 			<groupId>org.apache.log4j</groupId>
 			<artifactId>com.springsource.org.apache.log4j</artifactId>
 			<version>1.2.16</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.scala-lang</groupId>
+			<artifactId>scala-library</artifactId>
+			<version>2.10.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.scala-lang</groupId>
+			<artifactId>scala-reflect</artifactId>
+			<version>2.10.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.scala-lang</groupId>
+			<artifactId>scala-compiler</artifactId>
+			<version>2.10.2</version>
 		</dependency>		
     </dependencies>
 
