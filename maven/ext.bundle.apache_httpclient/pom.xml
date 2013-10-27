@@ -10,6 +10,10 @@
     <artifactId>ext.bundle.apache_httpclient</artifactId>
     <name>${project.artifactId} - OSGi Ext wrapper</name>
 
+    <properties>
+        <httpcore.version>4.3</httpcore.version>
+    </properties>
+
     <dependencies>
 
 		<dependency>
@@ -36,7 +40,7 @@
                         <instructions>
                         <Embed-Dependency>*;scope=compile|runtime;inline=true</Embed-Dependency>
                         <Import-Package>javax.crypto, javax.crypto.spec, javax.net, javax.net.ssl, javax.security.auth.x500, org.ietf.jgss, org.osgi.framework, org.osgi.service.cm, org.apache.commons.logging;version="[1.1.1,1.2.0)", org.apache.http;version=${httpcore.version}, org.apache.http.config;version=${httpcore.version}, org.apache.http.concurrent;version=${httpcore.version}, org.apache.http.entity;version=${httpcore.version}, org.apache.http.io;version=${httpcore.version}, org.apache.http.message;version=${httpcore.version}, org.apache.http.params;version=${httpcore.version}, org.apache.http.pool;version=${httpcore.version}, org.apache.http.protocol;version=${httpcore.version}, org.apache.http.util;version=${httpcore.version}, org.apache.http.impl;version=${httpcore.version}, org.apache.http.impl.entity;version=${httpcore.version}, org.apache.http.impl.io;version=${httpcore.version}, org.apache.http.impl.pool;version=${httpcore.version}, net.sf.ehcache.*;resolution:=optional, net.spy.memcached.*;resolution:=optional</Import-Package>
-                        <Bundle-Activator>org.apache.http.osgi.impl.HttpProxyConfigurationActivator</Bundle-Activator>
+                        <!--Bundle-Activator>org.apache.http.osgi.impl.HttpProxyConfigurationActivator</Bundle-Activator-->
                         </instructions>
                 </configuration>
             </plugin>
