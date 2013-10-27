@@ -17,7 +17,7 @@ package org.appdapter.core.log;
 
 import java.net.URL;
 
-import org.appdapter.api.trigger.AnyOper.UIHidden;
+import org.appdapter.core.debug.UIAnnotations.UIHidden;
 import org.appdapter.bind.log4j.Log4jFuncs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +26,7 @@ import org.slf4j.helpers.NOPLogger;
 /**
  * @author Stu B. <www.texpedient.com>
  */
-@UIHidden
+//@UIHidden
 public class BasicDebugger implements Loggable {
 
 	private Class myAppClass;

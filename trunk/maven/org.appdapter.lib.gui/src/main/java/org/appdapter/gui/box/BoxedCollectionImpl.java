@@ -17,7 +17,7 @@ import java.lang.reflect.Type;
 import java.util.*;
 
 import org.appdapter.api.trigger.Box;
-import org.appdapter.api.trigger.SetObject;
+import org.appdapter.core.jvm.SetObject;
 import org.appdapter.core.component.KnownComponent;
 import org.appdapter.core.convert.Converter.ConverterMethod;
 import org.appdapter.core.convert.ReflectUtils;

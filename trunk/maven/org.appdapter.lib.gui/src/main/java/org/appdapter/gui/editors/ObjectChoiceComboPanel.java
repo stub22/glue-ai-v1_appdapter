@@ -35,7 +35,7 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.tree.TreeCellEditor;
 
 import org.appdapter.api.trigger.AnyOper.UserInputComponent;
-import org.appdapter.api.trigger.GetObject;
+import org.appdapter.core.jvm.GetObject;
 import org.appdapter.core.convert.NoSuchConversionException;
 import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.core.convert.ToFromKeyConverter;

@@ -12,10 +12,10 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.apache.felix</groupId>
-            <artifactId>org.osgi.core</artifactId>
-            <version>1.4.0</version>
-        </dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>ext.bundle.osgi.common</artifactId>
+            <version>${project.version}</version>
+        </dependency>			
         <dependency>
             <groupId>dom4j</groupId>
             <artifactId>dom4j</artifactId>

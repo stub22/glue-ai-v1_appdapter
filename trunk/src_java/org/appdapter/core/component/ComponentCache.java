@@ -18,7 +18,7 @@ package org.appdapter.core.component;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.appdapter.api.trigger.GetObject;
+import org.appdapter.core.jvm.GetObject;
 import org.appdapter.core.name.Ident;
 
 public class ComponentCache<MKC extends MutableKnownComponent> implements GetObject {

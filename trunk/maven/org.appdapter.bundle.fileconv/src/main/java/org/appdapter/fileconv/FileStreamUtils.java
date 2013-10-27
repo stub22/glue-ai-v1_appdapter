@@ -40,23 +40,23 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.appdapter.api.trigger.AnyOper.UISalient;
-import org.appdapter.bind.rdf.jena.model.JenaFileManagerUtils;
-import org.appdapter.core.boot.ClassLoaderUtils;
-import org.appdapter.core.log.Debuggable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.util.FileManager;
+import org.appdapter.core.log.Debuggable;
 
 /**
  * @author Stu B. <www.texpedient.com>
+ * 
+ * @author logicmoo
  */
 
 public class FileStreamUtils {
 
-	@UISalient
+
 	public static boolean SheetURLDataReaderMayReturnNullOnError = true;
 
 	public static Reader makeSheetURLDataReader(String fullUrlTxt) throws IOException {
@@ -64,8 +64,9 @@ public class FileStreamUtils {
 			return new InputStreamReader((new URL(fullUrlTxt)).openStream());
 		} catch (Throwable t) {
 			theLogger.error("Cannot read[" + fullUrlTxt + "]", t);
-			if (SheetURLDataReaderMayReturnNullOnError)
+			if (SheetURLDataReaderMayReturnNullOnError) {
 				return null;
+			}
 			throw Debuggable.reThrowable(t, IOException.class);
 		}
 	}
@@ -115,24 +116,7 @@ public class FileStreamUtils {
 		return null;
 	}
 
-	public static Model getModelIfAvailable(String sheetLocation, String sheetName, java.util.Map nsMap, java.util.List<ClassLoader> fileModelCLs) {
-		FileManager fm = JenaFileManagerUtils.getDefaultJenaFM();
 
-		for (ClassLoader cl : fileModelCLs)
-			fm.addLocatorClassLoader(cl);
-
-		Model m = getModelIfAvailable(sheetLocation + sheetName, fm);
-		if (m != null)
-			return m;
-		m = getModelIfAvailable(sheetName, fm);
-		if (m != null)
-			return m;
-		try {
-			return fm.loadModel(sheetName, sheetLocation);
-		} catch (Exception e) {
-			return null;
-		}
-	}
 
 	public static Model getModelIfAvailable(String sheetLocation, FileManager fm) {
 		try {
@@ -443,77 +427,7 @@ public class FileStreamUtils {
 		return field;
 	}
 
-	public static InputStream openInputStreamOrNull(String srcPath, java.util.List<ClassLoader> cls) {
-		try {
-			return openInputStream(srcPath, cls);
-		} catch (Throwable e) {
-			getLogger().error("Bad srcPath={}", srcPath, e);
-			return null;
-		}
-	}
 
-	public static InputStream openInputStream(String srcPath, java.util.List<ClassLoader> cls) throws IOException {
 
-		if (cls == null) {
-			cls = ClassLoaderUtils.getCurrentClassLoaderList();
-		}
-		if (srcPath == null)
-			throw new MalformedURLException("URL = NULL");
-		IOException ioe = null;
-		File file = new File(srcPath);
-		if (file.exists()) {
-			try {
-				return new FileInputStream(file);
-			} catch (IOException io) {
-				// It existed so this might be legit
-				ioe = io;
-			}
-		}
-		if (srcPath.contains(":")) {
-			try {
-				return new URL(srcPath).openStream();
-			} catch (MalformedURLException maf) {
-				if (ioe == null)
-					ioe = maf;
-			} catch (IOException e) {
-				ioe = e;
-			}
-		}
-		for (Iterator iterator = cls.iterator(); iterator.hasNext();) {
-			ClassLoader classLoader = (ClassLoader) iterator.next();
-			InputStream is = null;
-			URL url = classLoader.getResource(srcPath);
-			if (url != null) {
-				try {
-					is = url.openStream();
-				} catch (IOException e) {
-					ioe = e;
-				}
-			} else {
-				is = classLoader.getResourceAsStream(srcPath);
-			}
-			if (is != null)
-				return is;
-		}
 
-		if (!srcPath.contains(":")) {
-			InputStream is = ClassLoader.getSystemResourceAsStream(srcPath);
-			if (is != null)
-				return is;
-			srcPath = "file:" + srcPath;
-			try {
-				return new URL(srcPath).openStream();
-			} catch (MalformedURLException maf) {
-				if (ioe == null)
-					ioe = maf;
-			} catch (IOException e) {
-				ioe = e;
-			}
-			if (ioe != null) {
-				throw ioe;
-			}
-		}
-
-		return null;
-	}
 }

@@ -46,7 +46,7 @@ import org.appdapter.api.trigger.AnyOper.UIHidden;
 import org.appdapter.api.trigger.AnyOper.UISalient;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.BoxContext;
-import org.appdapter.api.trigger.CallableWithParameters;
+import org.appdapter.core.jvm.CallableWithParameters;
 import org.appdapter.api.trigger.MutableBox;
 import org.appdapter.api.trigger.UserResult;
 import org.appdapter.core.convert.NoSuchConversionException;
@@ -383,7 +383,7 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 
 		add(myBrowserSplitPane, java.awt.BorderLayout.CENTER);
 	}// </editor-fold>
-	 //GEN-END:initComponents
+	//GEN-END:initComponents
 
 	private void myCmdInputTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_myCmdInputTextFieldActionPerformed
 		// TODO add your handling code here:

@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author Stu B. <www.texpedient.com>
+ * @author logicmoo
  */
 
 public class ClassLoaderUtils {
@@ -296,6 +297,10 @@ public class ClassLoaderUtils {
 		return internalGetFelixBundleClassLoader(bundle);
 	}
 
+	/***** 2013-10-27    
+	 * Stu is a bit concerned by the following 
+	 * 
+	 */
 	private static Field Felix_BundleImpl_m_modules_field;
 
 	private static Field Felix_ModuleImpl_m_classLoader_field;

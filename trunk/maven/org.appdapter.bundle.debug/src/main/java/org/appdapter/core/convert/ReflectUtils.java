@@ -46,14 +46,16 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.jena.atlas.lib.Lib;
-import org.appdapter.api.trigger.AnyOper.AskIfEqual;
-import org.appdapter.api.trigger.AnyOper.DontAdd;
-import org.appdapter.api.trigger.AnyOper.HRKRefinement;
-import org.appdapter.api.trigger.AnyOper.UIHidden;
-import org.appdapter.api.trigger.AnyOper.UISalient;
-import org.appdapter.api.trigger.AnyOper.UtilClass;
-import org.appdapter.api.trigger.GetObject;
-import org.appdapter.api.trigger.SetObject;
+
+import org.appdapter.core.debug.UIAnnotations.AskIfEqual;
+import org.appdapter.core.debug.UIAnnotations.DontAdd;
+import org.appdapter.core.debug.UIAnnotations.HRKRefinement;
+import org.appdapter.core.debug.UIAnnotations.UIHidden;
+import org.appdapter.core.debug.UIAnnotations.UISalient;
+import org.appdapter.core.debug.UIAnnotations.UtilClass;
+
+import org.appdapter.core.jvm.GetObject;
+import org.appdapter.core.jvm.SetObject;
 import org.appdapter.core.convert.Converter.ConverterMethod;
 import org.appdapter.core.log.Debuggable;
 import org.slf4j.Logger;

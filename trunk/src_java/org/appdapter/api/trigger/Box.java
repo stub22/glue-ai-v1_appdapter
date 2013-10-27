@@ -16,6 +16,7 @@
 
 package org.appdapter.api.trigger;
 
+import org.appdapter.core.jvm.GetObject;
 import java.awt.Component;
 import java.util.List;
 

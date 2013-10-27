@@ -19,6 +19,7 @@
         <module>../org.appdapter.lib.gui</module>		
         <module>../org.appdapter.bundle.core</module>
         <module>../org.appdapter.bundle.gui</module>
+		<module>../org.appdapter.bundle.debug</module>
 		<module>../org.appdapter.bundle.fileconv</module>
         <module>../ext.bundle.jena.full</module>
         <module>../ext.bundle.openconverters</module>

@@ -57,8 +57,8 @@ import javax.swing.text.TextAction;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
-import org.appdapter.api.trigger.CallableWithParameters;
-import org.appdapter.api.trigger.GetObject;
+import org.appdapter.core.jvm.CallableWithParameters;
+import org.appdapter.core.jvm.GetObject;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.swing.ObjectView;
 import org.appdapter.gui.swing.SmallObjectView;
