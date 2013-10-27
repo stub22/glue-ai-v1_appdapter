@@ -20,7 +20,7 @@
 	<!-- Artifact ID updated on 2013-07-17 from ext.bundle.jena_all_264 to what you see on next line (v 2.10.1) -->
 	<artifactId>ext.bundle.jena_all_2_10_1</artifactId>
 	<packaging>bundle</packaging>
-	<name>${artifactId} - OSGi - Jena wrapper</name>
+	<name>${project.artifactId} - OSGi - Jena wrapper</name>
 	<description>Jena ${jena.version}, ARQ + SDB ${jena-sdb.version} + Sesame ${sesame.version}</description>
 
 	<repositories>
@@ -40,7 +40,8 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
 			<version>1.7.5</version>
-			<scope>runtime</scope>
+			<!-- Changed from runtime to test - we do not want this binding to propagate! -->
+			<scope>test</scope>
 			<exclusions>
 				<!-- We exclude the normally embedded Log4J version, because it is not OSGi friendly.
 					We instead use the bundled version supplied by SpringSource below.
@@ -61,7 +62,8 @@
 			<groupId>org.apache.log4j</groupId>
 			<artifactId>com.springsource.org.apache.log4j</artifactId>
 			<version>1.2.16</version>
-			<scope>runtime</scope>
+			<!-- Stu sez:  This particular one can be a compile-time dep. -->
+			<scope>compile</scope>
 
 		</dependency>
 <!--        <dependency>
@@ -340,8 +342,17 @@
 						-->
 						<DynamicImport-Package>org.appdapter.*,org.cogchar.*</DynamicImport-Package>
 						<Bundle-Activator>org.appdapter.ext.bundle.jena.full.Activator</Bundle-Activator>
-						<!-- The sdb.* packages require Junit -->
-						<Export-Package>org.appdapter.*,arq.*,tdb.*,com.hp.hpl.jena.*,etc.*,org.openjena.*,vocabularies.*, jena.*, org.apache.jena.*</Export-Package>
+	
+						<Export-Package>
+							org.appdapter.ext.bundle.jena.full,
+							arq.*,
+							tdb.*;-split-package:=merge-first,
+							com.hp.hpl.jena.*;-split-package:=merge-first,
+							etc.*;-split-package:=merge-first,
+							org.openjena.*;-split-package:=merge-first,
+							jena.*;-split-package:=merge-first, 
+							org.apache.jena.*;-split-package:=merge-first
+						</Export-Package>
 						<Private-Package>riotcmd</Private-Package>
 					</instructions>
 				</configuration>
