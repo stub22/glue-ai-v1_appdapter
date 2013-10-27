@@ -56,6 +56,17 @@
 			<artifactId>com.springsource.org.apache.log4j</artifactId>
 			<version>1.2.16</version>
 		</dependency>
+		<dependency>
+			<!-- This version of apache-commons-codec is a proper OSGi bundle, which uses a different version numbering 
+				stream than the apache-servicemix wrapper-bundle previously pulled into o.a.bundle.core on behalf of 
+				apache POI.  
+				ARQ wants this one.  
+			-->
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
+			<version>1.6</version>
+			<scope>runtime</scope>
+		</dependency>		
 		
 		<dependency>
 			<groupId>org.scala-lang</groupId>

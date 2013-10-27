@@ -44,6 +44,11 @@
 			<artifactId>ext.bundle.osgi.common</artifactId>
             <version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>ext.bundle.apache_httpclient</artifactId>
+            <version>${project.version}</version>
+		</dependency>		
 		
 		<dependency>
 			<groupId>org.apache.jena</groupId>
@@ -98,6 +103,14 @@
 			<artifactId>jena-arq</artifactId>
 			<version>${jena.version}</version>
 			<classifier>sources</classifier>
+			<scope>provided</scope>
+		 <exclusions>
+		  <exclusion>
+			  <!-- We want the OSGi-friendly version -->
+		   <artifactId>httpclient</artifactId>
+		   <groupId>org.apache.httpcomponents</groupId>
+		  </exclusion>
+		 </exclusions>
 		</dependency>
 
 		<dependency>
@@ -105,12 +118,14 @@
 			<artifactId>jena-arq</artifactId>
 			<version>${jena.version}</version>
 			<classifier>javadoc</classifier>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-core</artifactId>
 			<version>${jena.version}</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
@@ -118,6 +133,7 @@
 			<artifactId>jena-core</artifactId>
 			<version>${jena.version}</version>
 			<classifier>sources</classifier>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
@@ -125,12 +141,21 @@
 			<artifactId>jena-core</artifactId>
 			<version>${jena.version}</version>
 			<classifier>javadoc</classifier>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-tdb</artifactId>
 			<version>${jena-tdb.version}</version>
+			<scope>provided</scope>
+			<exclusions>
+				<!-- We want the OSGi-friendly version -->
+				<exclusion>
+					<artifactId>httpclient</artifactId>
+					<groupId>org.apache.httpcomponents</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>
@@ -138,6 +163,7 @@
 			<artifactId>jena-tdb</artifactId>
 			<version>${jena-tdb.version}</version>
 			<classifier>sources</classifier>
+			<scope>provided</scope>			
 		</dependency>
 
 		<dependency>
@@ -145,6 +171,7 @@
 			<artifactId>jena-tdb</artifactId>
 			<version>${jena-tdb.version}</version>
 			<classifier>javadoc</classifier>
+			<scope>provided</scope>
 		</dependency>
 
 
@@ -153,6 +180,7 @@
 			<artifactId>jena-sdb</artifactId>
 			<version>${jena-sdb.version}</version>
 			<classifier>sources</classifier>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
@@ -160,12 +188,14 @@
 			<artifactId>jena-sdb</artifactId>
 			<version>${jena-sdb.version}</version>
 			<classifier>javadoc</classifier>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-iri</artifactId>
 			<version>${jena-iri.version}</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
@@ -173,6 +203,7 @@
 			<artifactId>jena-iri</artifactId>
 			<version>${jena-iri.version}</version>
 			<classifier>sources</classifier>
+			<scope>provided</scope>
 		</dependency>
                
     <!--
@@ -250,17 +281,7 @@
 			<scope>runtime</scope>
 		</dependency>
 
-		<dependency>
-			<!-- This version of apache-commons-codec is a proper OSGi bundle, which uses a different version numbering 
-				stream than the apache-servicemix wrapper-bundle previously pulled into o.a.bundle.core on behalf of 
-				apache POI.  
-				ARQ wants this one.  
-			-->
-			<groupId>commons-codec</groupId>
-			<artifactId>commons-codec</artifactId>
-			<version>1.6</version>
-			<scope>runtime</scope>
-		</dependency>
+
 		<dependency>
 			<groupId>com.ibm.icu</groupId>
 			<artifactId>com.springsource.com.ibm.icu</artifactId>
@@ -280,9 +301,9 @@
 			<!-- We use "runtime" scope, because Xerces is needed when we compile references to Jena XSD-based 
 				datatypes for literals (in Scala, anyway) in customers of this bundle.  Without it we'll see:
 				
-     Missing dependency 'class org.apache.xerces.impl.dv.XSSimpleType', 
-     required by ...ext.bundle.jena_all_264\1.0.7-SNAPSHOT\ext.bundle.jena_all_264-1.0.7-SNAPSHOT.jar(com/hp/hpl/jena/datatypes/xsd/XSDDatatype.class)
-            -->
+	 Missing dependency 'class org.apache.xerces.impl.dv.XSSimpleType', 
+	 required by ...ext.bundle.jena_all_264\1.0.7-SNAPSHOT\ext.bundle.jena_all_264-1.0.7-SNAPSHOT.jar(com/hp/hpl/jena/datatypes/xsd/XSDDatatype.class)
+			-->
 
 			<scope>compile</scope>
 			<exclusions>
