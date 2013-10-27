@@ -8,12 +8,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.appdapter.core.store.dataset.DatasetGraphQuadProc;
-import org.openrdf.model.Resource;
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.RepositoryResult;
-import org.openrdf.repository.http.HTTPRepository;
 
 import com.hp.hpl.jena.graph.Graph;
 import com.hp.hpl.jena.graph.Node;
@@ -24,6 +18,7 @@ import com.hp.hpl.jena.query.QueryExecutionFactory;
 import com.hp.hpl.jena.query.QueryFactory;
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.ResultSet;
+import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.shared.Lock;
 import com.hp.hpl.jena.shared.LockMRSW;
 import com.hp.hpl.jena.sparql.core.DatasetGraph;
@@ -36,12 +31,12 @@ import com.hp.hpl.jena.util.iterator.WrappedIterator;
 public class SparqlDatasetGraph extends DatasetGraphQuadProc implements DatasetGraph {
 
 	private String endpointURI;
-	private Repository repository;
+	private SparqlEndpointClient repository;
 	private Lock lock = new LockMRSW();
 
 	public SparqlDatasetGraph(String endpointURI) {
 		this.endpointURI = endpointURI;
-		this.repository = new HTTPRepository(endpointURI);
+		this.repository = new SparqlEndpointClient(endpointURI);
 	}
 
 	private Graph getGraphFor(Quad q) {
@@ -144,26 +139,26 @@ public class SparqlDatasetGraph extends DatasetGraphQuadProc implements DatasetG
 	@Override public Iterator<Node> listGraphNodes() {
 		List<Node> graphNodeList = new ArrayList<Node>();
 		try {
-			RepositoryConnection conn = getConnection();
+			SparqlEndpointClient conn = getConnection();
 			try {
-				RepositoryResult<Resource> conResult = conn.getContextIDs();
-				while (conResult.hasNext()) {
-					Resource con = conResult.next();
-					graphNodeList.add(Node.createURI(con.stringValue()));
+				List<Resource> conResult = conn.getContextIDs();
+
+				for (Resource con : conResult) {
+					graphNodeList.add(con.asNode());
 				}
 			} finally {
-				conn.close();
+
 			}
-		} catch (RepositoryException re) {
+		} catch (Exception re) {
 			throw new RuntimeException(re);
 		}
 		return graphNodeList.iterator();
 	}
 
-	private RepositoryConnection getConnection() {
+	private SparqlEndpointClient getConnection() {
 		try {
 			return this.repository.getConnection();
-		} catch (RepositoryException e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -173,6 +168,8 @@ public class SparqlDatasetGraph extends DatasetGraphQuadProc implements DatasetG
 	}
 
 	private ResultSet execSelect(String queryStr) {
+		if (true)
+			return getConnection().execRemoteSparqlSelect(endpointURI, queryStr);
 
 		//      long startTime1 = System.currentTimeMillis();
 		//      try {
@@ -202,50 +199,4 @@ public class SparqlDatasetGraph extends DatasetGraphQuadProc implements DatasetG
 			qe.close();
 		}
 	}
-
-	@Override public boolean containsGraph(Node graphNode) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override public void setDefaultGraph(Graph g) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override public void addGraph(Node graphName, Graph graph) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override public void removeGraph(Node graphName) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override public void add(Node g, Node s, Node p, Node o) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override public void delete(Node g, Node s, Node p, Node o) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override public Context getContext() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override public long size() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override public void close() {
-		// TODO Auto-generated method stub
-
-	}
-
 }
