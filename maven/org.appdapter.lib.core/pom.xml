@@ -82,7 +82,7 @@ central repo.
 
 
         <dependency>
-			<!-- TODO:  Review how this dep relates to H2 found through Jena-SDB -->
+			<!-- Jena-SDB no longer propagates this dep to us.  -->
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <version>1.3.157</version>

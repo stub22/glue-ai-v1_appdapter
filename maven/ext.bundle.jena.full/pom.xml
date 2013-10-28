@@ -51,7 +51,12 @@
 			<groupId>${project.groupId}</groupId>
 			<artifactId>ext.bundle.apache_httpclient</artifactId>
             <version>${project.version}</version>
-		</dependency>		
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>ext.bundle.xml.xerces</artifactId>
+            <version>${project.version}</version>
+		</dependency>			
 		
 		<!-- Jena "sources" and "javadocs" deps commented out and moved to bottom of file. See comments there -->
 		<dependency>
@@ -152,6 +157,7 @@
 			<version>${jena-sdb.version}</version>
 			<scope>provided</scope>
 			<exclusions>
+				<!-- Exclude bindings that we provide elsewhere in more OSGi-friendly form -->
 				<exclusion>
 					<artifactId>lucene-core</artifactId>
 					<groupId>org.apache.lucene</groupId>
@@ -183,15 +189,6 @@
 			</exclusions>
 		</dependency>
 
-		
-		<dependency>
-			<groupId>org.apache.servicemix.bundles</groupId>
-			<artifactId>org.apache.servicemix.bundles.xmlresolver</artifactId>
-			<version>1.2_3</version>
-			<scope>runtime</scope>
-		</dependency>
-
-
 		<dependency>
 			<groupId>com.ibm.icu</groupId>
 			<artifactId>com.springsource.com.ibm.icu</artifactId>
@@ -204,25 +201,7 @@
 			<version>3.0.3_2</version>
 			<scope>runtime</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.apache.servicemix.bundles</groupId>
-			<artifactId>org.apache.servicemix.bundles.xerces</artifactId>
-			<version>2.9.1_5</version>
-			<!-- We use "runtime" scope, because Xerces is needed when we compile references to Jena XSD-based 
-				datatypes for literals (in Scala, anyway) in customers of this bundle.  Without it we'll see:
-				
-	 Missing dependency 'class org.apache.xerces.impl.dv.XSSimpleType', 
-	 required by ...ext.bundle.jena_all_264\1.0.7-SNAPSHOT\ext.bundle.jena_all_264-1.0.7-SNAPSHOT.jar(com/hp/hpl/jena/datatypes/xsd/XSDDatatype.class)
-			-->
 
-			<scope>compile</scope>
-			<exclusions>
-				<exclusion>
-					<artifactId>xml-apis</artifactId>
-					<groupId>xml-apis</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>
 		<dependency>
 			<groupId>org.apache.servicemix.bundles</groupId>
 			<artifactId>org.apache.servicemix.bundles.javax.mail</artifactId>
@@ -282,8 +261,15 @@
 			<!--   Customer bundles like o.a.b.debug report on solo launch:  
 			&(osgi.wiring.package=org.apache.xerces.impl.dv)(version>=2.9.0)(!(version>=3.0.0))) 
 			[caused by: :::  (osgi.wiring.package=org.w3c.dom.html)]	
+			We also see the same dependence on org.w3c.dom.html from cousins like :   org.apache.xerces.parsers
+			
+			But now even with all of xerces packages optional, o.a.b.debug solo-launch stills get a more general 
+			complaint, at the bundle level:
+		Unresolved constraint in bundle org.apache.servicemix.bundles.xerces [19]: 
+		Unable to resolve 19.0: missing requirement [19.0] osgi.wiring.package; 
+		(osgi.wiring.package=org.w3c.dom.html)			
 			-->					
-							org.apache.xerces.impl.dv;resolution:='optional',
+							org.apache.xerces.*;resolution:='optional',
 							*
 						</Import-Package>
 						<!-- Horrid workaround for Class.forName() used in AssemberHelp, could widen it to "*",
