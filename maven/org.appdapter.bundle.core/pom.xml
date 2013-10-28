@@ -35,17 +35,20 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>org.appdapter.lib.bind.jena</artifactId>
             <version>${project.version}</version>
+			<!-- We are exporting these packages -->
             <scope>provided</scope>
         </dependency>	   
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>org.appdapter.lib.registry</artifactId>
             <version>${project.version}</version>
+			<!-- We are exporting these packages -->
             <scope>provided</scope>
         </dependency>
         <dependency>
 			<!-- We exclude all the packages of this bundle from Export-Package below, so they don't get 
 					exported in two different places.
+					This dependency is propagated with compile-time scope.
 			-->
             <groupId>${project.groupId}</groupId>
             <artifactId>org.appdapter.bundle.debug</artifactId>
@@ -54,6 +57,7 @@
         <dependency>
 			<!-- We exclude all the packages of this bundle from Export-Package below, so they don't get 
 					exported in two different places.
+					This dependency is propagated with compile-time scope.
 			-->
             <groupId>${project.groupId}</groupId>
             <artifactId>org.appdapter.bundle.fileconv</artifactId>
@@ -65,7 +69,9 @@
                 </exclusion>
             </exclusions>
         </dependency>			
-        <!-- removed until it is complete -->
+        <!-- Disabled this "remote" adaptation of Jena client code as an ingredient of o.a.bundle.core, 
+				until it is complete. 
+		-->
         <!--dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>org.appdapter.lib.remote</artifactId>
@@ -81,10 +87,26 @@
 					can be wired properly at runtime, but at compile time users can *choose* whether
 					to bring the ext.Jena bundle into their compile scope.  In principle, users could
 					choose to use a different compatible OSGi-bundling of Jena at runtime or compile time.
-					Is this flexibility worth the fact that our consumers need to make a separate 
-					dependency if they want to code against Jena directly?   Debatable.
-
-                    Since bundle.core should contain mostly only an activator.. like any wrapper all should be  is <scope>runtime</scope>.. instead of compile time?
+					
+					However, they could also do that by "excluding" this bundle from their deps.
+					
+					Our levels of "recommendation" that a particular bundle be used are:
+							scope=provided  is equivalent to omitted/excluded
+									From outside this bundle, the dependency is invisible.
+									User, you are on your own.  
+									Can be combined with Import-optional.
+									
+							Import-optional  - Applied at the OSGi-wiring level, per package, rather than the dep level.
+									Makes sense for packages that we don't really expect to need at runtime, or that
+									we expect to be optionally plugged in by some outer context.
+									
+							scope=runtime -  We'll quietly apply the dep for you at launch time.  
+											You can still exclude it.
+											You can't code against it without your own compile-time dep.
+											
+							scope=compile -  This dep is right in your face.  You can code against it.
+											You can also exclude it if it's in your way.
+									
 			-->
 			<scope>runtime</scope>
 		</dependency>
@@ -99,33 +121,10 @@
 
 
         <dependency>
-			<!-- Stu asks:  What features in o.a.b.core require this dep? 
-            
-             Douglas:
-             o.a.lib.remote needs for the sparql client I belived
-             It is proabably true that any ext.*.* of ours that we bundle here
-             we will need to re-include its reqirements at least at the runtime level
-             But not have to re-export it's packages in these exports (that is take classloader responsiibity).
-             Since we'd want downstreams to be able to take classloader reponsibility (First before a differnt activator (of ours) takes ownership (Of course this bundle still may take it when no override happens )).               
-             Then if they dont take on the responsibility, still be able to supply the ones we picked out that we know work even with class isolation.
-             
-             Another real goal (only slightly related) is to ensure we get them using and owning <artifactId>ext.bundle.apache_httpclient</artifactId>
-             
-             IF
-                they (they=startable bundle) want this use bundle 
-                AND want/need (jena OR dom4j OR httpclient)
-             THEN 
-                they will themselves will depend directly on our ext.b.*s
-             ELSE  
-                  give them a wiring error that "there are more than one way to resolve org.apache.client"
-                  [ if they have a valid reason for not using ours.. let them isolate theirs, not ours]
-             
-             We do this visibly with Jena (not on purpose for the IF/THEN/ELSE)
-
-             When we didn't want this, then we need to make sure we give them jena only at compile time and 
-			we'd need to hide it from exports, but not runtime correct?  
-            
-                        
+			<!-- Jena wants this HTTP-client lib, which is also useful to end-users of this bundle.
+				We propagate it at compile scope to ensure noone tries to duplicate anything it provides,
+				since it can be a bit of a sneaky dep that we want to proactively guard "against", as it were.
+				"Keep your friends close ...", and so forth!
             -->
             <groupId>${project.groupId}</groupId>
             <artifactId>ext.bundle.apache_httpclient</artifactId>
@@ -135,25 +134,42 @@
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>ext.bundle.math.jscience_50SNAP</artifactId>
-			<!-- This external component bundle-snapshot version is now fixed -->
+			<!-- This external component bundle-snapshot version is now fixed at Appdapter rev 1.0.9 (Spring 2013) -->
 			<version>1.0.9</version>
-			<!-- See explanation above under Jena dep about why this is "runtime" -->
+			<!-- See explanation above under Jena dep about why this is "runtime".
+				Any user who wants to actually code against this API can add it as an explicit compile dep
+				in their own project.
+			-->
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>ext.bundle.xml.dom4j_161</artifactId>
 			<version>${project.version}</version>
-			<!-- See explanation above under Jena dep about why this is "runtime" -->
+			<!-- See explanation above under Jena dep about why this is "runtime".
+			Any user who wants to actually code against this API can add it as an explicit compile dep
+			in their own project.
+			-->
 			<scope>runtime</scope>
 		</dependency>
        		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
 			<version>1.7.5</version>
+			<!-- Please see extensive comments about this scope, and how to use this style of dependency
+				 in the pom.xml for project:  	ext.bundle.osgi.common.
+				 
+				 We are now exposing this dependency at runtime scope, by default, for all users of
+				 org.appdapter bundle.core.  It is permissible for users to exclude this dependency
+				 when it is undesirable.
+				 
+				 TODO:  Verify that nothing in our Manifest's imports make OSGi think this dep is required.
+			-->
 			<scope>runtime</scope>
 			<exclusions>
-				<!-- This embedded Log4J version is not OSGi friendly -->				
+				<!-- This embedded Log4J version is not OSGi friendly, so we need to exclude it.
+					The "good" Log4J is applied transitively through   ext.bundle.osgi.common.
+				-->				
 				<exclusion>
 					<artifactId>log4j</artifactId>
 					<groupId>log4j</groupId>
@@ -173,6 +189,16 @@
 					<instructions>
 						<!-- Why is this 'optional' resolution of our deps so broadly necessary? 
 								Which deps are we having trouble resolving.
+								
+								Aha!  This is why fileconv and debug fail to launch, but o.a.bundle.core runs.
+								
+								So, we now record the fact that a sloppy trick to make your bundle launch happily
+								standalone, without regard to the consequences, is:
+								
+								<Import-Package>*;resolution:='optional'</Import-Package>
+								
+								2013-10-28 In progress:  Whittling this down to the minimum set of stuff that 
+								really needs to be 'optional'.
 						-->
                         <Import-Package>*;resolution:='optional'</Import-Package>
 						<Bundle-Activator>org.appdapter.osgi.core.AppdapterCoreBundleActivator</Bundle-Activator>
