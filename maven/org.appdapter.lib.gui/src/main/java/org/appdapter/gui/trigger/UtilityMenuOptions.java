@@ -20,7 +20,7 @@ import org.appdapter.core.debug.UIAnnotations.UISalient;
 import org.appdapter.core.debug.UIAnnotations.UtilClass;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.Trigger;
-import org.appdapter.api.trigger.TriggerImpl;
+import org.appdapter.trigger.bind.jena.TriggerImpl;
 import org.appdapter.bind.rdf.jena.model.JenaModelUtils;
 import org.appdapter.core.component.KnownComponent;
 import org.appdapter.core.convert.ReflectUtils;

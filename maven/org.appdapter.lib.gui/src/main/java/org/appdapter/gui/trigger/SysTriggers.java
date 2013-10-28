@@ -19,7 +19,7 @@ package org.appdapter.gui.trigger;
 import javax.swing.JFrame;
 
 import org.appdapter.api.trigger.Box;
-import org.appdapter.api.trigger.TriggerImpl;
+import org.appdapter.trigger.bind.jena.TriggerImpl;
 import org.appdapter.gui.box.ScreenBoxImpl;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.demo.DemoBrowser;

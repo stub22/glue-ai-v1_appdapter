@@ -17,7 +17,7 @@
 package org.appdapter.gui.trigger;
 
 import org.appdapter.api.trigger.MutableBox;
-import org.appdapter.api.trigger.TriggerImpl;
+import org.appdapter.trigger.bind.jena.TriggerImpl;
 import org.appdapter.gui.box.ScreenBoxImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

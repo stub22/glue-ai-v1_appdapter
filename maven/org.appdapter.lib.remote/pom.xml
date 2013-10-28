@@ -33,14 +33,6 @@
 			<groupId>${project.groupId}</groupId>
 			<artifactId>ext.bundle.jena_all_2_10_1</artifactId>
 			<version>${project.version}</version>
-			<!-- Hmmmm - what's up with this?
-			<exclusions>
-				<exclusion>
-					<artifactId>org.osgi.core</artifactId>
-					<groupId>org.apache.felix</groupId>
-				</exclusion>
-			</exclusions>
-			-->
 		</dependency>
 
         <dependency>
@@ -55,8 +47,17 @@
             <artifactId>org.appdapter.lib.core</artifactId>
             <version>${project.version}</version>
         </dependency>
-
-	 
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>org.appdapter.lib.bind.jena</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+	 		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>org.appdapter.bundle.debug</artifactId>
+			<version>${project.version}</version>
+			<scope>provided</scope>
+		</dependency>	
 	</dependencies>
 	
 	<build>
@@ -80,17 +81,13 @@
 					</includes>
 				</configuration>
 			</plugin>
-
-
 		</plugins>
-		<pluginManagement>
-		  
-		</pluginManagement>
+
 	</build>
 </project>
 <!--
 /*
- *  Copyright 2011 by The Appdapter Project (www.appdapter.org).
+ *  Copyright 2013 by The Appdapter Project (www.appdapter.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.

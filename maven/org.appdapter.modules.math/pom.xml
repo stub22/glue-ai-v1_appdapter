@@ -20,6 +20,7 @@
 		<module>../ext.bundle.math.jscience</module>
 		-->
 		<module>../ext.bundle.math.symja_jas</module>
+		<module>../org.appdapter.lib.bind.math</module>
 	</modules>  
 </project>
 <!--

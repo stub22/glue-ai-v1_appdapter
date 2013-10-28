@@ -16,7 +16,7 @@
 
 package org.appdapter.gui.trigger;
 
-import org.appdapter.api.trigger.TriggerImpl;
+import org.appdapter.trigger.bind.jena.TriggerImpl;
 import org.appdapter.gui.box.ScreenBoxImpl;
 
 /**

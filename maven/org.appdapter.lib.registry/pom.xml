@@ -21,8 +21,19 @@
 			<artifactId>org.appdapter.lib.core</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>org.appdapter.bundle.debug</artifactId>
+			<version>${project.version}</version>
+			<scope>provided</scope>
+		</dependency>		
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>org.appdapter.lib.bind.jena</artifactId>
+			<version>${project.version}</version>
+		</dependency>		
 		<!--
-			We don't propagate the slf4j dep, because SLF4J is based on user choosing *their own* 
+			We don't propagate this concrete slf4j binding dep, because SLF4J is based on user choosing *their own* 
 			impl jar.  Unfortunately, the SLF4J default impl is NOPLogger, which does nothing,
 			which is why we supply the Sys.out.println fallback in BasicDebugger. 
 			
