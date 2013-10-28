@@ -43,6 +43,14 @@
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+			<!-- We exclude all the packages of this bundle from Export-Package below, so they don't get 
+					exported in two different places.
+			-->
+            <groupId>${project.groupId}</groupId>
+            <artifactId>org.appdapter.bundle.debug</artifactId>
+            <version>${project.version}</version>
+        </dependency>		
         <!-- removed until it is complete -->
         <!--dependency>
             <groupId>${project.groupId}</groupId>
@@ -137,22 +145,25 @@
 				<extensions>true</extensions>
 				<configuration>
 					<instructions>
-						<!-- 
-						org.gjt.*;resolution:='optional',
-                        sun.*;resolution:='optional', 
-						com.sun.*;resolution:='optional', 
-						org.apache.*;resolution:='optional', 
-						org.h2, 
-						apple.laf.*;resolution:='optional', 
-						com.apple.laf.*;resolution:='optional', 
-						*;resolution:='optional'</Import-Package
+						<!-- Why is this 'optional' resolution of our deps so broadly necessary? 
+								Which deps are we having trouble resolving.
 						-->
                         <Import-Package>*;resolution:='optional'</Import-Package>
 						<Bundle-Activator>org.appdapter.osgi.core.AppdapterCoreBundleActivator</Bundle-Activator>
 						<!-- This full wildcard is a bit too broad, since it allows in some ext.bundle activators,
 						which is a good reason to change the package on those.
 						-->
-						<Export-Package>org.appdapter.*</Export-Package>
+						<Export-Package>
+							<!-- Need to exclude all the packages from o.a.bundle.debug, or they will get re-exported.
+								TODO:  Rename these packages so they are easier to exclude en-masse.
+							-->
+							!org.appdapter.bind.log4j,
+							!org.appdapter.bundle.debug,
+							!org.appdapter.core.convert,
+							!org.appdapter.core.debug,
+							!org.appdapter.core.jvm,
+							!org.appdapter.core.log,
+							org.appdapter.*</Export-Package>
 
 						<!--Export-Package>org.appdapter.*, org.apache.xmlbeans.*,com.hp.hpl.jena.graph.query</Export-Package-->
 						<!-- Horrid workaround for Class.forName() used in DynamicCachingComponentAssembler, could widen it to "*",

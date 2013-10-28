@@ -14,10 +14,11 @@
  *  limitations under the License.
  */
 
-package org.appdapter.core.component;
+package org.appdapter.bind.rdf.jena.assembly;
 
 import org.appdapter.bind.rdf.jena.assembly.CachingComponentAssembler;
 import org.appdapter.bind.rdf.jena.model.JenaLiteralUtils;
+import org.appdapter.core.component.MutableKnownComponent;
 import org.appdapter.core.log.BasicDebugger;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.core.name.Ident;

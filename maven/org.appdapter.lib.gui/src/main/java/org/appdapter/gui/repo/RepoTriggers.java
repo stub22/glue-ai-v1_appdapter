@@ -18,7 +18,7 @@ package org.appdapter.gui.repo;
 
 import java.util.List;
 
-import org.appdapter.api.trigger.TriggerImpl;
+import org.appdapter.trigger.bind.jena.TriggerImpl;
 import org.appdapter.core.store.Repo.GraphStat;
 import org.appdapter.core.store.dataset.RepoDatasetFactory;
 import org.appdapter.core.store.RepoBox;

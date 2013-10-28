@@ -20,7 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-import org.appdapter.api.trigger.TriggerImpl;
+import org.appdapter.trigger.bind.jena.TriggerImpl;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.ScreenBox;
 import org.appdapter.gui.api.ScreenBox.Kind;

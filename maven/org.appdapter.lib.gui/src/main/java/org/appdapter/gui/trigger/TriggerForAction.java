@@ -6,7 +6,7 @@ import javax.swing.Action;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.Trigger;
-import org.appdapter.api.trigger.TriggerImpl;
+import org.appdapter.trigger.bind.jena.TriggerImpl;
 import org.appdapter.core.log.Debuggable;
 
 public class TriggerForAction extends TriggerImpl implements Trigger {

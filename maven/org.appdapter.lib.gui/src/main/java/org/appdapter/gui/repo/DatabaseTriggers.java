@@ -17,7 +17,7 @@
 package org.appdapter.gui.repo;
 
 import org.appdapter.api.trigger.Box;
-import org.appdapter.api.trigger.TriggerImpl;
+import org.appdapter.trigger.bind.jena.TriggerImpl;
 import org.appdapter.bind.sql.h2.DatabaseConnector;
 import org.appdapter.demo.DemoDatabase;
 
