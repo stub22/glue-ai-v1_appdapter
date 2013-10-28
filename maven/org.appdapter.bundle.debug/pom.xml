@@ -15,12 +15,15 @@
 
 	<!-- This debug bundle should not depend on anything but ext.bundles .
 	
-	Launched standalone, it fails to wire with 
+	Updatd 2013-10-28:   Launched solo, this bundle will fail to wire with:
 			&(osgi.wiring.package=org.apache.xerces.impl.dv)(version>=2.9.0)(!(version>=3.0.0))) 
 			[caused by: :::  (osgi.wiring.package=org.w3c.dom.html)]
-	
 			
-	However, upon 
+	However o.a.bundle.core launches OK, because it was using:
+		<Import-Package>*;resolution:='optional'</Import-Package>
+	
+	Note that o.a.b.fileconv launched standalone fails with a *different* XML-parser wiring issue. 
+	(org.apache.crimson.jaxp)
 	-->
     <dependencies>
 		<dependency>
@@ -36,8 +39,6 @@
 		
 		<dependency>
 			<!-- ReflectUtils and AggregateConverter uses org.apache.jena.atlas.lib.
-			
-				Strangely
 			-->
 			<groupId>${project.groupId}</groupId>
 			<artifactId>ext.bundle.jena_all_2_10_1</artifactId>
