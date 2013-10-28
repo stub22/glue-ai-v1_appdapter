@@ -34,7 +34,21 @@
 			<artifactId>ext.bundle.jena_all_2_10_1</artifactId>
             <version>${project.version}</version>
 		</dependency>			
-				
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.7.5</version>
+			<scope>runtime</scope>
+			<exclusions>
+				<!-- This embedded Log4J version is not OSGi friendly, so we exclude it.
+					The "good" one is already inherited from ext.bundle.osgi.common.
+				-->				
+				<exclusion>
+					<artifactId>log4j</artifactId>
+					<groupId>log4j</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>				
     </dependencies>
 
     <build>
