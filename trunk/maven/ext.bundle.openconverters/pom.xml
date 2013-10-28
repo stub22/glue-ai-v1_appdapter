@@ -83,24 +83,7 @@
 			<scope>provided</scope>
 		</dependency>
 
-		<!-- TODO: Let's move the POI-dependent features into their own bundle
-			oriented towards data import/export. Included ow2 bundle to export apache.commons.logging.
-			Needed by org.apache.poi -->
-		<dependency>
-			<groupId>org.ow2.bundles</groupId>
-			<artifactId>ow2-bundles-externals-commons-logging</artifactId>
-			<version>1.0.33</version>
-			<!-- This bundle does not need re-exporting, and is not needed at compile time, but users will need it
-					at runtime.
-			-->
-			<scope>runtime</scope>
-			<exclusions>
-				<exclusion>
-					<artifactId>commons-logging-api</artifactId>
-					<groupId>commons-logging</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>
+
 		
 		<!-- CSV library used for parsing - indepdendent of the POI stuff-->
 		<dependency>
