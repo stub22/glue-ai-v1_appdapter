@@ -18,7 +18,8 @@ package org.appdapter.scafun.app
 
 import scala.collection.JavaConverters.asScalaBufferConverter
 
-import org.appdapter.api.trigger.{ BoxContext, MutableTrigger, TriggerImpl }
+import org.appdapter.api.trigger.{ BoxContext, MutableTrigger }
+import org.appdapter.trigger.bind.jena.TriggerImpl
 import org.appdapter.bind.rdf.jena.assembly.AssemblerUtils
 import org.appdapter.bind.rdf.jena.model.JenaFileManagerUtils
 import org.appdapter.demo.DemoResources
