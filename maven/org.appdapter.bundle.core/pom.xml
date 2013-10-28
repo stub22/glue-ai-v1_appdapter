@@ -50,7 +50,15 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>org.appdapter.bundle.debug</artifactId>
             <version>${project.version}</version>
-        </dependency>		
+        </dependency>
+        <dependency>
+			<!-- We exclude all the packages of this bundle from Export-Package below, so they don't get 
+					exported in two different places.
+			-->
+            <groupId>${project.groupId}</groupId>
+            <artifactId>org.appdapter.bundle.fileconv</artifactId>
+            <version>${project.version}</version>
+        </dependency>			
         <!-- removed until it is complete -->
         <!--dependency>
             <groupId>${project.groupId}</groupId>
@@ -175,7 +183,14 @@
 							!org.appdapter.core.debug,
 							!org.appdapter.core.jvm,
 							!org.appdapter.core.log,
-							org.appdapter.*</Export-Package>
+							<!-- Exclude these packages from o.a.bundle.fileconv -->
+							!org.appdapter.bind.csv.datmat,
+							!org.appdapter.bundle.fileconv,
+							!org.appdapter.fileconv,
+							<!-- NOW, we can export the rest of appdapter-core 
+							(contents of lib.core, lib.registry, lib.bind.{math,jena}	-->
+							org.appdapter.*
+						</Export-Package>
 
 						<!--Export-Package>org.appdapter.*, org.apache.xmlbeans.*,com.hp.hpl.jena.graph.query</Export-Package-->
 						<!-- Horrid workaround for Class.forName() used in DynamicCachingComponentAssembler, could widen it to "*",

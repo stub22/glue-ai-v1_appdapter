@@ -25,7 +25,6 @@
 			<groupId>${project.groupId}</groupId>
 			<artifactId>org.appdapter.bundle.debug</artifactId>
 			<version>${project.version}</version>
-			<scope>provided</scope>
 		</dependency>		
 		<dependency>
 			<groupId>${project.groupId}</groupId>
