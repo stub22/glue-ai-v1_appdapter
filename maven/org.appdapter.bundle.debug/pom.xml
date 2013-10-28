@@ -13,7 +13,14 @@
 	<packaging>bundle</packaging>
     <name>${project.artifactId} - OSGi Bundle</name>
 
-	<!-- This debug bundle should not depend on anything but ext.bundles  
+	<!-- This debug bundle should not depend on anything but ext.bundles .
+	
+	Launched standalone, it fails to wire with 
+			&(osgi.wiring.package=org.apache.xerces.impl.dv)(version>=2.9.0)(!(version>=3.0.0))) 
+			[caused by: :::  (osgi.wiring.package=org.w3c.dom.html)]
+	
+			
+	However, upon 
 	-->
     <dependencies>
 		<dependency>
@@ -28,13 +35,16 @@
 		</dependency>
 		
 		<dependency>
-			<!-- ReflectUtils and AggregateConverter uses org.apache.jena.atlas.lib
+			<!-- ReflectUtils and AggregateConverter uses org.apache.jena.atlas.lib.
+			
+				Strangely
 			-->
 			<groupId>${project.groupId}</groupId>
 			<artifactId>ext.bundle.jena_all_2_10_1</artifactId>
             <version>${project.version}</version>
 		</dependency>			
 		<dependency>
+			
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
 			<version>1.7.5</version>
