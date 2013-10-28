@@ -58,6 +58,12 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>org.appdapter.bundle.fileconv</artifactId>
             <version>${project.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>xml-apis</artifactId>
+                    <groupId>xml-apis</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>			
         <!-- removed until it is complete -->
         <!--dependency>
