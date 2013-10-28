@@ -49,6 +49,7 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
 			<version>1.7.5</version>
+			<!-- Set to "runtime" to test standalone launch, but commit only at "test" scope -->
 			<scope>runtime</scope>
 			<exclusions>
 				<!-- This embedded Log4J version is not OSGi friendly, so we exclude it.
@@ -71,6 +72,7 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
+						<Import-Package>*;resolution:='optional'</Import-Package>
                         <Bundle-Activator>org.appdapter.bundle.debug.Activator</Bundle-Activator>
 						<!-- If we are not specific enough in our Export-Package, BND will re-export imported packages 
 							(e.g. the Activator packages it finds in the ext-bundles).
