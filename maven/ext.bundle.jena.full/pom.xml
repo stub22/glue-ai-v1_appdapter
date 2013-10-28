@@ -91,13 +91,11 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
- <!--
-   <dependency>
-      <groupId>org.apache.jena</groupId>
-      <artifactId>jena-arq</artifactId>
-      <version>${jena.version}</version>
-    </dependency>
- -->
+
+<!--
+		These "sources" and "javadocs" deps appear to be complicating the resolution of the
+		httpclient/httpcore imports.  We can come back to this.
+		
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-arq</artifactId>
@@ -106,7 +104,7 @@
 			<scope>provided</scope>
 		 <exclusions>
 		  <exclusion>
-			  <!-- We want the OSGi-friendly version -->
+
 		   <artifactId>httpclient</artifactId>
 		   <groupId>org.apache.httpcomponents</groupId>
 		  </exclusion>
@@ -120,14 +118,20 @@
 			<classifier>javadoc</classifier>
 			<scope>provided</scope>
 		</dependency>
-
+-->
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-core</artifactId>
 			<version>${jena.version}</version>
 			<scope>provided</scope>
+		 <exclusions>
+		  <exclusion>
+		   <artifactId>log4j</artifactId>
+		   <groupId>log4j</groupId>
+		  </exclusion>
+		 </exclusions>
 		</dependency>
-
+<!--
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-core</artifactId>
@@ -143,7 +147,7 @@
 			<classifier>javadoc</classifier>
 			<scope>provided</scope>
 		</dependency>
-
+-->
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-tdb</artifactId>
@@ -155,9 +159,13 @@
 					<artifactId>httpclient</artifactId>
 					<groupId>org.apache.httpcomponents</groupId>
 				</exclusion>
+			 <exclusion>
+			  <artifactId>log4j</artifactId>
+			  <groupId>log4j</groupId>
+			 </exclusion>
 			</exclusions>
 		</dependency>
-
+<!--
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-tdb</artifactId>
@@ -174,7 +182,8 @@
 			<scope>provided</scope>
 		</dependency>
 
-
+-->
+<!--
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-sdb</artifactId>
@@ -190,14 +199,21 @@
 			<classifier>javadoc</classifier>
 			<scope>provided</scope>
 		</dependency>
-
+-->
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-iri</artifactId>
 			<version>${jena-iri.version}</version>
 			<scope>provided</scope>
+		 <exclusions>
+		  <exclusion>
+		   <artifactId>log4j</artifactId>
+		   <groupId>log4j</groupId>
+		  </exclusion>
+		 </exclusions>
 		</dependency>
 
+<!--
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-iri</artifactId>
@@ -205,7 +221,7 @@
 			<classifier>sources</classifier>
 			<scope>provided</scope>
 		</dependency>
-               
+-->           
 	<dependency>
             <groupId>org.apache.jena</groupId>
 			<artifactId>jena-sdb</artifactId>
@@ -297,6 +313,14 @@
 			<scope>runtime</scope>
 		</dependency>		
 		
+		<!-- If we don't properly exclude all of Jena's attempts to propagate Log4J, we see runtime messages like:
+						
+     [java] Auto-properties install: file:/E:/maven_repo/log4j/log4j/1.2.16/log4j-1.2.16.jar (org.osgi.framework.BundleException: Duplicate import: com.sun.jdmk.comm)
+     [java] Auto-properties start: file:/E:/maven_repo/log4j/log4j/1.2.16/log4j-1.2.16.jar (org.osgi.framework.BundleException: Duplicate im[System.out] Trace: 
+		ext.osgi.common.ExtOSGiCommonBundleActivator.start(ctx=org.apache.felix.framework.BundleContextImpl@32955cd5port: com.sun.jdmk.comm)				
+
+		-->
+		
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
@@ -325,7 +349,7 @@
 				<extensions>true</extensions>
 				<configuration>
 					<instructions>
-						<Import-Package>*</Import-Package>
+						<Import-Package>!org.apache.http.impl.*,*</Import-Package>
 						<!-- Horrid workaround for Class.forName() used in AssemberHelp, could widen it to "*",
 							but better to get Jena code fixed to allow classloader setup.
 						-->

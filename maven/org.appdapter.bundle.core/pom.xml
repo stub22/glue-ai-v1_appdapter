@@ -133,7 +133,19 @@
 			<!-- See explanation above under Jena dep about why this is "runtime" -->
 			<scope>runtime</scope>
 		</dependency>
-       
+       		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.7.5</version>
+			<scope>runtime</scope>
+			<exclusions>
+				<!-- This embedded Log4J version is not OSGi friendly -->				
+				<exclusion>
+					<artifactId>log4j</artifactId>
+					<groupId>log4j</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 	</dependencies>
 
 	<build>

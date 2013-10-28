@@ -50,11 +50,14 @@
 				the methods provided by Appdapter, which assumes a log4j.properties file at
 				root of this bundle.  We can also do any Log4J config using code, e.g.
 				using "BasicConfigurator".
+				
 			-->			
 
 			<groupId>org.apache.log4j</groupId>
 			<artifactId>com.springsource.org.apache.log4j</artifactId>
 			<version>1.2.16</version>
+	
+			
 		</dependency>
 		<dependency>
 			<!-- This version of apache-commons-codec is a proper OSGi bundle, which uses a different version numbering 
@@ -82,7 +85,23 @@
 			<groupId>org.scala-lang</groupId>
 			<artifactId>scala-compiler</artifactId>
 			<version>2.10.2</version>
-		</dependency>		
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.7.5</version>
+			<!-- Changed from runtime to test - we do not want this binding to propagate! -->
+			<scope>test</scope>
+			<exclusions>
+				<!-- We exclude the normally embedded Log4J version, because it is not OSGi friendly.
+					We instead use the bundled version supplied by SpringSource below.
+				-->			
+				<exclusion>
+					<artifactId>log4j</artifactId>
+					<groupId>log4j</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>			
     </dependencies>
 
     <build>
