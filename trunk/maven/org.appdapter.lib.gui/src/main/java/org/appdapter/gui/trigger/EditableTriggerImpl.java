@@ -6,7 +6,7 @@ import java.util.concurrent.Callable;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.core.jvm.CallableWithParameters;
 import org.appdapter.api.trigger.Trigger;
-import org.appdapter.api.trigger.TriggerImpl;
+import org.appdapter.trigger.bind.jena.TriggerImpl;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.EditableTrigger;

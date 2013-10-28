@@ -14,9 +14,12 @@
  *  limitations under the License.
  */
 
-package org.appdapter.api.trigger;
+package org.appdapter.trigger.bind.jena;
 
-import org.appdapter.core.component.KnownComponentImpl;
+import org.appdapter.api.trigger.Box;
+import org.appdapter.api.trigger.MenuName;
+import org.appdapter.api.trigger.MutableTrigger;
+import org.appdapter.bind.rdf.jena.assembly.KnownComponentImpl;
 import org.appdapter.core.convert.ReflectUtils;
 
 /**

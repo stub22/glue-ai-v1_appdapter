@@ -1,7 +1,7 @@
 package org.appdapter.gui.repo;
 
 import org.appdapter.api.trigger.Box;
-import org.appdapter.api.trigger.TriggerImpl;
+import org.appdapter.trigger.bind.jena.TriggerImpl;
 
 public class ScreenGraphTrigger<MRB extends Box<TriggerImpl<MRB>>> extends TriggerImpl<MRB> /*
 * with FullTrigger<GraphBox>

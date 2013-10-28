@@ -36,7 +36,7 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
-import org.appdapter.api.trigger.ABoxImpl;
+import org.appdapter.trigger.bind.jena.ABoxImpl;
 import org.appdapter.api.trigger.AnyOper.HasIdent;
 import org.appdapter.core.debug.UIAnnotations.UIHidden;
 import org.appdapter.api.trigger.Box;

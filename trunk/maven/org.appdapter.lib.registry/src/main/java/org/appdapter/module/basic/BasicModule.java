@@ -16,7 +16,7 @@
 package org.appdapter.module.basic;
 
 import org.appdapter.api.module.Module;
-import org.appdapter.core.component.KnownComponentImpl;
+import org.appdapter.bind.rdf.jena.assembly.KnownComponentImpl;
 
 /**
  * @author Stu B. <www.texpedient.com>

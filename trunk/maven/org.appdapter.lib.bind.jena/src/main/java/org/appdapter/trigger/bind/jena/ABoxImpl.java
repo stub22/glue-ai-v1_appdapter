@@ -14,12 +14,15 @@
  *  limitations under the License.
  */
 
-package org.appdapter.api.trigger;
+package org.appdapter.trigger.bind.jena;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.appdapter.api.trigger.BoxContext;
+import org.appdapter.api.trigger.MutableBox;
+import org.appdapter.api.trigger.Trigger;
 
-import org.appdapter.core.component.KnownComponentImpl;
+import org.appdapter.bind.rdf.jena.assembly.KnownComponentImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.helpers.NOPLogger;
