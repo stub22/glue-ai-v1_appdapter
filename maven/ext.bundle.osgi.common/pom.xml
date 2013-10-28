@@ -15,6 +15,7 @@
 				and our logging infrastructure.
 	</description>
 				
+	<!-- This bundle launches cleanly standalone, *IF* an SLF4J runtime binding is supplied to it -->
     <dependencies>
         <dependency>
             <groupId>org.osgi</groupId>
@@ -66,8 +67,8 @@
 		<!-- BEGIN logging section -->
 		<dependency>
 			<!-- Hooray - commons-logging default distro is now a bundle!  
-				That is not clear in the online pom at Maven central, but the manifest looks good.
-				This version is needed by httpclient 4.3, which is needed by Jena.
+				That is not clear in the online pom at Maven central, but the manifest in the jar looks good.
+				This version is needed by httpclient-osgi 4.3, which is needed by Jena.
 				
 				It is also used at compile time by our ported Jena code in o.a.lib.remote.
 			-->
@@ -100,6 +101,7 @@
 			
 		</dependency>
 		<dependency>
+			<!-- Local SLF4J-Log4J binding used during bundle dev testing only -->
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
 			<version>1.7.5</version>
@@ -116,7 +118,7 @@
 				b) To run your bundle as a direct felix-launchable (useful for testing that your bundle wires OK),
 				and use Log4J logging, you will need at least runtime scope.
 				
-				Note that you must also address Log4J config
+				Note that you must also address Log4J config, as discussed under the log4J dependency above.
 			-->
 			<scope>test</scope>
 			<exclusions>

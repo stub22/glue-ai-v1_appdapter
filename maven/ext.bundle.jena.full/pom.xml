@@ -14,12 +14,15 @@
 		<jena-tdb.version>0.10.1</jena-tdb.version>
 		<jena-iri.version>0.9.6</jena-iri.version>
 		<jena-fuseki.version>0.2.7</jena-fuseki.version>
-		<!--
+		<!--	LogicMoo was experimenting with plugging Sesame in here as well, but we decided it is too bulky and 
+				deserves its own wrappers if we are going to use it.
 		<sesame.version>2.7.4</sesame.version>
 		-->
 	</properties>
 
-	<!-- Artifact ID updated on 2013-07-17 from ext.bundle.jena_all_264 to what you see on next line (v 2.10.1) -->
+	<!-- Artifact ID updated on 2013-07-17 from ext.bundle.jena_all_264 to what you see on next line (v 2.10.1)
+			Next expected update to our glue.ai Jena dependency (and other key deps) is expected 2014-June.
+	-->
 	<artifactId>ext.bundle.jena_all_2_10_1</artifactId>
 	<packaging>bundle</packaging>
 	<name>${project.artifactId} - OSGi - Jena wrapper</name>
@@ -50,6 +53,7 @@
             <version>${project.version}</version>
 		</dependency>		
 		
+		<!-- Jena "sources" and "javadocs" deps commented out and moved to bottom of file. See comments there -->
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>apache-jena-libs</artifactId>
@@ -61,6 +65,9 @@
 			-->
 			<scope>provided</scope>
 			<exclusions>
+				<!-- We want to prevent Jena's bundled dependencies from propagating and interfering with our 
+					other glue.ai OSGi 	compliant deps.
+				-->
 				<exclusion>
 					<artifactId>lucene-core</artifactId>
 					<groupId>org.apache.lucene</groupId>
@@ -92,33 +99,7 @@
 			</exclusions>
 		</dependency>
 
-<!--
-		These "sources" and "javadocs" deps appear to be complicating the resolution of the
-		httpclient/httpcore imports.  We can come back to this.
-		
-		<dependency>
-			<groupId>org.apache.jena</groupId>
-			<artifactId>jena-arq</artifactId>
-			<version>${jena.version}</version>
-			<classifier>sources</classifier>
-			<scope>provided</scope>
-		 <exclusions>
-		  <exclusion>
 
-		   <artifactId>httpclient</artifactId>
-		   <groupId>org.apache.httpcomponents</groupId>
-		  </exclusion>
-		 </exclusions>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.jena</groupId>
-			<artifactId>jena-arq</artifactId>
-			<version>${jena.version}</version>
-			<classifier>javadoc</classifier>
-			<scope>provided</scope>
-		</dependency>
--->
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-core</artifactId>
@@ -131,23 +112,7 @@
 		  </exclusion>
 		 </exclusions>
 		</dependency>
-<!--
-		<dependency>
-			<groupId>org.apache.jena</groupId>
-			<artifactId>jena-core</artifactId>
-			<version>${jena.version}</version>
-			<classifier>sources</classifier>
-			<scope>provided</scope>
-		</dependency>
 
-		<dependency>
-			<groupId>org.apache.jena</groupId>
-			<artifactId>jena-core</artifactId>
-			<version>${jena.version}</version>
-			<classifier>javadoc</classifier>
-			<scope>provided</scope>
-		</dependency>
--->
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-tdb</artifactId>
@@ -165,41 +130,7 @@
 			 </exclusion>
 			</exclusions>
 		</dependency>
-<!--
-		<dependency>
-			<groupId>org.apache.jena</groupId>
-			<artifactId>jena-tdb</artifactId>
-			<version>${jena-tdb.version}</version>
-			<classifier>sources</classifier>
-			<scope>provided</scope>			
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.jena</groupId>
-			<artifactId>jena-tdb</artifactId>
-			<version>${jena-tdb.version}</version>
-			<classifier>javadoc</classifier>
-			<scope>provided</scope>
-		</dependency>
-
--->
-<!--
-		<dependency>
-			<groupId>org.apache.jena</groupId>
-			<artifactId>jena-sdb</artifactId>
-			<version>${jena-sdb.version}</version>
-			<classifier>sources</classifier>
-			<scope>provided</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.jena</groupId>
-			<artifactId>jena-sdb</artifactId>
-			<version>${jena-sdb.version}</version>
-			<classifier>javadoc</classifier>
-			<scope>provided</scope>
-		</dependency>
--->
+   
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-iri</artifactId>
@@ -213,15 +144,7 @@
 		 </exclusions>
 		</dependency>
 
-<!--
-		<dependency>
-			<groupId>org.apache.jena</groupId>
-			<artifactId>jena-iri</artifactId>
-			<version>${jena-iri.version}</version>
-			<classifier>sources</classifier>
-			<scope>provided</scope>
-		</dependency>
--->           
+ 
 	<dependency>
             <groupId>org.apache.jena</groupId>
 			<artifactId>jena-sdb</artifactId>
@@ -313,7 +236,8 @@
 			<scope>runtime</scope>
 		</dependency>		
 		
-		<!-- If we don't properly exclude all of Jena's attempts to propagate Log4J, we see runtime messages like:
+		<!-- If we don't properly exclude all of Jena's attempts to propagate (non-OSGi friendly) Log4J jars, we see 
+		runtime messages like:
 						
      [java] Auto-properties install: file:/E:/maven_repo/log4j/log4j/1.2.16/log4j-1.2.16.jar (org.osgi.framework.BundleException: Duplicate import: com.sun.jdmk.comm)
      [java] Auto-properties start: file:/E:/maven_repo/log4j/log4j/1.2.16/log4j-1.2.16.jar (org.osgi.framework.BundleException: Duplicate im[System.out] Trace: 
@@ -322,14 +246,16 @@
 		-->
 		
 		<dependency>
+			<!-- Local SLF4J-Log4J binding used during bundle dev testing only -->
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
 			<version>1.7.5</version>
-			<!-- Changed from runtime to test - we do not want this binding to propagate! -->
+			<!-- Can be changed to "runtime" for a solo-launch test, but do not commit other than at "test"
+			- we do not want this binding to propagate from here. -->
 			<scope>test</scope>
 			<exclusions>
 				<!-- We exclude the normally embedded Log4J version, because it is not OSGi friendly.
-					We instead use the bundled version supplied by SpringSource below.
+					We instead use the bundled version supplied by SpringSource, via ext.bundle.osgi.common.
 				-->			
 				<exclusion>
 					<artifactId>log4j</artifactId>
@@ -350,15 +276,20 @@
 				<configuration>
 					<instructions>
 
-							
-
 						<Import-Package>
 						<!-- Prevent direct wiring to this pkg, which is private in our httpclient-osgi-4.3.jar -->
 							!org.apache.http.impl.*,
+			<!--   Customer bundles like o.a.b.debug report on solo launch:  
+			&(osgi.wiring.package=org.apache.xerces.impl.dv)(version>=2.9.0)(!(version>=3.0.0))) 
+			[caused by: :::  (osgi.wiring.package=org.w3c.dom.html)]	
+			-->					
+							org.apache.xerces.impl.dv;resolution:='optional',
 							*
 						</Import-Package>
 						<!-- Horrid workaround for Class.forName() used in AssemberHelp, could widen it to "*",
 							but better to get Jena code fixed to allow classloader setup.
+							
+							TODO:  Implement a Fragment-Host approach to allow Assembler to process injected classes.
 						-->
 						<DynamicImport-Package>org.appdapter.*,org.cogchar.*</DynamicImport-Package>
 						<Bundle-Activator>ext.bundle.jena.full.Activator</Bundle-Activator>
@@ -380,3 +311,93 @@
 		</plugins>
 	</build>
 </project>
+
+<!--
+		These "sources" and "javadocs" deps appear to possibly be complicating the resolution of the
+		httpclient/httpcore imports.  We can come back to this.  However, these are so bulky in the
+		pom.xml - can we file them neatly away somewhere else without another ext-bundle in Appdapter?
+		
+		<dependency>
+			<groupId>org.apache.jena</groupId>
+			<artifactId>jena-arq</artifactId>
+			<version>${jena.version}</version>
+			<classifier>sources</classifier>
+			<scope>provided</scope>
+		 <exclusions>
+		  <exclusion>
+
+		   <artifactId>httpclient</artifactId>
+		   <groupId>org.apache.httpcomponents</groupId>
+		  </exclusion>
+		 </exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.jena</groupId>
+			<artifactId>jena-arq</artifactId>
+			<version>${jena.version}</version>
+			<classifier>javadoc</classifier>
+			<scope>provided</scope>
+		</dependency>
+-->		
+<!--
+		<dependency>
+			<groupId>org.apache.jena</groupId>
+			<artifactId>jena-core</artifactId>
+			<version>${jena.version}</version>
+			<classifier>sources</classifier>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.jena</groupId>
+			<artifactId>jena-core</artifactId>
+			<version>${jena.version}</version>
+			<classifier>javadoc</classifier>
+			<scope>provided</scope>
+		</dependency>
+-->		
+<!--
+		<dependency>
+			<groupId>org.apache.jena</groupId>
+			<artifactId>jena-tdb</artifactId>
+			<version>${jena-tdb.version}</version>
+			<classifier>sources</classifier>
+			<scope>provided</scope>			
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.jena</groupId>
+			<artifactId>jena-tdb</artifactId>
+			<version>${jena-tdb.version}</version>
+			<classifier>javadoc</classifier>
+			<scope>provided</scope>
+		</dependency>
+
+-->
+<!--
+		<dependency>
+			<groupId>org.apache.jena</groupId>
+			<artifactId>jena-sdb</artifactId>
+			<version>${jena-sdb.version}</version>
+			<classifier>sources</classifier>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.jena</groupId>
+			<artifactId>jena-sdb</artifactId>
+			<version>${jena-sdb.version}</version>
+			<classifier>javadoc</classifier>
+			<scope>provided</scope>
+		</dependency>
+-->
+<!--
+		<dependency>
+			<groupId>org.apache.jena</groupId>
+			<artifactId>jena-iri</artifactId>
+			<version>${jena-iri.version}</version>
+			<classifier>sources</classifier>
+			<scope>provided</scope>
+		</dependency>
+-->       
