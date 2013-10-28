@@ -25,6 +25,7 @@
         <module>../ext.bundle.openconverters</module>
         <module>../ext.bundle.apache_httpclient</module>
 		<module>../ext.bundle.xml.dom4j</module>
+		<module>../ext.bundle.xml.xerces</module>
 	</modules>
 	
 	<repositories>
