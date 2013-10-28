@@ -13,9 +13,14 @@
 
     <name>${project.artifactId} - OSGi Bundle</name>
 
-	<!-- Run solo, this will fail with
-		 org.appdapter.ext.bundle.openconverters [1]: Unable to resolve 1.0: missing requirement [1.0] 
-		osgi.wiring.package; (osgi.wiring.package=org.apache.crimson.jaxp)
+	<!-- Updatd 2013-10-28:   Launched solo, this bundle will fail to wire with:
+		 org.appdapter.ext.bundle.openconverters [1]: 
+		
+		(osgi.wiring.package=org.apache.crimson.jaxp)
+		
+		However, o.a.bundle.core launches OK.
+		
+		Note that o.a.b.debug launched standalone fails with a *different* XML-parser wiring issue: (org.w3c.dom.html)
 	-->
 
     <dependencies>
