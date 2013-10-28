@@ -349,7 +349,14 @@
 				<extensions>true</extensions>
 				<configuration>
 					<instructions>
-						<Import-Package>!org.apache.http.impl.*,*</Import-Package>
+
+							
+
+						<Import-Package>
+						<!-- Prevent direct wiring to this pkg, which is private in our httpclient-osgi-4.3.jar -->
+							!org.apache.http.impl.*,
+							*
+						</Import-Package>
 						<!-- Horrid workaround for Class.forName() used in AssemberHelp, could widen it to "*",
 							but better to get Jena code fixed to allow classloader setup.
 						-->
