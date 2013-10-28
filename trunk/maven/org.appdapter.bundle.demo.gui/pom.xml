@@ -59,7 +59,9 @@
                     <instructions>
                         <Bundle-Activator>org.appdapter.demo.gui.osgi.Activator</Bundle-Activator>
 						<!-- We want to use explicit packages.    *;-split-package:=merge-first  -->
-                        <Export-Package></Export-Package>
+                        <Export-Package>
+							org.appdapter.demo.gui.osgi
+						</Export-Package>
 
                     </instructions>
 				</configuration>
