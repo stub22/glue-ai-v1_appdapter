@@ -20,7 +20,6 @@ use ${project.groupId} and ${project.version} for inter module dependencies.
 
 Version less parent will be allowed in Maven 3.1.
 -->
-
 	<artifactId>org.appdapter.modules.all</artifactId>
 
 	<packaging>pom</packaging>

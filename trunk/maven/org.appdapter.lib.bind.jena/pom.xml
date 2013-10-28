@@ -13,7 +13,6 @@
 	<name>${project.artifactId} - POJO</name>
 
 
-
     <dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>

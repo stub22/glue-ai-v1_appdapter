@@ -106,10 +106,10 @@
                     <instructions>
 
                         <Import-Package>
-							<!-- Either of these actually needed by the fileconv ? 
-							com.sun.*;resolution:=optional,
+							<!--
 							javax.*;resolution:=optional,
 							-->
+							com.sun.*;resolution:=optional,  <!-- au.com.bytecode.opencsv wants   com.sun.javadoc -->
 							*
 						</Import-Package>
 

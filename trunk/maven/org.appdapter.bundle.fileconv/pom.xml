@@ -13,6 +13,10 @@
 
     <name>${project.artifactId} - OSGi Bundle</name>
 
+	<!-- Run solo, this will fail with
+		 org.appdapter.ext.bundle.openconverters [1]: Unable to resolve 1.0: missing requirement [1.0] 
+		osgi.wiring.package; (osgi.wiring.package=org.apache.crimson.jaxp)
+	-->
 
     <dependencies>
         <dependency>
@@ -46,7 +50,7 @@
                         <Export-Package>
 							org.appdapter.fileconv, 
 							org.appdapter.bind.csv.*, 
-							org.appdatper.bundle.fileconv
+							org.appdapter.bundle.fileconv
 						</Export-Package>
                     </instructions>
                 </configuration>
