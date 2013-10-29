@@ -84,6 +84,10 @@
 					<artifactId>dom4j</artifactId>
 					<groupId>dom4j</groupId>
 				</exclusion>
+				<exclusion>
+					<artifactId>junit</artifactId>
+					<groupId>junit</groupId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<!-- We excluded XMLBeans above.  Here we add a specific but non-OSGi-aware version, 

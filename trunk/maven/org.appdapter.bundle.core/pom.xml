@@ -28,19 +28,8 @@
            <version>${project.version}</version>
 		   <!-- We use "provided" scope for the code we are exporting, because we don't want our dependency on the
 				lib to propagate out to users of this bundle.
-				
-
 			-->
            <scope>provided</scope>
-		    <exclusions>
-				<!-- 	Interestingly, despite the provided-scope, o.a.lib.core propagates a dependence on the H2 database,
-				unless we exclude it.
-		        <exclusion>
-		            <artifactId>h2</artifactId>
-		            <groupId>com.h2database</groupId>
-		        </exclusion>
-				-->
-		    </exclusions>
 		</dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -140,6 +129,12 @@
 			-->
 			<scope>runtime</scope>
 		</dependency>
+		<dependency>
+			<!-- Jena-SDB no longer propagates this dep to us.  -->
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>1.3.157</version>
+		</dependency>	
        		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
