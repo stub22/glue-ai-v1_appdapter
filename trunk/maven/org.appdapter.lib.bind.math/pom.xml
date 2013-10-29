@@ -32,6 +32,8 @@
 			<version>4.7_3</version>
 			<scope>test</scope>
 		</dependency>
+		
+		<!-- SLF4J-Log4J runtime binding now received transitively from o.a.lib.core -->
 	</dependencies>
 	<build>
 		<plugins>

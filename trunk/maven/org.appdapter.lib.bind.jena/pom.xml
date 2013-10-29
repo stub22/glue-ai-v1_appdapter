@@ -18,23 +18,9 @@
 			<groupId>${project.groupId}</groupId>
 			<artifactId>org.appdapter.lib.core</artifactId>
             <version>${project.version}</version>
-		</dependency>		
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>ext.bundle.jena_all_2_10_1</artifactId>
-            <version>${project.version}</version>
-		</dependency>		
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>org.appdapter.bundle.debug</artifactId>
-            <version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>org.appdapter.bundle.fileconv</artifactId>
-            <version>${project.version}</version>
-		</dependency>		
+		</dependency>	
 		
+		<!-- SLF4J-Log4J runtime binding now received transitively from o.a.lib.core -->
     </dependencies>
 
 	<build>
