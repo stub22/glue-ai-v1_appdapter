@@ -1,4 +1,4 @@
-package org.appdapter.scafun;
+package org.appdapter.trigger.bind.java;
 
 import org.appdapter.api.trigger.MutableTrigger;
 
