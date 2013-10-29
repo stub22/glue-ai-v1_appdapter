@@ -74,7 +74,7 @@
 			<artifactId>slf4j-log4j12</artifactId>
 			<version>1.7.5</version>
 			<!-- Set to "runtime" to test standalone launch, but commit only at "test" scope -->
-			<scope>runtime</scope>
+			<scope>test</scope>
 			<exclusions>
 				<!-- This embedded Log4J version is not OSGi friendly, so we exclude it.
 					The "good" one is already inherited from ext.bundle.osgi.common.
