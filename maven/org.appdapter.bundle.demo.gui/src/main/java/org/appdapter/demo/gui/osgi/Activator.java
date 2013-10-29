@@ -18,6 +18,8 @@ public class Activator extends ExtBundleActivatorBase {
 		//   moved to o.a.bundle.fileconv Activator.
 		//	ext.bundle.openconverters.osgi.Activator.ensureConvertersClassesAreFindable();
 		org.appdapter.gui.demo.DemoBrowser.main(args);
+		System.out.println("[System.out] ...addRepoLoaderMenu !");
+		org.appdapter.gui.trigger.UtilityMenuOptions.setAllFeatures(true);
 		System.out.println("[System.out] ...all done!");
 	}
 }
