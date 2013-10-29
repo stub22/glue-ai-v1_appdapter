@@ -22,10 +22,7 @@ import org.appdapter.module.basic.BasicModulator;
 import org.appdapter.module.basic.BasicModule;
 import org.appdapter.module.basic.EmptyTimedModule;
 import org.appdapter.module.basic.NullModule;
-import org.appdapter.module.basic.TimedModule;
 import org.appdapter.osgi.registry.RegistryServiceFuncs;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Stu B. <www.texpedient.com>

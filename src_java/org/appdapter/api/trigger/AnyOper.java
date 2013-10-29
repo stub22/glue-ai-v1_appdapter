@@ -17,10 +17,7 @@ package org.appdapter.api.trigger;
 
 
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import org.appdapter.core.component.KnownComponent;
-
 import org.appdapter.core.debug.UIAnnotations;
 import org.appdapter.core.name.Ident;
 

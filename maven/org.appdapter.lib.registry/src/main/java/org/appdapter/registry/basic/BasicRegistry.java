@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.appdapter.api.registry.Description;
 import org.appdapter.api.registry.Finder;
 import org.appdapter.api.registry.Pattern;
