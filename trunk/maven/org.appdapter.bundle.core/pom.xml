@@ -37,7 +37,14 @@
             <version>${project.version}</version>
 			<!-- We are exporting these packages -->
             <scope>provided</scope>
-        </dependency>	   
+        </dependency>	
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>org.appdapter.lib.bind.math</artifactId>
+            <version>${project.version}</version>
+			<!-- We are exporting these packages -->
+            <scope>provided</scope>
+        </dependency>			   
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>org.appdapter.lib.registry</artifactId>
