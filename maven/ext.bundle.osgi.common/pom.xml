@@ -64,7 +64,8 @@
 			<version>2.10.2</version>
 		</dependency>
 		
-		<!-- BEGIN logging section -->
+		<!-- BEGIN logging section.
+		-->
 		<dependency>
 			<!-- Hooray - commons-logging default distro is now a bundle!  
 				That is not clear in the online pom at Maven central, but the manifest in the jar looks good.
@@ -151,6 +152,10 @@
         </plugins>
     </build>
 
+<!--	This bundle has its own copy of the launch profile stuff, because there is some customization 
+		to generate an ant-runnable launch script at bottom.  TODO:  Either make that feature standard, or
+		remove it.  (We do have docs about this feature in our Appdapter wiki).
+-->
     <profiles>
         <profile>
             <id>build-for-felix</id>

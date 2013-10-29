@@ -13,14 +13,41 @@
 
     <name>${project.artifactId} - OSGi Bundle</name>
 
-	<!-- Updatd 2013-10-28:   Launched solo, this bundle will fail to wire with:
+	<!-- Updatd 2013-10-28:   Launched solo, this bundle will wire OK, but fails to find
+		certain classes via the debugLoaders facilities.
+		
+	[propertyfile] Creating new property file: E:\_mount\appdapter_trunk\maven\org.appdapter.bundle.fileconv\target\run.properties
+     [java] [System.out] Trace: ext.osgi.common.ExtOSGiCommonBundleActivator.start(ctx=org.apache.felix.framework.BundleContextImpl@638bd7f1)
+     [java] Auto-properties start: file:/E:/maven_repo/org/slf4j/slf4j-log4j12/1.7.5/slf4j-log4j12-1.7.5.jar (org.osgi.framework.BundleException: Fragment bundles can not be started.)
+     [java] [System.err] Warning: ext.bundle.openconverters.osgi.Activator.start<BundleActivatorBase>(ctx=[org.apache.felix.framework.BundleContextImpl@38827968], bundle=[org.appdapter.ext.bundle.openconverters [1]])
+     [java] [System.out] Trace: ************************ Got frameworkEvent with eventType=1, bundle=org.apache.felix.framework [0]
+     [java] [System.err] Warning: org.appdapter.bundle.fileconv.Activator.start<BundleActivatorBase>(ctx=[org.apache.felix.framework.BundleContextImpl@4d480ea], bundle=[org.appdapter.org.appdapter.bundle.fileconv [30]])
+     [java] [System.err] Warning: ********  OSGi Framework has STARTED, calling dispatchFrameworkStartedEvent()
+     [java] [System.err] Warning: dispatchFrameworkStartedEvent<BundleActivatorBase> ( bundle={}, msg={}
+     [java] [System.err] Warning: Default implementation of handleFrameworkStartedEvent() called on class org.appdapter.bundle.fileconv.Activator, you should override this!  BundleContext=org.apache.felix.framework.BundleContextImpl@1b5b8520
+     [java] java.lang.ClassNotFoundException: org/apache/poi/common/usermodel/Hyperlink
+     [java] 	at java.lang.Class.forName0(Native Method)
+     [java] 	at java.lang.Class.forName(Class.java:247)
+     [java] 	at ext.osgi.common.ExtBundleActivatorBase.debugLoaders(ExtBundleActivatorBase.java:132)
+     [java] 	at ext.bundle.openconverters.osgi.Activator.ensureConvertersClassesAreFindable(Activator.java:8)
+     [java] 	at org.appdapter.bundle.fileconv.Activator.handleFrameworkStartedEvent(Activator.java:10)
+     [java] 	at ext.osgi.common.ExtBundleActivatorBase.dispatchFrameworkStartedEvent(ExtBundleActivatorBase.java:107)
+     [java] 	at ext.osgi.common.ExtBundleActivatorBase.access$000(ExtBundleActivatorBase.java:29)
+     [java] 	at ext.osgi.common.ExtBundleActivatorBase$GotFrameworkStartEvent.frameworkEvent(ExtBundleActivatorBase.java:44)
+     [java] 	at org.apache.felix.framework.util.EventDispatcher.invokeFrameworkListenerCallback(EventDispatcher.java:835)
+     [java] 	at org.apache.felix.framework.util.EventDispatcher.fireEventImmediately(EventDispatcher.java:785)
+     [java] 	at org.apache.felix.framework.util.EventDispatcher.run(EventDispatcher.java:1088)
+     [java] 	at org.apache.felix.framework.util.EventDispatcher.access$000(EventDispatcher.java:54)
+     [java] 	at org.apache.felix.framework.util.EventDispatcher$1.run(EventDispatcher.java:101)
+     [java] 	at java.lang.Thread.run(Thread.java:662)
+     [java] [System.err] Warning: Class missing in current loader interface org.apache.poi.common.usermodel.Hyperlink
+     [java] java.lang.NullPointerException
+     [java] 	at ext.osgi.common.ExtBundleActivatorBase.debugLoadersInfo(ExtBundleActivatorBase.java:150)
+     [java] 	at ext.osgi.common.ExtBundleActivatorBase.debugLoaders(ExtBundleActivatorBase.java:141)
+     [java] 	at ext.bundle.openconverters.osgi.Activator.ensureConvertersClassesAreFindable(Activator.java:8)
+     [java] 	at org.appdapter.bundle.fileconv.Activator.handleFrameworkStartedEvent(Activator.java:10)
 		 org.appdapter.ext.bundle.openconverters [1]: 
 		
-		(osgi.wiring.package=org.apache.crimson.jaxp)
-		
-		However, o.a.bundle.core launches OK.
-		
-		Note that o.a.b.debug launched standalone fails with a *different* XML-parser wiring issue: (org.w3c.dom.html)
 	-->
 
     <dependencies>
@@ -39,7 +66,25 @@
 			<groupId>${project.groupId}</groupId>
 			<artifactId>org.appdapter.bundle.debug</artifactId>
             <version>${project.version}</version>
-		</dependency>				
+		</dependency>
+		
+		<dependency>
+			
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.7.5</version>
+			<!-- Set to "runtime" to test standalone launch, but commit only at "test" scope -->
+			<scope>runtime</scope>
+			<exclusions>
+				<!-- This embedded Log4J version is not OSGi friendly, so we exclude it.
+					The "good" one is already inherited from ext.bundle.osgi.common.
+				-->				
+				<exclusion>
+					<artifactId>log4j</artifactId>
+					<groupId>log4j</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>									
     </dependencies>
 
     <build>
