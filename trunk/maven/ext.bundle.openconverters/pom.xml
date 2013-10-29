@@ -72,10 +72,14 @@
 					<artifactId>xmlbeans</artifactId>
 					<groupId>org.apache.xmlbeans</groupId>
 				</exclusion>
-			 <exclusion>
-			  <artifactId>xml-apis</artifactId>
-			  <groupId>xml-apis</groupId>
-			 </exclusion>
+				<exclusion>
+					<artifactId>xml-apis</artifactId>
+					<groupId>xml-apis</groupId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.poi</groupId>
+					<artifactId>ooxml-schemas</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<!-- We excluded XMLBeans above.  Here we add a specific but non-OSGi-aware version, 
@@ -97,6 +101,14 @@
 			<version>2.3</version>
 			<scope>provided</scope>
 		</dependency>
+		
+		<!-- We *could* get this dep from ext.bundle.xml.xerces -->
+		<dependency>
+			<groupId>org.apache.servicemix.bundles</groupId>
+			<artifactId>org.apache.servicemix.bundles.xmlresolver</artifactId>
+			<version>1.2_3</version>
+			<scope>runtime</scope>
+		</dependency>		
 
 	</dependencies>
 
@@ -111,14 +123,15 @@
                     <instructions>
 
                         <Import-Package>
-							<!--
-							javax.*;resolution:=optional,
-							-->
-							com.sun.*;resolution:=optional,  <!-- au.com.bytecode.opencsv wants   com.sun.javadoc -->
+							<!-- au.com.bytecode.opencsv wants   com.sun.javadoc -->
+							com.sun.*;resolution:=optional,  
+							<!-- POI stuff wants these packages, which perhaps we don't really need at runtime. -->
+							org.apache.crimson.*;resolution:=optional,
+							org.apache.tools.*;resolution:=optional,
 							*
 						</Import-Package>
 
-                        <Bundle-Activator>${project.groupId}.${project.artifactId}.osgi.Activator</Bundle-Activator>
+                        <Bundle-Activator>ext.bundle.openconverters.osgi.Activator</Bundle-Activator>
 	
                         <Export-Package>
 							ext.bundle.openconverters.*,
@@ -129,7 +142,7 @@
 						<Private-Package>
 							<!-- These special-purpose facilities will be used nowhere outside the impl of this bundle -->
 							org.apache.xmlbeans.*,
-							schemaorg_apache_xmlbeans.*,
+							schemaorg_apache_xmlbeans.*;-split-package:=merge-first,
 							schemasMicrosoftComOfficeOffice;-split-package:=merge-first,
 							schemasMicrosoftComOfficeExcel;-split-package:=merge-first,							
 							schemaorg_apache_xmlbeans.*;-split-package:=merge-first
