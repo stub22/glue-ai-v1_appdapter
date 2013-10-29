@@ -81,7 +81,8 @@ public abstract class ExtBundleActivatorBase implements BundleActivator {
 	 * @throws Exception
 	 */
 	protected void handleFrameworkStartedEvent(BundleContext bundleCtx) throws Exception {
-		ExtOSGiCommonBundleActivator.warning("Default implementation of handleFrameworkStartedEvent() called on " + getClass() + ", you may override this. with handleFrameworkStartedEvent (and not call super...) BundleContext=" + bundleCtxName(bundleCtx));
+		ExtOSGiCommonBundleActivator.warning("Default implementation of handleFrameworkStartedEvent() called on " + getClass()
+				+ ", you may override this. with handleFrameworkStartedEvent (and not call super...) BundleContext=" + bundleCtxName(bundleCtx));
 	}
 
 	/**
@@ -116,10 +117,12 @@ public abstract class ExtBundleActivatorBase implements BundleActivator {
 		return msg;
 	}
 
-        private static String bundleCtxName(BundleContext bc) {
-            if (bc==null) return "NULL";
-            return "" + bc.getBundle();
-        }
+	private static String bundleCtxName(BundleContext bc) {
+		if (bc == null)
+			return "NULL";
+		return "" + bc.getBundle();
+	}
+
 	public static void trace(String string, Object... args) {
 		System.out.println("[System.out] Trace: " + string);
 	}
@@ -128,36 +131,37 @@ public abstract class ExtBundleActivatorBase implements BundleActivator {
 		System.err.println("[System.err] Warning: " + string);
 	}
 
-        public static boolean isOSGIProperty(String string, Object value) {
-            String sp = System.getProperty(string,null);
-            if (sp==null) return false;
-            String sv = ""+value;            
-            return sp.equalsIgnoreCase(sv);
+	public static boolean isOSGIProperty(String string, Object value) {
+		String sp = System.getProperty(string, null);
+		if (sp == null)
+			return value == null;
+		String sv = "" + value;
+		return sp.equalsIgnoreCase(sv);
 	}
 
 	public static void debugLoaders(Class clazz) {
 		try {
-                    clazz.getDeclaredMethods();
-                    clazz.getDeclaredFields();
-                    if (isOSGIProperty("test.classloader",true)) {
-                    Class class2;
-			class2 = Class.forName(clazz.getName(), true, null);
-			if (class2 != clazz) {
-				warning("Classes not same as in current loader " + clazz);
-				debugLoadersInfo(clazz);
-				debugLoadersInfo(class2);
+			clazz.getDeclaredMethods();
+			clazz.getDeclaredFields();
+			if (isOSGIProperty("test.classloader", true)) {
+				Class class2;
+				class2 = Class.forName(clazz.getName(), true, null);
+				if (class2 != clazz) {
+					warning("Classes not same as in current loader " + clazz);
+					debugLoadersInfo(clazz);
+					debugLoadersInfo(class2);
+				}
 			}
-                    }
 		} catch (Throwable e) {
 			e.printStackTrace();
 			warning("Class has errors in current loader " + clazz);
 			debugLoadersInfo(clazz);
 			if (e instanceof NoClassDefFoundError) {
-                            
-                            return;
-                        }
+
+				return;
+			}
 			if (e instanceof Error)
-				throw (Error) e;                        
+				throw (Error) e;
 		}
 	}
 
