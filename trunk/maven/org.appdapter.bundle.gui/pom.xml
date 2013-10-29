@@ -44,9 +44,17 @@
 				<configuration>
                     <instructions>
                         <Bundle-Activator>org.appdapter.bundle.gui.osgi.Activator</Bundle-Activator>
+						<Import-Package>
+							apple.laf.*;resolution:='optional',
+							com.apple.laf.*;resolution:='optional',
+							com.sun.*;resolution:='optional',
+							sun.*;resolution:='optional',
+							*
+						</Import-Package>
 						<Export-Package>
 							org.appdapter.gui.*,
-							org.appdapter.scafun.*
+							org.appdapter.scafun.*,
+							org.appdapter.bundle.gui.osgi.*
 						</Export-Package>
 						<Private-Package>
 							com.jidesoft.*
