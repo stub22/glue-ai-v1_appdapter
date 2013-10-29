@@ -18,11 +18,12 @@
             <version>${project.version}</version>
 		</dependency>
 		<dependency>
+			<!-- This jar is a proper bundle, hooray! -->
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-math3</artifactId>
 			<version>3.1.1</version>
 		</dependency>
-		<!--  Is a proper subset of "guava"? 
+		<!--  Is a proper subset of "guava"?   So far, appears yes.
 		<dependency>
 			<groupId>com.google.collections</groupId>
 			<artifactId>google-collections</artifactId>
@@ -33,6 +34,8 @@
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
 			<version>11.0</version>
+			<!-- These packages are exported below, so we don't need this dep to propagate -->
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<!-- JAS has some embedded JUnit tests.  We absorb junit into our Private-Packages below. -->
@@ -53,8 +56,9 @@
                 <configuration>
                     <instructions>
                         <Bundle-Activator>ext.bundle.math.symja.Activator</Bundle-Activator>
-						<!-- The following packages appear to not be exported by manifests of our deps above -->
+						<!-- We take the default export + import behaviors -->
 						<Private-Package>
+							<!-- The following packages are used within this bundle, but not exposed outside of it. -->
 							com.google.common.*,
 							junit.*, 
 							org.junit.*, 
