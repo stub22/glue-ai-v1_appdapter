@@ -17,9 +17,9 @@ package org.appdapter.registry.basic;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.appdapter.api.registry.Pattern;
 import org.appdapter.api.registry.Receiver;
-import org.appdapter.api.registry.Receiver.Status;
 import org.appdapter.api.registry.ResultSequence;
 import org.appdapter.api.registry.SimpleFinder;
 
