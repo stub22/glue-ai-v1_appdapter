@@ -157,8 +157,9 @@
 							-->
 							schemaorg_apache_xmlbeans.*;-split-package:=merge-first,
 							org.openxmlformats.*;-split-package:=merge-first,							
-							schemasMicrosoftComOfficeOffice;-split-package:=merge-first,
-							schemasMicrosoftComOfficeExcel;-split-package:=merge-first									
+							schemasMicrosoftComOfficeOffice.*;-split-package:=merge-first,
+							schemasMicrosoftComOfficeExcel.*;-split-package:=merge-first,
+							schemasMicrosoftComVml.*;-split-package:=merge-first			
 						</Private-Package>
                     </instructions>
 				</configuration>
