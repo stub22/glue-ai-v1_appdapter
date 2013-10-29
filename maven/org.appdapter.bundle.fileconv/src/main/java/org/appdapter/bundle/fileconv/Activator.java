@@ -7,6 +7,8 @@ public class Activator  extends ExtBundleActivatorBase {
 
 	@Override protected void handleFrameworkStartedEvent(BundleContext bundleCtx) throws Exception {
 		super.handleFrameworkStartedEvent(bundleCtx);
-		ext.bundle.openconverters.osgi.Activator.ensureConvertersClassesAreFindable();
-	}
+                if (isOSGIProperty("osgi-tests", true)) {
+                     ext.bundle.openconverters.osgi.Activator.ensureConvertersClassesAreFindable();                   
+                }
+        }
 }

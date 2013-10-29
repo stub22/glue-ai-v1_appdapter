@@ -12,7 +12,6 @@ public class Activator extends ext.osgi.common.ExtBundleActivatorBase {
 	}
 
 	@Override protected void handleFrameworkStartedEvent(BundleContext bundleCtx) throws Exception {
-		debugLoaders(Activator.class);
 		super.handleFrameworkStartedEvent(bundleCtx);
 	}
 
