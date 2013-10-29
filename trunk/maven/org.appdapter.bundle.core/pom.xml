@@ -94,32 +94,11 @@
 			<artifactId>ext.bundle.jena_all_2_10_1</artifactId>
 			<groupId>${project.groupId}</groupId>
 			<version>${project.version}</version>
-			<!-- This is currently a "runtime" depdendency so that the code we export from o.c.lib.core 
-					can be wired properly at runtime, but at compile time users can *choose* whether
-					to bring the ext.Jena bundle into their compile scope.  In principle, users could
-					choose to use a different compatible OSGi-bundling of Jena at runtime or compile time.
-					
-					However, they could also do that by "excluding" this bundle from their deps.
-					
-					Our levels of "recommendation" that a particular bundle be used are:
-							scope=provided  is equivalent to omitted/excluded
-									From outside this bundle, the dependency is invisible.
-									User, you are on your own.  
-									Can be combined with Import-optional.
-									
-							Import-optional  - Applied at the OSGi-wiring level, per package, rather than the dep level.
-									Makes sense for packages that we don't really expect to need at runtime, or that
-									we expect to be optionally plugged in by some outer context.
-									
-							scope=runtime -  We'll quietly apply the dep for you at launch time.  
-											You can still exclude it.
-											You can't code against it without your own compile-time dep.
-											
-							scope=compile -  This dep is right in your face.  You can code against it.
-											You can also exclude it if it's in your way.
-									
+			<!-- 2013-10-28 - after some dithering, decided we want compile scope, since the user can
+				always exclude the dep if its not wanted.
 			-->
-			<scope>runtime</scope>
+			<scope>compile</scope>
+
 		</dependency>
 
 
@@ -135,12 +114,16 @@
         </dependency>	
 			
 		<dependency>
+			<!-- Still used in our stale old o.a.lib.bind.math, which is due for some rejuvenation, Symja-wise -->
 			<groupId>${project.groupId}</groupId>
 			<artifactId>ext.bundle.math.jscience_50SNAP</artifactId>
 			<!-- This external component bundle-snapshot version is now fixed at Appdapter rev 1.0.9 (Spring 2013) -->
 			<version>1.0.9</version>
-			<!-- See explanation above under Jena dep about why this is "runtime".
-				Any user who wants to actually code against this API can add it as an explicit compile dep
+			<!--  We would like to see JScience keep going, but we aren't encouraging further coding directly
+					against it at this time.  Our appdapter and cogchar APIs should offer increasing abstraction 
+					between	the JScience and Symja/JAS approaches.
+					
+				Any user who wants to actually code against the JScience API can add it as an explicit compile dep
 				in their own project.
 			-->
 			<scope>runtime</scope>
@@ -149,9 +132,11 @@
 			<groupId>${project.groupId}</groupId>
 			<artifactId>ext.bundle.xml.dom4j_161</artifactId>
 			<version>${project.version}</version>
-			<!-- See explanation above under Jena dep about why this is "runtime".
-			Any user who wants to actually code against this API can add it as an explicit compile dep
-			in their own project.
+			<!-- Dom4J is useful, and it makes sense for us to encourage it's use, but
+				we have not retested any of the fancier XPath/Jaxen stuff in awhile.
+				
+				Any user who wants to actually code against the Dom4J API can add it as an explicit compile dep
+				in their own project.   Also see ext.bundles.xml.xerces.				
 			-->
 			<scope>runtime</scope>
 		</dependency>

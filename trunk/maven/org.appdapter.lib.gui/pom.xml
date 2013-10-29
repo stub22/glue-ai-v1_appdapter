@@ -65,15 +65,11 @@ central repo.
 			<version>${project.version}</version>
 			<scope>provided</scope>
 		</dependency>
+
+		<!--  Currently we get both this and o.a.b.debug transitively from o.a.bundle.core.
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>ext.bundle.jena_all_2_10_1</artifactId>
-			<version>${project.version}</version>
-		</dependency>	
-		<!--
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>ext.bundle.openconverters</artifactId>
+			<artifactId>org.appdapter.bundle.fileconv</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		-->
@@ -83,26 +79,14 @@ central repo.
 			<version>3.5.5</version>
 		</dependency>	
 		
-		
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.7.5</version>
-			<scope>test</scope>
-			<exclusions>
-				<!-- This embedded Log4J version is not OSGi friendly, so we exclude it.  -->				
-				<exclusion>
-					<artifactId>log4j</artifactId>
-					<groupId>log4j</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>
 		<dependency>
 			<groupId>org.apache.servicemix.bundles</groupId>
 			<artifactId>org.apache.servicemix.bundles.junit</artifactId>
 			<version>4.7_3</version>
 			<scope>test</scope>
 		</dependency>
+		
+		<!-- We now get all the SLF4J + Log4J classes via o.a.bundle.core -->
 	</dependencies>
 	
 	<build>
