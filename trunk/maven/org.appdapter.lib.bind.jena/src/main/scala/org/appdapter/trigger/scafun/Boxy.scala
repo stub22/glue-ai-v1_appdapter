@@ -14,19 +14,16 @@
  *  limitations under the License.
  */
 
-package org.appdapter.scafun
+package org.appdapter.trigger.scafun
 
-import scala.collection.JavaConverters.asScalaBufferConverter
+import collection.JavaConverters.asScalaBufferConverter
 
-import org.appdapter.api.trigger.{ BoxContext, MutableTrigger }
-import org.appdapter.trigger.bind.jena.TriggerImpl
+import org.appdapter.api.trigger.BoxContext
 import org.appdapter.bind.rdf.jena.assembly.AssemblerUtils
 import org.appdapter.bind.rdf.jena.model.JenaFileManagerUtils
 import org.appdapter.demo.DemoResources
-import org.appdapter.gui.box.ScreenBoxImpl
 
-
-class BoxOne extends org.appdapter.trigger.bind.java.FullBox[TriggerOne] {
+class BoxOne extends org.appdapter.trigger.bind.jena.FullBox[TriggerOne] {
   import collection.JavaConverters._
   def getOpenKidBoxes(bc: BoxContext): Seq[BoxOne] = {
     val kidBoxJL = bc.getOpenChildBoxesNarrowed(this, classOf[BoxOne], classOf[TriggerOne]).asInstanceOf[java.util.List[BoxOne]];
@@ -38,7 +35,7 @@ class BoxOne extends org.appdapter.trigger.bind.java.FullBox[TriggerOne] {
   }
 }
 
-class TriggerOne extends TriggerImpl[BoxOne] with org.appdapter.trigger.bind.java.FullTrigger[BoxOne] {
+class TriggerOne extends org.appdapter.trigger.bind.jena.TriggerImpl[BoxOne] with org.appdapter.trigger.bind.jena.FullTrigger[BoxOne] {
   override def fire(box: BoxOne): Unit = {
     println(this.toString() + " firing on " + box.toString());
   }
