@@ -144,16 +144,21 @@
                         <Export-Package>
 							ext.bundle.openconverters.*,
 							au.com.bytecode.opencsv.*,
+							<!-- See note below under Private-Package about the split-package directive -->
 							org.apache.poi.*;-split-package:=merge-first
 						</Export-Package>
 						
 						<Private-Package>
 							<!-- These special-purpose facilities will be used nowhere outside the impl of this bundle -->
 							org.apache.xmlbeans.*,
+							<!-- We need the split-package stuff because BND is pulling together these packages from
+								multiple source jars.  This directive should be applied only when actually needed,
+								as indicated by warnings from BND.  
+							-->
 							schemaorg_apache_xmlbeans.*;-split-package:=merge-first,
+							org.openxmlformats.*;-split-package:=merge-first,							
 							schemasMicrosoftComOfficeOffice;-split-package:=merge-first,
-							schemasMicrosoftComOfficeExcel;-split-package:=merge-first,							
-							schemaorg_apache_xmlbeans.*;-split-package:=merge-first
+							schemasMicrosoftComOfficeExcel;-split-package:=merge-first									
 						</Private-Package>
                     </instructions>
 				</configuration>
