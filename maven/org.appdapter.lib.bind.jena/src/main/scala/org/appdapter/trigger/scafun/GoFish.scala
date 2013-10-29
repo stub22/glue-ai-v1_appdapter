@@ -14,9 +14,9 @@
  *  limitations under the License.
  */
 
-package org.appdapter.scafun
+package org.appdapter.trigger.scafun
 
-import org.appdapter.demo.{DemoBrowserUI, DemoBrowserCtrl}
+import org.appdapter.demo.{ DemoBrowserCtrl, DemoBrowserUI }
 //import org.appdapter.gui.scafun.Boxy
 
 object GoFish {
@@ -34,6 +34,7 @@ object GoFish {
   def makeTNC(args: Array[String]): DemoBrowserCtrl = {
     val tnc = DemoBrowserUI.makeDemoNavigatorCtrl(args);
     val box1 = Boxy.boxItUp();
+    box1.attachTrigger(null);
     tnc.addObject(null, box1, true, false);
     tnc;
   }

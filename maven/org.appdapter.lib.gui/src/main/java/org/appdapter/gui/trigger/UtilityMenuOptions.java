@@ -15,21 +15,18 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 
 import org.appdapter.api.trigger.AnyOper;
-import org.appdapter.core.debug.UIAnnotations.Autoload;
-import org.appdapter.core.debug.UIAnnotations.UISalient;
-import org.appdapter.core.debug.UIAnnotations.UtilClass;
 import org.appdapter.api.trigger.Box;
 import org.appdapter.api.trigger.Trigger;
-import org.appdapter.trigger.bind.jena.TriggerImpl;
 import org.appdapter.bind.rdf.jena.model.JenaModelUtils;
 import org.appdapter.core.component.KnownComponent;
 import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.core.convert.TypeAssignable;
+import org.appdapter.core.debug.UIAnnotations.Autoload;
+import org.appdapter.core.debug.UIAnnotations.UISalient;
+import org.appdapter.core.debug.UIAnnotations.UtilClass;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.ScreenBox;
-import org.appdapter.gui.box.BoxImpl;
-import org.appdapter.gui.box.ScreenBoxImpl;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.demo.DemoBrowser;
 import org.appdapter.gui.editors.ObjectPanel;
@@ -37,6 +34,8 @@ import org.appdapter.gui.repo.RepoManagerPanel;
 import org.appdapter.gui.swing.ScreenBoxPanel;
 import org.appdapter.gui.util.ClassFinder;
 import org.appdapter.gui.util.PromiscuousClassUtilsA;
+import org.appdapter.trigger.bind.jena.BoxImpl;
+import org.appdapter.trigger.bind.jena.TriggerImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -258,13 +257,13 @@ abstract public class UtilityMenuOptions implements UtilClass {
 		{
 			add(Box.class);
 			add(ScreenBox.class);
-			add(ScreenBoxImpl.class);
+			add(org.appdapter.gui.box.ScreenBoxImpl.class);
 			add(BoxImpl.class);
 			add(Trigger.class);
 			add(TriggerImpl.class);
 			add(Object.class);
 			addAll(ReflectUtils.asList(TriggerImpl.class.getInterfaces()));
-			addAll(ReflectUtils.asList(ScreenBoxImpl.class.getInterfaces()));
+			addAll(ReflectUtils.asList(org.appdapter.gui.box.ScreenBoxImpl.class.getInterfaces()));
 			add(java.io.Serializable.class);
 		}
 	};
