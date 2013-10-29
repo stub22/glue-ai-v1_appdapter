@@ -81,7 +81,7 @@ public abstract class ExtBundleActivatorBase implements BundleActivator {
 	 * @throws Exception
 	 */
 	protected void handleFrameworkStartedEvent(BundleContext bundleCtx) throws Exception {
-		ExtOSGiCommonBundleActivator.warning("Default implementation of handleFrameworkStartedEvent() called on " + getClass() + ", you should override this!  BundleContext=" + bundleCtx);
+		ExtOSGiCommonBundleActivator.warning("Default implementation of handleFrameworkStartedEvent() called on " + getClass() + ", you may override this. with handleFrameworkStartedEvent (and not call super...) BundleContext=" + bundleCtxName(bundleCtx));
 	}
 
 	/**
@@ -102,7 +102,7 @@ public abstract class ExtBundleActivatorBase implements BundleActivator {
 		if (eventThrowable == null) {
 			BundleContext bc = eventBundle.getBundleContext();
 			if (bc == null) {
-				ExtOSGiCommonBundleActivator.warning("Cannot find bundle context for event bundle, so there will be no callback to app startup: {} ", eventBundle);
+				ExtOSGiCommonBundleActivator.warning("Cannot find bundle context for event bundle, so there will be no callback to app startup: {} ", bundleCtxName(bc));
 			}
 			handleFrameworkStartedEvent(bc);
 		} else {
@@ -112,10 +112,14 @@ public abstract class ExtBundleActivatorBase implements BundleActivator {
 
 	protected String describe(String action, BundleContext bundleCtx) {
 		Bundle b = bundleCtx.getBundle();
-		String msg = getClass().getCanonicalName() + "." + action + "(ctx=[" + bundleCtx + "], bundle=[" + b + "])";
+		String msg = getClass().getCanonicalName() + "." + action + "(ctx=[" + bundleCtxName(bundleCtx) + "], bundle=[" + b + "])";
 		return msg;
 	}
 
+        private static String bundleCtxName(BundleContext bc) {
+            if (bc==null) return "NULL";
+            return "" + bc.getBundle();
+        }
 	public static void trace(String string, Object... args) {
 		System.out.println("[System.out] Trace: " + string);
 	}
@@ -124,23 +128,36 @@ public abstract class ExtBundleActivatorBase implements BundleActivator {
 		System.err.println("[System.err] Warning: " + string);
 	}
 
+        public static boolean isOSGIProperty(String string, Object value) {
+            String sp = System.getProperty(string,null);
+            if (sp==null) return false;
+            String sv = ""+value;            
+            return sp.equalsIgnoreCase(sv);
+	}
+
 	public static void debugLoaders(Class clazz) {
-		clazz.getDeclaredMethods();
-		clazz.getDeclaredFields();
-		Class class2;
 		try {
+                    clazz.getDeclaredMethods();
+                    clazz.getDeclaredFields();
+                    if (isOSGIProperty("test.classloader",true)) {
+                    Class class2;
 			class2 = Class.forName(clazz.getName(), true, null);
 			if (class2 != clazz) {
 				warning("Classes not same as in current loader " + clazz);
 				debugLoadersInfo(clazz);
 				debugLoadersInfo(class2);
 			}
+                    }
 		} catch (Throwable e) {
 			e.printStackTrace();
-			warning("Class missing in current loader " + clazz);
+			warning("Class has errors in current loader " + clazz);
 			debugLoadersInfo(clazz);
+			if (e instanceof NoClassDefFoundError) {
+                            
+                            return;
+                        }
 			if (e instanceof Error)
-				throw (Error) e;
+				throw (Error) e;                        
 		}
 	}
 
