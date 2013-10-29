@@ -25,56 +25,13 @@
 			<groupId>${project.groupId}</groupId>
 			<artifactId>org.appdapter.bundle.core</artifactId>
 			<version>${project.version}</version>
-		 <exclusions>
-			 <!--
-		  <exclusion>
-		   <artifactId>org.appdapter.lib.core</artifactId>
-		   <groupId>org.appdapter</groupId>
-		  </exclusion>
-		  -->
-		  <exclusion>
-		   <artifactId>org.osgi.core</artifactId>
-		   <groupId>org.apache.felix</groupId>
-		  </exclusion>
-		 </exclusions>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>ext.bundle.felix.shell</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		<!-- The log4j 1.2.16  bundle in central repo is broken, and gives:
-		org.osgi.framework.BundleException: Duplicate import: com.sun.jdmk.comm
-		see:
-			http://mail-archives.apache.org/mod_mbox/felix-users/201006.mbox/%3CEAA5E99A-F41F-4FAF-A3A0-C8B19A5D0040@apache.org%3E
-			https://issues.apache.org/bugzilla/show_bug.cgi?id=49470
-		-->
-				
-		<dependency>
-			<artifactId>slf4j-api</artifactId>
-			<groupId>org.slf4j</groupId>
-			<type>jar</type>
-            <version>1.7.5</version>
-            <scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.log4j</groupId>
-			<artifactId>com.springsource.org.apache.log4j</artifactId>
-			<version>1.2.16</version>
-			<scope>runtime</scope>			
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.7.5</version>
-			<scope>runtime</scope>
-		    <exclusions>
-		        <exclusion>
-		            <artifactId>log4j</artifactId>
-		            <groupId>log4j</groupId>
-		        </exclusion>
-		    </exclusions>
-		</dependency>
+	
 	</dependencies>
 
 	<build>
