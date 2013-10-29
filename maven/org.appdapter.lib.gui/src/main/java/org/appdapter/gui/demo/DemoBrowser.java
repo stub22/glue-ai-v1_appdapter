@@ -408,6 +408,7 @@ final public class DemoBrowser implements AnyOper.Singleton {
 				}
 			}
 		});
+		addRepoLoaderMenu();
 	}
 
 	public static void addRepoLoaderMenu() {
@@ -460,6 +461,7 @@ final public class DemoBrowser implements AnyOper.Singleton {
 			}
 		});
 
+		Utility.updateToolsMenu();
 	}
 
 	static public class AsApplet extends JApplet {

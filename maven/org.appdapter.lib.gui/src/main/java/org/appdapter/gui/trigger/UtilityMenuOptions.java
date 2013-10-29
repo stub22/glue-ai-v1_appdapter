@@ -57,6 +57,16 @@ abstract public class UtilityMenuOptions implements UtilClass {
 	public static boolean scanForMissingScreenBoxPanels = false;
 	public static boolean doErrorCheckScanForMissingScreenBoxPanels = false;
 
+	public static void setAllFeatures(boolean tf) {
+		scanForMissingScreenBoxPanels = tf;
+		doErrorCheckScanForMissingScreenBoxPanels = tf;
+		ClassFinder.DISABLE_CLASS_FINDER = !tf;
+		if (tf) {
+			Utility.RAN_FIRST_INIT_GUI = false;
+			Utility.initGUI();
+		}
+	}
+
 	interface VoidFunc2<A, B> {
 		void call(A a, B b);
 	}
