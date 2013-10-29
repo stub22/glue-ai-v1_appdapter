@@ -121,10 +121,12 @@ central repo.
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
 			<version>1.7.5</version>
-			<!--	We have this dep at test scope.  
-					Our OSGi users approaching through o.a.b.core get it at runtime scope.
+			<!--	It's OK for lib-core to runtime depend on this binding.
+					Users are free to exclude it if they prefer.
+					
+					Our OSGi users approaching through o.a.b.core also get it at runtime scope.
 			-->
-			<scope>test</scope>
+			<scope>runtime</scope>
 			<exclusions>
 				<!-- This embedded Log4J version is not OSGi friendly, so we exclude it.  -->				
 				<exclusion>

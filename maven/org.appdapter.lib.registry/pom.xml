@@ -44,23 +44,8 @@
 			<artifactId>org.apache.servicemix.bundles.junit</artifactId>
 			<version>4.7_3</version>
 			<scope>test</scope>
-		</dependency>		
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.7.5</version>
-			<scope>test</scope>
-			<exclusions>
-				<!-- This embedded Log4J version is not OSGi friendly, so we exclude it.
-					The "good" one is already inherited from ext.bundle.osgi.common.
-				-->				
-				<exclusion>
-					<artifactId>log4j</artifactId>
-					<groupId>log4j</groupId>
-				</exclusion>
-			</exclusions>
 		</dependency>
-
+		<!-- SLF4J-Log4J runtime binding now received transitively from o.a.lib.core -->
 	</dependencies>
     <build>
         <plugins>

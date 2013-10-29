@@ -22,23 +22,10 @@
             <scope>provided</scope>
         </dependency>
 
-        
         <dependency>
           <groupId>commons-lang</groupId>
           <artifactId>commons-lang</artifactId>
           <version>2.4</version>
-        </dependency>
-
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>ext.bundle.jena_all_2_10_1</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>ext.bundle.apache_httpclient</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
 
@@ -47,17 +34,19 @@
             <artifactId>org.appdapter.lib.core</artifactId>
             <version>${project.version}</version>
         </dependency>
+		
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>org.appdapter.lib.bind.jena</artifactId>
             <version>${project.version}</version>
         </dependency>
-	 		<dependency>
+		
+	 	<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>org.appdapter.bundle.debug</artifactId>
 			<version>${project.version}</version>
-			<scope>provided</scope>
-		</dependency>	
+		</dependency>
+		
 	</dependencies>
 	
 	<build>
