@@ -45,10 +45,12 @@
                     <instructions>
                         <Bundle-Activator>org.appdapter.bundle.gui.osgi.Activator</Bundle-Activator>
 						<Import-Package>
+							<!-- Platform-specific GUI packages are optional -->
 							apple.laf.*;resolution:='optional',
 							com.apple.laf.*;resolution:='optional',
 							com.sun.*;resolution:='optional',
 							sun.*;resolution:='optional',
+							<!-- The rest of our imports are required -->
 							*
 						</Import-Package>
 						<Export-Package>
