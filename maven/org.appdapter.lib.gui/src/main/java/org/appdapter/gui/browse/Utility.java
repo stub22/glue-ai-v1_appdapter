@@ -3573,7 +3573,19 @@ public class Utility extends UtilityMenuOptions {
 		}, ancestor);
 	}
 
-	static void initGUI() {
+	public static boolean RAN_FIRST_INIT_GUI = false;
+	public static Object RAN_FIRST_INIT_GUI_LOCK = new Object();
+
+	public static void initGUI() {
+		synchronized (RAN_FIRST_INIT_GUI_LOCK) {
+			if (RAN_FIRST_INIT_GUI)
+				return;
+			RAN_FIRST_INIT_GUI = true;
+			initGUI0();
+		}
+	}
+
+	public static void initGUI0() {
 		DemoBrowser.addRepoLoaderMenu();
 
 		try {

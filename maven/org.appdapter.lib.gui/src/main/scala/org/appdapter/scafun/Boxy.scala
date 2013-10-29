@@ -26,7 +26,7 @@ import org.appdapter.demo.DemoResources
 import org.appdapter.gui.box.ScreenBoxImpl
 
 
-class BoxOne extends org.appdapter.scafun.FullBox[TriggerOne] {
+class BoxOne extends org.appdapter.trigger.bind.java.FullBox[TriggerOne] {
   import collection.JavaConverters._
   def getOpenKidBoxes(bc: BoxContext): Seq[BoxOne] = {
     val kidBoxJL = bc.getOpenChildBoxesNarrowed(this, classOf[BoxOne], classOf[TriggerOne]).asInstanceOf[java.util.List[BoxOne]];
@@ -38,7 +38,7 @@ class BoxOne extends org.appdapter.scafun.FullBox[TriggerOne] {
   }
 }
 
-class TriggerOne extends TriggerImpl[BoxOne] with FullTrigger[BoxOne] {
+class TriggerOne extends TriggerImpl[BoxOne] with org.appdapter.trigger.bind.java.FullTrigger[BoxOne] {
   override def fire(box: BoxOne): Unit = {
     println(this.toString() + " firing on " + box.toString());
   }
@@ -59,7 +59,7 @@ object Boxy {
     val triplesPath = DemoResources.MENU_ASSEMBLY_PATH;
     JenaFileManagerUtils.ensureClassLoaderRegisteredWithDefaultJenaFM(this.getClass().getClassLoader());
     println("Loading triples from URL: " + triplesPath);
-    // Set<Object> 
+    // Set<Object>
     val loadedStuff = AssemblerUtils.buildAllObjectsInRdfFile(triplesPath);
     println("Loaded objects: " + loadedStuff);
   }
