@@ -30,7 +30,8 @@
 			<artifactId>org.apache.servicemix.bundles.junit</artifactId>
 			<version>4.7_3</version>
 			<scope>test</scope>
-		</dependency>		
+		</dependency>
+		<!-- We now get all Log4J + SLF4J wiring from o.a.b.core -->
 	</dependencies>
 
 	<build>

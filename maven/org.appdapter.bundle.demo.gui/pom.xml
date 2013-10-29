@@ -21,6 +21,7 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+			<!-- Currently we get this transitively from o.a.b.core, but that dep may not last -->
             <groupId>${project.groupId}</groupId>
             <artifactId>org.appdapter.bundle.fileconv</artifactId>
             <version>${project.version}</version>
@@ -31,21 +32,7 @@
 			<version>4.7_3</version>
 			<scope>test</scope>
 		</dependency>		
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.7.5</version>
-			<scope>test</scope>
-			<exclusions>
-				<!-- This embedded Log4J version is not OSGi friendly, so we exclude it.
-					The "good" one is already inherited from ext.bundle.osgi.common.
-				-->				
-				<exclusion>
-					<artifactId>log4j</artifactId>
-					<groupId>log4j</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>	
+		<!-- We now get all Log4J + SLF4J wiring from o.a.b.core -->
 	</dependencies>
 
 	<build>
