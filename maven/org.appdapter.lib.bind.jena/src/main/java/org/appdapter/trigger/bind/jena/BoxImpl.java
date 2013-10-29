@@ -1,9 +1,8 @@
-package org.appdapter.gui.box;
+package org.appdapter.trigger.bind.jena;
 
 import java.util.Arrays;
 import java.util.HashSet;
 
-import org.appdapter.trigger.bind.jena.ABoxImpl;
 import org.appdapter.api.trigger.Trigger;
 
 public class BoxImpl<TrigType extends Trigger<? extends ABoxImpl<TrigType>>> extends ABoxImpl<TrigType> {
