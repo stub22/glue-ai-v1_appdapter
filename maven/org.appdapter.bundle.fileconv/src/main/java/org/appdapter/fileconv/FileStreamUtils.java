@@ -1,12 +1,12 @@
 /*
  *  Copyright 2012 by The Appdapter Project (www.appdapter.org).
- * 
+ *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
  *  You may obtain a copy of the License at
- * 
+ *
  *       http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  *  Unless required by applicable law or agreed to in writing, software
  *  distributed under the License is distributed on an "AS IS" BASIS,
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,17 +19,15 @@ package org.appdapter.fileconv;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.LineNumberReader;
 import java.io.Reader;
 import java.io.StringReader;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Iterator;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
@@ -40,22 +38,20 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-
+import org.appdapter.core.log.Debuggable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.util.FileManager;
-import org.appdapter.core.log.BasicDebugger;
-import org.appdapter.core.log.Debuggable;
 
 /**
  * @author Stu B. <www.texpedient.com>
- * 
+ *
  * @author logicmoo
  */
 
-public abstract class FileStreamUtils  {
+public abstract class FileStreamUtils {
 
 	static private Logger theLogger = LoggerFactory.getLogger(FileStreamUtils.class);
 
@@ -73,7 +69,36 @@ public abstract class FileStreamUtils  {
 		}
 	}
 
-	
+	public static boolean canLoadWorkbooks() {
+		String loc = "GluePuma_HRKR50_TestFull_OnDisk.xlsx";
+		URL url = FileStreamUtils.class.getResource(loc);
+		if (url != null) {
+			loc = url.toString();
+		}
+		try {
+			theLogger.warn("canLoadWorkbook: " + loc + "=" + url);
+			Workbook workbook = getWorkbook(url.openStream(), "xlsx");
+			Sheet sheet = null;
+			int max = workbook.getNumberOfSheets() - 1;
+			for (int sheetNumber = 0; sheetNumber <= max; sheetNumber++) {
+
+				sheet = workbook.getSheetAt(sheetNumber);
+				String sn = sheet.getSheetName();
+				theLogger.warn("canLoadWorkbook: " + sn + "=" + loc);
+				Reader reader = sheetToReader(sheet);
+				LineNumberReader lnr = new LineNumberReader(reader);
+				while ((lnr.readLine()) != null) {
+				}
+			}
+		} catch (InvalidFormatException e) {
+			theLogger.error("canLoadWorkbook ", e);
+		} catch (IOException e) {
+			theLogger.error("canLoadWorkbook ", e);
+		} catch (Throwable e) {
+			theLogger.error("canLoadWorkbook ", e);
+		}
+		return false;
+	}
 
 	public static Workbook getWorkbook(InputStream is, String extHint) throws IOException, InvalidFormatException {
 		if (is == null)
@@ -98,12 +123,11 @@ public abstract class FileStreamUtils  {
 			}
 		}
 	}
-	
+
 	
 	abstract public InputStream openInputStream(String srcPath, java.util.List<ClassLoader> cls) throws IOException;
 	abstract public InputStream openInputStreamOrNull(String srcPath, java.util.List<ClassLoader> cls);
-	
-	
+
 	public Workbook getWorkbook(String sheetLocation, java.util.List<ClassLoader> fileModelCLs) throws InvalidFormatException, IOException {
 		InputStream stream = openInputStreamOrNull(sheetLocation, fileModelCLs);
 		if (stream == null)
@@ -122,8 +146,6 @@ public abstract class FileStreamUtils  {
 		}
 		return null;
 	}
-
-
 
 	public static Model getModelIfAvailable(String sheetLocation, FileManager fm) {
 		try {
@@ -342,7 +364,7 @@ public abstract class FileStreamUtils  {
 				t = "CELL_TYPE_FORMULA";
 				try {
 					c = cell.getCellFormula();
-				} catch (org.apache.poi.ss.formula.FormulaParseException e) {					
+				} catch (org.apache.poi.ss.formula.FormulaParseException e) {
 					if (Debuggable.isRelease())
 						theLogger.warn("" + e);
 					else {
@@ -433,8 +455,5 @@ public abstract class FileStreamUtils  {
 		}
 		return field;
 	}
-
-
-
 
 }
