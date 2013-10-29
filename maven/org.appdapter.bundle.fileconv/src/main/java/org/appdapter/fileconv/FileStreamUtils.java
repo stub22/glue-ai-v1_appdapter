@@ -76,6 +76,7 @@ public abstract class FileStreamUtils {
 			loc = url.toString();
 		}
 		try {
+			url = new URL(loc);
 			theLogger.warn("canLoadWorkbook: " + loc + "=" + url);
 			Workbook workbook = getWorkbook(url.openStream(), "xlsx");
 			Sheet sheet = null;
@@ -124,8 +125,8 @@ public abstract class FileStreamUtils {
 		}
 	}
 
-	
 	abstract public InputStream openInputStream(String srcPath, java.util.List<ClassLoader> cls) throws IOException;
+
 	abstract public InputStream openInputStreamOrNull(String srcPath, java.util.List<ClassLoader> cls);
 
 	public Workbook getWorkbook(String sheetLocation, java.util.List<ClassLoader> fileModelCLs) throws InvalidFormatException, IOException {
