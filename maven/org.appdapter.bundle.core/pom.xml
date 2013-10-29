@@ -212,7 +212,7 @@
 						<!--
 						arq.*,com.hp.hpl.jena.*,org.openjena.*,etc.*,vocabularies.*						
 						<Private-Package>org.xmldb.*,riotcmd.*</Private-Package>
-                        <Private-Package>org.apache.poi.*, com.jidesoft.*, org.openxmlformats.*, schemaorg_apache_xmlbeans.*, schemasMicrosoftComOfficeExcel.*, schemasMicrosoftComOfficeOffice.*, schemasMicrosoftComVml.*,org.joda.*</Private-Package>
+                        <Private-Package>org.apache.poi.*,  org.openxmlformats.*, schemaorg_apache_xmlbeans.*, schemasMicrosoftComOfficeExcel.*, schemasMicrosoftComOfficeOffice.*, schemasMicrosoftComVml.*,org.joda.*</Private-Package>
                         -->						
 
 					</instructions>

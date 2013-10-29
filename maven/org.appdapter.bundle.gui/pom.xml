@@ -17,7 +17,7 @@
            <groupId>${project.groupId}</groupId>
            <artifactId>org.appdapter.bundle.core</artifactId>
            <version>${project.version}</version>
-       </dependency>
+		</dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>org.appdapter.lib.gui</artifactId>
@@ -48,6 +48,9 @@
 							org.appdapter.gui.*,
 							org.appdapter.scafun.*
 						</Export-Package>
+						<Private-Package>
+							com.jidesoft.*
+						</Private-Package>
                     </instructions>
 				</configuration>
 			</plugin>
