@@ -64,7 +64,7 @@ import org.appdapter.gui.swing.ObjectView;
 import org.appdapter.gui.swing.SmallObjectView;
 
 import com.jidesoft.swing.JideTabbedPane;
-import com.sun.java.swing.plaf.windows.WindowsComboBoxUI;
+//import com.sun.java.swing.plaf.windows.WindowsComboBoxUI;
 
 public class TriggerMouseAdapter extends MouseAdapter implements PopupMenuListener {
 	static boolean alreadyInstalled = false;
@@ -181,31 +181,38 @@ public class TriggerMouseAdapter extends MouseAdapter implements PopupMenuListen
 	static boolean addWorkarrounds(JComboBox combo) {
 		if (lookedOnce && icon == null)
 			return true;
-		if (combo.getUI() instanceof WindowsComboBoxUI) {
-			combo.setUI(new WindowsComboBoxUI() {
-
-				@Override protected JButton createArrowButton() {
-
-					if (icon == null && !lookedOnce) {
-						lookedOnce = true;
-						try {
-							icon = new ImageIcon(getClass().getResource("14x14.png"));
-						} catch (Exception e) {
-
-						}
-					}
-					JButton button = new JButton(icon) {
-						@Override public Dimension getPreferredSize() {
-							return new Dimension(14, 14);
-						}
-					};
-					button.setRolloverIcon(makeRolloverIcon(icon));
-					button.setFocusPainted(false);
-					button.setContentAreaFilled(false);
-					return button;
-				}
-			});
-		} else {
+        
+        /*
+         * When tryig to run an osgi app outside of maven, I get:
+         * java.lang.NoClassDefFoundError: com/sun/java/swing/plaf/windows/WindowsComboBoxUI
+         * Commenting out the code below to temporarily fix this.
+         * -- Matt 2013-10-25
+         */
+//		if (combo.getUI() instanceof WindowsComboBoxUI) {
+//			combo.setUI(new WindowsComboBoxUI() {
+//
+//				@Override protected JButton createArrowButton() {
+//
+//					if (icon == null && !lookedOnce) {
+//						lookedOnce = true;
+//						try {
+//							icon = new ImageIcon(getClass().getResource("14x14.png"));
+//						} catch (Exception e) {
+//
+//						}
+//					}
+//					JButton button = new JButton(icon) {
+//						@Override public Dimension getPreferredSize() {
+//							return new Dimension(14, 14);
+//						}
+//					};
+//					button.setRolloverIcon(makeRolloverIcon(icon));
+//					button.setFocusPainted(false);
+//					button.setContentAreaFilled(false);
+//					return button;
+//				}
+//			});
+//		} else {
 			combo.setUI(new BasicComboBoxUI() {
 				@Override protected JButton createArrowButton() {
 					JButton button = super.createArrowButton();
@@ -213,7 +220,7 @@ public class TriggerMouseAdapter extends MouseAdapter implements PopupMenuListen
 					return button;
 				}
 			});
-		}
+//		}
 		return true;
 	}
 
