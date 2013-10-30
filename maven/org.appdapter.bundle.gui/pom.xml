@@ -55,9 +55,7 @@
 						</Import-Package>
 						<Export-Package>
 							org.appdapter.gui.*,
-							org.appdapter.scafun.*,
-							org.appdapter.bundle.gui.osgi.*,
-							org.appdapter.trigger.bind.java.*
+							org.appdapter.bundle.gui.osgi.*
 						</Export-Package>
 						<Private-Package>
 							com.jidesoft.*
