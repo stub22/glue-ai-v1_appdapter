@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<classpath>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry exported="true" kind="src" path="/ext.bundle.xml.dom4j_161"/>
-	<classpathentry exported="true" kind="src" path="/ext.bundle.jena_all_2_10_1"/>
-	<classpathentry exported="true" kind="src" path="/org.appdapter.lib.core"/>
-	<classpathentry exported="true" kind="src" path="/ext.bundle.osgi.common"/>
-	<classpathentry kind="output" path="target/eclipse-classes"/>
-<classpathentry exported="true" kind="src" path="/org.storychat.bundle.osgi"/></classpath>
