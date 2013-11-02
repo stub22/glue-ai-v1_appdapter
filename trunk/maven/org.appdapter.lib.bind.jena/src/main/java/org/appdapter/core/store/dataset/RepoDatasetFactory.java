@@ -28,6 +28,7 @@ import org.appdapter.core.debug.UIAnnotations.UtilClass;
 import org.appdapter.bind.rdf.jena.model.JenaFileManagerUtils;
 import org.appdapter.bind.rdf.jena.sdb.SdbStoreFactory;
 import org.appdapter.core.convert.ReflectUtils;
+import org.appdapter.core.log.Debuggable;
 import org.appdapter.core.store.RepoOper;
 import org.appdapter.core.store.RepoOper.ReloadableDataset;
 import org.appdapter.core.store.StatementSync;
@@ -212,12 +213,16 @@ public class RepoDatasetFactory implements AnyOper, UtilClass {
 	}
 
 	@UISalient public static void addModelSync(Model m1, Model m2) {
+		if (true)
+			Debuggable.notImplemented("addModelSync", m1, m2);
 		StatementSync ss = StatementSync.getStatementSyncerOfModels(m1, m2);
 		ss.enableSync();
 		ss.completeSync();
 	}
 
 	@UISalient public static void addDatasetSync(Dataset d1, Dataset d2) {
+		if (true)
+			Debuggable.notImplemented("AddDatasetSync", d1, d2);
 		HashSet<String> nameSet = new HashSet<String>();
 		ReflectUtils.addAllNew(nameSet, d1.listNames());
 		ReflectUtils.addAllNew(nameSet, d2.listNames());

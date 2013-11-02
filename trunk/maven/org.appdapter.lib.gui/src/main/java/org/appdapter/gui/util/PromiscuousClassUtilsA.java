@@ -44,6 +44,7 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.appdapter.core.debug.NoLeakThreadLocal;
 import org.appdapter.core.debug.UIAnnotations.HRKRefinement;
 import org.appdapter.core.log.Debuggable;
 
@@ -53,14 +54,14 @@ import sun.reflect.Reflection;
 
 @SuppressWarnings("restriction")
 abstract public class PromiscuousClassUtilsA {
-	public static ThreadLocal<Boolean> dontActuallyDefine = new ThreadLocal<Boolean>();
+	public static NoLeakThreadLocal<Boolean> dontActuallyDefine = new NoLeakThreadLocal<Boolean>();
 
 	static public interface ArchiveSearcher {
 		String replace(String target, boolean maySplit, int depth);
 	}
 
 	// Thread local to detect class loading cycles.
-	private final static ThreadLocal m_depthCheck = new ThreadLocal();
+	private final static NoLeakThreadLocal m_depthCheck = new NoLeakThreadLocal();
 	public static ClassLoader originalSystemClassLoader = getSystemClassLoader();
 	public static ClassLoader bootstrapClassLoader = originalSystemClassLoader.getParent();
 	public static ArrayList<ClassLoader> allClassLoaders = new ArrayList<ClassLoader>();
@@ -70,7 +71,7 @@ abstract public class PromiscuousClassUtilsA {
 	public static Map<String, Class> classnameToClass = new HashMap();
 	private static Map<String, Throwable> classNotFoundYet = new HashMap<String, Throwable>();
 
-	public static ThreadLocal<Map<String, List<?>>> m_currentModule = new ThreadLocal<Map<String, List<?>>>();
+	public static NoLeakThreadLocal<Map<String, List<?>>> m_currentModule = new NoLeakThreadLocal<Map<String, List<?>>>();
 
 	private static String M2_REPO = null;
 
