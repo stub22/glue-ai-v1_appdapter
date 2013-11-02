@@ -12,10 +12,9 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.logging.Logger;
 
-
-import org.appdapter.core.debug.UIAnnotations.UIHidden;
-import org.appdapter.core.debug.UIAnnotations.UISalient;
 import org.appdapter.core.convert.ReflectUtils;
+import org.appdapter.core.debug.NoLeakThreadLocal;
+import org.appdapter.core.debug.UIAnnotations.UIHidden;
 
 @UIHidden
 public abstract class Debuggable extends BasicDebugger {
@@ -194,15 +193,15 @@ public abstract class Debuggable extends BasicDebugger {
 		return null;
 	}
 
-	static ThreadLocal<HashSet<String>> DontDescend = new ThreadLocal<HashSet<String>>() {
+	static NoLeakThreadLocal<HashSet<String>> DontDescend = new NoLeakThreadLocal<HashSet<String>>() {
 		@Override protected HashSet<String> initialValue() {
 			return new HashSet<String>();
 		}
 	};
 
-//	@UISalient
+	//	@UISalient
 	public static boolean useDebuggableToString = true;
-//	@UISalient
+	//	@UISalient
 	public static boolean useSystemConsoleBreaks = false;
 
 	public static String toInfoStringF(Object o) {
@@ -524,9 +523,9 @@ public abstract class Debuggable extends BasicDebugger {
 
 	}
 
-	static InheritableThreadLocal<Boolean> QUITELY = new InheritableThreadLocal<Boolean>();
-	static InheritableThreadLocal<Boolean> DEBUGGING = new InheritableThreadLocal<Boolean>();
-	static InheritableThreadLocal<Boolean> INTESTS = new InheritableThreadLocal<Boolean>();
+	static NoLeakThreadLocal<Boolean> QUITELY = new NoLeakThreadLocal<Boolean>(true);
+	static NoLeakThreadLocal<Boolean> DEBUGGING = new NoLeakThreadLocal<Boolean>(true);
+	static NoLeakThreadLocal<Boolean> INTESTS = new NoLeakThreadLocal<Boolean>(true);
 
 	public static boolean isNotShowingExceptions() {
 		if (isRelease())

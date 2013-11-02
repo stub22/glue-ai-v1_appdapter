@@ -1,4 +1,18 @@
-/* $This file is distributed under the terms of the license in /doc/license.txt$ */
+/*
+ *  Copyright 2013 by The Appdapter Project (www.appdapter.org).
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 
 package org.appdapter.core.remote.sparql;
 
@@ -15,11 +29,6 @@ import com.hp.hpl.jena.shared.AddDeniedException;
 import com.hp.hpl.jena.shared.DeleteDeniedException;
 import com.hp.hpl.jena.shared.PrefixMapping;
 import com.hp.hpl.jena.util.iterator.ExtendedIterator;
-
-import ext.com.hp.hpl.jena.graph.Reifier;
-import ext.com.hp.hpl.jena.graph.impl.SimpleReifier;
-import ext.com.hp.hpl.jena.graph.query.QueryHandler;
-import ext.com.hp.hpl.jena.graph.query.SimpleQueryHandler;
 
 public class SpecialBulkUpdateHandlerGraph extends JenaWrappedGraph implements Graph {
 
@@ -79,10 +88,11 @@ public class SpecialBulkUpdateHandlerGraph extends JenaWrappedGraph implements G
 		return g.getPrefixMapping();
 	}
 
-	@Override public Reifier getReifier() {
-		return SimpleReifier.findOrCreate(g);
-	}
-
+	/*
+		@Override public Reifier getReifier() {
+			return SimpleReifier.findOrCreate(g);
+		}
+	*/
 	@Override public GraphStatisticsHandler getStatisticsHandler() {
 		return g.getStatisticsHandler();
 	}
@@ -103,9 +113,9 @@ public class SpecialBulkUpdateHandlerGraph extends JenaWrappedGraph implements G
 		return g.isIsomorphicWith(arg0);
 	}
 
-	@Override public QueryHandler queryHandler() {
+	/*@Override public QueryHandler queryHandler() {
 		return SimpleQueryHandler.findOrCreate(g);
-	}
+	}*/
 
 	@Override public int size() {
 		return g.size();

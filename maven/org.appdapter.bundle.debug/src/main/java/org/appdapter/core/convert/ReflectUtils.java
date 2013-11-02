@@ -47,6 +47,7 @@ import java.util.regex.Pattern;
 
 import org.apache.jena.atlas.lib.Lib;
 
+import org.appdapter.core.debug.NoLeakThreadLocal;
 import org.appdapter.core.debug.UIAnnotations.AskIfEqual;
 import org.appdapter.core.debug.UIAnnotations.DontAdd;
 import org.appdapter.core.debug.UIAnnotations.HRKRefinement;
@@ -3093,7 +3094,7 @@ abstract public class ReflectUtils implements UtilClass {
 		}
 	}
 
-	static ThreadLocal<SetObject> objectKey = new ThreadLocal<SetObject>() {
+	static NoLeakThreadLocal<SetObject> objectKey = new NoLeakThreadLocal<SetObject>() {
 		protected SetObject<?> initialValue() {
 			return new KeyReference(CLASS0);
 		}
