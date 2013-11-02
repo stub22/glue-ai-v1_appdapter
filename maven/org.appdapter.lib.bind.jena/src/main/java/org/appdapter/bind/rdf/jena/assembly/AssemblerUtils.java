@@ -98,13 +98,12 @@ public class AssemblerUtils {
 	public static Set<Object> buildAllRootsInModel(Assembler jenaAssembler, Model jenaModel, Mode jenaAssemblyMode) {
 		Set<Object> results = new HashSet<Object>();	
 		Set<Resource> aroots = AssemblerHelp.findAssemblerRoots(jenaModel);
-		theLogger.warn("Found " + aroots.size() + " assembler-roots in model");
+		theLogger.info("Found " + aroots.size() + " assembler-roots in model");
 		for (Resource aroot : aroots) {
 			// needed a problem report on each item
 			try {
 				Object result = jenaAssembler.open(jenaAssembler, aroot, jenaAssemblyMode);
 				results.add(result);
-				theLogger.warn("Success assembling item " + aroot.asNode());
 			} catch (Throwable t) {
 			    theLogger.error("Cannot assemble item " + aroot, t);
 			}
