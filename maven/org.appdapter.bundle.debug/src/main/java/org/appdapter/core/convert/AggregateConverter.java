@@ -5,10 +5,11 @@ import java.util.ConcurrentModificationException;
 import java.util.List;
 
 import org.apache.jena.atlas.lib.Lib;
+import org.appdapter.core.debug.NoLeakThreadLocal;
 
 public class AggregateConverter implements Converter {
 
-	static ThreadLocal<List> curretnConversions = new ThreadLocal<List>() {
+	static NoLeakThreadLocal<List> curretnConversions = new NoLeakThreadLocal<List>() {
 		protected List initialValue() {
 			return null;
 		};

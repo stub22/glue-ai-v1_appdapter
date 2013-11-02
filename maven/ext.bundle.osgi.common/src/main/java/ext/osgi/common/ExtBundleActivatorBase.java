@@ -157,7 +157,6 @@ public abstract class ExtBundleActivatorBase implements BundleActivator {
 			warning("Class has errors in current loader " + clazz);
 			debugLoadersInfo(clazz);
 			if (e instanceof NoClassDefFoundError) {
-
 				return;
 			}
 			if (e instanceof Error)
@@ -183,7 +182,7 @@ public abstract class ExtBundleActivatorBase implements BundleActivator {
 		trace("------------");
 		URL rurl = cl.getResource(resourcePath);
 		trace("Classloader[" + desc + ", " + cl + "].getResource(" + resourcePath + ") = " + rurl);
-		URL surl = cl.getSystemResource(resourcePath);
+		URL surl = ClassLoader.getSystemResource(resourcePath);
 		trace("Classloader[" + desc + ", " + cl + "].getSystemResource(" + resourcePath + ") = " + surl);
 		trace("------------");
 	}

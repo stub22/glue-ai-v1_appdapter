@@ -26,6 +26,8 @@ import com.hp.hpl.jena.query.QueryExecutionFactory;
 import com.hp.hpl.jena.query.QueryFactory;
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.ResultSet;
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.shared.AddDeniedException;
 import com.hp.hpl.jena.shared.DeleteDeniedException;
 import com.hp.hpl.jena.shared.PrefixMapping;
@@ -439,5 +441,9 @@ public class SparqlGraph extends JenaWrappedGraph implements GraphWithPerform, G
 			//                sbuff.append("0");
 			//            sbuff.append(hexstr);
 		}
+	}
+
+	public Model toModel() {
+		return ModelFactory.createModelForGraph(this);
 	}
 }
