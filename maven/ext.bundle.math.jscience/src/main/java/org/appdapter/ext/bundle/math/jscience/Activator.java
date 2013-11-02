@@ -1,9 +1,9 @@
 package org.appdapter.ext.bundle.math.jscience;
 
+import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
-// we extend ExtBundleActivatorBase so we get a free call to handleFrameworkStartedEvent
-public class Activator extends ext.osgi.common.ExtBundleActivatorBase {
+public class Activator implements BundleActivator {
 
 	public void start(BundleContext context) throws Exception {
 		// TODO add activation code here
@@ -13,7 +13,4 @@ public class Activator extends ext.osgi.common.ExtBundleActivatorBase {
 		// TODO add deactivation code here
 	}
 
-	@Override protected void handleFrameworkStartedEvent(BundleContext bundleCtx) throws Exception {
-		debugLoaders(org.jscience.mathematics.vector.SparseVector.class);
-	}
 }
