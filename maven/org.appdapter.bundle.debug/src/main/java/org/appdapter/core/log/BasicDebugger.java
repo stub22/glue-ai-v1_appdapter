@@ -55,7 +55,7 @@ public class BasicDebugger implements Loggable {
 		INFO, WARN, ERROR
 	}
 
-	private Logger myLogger;
+	protected Logger myLogger;
 	private int myDebugImportanceThreshold = IMPO_NORM;
 
 	/*
