@@ -21,6 +21,7 @@ public abstract class Debuggable extends BasicDebugger {
 
 	public static int PRINT_DEPTH = 3;
 	public static LinkedList<Object> allObjectsForDebug = new LinkedList<Object>();
+	public static boolean saveAllObjectsForDebug = false;
 
 	public static Logger LOGGER = Logger.getLogger(Debuggable.class.getSimpleName());
 
@@ -509,6 +510,8 @@ public abstract class Debuggable extends BasicDebugger {
 	}
 
 	public static void addForDebug(Object obj) {
+		if (allObjectsForDebug == null || !saveAllObjectsForDebug || obj == null)
+			return;
 		synchronized (allObjectsForDebug) {
 			allObjectsForDebug.add(obj);
 		}
@@ -545,8 +548,8 @@ public abstract class Debuggable extends BasicDebugger {
 	}
 
 	public static boolean isDebugging() {
-		if (true)
-			return false;
+		//if (true)
+			//return true;
 		return DEBUGGING.get() == Boolean.TRUE;
 	}
 
@@ -559,7 +562,7 @@ public abstract class Debuggable extends BasicDebugger {
 			return false;
 		if (isTesting())
 			return false;
-		if (false // change this to true if you dare
+		if (true // change this to true if you dare
 		)
 			return false;
 		return true;
