@@ -1,16 +1,12 @@
 package ext.bundle.xml.dom4j;
 
-import org.osgi.framework.BundleActivator;
-import org.osgi.framework.BundleContext;
+import ext.osgi.common.ExtBundleActivatorBase;
 
-public class Activator implements BundleActivator {
+public class Activator extends ExtBundleActivatorBase {
 
-    public void start(BundleContext context) throws Exception {
-        // TODO add activation code here
-    }
-
-    public void stop(BundleContext context) throws Exception {
-        // TODO add deactivation code here
-    }
-
+	@Override public void ensureExtClassesAreFindable() {
+		if (isOSGIProperty("osgi-tests", true)) {
+			debugLoaders(org.dom4j.swing.XMLTableDefinition.class);
+		}
+	}
 }

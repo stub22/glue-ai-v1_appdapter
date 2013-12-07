@@ -1,16 +1,14 @@
 package org.appdapter.bundle.fileconv;
 
-import ext.osgi.common.ExtBundleActivatorBase;
 import org.appdapter.fileconv.FileStreamUtils;
-import org.osgi.framework.BundleContext;
+
+import ext.osgi.common.ExtBundleActivatorBase;
 
 public class Activator extends ExtBundleActivatorBase {
 
-	@Override protected void handleFrameworkStartedEvent(BundleContext bundleCtx) throws Exception {
-		super.handleFrameworkStartedEvent(bundleCtx);
+	@Override public void ensureExtClassesAreFindable() {
 		if (isOSGIProperty("osgi-tests", true)) {
-			ext.bundle.openconverters.osgi.Activator.ensureConvertersClassesAreFindable();
-        		FileStreamUtils.canLoadWorkbooks();
+			FileStreamUtils.canLoadWorkbooks();
 		}
 	}
 }

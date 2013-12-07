@@ -30,11 +30,15 @@ import com.hp.hpl.jena.rdf.model.Literal;
 
 /**
  * @author Stu B. <www.texpedient.com>
- * 
+ *
  * TODO:  BaseItem can extend BaseIdent to ensure we can have same hashCode() + equals() for all idents + items.
  */
 public abstract class BaseItem implements Item {
 	static Logger theLogger = LoggerFactory.getLogger(BaseItem.class);
+
+	// @TODO figure out if we are OK when a Item property is really missing
+	Item MISSING_ITEM = null;
+	boolean MISSING_ITEM_OK = false;
 
 	protected abstract Literal getLiteralVal(Ident fieldID, boolean throwOnFailure);
 
@@ -59,13 +63,19 @@ public abstract class BaseItem implements Item {
 			linkedItems.toArray(items);
 			return items[0];
 		} else {
-			throw new RuntimeException("Found " + size + " items instead of expected 1 for property " + (linkName == null ? "NULL" : linkName.getAbsUriString()) + " while assembling " + this);
+			RuntimeException rtException = new RuntimeException("Found " + size + " items instead of expected 1 for property " + (linkName == null ? "NULL" : linkName.getAbsUriString())
+					+ " while assembling " + this);
+			if (MISSING_ITEM_OK) {
+				theLogger.error("MISSING_ITEM_OK? " + rtException, rtException);
+				return MISSING_ITEM;
+			}
+			throw rtException;
 		}
 	}
 
 	/**
 	 * Returns one item or null if not available.
-	 * 
+	 *
 	 * @param linkName
 	 * @param linkDir
 	 * @return The 'Item' or a null value
@@ -87,7 +97,7 @@ public abstract class BaseItem implements Item {
 	 * To be fixed!
 	 * @param linkName
 	 * @param sortFieldNames - presently ignored.
-	 * @return 
+	 * @return
 	 */
 	@Override public List<Item> getLinkedItemsSorted(Ident linkName, LinkDirection linkDir, List<SortKey> sortFieldNames) {
 		// theLogger.warn("These items are not yet really sorted by linkName: " + linkName);

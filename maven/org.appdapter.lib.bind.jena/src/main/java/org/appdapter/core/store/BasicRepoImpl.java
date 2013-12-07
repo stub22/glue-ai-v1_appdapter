@@ -16,6 +16,10 @@
 
 package org.appdapter.core.store;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -24,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.appdapter.core.jvm.GetObject;
+import org.appdapter.core.log.Debuggable;
 import org.appdapter.bind.rdf.jena.assembly.AssemblerUtils;
 import org.appdapter.bind.rdf.jena.query.JenaArqQueryFuncs;
 import org.appdapter.bind.rdf.jena.query.JenaArqResultSetProcessor;
@@ -92,15 +97,18 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 	final public Object loadingLock = new Object();
 	public boolean isLoadingStarted = false;
 	public boolean isLoadingLocked = false;
+	public boolean isLoadingFinished = false;
 	protected UserDatasetFactory datasetProvider = RepoDatasetFactory.DEFAULT;
 	public String datasetType;
 
 	public void replaceNamedModel(Ident modelID, Model jenaModel) {
 		Dataset repoDset = getMainQueryDataset();
 		Lock lock = repoDset.getLock();
+		String name = modelID.getAbsUriString();
+		name = RepoOper.correctModelName(name);
 		try {
 			lock.enterCriticalSection(false);
-			repoDset.replaceNamedModel(modelID.getAbsUriString(), jenaModel);
+			repoDset.replaceNamedModel(name, jenaModel);
 		} finally {
 			lock.leaveCriticalSection();
 		}
@@ -114,6 +122,7 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 		try {
 			lock.enterCriticalSection(false);
 			String name = modelID.getAbsUriString();
+			name = RepoOper.correctModelName(name);
 			if (!repoDset.containsNamedModel(name)) {
 				repoDset.addNamedModel(name, jenaModel);
 			} else {
@@ -166,10 +175,11 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 		Dataset repoDset = getMainQueryDataset();
 		// DataSource repoDsource = (DataSource) repoDset;
 		Lock lock = repoDset.getLock();
+		String name = modelID.getAbsUriString();
+		name = RepoOper.correctModelName(name);
 		Model jenaModel = null;
 		try {
 			lock.enterCriticalSection(false);
-			String name = modelID.getAbsUriString();
 			if (!repoDset.containsNamedModel(name)) {
 				jenaModel = createLocalNamedModel(modelID);
 				repoDset.addNamedModel(name, jenaModel);
@@ -183,7 +193,9 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 	}
 
 	public Model createLocalNamedModel(Ident modelID) {
-		return RepoDatasetFactory.createModel(getDatasetType(), modelID.getAbsUriString(), getShareName());
+		String name = modelID.getAbsUriString();
+		name = RepoOper.correctModelName(name);
+		return RepoDatasetFactory.createModel(getDatasetType(), name, getShareName());
 	}
 
 	public String getShareName() {
@@ -211,10 +223,11 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 
 	@Override public Dataset getMainQueryDataset() {
 		beginLoading();
-		finishLoading();
 		if (myMainQueryDataset == null) {
 			myMainQueryDataset = makeMainQueryDataset();
 		}
+		if (!isLoadingFinished)
+			finishLoading();
 		return myMainQueryDataset;
 	}
 
@@ -226,6 +239,7 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 		synchronized (this.loadingLock) {
 			isLoadingStarted = true;
 			isLoadingLocked = true;
+			isLoadingFinished = false;
 			addLoadTask("directoryModel", new Runnable() {
 				@Override public void run() {
 					final SpecialRepoLoader repoLoader = getRepoLoader();
@@ -247,6 +261,7 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 		synchronized (this.loadingLock) {
 			isLoadingStarted = true;
 			isLoadingLocked = true;
+			isLoadingFinished = false;
 			(new Thread("Loading " + this) {
 				@Override public void run() {
 					synchronized (loadingLock) {
@@ -272,6 +287,15 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 		}
 		final SpecialRepoLoader repoLoader = getRepoLoader();
 		repoLoader.waitUntilLastJobComplete();
+		Dataset wDataset = myMainQueryDataset;
+		try {
+			isLoadingFinished = true;
+			RepoOper.writeToTTL(this, new FileWriter("finishedLoading.ttl"));
+		} catch (IOException e) {
+
+			e.printStackTrace();
+		}
+
 	}
 
 	@Override public List<GraphStat> getGraphStats() {
@@ -309,6 +333,7 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 	@Override public Model getNamedModel(Ident graphNameIdent) {
 		Dataset mqd = getMainQueryDataset();
 		String absURI = graphNameIdent.getAbsUriString();
+		absURI = RepoOper.correctModelName(absURI);
 		return mqd.getNamedModel(absURI);
 	}
 
