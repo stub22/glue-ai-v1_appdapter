@@ -266,6 +266,7 @@ final public class DemoBrowser implements AnyOper.Singleton {
 	 * @throws Exception
 	 */
 	public static synchronized void ensureRunning(boolean bringToFront, final String... args) throws InterruptedException {
+		theLogger = getLogger();
 		if (mainControl == null) {
 
 			theLogger.info(appName + ".ensureRunning()-START");

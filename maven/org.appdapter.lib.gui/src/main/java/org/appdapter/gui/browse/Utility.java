@@ -3550,11 +3550,16 @@ public class Utility extends UtilityMenuOptions {
 		localPackagePrefixs.add("java.b");
 	}
 
-	static Thread threadInitGUI = new Thread("Init GUI") {
+	static public void initGUIInThread() {
+		synchronized (RAN_FIRST_INIT_GUI_LOCK) {
+			Thread threadInitGUI = new Thread("Init GUI") {
 		@Override public void run() {
 			initGUI();
 		}
 	};
+			threadInitGUI.start();
+		}
+	}
 
 	public static <T> Set<Class<? extends T>> getCoreClasses(final Class<T> ancestor) {
 		return ReflectUtils.cachedResult(new Callable() {

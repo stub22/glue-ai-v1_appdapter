@@ -38,6 +38,7 @@ import javax.swing.event.CaretListener;
 import javax.swing.text.BadLocationException;
 
 import org.appdapter.core.convert.NoSuchConversionException;
+import org.appdapter.core.store.RepoOper;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.editors.ObjectPanel;
 import org.appdapter.gui.swing.JJPanel;
@@ -60,16 +61,16 @@ import com.hp.hpl.jena.shared.Lock;
  * editor and inspector for Jena models. Useful for debugging GUI
  * and web applications. To open an editor window, pass the model
  * instance to the static {@link ModelAsTurtleEditor#open(Model)} method.</p>
- * 
+ *
  * <p>The editor has basic reporting of Turtle syntax errors.
  * It also updates the namespace prefixes of the model.
  * Several windows for different models may be open at the same
  * time. Concurrent changes to the model are reported.</p>
- * 
+ *
  * <p>The class has a {@link #main} method for demonstration purposes.
  * It loads one or more RDF files into Jena models and displays an editor
  * for each.</p>
- * 
+ *
  * @version $Id$
  * @author Richard Cyganiak (richard@cyganiak.de)
  * @author LogicMoo
@@ -178,16 +179,6 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 	protected JComboBox combo;
 
 	private boolean inAddingModel;
-
-	public static String getBaseURI(Model defaultModel, String name) {
-		String baseURI = defaultModel.getNsPrefixURI("");
-		if (baseURI == null) {
-			baseURI = name;
-		}
-		if (baseURI == null)
-			baseURI = "http://modelToOntoModel/modelToOntoModel_model_" + System.identityHashCode(defaultModel) + "#";
-		return baseURI;
-	}
 
 	/**
 	 * Creates and displays new ModelEditor.
@@ -326,7 +317,7 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 
 	/**
 	 * Replaces the contents of the text area with a Turtle
-	 * serialization of the model. 
+	 * serialization of the model.
 	 */
 	protected void fetchTurtleFromModel() {
 		inModelLock(true, new VoidFunc1<Model>() {
@@ -717,7 +708,7 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 			}
 		};
 		boundModel.register(this.listener);
-		add(boundModel, getBaseURI(boundModel, null));
+		add(boundModel, RepoOper.getBaseURI(boundModel, null));
 	}
 
 	public static Map<Model, StatementListener> listeners = new HashMap();
