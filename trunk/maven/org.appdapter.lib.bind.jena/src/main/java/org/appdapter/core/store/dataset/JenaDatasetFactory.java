@@ -18,7 +18,6 @@ package org.appdapter.core.store.dataset;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.query.DatasetFactory;
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.sdb.SDBFactory;
 import com.hp.hpl.jena.sdb.Store;
 import com.hp.hpl.jena.sparql.core.DatasetGraph;
@@ -53,7 +52,6 @@ public class JenaDatasetFactory extends AbstractDatasetFactory implements UserDa
 		return create(DatasetGraphFactory.createMemFixed());
 	}
 
-
 	public Dataset createMemFixedDS() {
 		return create(DatasetFactory.createMemFixed());
 	}
@@ -71,6 +69,9 @@ public class JenaDatasetFactory extends AbstractDatasetFactory implements UserDa
 	 * @return Dataset
 	 */
 	public Dataset create(Dataset dataset) {
+		if (RepoDatasetFactory.datasetNoDeleteModels) {
+			return new RepoDatasetFactory.DatasetNoRemove(dataset);
+		}
 		return new DatasetImpl(dataset);
 	}
 
@@ -79,6 +80,9 @@ public class JenaDatasetFactory extends AbstractDatasetFactory implements UserDa
 	 * @return Dataset
 	 */
 	public Dataset create(DatasetGraph dataset) {
+		if (RepoDatasetFactory.datasetNoDeleteModels) {
+			return new RepoDatasetFactory.DatasetNoRemove(dataset);
+		}
 		return DatasetImpl.wrap(dataset);
 	}
 
@@ -97,7 +101,7 @@ public class JenaDatasetFactory extends AbstractDatasetFactory implements UserDa
 	}
 
 	@Override public Model createModelOfType(String typeOf, String modelName, String shareName) {
-		return ModelFactory.createDefaultModel();
+		return RepoDatasetFactory.createDefaultModel();
 	}
 
 }

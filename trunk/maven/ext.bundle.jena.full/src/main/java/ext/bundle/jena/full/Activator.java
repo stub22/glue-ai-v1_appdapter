@@ -1,16 +1,7 @@
 package ext.bundle.jena.full;
 
-import org.osgi.framework.BundleActivator;
-import org.osgi.framework.BundleContext;
+import ext.osgi.common.ExtBundleActivatorBase;
 
-public class Activator implements BundleActivator {
-
-    public void start(BundleContext context) throws Exception {
-        // TODO add activation code here
-    }
-
-    public void stop(BundleContext context) throws Exception {
-        // TODO add deactivation code here
-    }
+public class Activator extends ExtBundleActivatorBase {
 
 }

@@ -43,6 +43,7 @@ public class SparqlDatasetProvider extends JenaSDBWrappedDatasetFactory implemen
 
 		RepoDatasetFactory.globalDS = SINGLETON.createRemotePeer();
 		RepoDatasetFactory.alwaysShareDataset = true;
+		RepoOper.isMergeDefault = false;
 		RepoDatasetFactory.registerDatasetFactory("default", SINGLETON);
 		RepoOper.registerDatasetFactory("remote", SINGLETON);
 		RepoOper.registerDatasetFactory("shared", SINGLETON);

@@ -16,8 +16,6 @@
 
 package org.appdapter.core.boot;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,13 +29,16 @@ import java.util.Map;
 
 import org.appdapter.core.log.Debuggable;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ext.osgi.common.MacroBundleActivatorBase;
+import ext.osgi.common.MacroBundleActivatorBase.BundleClassWatcher;
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -45,13 +46,40 @@ import org.slf4j.LoggerFactory;
  */
 
 public class ClassLoaderUtils {
+	public static class BootBundleWatcher implements BundleClassWatcher {
+		BundleClassWatcher bcw;
+
+		public BootBundleWatcher(BundleClassWatcher bbw) {
+			bcw = bbw;
+		}
+
+		@Override public void unregisterClassLoader(BundleActivator b, BundleContext c) {
+			ClassLoaderUtils.unregisterClassLoader(b, c);
+			if (bcw != null)
+				bcw.unregisterClassLoader(b, c);
+		}
+
+		@Override public void registerClassLoader(BundleActivator b, BundleContext c) {
+			ClassLoaderUtils.registerClassLoader(b, c);
+			if (bcw != null)
+				bcw.registerClassLoader(b, c);
+		}
+	}
+
 	public final static String ALL_RESOURCE_CLASSLOADER_TYPES = "*";
 
 	public final static String RESOURCE_CLASSLOADER_TYPE = "ResourceClassLoaderType";
 	private final static Logger theLogger = LoggerFactory.getLogger(ClassLoaderUtils.class);
 
 	static {
+		installBundleWatcher();
+	}
 
+	public static void installBundleWatcher() {
+		if (MacroBundleActivatorBase.classLoaderUtils != null)
+			return;
+
+		MacroBundleActivatorBase.classLoaderUtils = new BootBundleWatcher(MacroBundleActivatorBase.classLoaderUtils);
 	}
 
 	private static <T> boolean addIfNew(Collection<T> col, T e) {
@@ -195,6 +223,10 @@ public class ClassLoaderUtils {
 		withClassLoader(context, loader, resourceClassLoaderType, false, false);
 	}
 
+	public static void registerClassLoader(BundleContext context, Class loader, String resourceClassLoaderType) {
+		registerClassLoader(context, getClassLoaderForClassOrSystemClassLoader(loader), resourceClassLoaderType);
+	}
+
 	private static void withClassLoader(BundleContext context, ClassLoader loader, String resourceClassLoaderType, boolean contextOptional, boolean isRemoval) {
 		if (loader == null && !isRemoval) {
 			theLogger.error(Debuggable.toInfoStringCompound("NULLS in registerClassLoader", context, loader, resourceClassLoaderType, "contextOptional=", contextOptional, "isRemoval=", isRemoval));
@@ -245,7 +277,12 @@ public class ClassLoaderUtils {
 		if (something instanceof Class) {
 			thisClass = (Class) something;
 		}
-		withClassLoader(ctx, getClassLoader(thisClass), thisClass.getPackage().getName(), true, false);
+		String pname = null;
+		Package p = thisClass.getPackage();
+		if (p != null) {
+			pname = p.getName();
+		}
+		withClassLoader(ctx, getClassLoader(thisClass), pname, true, false);
 
 	}
 
@@ -261,21 +298,24 @@ public class ClassLoaderUtils {
 	public static ClassLoader getClassLoader(Class thisClass) {
 		ClassLoader cl = null;
 		Bundle bundle = FrameworkUtil.getBundle(thisClass);
-		if (bundle != null)
+		if (bundle != null) {
 			cl = getBundleClassLoader(bundle);
+			if (cl == null) {
+				cl = getClasssLoader_Require_POM_REference(bundle);
+			}
+		}
 		if (cl != null)
 			return cl;
-		cl = thisClass.getClassLoader();
-		if (cl != null)
-			return cl;
-		return null;
+		return getClassLoaderForClassOrSystemClassLoader(thisClass);
 	}
 
 	public static ClassLoader getClasssLoader_Require_POM_REference(Bundle bundle) {
-		/*
+		/**
+		   the "correct" way to get a bundle classlaoder
+
 		BundleWiring bundleWiring = bundle.adapt(BundleWiring.class);
 		ClassLoader classLoader = bundleWiring.getClassLoader();
-		return classLoader;*/
+		return classLoader; */
 		return null;
 	}
 
@@ -286,106 +326,22 @@ public class ClassLoaderUtils {
 		}
 		if (bundleActivator != null) {
 			try {
-				return bundle.loadClass(bundleActivator).getClassLoader();
+				return getClassLoaderForClassOrSystemClassLoader(bundle.loadClass(bundleActivator));
 			} catch (ClassNotFoundException e) {
 				// should not happen as we are called if the bundle is started
 				// anyways.
 				e.printStackTrace();
 			}
 		}
-
-		return internalGetFelixBundleClassLoader(bundle);
+		return getClassLoaderForClassOrSystemClassLoader(bundle.getClass());
 	}
 
-	/***** 2013-10-27    
-	 * Stu is a bit concerned by the following 
-	 * 
-	 */
-	private static Field Felix_BundleImpl_m_modules_field;
-
-	private static Field Felix_ModuleImpl_m_classLoader_field;
-
-	private static Method Felix_adapt_method;
-
-	private static Method Felix_bundle_wiring_getClassLoader_method;
-
-	private static Class Felix_bundleWiringClazz;
-
-	private static Boolean isFelix403 = null;
-
-	private static ClassLoader internalGetFelixBundleClassLoader(Bundle bundle) {
-		//firstly, try to find classes matching a newer version of felix
-
-		if (isFelix403.booleanValue()) {
-			try {
-				Object wiring = Felix_adapt_method.invoke(bundle, new Object[] { Felix_bundleWiringClazz });
-				ClassLoader cl = (ClassLoader) Felix_bundle_wiring_getClassLoader_method.invoke(wiring);
-				return cl;
-			} catch (Exception e) {
-				return null;
-			}
+	private static ClassLoader getClassLoaderForClassOrSystemClassLoader(Class<?> loadClass) {
+		ClassLoader classLoader = loadClass.getClassLoader();
+		if (classLoader == null) {
+			return ClassLoader.getSystemClassLoader();
 		}
-
-		// Fallback to trying earlier versions of felix.
-		if (Felix_BundleImpl_m_modules_field == null) {
-			try {
-				Class bundleImplClazz = bundle.getClass().getClassLoader().loadClass("org.apache.felix.framework.BundleImpl");
-				Felix_BundleImpl_m_modules_field = bundleImplClazz.getDeclaredField("m_modules");
-				Felix_BundleImpl_m_modules_field.setAccessible(true);
-			} catch (ClassNotFoundException e) {
-			} catch (NoSuchFieldException e) {
-			}
-		}
-
-		// Figure out which version of the modules is exported
-		Object currentModuleImpl;
-		try {
-			Object[] moduleArray = (Object[]) Felix_BundleImpl_m_modules_field.get(bundle);
-			currentModuleImpl = moduleArray[moduleArray.length - 1];
-		} catch (Throwable t2) {
-			try {
-				List<Object> moduleArray = (List<Object>) Felix_BundleImpl_m_modules_field.get(bundle);
-				currentModuleImpl = moduleArray.get(moduleArray.size() - 1);
-			} catch (Exception e) {
-				return null;
-			}
-		}
-
-		if (Felix_ModuleImpl_m_classLoader_field == null && currentModuleImpl != null) {
-			try {
-				Felix_ModuleImpl_m_classLoader_field = bundle.getClass().getClassLoader().loadClass("org.apache.felix.framework.ModuleImpl").getDeclaredField("m_classLoader");
-				Felix_ModuleImpl_m_classLoader_field.setAccessible(true);
-			} catch (ClassNotFoundException e) {
-				return null;
-			} catch (NoSuchFieldException e) {
-
-				return null;
-			}
-		}
-		// first make sure that the classloader is ready:
-		// the m_classLoader field must be initialized by the
-		// ModuleImpl.getClassLoader() private method.
-		ClassLoader cl = null;
-		try {
-			cl = (ClassLoader) Felix_ModuleImpl_m_classLoader_field.get(currentModuleImpl);
-			if (cl != null)
-				return cl;
-		} catch (Exception e) {
-
-			return null;
-		}
-
-		// looks like it was not ready:
-		// the m_classLoader field must be initialized by the
-		// ModuleImpl.getClassLoader() private method.
-		// this call will do that.
-		try {
-			bundle.loadClass("java.lang.Object");
-			cl = (ClassLoader) Felix_ModuleImpl_m_classLoader_field.get(currentModuleImpl);
-			return cl;
-		} catch (Exception e) {
-			return null;
-		}
+		return classLoader;
 	}
 
 	public static URL getFileResource(String resourceClassLoaderType, String resourceName) {

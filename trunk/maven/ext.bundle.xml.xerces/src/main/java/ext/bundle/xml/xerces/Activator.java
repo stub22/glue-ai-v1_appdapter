@@ -4,13 +4,21 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
 public class Activator implements BundleActivator {
+	//public class Activator extends ExtBundleActivatorBase {
 
-    public void start(BundleContext context) throws Exception {
-        // TODO add activation code here
-    }
+	@Override public void start(BundleContext context) throws Exception {
+		// TODO Auto-generated method stub
 
-    public void stop(BundleContext context) throws Exception {
-        // TODO add deactivation code here
-    }
+	}
+
+	@Override public void stop(BundleContext context) throws Exception {
+		// TODO Auto-generated method stub
+
+	}/*
+	 @Override public void ensureExtClassesAreFindable() {
+	 if (isOSGIProperty("osgi-tests", true)) {
+	 	debugLoaders(org.apache.xerces.dom.DocumentImpl.class);
+	 }
+	 }*/
 
 }

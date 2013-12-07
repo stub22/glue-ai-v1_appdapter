@@ -25,7 +25,10 @@ import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AppdapterFelixShellBundleActivator extends BundleActivatorBase {
+import ext.osgi.common.MacroBundleActivatorBase;
+//import org.appdapter.gui.demo.DemoBrowser;
+//import org.appdapter.gui.demo.DemoNavigatorCtrl;
+public class AppdapterFelixShellBundleActivator extends MacroBundleActivatorBase {
 	static Logger theLogger = LoggerFactory.getLogger(AppdapterFelixShellBundleActivator.class);
 
 	private JFrame myDemoJFrame;

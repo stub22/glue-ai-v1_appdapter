@@ -1,12 +1,12 @@
 /*
  *  Copyright 2012 by The Appdapter Project (www.appdapter.org).
- * 
+ *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
  *  You may obtain a copy of the License at
- * 
+ *
  *       http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  *  Unless required by applicable law or agreed to in writing, software
  *  distributed under the License is distributed on an "AS IS" BASIS,
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,6 +30,7 @@ import org.appdapter.core.convert.Converter.ConverterMethod;
 import org.appdapter.core.convert.OptionalArg;
 import org.appdapter.core.item.JenaResourceItem;
 import org.appdapter.core.name.Ident;
+import org.appdapter.core.store.dataset.RepoDatasetFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -155,25 +156,25 @@ public class JenaModelUtils implements AnyOper.UtilClass {
 
 	/**
 	 * From jena docs for model.read()
-	 *  base - the base to use when converting relative to absolute uri's. The base URI may be null if there are 
+	 *  base - the base to use when converting relative to absolute uri's. The base URI may be null if there are
 	 * no relative URIs to convert. A base URI of "" may permit relative URIs to be used in the model unconverted.
 	 */
 	static public Model loadJenaModelFromXmlSerialStream(InputStream xmlInputStream, String modelBaseURI) throws Throwable {
-		Model model = ModelFactory.createDefaultModel();
+		Model model = RepoDatasetFactory.createDefaultModel();
 		// This form of Model.read() assumes that the model is encoded as RDF/XML.
 		model.read(xmlInputStream, modelBaseURI);
 		return model;
 	}
 
 	static public OntModel loadRDFS_ModelFromStream(InputStream modelInputStream, String modelBaseURI) throws Throwable {
-		Model baseModel = ModelFactory.createDefaultModel();
+		Model baseModel = RepoDatasetFactory.createDefaultModel();
 		baseModel.read(modelInputStream, modelBaseURI);
 		OntModel ontModel = ModelFactory.createOntologyModel(OntModelSpec.RDFS_MEM_RDFS_INF, baseModel);
 		return ontModel;
 	}
 
 	public static Model makeNaiveCopy(Model in) {
-		Model out = ModelFactory.createDefaultModel();
+		Model out = RepoDatasetFactory.createDefaultModel();
 		out.add(in);
 		return out;
 	}

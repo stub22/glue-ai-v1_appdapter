@@ -1,12 +1,12 @@
 /*
  *  Copyright 2013 by The Appdapter Project (www.appdapter.org).
- * 
+ *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
  *  You may obtain a copy of the License at
- * 
+ *
  *       http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  *  Unless required by applicable law or agreed to in writing, software
  *  distributed under the License is distributed on an "AS IS" BASIS,
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,8 +16,6 @@
 
 package org.appdapter.core.store;
 
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.util.FileManager;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -25,13 +23,14 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Iterator;
-import org.appdapter.fileconv.FileStreamUtils;
 
-import org.appdapter.core.debug.UIAnnotations.UISalient;
 import org.appdapter.bind.rdf.jena.model.JenaFileManagerUtils;
 import org.appdapter.core.boot.ClassLoaderUtils;
-import org.appdapter.core.log.Debuggable;
-import static org.appdapter.fileconv.FileStreamUtils.getModelIfAvailable;
+import org.appdapter.core.debug.UIAnnotations.UISalient;
+import org.appdapter.fileconv.FileStreamUtils;
+
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.util.FileManager;
 
 
 /**
@@ -40,7 +39,7 @@ import static org.appdapter.fileconv.FileStreamUtils.getModelIfAvailable;
 
 public class ExtendedFileStreamUtils extends FileStreamUtils {
 	@UISalient
-	
+
 	public static Model getModelIfAvailable(String sheetLocation, String sheetName, java.util.Map nsMap, java.util.List<ClassLoader> fileModelCLs) {
 		FileManager fm = JenaFileManagerUtils.getDefaultJenaFM();
 
@@ -58,7 +57,7 @@ public class ExtendedFileStreamUtils extends FileStreamUtils {
 		} catch (Exception e) {
 			return null;
 		}
-	}	
+	}
 	@Override public InputStream openInputStream(String srcPath, java.util.List<ClassLoader> cls) throws IOException {
 
 		if (cls == null) {
@@ -130,5 +129,5 @@ public class ExtendedFileStreamUtils extends FileStreamUtils {
 			getLogger().error("Bad srcPath={}", srcPath, e);
 			return null;
 		}
-	}	
+	}
 }
