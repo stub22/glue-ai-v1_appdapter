@@ -34,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.hp.hpl.jena.query.Dataset;
+import com.hp.hpl.jena.query.DatasetFactory;
 import com.hp.hpl.jena.rdf.listeners.StatementListener;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelChangedListener;
@@ -219,7 +220,7 @@ public class RepoFromTurtleEditor extends ModelAsTurtleEditor implements ObjectP
 		}
 		Model defaultModel = ds.getDefaultModel();
 		if (defaultModel != null) {
-			add(defaultModel, getBaseURI(defaultModel, "defaultModel"));
+			add(defaultModel, RepoOper.getBaseURI(defaultModel, "defaultModel"));
 			totalModel.add(defaultModel);
 		}
 	}
@@ -228,143 +229,38 @@ public class RepoFromTurtleEditor extends ModelAsTurtleEditor implements ObjectP
 		Repo boundRepo = getRepo(getValue());
 		FileOutputStream os = new FileOutputStream(file);
 		OutputStreamWriter ow = new OutputStreamWriter(os);
-		writeToTTL(boundRepo, ow);
+		RepoOper.writeToTTL(boundRepo, ow);
 		ow.close();
-	}
-
-	private void writeToTTL(Repo boundRepo, Writer ow) throws IOException {
-		String repoName = "" + boundRepo;
-		String thiz = "<_:self>";
-		String bar = "########################################\n";
-		ow.write("# reponame=" + repoName + "\n");
-		ow.write("# time=" + new Date().toString() + "\n");
-		Model dirModel = null;
-		if (boundRepo instanceof Repo.WithDirectory) {
-			dirModel = ((Repo.WithDirectory) boundRepo).getDirectoryModel();
-			ow.write("# dirModel = " + dirModel.size() + "\n");
-			ow.flush();
-			dirModel.write(ow, "TTL");
-			ow.write("\n\n");
-			ow.write(thiz + " a ccrt:DirectoryModel. \n");
-			ow.write("\n\n");
-			ow.flush();
-		}
-		/*if (dirModel == null) {
-			dirModel = ModelFactory.createDefaultModel();
-		}
-		String modelName = addNamedModel("", dirModel);
-		*/
-		Dataset ds = boundRepo.getMainQueryDataset();
-
-		Iterator dni = ds.listNames();
-		Model defaultModel = ds.getDefaultModel();
-		while (dni.hasNext()) {
-			String name = (String) dni.next();
-			ow.write("\n\n");
-			ow.write(bar);
-			ow.write("# modelName=" + name + "\n");
-			ow.write(thiz + " ccrt:sheetName \"" + name + "\".\n");
-			Model m = ds.getNamedModel(name);
-			ow.write(getModelSource(m) + "\n");
-			ow.write("# modelSize=" + m.size() + "\n");
-			ow.write(thiz + " a ccrt:RepoSheetModel. \n");
-			if (m == defaultModel) {
-				ow.write(thiz + " a ccrt:DatasetDefaultModel. \n");
-				defaultModel = null;
-			}
-			ow.write("\n\n");
-			ow.flush();
-		}
-		if (defaultModel != null) {
-			ow.write(bar);
-			ow.write("# defaultModel..." + "\n");
-			String name = getBaseURI(defaultModel, null);
-			ow.write("# modelName=" + name + "\n");
-			ow.write(thiz + " ccrt:sheetName \"" + name + "\".\n");
-			ow.write(getModelSource(defaultModel) + "\n");
-			ow.write("\n\n");
-			ow.write("# modelSize=" + defaultModel.size() + "\n");
-			ow.write(thiz + " a ccrt:DatasetDefaultModel. \n");
-			ow.write("\n\n");
-		}
-		ow.flush();
 	}
 
 	@Override public void loadTTL(File file) throws IOException, NoSuchConversionException {
 		if (file == null)
 			return;
-		final Model loaderModel = ModelFactory.createDefaultModel();
-		final Model[] currentModel = new Model[] { ModelFactory.createDefaultModel(), null, null };
-		final String[] modelName = new String[] { "" };
-		final Map<String, Model> constits = new HashMap();
 		final Repo.WithDirectory repo = (WithDirectory) this.getRepo(getValue());
-		loaderModel.register(new StatementListener() {
-
-			@Override public void addedStatement(Statement arg0) {
-				System.out.println("Adding statement: " + arg0);
-				String subjStr = "" + arg0.getSubject();
-				if (subjStr.equals("self")) {
-					// processing directive
-					RDFNode r = arg0.getObject();
-					if (r.isLiteral()) {
-						// is a model start declaration;
-						String baseURI = modelName[0] = r.asLiteral().getString();
-						Model newModel = currentModel[0] = ModelFactory.createDefaultModel();
-						currentModel[0].setNsPrefix("", baseURI);
-					} else if (r.isResource()) {
-						// is a model ending declaration (we dont clear)
-						Resource rs = r.asResource();
-						String type = rs.getLocalName();
-						Model newModel = currentModel[0];
-						newModel.setNsPrefixes(loaderModel.getNsPrefixMap());
-						if (type.equals("DirectoryModel")) {
-							currentModel[1] = currentModel[0];
-						} else if (type.equals("RepoSheetModel")) {
-							constits.put(modelName[0], currentModel[0]);
-						} else if (type.equals("DatasetDefaultModel")) {
-							currentModel[2] = currentModel[0];
-						}
-					}
-				} else {
-					currentModel[0].add(arg0);
-				}
-			}
-		});
+		Dataset oldds = repo.getMainQueryDataset();
+		Model oldDirModel = repo.getDirectoryModel();
+		Dataset newds = DatasetFactory.createMemFixed();
 		FileInputStream fis = new FileInputStream(file);
-		InputStreamReader isr = new InputStreamReader(fis, Charset.defaultCharset().name());
-		try {
-			loaderModel.read(isr, null, "TTL");
-		} catch (Throwable t) {
-			Debuggable.printStackTrace(t);
-		}
-		// create a direct repo now
-		Repo.WithDirectory rwd = null;
-
-		if (constits.size() == 0) {
-			// we probably need to load
-			rwd = new OmniLoaderRepo(currentModel[1]);
+		Model newDirModel = RepoOper.loadTTLReturnDirModel(newds, fis);
+		Repo.WithDirectory rwd;
+		if (!newds.listNames().hasNext()) {
+			// nothing loaded.. probably just DirectoryModel
+			rwd = new OmniLoaderRepo(newDirModel);
 		} else {
-			// we already have loaded most likely
-			rwd = new DirectRepo(currentModel[1]);
+			rwd = new DirectRepo(newDirModel);
 		}
-		Dataset ds = rwd.getMainQueryDataset();
-		if (currentModel[2] != null)
-			ds.setDefaultModel(currentModel[2]);
-
-		for (Map.Entry<String, Model> entry : constits.entrySet()) {
-			ds.addNamedModel(entry.getKey(), entry.getValue());
-		}
+		newds = rwd.getMainQueryDataset();
+		RepoOper.replaceDatasetElements(oldds, newds);
 		if (repo.getClass() == rwd.getClass()) {
-			RepoOper.replaceModelElements(repo.getDirectoryModel(), rwd.getDirectoryModel());
-			RepoOper.replaceDatasetElements(repo.getMainQueryDataset(), ds);
+			RepoOper.replaceModelElements(oldDirModel, rwd.getDirectoryModel());
+			RepoOper.replaceDatasetElements(oldds, newds);
 		} else {
 			setRepoObject(rwd);
 		}
-
 	}
 
 	private String addNamedModel(String name, Model m) {
-		String baseURI = getBaseURI(m, name);
+		String baseURI = RepoOper.getBaseURI(m, name);
 
 		m.setNsPrefix("", baseURI);
 		if (!baseURIToGraph.containsKey(baseURI)) {
