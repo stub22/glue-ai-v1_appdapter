@@ -1,6 +1,8 @@
 package org.appdapter.core.log;
 
 import java.io.ByteArrayOutputStream;
+import java.io.Console;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -15,6 +17,7 @@ import java.util.logging.Logger;
 import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.core.debug.NoLeakThreadLocal;
 import org.appdapter.core.debug.UIAnnotations.UIHidden;
+import org.appdapter.core.debug.UIAnnotations.UISalient;
 
 @UIHidden
 public abstract class Debuggable extends BasicDebugger {
@@ -22,6 +25,10 @@ public abstract class Debuggable extends BasicDebugger {
 	public static int PRINT_DEPTH = 3;
 	public static LinkedList<Object> allObjectsForDebug = new LinkedList<Object>();
 	public static boolean saveAllObjectsForDebug = false;
+	public static final PrintStream ORIGINAL_ERR_STREAM = System.err;
+	public static final PrintStream ORIGINAL_OUT_STREAM = System.out;
+	public static final InputStream ORIGINAL_IN_STREAM = System.in;
+	public static final Console ORIGINAL_CONSOLE = System.console();
 
 	public static Logger LOGGER = Logger.getLogger(Debuggable.class.getSimpleName());
 
@@ -53,15 +60,15 @@ public abstract class Debuggable extends BasicDebugger {
 	}
 
 	public static boolean doBreak(Object... s) {
-		PrintStream v = System.out;
+		PrintStream v = ORIGINAL_OUT_STREAM;
 		new Exception("" + s[0]).fillInStackTrace().printStackTrace(v);
 		for (int i = 0; i < s.length; i++) {
-			System.console().printf("\n" + s[i]);
+			v.printf("\n" + s[i]);
 		}
 		if (!Debuggable.useSystemConsoleBreaks)
 			return false;
-		System.console().printf("\nPress enter to continue\n");
-		System.console().readLine();
+		ORIGINAL_CONSOLE.printf("\nPress enter to continue\n");
+		ORIGINAL_CONSOLE.readLine();
 		return true;
 	}
 
@@ -200,9 +207,9 @@ public abstract class Debuggable extends BasicDebugger {
 		}
 	};
 
-	//	@UISalient
+	@UISalient
 	public static boolean useDebuggableToString = true;
-	//	@UISalient
+	@UISalient
 	public static boolean useSystemConsoleBreaks = false;
 
 	public static String toInfoStringF(Object o) {
@@ -438,6 +445,7 @@ public abstract class Debuggable extends BasicDebugger {
 				try {
 					ReflectUtils.setField(ex, ex.getClass(), Throwable.class, "cause", cause);
 				} catch (Throwable e2) {
+					e2.printStackTrace();
 					// cannot set the cause?!
 				}
 			}
@@ -451,7 +459,7 @@ public abstract class Debuggable extends BasicDebugger {
 	final static Class[] C_0 = new Class[] {};
 
 	public static RuntimeException printStackTrace(final Throwable ex) {
-		printStackTrace(ex, System.err, -1);
+		printStackTrace(ex, ORIGINAL_ERR_STREAM, -1);
 		return reThrowable(ex);
 	}
 
@@ -549,7 +557,7 @@ public abstract class Debuggable extends BasicDebugger {
 
 	public static boolean isDebugging() {
 		//if (true)
-			//return true;
+		//return true;
 		return DEBUGGING.get() == Boolean.TRUE;
 	}
 

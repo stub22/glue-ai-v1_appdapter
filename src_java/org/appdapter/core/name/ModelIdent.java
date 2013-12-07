@@ -16,7 +16,6 @@
 
 package org.appdapter.core.name;
 
-import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 /**

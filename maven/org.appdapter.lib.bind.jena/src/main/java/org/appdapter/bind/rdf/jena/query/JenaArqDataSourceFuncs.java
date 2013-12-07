@@ -1,12 +1,12 @@
 /*
  *  Copyright 2012 by The Appdapter Project (www.appdapter.org).
- * 
+ *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
  *  You may obtain a copy of the License at
- * 
+ *
  *       http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  *  Unless required by applicable law or agreed to in writing, software
  *  distributed under the License is distributed on an "AS IS" BASIS,
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,6 +18,7 @@ package org.appdapter.bind.rdf.jena.query;
 
 import org.appdapter.bind.rdf.jena.model.JenaModelUtils;
 import org.appdapter.core.log.BasicDebugger;
+import org.appdapter.core.store.dataset.RepoDatasetFactory;
 
 // import com.hp.hpl.jena.query.DataSource;
 import com.hp.hpl.jena.query.Dataset;
@@ -30,8 +31,8 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
  */
 
 public class JenaArqDataSourceFuncs {
-	public static BasicDebugger	theDbg = new BasicDebugger();	
-/** 	
+	public static BasicDebugger	theDbg = new BasicDebugger();
+/**
 	  * The exact semantics here are still vague.   Roughly speaking, the new datasource
 	  * is one that we can modify "without affecting" the original dataset, but that
 	  * meaning is unclear when the original dataset contains database models.
@@ -46,17 +47,17 @@ public class JenaArqDataSourceFuncs {
 		}
 		Dataset copy = DatasetFactory.make(dset, newDefaultModel);
  		return copy;
-	}	
-	
-	/** 	
+	}
+
+	/**
 	**/
 	public static void ensureDefaultModelNotNull(Dataset ds) {
 		if (ds.getDefaultModel() == null) {
-			Model emptyModel = ModelFactory.createDefaultModel();
+			Model emptyModel = RepoDatasetFactory.createDefaultModel();
 			ds.setDefaultModel(emptyModel);
 		}
 	}
-	
+
 	/** 	If no model yet exists within dataset @ nameURI, then we create it.
 			If nameURI is null, then we merge into (or create) the "default model"
 	**/

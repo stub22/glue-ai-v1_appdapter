@@ -19,13 +19,10 @@ package org.appdapter.osgi.core;
  * @author Stu B. <www.texpedient.com>
  */
 import org.appdapter.core.boot.ClassLoaderUtils;
-import org.appdapter.core.log.BasicDebugger;
-import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.FrameworkEvent;
-import org.osgi.framework.FrameworkListener;
 
+import ext.osgi.common.MacroBundleActivatorBase;
 
 /**
  * Note:  Appdapter client bundles are *not* required to use this class, or to use
@@ -44,12 +41,12 @@ import org.osgi.framework.FrameworkListener;
  * @author Stu B. <www.texpedient.com>
  */
 
-public abstract class BundleActivatorBase extends BasicDebugger implements BundleActivator {
+public abstract class BundleActivatorBase extends MacroBundleActivatorBase implements BundleActivator {
 
-	protected boolean startedEventScheduled = false;
-	protected boolean hasDispatchedFrameworkStartedEvent = false;
-	final protected Object dispatchEventLock = new Object();
-
+	//protected boolean startedEventScheduled = false;
+	//protected boolean hasDispatchedFrameworkStartedEvent = false;
+	//final protected Object dispatchEventLock = new Object();
+	/*
 	final class GotFrameworkStartEvent implements FrameworkListener {
 		public void frameworkEvent(FrameworkEvent fe) {
 			int eventType = fe.getType();
@@ -64,7 +61,7 @@ public abstract class BundleActivatorBase extends BasicDebugger implements Bundl
 				dispatchFrameworkStartedEvent(fe.getBundle(), fe.getThrowable());
 			}
 		}
-	}
+	}*/
 
 	public BundleActivatorBase() {
 		ClassLoaderUtils.registerClassLoader(this, null);
@@ -86,12 +83,14 @@ public abstract class BundleActivatorBase extends BasicDebugger implements Bundl
 	 * @throws Exception
 	 */
 	@Override public void start(BundleContext bundleCtx) throws Exception {
+		super.start(bundleCtx);
 		ClassLoaderUtils.registerClassLoader(this, bundleCtx);
 		getLogger().info(describe("start<BundleActivatorBase>", bundleCtx));
 		scheduleFrameworkStartEventHandler(bundleCtx);
 	}
 
 	@Override public void stop(BundleContext bundleCtx) throws Exception {
+		super.stop(bundleCtx);
 		ClassLoaderUtils.unregisterClassLoader(this, bundleCtx);
 		getLogger().info(describe("stop<BundleActivatorBase>", bundleCtx));
 	}
@@ -101,25 +100,26 @@ public abstract class BundleActivatorBase extends BasicDebugger implements Bundl
 	 * Important:  This handler will only be called if you called scheduleFrameworkStartEventHandler()
 	 * from your bundle's start() method!
 	 * @param bundleCtx - Fetched from the bundle of the FrameworkEvent, so it should be nice and fresh.
-	 */
+	 *//*
 	protected void handleFrameworkStartedEvent(BundleContext bundleCtx) {
 		getLogger().info("Default implementation of handleFrameworkStartedEvent() called on " + getClass() + ", you should override this!  BundleContext=" + bundleCtx);
-	}
+	}*/
 
 	/**
 	 * Call this method from any bundle's start() to schedule a callback to its handleFrameworkStartedEvent() method.
 	 *
 	 * @param bundleCtx - used to schedule the callback, and then forgotten.
+	 * @throws Exception
 	 */
-	protected void scheduleFrameworkStartEventHandler(BundleContext bundleCtx) {
+	/*final protected void scheduleFrameworkStartEventHandler(BundleContext bundleCtx) throws Exception {
 		synchronized (dispatchEventLock) {
 			if (startedEventScheduled)
 				return;
 			startedEventScheduled = true;
 		}
-		bundleCtx.addFrameworkListener(new GotFrameworkStartEvent());
-	}
-
+		super.scheduleFrameworkStartEventHandler(bundleCtx);
+	}*/
+/*
 	private void dispatchFrameworkStartedEvent(Bundle eventBundle, Throwable eventThrowable) {
 		String thrownMsg = (eventThrowable == null) ? "OK" : eventThrowable.getClass().getName();
 		getLogger().info("dispatchFrameworkStartedEvent<BundleActivatorBase> ( bundle={}, msg={}", eventBundle, thrownMsg);
@@ -139,5 +139,5 @@ public abstract class BundleActivatorBase extends BasicDebugger implements Bundl
 		String msg = getClass().getCanonicalName() + "." + action + "(ctx=[" + bundleCtx + "], bundle=[" + b + "])";
 		return msg;
 	}
-
+*/
 }
