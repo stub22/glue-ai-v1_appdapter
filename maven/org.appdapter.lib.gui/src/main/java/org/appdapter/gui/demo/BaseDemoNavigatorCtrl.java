@@ -96,6 +96,7 @@ abstract public class BaseDemoNavigatorCtrl implements BrowserPanelGUI, org.appd
 	}
 
 	private void setupBrowsePanel() {
+		Utility.initGUIInThread();
 		myBP = new BrowsePanel(myTM, myBoxCtx);
 		DisplayContext dc = myBP.getDisplayContext();
 		myRootBTN.setDisplayContext(dc);
