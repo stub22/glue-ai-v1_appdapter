@@ -1,0 +1,315 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.appdapter</groupId>
+		<artifactId>org.appdapter.modules.core</artifactId>
+		<version>1.1.4-SNAPSHOT</version>
+		<relativePath>../org.appdapter.modules.core/pom.xml</relativePath>
+	</parent>	
+	<packaging>bundle</packaging>
+	<artifactId>ext.bundle.jetty_osgi</artifactId>
+	<name>${project.artifactId} - OSGi Ext wrapper (PAX-WEB)</name>
+
+	<properties>
+      <pax.version>1.1.2</pax.version>
+      <pax.scope>runtime</pax.scope>
+      <!-- OUR Consumer uses 
+        <scope>runtime</scope> 
+      -->
+	</properties>
+
+
+<!--  Why has   JETTY/PAX  been crashing in my JVM with IncompatableClasses comming up as VerifyErrors? 
+
+
+  see "org.ops4j.pax.web:pax-web-extender-war:1.1.2"   below... see how it literally has (without help) volentarily pointing to incompatible classes 
+
+
+
+===================================================================================================
+
+[WARNING] Rule 0: org.apache.maven.plugins.enforcer.DependencyConvergence failed with message:
+Failed while enforcing releasability the error(s) are [
+Dependency convergence error for org.ops4j.base:ops4j-base-lang:1.2.3 paths to dependency are:
++-org.appdapter:ext.bundle.jetty_osgi:1.1.4-SNAPSHOT
+  +-org.ops4j.pax.web:pax-web-extender-war:1.1.2
+    +-org.ops4j.base:ops4j-base-lang:1.2.3
+and
++-org.appdapter:ext.bundle.jetty_osgi:1.1.4-SNAPSHOT
+  +-org.ops4j.pax.web:pax-web-extender-war:1.1.2
+    +-org.ops4j.base:ops4j-base-util-xml:1.2.3
+      +-org.ops4j.base:ops4j-base-lang:1.2.3
+and
++-org.appdapter:ext.bundle.jetty_osgi:1.1.4-SNAPSHOT
+  +-org.ops4j.pax.web:pax-web-extender-war:1.1.2
+    +-org.ops4j.base:ops4j-base-util-xml:1.2.3
+      +-org.ops4j.base:ops4j-base-util-collections:1.2.3
+        +-org.ops4j.base:ops4j-base-lang:1.2.3
+and
++-org.appdapter:ext.bundle.jetty_osgi:1.1.4-SNAPSHOT
+  +-org.ops4j.pax.web:pax-web-extender-war:1.1.2
+    +-org.ops4j.pax.swissbox:pax-swissbox-extender:1.4.0
+      +-org.ops4j.base:ops4j-base-lang:1.2.2
+and
++-org.appdapter:ext.bundle.jetty_osgi:1.1.4-SNAPSHOT
+  +-org.ops4j.pax.web:pax-web-extender-war:1.1.2
+    +-org.ops4j.pax.swissbox:pax-swissbox-tracker:1.4.0
+      +-org.ops4j.base:ops4j-base-lang:1.2.2
+and
++-org.appdapter:ext.bundle.jetty_osgi:1.1.4-SNAPSHOT
+  +-org.ops4j.pax.web:pax-web-extender-whiteboard:1.1.2
+    +-org.ops4j.base:ops4j-base-lang:1.2.3
+]
+
+
+
+=========================================================================================================
+
+CULPRITS:
+
+
+
+A) org.ops4j.base:ops4j-base-lang:1.2.3        via  org.ops4j.base:ops4j-base-util-xml:1.2.3
+
+B) org.ops4j.base:ops4j-base-lang:1.2.2        via  org.ops4j.pax.swissbox:pax-swissbox-extender:1.4.0
+
+
+
+=========================================================================================================
+
+Douglas thinks our goal using OSGi is to get as much help from it's tools as possible.. 
+
+
+
+*) Not just let OSGi bandaid this wound.. We'll take care of ourselves. 
+
+* ) We will let OSGi solve problems we  couldnt foresee
+
+
+Why is  PAX-WEB (already bundled ) gettign an Ext?!    
+
+
+18 files currenty have these ~60 lines boilerplated and need to be fixed 
+
+
+He'd suggest agsinst replacing those 18 (acrossed 4 separately hosted projects) times ~80 lines  .. but instead with..
+
+
+   <!== Our PAX-JETTY service ==>
+     <dependency>
+         <groupId>org.appdapter</groupId>
+         <artifactId>ext.bundle.jetty_osgi</artifactId>
+         <version>${appdapter.version}</version>
+         <scope>runtime</scope>
+     </dependency>
+
+
+  Readable and simple
+
+  And makes replacing our webserver in future as easy as editing this file 
+
+-->
+
+
+	<dependencies>
+
+      <!--  include the version  of "ops4j-base-lang we want .. higher number ? -->
+      <dependency>
+        <groupId>org.ops4j.base</groupId>
+        <artifactId>ops4j-base-lang</artifactId>
+        <version>1.2.3</version>
+        <scope>${pax.scope}</scope>
+      </dependency>
+     
+      <!-- Get the "pax-swissbox-core" we need .. since we are going to hide it below ? -->
+      <dependency>
+        <groupId>org.ops4j.pax.swissbox</groupId>
+        <artifactId>pax-swissbox-core</artifactId>
+        <version>1.4.0</version>
+        <scope>${pax.scope}</scope>
+        <exclusions>
+          <exclusion>
+            <artifactId>ops4j-base-lang</artifactId>
+            <groupId>org.ops4j.base</groupId>
+            <!-- hide  1.2.2 -->
+          </exclusion>
+        </exclusions>
+      </dependency>
+
+      <dependency>
+            <!-- This is a big honking hunk of code, but so far is working better than trying
+                to mix-and-match our own version of Jetty + PAX.
+            -->
+          <groupId>org.ops4j.pax.web</groupId>
+          <artifactId>pax-web-jetty-bundle</artifactId>
+            <version>${pax.version}</version>
+            <scope>${pax.scope}</scope>
+        </dependency>
+        <dependency>
+            <!--  		http://team.ops4j.org/wiki/display/paxweb/WAR+Extender
+            "Once installed the war extender will watch over the bundles that get started / stopped. 
+            Once your war bundle gets deployed and started, the war extender will parse your web.xml 
+            and registers all elements with http service."
+            -->
+
+            <groupId>org.ops4j.pax.web</groupId>
+            <artifactId>pax-web-extender-war</artifactId>
+            <version>${pax.version}</version>
+            <scope>${pax.scope}</scope>
+            <exclusions>
+              <exclusion>
+                <groupId>org.ops4j.base</groupId>
+                <artifactId>ops4j-base-lang</artifactId>
+              </exclusion>
+              <exclusion>
+                <artifactId>ops4j-base-lang</artifactId>
+                <groupId>org.ops4j.base</groupId>
+                <!-- hide  both 1.2.2  - 1.2.3 -->
+              </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <!--  We do not use JSP technology, but apparently pax-web-jsp is needed, to resolve:
+                org.ops4j.pax.web.pax-web-jetty-bundle imports (package=org.eclipse.jdt.core.compiler)
+            -->			
+            <groupId>org.ops4j.pax.web</groupId>
+            <artifactId>pax-web-jsp</artifactId>
+            <version>${pax.version}</version>
+            <scope>${pax.scope}</scope>
+        </dependency>
+
+
+        <dependency>
+            <!-- What exactly is this one doing for us? -->
+            <groupId>org.ops4j.pax.web</groupId>
+            <artifactId>pax-web-extender-whiteboard</artifactId>
+            <version>${pax.version}</version>
+            <scope>${pax.scope}</scope>
+        </dependency> 
+
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<version>2.3.7</version>
+				<extensions>true</extensions>
+				<configuration>
+					<instructions>
+						<Import-Package>*</Import-Package>
+                        <Export-Package/>
+                        <!-- The bundles we depend on are good enough, we don't need to do any exporting -->
+					</instructions>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>
+
+<!--
+ /*
+ *  Copyright 2013 by The Appdapter Project (www.appdapter.org).
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+
+ * <p> Jetty Runner : Embedded Jetty Tool for running webapps directly <p>
+ *
+ *
+ * @since 1.1.4
+ * @author logicmoo
+ * @version 0.0.1
+ */
+-->
+    <!--
+        <dependency>
+          <groupId>activesoap</groupId>
+          <artifactId>jaxb-xalan</artifactId>
+          <version>1.5</version>
+        </dependency>
+
+      <dependency>
+        <groupId>org.apache.servicemix.bundles</groupId>
+        <artifactId>org.apache.servicemix.bundles.jaxp-ri</artifactId>
+        <version>1.4.2_1</version>
+      </dependency>
+
+     <dependency>
+    	<groupId>com.sun.xml.parsers</groupId>
+    	<artifactId>jaxp-ri</artifactId>
+    	<version>1.4.5</version>
+    </dependency>
+
+      <dependency>
+      <groupId>org.ow2.jonas.osgi</groupId>
+      <artifactId>jaxp-ri</artifactId>
+      <version>5.1.0-M2</version>
+    </dependency> 
+
+      <dependency>
+        <groupId>jaxen</groupId>
+        <artifactId>jaxen</artifactId>
+        <version>full</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.jdom</groupId>
+        <artifactId>saxpath</artifactId>
+        <version>1.0-FCS</version>
+      </dependency>
+
+      <dependency>
+          <groupId>org.apache.xbean</groupId>
+          <artifactId>xbean-finder-shaded</artifactId>
+          <version>3.14</version>
+      </dependency>
+
+
+    <dependency>
+        <groupId>org.ops4j.pax.web</groupId>
+        <artifactId>pax-web-runtime</artifactId>
+        <version>${pax.ver}</version>
+        <scope>runtime</scope>
+    </dependency>
+
+   <dependency>
+        <groupId>org.ops4j.pax.web</groupId>
+        <artifactId>pax-web-jetty</artifactId>
+        <version>${pax.ver}</version>
+        <scope>runtime</scope>
+   /dependency>
+
+
+   <dependency>
+            <groupId>org.eclipse.jetty.aggregate</groupId>
+            <artifactId>jetty-all-server</artifactId>
+            <version>8.1.13.v20130916</version>
+            <scope>compile</scope>
+   /dependency>
+
+
+        <dependency>
+            <artifactId>org.friendularity.spec.connection</artifactId>
+            <groupId>org.friendularity</groupId>
+            <version>${project.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>servlet-api</artifactId>
+                    <groupId>org.mortbay.jetty</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+-->
