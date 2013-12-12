@@ -90,42 +90,7 @@ central repo.
 	</dependencies>
 	
 	<build>
-		<!--
-	  <sourceDirectory>src/main/scala</sourceDirectory>
-	  <testSourceDirectory>src/test/scala</testSourceDirectory>
-		-->
 		<plugins>
-			<plugin>
-				<groupId>org.scala-tools</groupId>
-				<artifactId>maven-scala-plugin</artifactId>
-				<version>2.15.2</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>compile</goal>
-							<!-- Not currently using any tests
-							<goal>testCompile</goal>
-							--> 
-						</goals>
-						<configuration>
-
-							<!--			This works for compiling, but not for displaying the source folders in Netbeans.
-											So we are instead using SVN externals to create a tree in Maven-preferred form.
-														<sourceDir>../../src_scala</sourceDir>
-														<sourceDir>../../src_java</sourceDir>
-							-->
-						</configuration>
-						
-					</execution>
-				</executions>
-			</plugin>
-
-			<!--
-		 <plugin> <groupId>org.codehaus.mojo</groupId> <artifactId>build-helper-maven-plugin</artifactId> 
-			<executions> <execution> <id>add-source</id> <phase>generate-sources</phase> 
-			<goals> <goal>add-source</goal> </goals> <configuration> <sources> <source>src/main/scala</source> 			
-		</sources> </configuration> </execution> </executions> </plugin> 
-			-->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
@@ -139,50 +104,12 @@ central repo.
 					<!-- If you have classpath issue like NoDefClassError,... -->
 					<!-- useManifestOnlyJar>false</useManifestOnlyJar -->
 					<includes>
-						
 						<include>**/*Test.*</include>
 						<include>**/*Suite.*</include>
 					</includes>
 				</configuration>
 			</plugin>
-
-
 		</plugins>
-		<pluginManagement>
-			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
-				<plugin>
-					<groupId>org.eclipse.m2e</groupId>
-					<artifactId>lifecycle-mapping</artifactId>
-					<version>1.0.0</version>
-					<configuration>
-						<lifecycleMappingMetadata>
-							<pluginExecutions>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>
-											org.scala-tools
-										</groupId>
-										<artifactId>
-											maven-scala-plugin
-										</artifactId>
-										<versionRange>
-											[2.15.2,)
-										</versionRange>
-										<goals>
-											<goal>compile</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore />
-									</action>
-								</pluginExecution>
-							</pluginExecutions>
-						</lifecycleMappingMetadata>
-					</configuration>
-				</plugin>
-			</plugins>
-		</pluginManagement>
 	</build>
 </project>
 <!--

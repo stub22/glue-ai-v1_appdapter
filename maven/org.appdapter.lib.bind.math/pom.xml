@@ -14,10 +14,52 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>${project.groupId}</groupId>
+            <groupId>org.appdapter</groupId>
 			<artifactId>ext.bundle.math.jscience_50SNAP</artifactId>
-			<!-- Now frozen to use version 1.0.9, so we don't have to build JScience wrapper anymore -->
-			<version>1.0.9</version>
+     
+            <!-- Freezing to the 1.0.9 version of JScience wrapper -->
+            <version>${appdapter.jscience.version}</version>
+            <!-- but dont let it use "runtime" classes that mismatch -->
+            <exclusions>
+              <!--
+              <exclusion>
+                <groupId>org.appdapter</groupId>
+                <artifactId>org.appdapter.modules.math</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>org.appdapter</groupId>
+                <artifactId>org.appdapter.modules.core</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>org.appdapter</groupId>
+                <artifactId>org.appdapter.project.root</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>*</groupId>
+                <artifactId>*</artifactId>
+              </exclusion>
+              -->
+                <exclusion>
+                    <artifactId>org.osgi.core</artifactId>
+                    <groupId>org.apache.felix</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>log4j</artifactId>
+                    <groupId>log4j</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>xercesImpl</artifactId>
+                    <groupId>xerces</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>icu4j</artifactId>
+                    <groupId>com.ibm.icu</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>slf4j-log4j12</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
+            </exclusions>    
 		</dependency>
 
 		<dependency>
