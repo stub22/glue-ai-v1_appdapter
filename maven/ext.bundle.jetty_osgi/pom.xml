@@ -11,7 +11,6 @@
 	<name>${project.artifactId} - OSGi Ext wrapper (PAX-WEB)</name>
 
 	<properties>
-      <pax.version>1.1.2</pax.version>
       <pax.scope>runtime</pax.scope>
       <!-- OUR Consumer uses 
         <scope>runtime</scope> 
