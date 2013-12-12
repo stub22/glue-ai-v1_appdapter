@@ -166,12 +166,12 @@ Version-less parent will be allowed in Maven 3.1.
 
 		<plugins>
 
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-gpg-plugin</artifactId>
-			</plugin>
+		  <!--plugin>
+			  <groupId>org.apache.maven.plugins</groupId>
+			  <artifactId>maven-gpg-plugin</artifactId>
+		  </plugin-->
 
-			<plugin>
+		  <plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 			</plugin>
@@ -343,6 +343,35 @@ Version-less parent will be allowed in Maven 3.1.
 			</plugins>
 		</pluginManagement>
 	</build>
+
+     <profile>
+       <id>release-sign-artifacts</id>
+         <activation>
+           <property>
+            <name>performRelease</name>
+             <value>true</value>
+           </property>
+       </activation>
+       <build>
+         <plugins>
+          <plugin>
+             <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-gpg-plugin</artifactId>
+                 <version>1.4</version>
+                  <executions>
+                     <execution>
+                      <id>sign-artifacts</id>
+                       <phase>verify</phase>
+                       <goals>
+                         <goal>sign</goal>
+                       </goals>
+                    </execution>
+                 </executions>
+             </plugin>
+         </plugins>
+       </build>
+     </profile>
+
 </project>
 <!--
 /*
