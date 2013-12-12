@@ -32,18 +32,35 @@
 			<version>3.9</version>
 			<!-- For all these POI inputs, we are exporting the contents, so we don't want the dep to propagate -->
 			<scope>provided</scope>
+            <exclusions>
+            <exclusion>
+                <artifactId>commons-codec</artifactId>
+                <groupId>commons-codec</groupId>
+            </exclusion></exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>ooxml-schemas</artifactId>
 			<version>1.0</version>
 			<scope>provided</scope>
+            <exclusions>
+              <exclusion>
+                <artifactId>xmlbeans</artifactId>
+                <groupId>org.apache.xmlbeans</groupId>
+              </exclusion>
+            </exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi-ooxml-schemas</artifactId>
 			<version>3.9</version>
 			<scope>provided</scope>
+            <exclusions>
+              <exclusion>
+                <artifactId>xmlbeans</artifactId>
+                <groupId>org.apache.xmlbeans</groupId>
+              </exclusion>
+            </exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.poi</groupId>
@@ -68,6 +85,14 @@
 			<scope>runtime</scope>
 			<exclusions>
 				<exclusion>
+                  <artifactId>commons-logging</artifactId>
+                  <groupId>commons-logging</groupId>
+              </exclusion>
+              <exclusion>
+                  <artifactId>commons-codec</artifactId>
+                  <groupId>commons-codec</groupId>
+              </exclusion>
+              <exclusion>
 					<artifactId>xmlbeans</artifactId>
 					<groupId>org.apache.xmlbeans</groupId>
 				</exclusion>

@@ -80,7 +80,7 @@
                 <dependency>
                     <groupId>org.apache.felix</groupId>
                     <artifactId>org.apache.felix.main</artifactId>
-                    <version>4.0.3</version>
+                    <version>4.2.1</version>
                     <scope>provided</scope>
                 </dependency>
                 <!-- To include a shell:
@@ -158,7 +158,7 @@
                 <dependency>
                     <groupId>org.apache.felix</groupId>
                     <artifactId>org.apache.felix.main</artifactId>
-                    <version>4.0.3</version>
+                    <version>4.2.1</version>
                     <scope>provided</scope>
                 </dependency>
                 <!-- org.apache.felix:org.apache.felix.gogo.shell:0.6.1 useless from Maven since stdin is swallowed -->

@@ -15,6 +15,14 @@
 	
 	http://repo1.maven.org/maven2/org/sonatype/oss/oss-parent/7/oss-parent-7.pom
 	-->
+<!-- #IF LIVEPROFILER
+    <parent>
+      <groupId>base.buildall</groupId>
+          <artifactId>developer_workspace.root</artifactId>
+          <relativePath>../buildhrkpom.xml</relativePath>
+          <version>1.0.0-SNAPSHOT</version>
+      </parent>
+#FI LIVEPROFILER -->
 	<parent>
 		<groupId>org.sonatype.oss</groupId>
 		<artifactId>oss-parent</artifactId>
@@ -49,19 +57,24 @@ Version-less parent will be allowed in Maven 3.1.
 	<modules>
 		<module>maven/org.appdapter.modules.all</module>	
 	</modules>
-	<properties>
-            <!-- Override this property in a profile to use different targets
-            See pattern suggested at:  
-            http://stackoverflow.com/questions/1005407/can-i-move-maven2-target-folder-to-another-device
-            -->
-		<my.build.directory>target</my.build.directory>
-	</properties>	
 	
 <!--
 	connection - used for read access to Maven (e.g. for svn-update)
 	developerConnection - requires a write-access connection (e.g. for svn-commit)
 	url - human-browsable view of SVN
 -->
+
+	<properties>
+	  <appdapter.msg.version>1.0.5</appdapter.msg.version>
+		<osgi.core.version>4.2.0</osgi.core.version>
+		<maven.compiler.source>1.6</maven.compiler.source>
+		<maven.compiler.target>1.6</maven.compiler.target>
+		<encoding>UTF-8</encoding>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<netbeans.hint.license>appdapter-apache20</netbeans.hint.license>
+		<scala.version>2.10.2</scala.version>
+	</properties>	
+
 	
 	<scm>
 		<connection>scm:svn:https://subversion.assembla.com/svn/appdapter/trunk/</connection>
@@ -69,7 +82,6 @@ Version-less parent will be allowed in Maven 3.1.
 		<url>https://www.assembla.com/code/appdapter/subversion/nodes/trunk/</url>
 	</scm>
 	<build>
-		<directory>${my.build.directory}</directory>
 		<pluginManagement>
 			<plugins>
 				<plugin>
@@ -115,8 +127,24 @@ Version-less parent will be allowed in Maven 3.1.
 		
 			</plugins>
 		</pluginManagement>
-		<plugins>
-
-		</plugins>
+		<plugins/>
 	</build>
 </project>
+<!--
+/*
+ *  Copyright 2013 by The Appdapter Project (www.appdapter.org).
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+-->
+
