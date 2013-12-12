@@ -102,6 +102,14 @@
 					<artifactId>slf4j-log4j12</artifactId>
 					<groupId>org.slf4j</groupId>
 				</exclusion>
+                <exclusion>
+                     <artifactId>slf4j-api</artifactId>
+                     <groupId>org.slf4j</groupId>
+                 </exclusion>
+                <exclusion>
+                     <artifactId>jcl-over-slf4j</artifactId>
+                     <groupId>org.slf4j</groupId>
+                 </exclusion>
 			</exclusions>
 		</dependency>
 
@@ -115,6 +123,18 @@
 					<artifactId>log4j</artifactId>
 					<groupId>log4j</groupId>
 				</exclusion>
+              <exclusion>
+                  <artifactId>slf4j-log4j12</artifactId>
+                  <groupId>org.slf4j</groupId>
+              </exclusion>
+              <exclusion>
+                   <artifactId>slf4j-api</artifactId>
+                   <groupId>org.slf4j</groupId>
+               </exclusion>
+              <exclusion>
+                   <artifactId>jcl-over-slf4j</artifactId>
+                   <groupId>org.slf4j</groupId>
+               </exclusion>
 			</exclusions>
 		</dependency>
 
@@ -133,6 +153,19 @@
 			  <artifactId>log4j</artifactId>
 			  <groupId>log4j</groupId>
 			 </exclusion>
+                <exclusion>
+                    <artifactId>slf4j-log4j12</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
+                <exclusion>
+                     <artifactId>slf4j-api</artifactId>
+                     <groupId>org.slf4j</groupId>
+                 </exclusion>
+                <exclusion>
+                     <artifactId>jcl-over-slf4j</artifactId>
+                     <groupId>org.slf4j</groupId>
+                 </exclusion>
+
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -145,6 +178,18 @@
 					<artifactId>log4j</artifactId>
 					<groupId>log4j</groupId>
 				</exclusion>
+              <exclusion>
+                  <artifactId>slf4j-log4j12</artifactId>
+                  <groupId>org.slf4j</groupId>
+              </exclusion>
+              <exclusion>
+                   <artifactId>slf4j-api</artifactId>
+                   <groupId>org.slf4j</groupId>
+               </exclusion>
+              <exclusion>
+                   <artifactId>jcl-over-slf4j</artifactId>
+                   <groupId>org.slf4j</groupId>
+               </exclusion>
 			</exclusions>
 		</dependency>
 
@@ -185,6 +230,15 @@
 					<artifactId>slf4j-log4j12</artifactId>
 					<groupId>org.slf4j</groupId>
 				</exclusion>
+                <exclusion>
+                     <artifactId>slf4j-api</artifactId>
+                     <groupId>org.slf4j</groupId>
+                 </exclusion>
+                <exclusion>
+                     <artifactId>jcl-over-slf4j</artifactId>
+                     <groupId>org.slf4j</groupId>
+                 </exclusion>
+
 			</exclusions>
 		</dependency>
 
@@ -300,24 +354,7 @@
 			<version>${jena.version}</version>
 			<classifier>sources</classifier>
 			<scope>provided</scope>
-		 <exclusions>
-		  <exclusion>
-
-		   <artifactId>httpclient</artifactId>
-		   <groupId>org.apache.httpcomponents</groupId>
-		  </exclusion>
-		 </exclusions>
 		</dependency>
-
-		<dependency>
-			<groupId>org.apache.jena</groupId>
-			<artifactId>jena-arq</artifactId>
-			<version>${jena.version}</version>
-			<classifier>javadoc</classifier>
-			<scope>provided</scope>
-		</dependency>
--->		
-<!--
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-core</artifactId>
@@ -326,15 +363,6 @@
 			<scope>provided</scope>
 		</dependency>
 
-		<dependency>
-			<groupId>org.apache.jena</groupId>
-			<artifactId>jena-core</artifactId>
-			<version>${jena.version}</version>
-			<classifier>javadoc</classifier>
-			<scope>provided</scope>
-		</dependency>
--->		
-<!--
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-tdb</artifactId>
@@ -342,17 +370,6 @@
 			<classifier>sources</classifier>
 			<scope>provided</scope>			
 		</dependency>
-
-		<dependency>
-			<groupId>org.apache.jena</groupId>
-			<artifactId>jena-tdb</artifactId>
-			<version>${jena-tdb.version}</version>
-			<classifier>javadoc</classifier>
-			<scope>provided</scope>
-		</dependency>
-
--->
-<!--
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-sdb</artifactId>
@@ -360,16 +377,6 @@
 			<classifier>sources</classifier>
 			<scope>provided</scope>
 		</dependency>
-
-		<dependency>
-			<groupId>org.apache.jena</groupId>
-			<artifactId>jena-sdb</artifactId>
-			<version>${jena-sdb.version}</version>
-			<classifier>javadoc</classifier>
-			<scope>provided</scope>
-		</dependency>
--->
-<!--
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-iri</artifactId>
@@ -378,3 +385,4 @@
 			<scope>provided</scope>
 		</dependency>
 -->       
+
