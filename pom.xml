@@ -343,7 +343,7 @@ Version-less parent will be allowed in Maven 3.1.
 			</plugins>
 		</pluginManagement>
 	</build>
-
+   <profiles>
      <profile>
        <id>release-sign-artifacts</id>
          <activation>
@@ -371,7 +371,7 @@ Version-less parent will be allowed in Maven 3.1.
          </plugins>
        </build>
      </profile>
-
+	</profiles>
 </project>
 <!--
 /*
