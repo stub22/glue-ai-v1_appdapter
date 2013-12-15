@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.List;
 
-import org.apache.jena.atlas.lib.Lib;
 import org.appdapter.core.debug.NoLeakThreadLocal;
 
 public class AggregateConverter implements Converter {
@@ -169,9 +168,18 @@ public class AggregateConverter implements Converter {
 		}
 
 		public int hashCode() {
-			return Lib.hashCodeObject(car()) ^ Lib.hashCodeObject(cdr()) << 1;
+			return hashCodeObject(car()) ^ hashCodeObject(cdr()) << 1;
 		}
-
+	    /** HashCode - allow nulls */
+	    public static final int hashCodeObject(Object obj) { return hashCodeObject(obj, -4) ; }
+	    
+	    /** HashCode - allow nulls */
+	    public static final int hashCodeObject(Object obj, int nullHashCode)
+	    {
+	        if ( obj == null )
+	            return nullHashCode ; 
+	        return obj.hashCode() ;
+	    }
 		public boolean equals(Object other) {
 			if (this == other)
 				return true;
