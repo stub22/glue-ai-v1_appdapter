@@ -472,7 +472,7 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 	 *
 	 * @param event The {@code FrameworkEvent} object.
 	 */
-	final public void frameworkEvent(FrameworkEvent fe) {
+	public void frameworkEvent(FrameworkEvent fe) {
 		int eventType = fe.getType();
 		if (eventType == FrameworkEvent.STARTED) {
 			getLogger().info("********  OSGi Framework has STARTED, calling dispatchFrameworkStartedEvent()");
