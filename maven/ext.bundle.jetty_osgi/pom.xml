@@ -11,6 +11,7 @@
 	<name>${project.artifactId} - OSGi Ext wrapper (PAX-WEB)</name>
 
 	<properties>
+	  <pax.version>1.1.2</pax.version>
       <pax.scope>runtime</pax.scope>
       <!-- OUR Consumer uses 
         <scope>runtime</scope> 
@@ -108,19 +109,17 @@ He'd suggest agsinst replacing those 18 (acrossed 4 separately hosted projects) 
   And makes replacing our webserver in future as easy as editing this file 
 
 -->
+      <dependencies>
 
-
-	<dependencies>
-
-      <!--  include the version  of "ops4j-base-lang we want .. higher number ? -->
+      <!--  include the version  of "ops4j-base-lang we want .. higher number ?
       <dependency>
         <groupId>org.ops4j.base</groupId>
         <artifactId>ops4j-base-lang</artifactId>
         <version>1.2.3</version>
-        <scope>${pax.scope}</scope>
-      </dependency>
+        <scope>provided</scope>
+      </dependency> -->
      
-      <!-- Get the "pax-swissbox-core" we need .. since we are going to hide it below ? -->
+      <!-- Get the "pax-swissbox-core" we need .. since we are going to hide it below ?
       <dependency>
         <groupId>org.ops4j.pax.swissbox</groupId>
         <artifactId>pax-swissbox-core</artifactId>
@@ -130,11 +129,10 @@ He'd suggest agsinst replacing those 18 (acrossed 4 separately hosted projects) 
           <exclusion>
             <artifactId>ops4j-base-lang</artifactId>
             <groupId>org.ops4j.base</groupId>
-            <!-- hide  1.2.2 -->
           </exclusion>
         </exclusions>
       </dependency>
-
+ 	-->
       <dependency>
             <!-- This is a big honking hunk of code, but so far is working better than trying
                 to mix-and-match our own version of Jetty + PAX.
@@ -144,6 +142,7 @@ He'd suggest agsinst replacing those 18 (acrossed 4 separately hosted projects) 
             <version>${pax.version}</version>
             <scope>${pax.scope}</scope>
         </dependency>
+
         <dependency>
             <!--  		http://team.ops4j.org/wiki/display/paxweb/WAR+Extender
             "Once installed the war extender will watch over the bundles that get started / stopped. 
@@ -155,7 +154,7 @@ He'd suggest agsinst replacing those 18 (acrossed 4 separately hosted projects) 
             <artifactId>pax-web-extender-war</artifactId>
             <version>${pax.version}</version>
             <scope>${pax.scope}</scope>
-            <exclusions>
+            <!--exclusions>
               <exclusion>
                 <groupId>org.ops4j.base</groupId>
                 <artifactId>ops4j-base-lang</artifactId>
@@ -163,9 +162,8 @@ He'd suggest agsinst replacing those 18 (acrossed 4 separately hosted projects) 
               <exclusion>
                 <artifactId>ops4j-base-lang</artifactId>
                 <groupId>org.ops4j.base</groupId>
-                <!-- hide  both 1.2.2  - 1.2.3 -->
               </exclusion>
-            </exclusions>
+            </exclusions-->
         </dependency>
 
         <dependency>
