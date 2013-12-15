@@ -20,7 +20,7 @@
 		<artifactId>oss-parent</artifactId>
 		<version>7</version>
 	</parent>	
-	
+
 <!--
 http://stackoverflow.com/questions/3684664/maven-property-substitution-not-done-for-project-version-tag-of-pom/3685248#3685248
 
@@ -77,8 +77,8 @@ Version-less parent will be allowed in Maven 3.1.
 		<osgi.core.version>4.2.0</osgi.core.version>
 		<httpclient.version>4.3.1</httpclient.version>
 		<httpcore.version>4.3</httpcore.version>
-		<osgi.core.version>4.2.0</osgi.core.version>
-		<pax.version>1.1.2</pax.version>
+		<osgi.core.version>4.2.0</osgi.core.version>		
+		<avro.version>1.7.4</avro.version>
 		<scala.version>2.10.2</scala.version>
 		<slf4j.version>1.7.5</slf4j.version>
 		<jscience.groupId>org.jscience</jscience.groupId>
@@ -196,10 +196,10 @@ Version-less parent will be allowed in Maven 3.1.
 				<artifactId>maven-antrun-plugin</artifactId>
 			</plugin>
 
-			<plugin>
+			<!--plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-enforcer-plugin</artifactId>
-			</plugin>
+			</plugin-->
 
 			<!--plugin>
 					<groupId>org.apache.felix</groupId>
@@ -226,25 +226,27 @@ Version-less parent will be allowed in Maven 3.1.
 					</configuration>
 				</plugin>
 
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-enforcer-plugin</artifactId>
-					<version>1.3.1</version>
-					<executions>
-						<execution>
-							<id>enforce</id>
-							<configuration>
-								<rules>
-									<DependencyConvergence>
-									</DependencyConvergence>
-								</rules>
-							</configuration>
-							<goals>
-								<goal>enforce</goal>
-							</goals>
-						</execution>
-					</executions>
-				</plugin>
+			  <!--
+              <plugin>
+                 <groupId>org.apache.maven.plugins</groupId>
+                 <artifactId>maven-enforcer-plugin</artifactId>
+                 <version>1.3.1</version>
+                 <executions>
+                   <execution>
+                       <id>enforce</id>
+                       <configuration>
+                         <rules>
+                           <DependencyConvergence>
+                           </DependencyConvergence>
+                         </rules>
+                       </configuration>
+                       <goals>
+                         <goal>enforce</goal>
+                       </goals>
+					   </execution>
+                 </executions>
+               </plugin>
+			  -->
 
 				<plugin>
 					<groupId>org.scala-tools</groupId>
