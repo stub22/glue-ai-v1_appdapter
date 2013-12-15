@@ -570,7 +570,7 @@ public abstract class Debuggable extends BasicDebugger {
 			return false;
 		if (isTesting())
 			return false;
-		if (true // change this to true if you dare
+		if (false // change this to true if you dare
 		)
 			return false;
 		return true;
