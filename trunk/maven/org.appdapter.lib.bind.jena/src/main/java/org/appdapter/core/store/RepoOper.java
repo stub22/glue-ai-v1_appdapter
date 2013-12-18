@@ -16,15 +16,15 @@
 package org.appdapter.core.store;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -487,8 +487,11 @@ public class RepoOper implements AnyOper, UtilClass {
 			dirModel = ((Repo.WithDirectory) boundRepo).getDirectoryModel();
 		}
 		if (true) {
-			File f = File.createTempFile("foo", "");
-			saveRepoAsManyTTLs("loaded_" + f.getName() + "_cache/", dirModel, ds, false);
+			String rname = new SimpleDateFormat("YYYYMMddHHmm_ss_SSS").format(new Date());
+			String dir = "loaded_" + rname + "/";
+			String csiURI = dirModel.getNsPrefixURI("csi");
+			Node fileRepoName = dirModel.getResource(csiURI + "filerepo_" + rname).asNode();
+			saveRepoAsManyTTLs(fileRepoName, dir, dirModel, ds, false);
 			return;
 		}
 
@@ -502,22 +505,33 @@ public class RepoOper implements AnyOper, UtilClass {
 		writeToTTL(repoName, thiz, dirModel, ds, ow);
 	}
 
-	public static void saveRepoAsManyTTLs(String dir, Model dirModel, Dataset ds, boolean dontChangeDir) throws IOException {
+	public static void saveRepoAsManyTTLs(Node fileRepoName, String dir, Model dirModel, Dataset ds, boolean dontChangeDir) throws IOException {
 		new File(dir).mkdir();
-		Node googSheet = NodeFactory.createURI("ccrt:GoogSheet");
-		Node fileModel = NodeFactory.createURI("ccrt:FileModel");
-		Node fileRepo = NodeFactory.createURI("ccrt:FileRepo");
-		Node googSheetRepo = NodeFactory.createURI("ccrt:GoogSheetRepo");
-		Node repo = NodeFactory.createURI("crrt:repo");
+		String ccrtNS = dirModel.getNsPrefixURI("ccrt");
+		String frtURI = dirModel.getNsPrefixURI("frt");
+		Node googSheet = dirModel.getResource(ccrtNS + "GoogSheet").asNode();
+		Node fileModel = dirModel.getResource(ccrtNS + "FileModel").asNode();
+		Node fileRepo = dirModel.getResource(ccrtNS + "FileRepo").asNode();
+		Node googSheetRepo = dirModel.getResource(ccrtNS + "GoogSheetRepo").asNode();
+		Node repo = dirModel.createProperty(frtURI, "repo").asNode();
 		Node rdftype = RDF.type.asNode();
-		Node sourcePath = NodeFactory.createURI("ccrt:sourcePath");
+		Node sourcePath = dirModel.createProperty(frtURI, "sourcePath").asNode();
 
 		Iterator<Node> dni = ds.asDatasetGraph().listGraphNodes();
 		Model defaultModel = ds.getDefaultModel();
-		String defaultName = null;
 		Node defaultURI = null;
-		Node fileRepoName = NodeFactory.createAnon();
+
 		Graph dirGraph = dirModel.getGraph();
+
+		if (dirModel != null) {
+			File file = new File(dir, dontChangeDir ? "dir.ttl" : "dir.old");
+			PrintWriter ow = new PrintWriter(file);
+			ow.println("\n");
+			dirModel.write(ow, "TTL");
+			ow.println("\n");
+			ow.println("# modelSize=" + dirModel.size() + "\n\n");
+			ow.close();
+		}
 		if (!dontChangeDir) {
 			dirGraph.remove(fileRepoName, sourcePath, Node.ANY);
 			dirGraph.add(new Triple(fileRepoName, sourcePath, NodeFactory.createLiteral(dir)));
@@ -526,40 +540,43 @@ public class RepoOper implements AnyOper, UtilClass {
 		while (dni.hasNext()) {
 			Node gname = dni.next();
 			String name = gname.getLocalName();
-			String filename = new File(dir, name) + ".ttl";
-			if (!dontChangeDir) {
-				dirGraph.remove(gname, rdftype, googSheetRepo);
-				dirGraph.remove(gname, rdftype, googSheet);
-				dirGraph.remove(gname, sourcePath, Node.ANY);
-				dirGraph.add(new Triple(gname, repo, fileModel));
-				dirGraph.add(new Triple(gname, sourcePath, NodeFactory.createLiteral(filename)));
-			}
-			Writer ow = new OutputStreamWriter(new FileOutputStream(new File(filename)));
-			ow.write("# modelName=" + gname + "\n");
-			ow.write(bar);
+			String filename = name + ".ttl";
+			PrintWriter ow = new PrintWriter(new File(dir, filename));
+			ow.println("# modelName=" + gname);
 			Model m = ds.getNamedModel(gname.toString());
 			if (m == defaultModel) {
 				defaultURI = gname;
+				ow.println("# isDefaultModel\n");
 			}
-			m.write(ow,"TTL");
-			ow.write("# modelSize=" + m.size() + "\n");
-			ow.write("\n\n");
+			if (!dontChangeDir) {
+				dirGraph.remove(gname, rdftype, googSheetRepo);
+				dirGraph.remove(gname, rdftype, googSheet);
+				//NodeIterator foo = 
+				// dirModel.listObjectsOfProperty(dirModel.createResource(gname.getURI()), dirModel.createProperty(sourcePath.getURI()));
+				dirGraph.remove(gname, sourcePath, Node.ANY);
+				dirGraph.add(new Triple(gname, repo, fileRepoName));
+				dirGraph.add(new Triple(gname, rdftype, fileModel));
+				dirGraph.add(new Triple(gname, sourcePath, NodeFactory.createLiteral(filename)));
+			}
+			ow.println("\n");
+			m.write(ow, "TTL");
+			ow.println("\n");
+			ow.println("# modelSize=" + m.size() + "\n\n");
 			ow.close();
 		}
-		if (dirModel != null) {
-			File file = new File(dir, "dir.ttl");
-			Writer ow = new OutputStreamWriter(new FileOutputStream(file));
-			ow.write("# load this with..  Repo repo = new UrlRepoSpec(\"" + file.toURL() + "\").makeRepo(); ");
-			ow.write("# dirModel = " + dirModel.size() + "\n");
-			if (defaultURI != null) {
-				ow.write("# defualtModel = " + defaultURI + "\n");
-			}
-			ow.flush();
-			dirModel.write(ow, "TTL");
 
-			/*
-			ow.write(thiz + " a ccrt:DirectoryModel. \n");
-			ow.write("\n\n");*/
+		if (dirModel != null && !dontChangeDir) {
+			File file = new File(dir, "dir.ttl");
+			PrintWriter ow = new PrintWriter(file);
+			ow.println("# load this with..  Repo repo = new UrlRepoSpec(\"" + file.toURL() + "\").makeRepo();\n");
+			ow.println("# dirModel = " + dirModel.size());
+			if (defaultURI != null) {
+				ow.println("# defualtModel = " + defaultURI);
+			}
+			ow.println("\n");
+			ModelFactory.createModelForGraph(dirGraph).write(ow, "TTL");
+			ow.println("\n");
+			ow.println("# modelSize=" + dirModel.size() + "\n\n");
 			ow.close();
 		}
 	}
