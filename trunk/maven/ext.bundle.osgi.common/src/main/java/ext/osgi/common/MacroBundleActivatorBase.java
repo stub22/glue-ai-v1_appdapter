@@ -683,7 +683,7 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 							return;
 						hasDispatchedFrameworkStartedEvent = true;
 					}
-					handleFrameworkStartedEvent(m_context);
+					handleFrameworkStartedEvent(bc);
 				}
 			} catch (Exception e) {
 				getLogger().error("handleFrameworkStartedEvent " + e, e);
