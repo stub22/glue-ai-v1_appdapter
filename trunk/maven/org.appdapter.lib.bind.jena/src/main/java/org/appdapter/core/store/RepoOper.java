@@ -487,7 +487,7 @@ public class RepoOper implements AnyOper, UtilClass {
 			dirModel = ((Repo.WithDirectory) boundRepo).getDirectoryModel();
 		}
 		if (true) {
-			String rname = new SimpleDateFormat("YYYYMMddHHmm_ss_SSS").format(new Date());
+			String rname = new SimpleDateFormat("yyyyMMddHH_mmss_SSS").format(new Date());
 			String dir = "loaded_" + rname + "/";
 			String csiURI = dirModel.getNsPrefixURI("csi");
 			Node fileRepoName = dirModel.getResource(csiURI + "filerepo_" + rname).asNode();
