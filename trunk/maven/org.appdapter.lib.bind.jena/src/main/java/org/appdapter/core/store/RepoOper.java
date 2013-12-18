@@ -541,7 +541,7 @@ public class RepoOper implements AnyOper, UtilClass {
 			if (m == defaultModel) {
 				defaultURI = gname;
 			}
-			m.write(ow);
+			m.write(ow,"TTL");
 			ow.write("# modelSize=" + m.size() + "\n");
 			ow.write("\n\n");
 			ow.close();
