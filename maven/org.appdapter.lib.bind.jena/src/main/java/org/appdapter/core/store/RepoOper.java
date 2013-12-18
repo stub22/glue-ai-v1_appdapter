@@ -16,10 +16,11 @@
 package org.appdapter.core.store;
 
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -32,7 +33,6 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.appdapter.api.trigger.AnyOper;
-import org.appdapter.core.convert.NoSuchConversionException;
 import org.appdapter.core.debug.UIAnnotations.UIHidden;
 import org.appdapter.core.debug.UIAnnotations.UtilClass;
 import org.appdapter.core.log.Debuggable;
@@ -44,6 +44,10 @@ import org.appdapter.trigger.bind.jena.TriggerImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.hp.hpl.jena.graph.Graph;
+import com.hp.hpl.jena.graph.Node;
+import com.hp.hpl.jena.graph.NodeFactory;
+import com.hp.hpl.jena.graph.Triple;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.query.DatasetFactory;
 import com.hp.hpl.jena.rdf.listeners.StatementListener;
@@ -54,6 +58,7 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.shared.Lock;
 import com.hp.hpl.jena.shared.PrefixMapping;
+import com.hp.hpl.jena.vocabulary.RDF;
 
 // import com.hp.hpl.jena.query.DataSource;
 
@@ -65,36 +70,42 @@ import com.hp.hpl.jena.shared.PrefixMapping;
 public class RepoOper implements AnyOper, UtilClass {
 	@UISalient
 	static public interface ISeeToString {
-		@Override @UISalient(MenuName = "Call ToString") public String toString();
+		@Override
+		@UISalient(MenuName = "Call ToString")
+		public String toString();
 	}
 
 	@UISalient
 	static public interface ReloadableDataset {
 
-		@UISalient(MenuName = "Reload Repo") void reloadAllModels();
+		@UISalient(MenuName = "Reload Repo")
+		void reloadAllModels();
 
-		@UISalient() void reloadSingleModel(String modelName);
+		@UISalient()
+		void reloadSingleModel(String modelName);
 
-		@UISalient(ToValueMethod = "toString") Dataset getMainQueryDataset();
+		@UISalient(ToValueMethod = "toString")
+		Dataset getMainQueryDataset();
 
 		/**
 		 * Causes a repo to replace its mainQueryDataset with the 'ds' param
-		 *
-		 *  To switch from a file repo to a database repo
-		 *
-		 *     ReloadableDataset myRepo = new URLRepoSpec("myturtle.ttl").makeRepo();
-		 *
-		 *     Dataset old = myRepo.mainQueryDataset();
-		 *
-		 *     Dataset newDs = SDB.store();
-		 *
-		 *
-		 *
-		 *
+		 * 
+		 * To switch from a file repo to a database repo
+		 * 
+		 * ReloadableDataset myRepo = new URLRepoSpec("myturtle.ttl").makeRepo();
+		 * 
+		 * Dataset old = myRepo.mainQueryDataset();
+		 * 
+		 * Dataset newDs = SDB.store();
+		 * 
+		 * 
+		 * 
+		 * 
 		 * @param ds
 		 * @return
 		 */
-		@UISalient(ToValueMethod = "toString") void setMyMainQueryDataset(Dataset ds);
+		@UISalient(ToValueMethod = "toString")
+		void setMyMainQueryDataset(Dataset ds);
 	}
 
 	// static class ConcBootstrapTF extends
@@ -112,7 +123,8 @@ public class RepoOper implements AnyOper, UtilClass {
 			m_repo = repo;
 		}
 
-		@Override public void fire(RB targetBox) {
+		@Override
+		public void fire(RB targetBox) {
 			String resolvedQueryURL = DemoResources.QUERY_PATH;
 			ClassLoader optCL = getClass().getClassLoader();
 			if (targetBox != null) {
@@ -139,7 +151,8 @@ public class RepoOper implements AnyOper, UtilClass {
 			m_repo = repo;
 		}
 
-		@Override public void fire(RB targetBox) {
+		@Override
+		public void fire(RB targetBox) {
 			m_repo.reloadSingleModel(graphURI);
 		}
 	}
@@ -151,7 +164,8 @@ public class RepoOper implements AnyOper, UtilClass {
 	@UISalient
 	public static boolean isMergeDefault = true;
 
-	@UISalient public static void replaceModelElements(Model dest, Model src) {
+	@UISalient
+	public static void replaceModelElements(Model dest, Model src) {
 		if (src == dest) {
 			return;
 		}
@@ -163,7 +177,8 @@ public class RepoOper implements AnyOper, UtilClass {
 		///dest.setNsPrefix("#", src.getNsPrefixURI("#"));
 	}
 
-	@UISalient public static void replaceModelElements(Model dest, Model src, Resource unionOrReplace) {
+	@UISalient
+	public static void replaceModelElements(Model dest, Model src, Resource unionOrReplace) {
 		if (src == dest) {
 			return;
 		}
@@ -238,7 +253,8 @@ public class RepoOper implements AnyOper, UtilClass {
 		final Map<String, Model> constits = new HashMap();
 		loaderModel.register(new StatementListener() {
 
-			@Override public void addedStatement(Statement arg0) {
+			@Override
+			public void addedStatement(Statement arg0) {
 				System.out.println("Adding statement: " + arg0);
 				String subjStr = "" + arg0.getSubject();
 				if (subjStr.equals("self")) {
@@ -462,22 +478,90 @@ public class RepoOper implements AnyOper, UtilClass {
 	static private String bar = "########################################\n";
 
 	public static void writeToTTL(Repo boundRepo, Writer ow) throws IOException {
+
 		String repoName = "" + boundRepo;
 		Dataset ds = boundRepo.getMainQueryDataset();
 		String thiz = "<_:self>";
-
-		ow.write("# reponame=" + repoName + "\n");
-		ow.write("# time=" + new Date().toString() + "\n");
 		Model dirModel = null;
 		if (boundRepo instanceof Repo.WithDirectory) {
 			dirModel = ((Repo.WithDirectory) boundRepo).getDirectoryModel();
 		}
+		if (true) {
+			File f = File.createTempFile("foo", "");
+			saveRepoAsManyTTLs("loaded_" + f.getName() + "_cache/", dirModel, ds, false);
+			return;
+		}
+
+		ow.write("# reponame=" + repoName + "\n");
+		ow.write("# time=" + new Date().toString() + "\n");
 		/*if (dirModel == null) {
 			dirModel = ModelFactory.createDefaultModel();
 		}
 		String modelName = addNamedModel("", dirModel);
 		*/
 		writeToTTL(repoName, thiz, dirModel, ds, ow);
+	}
+
+	public static void saveRepoAsManyTTLs(String dir, Model dirModel, Dataset ds, boolean dontChangeDir) throws IOException {
+		new File(dir).mkdir();
+		Node googSheet = NodeFactory.createURI("ccrt:GoogSheet");
+		Node fileModel = NodeFactory.createURI("ccrt:FileModel");
+		Node fileRepo = NodeFactory.createURI("ccrt:FileRepo");
+		Node googSheetRepo = NodeFactory.createURI("ccrt:GoogSheetRepo");
+		Node repo = NodeFactory.createURI("crrt:repo");
+		Node rdftype = RDF.type.asNode();
+		Node sourcePath = NodeFactory.createURI("ccrt:sourcePath");
+
+		Iterator<Node> dni = ds.asDatasetGraph().listGraphNodes();
+		Model defaultModel = ds.getDefaultModel();
+		String defaultName = null;
+		Node defaultURI = null;
+		Node fileRepoName = NodeFactory.createAnon();
+		Graph dirGraph = dirModel.getGraph();
+		if (!dontChangeDir) {
+			dirGraph.remove(fileRepoName, sourcePath, Node.ANY);
+			dirGraph.add(new Triple(fileRepoName, sourcePath, NodeFactory.createLiteral(dir)));
+			dirGraph.add(new Triple(fileRepoName, rdftype, fileRepo));
+		}
+		while (dni.hasNext()) {
+			Node gname = dni.next();
+			String name = gname.getLocalName();
+			String filename = new File(dir, name) + ".ttl";
+			if (!dontChangeDir) {
+				dirGraph.remove(gname, rdftype, googSheetRepo);
+				dirGraph.remove(gname, rdftype, googSheet);
+				dirGraph.remove(gname, sourcePath, Node.ANY);
+				dirGraph.add(new Triple(gname, repo, fileModel));
+				dirGraph.add(new Triple(gname, sourcePath, NodeFactory.createLiteral(filename)));
+			}
+			Writer ow = new OutputStreamWriter(new FileOutputStream(new File(filename)));
+			ow.write("# modelName=" + gname + "\n");
+			ow.write(bar);
+			Model m = ds.getNamedModel(gname.toString());
+			if (m == defaultModel) {
+				defaultURI = gname;
+			}
+			m.write(ow);
+			ow.write("# modelSize=" + m.size() + "\n");
+			ow.write("\n\n");
+			ow.close();
+		}
+		if (dirModel != null) {
+			File file = new File(dir, "dir.ttl");
+			Writer ow = new OutputStreamWriter(new FileOutputStream(file));
+			ow.write("# load this with..  Repo repo = new UrlRepoSpec(\"" + file.toURL() + "\").makeRepo(); ");
+			ow.write("# dirModel = " + dirModel.size() + "\n");
+			if (defaultURI != null) {
+				ow.write("# defualtModel = " + defaultURI + "\n");
+			}
+			ow.flush();
+			dirModel.write(ow, "TTL");
+
+			/*
+			ow.write(thiz + " a ccrt:DirectoryModel. \n");
+			ow.write("\n\n");*/
+			ow.close();
+		}
 	}
 
 	public static void writeToTTL(String repoName, String thiz, Model dirModel, Dataset ds, Writer ow) throws IOException {
@@ -563,7 +647,8 @@ public class RepoOper implements AnyOper, UtilClass {
 		final PrefixMapping nsMap = loaderModel;
 		loaderModel.register(new StatementListener() {
 
-			@Override public void addedStatement(Statement arg0) {
+			@Override
+			public void addedStatement(Statement arg0) {
 
 				System.out.println("Adding statement: " + arg0);
 				String subjStr = "" + arg0.getSubject();
