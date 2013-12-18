@@ -53,6 +53,7 @@ import com.hp.hpl.jena.query.DatasetFactory;
 import com.hp.hpl.jena.rdf.listeners.StatementListener;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.NodeIterator;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
@@ -509,10 +510,11 @@ public class RepoOper implements AnyOper, UtilClass {
 		new File(dir).mkdir();
 		String ccrtNS = dirModel.getNsPrefixURI("ccrt");
 		String frtURI = dirModel.getNsPrefixURI("frt");
+		Node fileRepo = dirModel.getResource(ccrtNS + "FileRepo").asNode();		
 		Node googSheet = dirModel.getResource(ccrtNS + "GoogSheet").asNode();
 		Node fileModel = dirModel.getResource(ccrtNS + "FileModel").asNode();
-		Node fileRepo = dirModel.getResource(ccrtNS + "FileRepo").asNode();
-		Node googSheetRepo = dirModel.getResource(ccrtNS + "GoogSheetRepo").asNode();
+		Node xlsxSheet = dirModel.getResource(ccrtNS + "XlsxSheet").asNode();
+		Node csvSheet = dirModel.getResource(ccrtNS + "CsvFileSheet").asNode();
 		Node repo = dirModel.createProperty(frtURI, "repo").asNode();
 		Node rdftype = RDF.type.asNode();
 		Node sourcePath = dirModel.createProperty(frtURI, "sourcePath").asNode();
@@ -549,11 +551,13 @@ public class RepoOper implements AnyOper, UtilClass {
 				ow.println("# isDefaultModel\n");
 			}
 			if (!dontChangeDir) {
-				dirGraph.remove(gname, rdftype, googSheetRepo);
+				dirGraph.remove(gname, rdftype, xlsxSheet);
+				dirGraph.remove(gname, rdftype, csvSheet);
 				dirGraph.remove(gname, rdftype, googSheet);
 				//NodeIterator foo = 
 				// dirModel.listObjectsOfProperty(dirModel.createResource(gname.getURI()), dirModel.createProperty(sourcePath.getURI()));
 				dirGraph.remove(gname, sourcePath, Node.ANY);
+				dirGraph.remove(gname, repo, Node.ANY);
 				dirGraph.add(new Triple(gname, repo, fileRepoName));
 				dirGraph.add(new Triple(gname, rdftype, fileModel));
 				dirGraph.add(new Triple(gname, sourcePath, NodeFactory.createLiteral(filename)));
