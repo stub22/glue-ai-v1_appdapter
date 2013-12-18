@@ -290,9 +290,9 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 		Dataset wDataset = myMainQueryDataset;
 		try {
 			isLoadingFinished = true;
-			RepoOper.writeToTTL(this, new FileWriter("finishedLoading.ttl"));
+			if (Debuggable.isTesting())
+				RepoOper.writeToTTL(this, new FileWriter("finishedLoading.ttl"));
 		} catch (IOException e) {
-
 			e.printStackTrace();
 		}
 
