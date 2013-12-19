@@ -63,7 +63,7 @@ class MatrixRowCSV(val myRowArr: Array[String]) extends MatrixRow {
       if ((colVal == null) || (colVal.length() == 0)) {
         None;
       } else {
-        Some(colVal);
+        Some(colVal.trim());
       }
     }
   }
