@@ -30,7 +30,9 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.appdapter.api.trigger.AnyOper;
 import org.appdapter.core.debug.UIAnnotations.UIHidden;
@@ -53,12 +55,12 @@ import com.hp.hpl.jena.query.DatasetFactory;
 import com.hp.hpl.jena.rdf.listeners.StatementListener;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.NodeIterator;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.shared.Lock;
 import com.hp.hpl.jena.shared.PrefixMapping;
+import com.hp.hpl.jena.sparql.graph.GraphFactory;
 import com.hp.hpl.jena.vocabulary.RDF;
 
 // import com.hp.hpl.jena.query.DataSource;
@@ -508,13 +510,19 @@ public class RepoOper implements AnyOper, UtilClass {
 
 	public static void saveRepoAsManyTTLs(Node fileRepoName, String dir, Model dirModel, Dataset ds, boolean dontChangeDir) throws IOException {
 		new File(dir).mkdir();
+
 		String ccrtNS = dirModel.getNsPrefixURI("ccrt");
 		String frtURI = dirModel.getNsPrefixURI("frt");
-		Node fileRepo = dirModel.getResource(ccrtNS + "FileRepo").asNode();		
-		Node googSheet = dirModel.getResource(ccrtNS + "GoogSheet").asNode();
+		Node fileRepo = dirModel.getResource(ccrtNS + "FileRepo").asNode();
 		Node fileModel = dirModel.getResource(ccrtNS + "FileModel").asNode();
-		Node xlsxSheet = dirModel.getResource(ccrtNS + "XlsxSheet").asNode();
-		Node csvSheet = dirModel.getResource(ccrtNS + "CsvFileSheet").asNode();
+		Set<Node> sheetTypes = new HashSet<Node>();
+		sheetTypes.add(fileModel);
+		sheetTypes.add(dirModel.getResource(ccrtNS + "GoogSheet").asNode());
+		sheetTypes.add(dirModel.getResource(ccrtNS + "XlsxSheet").asNode());
+		sheetTypes.add(dirModel.getResource(ccrtNS + "CsvFileSheet").asNode());
+		Set<Node> sheetTypesToLocalize = new HashSet<Node>();
+		sheetTypesToLocalize.addAll(sheetTypes);
+		sheetTypesToLocalize.add(fileModel);
 		Node repo = dirModel.createProperty(frtURI, "repo").asNode();
 		Node rdftype = RDF.type.asNode();
 		Node sourcePath = dirModel.createProperty(frtURI, "sourcePath").asNode();
@@ -523,9 +531,9 @@ public class RepoOper implements AnyOper, UtilClass {
 		Model defaultModel = ds.getDefaultModel();
 		Node defaultURI = null;
 
-		Graph dirGraph = dirModel.getGraph();
-
-		if (dirModel != null) {
+		Graph dirqGraph = dirModel.getGraph();
+		{
+			// letting dir models advertise all namespaces
 			File file = new File(dir, dontChangeDir ? "dir.ttl" : "dir.old");
 			PrintWriter ow = new PrintWriter(file);
 			ow.println("\n");
@@ -534,38 +542,36 @@ public class RepoOper implements AnyOper, UtilClass {
 			ow.println("# modelSize=" + dirModel.size() + "\n\n");
 			ow.close();
 		}
-		if (!dontChangeDir) {
-			dirGraph.remove(fileRepoName, sourcePath, Node.ANY);
-			dirGraph.add(new Triple(fileRepoName, sourcePath, NodeFactory.createLiteral(dir)));
-			dirGraph.add(new Triple(fileRepoName, rdftype, fileRepo));
-		}
+		Graph newGraph = GraphFactory.createGraphMem();
+
+		newGraph.add(new Triple(fileRepoName, sourcePath, NodeFactory.createLiteral(dir)));
+		newGraph.add(new Triple(fileRepoName, rdftype, fileRepo));
 		while (dni.hasNext()) {
 			Node gname = dni.next();
 			String name = gname.getLocalName();
 			String filename = name + ".ttl";
 			PrintWriter ow = new PrintWriter(new File(dir, filename));
-			ow.println("# modelName=" + gname);
 			Model m = ds.getNamedModel(gname.toString());
+			for (Triple was : dirqGraph.find(gname, rdftype, Node.ANY).toList()) {
+				if (!sheetTypes.contains(was.getObject())) {
+					newGraph.add(was);
+				}
+				//NodeIterator foo = 
+				// dirModel.listObjectsOfProperty(dirModel.createResource(gname.getURI()), dirModel.createProperty(sourcePath.getURI()));
+				newGraph.add(new Triple(gname, repo, fileRepoName));
+				newGraph.add(new Triple(gname, rdftype, fileModel));
+				newGraph.add(new Triple(gname, sourcePath, NodeFactory.createLiteral(filename)));
+			}
+			ow.println("\n");
+			writeModelOnlyReferncedNamespace(ow, m, dirModel);
+			ow.println("\n");
+			ow.println("# modelName=" + gname);
+			ow.println("# modelSize=" + m.size() + "\n\n");
 			if (m == defaultModel) {
 				defaultURI = gname;
 				ow.println("# isDefaultModel\n");
 			}
-			if (!dontChangeDir) {
-				dirGraph.remove(gname, rdftype, xlsxSheet);
-				dirGraph.remove(gname, rdftype, csvSheet);
-				dirGraph.remove(gname, rdftype, googSheet);
-				//NodeIterator foo = 
-				// dirModel.listObjectsOfProperty(dirModel.createResource(gname.getURI()), dirModel.createProperty(sourcePath.getURI()));
-				dirGraph.remove(gname, sourcePath, Node.ANY);
-				dirGraph.remove(gname, repo, Node.ANY);
-				dirGraph.add(new Triple(gname, repo, fileRepoName));
-				dirGraph.add(new Triple(gname, rdftype, fileModel));
-				dirGraph.add(new Triple(gname, sourcePath, NodeFactory.createLiteral(filename)));
-			}
-			ow.println("\n");
-			m.write(ow, "TTL");
-			ow.println("\n");
-			ow.println("# modelSize=" + m.size() + "\n\n");
+
 			ow.close();
 		}
 
@@ -573,16 +579,43 @@ public class RepoOper implements AnyOper, UtilClass {
 			File file = new File(dir, "dir.ttl");
 			PrintWriter ow = new PrintWriter(file);
 			ow.println("# load this with..  Repo repo = new UrlRepoSpec(\"" + file.toURL() + "\").makeRepo();\n");
-			ow.println("# dirModel = " + dirModel.size());
-			if (defaultURI != null) {
-				ow.println("# defualtModel = " + defaultURI);
-			}
 			ow.println("\n");
-			ModelFactory.createModelForGraph(dirGraph).write(ow, "TTL");
+			Model m = ModelFactory.createDefaultModel();
+			m.setNsPrefixes(dirModel);
+			m.add(ModelFactory.createModelForGraph(newGraph));
+			m.write(ow, "TTL");
 			ow.println("\n");
 			ow.println("# modelSize=" + dirModel.size() + "\n\n");
+			ow.println("# dirModel = " + dirModel.size());
+			if (defaultURI != null) {
+				ow.println("# defaultModel = " + defaultURI);
+			}
 			ow.close();
 		}
+	}
+
+	private static void writeModelOnlyReferncedNamespace(PrintWriter ow, Model m, PrefixMapping pm) {
+		Model m2 = ModelFactory.createDefaultModel();
+		List<Statement> stmts = m.listStatements().toList();
+		Set<String> usedNS = new HashSet<String>(m.listNameSpaces().toList());
+
+		for (Statement stmt : stmts) {
+			String ns = stmt.getSubject().getNameSpace();
+			if (ns != null) {
+				usedNS.add(ns);
+			}
+		}
+		for (String ns : usedNS) {
+			String prefix = m.getNsURIPrefix(ns);
+			if (prefix == null)
+				prefix = pm.getNsURIPrefix(ns);
+			if (prefix == null) {
+				continue;
+			}
+			m2.setNsPrefix(prefix, ns);
+		}
+		m2.add(m);
+		m2.write(ow, "TTL");
 	}
 
 	public static void writeToTTL(String repoName, String thiz, Model dirModel, Dataset ds, Writer ow) throws IOException {
