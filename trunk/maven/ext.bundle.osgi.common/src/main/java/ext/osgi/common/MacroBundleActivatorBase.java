@@ -15,6 +15,7 @@
  */
 package ext.osgi.common;
 
+import java.io.PrintStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,7 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Note:  Macro bundles are *not* required to use this class
+ * Note: Macro bundles are *not* required to use this class
  */
 
 public abstract class MacroBundleActivatorBase implements BundleActivator, FrameworkListener {
@@ -200,6 +201,7 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 		int LAUNCHING = 80;
 		int LAUNCHING_COMPLETE = 90;
 		int RUNNING = 90;
+		int RUNNING_COMPLETE = 100;
 	}
 
 	public int bundleBootPhase = BootPhaseConst.UNSTARTED;
@@ -209,7 +211,7 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 
 	final public static MacroStartupSettings macroStartupSettings = new MacroStartupSettings();
 
-	static public class MacroStartupSettings {
+	static public class MacroStartupSettings implements BootPhaseConst {
 
 		public boolean flagTrue(String key) {
 			return hasSetting(key) && sameValue(getSetting(key), Boolean.TRUE);
@@ -222,14 +224,65 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 		public BundleActivator firstBundleActivatorBase = null;
 		public Map settingsMap = new HashMap();
 		public List<String> servicesBegun = new ArrayList<String>();
+
 		public List<String> servicesMissing = new ArrayList<String>();
 		public List<String> servicesDisabled = new ArrayList<String>();
+		public List<String> servicesKnown = new ArrayList<String>();
+
+		private void addServiceName(String key) {
+			key = toKeyCase(key);
+			if (!servicesKnown.contains(key))
+				servicesKnown.add(key);
+		}
 
 		public void putSetting(String key, Object value) {
 			key = toKeyCase(key);
 			synchronized (settingsMap) {
 				settingsMap.put(key, value);
+				if (value instanceof Boolean) {
+					setServiceEnabled(key, (boolean) (Boolean) value);
+				}
 			}
+		}
+
+		public void setServiceEnabled(String key, boolean b) {
+			key = toKeyCase(key);
+			if (b) {
+				if (servicesDisabled.remove(key)) {
+					servicesBegun.remove(key);
+				}
+			} else {
+				servicesDisabled.add(key);
+			}
+
+		}
+
+		public String getProperty(Bundle bundle, String defult, String... tryFrom) {
+			boolean blankString = false;
+			BundleContext context = null;
+			if (bundle != null) {
+				context = bundle.getBundleContext();
+			}
+			for (String s : tryFrom) {
+
+				String args = null;
+				if (bundle != null) {
+					args = context.getProperty(s);
+				}
+				if (args != null) {
+					if (args.length() == 0) {
+						blankString = true;
+						continue;
+					}
+					return args;
+				}
+				Object oargs = getSetting(s);
+				if (oargs != null)
+					return "" + oargs;
+			}
+			if (blankString)
+				return "";
+			return defult;
 		}
 
 		public <T> T getSetting(String key) {
@@ -243,7 +296,7 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 			return (T) settingsMap.get(key2);
 		}
 
-		public boolean doRun(String key) {
+		public boolean isEnabled(String key) {
 			key = toKeyCase(key);
 			if (servicesDisabled.contains(key)) {
 				return false;
@@ -264,7 +317,7 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 			return true;
 		}
 
-		public boolean dontRun(String key) {
+		public boolean isDisabledOrAlreadyRunning(String key) {
 			key = toKeyCase(key);
 			if (servicesBegun.contains(key)) {
 				return true;
@@ -324,10 +377,10 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 			synchronized (servicesBegun) {
 				if (servicesBegun.contains(keyString))
 					return;
-				if (dontRun(keyString)) {
+				if (isDisabledOrAlreadyRunning(keyString)) {
 					System.err.println("-------------Skipping (dontRun) " + keyString);
 				}
-				if (!doRun(keyString)) {
+				if (!isEnabled(keyString)) {
 					System.err.println("---------Skipping (!doRun) " + keyString);
 					return;
 				}
@@ -352,11 +405,11 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 			}
 		}
 
-		public void launchPhases() {
+		public void raiseToPhase(int top) {
 			boolean runAgain = true;
 			while (runAgain) {
 				runAgain = false;
-				for (int phaseAt = 0; phaseAt < 100; phaseAt++) {
+				for (int phaseAt = 0; phaseAt < top; phaseAt++) {
 					List<TodoItem> todos = getPhaseTodo(phaseAt, false);
 					if (todos == null || todos.size() == 0)
 						continue;
@@ -368,8 +421,13 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 			}
 		}
 
+		public void launchPhases() {
+			raiseToPhase(BootPhaseConst.RUNNING_COMPLETE);
+		}
+
 		public void addMacroService(int bootPhase, String key, Runnable value) {
 			key = toKeyCase(key);
+			addServiceName(key);
 			synchronized (macroStartupSettings) {
 				getPhaseTodo(bootPhase).add(asTodoItem(key, value));
 			}
@@ -401,6 +459,62 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 				}
 			});
 
+		}
+
+		public void printMacroStateInfo(PrintStream ps, BundleContext bc) {
+			if (false) {
+				Bundle[] bundles = bc.getBundles();
+				for (Bundle b : bundles) {
+					ps.println(b.getBundleId() + ": " + toBundleStateString(b.getState()) + " " + getBundleName(b));
+				}
+			}
+			List<String> names = new ArrayList<String>(servicesBegun);
+			names.addAll(servicesDisabled);
+			names.addAll(servicesMissing);
+			synchronized (settingsMap) {
+				names.addAll(settingsMap.keySet());
+			}
+			for (String n : names) {
+				String status = "";
+				String value = getProperty(null, null, n);
+				if (servicesBegun.contains(n)) {
+					status += " %BEGUN";
+				}
+				if (servicesDisabled.contains(n)) {
+					status += " %DISABLED";
+				}
+				if (servicesMissing.contains(n)) {
+					status += " %MISSING";
+				}
+				if (status == "") {
+					status = " %WAITING";
+				}
+				if (value == null)
+					value = "";
+				ps.println(n + "=" + value + status);
+			}
+		}
+
+		/**
+		 * Return a String representation of a bundle state
+		 */
+		public static String toBundleStateString(int state) {
+			switch (state) {
+			case Bundle.UNINSTALLED:
+				return "UNINSTALLED";
+			case Bundle.INSTALLED:
+				return "INSTALLED";
+			case Bundle.RESOLVED:
+				return "RESOLVED";
+			case Bundle.STARTING:
+				return "STARTING";
+			case Bundle.STOPPING:
+				return "STOPPING";
+			case Bundle.ACTIVE:
+				return "ACTIVE";
+			default:
+				return "UNKNOWN";
+			}
 		}
 
 	}
@@ -448,6 +562,22 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 				}
 			}
 		}
+		while (remove) {
+			remove = false;
+			for (String s : new String[] { "application", "app", "lifecycles", "lifecycle", "service", "services", "launcher", }) {
+				if (key.endsWith(s) && key.length() + 2 > s.length()) {
+					key = key.substring(0, key.length() - s.length());
+					remove = true;
+				}
+			}
+		}
+		key = key.replace("behaviormasterdemo", "bm");
+		key = key.replace("behaviormaster", "bm");
+		key = key.replace("behavior", "bm");
+		key = key.replace("bmd", "bm");
+		key = key.replace("configuration", "config");
+		key = key.replace("config", "conf");
+
 		key = key.replace("activator", "");
 		key = key.replace(".", "_");
 		key = key.replace("__", "_");
@@ -457,6 +587,18 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 		key = key.replace("frame", "panel");
 		key = key.replace("spanel", "panel");
 		key = key.replace("panel", "gui");
+
+		if (false) {
+			if (key.indexOf("gui") > 0) {
+				key = "gui_" + key.replace("gui", "");
+			} else if (key.indexOf("conf") > 0) {
+				key = "conf_" + key.replace("conf", "");
+			} else if (key.indexOf("launch") > 0) {
+				key = "launch_" + key.replace("launch", "");
+			} else if (!key.startsWith("launch_")) {
+				key = "launch_" + key;
+			}
+		}
 		return key;
 	}
 
@@ -469,7 +611,7 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 
 	/**
 	 * Receives notification of a general {@code FrameworkEvent} object.
-	 *
+	 * 
 	 * @param event The {@code FrameworkEvent} object.
 	 */
 	public void frameworkEvent(FrameworkEvent fe) {
@@ -502,7 +644,7 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 	 * 1) Call forceLog4JConfig() if you like Log4J logging.
 	 * 2) Call scheduleFrameworkStartEventHandler() to schedule a callback allowing you to
 	 * safely begin your application setup *after* all initial bundles have been started.
-	 *
+	 * 
 	 * @param bundleCtx
 	 * @throws Exception
 	 */
@@ -603,20 +745,33 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 		return key.getClass().getName();
 	}
 
-	/** The code in here should be moved between two methods:
-	 *
-	 *
+	static protected String getBundleName(Bundle b) {
+		String sym = b.getSymbolicName();
+		if (sym != null && sym.length() > 0) {
+			return sym;
+		}
+		sym = b.getLocation();
+		if (sym != null && sym.length() > 0) {
+			return sym;
+		}
+		return b.toString();
+	}
+
+	/**
+	 * The code in here should be moved between two methods:
+	 * 
+	 * 
 	 *  handleFrameworkStartedEvent  =
 	 *     everything has had start(.) called now
 	 *     the best time to create objects and populate fields
 	 *     hopefully the best time to win a race at setting a OSGi framework property
-	 *
+	 * 
 	 * registerServices = time to change properies and register serveices
-	 *
+	 * 
 	 *  laucheBundle =
 	 * 		everything has had handleFrameworkStartedEvent(.) called now
 	 *			use isLauncherBundle() in your code to see if you are the toplevel bundle
-	 *
+	 * 
 	 * We might go to three methods
 	 */
 	protected void registerConfig(BundleContext bundleCtx) throws Exception {
@@ -647,7 +802,7 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 
 	/**
 	 * Call this method from any bundle's start() to schedule a callback to its handleFrameworkStartedEvent() method.
-	 *
+	 * 
 	 * @param bundleCtx - used to schedule the callback, and then forgotten.
 	 */
 	final protected void scheduleFrameworkStartEventHandler(BundleContext bundleCtx) {
@@ -660,6 +815,7 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 			MacroBundleActivatorBase.macroStartupSettings.scheduleFrameworkStartEventHandler(this);
 			return;
 		}
+		bundleCtx.removeFrameworkListener(this);
 		bundleCtx.addFrameworkListener(this);
 	}
 
@@ -737,17 +893,17 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 	/**
 	 * This should usually be called only once during a system's runtime lifetime.
 	 * (To be tested:  works OK to update properties at runtime?)
-	 *
+	 * 
 	 * Prints some debug to stdout about known classloaders, then builds a URL using the
 	 * *local* CL of this concrete class (which will be *your* class is you make subtypes
 	 * of BasicDebugger or BundleActivatorBase!) to create a resource URL into the classpath
 	 * (under OSGi, the bundle-classpath-of) of that concrete class, which under OSGi will
 	 * look something like:
-	 *
-	 *  bundle://221.0:1/log4j.properties
-	 *
+	 * 
+	 * bundle://221.0:1/log4j.properties
+	 * 
 	 * ...which is then passed to Log4jFuncs.forceLog4jConfig.
-	 *
+	 * 
 	 * What this means is that you can put a log4j.properties into any bundle of your own,
 	 * then call "forceLog4jConfig()" ONCE from that bundle's activator (or framework-START-event
 	 * handler), and then your properties should be in place.
