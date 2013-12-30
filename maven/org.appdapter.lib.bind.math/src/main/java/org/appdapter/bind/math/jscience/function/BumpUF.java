@@ -16,7 +16,8 @@
 package org.appdapter.bind.math.jscience.function;
 
 /**
- *
+ * See  http://en.wikipedia.org/wiki/Bump_function
+ * 
  * @author Stu B. <www.texpedient.com>
  */
 public interface BumpUF <DomainType, RangeType>
