@@ -19,6 +19,7 @@ import org.appdapter.gui.api.NamedObjectCollection;
 import org.appdapter.gui.api.POJOCollectionListener;
 import org.appdapter.gui.api.ScreenBoxTreeNode;
 import org.appdapter.gui.box.ScreenBoxTreeNodeImpl;
+import org.appdapter.gui.demo.UISettings;
 import org.appdapter.gui.swing.CantankerousJob;
 
 public class AddToTreeListener implements POJOCollectionListener {
@@ -41,13 +42,19 @@ public class AddToTreeListener implements POJOCollectionListener {
 		col = ctx;
 		this.root = root;
 		this.organizeIntoClasses = organizeIntoClasses;
-		Utility.invokeAfterLoader(new Runnable() {
+		if (UISettings.isOverzealousHunter()) {
+			Utility.invokeAfterLoader(new Runnable() {
 
-			@Override public void run() {
-				addboxes(col);
-				col.addListener(AddToTreeListener.this, false);
-			}
-		});
+				@Override public void run() {
+					addboxes(col);
+					col.addListener(AddToTreeListener.this, false);
+				}
+
+				@Override public String toString() {
+					return "AddToTreeListener.addListener " + col;
+				}
+			});
+		}
 	}
 
 	public void selectInTree(Object anyObject) {

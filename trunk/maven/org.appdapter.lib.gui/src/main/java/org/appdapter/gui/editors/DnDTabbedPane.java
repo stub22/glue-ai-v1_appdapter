@@ -51,7 +51,7 @@ import org.appdapter.gui.swing.JTabbedPaneWithCloseIcons;
 
 import com.jidesoft.swing.JideTabbedPane;
 
-public class DnDTabbedPane extends JideTabbedPane {
+public class DnDTabbedPane extends JTabbedPane {
 	public static final long serialVersionUID = 1L;
 	private static final int LINEWIDTH = 3;
 	private static final String NAME = "TabTransferData";
@@ -466,7 +466,9 @@ public class DnDTabbedPane extends JideTabbedPane {
 
 	/**
 	 * returns potential index for drop.
-	 * @param a_point point given in the drop site component's coordinate
+	 * 
+	 * @param a_point
+	 *            point given in the drop site component's coordinate
 	 * @return returns potential index for drop.
 	 */
 	private int getTargetTabIndex(Point a_point) {
@@ -510,7 +512,7 @@ public class DnDTabbedPane extends JideTabbedPane {
 		if (sourceIndex < 0) {
 			return;
 		} // if
-		  //Save the tab's component, title, and TabComponent.
+			//Save the tab's component, title, and TabComponent.
 		Component cmp = source.getComponentAt(sourceIndex);
 		String str = source.getTitleAt(sourceIndex);
 		Component tcmp = source.getTabComponentAt(sourceIndex);
