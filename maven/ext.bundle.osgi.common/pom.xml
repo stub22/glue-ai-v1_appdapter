@@ -23,6 +23,13 @@
 			<!-- TODO:  Are we ready for 4.3? -->
             <version>${osgi.core.version}</version>		
         </dependency>
+        
+        <dependency>
+		  <groupId>org.jflux</groupId>
+		  <artifactId>org.jflux.api.core</artifactId>
+		  <version>0.1.8-SNAPSHOT</version>
+		  <scope>compile</scope>
+		</dependency>
 		
         <dependency>
             <groupId>org.osgi</groupId>
