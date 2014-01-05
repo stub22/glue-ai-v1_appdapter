@@ -215,18 +215,15 @@ public class SparqlDatasetGraph extends DatasetGraphQuadProc implements DatasetG
 	}
 
 	public SparqlGraph createGraph(String string) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new AbstractMethodError("createGraph");
 	}
 
 	public SparqlDatasetGraph createDataset(String string) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new AbstractMethodError("createDataset");
 	}
 
 	public Dataset getRemoteDataset(String shareName) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new AbstractMethodError("getRemoteDataset");
 	}
 
 	public Dataset toDataset() {
