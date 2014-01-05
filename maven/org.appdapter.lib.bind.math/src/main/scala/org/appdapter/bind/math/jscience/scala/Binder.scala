@@ -19,7 +19,7 @@ package org.appdapter.bind.math.jscience.scala
 import org.jscience.mathematics.number.{FieldNumber, Float64};
 import org.jscience.mathematics.function.{Polynomial, RationalFunction, Term} ;
 import org.jscience.mathematics.structure.{Field};
-import org.appdapter.core.math.scala.Functor.{ConcreteInterval};
+//import org.appdapter.core.math.scala.Functor.{ConcreteInterval};
 // import org.appdapter.core.math.calculus.{Interval};
 
 import org.appdapter.bind.math.jscience.function.{PolyRatioFuncs};
