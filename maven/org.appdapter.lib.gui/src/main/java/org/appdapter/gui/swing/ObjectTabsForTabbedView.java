@@ -28,11 +28,12 @@ import com.jidesoft.swing.JideTabbedPane;
 
 public class ObjectTabsForTabbedView implements BoxPanelSwitchableView {
 
-	final JideTabbedPane tabs;
+	final JTabbedPane tabs;
+	//final JideTabbedPane jtabs;
 	final Object lock;
 	final Object rootValue;
 
-	private static void setupTabTraversalKeys(JideTabbedPane tabbedPane) {
+	private static void setupTabTraversalKeys(JTabbedPane tabbedPane) {
 		KeyStroke ctrlTab = KeyStroke.getKeyStroke("ctrl TAB");
 		KeyStroke ctrlShiftTab = KeyStroke.getKeyStroke("ctrl shift TAB");
 
@@ -52,23 +53,26 @@ public class ObjectTabsForTabbedView implements BoxPanelSwitchableView {
 		inputMap.put(ctrlShiftTab, "navigatePrevious");
 	}
 
-	public ObjectTabsForTabbedView(JideTabbedPane tbs, boolean closableTabs, Object rootValue) {
+	public ObjectTabsForTabbedView(JTabbedPane tbs, boolean closableTabs, Object rootValue) {
 		this.rootValue = rootValue;
 		lock = tbs;
+		tabs = tbs;
+		tabs.setInheritsPopupMenu(true);
+		setupTabTraversalKeys(tbs);
 		synchronized (lock) {
-			setupTabTraversalKeys(tbs);
-			JideTabbedPane myBoxPanelTabPane = tabs = tbs;
-			myBoxPanelTabPane.setBoldActiveTab(true);
-			myBoxPanelTabPane.setAutoRequestFocus(true);
-			myBoxPanelTabPane.setInheritsPopupMenu(true);
-			myBoxPanelTabPane.setShowCloseButtonOnMouseOver(false);
-			myBoxPanelTabPane.setScrollSelectedTabOnWheel(true);
-			myBoxPanelTabPane.setTabEditingAllowed(false);
+			if (tbs instanceof JideTabbedPane) {
+				JideTabbedPane myBoxPanelTabPane = (JideTabbedPane) tbs;
+				myBoxPanelTabPane.setBoldActiveTab(true);
+				myBoxPanelTabPane.setAutoRequestFocus(true);
+				myBoxPanelTabPane.setShowCloseButtonOnMouseOver(false);
+				myBoxPanelTabPane.setScrollSelectedTabOnWheel(true);
+				myBoxPanelTabPane.setTabEditingAllowed(false);
 
-			myBoxPanelTabPane.setShowCloseButton(closableTabs);
-			myBoxPanelTabPane.setUseDefaultShowCloseButtonOnTab(closableTabs);
-			myBoxPanelTabPane.setCloseTabOnMouseMiddleButton(closableTabs);
-			myBoxPanelTabPane.setShowCloseButtonOnTab(closableTabs);
+				myBoxPanelTabPane.setShowCloseButton(closableTabs);
+				myBoxPanelTabPane.setUseDefaultShowCloseButtonOnTab(closableTabs);
+				myBoxPanelTabPane.setCloseTabOnMouseMiddleButton(closableTabs);
+				myBoxPanelTabPane.setShowCloseButtonOnTab(closableTabs);
+			}
 		}
 	}
 

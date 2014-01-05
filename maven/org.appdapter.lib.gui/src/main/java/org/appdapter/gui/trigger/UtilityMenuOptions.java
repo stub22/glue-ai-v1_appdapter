@@ -47,11 +47,11 @@ abstract public class UtilityMenuOptions implements UtilClass {
 
 	protected static Logger theLogger = LoggerFactory.getLogger(UtilityMenuOptions.class);
 
-	public static boolean addPanelClasses = true;
+	public static boolean addPanelClasses = false;
 	public static boolean addGlobalStatics = true;
 	public static boolean allTriggersAreGlobal = true;
 	public static boolean useBeanIcons = false;
-	public static boolean usePropertyEditorManager = true;
+	public static boolean usePropertyEditorManager = false;
 	public static boolean separateSlowThreads = true;
 	public static boolean scanForMissingScreenBoxPanels = false;
 	public static boolean doErrorCheckScanForMissingScreenBoxPanels = false;
@@ -138,6 +138,9 @@ abstract public class UtilityMenuOptions implements UtilClass {
 						theLogger.error("With subclass " + cls + " of " + ancestor, t);
 					}
 				}
+			}
+			@Override public String toString() {
+				return "With subclassof " + ancestor + " via " + func;
 			}
 		});
 	}

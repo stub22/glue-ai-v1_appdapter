@@ -15,11 +15,11 @@ import org.appdapter.core.log.BasicDebugger;
 
 import com.hp.hpl.jena.rdf.model.Model;
 
-/** 
-  Repo loading in parallel
-  
-  LogicMoo
-*/
+/**
+ * Repo loading in parallel
+ * 
+ * LogicMoo
+ */
 public class SpecialQueue extends BasicDebugger implements UncaughtExceptionHandler {
 	public enum SheetLoadStatus {
 		Pending, Loading, Loaded, Unloading, Unloaded, Cancelling, Cancelled, Error
@@ -70,7 +70,8 @@ public class SpecialQueue extends BasicDebugger implements UncaughtExceptionHand
 		}
 	}
 
-	@Override public String toString() {
+	@Override
+	public String toString() {
 		if (false) {
 			StringBuilder sbuf = new StringBuilder();
 			int num = tasksWithsStatus(sbuf, true, SheetLoadStatus.Loaded);
@@ -98,9 +99,9 @@ public class SpecialQueue extends BasicDebugger implements UncaughtExceptionHand
 		return taskNum;
 	}
 
-	/** 
-	 Wait for the last load to happens
-	*/
+	/**
+	 * Wait for the last load to happens
+	 */
 	public void waitUntilLastJobComplete() {
 
 		int origTaskSize = 0;
@@ -126,13 +127,13 @@ public class SpecialQueue extends BasicDebugger implements UncaughtExceptionHand
 			///logError("To Early to have called waitUntilLastJobComplete");
 		}
 	}
-
+/*
 	public void addTask(Runnable r) {
 		addTask("" + r, r);
 	}
-
-	public void addTask(String sheetNameURI, Runnable r) {
-		Task task = new Task(sheetNameURI, r);
+*/
+	public void addTask(String named0, Runnable r) {
+		Task task = new Task(named0, r);
 		//synchronized (synchronousAdderLock) 
 		{
 			if (isSynchronous || taskNum < howManyTasksBeforeStartingPool) {
@@ -145,13 +146,15 @@ public class SpecialQueue extends BasicDebugger implements UncaughtExceptionHand
 				lastJobSubmitted = false;
 				logWarning("Creating executor for " + repoStr);
 				executor = Executors.newFixedThreadPool(numThreads, new ThreadFactory() {
-					@Override public Thread newThread(final Runnable r) {
+					@Override
+					public Thread newThread(final Runnable r) {
 						return new Thread("Worker " + ++workrNum + " for " + loaderFor) {
 							public void run() {
 								r.run();
 							}
 
-							@Override public UncaughtExceptionHandler getUncaughtExceptionHandler() {
+							@Override
+							public UncaughtExceptionHandler getUncaughtExceptionHandler() {
 								return SpecialQueue.this;
 							}
 						};
@@ -172,7 +175,7 @@ public class SpecialQueue extends BasicDebugger implements UncaughtExceptionHand
 
 	/** Try to sheetLoad a URL. Return true only if successful. */
 	public final class Task implements Callable<Task>, Runnable {
-		final String sheetName;
+		final String taskName;
 		final int taskNum = totalTasks++;
 		SheetLoadStatus sheetLoadStatus = SheetLoadStatus.Unloaded;
 		Future<Task> future;
@@ -180,13 +183,14 @@ public class SpecialQueue extends BasicDebugger implements UncaughtExceptionHand
 		long start = -1, end = -1;
 		Throwable lastException;
 
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			long soFar = (end == -1) ? System.currentTimeMillis() - start : end - start;
-			return "TASK-" + taskNum + ": sheet=" + sheetName + " status=" + getLoadStatus() + " msecs=" + soFar + (lastException == null ? "" : " error=" + lastException);
+			return "TASK: " + taskName + " status=" + getLoadStatus() + " msecs=" + soFar + (lastException == null ? "" : " error=" + lastException);
 		}
 
-		public Task(String sheetNameURI, Runnable r) {
-			this.sheetName = sheetNameURI;
+		public Task(String named0, Runnable r) {
+			this.taskName = named0;
 			runIt = r;
 			postLoadStatus(SheetLoadStatus.Pending, false);
 		}
@@ -196,7 +200,8 @@ public class SpecialQueue extends BasicDebugger implements UncaughtExceptionHand
 			logError(toString(), t);
 		}
 
-		@Override public void run() {
+		@Override
+		public void run() {
 			call();
 		}
 
@@ -249,7 +254,8 @@ public class SpecialQueue extends BasicDebugger implements UncaughtExceptionHand
 		}
 	}
 
-	@Override public void uncaughtException(Thread t, Throwable e) {
+	@Override
+	public void uncaughtException(Thread t, Throwable e) {
 		logError(" uncaughtException on " + t, e);
 		e.printStackTrace();
 	}

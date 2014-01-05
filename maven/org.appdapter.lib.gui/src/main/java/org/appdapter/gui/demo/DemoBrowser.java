@@ -112,6 +112,10 @@ final public class DemoBrowser implements AnyOper.Singleton {
 						mainControl.show();
 					}
 				}
+
+				@Override public String toString() {
+					return "showObject optionalName=" + optionalName + " any=" + any;
+				}
 			});
 		} catch (Throwable e) {
 			Debuggable.printStackTrace(e);
@@ -178,12 +182,13 @@ final public class DemoBrowser implements AnyOper.Singleton {
 
 	/**
 	 * Register a Trigger to places on all instances of 'cls'
+	 * 
 	 * @param cls
 	 * @param menuLabel
 	 * @param trigger
-	 *
+	 * 
 	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
-	 *
+	 * 
 	 */
 	public static EditableTrigger registerTriggerForClassInstances(Class cls, String menuLabel, Trigger trigger) {
 		return Utility.registerTriggerForClassInstances(cls, menuLabel, trigger);
@@ -191,12 +196,13 @@ final public class DemoBrowser implements AnyOper.Singleton {
 
 	/**
 	 * Register a Trigger onto a class Object
+	 * 
 	 * @param cls
 	 * @param menuLabel
 	 * @param trigger
-	 *
+	 * 
 	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
-	 *
+	 * 
 	 */
 	public static EditableTrigger registerTriggerForClass(Class cls, String menuLabel, Trigger trigger) {
 		return Utility.registerTriggerForClass(cls, menuLabel, trigger);
@@ -204,12 +210,13 @@ final public class DemoBrowser implements AnyOper.Singleton {
 
 	/**
 	 * Register a Trigger onto a class Object
+	 * 
 	 * @param cls
 	 * @param menuLabel
 	 * @param trigger
-	 *
+	 * 
 	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
-	 *
+	 * 
 	 */
 	public static EditableTrigger registerTriggerForPredicate(CallableWithParameters<Box, Boolean> predicate, String menuLabel, Trigger trigger) {
 		return Utility.registerTriggerForPredicate(predicate, menuLabel, trigger);
@@ -217,12 +224,13 @@ final public class DemoBrowser implements AnyOper.Singleton {
 
 	/**
 	 * Register a Trigger onto a class Object
+	 * 
 	 * @param cls
 	 * @param menuLabel
 	 * @param trigger
-	 *
+	 * 
 	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
-	 *
+	 * 
 	 */
 	public static EditableTrigger registerCallableForPredicate(CallableWithParameters<Box, Boolean> predicate, String menuLabel, CallableWithParameters function) {
 		return Utility.registerCallableForPredicate(predicate, menuLabel, function);
@@ -230,12 +238,13 @@ final public class DemoBrowser implements AnyOper.Singleton {
 
 	/**
 	 * Register a Factory for a Class
+	 * 
 	 * @param cls
 	 * @param menuLabel
 	 * @param trigger
-	 *
+	 * 
 	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
-	 *
+	 * 
 	 */
 	public static <T> EditableTrigger registerFactoryForClass(Class<T> cls, String menuLabel, CallableWithParameters<Class<T>, ? extends T> trigger) {
 		return Utility.registerFactoryForClass(cls, menuLabel, trigger);
@@ -243,12 +252,13 @@ final public class DemoBrowser implements AnyOper.Singleton {
 
 	/**
 	 * Register a Trigger on a specific object
+	 * 
 	 * @param cls
 	 * @param menuLabel
 	 * @param trigger
-	 *
+	 * 
 	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
-	 *
+	 * 
 	 */
 	public static EditableTrigger registerTriggerForObject(Object anyObject, String menuLabel, Trigger trigger) {
 		return Utility.registerTriggerForObject(anyObject, menuLabel, trigger);
@@ -259,10 +269,10 @@ final public class DemoBrowser implements AnyOper.Singleton {
 	}
 
 	/**
-	 *  Ensure the main instance is started
-	 *
+	 * Ensure the main instance is started
+	 * 
 	 * @param bringToFront
-	 *
+	 * 
 	 * @throws Exception
 	 */
 	public static synchronized void ensureRunning(boolean bringToFront, final String... args) throws InterruptedException {
@@ -311,6 +321,10 @@ final public class DemoBrowser implements AnyOper.Singleton {
 				Utility.invokeAfterLoader(new Runnable() {
 					@Override public void run() {
 						mainControl.show();
+					}
+
+					@Override public String toString() {
+						return "mainControl.show()";
 					}
 				});
 			}
@@ -530,7 +544,7 @@ final public class DemoBrowser implements AnyOper.Singleton {
 	/**
 	 * <code>
 	 * 	<BT extends ScreenBoxImpl<TriggerImpl<BT>>, RBT extends RepoBoxImpl<TriggerImpl<RBT>>>
-	 *		ScreenBoxContextImpl makeBCI(Class<BT> boxClass, Class<RBT> repoBoxClass) {.. }
+	 * 		ScreenBoxContextImpl makeBCI(Class<BT> boxClass, Class<RBT> repoBoxClass) {.. }
 	 * </code>
 	 */
 	public static <BTI extends TriggerImpl<BT>, BT extends ScreenBoxImpl<BTI>, RBTI extends TriggerImpl<RBT>, RBT extends RepoBoxImpl<RBTI>> ScreenBoxContextImpl makeBCI(Class<BT> boxClass,
@@ -548,19 +562,22 @@ final public class DemoBrowser implements AnyOper.Singleton {
 	// static class ConcBootstrapTF extends BootstrapTriggerFactory<TriggerImpl<BoxImpl<TriggerImpl>>> {
 	// }  //   TT extends TriggerImpl<BT>
 
-	/** Here is a humdinger of a static method, that constructs a demontration application tree
-	 *
+	/**
+	 * Here is a humdinger of a static method, that constructs a demontration application tree
+	 * 
 	 * @param <BT>
 	 * @param <RBT>
 	 * @param regBoxClass
 	 * @param repoBoxClass
-	 * @param regTrigProto - defines the BT  trigger parameter type for screen boxes.  The regTrigProto instance data is unused.
-	 * @param repoTrigProto - defines the RBT trigger parameter type for repo boxes.  The repoTrigProto instance data is unused.
+	 * @param regTrigProto
+	 *            - defines the BT trigger parameter type for screen boxes. The regTrigProto instance data is unused.
+	 * @param repoTrigProto
+	 *            - defines the RBT trigger parameter type for repo boxes. The repoTrigProto instance data is unused.
 	 * @return
 	 */
 	public static <TBT extends TriggerImpl<BT>, BT extends ScreenBoxImpl<TBT>, TRBT extends TriggerImpl<RBT>, RBT extends RepoBoxImpl<TRBT>>
 
-	ScreenBoxContextImpl makeBoxContextImpl(Class<BT> regBoxClass, Class<RBT> repoBoxClass, TriggerImpl<BT> regTrigProto, TriggerImpl<RBT> repoTrigProto, boolean isExampleCode) {
+			ScreenBoxContextImpl makeBoxContextImpl(Class<BT> regBoxClass, Class<RBT> repoBoxClass, TriggerImpl<BT> regTrigProto, TriggerImpl<RBT> repoTrigProto, boolean isExampleCode) {
 		try {
 
 			BT rootBox = (BT) DemoServiceWrapFuncs.makeTestBoxImplWithValue((Class<BT>) regBoxClass, Class.class, "All Objects");
@@ -817,6 +834,11 @@ final public class DemoBrowser implements AnyOper.Singleton {
 		return new org.appdapter.core.matdat.GoogSheetRepoSpec(BMC_SHEET_KEY, BMC_NAMESPACE_SHEET_NUM, BMC_DIRECTORY_SHEET_NUM).makeRepo();
 	}
 
+	static UISettings defaultSettings = new UISettings();
+
+	public static UISettings getSettings() {
+		return defaultSettings;
+	}
 	/*
 	public <BT extends ScreenBoxImpl> BT makeRepoChildBoxImpl(Box parentBox, Class<BT> childBoxClass, TriggerImpl trigProto, String label, Repo.WithDirectory inner) {
 		BT result = null;
