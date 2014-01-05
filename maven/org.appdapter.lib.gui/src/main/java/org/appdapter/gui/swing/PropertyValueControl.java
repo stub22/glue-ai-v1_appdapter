@@ -62,10 +62,10 @@ import com.hp.hpl.jena.shared.JenaException;
 
 import org.appdapter.gui.util.Annotations.UserInputComponent;
 
-
 @SuppressWarnings({ "serial" })
-public class PropertyValueControl extends JVPanel implements PropertyEditor, PropertyChangeListener, IValidate, GetSetObject, ValueEditor, CellEditorComponent,
-		org.appdapter.core.convert.ToFromKeyConverter<Object, String> {
+public class PropertyValueControl extends JVPanel implements PropertyEditor, PropertyChangeListener, IValidate, GetSetObject, ValueEditor, CellEditorComponent, org.appdapter.core.convert.ToFromKeyConverter<Object, String> {
+
+	Object valueLock = new Object();
 
 	/**
 	 * Displays a list of fixed values to choose from.
@@ -191,7 +191,7 @@ public class PropertyValueControl extends JVPanel implements PropertyEditor, Pro
 	 * We have this set to private since this is an inner-helper to select when to use a ObjectChoiceComboPanel
 	 * 
 	 * @author Administrator
-	 *
+	 * 
 	 */
 	static public class ObjectReferenceEditor extends GoodPropertyEditorSupport implements PropertyChangeListener {
 
@@ -355,7 +355,7 @@ public class PropertyValueControl extends JVPanel implements PropertyEditor, Pro
 	 * We have this set to private since this is an inner-helper to select when to use a ObjectChoiceComboPanel
 	 * 
 	 * @author Administrator
-	 *
+	 * 
 	 */
 	public static class RDFObjectReferenceEditor extends GoodPropertyEditorSupport implements PropertyChangeListener {
 
@@ -779,9 +779,7 @@ public class PropertyValueControl extends JVPanel implements PropertyEditor, Pro
 	}
 
 	/**
-	 * Creates an unbound PropertyValueControl of the given type. It will be
-	 * initialized to a default value, for non-primitive this is null and for
-	 * primitives it is 0, false, or whatever.
+	 * Creates an unbound PropertyValueControl of the given type. It will be initialized to a default value, for non-primitive this is null and for primitives it is 0, false, or whatever.
 	 */
 	public PropertyValueControl(DisplayContext context, String title, Class type, boolean editable) {
 		this(context, title, type, editable, null);
@@ -842,6 +840,12 @@ public class PropertyValueControl extends JVPanel implements PropertyEditor, Pro
 	}
 
 	public void bind(Object source, PropertyDescriptor property) {
+		synchronized (valueLock) {
+			bind0(source, property);
+		}
+	}
+
+	private void bind0(Object source, PropertyDescriptor property) {
 		this.property = property;
 		this.source = source;
 		Method readMethod = property.getReadMethod();
@@ -865,6 +869,12 @@ public class PropertyValueControl extends JVPanel implements PropertyEditor, Pro
 	}
 
 	public void bind(Object source, Field property) {
+		synchronized (valueLock) {
+			bind0(source, property);
+		}
+	}
+
+	private void bind0(Object source, Field property) {
 		this.field = property;
 		this.source = source;
 		type = property.getType();
@@ -875,9 +885,7 @@ public class PropertyValueControl extends JVPanel implements PropertyEditor, Pro
 	}
 
 	/**
-	 * Returns the current type of the value in this PropertyValueControl. If
-	 * there is a fixed type that will be returned instead. If the there is no
-	 * value set and no fixed type, null will be returned.
+	 * Returns the current type of the value in this PropertyValueControl. If there is a fixed type that will be returned instead. If the there is no value set and no fixed type, null will be returned.
 	 */
 	public Class getCurrentType() {
 		if (value != null)
@@ -895,10 +903,10 @@ public class PropertyValueControl extends JVPanel implements PropertyEditor, Pro
 
 	/**
 	 * Locate a value editor for a given target type.
-	 *
-	 * @param type  The Class object for the type to be edited
-	 * @return An editor object for the given target class.
-	 * The result is null if no suitable editor can be found.
+	 * 
+	 * @param type
+	 *            The Class object for the type to be edited
+	 * @return An editor object for the given target class. The result is null if no suitable editor can be found.
 	 */
 
 	private PropertyEditor getEditor(Class type, boolean editable) {
@@ -956,9 +964,7 @@ public class PropertyValueControl extends JVPanel implements PropertyEditor, Pro
 	}
 
 	/**
-	 * Returns the type of this PropertyValueControl, if there is a fixed type.
-	 * For example if this is String then this PropertyValueControl can only be
-	 * used to create and view Strings.
+	 * Returns the type of this PropertyValueControl, if there is a fixed type. For example if this is String then this PropertyValueControl can only be used to create and view Strings.
 	 */
 	public Class getFixedType() {
 		return type;
@@ -1162,12 +1168,18 @@ public class PropertyValueControl extends JVPanel implements PropertyEditor, Pro
 	}
 
 	private synchronized void recreateGUI() {
-		removeAll();
-		setLayout(new BorderLayout());
+		synchronized (valueLock) {
+			recreateGUI0();
+		}
+	}
 
+	private synchronized void recreateGUI0() {
 		if (currentEditor != null) {
 			currentEditor.removePropertyChangeListener(this);
 		}
+		removeAll();
+		setLayout(new BorderLayout());
+
 		stopListeningToSource();
 
 		currentEditor = null;
@@ -1229,9 +1241,7 @@ public class PropertyValueControl extends JVPanel implements PropertyEditor, Pro
 	}
 
 	/**
-	 * Sets the value in this PropertyValueControl to the default for the
-	 * variable type. For example if the type is String the value will be null,
-	 * if the type is int the value will be 0, etc.
+	 * Sets the value in this PropertyValueControl to the default for the variable type. For example if the type is String the value will be null, if the type is int the value will be 0, etc.
 	 */
 	public void resetValue() throws Exception {
 		Class currentType = getCurrentType();

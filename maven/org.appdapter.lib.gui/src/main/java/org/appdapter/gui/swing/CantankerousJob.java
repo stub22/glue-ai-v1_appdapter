@@ -52,6 +52,7 @@ abstract public class CantankerousJob implements Runnable {
 							CantankerousJob.this.run();
 						}
 					} catch (Throwable t) {
+						t.printStackTrace();
 						Debuggable.printStackTrace(t);
 						try {
 							Thread.sleep(10000);

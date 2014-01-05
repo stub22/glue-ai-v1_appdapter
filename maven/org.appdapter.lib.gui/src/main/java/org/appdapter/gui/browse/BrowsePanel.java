@@ -133,22 +133,25 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 	}
 
 	private void setTabbedPaneOptions() {
-		/**JIDESOFT	 */
+		if (!(myBoxPanelTabPane instanceof JideTabbedPane))
+			return;
+		/** JIDESOFT */
 		boolean closableTabs = true;
-		myBoxPanelTabPane.setBoldActiveTab(true);
-		myBoxPanelTabPane.setShowCloseButtonOnMouseOver(false);
-		myBoxPanelTabPane.setScrollSelectedTabOnWheel(true);
-		myBoxPanelTabPane.setTabEditingAllowed(false);
+		JideTabbedPane jide = (JideTabbedPane) myBoxPanelTabPane;
+		jide.setBoldActiveTab(true);
+		jide.setShowCloseButtonOnMouseOver(false);
+		jide.setScrollSelectedTabOnWheel(true);
+		jide.setTabEditingAllowed(false);
 
-		myBoxPanelTabPane.setShowCloseButton(closableTabs);
-		myBoxPanelTabPane.setUseDefaultShowCloseButtonOnTab(closableTabs);
-		myBoxPanelTabPane.setCloseTabOnMouseMiddleButton(closableTabs);
-		myBoxPanelTabPane.setShowCloseButtonOnTab(closableTabs);
+		jide.setShowCloseButton(closableTabs);
+		jide.setUseDefaultShowCloseButtonOnTab(closableTabs);
+		jide.setCloseTabOnMouseMiddleButton(closableTabs);
+		jide.setShowCloseButtonOnTab(closableTabs);
 	}
 
 	private void hookTree() {
 		ToolTipManager.sharedInstance().registerComponent(myTree);
-		/**JIDESOFT */
+		/** JIDESOFT */
 		SearchableDemo.installSearchable(myTree);
 		myTree.setCellRenderer(new StyledTreeCellRenderer() {
 
@@ -234,6 +237,10 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 		Utility.invokeAfterLoader(new Runnable() {
 			@Override public void run() {
 				setDividerLocation(0.33);
+			}
+
+			@Override public String toString() {
+				return "setDividerLocation(0.33);";
 			}
 		});
 	}
@@ -345,7 +352,10 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 
 		myBoxPanelTabPane.setAutoscrolls(true);
 		myBoxPanelTabPane.setBackground(Color.LIGHT_GRAY);
-		myBoxPanelTabPane.setBoldActiveTab(true);
+		if (myBoxPanelTabPane instanceof JideTabbedPane) {
+			JideTabbedPane jide = (JideTabbedPane) myBoxPanelTabPane;
+			jide.setBoldActiveTab(true);
+		}
 
 		myHomeBoxPanel.setInheritsPopupMenu(true);
 
@@ -383,7 +393,7 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 
 		add(myBrowserSplitPane, java.awt.BorderLayout.CENTER);
 	}// </editor-fold>
-	//GEN-END:initComponents
+		//GEN-END:initComponents
 
 	private void myCmdInputTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_myCmdInputTextFieldActionPerformed
 		// TODO add your handling code here:
@@ -412,7 +422,7 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 	//GEN-BEGIN:variables
 	// Variables declaration - do not modify
 	private javax.swing.JTextField myBoxPanelStatus;
-	private JideTabbedPane myBoxPanelTabPane;
+	private JTabbedPane myBoxPanelTabPane;
 	private javax.swing.JSplitPane myBrowserSplitPane;
 	private javax.swing.JTextField myCmdInputTextField;
 	private javax.swing.JPanel myContentPanel;
@@ -474,6 +484,11 @@ public class BrowsePanel extends javax.swing.JPanel implements IShowObjectMessag
 
 				@Override public void run() {
 					res[0] = addObjectWorker(title, anyObject, attachType, showASAP, expandChildren);
+				}
+
+				@Override public String toString() {
+					// TODO Auto-generated method stub
+					return "addObjectWorker " + title + " " + anyObject;
 				}
 
 			});

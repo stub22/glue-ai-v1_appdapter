@@ -301,7 +301,7 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 
 	 * @param wrapper
 	 * @param view
-	 * @return 
+	 * @return
 	 */
 	private JPanel asPanel(String name, Class c, Component view, Object boxed) {
 
@@ -599,6 +599,10 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 			@Override public UserResult call() throws Exception {
 				return showScreenBoxAsResult0(title, anyObject, typeWhenNull);
 			}
+
+			@Override public String toString() {
+				return "showScreenBoxAsResult0(title=" + title + ", anyObject=" + anyObject + ", typeWhenNull=" + typeWhenNull + ")";
+			}
 		});
 	}
 
@@ -683,8 +687,8 @@ public class DisplayContextUIImpl implements BrowserPanelGUI, POJOCollection {
 	/**
 	 * For objects that happen to be Components, this method can be used to
 	 * cause the object to be drawn as a component.
-	 * @return 
-	 * @throws IntrospectionException 
+	 * @return
+	 * @throws IntrospectionException
 	 */
 	private void showObjectGUI(String name, Object guiFor, Component component, boolean showASAP) {
 		showObjectGUI(name, guiFor, component, showASAP, Utility.objectWindows);

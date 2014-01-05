@@ -33,16 +33,15 @@ import org.slf4j.LoggerFactory;
 import com.jidesoft.swing.JideTabbedPane;
 
 /**
- * A panel containing a complete GUI for a object, including properties,
- * methods, etc.
+ * A panel containing a complete GUI for a object, including properties, methods, etc.
  * <p>
- *
- *
+ * 
+ * 
  */
 @SuppressWarnings("serial")
 final public class LargeObjectView<BoxType extends Box>
 
-extends ObjectView<BoxType> implements Customizer, GetSetObject, ObjectPanelHost {
+		extends ObjectView<BoxType> implements Customizer, GetSetObject, ObjectPanelHost {
 	static public abstract class TabPanelMaker implements AddTabFrames {
 
 		@Override public int hashCode() {
@@ -58,7 +57,7 @@ extends ObjectView<BoxType> implements Customizer, GetSetObject, ObjectPanelHost
 	public static Type[] EDITTYPE = new Type[] { Object.class };
 
 	protected DisplayContext context;
-	protected JideTabbedPane tabs;
+	protected DnDTabbedPane tabs;
 	//protected Object objectValue;
 	BoxPanelSwitchableView objTabs;
 
@@ -152,9 +151,9 @@ extends ObjectView<BoxType> implements Customizer, GetSetObject, ObjectPanelHost
 
 	/**
 	 * Return the live object in which we think we are updating
-	 *
+	 * 
 	 * This can be 'this' object
-	 *
+	 * 
 	 */
 	@Override public Object getValue() {
 		Object o = objectValue;
@@ -224,29 +223,26 @@ extends ObjectView<BoxType> implements Customizer, GetSetObject, ObjectPanelHost
 	}
 
 	/**
-	 * Delegates directly to setObject(...). This method is needed to conform to
-	 * the Customizer interface. */
+	 * Delegates directly to setObject(...). This method is needed to conform to the Customizer interface.
+	 */
 	public void setBean(Object obj) {
 		setObject(obj);
 	}
 
 	/**
-	 * This method is needed to conform to the Customizer interface. It doesn't
-	 * do anything yet.
+	 * This method is needed to conform to the Customizer interface. It doesn't do anything yet.
 	 */
 	@Override public void addPropertyChangeListener(PropertyChangeListener listener) {
 	}
 
 	/**
-	 * This method is needed to conform to the Customizer interface. It doesn't
-	 * do anything yet.
+	 * This method is needed to conform to the Customizer interface. It doesn't do anything yet.
 	 */
 	@Override public void removePropertyChangeListener(PropertyChangeListener listener) {
 	}
 
 	/**
-	 * Called whenever the pojo is switched. Caused the GUI to update to render
-	 * the new pojObject instead.
+	 * Called whenever the pojo is switched. Caused the GUI to update to render the new pojObject instead.
 	 */
 	@Override public void objectValueChanged(Object oldValue, Object newValue) {
 		newValue = Utility.dref(newValue);

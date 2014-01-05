@@ -53,10 +53,10 @@ public class ObjectChoiceModel extends SortedComboBoxModel implements ComboBoxMo
 		refeshComponet = comp;
 		propSupport = ps;
 		selected = valueToStart;/*new Object() {
-						@Override public String toString() {
-						return "No selected object for " + title + " of type " + type;
-						}
-						};*/
+								@Override public String toString() {
+								return "No selected object for " + title + " of type " + type;
+								}
+								};*/
 		ensureObjectValues();
 	}
 
@@ -167,9 +167,7 @@ public class ObjectChoiceModel extends SortedComboBoxModel implements ComboBoxMo
 	@Override public void pojoAdded(Object obj, BT box, Object senderCollection) {
 		if (senderCollection == this || !acceptsObject(obj))
 			return;
-		Object selected = getSelectedItem();
 		if (addItem(null, obj, true)) {
-			setSelectedItem(selected);
 			if (refeshComponet != null && false)
 				refeshComponet.invalidate();
 		}

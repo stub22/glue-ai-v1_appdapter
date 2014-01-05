@@ -2213,11 +2213,10 @@ public class Utility extends UtilityMenuOptions {
 
 	/**
 	 * Locate a value editor for a given target type.
-	 *
+	 * 
 	 * @param targetType
 	 *            The Class object for the type to be edited
-	 * @return An editor object for the given target class. The result is null
-	 *         if no suitable editor can be found.
+	 * @return An editor object for the given target class. The result is null if no suitable editor can be found.
 	 */
 	public static PropertyEditor findEditor(Class targetType, boolean canUsePEMAnager, boolean mustSupportUI, boolean mustHaveZeroArgConstrutor, Type... otherRequirments) {
 
@@ -2334,19 +2333,19 @@ public class Utility extends UtilityMenuOptions {
 		addIfNew(panelClass, findImplmentingForMatch(Component.class, targetType), false);
 		addIfNew(panelClass, findImplmentingForMatch(Object.class, targetType), false);
 		addIfNew(panelClass, makeCustomizerFromEditor(targetType), false);
-		boolean wasInClassloaderPing = isInClassLoadPing();
-		try {
-			if (usePropertyEditorManager) {
+		if (usePropertyEditorManager) {
+			boolean wasInClassloaderPing = isInClassLoadPing();
+			try {
 				isInClassLoadPing(true);
 				ped = PropertyEditorManager.findEditor(targetType);
 				if (ped != null) {
 					panelClass.add(ped.getClass());
 				}
+			} catch (Throwable e) {
+				// PropertyEditorManager is a wild and untamed thing
+			} finally {
+				isInClassLoadPing(wasInClassloaderPing);
 			}
-		} catch (Throwable e) {
-			// PropertyEditorManager is a wild and untamed thing
-		} finally {
-			isInClassLoadPing(wasInClassloaderPing);
 		}
 		if (panelClass.size() == 0) {
 			return EMPTY_COLLECTION;
@@ -2408,6 +2407,7 @@ public class Utility extends UtilityMenuOptions {
 
 	/**
 	 * Return a JPAnel to edit obj
+	 * 
 	 * @param object
 	 * @return
 	 */
@@ -2606,9 +2606,8 @@ public class Utility extends UtilityMenuOptions {
 	}
 
 	/**
-	 * Generates a default name for the given object, while will be something
-	 * like "Button1", "Button2", etc.
-	 *
+	 * Generates a default name for the given object, while will be something like "Button1", "Button2", etc.
+	 * 
 	 * @param nameIndex
 	 */
 	public static String generateUniqueName(Object object, Map<String, BT> checkAgainst) {
@@ -3330,8 +3329,7 @@ public class Utility extends UtilityMenuOptions {
 	}
 
 	/**
-	 * Returns an Icon for this object, determined using BeanInfo. If no icon
-	 * was found a default icon will be returned.
+	 * Returns an Icon for this object, determined using BeanInfo. If no icon was found a default icon will be returned.
 	 */
 	static public Icon getIcon(BeanInfo info) {
 		Icon icon;
@@ -3553,10 +3551,10 @@ public class Utility extends UtilityMenuOptions {
 	static public void initGUIInThread() {
 		synchronized (RAN_FIRST_INIT_GUI_LOCK) {
 			Thread threadInitGUI = new Thread("Init GUI") {
-		@Override public void run() {
-			initGUI();
-		}
-	};
+				@Override public void run() {
+					initGUI();
+				}
+			};
 			threadInitGUI.start();
 		}
 	}
@@ -3667,6 +3665,11 @@ public class Utility extends UtilityMenuOptions {
 			@Override public void run() {
 				UtilityMenuOptions.ensurePanelsAllRegistered();
 			}
+
+			@Override public String toString() {
+				return "UtilityMenuOptions.ensurePanelsAllRegistered();";
+			}
+
 		});
 	}
 	static {
@@ -3858,7 +3861,13 @@ public class Utility extends UtilityMenuOptions {
 				} catch (Exception e) {
 					printStackTrace(e);
 				}
+
 			}
+
+			@Override public String toString() {
+				return "callable.call()=" + callable;
+			}
+
 		});
 		return UserResult.SUCCESS;
 	}
@@ -3887,7 +3896,7 @@ public class Utility extends UtilityMenuOptions {
 	}
 
 	public static void runTask(Runnable runnable) {
-		taskEqueue.addTask(runnable);
+		taskEqueue.addTask("" + runnable, runnable);
 	}
 
 	static {
@@ -3904,6 +3913,10 @@ public class Utility extends UtilityMenuOptions {
 					//glassPane.addMouseListener(rc);
 					frame.setGlassPane(rc);
 					rc.setVisible(true);
+				}
+
+				@Override public String toString() {
+					return "Mass Hysteria test";
 				}
 			});
 
@@ -4127,12 +4140,13 @@ public class Utility extends UtilityMenuOptions {
 
 	/**
 	 * Register a Trigger to places on all instances of 'cls'
+	 * 
 	 * @param cls
 	 * @param menuLabel
 	 * @param trigger
-	 *
+	 * 
 	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
-	 *
+	 * 
 	 */
 	public static EditableTrigger registerTriggerForClassInstances(Class cls, String menuLabel, Trigger trigger) {
 		EditableTrigger editableTrigger = new EditableTriggerImpl(cls, menuLabel, trigger);
@@ -4147,12 +4161,13 @@ public class Utility extends UtilityMenuOptions {
 
 	/**
 	 * Register a Trigger onto a class Object
+	 * 
 	 * @param cls
 	 * @param menuLabel
 	 * @param trigger
-	 *
+	 * 
 	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
-	 *
+	 * 
 	 */
 	public static EditableTrigger registerTriggerForClass(Class cls, String menuLabel, Trigger trigger) {
 		EditableTrigger editableTrigger = new EditableTriggerImpl(cls, menuLabel, trigger);
@@ -4164,12 +4179,13 @@ public class Utility extends UtilityMenuOptions {
 
 	/**
 	 * Register a Trigger onto a class Object
+	 * 
 	 * @param cls
 	 * @param menuLabel
 	 * @param trigger
-	 *
+	 * 
 	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
-	 *
+	 * 
 	 */
 	public static EditableTrigger registerTriggerForPredicate(CallableWithParameters<Box, Boolean> predicate, String menuLabel, Trigger trigger) {
 		EditableTrigger editableTrigger = new EditableTriggerImpl(predicate, menuLabel, trigger);
@@ -4184,12 +4200,13 @@ public class Utility extends UtilityMenuOptions {
 
 	/**
 	 * Register a Factory for a Class
+	 * 
 	 * @param cls
 	 * @param menuLabel
 	 * @param trigger
-	 *
+	 * 
 	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
-	 *
+	 * 
 	 */
 	public static <T> EditableTrigger registerFactoryForClass(final Class<T> cls, String menuLabel, final CallableWithParameters<Class<T>, ? extends T> function) {
 		EditableTrigger editableTrigger = new EditableTriggerImpl(cls, menuLabel, function);
@@ -4210,12 +4227,13 @@ public class Utility extends UtilityMenuOptions {
 
 	/**
 	 * Register a Factory for a Class
+	 * 
 	 * @param cls
 	 * @param menuLabel
 	 * @param trigger
-	 *
+	 * 
 	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
-	 *
+	 * 
 	 */
 	public static <T> EditableTrigger registerToolsTrigger(String menuLabel, Trigger function) {
 		EditableTrigger editableTrigger = new EditableTriggerImpl(menuLabel, function);
@@ -4227,12 +4245,13 @@ public class Utility extends UtilityMenuOptions {
 
 	/**
 	 * Register a Trigger on a specific object
+	 * 
 	 * @param cls
 	 * @param menuLabel
 	 * @param trigger
-	 *
+	 * 
 	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
-	 *
+	 * 
 	 */
 	public static EditableTrigger registerTriggerForObject(Object anyObject, String menuLabel, Trigger trigger) {
 		if (anyObject == null) {
@@ -4245,12 +4264,13 @@ public class Utility extends UtilityMenuOptions {
 
 	/**
 	 * Register a Trigger onto a class Object
+	 * 
 	 * @param cls
 	 * @param menuLabel
 	 * @param trigger
-	 *
+	 * 
 	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
-	 *
+	 * 
 	 */
 	public static EditableTrigger registerCallableForPredicate(CallableWithParameters<Box, Boolean> predicate, String menuLabel, CallableWithParameters function) {
 		EditableTrigger editableTrigger = new EditableTriggerImpl(predicate, menuLabel, function);
@@ -4403,6 +4423,11 @@ public class Utility extends UtilityMenuOptions {
 			@Override public void run() {
 				isAfterLoader = true;
 			}
+
+			@Override public String toString() {
+				return "isAfterLoader = true";
+			}
+
 		});
 	}
 
