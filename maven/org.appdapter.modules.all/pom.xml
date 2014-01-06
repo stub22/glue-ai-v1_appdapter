@@ -35,16 +35,7 @@ Version less parent will be allowed in Maven 3.1.
 		<module>../org.appdapter.modules.math</module>	
 		<module>../org.appdapter.modules.gui</module>
 	</modules>
-	<!--- found in root POM now 
-	<properties>
-		<maven.compiler.source>1.6</maven.compiler.source>
-		<maven.compiler.target>1.6</maven.compiler.target>
-		<encoding>UTF-8</encoding>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<netbeans.hint.license>appdapter-apache20</netbeans.hint.license>
-		<scala.version>2.10.2</scala.version>
-	</properties>	
-	-->
+
 	<build>
 		<pluginManagement>
 			<plugins>
