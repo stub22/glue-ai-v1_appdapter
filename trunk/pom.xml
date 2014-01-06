@@ -70,8 +70,7 @@ Version-less parent will be allowed in Maven 3.1.
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<netbeans.hint.license>appdapter-apache20</netbeans.hint.license>
 
-
-		<!-- global.version settings -->
+		<!-- global version settings -->
 		<jflux.version>0.1.8</jflux.version>
 		<appdapter.msg.version>1.0.5</appdapter.msg.version>
 		<appdapter.jscience.version>1.0.9</appdapter.jscience.version>
@@ -219,8 +218,8 @@ Version-less parent will be allowed in Maven 3.1.
 
 		<!-- wouldn't be nice if we had a parent pom! (we'd get rid of everything below (and some above)) 
 		
-			Stu:  That is not what we want to do.  Appdapter is an independent project.  
-			It does not	rely on any external parent template, except what is provided by Sonatype.
+			Stu: It is conceivable that we could have a parent glue-ai template.
+			However, that means that glue-ai would need to be released into maven-central as yet another project.
 		
 		-->
 
@@ -231,7 +230,7 @@ Version-less parent will be allowed in Maven 3.1.
 					<artifactId>maven-release-plugin</artifactId>
 					<configuration>
 						<autoVersionSubmodules>true</autoVersionSubmodules>
-						<!--allowTimestampedSnapshots>true</allowTimestampedSnapshots-->
+						<!--   allowTimestampedSnapshots>true</allowTimestampedSnapshots  -->
 						<!-- New in plugin version 2.2, but does not work correctly yet.
 						See:   https://jira.codehaus.org/browse/MRELEASE-695
 						<tagNameFormat>v@{project.version}</tagNameFormat>
