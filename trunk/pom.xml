@@ -33,7 +33,7 @@ Version-less parent will be allowed in Maven 3.1.
 -->
 	<groupId>org.appdapter</groupId>
 	<artifactId>org.appdapter.project.root</artifactId>
-	<version>1.1.4-SNAPSHOT</version>
+	<version>1.1.4</version>
 	<packaging>pom</packaging>
 	<name>${project.artifactId} - Root pom, linked to Sonatype repo parent</name>
 	<description>Project Root Folder pom.xml - includes all code + doc directories when snapped.</description>
@@ -57,9 +57,9 @@ Version-less parent will be allowed in Maven 3.1.
 	-->
 
 	<scm>
-		<connection>scm:svn:https://subversion.assembla.com/svn/appdapter/trunk/</connection>
-		<developerConnection>scm:svn:https://subversion.assembla.com/svn/appdapter/trunk/</developerConnection>
-		<url>https://www.assembla.com/code/appdapter/subversion/nodes/trunk/</url>
+		<connection>scm:svn:https://subversion.assembla.com/svn/appdapter/tags/org.appdapter.project.root-1.1.4</connection>
+		<developerConnection>scm:svn:https://subversion.assembla.com/svn/appdapter/tags/org.appdapter.project.root-1.1.4</developerConnection>
+		<url>https://www.assembla.com/code/appdapter/subversion/nodes/tags/org.appdapter.project.root-1.1.4</url>
 	</scm>
 
 
@@ -171,8 +171,7 @@ Version-less parent will be allowed in Maven 3.1.
 			plugin>
 			  <groupId>org.apache.maven.plugins</groupId>
 			  <artifactId>maven-gpg-plugin</artifactId>
-		  </plugin
-			-->
+		  </plugin -->
 
 		  <plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -203,15 +202,13 @@ Version-less parent will be allowed in Maven 3.1.
 				plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-enforcer-plugin</artifactId>
-			</plugin
-			-->
+			</plugin -->
 
 			<!--
 			plugin>
 					<groupId>org.apache.felix</groupId>
 					<artifactId>maven-bundle-plugin</artifactId>
-			</plugin
-			-->
+			</plugin -->
 
 		</plugins>
 
@@ -230,7 +227,7 @@ Version-less parent will be allowed in Maven 3.1.
 					<artifactId>maven-release-plugin</artifactId>
 					<configuration>
 						<autoVersionSubmodules>true</autoVersionSubmodules>
-						<!--   allowTimestampedSnapshots>true</allowTimestampedSnapshots  -->
+						<!--   allowTimestampedSnapshots>true</allowTimestampedSnapshots -->
 						<!-- New in plugin version 2.2, but does not work correctly yet.
 						See:   https://jira.codehaus.org/browse/MRELEASE-695
 						<tagNameFormat>v@{project.version}</tagNameFormat>
