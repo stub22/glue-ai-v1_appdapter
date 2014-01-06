@@ -1,0 +1,159 @@
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.appdapter</groupId>
+		<artifactId>org.appdapter.modules.math</artifactId>
+		<version>1.1.4-SNAPSHOT</version>
+		<relativePath>../org.appdapter.modules.math/pom.xml</relativePath>
+	</parent>
+	<artifactId>ext.bundle.math.jscience_50SNAP</artifactId>
+	<packaging>bundle</packaging>
+	<name>ext.bundle.math.jscience_50SNAP - OSGi - Jscience wrapper</name>
+
+	<!-- look for these in the root POM  (change there)
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		
+		<jscience.groupId>org.jscience</jscience.groupId>
+		<jscience.math.artifactId>jscience-mathematics</jscience.math.artifactId>
+		<jscience.version>5.0-SNAPSHOT</jscience.version>
+	</properties>
+	-->
+	<repositories>
+		<!-- 		
+        <repository>
+            <id>maven2-repository.dev.java.net</id>
+            <name>Java.net Repository for Maven</name>
+            <url>http://download.java.net/maven/2/</url>
+        </repository>		
+
+		May be used again for JScience, but Javolution is now in Sonatype
+		<repository>
+		
+			<id>maven.java.net-SNAP</id>
+			<name>maven.java.net SNAPSHOTS Repo</name>
+			<url>https://maven.java.net/content/repositories/snapshots/</url>
+		</repository>
+	-->
+	</repositories>	
+	<dependencies>
+		<dependency>
+			<groupId>org.apache.felix</groupId>
+			<artifactId>org.osgi.core</artifactId>
+			<version>1.4.0</version>
+		</dependency>
+		<!-- JScience snapshots have disappeared, so using uploaded libs and
+			a direct dep on javolution. It is an OSGi bundle, but cannot
+			be cleanly shared via maven 
+			not need re-wrapping.
+		
+		<dependency>
+			<groupId>org.jscience</groupId>
+			<artifactId>jscience</artifactId>
+			<version>5.0-SNAPSHOT</version>
+			<type>pom</type>
+			<scope>provided</scope>
+		</dependency>
+		-->
+		<!--    On our *first* build, this dep is installed to local repo during initialize phase below. 
+			
+
+                        Currently, to make that work, you must 
+                        1) Manually disable (comment out) this dependency the dep
+                        2) run "mvn initialize" (or "build" from netbeans), 
+                        3) Re-enable (uncomment) the dependency.
+                        4) Run "mvn clean install" (or Netbeans "clean and build")
+                        
+		
+	  	--> 
+                <!-- IMPORTANT and UGLY: Comment out this dep on first build (against
+                your particular local maven_repo), then uncomment and rebuild -->
+		<!-- dependency>
+			<groupId>org.jscience</groupId>
+			<artifactId>jscience-mathematics</artifactId>
+			<version>5.0-SNAPSHOT</version>
+			<scope>provided</scope>
+		</dependency-->
+		<!--  this jscience exists?  -->
+		<dependency>
+			<groupId>org.jscience</groupId>
+			<artifactId>jscience</artifactId>
+			<version>4.3.1</version>
+		</dependency>
+       	<dependency>
+            <groupId>javolution</groupId>
+			<artifactId>javolution</artifactId>
+		  <!-- We tearfully have to re-export javolution, even though it's  supplied to us as a "bundle", 
+				because the embedded poms are entangled with the broken java.net repository, and 
+				it is all just too screwed up.
+			-->
+			<type>jar</type>
+			<version>5.5.1</version>
+			<scope>provided</scope>
+		</dependency>  		
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-install-plugin</artifactId>
+				<version>2.3.1</version>
+				<executions>
+					<execution>
+						<id>install-jScience-snap-jar</id>
+						<phase>initialize</phase>
+						<goals>
+							<goal>install-file</goal>	
+						</goals>
+						<!--
+						<goals>
+							<goal>install-jar-manually-goal-by-stub22</goal>
+						</goals>
+						-->
+						<configuration>
+							<packaging>jar</packaging>
+							<groupId>${jscience.groupId}</groupId>
+							<artifactId>${jscience.math.artifactId}</artifactId>
+							<version>${jscience.version}</version>
+							<file>ext.lib.org.jscience/${jscience.math.artifactId}/${jscience.version}/${jscience.math.artifactId}-${jscience.version}.jar</file>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>				
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<version>2.3.7</version>
+				<extensions>true</extensions>
+				<configuration>
+					<instructions>
+						<Bundle-Activator>org.appdapter.ext.bundle.math.jscience.Activator</Bundle-Activator>
+						<!-- (re-)export both JScience and javolution, plus any extra activator classes -->
+						<Export-Package>org.jscience.*, javolution.*, org.appdapter.* </Export-Package>
+						<Import-Package>javax.realtime.*;resolution:='optional', *</Import-Package>
+					</instructions>
+				</configuration>
+			</plugin>
+		</plugins>
+			</build>
+</project>
+<!--
+/*
+ *  Copyright 2011 by The Appdapter Project (www.appdapter.org).
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+-->
+

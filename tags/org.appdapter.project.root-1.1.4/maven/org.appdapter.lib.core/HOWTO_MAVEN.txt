@@ -1,0 +1,40 @@
+
+1) Install one of the two following setups, or some combination:
+
+	A) Netbeans 7.0 with JDK 1.6 and builtin Maven 3.0.
+	
+	B) Basic modern Java command line tools setup:
+		a) JDK 1.6+ (and set JAVA_HOME)
+		b) Maven 3  (and set M2_HOME)
+		c) Ant 1.8+ (and set ANT_HOME)
+		d) Set your PATH variable to include the /bin directory of all three HOMES
+		
+2) Set your working directory to this subdirectory of appdapter/maven, e.g. from cygwin:
+
+cd /cygdrive/p/_prj/s2/appdapter/appdapter_trunk/maven/Appdapter_ScalaAndJava
+
+or from Linux:
+
+cd /mystuff/appdapter/maven/Appdapter_ScalaAndJava
+
+#From Windows prompt, it will be more like:
+
+cd \your\awesome\windows\path
+
+3) Now, assuming your JAVA_HOME, M2_HOME, ANT_HOME, and PATH are set up well, you can do:
+
+mvn clean
+mvn package
+
+mvn "-Dexec.args=-classpath %classpath org.appdapter.gui.demo.DemoBrowser" -Dexec.executable=java exec:exec
+
+
+mvn "-Dexec.args=-classpath %classpath org.appdapter.gui.main.TestBrowse" -Dexec.executable=java exec:exec
+
+
+mvn -Pgo-fish exec
+
+# Full command run by NB to run looks like:
+cd P:\_prj\s2\appdapter\appdapter_trunk\maven\Appdapter_ScalaAndJava; JAVA_HOME=C:\\_root\\_wapp\\jdk_16 
+C:\\_root\\_japp\\nb_70\\java\\maven\\bin\\mvn.bat -Dexec.classpathScope=runtime "-Dexec.args=-classpath %classpath # org.appdapter.gui.main.TestBrowse" -Dexec.executable=C:\\_root\\_wapp\\jdk_16\\bin\\java.exe process-classes org.codehaus.mojo:exec-maven-plugin:1.2:exec
+

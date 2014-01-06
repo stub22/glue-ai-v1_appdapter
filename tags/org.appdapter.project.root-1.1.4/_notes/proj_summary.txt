@@ -1,0 +1,21 @@
+"Appdapter" - Embeddable java + scala semantic features (RDF, OWL, SPARQL) - 
+persistence, query, transport.   jars+bundles(OSGi).   license=apache-2.0.
+
+Provides RDF+OWL persistence and SPARQL query services using Jena SDB+ARQ 
+and an embedded H2 SQL database backend.  Both OSGi bundles and "raw" 
+jars delivered.  Extra Scala magic 4U!  Run Felix + Scala (+ RDF etc.) 
+from Maven (optional Netbeans), using bundle repos and no explicit 
+installations, with optional Felix shell.    Demos in the form of simple 
+Swing GUIs.  Flexible logging with SLF4J.  Apache 2.0 License.
+Special Bonus:  Hilda's Type Puzzles!
+
+Appdapter = RDF+OWL persistence with SPARQL query services using Jena SDB+ARQ 
+and an embedded H2 SQL database backend.  Both OSGi bundles and "raw" 
+jars delivered.  Scala compiler, libs and samples included.  Run Felix + Scala 
+(+ RDF etc.) from Maven (optional Netbeans), using bundle repos and no explicit 
+installations, with optional Felix shell.    Demos in the form of simple 
+Swing GUIs.  Flexible logging with SLF4J.  Apache 2.0 License.
+Coming soon: Avro serialization.  Special Bonus:  Hilda's Type Puzzles!
+
+
+
