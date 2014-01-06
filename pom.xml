@@ -72,6 +72,7 @@ Version-less parent will be allowed in Maven 3.1.
 
 
 		<!-- global.version settings -->
+		<jflux.version>0.1.8</jflux.version>
 		<appdapter.msg.version>1.0.5</appdapter.msg.version>
 		<appdapter.jscience.version>1.0.9</appdapter.jscience.version>
 		<osgi.core.version>4.2.0</osgi.core.version>
@@ -81,6 +82,7 @@ Version-less parent will be allowed in Maven 3.1.
 		<avro.version>1.7.4</avro.version>
 		<scala.version>2.10.2</scala.version>
 		<slf4j.version>1.7.5</slf4j.version>
+		
 		<jscience.groupId>org.jscience</jscience.groupId>
 		<jscience.math.artifactId>jscience-mathematics</jscience.math.artifactId>
 		<jscience.version>5.0-SNAPSHOT</jscience.version>
