@@ -168,10 +168,12 @@ Version-less parent will be allowed in Maven 3.1.
 
 		<plugins>
 
-		  <!--plugin>
+		  <!--
+			plugin>
 			  <groupId>org.apache.maven.plugins</groupId>
 			  <artifactId>maven-gpg-plugin</artifactId>
-		  </plugin-->
+		  </plugin
+			-->
 
 		  <plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -198,20 +200,29 @@ Version-less parent will be allowed in Maven 3.1.
 				<artifactId>maven-antrun-plugin</artifactId>
 			</plugin>
 
-			<!--plugin>
+			<!--
+				plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-enforcer-plugin</artifactId>
-			</plugin-->
+			</plugin
+			-->
 
-			<!--plugin>
+			<!--
+			plugin>
 					<groupId>org.apache.felix</groupId>
 					<artifactId>maven-bundle-plugin</artifactId>
-			</plugin-->
+			</plugin
+			-->
 
 		</plugins>
 
 
-		<!-- wouldn't be nice if we had a parent pom! (we'd get rid of everything below (and some above)) -->
+		<!-- wouldn't be nice if we had a parent pom! (we'd get rid of everything below (and some above)) 
+		
+			Stu:  That is not what we want to do.  Appdapter is an independent project.  
+			It does not	rely on any external parent template, except what is provided by Sonatype.
+		
+		-->
 
 		<pluginManagement>
 			<plugins>
