@@ -27,7 +27,7 @@
         <dependency>
 		  <groupId>org.jflux</groupId>
 		  <artifactId>org.jflux.api.core</artifactId>
-		  <version>0.1.8-SNAPSHOT</version>
+		  <version>${jflux.version}</version>
 		  <scope>compile</scope>
 		</dependency>
 		
