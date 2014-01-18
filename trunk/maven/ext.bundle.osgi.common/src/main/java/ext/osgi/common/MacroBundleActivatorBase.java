@@ -310,17 +310,43 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 
 	public static String getPhaseName(Object phase) {
 		Class enumClass = BootPhaseConst.class;
-		for (Field f : enumClass.getDeclaredFields()) {
+		String s = getEnumValueName(phase, enumClass);
+		if (s != null)
+			return s;
+		return "UNKNOWN_" + phase;
+	}
+
+	public static String getEnumValueName(Object phase, Class searchClass) {
+		Class phaseClass = null;
+		boolean isNull = true;
+		int phaseHC = Integer.MIN_VALUE;
+		if (phase != null) {
+			isNull = false;
+			phaseClass = phase.getClass();
+			phaseHC = phase.hashCode();
+		}
+		for (Field f : searchClass.getDeclaredFields()) {
 			int mods = f.getModifiers();
 			if (Modifier.isStatic(mods)) {
 				try {
 					if (!f.isAccessible())
 						f.setAccessible(true);
 					Object fv = f.get(null);
-					if (fv == null)
+					if (fv == null) {
+						if (isNull) {
+
+							return f.getName();
+						}
+
 						continue;
-					if (phase.hashCode() == fv.hashCode())
+					}
+					if (isNull)
+						continue;
+					if (phaseHC == fv.hashCode()) {
+						if (!phase.equals(fv))
+							continue;
 						return f.getName();
+					}
 				} catch (IllegalArgumentException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -330,7 +356,16 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 				}
 			}
 		}
-		return "UNKNOWN_" + phase;
+		for (Class cc : searchClass.getInterfaces()) {
+			String r = getEnumValueName(phase, cc);
+			if (r != null)
+				return r;
+		}
+		searchClass = searchClass.getSuperclass();
+		if (searchClass != null) {
+			return getEnumValueName(phase, searchClass);
+		}
+		return null;
 	}
 
 	public int bundleBootPhase = BootPhaseConst.UNSTARTED;
@@ -926,10 +961,16 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 			}
 		}
 		//getLogger().info(describe("start<BundleActivatorBase>", bundleCtx));
-		bundleCtx.removeFrameworkListener(this);
-		bundleCtx.addFrameworkListener(this);
+		if (!isFakeOSGI()) {
+			bundleCtx.removeFrameworkListener(this);
+			bundleCtx.addFrameworkListener(this);
+		}
 		//scheduleFrameworkStartEventHandler(bundleCtx);
 		bundleBootPhase = BootPhaseConst.UNSTARTED;
+	}
+
+	public boolean isFakeOSGI() {
+		return m_context == null;
 	}
 
 	public static ArrayList<BundleActivator> startedBundles = new ArrayList<BundleActivator>();
@@ -973,7 +1014,11 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 			@Override public void run() {
 				bundleBootPhase = BootPhaseConst.FRAMEWORKSTARTING;
 				try {
-					dispatchFrameworkStartedEvent0(m_context.getBundle(), null);
+					Bundle b = null;
+					if (!isFakeOSGI()) {
+						b = m_context.getBundle();
+					}
+					dispatchFrameworkStartedEvent0(b, null);
 				} catch (Exception e) {
 					getLogger().error("registerServices: " + e, e);
 					e.printStackTrace();
@@ -1079,8 +1124,11 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 			MacroBundleActivatorBase.macroStartupSettings.scheduleFrameworkStartEventHandler(this);
 			return;
 		}
-		bundleCtx.removeFrameworkListener(this);
-		bundleCtx.addFrameworkListener(this);
+		// the macrostarter system also works outside OSGi
+		if (bundleCtx != null) {
+			bundleCtx.removeFrameworkListener(this);
+			bundleCtx.addFrameworkListener(this);
+		}
 	}
 
 	final void dispatchFrameworkStartedEvent0(Bundle eventBundle, Throwable eventThrowable) {
@@ -1088,7 +1136,10 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 		String bundleName = getBundleName(eventBundle);
 		getLogger().info("dispatchFrameworkStartedEvent<BundleActivatorBase> ( bundle={}, msg={}", bundleName, thrownMsg);
 		if (eventThrowable == null) {
-			BundleContext bc = eventBundle.getBundleContext();
+			BundleContext bc = null;
+			if (eventBundle != null) {
+				bc = eventBundle.getBundleContext();
+			}
 			if (bc == null) {
 				getLogger().info("Cannot find bundle context for event bundle, so there will be no callback to app startup: {} ", bundleName);
 			}
@@ -1127,7 +1178,9 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 	}
 
 	protected String describe(String action, BundleContext bundleCtx) {
-		Bundle b = bundleCtx.getBundle();
+		Bundle b = null;
+		if (bundleCtx != null)
+			b = bundleCtx.getBundle();
 		String msg = getClass().getCanonicalName() + "." + action + "(ctx=[" + bundleCtx + "], bundle=[" + getBundleName(b) + "])";
 		return msg;
 	}
