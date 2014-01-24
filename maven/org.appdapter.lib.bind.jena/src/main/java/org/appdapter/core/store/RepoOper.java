@@ -507,6 +507,18 @@ public class RepoOper implements AnyOper, UtilClass {
 		*/
 		writeToTTL(repoName, thiz, dirModel, ds, ow);
 	}
+	public static void writeToTTL(Repo boundRepo) throws IOException {
+		if (!(boundRepo instanceof Repo.WithDirectory)) {
+            return;
+		}
+		Dataset ds = boundRepo.getMainQueryDataset();
+        Model dirModel = ((Repo.WithDirectory) boundRepo).getDirectoryModel();
+        String rname = new SimpleDateFormat("yyyyMMddHH_mmss_SSS").format(new Date());
+        String dir = "loaded_" + rname + "/";
+        String csiURI = dirModel.getNsPrefixURI("csi");
+        Node fileRepoName = dirModel.getResource(csiURI + "filerepo_" + rname).asNode();
+        saveRepoAsManyTTLs(fileRepoName, dir, dirModel, ds, false);
+	}
 
 	public static void saveRepoAsManyTTLs(Node fileRepoName, String dir, Model dirModel, Dataset ds, boolean dontChangeDir) throws IOException {
 		new File(dir).mkdir();
