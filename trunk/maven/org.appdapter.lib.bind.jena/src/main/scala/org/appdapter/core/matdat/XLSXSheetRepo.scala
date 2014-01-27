@@ -99,7 +99,7 @@ object XLSXSheetRepoLoader extends BasicDebugger {
   }
 
   def readModelSheetX(sheetLocation: String, sheetName: String, nsJavaMap: java.util.Map[String, String], fileModelCLs: java.util.List[ClassLoader]): Model = {
-    val tgtModel: Model = RepoDatasetFactory.createDefaultModelUnshared
+    val tgtModel: Model = RepoDatasetFactory.createPrivateMemModel
     tgtModel.setNsPrefixes(nsJavaMap)
     val modelInsertProc = new SemSheet.ModelInsertSheetProc(tgtModel);
     val efsu = new ExtendedFileStreamUtils()

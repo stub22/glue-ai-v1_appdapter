@@ -121,7 +121,7 @@ object GoogSheetRepoLoader extends BasicDebugger {
   }
 
   def readModelSheet(sheetKey: String, sheetNum: Int, nsJavaMap: java.util.Map[String, String] = null): Model = {
-    val tgtModel: Model = RepoDatasetFactory.createDefaultModelUnshared
+    val tgtModel: Model = RepoDatasetFactory.createPrivateMemModel
 
     tgtModel.setNsPrefixes(nsJavaMap)
 

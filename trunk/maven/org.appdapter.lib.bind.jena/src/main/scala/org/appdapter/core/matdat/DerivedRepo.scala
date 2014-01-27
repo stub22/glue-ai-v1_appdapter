@@ -38,7 +38,7 @@ class DerivedRepoSpec(val myDGSpecs: Set[DerivedGraphSpec], val mySrcRepo: Repo.
     "DerivedRepoSpec[pipeSpecs= " + myDGSpecs + "]";
   }
   override def makeRepo(): DerivedRepo = {
-    val emptyDirModel = RepoDatasetFactory.createDefaultModelUnshared
+    val emptyDirModel = RepoDatasetFactory.createPrivateMemModel
     // TODO:  Copy over prefix-abbreviations from the source repo (need to confirm the line below does this correctly)
     emptyDirModel.setNsPrefixes(mySrcRepo.getDirectoryModel.getNsPrefixMap);
     val derivedRepo = new DerivedRepo(emptyDirModel, this)

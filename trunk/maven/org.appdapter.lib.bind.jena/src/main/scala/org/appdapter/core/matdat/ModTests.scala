@@ -73,7 +73,7 @@ event management, and transaction handling.
  */
     reposModel.register(prinListener);
 
-    val emptyModel = RepoDatasetFactory.createDefaultModelUnshared
+    val emptyModel = RepoDatasetFactory.createPrivateMemModel
     val unityModel = RepoDatasetFactory.createUnion(reposModel, emptyModel);
 
     val rdfsReposModel: InfModel = ModelFactory.createRDFSModel(reposModel);

@@ -1,7 +1,6 @@
 package org.appdapter.core.store.dataset;
 
-import org.appdapter.core.log.Debuggable;
-
+import com.hp.hpl.jena.enhanced.BuiltinPersonalities;
 import com.hp.hpl.jena.graph.Graph;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
@@ -11,12 +10,17 @@ public class CheckedModel extends ModelCom implements Model {
 	private final Graph modelGraph;
 
 	public CheckedModel(CheckedGraph modelGraph) {
-		super(modelGraph);
+		super(modelGraph, BuiltinPersonalities.model);
 		this.modelGraph = getGraphNoRemove().modelGraph;
 	}
 
 	public CheckedModel(Graph modelGraph, boolean makeNonAdd, boolean makeNonDelete, boolean makeNameSpaceChecked) {
 		this(CheckedGraph.ensure(modelGraph, makeNonAdd, makeNonDelete, makeNameSpaceChecked));
+	}
+
+	@Override public String toString()
+	{
+		return "<CheckedModel  " + getGraph() + " | " + reifiedToString() + ">";
 	}
 
 	private CheckedGraph getGraphNoRemove() {

@@ -26,11 +26,11 @@ import com.hp.hpl.jena.sparql.core.DatasetImpl;
 
 /**
  * @author Logicmoo. <www.logicmoo.org>
- *
- * Handling for a local *or* some 'remote'/'shared' model/dataset impls.
- *
+ * 
+ *         Handling for a local *or* some 'remote'/'shared' model/dataset impls.
+ * 
  */
-public class JenaDatasetFactory extends AbstractDatasetFactory implements UserDatasetFactory {
+class JenaDatasetFactory extends AbstractDatasetFactory implements UserDatasetFactory {
 
 	@Override public String getDatasetType() {
 		return "memory";
@@ -45,8 +45,8 @@ public class JenaDatasetFactory extends AbstractDatasetFactory implements UserDa
 		return create(DatasetGraphFactory.createMem());
 	}
 
-	/** Create an in-memory, modifiable Dataset.
-	 * New graphs must be explicitly added using .addGraph.
+	/**
+	 * Create an in-memory, modifiable Dataset. New graphs must be explicitly added using .addGraph.
 	 */
 	public Dataset createMemFixed() {
 		return create(DatasetGraphFactory.createMemFixed());
@@ -56,7 +56,9 @@ public class JenaDatasetFactory extends AbstractDatasetFactory implements UserDa
 		return create(DatasetFactory.createMemFixed());
 	}
 
-	/** Create a dataset with the given model as the default graph
+	/**
+	 * Create a dataset with the given model as the default graph
+	 * 
 	 * @param model
 	 * @return Dataset
 	 */
@@ -64,7 +66,9 @@ public class JenaDatasetFactory extends AbstractDatasetFactory implements UserDa
 		return new DatasetImpl(model);
 	}
 
-	/** Create a dataset
+	/**
+	 * Create a dataset
+	 * 
 	 * @param dataset
 	 * @return Dataset
 	 */
@@ -75,8 +79,11 @@ public class JenaDatasetFactory extends AbstractDatasetFactory implements UserDa
 		return new DatasetImpl(dataset);
 	}
 
-	/** Wrap a datasetgraph to make a mutable dataset
-	 * @param dataset DatasetGraph
+	/**
+	 * Wrap a datasetgraph to make a mutable dataset
+	 * 
+	 * @param dataset
+	 *            DatasetGraph
 	 * @return Dataset
 	 */
 	public Dataset create(DatasetGraph dataset) {
