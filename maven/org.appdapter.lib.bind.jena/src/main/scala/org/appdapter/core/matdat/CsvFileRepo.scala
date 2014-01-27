@@ -17,13 +17,12 @@
 package org.appdapter.core.matdat
 
 import java.io.{ InputStreamReader, Reader }
-
 import org.appdapter.core.log.BasicDebugger
 import org.appdapter.core.store.{ ExtendedFileStreamUtils, Repo }
 import org.appdapter.impl.store.QueryHelper
-
 import com.hp.hpl.jena.query.{ Dataset, QuerySolution, ResultSet, ResultSetFactory }
-import com.hp.hpl.jena.rdf.model.{ Literal, Model, ModelFactory, RDFNode, Resource }
+import com.hp.hpl.jena.rdf.model.{ Literal, Model, RDFNode, Resource }
+import org.appdapter.core.store.dataset.RepoDatasetFactory
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -116,7 +115,7 @@ object CsvFileSheetLoader extends BasicDebugger {
   }
  
   def readModelSheet(dirSheet: String, nsJavaMap: java.util.Map[String, String], fileModelCLs: java.util.List[ClassLoader]): Model = {
-    val tgtModel: Model = ModelFactory.createDefaultModel();
+    val tgtModel: Model = RepoDatasetFactory.createDefaultModelUnshared
     tgtModel.setNsPrefixes(nsJavaMap)
     val modelInsertProc = new SemSheet.ModelInsertSheetProc(tgtModel);
     val reader: Reader = getCsvReaderAt(dirSheet, fileModelCLs);

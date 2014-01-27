@@ -47,6 +47,7 @@ object SheetRepo extends BasicDebugger {
         //dirModelLoaders.add(new DerivedModelLoader());
         // the next is loaded loadDerivedModelsIntoMainDataset (which are pipeline models)
         //dirModelLoaders.add(new PipelineModelLoader());
+        dirModelLoaders.add(new PipelineSnapLoader());
 
       }
       return new ArrayList[InstallableRepoReader](dirModelLoaders);
@@ -125,7 +126,7 @@ abstract class SheetRepo(directoryModel: Model, var fileModelCLs: java.util.List
     val oldDataset = getMainQueryDataset();
     val myPNewMainQueryDataset = repo.getMainQueryDataset();
     getLogger.info("START: Trying to do reloading of model named.. " + modelName)
-    RepoOper.replaceDatasetElements(oldDataset, myPNewMainQueryDataset, modelName)
+    RepoOper.replaceSingleDatasetModel(oldDataset, myPNewMainQueryDataset, modelName)
     getLogger.info("START: Trying to do reloading of model named.. " + modelName)
   }
 
@@ -146,9 +147,13 @@ abstract class SheetRepo(directoryModel: Model, var fileModelCLs: java.util.List
     {
       //this.synchronized
       {
-        val reloadTries = 2;
+        var reloadTries: Int = 2;
         val dirModel = getDirectoryModel();
         while (!this.isUpdatedFromDirModel && reloadTries > 0) {
+          if (reloadTries == 1) {
+            getLogger.error("OLDBUG: Looping on Reloads!")
+          }
+          reloadTries = reloadTries - 1
           trace("Loading OnmiRepo to make UpToDate")
           this.isUpdatedFromDirModel = true;
           var dirModelSize = dirModel.size;
@@ -206,6 +211,7 @@ abstract class SheetRepo(directoryModel: Model, var fileModelCLs: java.util.List
         irr.loadModelsIntoTargetDataset(this, mainDset, dirModel, fileModelCLs);
       } catch {
         case except: Throwable =>
+          except.printStackTrace
           getLogger().error("Caught loading error in {}", Array[Object](irr, except))
       }
     }

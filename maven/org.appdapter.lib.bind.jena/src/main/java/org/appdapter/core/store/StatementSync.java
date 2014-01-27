@@ -300,7 +300,7 @@ public class StatementSync {
 				Collection<Lock> locks = enterCriticalSections(false, m1, m2);
 				theLogger.info("Making modelSync = " + key);
 				try {
-					Model memmodel = ModelFactory.createDefaultModel();
+					Model memmodel = RepoDatasetFactory.createDefaultModelUnshared();
 					memmodel.add(m1);
 					m1.add(m2);
 					m2.add(memmodel);
@@ -535,7 +535,7 @@ public class StatementSync {
 		try {
 			isSyncDisabled = true;
 			StatementSync mcl = this;
-			Model memmodel = ModelFactory.createDefaultModel();
+			Model memmodel = RepoDatasetFactory.createDefaultModelUnshared();
 			synchronized (sourceModels) {
 				for (Model m1 : sourceModels) {
 					memmodel.add(m1);

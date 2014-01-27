@@ -25,6 +25,7 @@ import org.appdapter.core.debug.UIAnnotations.Autoload;
 import org.appdapter.core.debug.UIAnnotations.UISalient;
 import org.appdapter.core.debug.UIAnnotations.UtilClass;
 import org.appdapter.core.log.Debuggable;
+import org.appdapter.core.store.dataset.RepoDatasetFactory;
 import org.appdapter.gui.api.DisplayContext;
 import org.appdapter.gui.api.ScreenBox;
 import org.appdapter.gui.browse.Utility;
@@ -86,6 +87,7 @@ abstract public class UtilityMenuOptions implements UtilClass {
 		withSubclasses(UtilClass.class, fw);
 		withSubclasses(AnyOper.class, fw);
 		withSubclasses(ModelFactory.class, fw);
+		withSubclasses(RepoDatasetFactory.class, fw);
 		useScannedClasses("com.hp.hpl.jena.rdf.model.", fw);
 		createEnumClass(ReificationStyle.class);
 
@@ -139,6 +141,7 @@ abstract public class UtilityMenuOptions implements UtilClass {
 					}
 				}
 			}
+
 			@Override public String toString() {
 				return "With subclassof " + ancestor + " via " + func;
 			}

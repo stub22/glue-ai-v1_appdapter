@@ -26,6 +26,7 @@ import annotation._
 import org.appdapter.impl.store.DirectRepo
 import org.appdapter.core.store.Repo
 import org.appdapter.core.store.RepoOper
+import org.appdapter.core.store.dataset.RepoDatasetFactory
 /**
  * @author Stu B. <www.texpedient.com>
  * @author Douglas R. Miles <www.logicmoo.org>
@@ -120,7 +121,7 @@ object GoogSheetRepoLoader extends BasicDebugger {
   }
 
   def readModelSheet(sheetKey: String, sheetNum: Int, nsJavaMap: java.util.Map[String, String] = null): Model = {
-    val tgtModel: Model = ModelFactory.createDefaultModel();
+    val tgtModel: Model = RepoDatasetFactory.createDefaultModelUnshared
 
     tgtModel.setNsPrefixes(nsJavaMap)
 

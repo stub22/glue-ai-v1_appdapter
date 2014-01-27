@@ -17,13 +17,12 @@
 package org.appdapter.core.matdat
 
 import scala.collection.JavaConversions.{ asScalaBuffer, asScalaIterator }
-
 import org.appdapter.bind.rdf.jena.model.ModelStuff
 import org.appdapter.impl.store.QueryHelper
-
 import com.hp.hpl.jena.query.{ QuerySolution, ResultSet, ResultSetFactory }
 import com.hp.hpl.jena.rdf.listeners.ObjectListener
 import com.hp.hpl.jena.rdf.model.{ InfModel, Literal, Model, ModelFactory, RDFNode, Statement }
+import org.appdapter.core.store.dataset.RepoDatasetFactory
 /**
  * @author Stu B. <www.texpedient.com>
  *
@@ -74,8 +73,8 @@ event management, and transaction handling.
  */
     reposModel.register(prinListener);
 
-    val emptyModel = ModelFactory.createDefaultModel();
-    val unityModel = ModelFactory.createUnion(reposModel, emptyModel);
+    val emptyModel = RepoDatasetFactory.createDefaultModelUnshared
+    val unityModel = RepoDatasetFactory.createUnion(reposModel, emptyModel);
 
     val rdfsReposModel: InfModel = ModelFactory.createRDFSModel(reposModel);
 
