@@ -37,10 +37,9 @@ import com.hp.hpl.jena.rdf.model.Model;
 
 /**
  * @author Logicmoo. <www.logicmoo.org>
- *
- * Repo loading in parallel
- * Handling for a local *or* some 'remote'/'shared' model/dataset impl.
- *
+ * 
+ *         Repo loading in parallel Handling for a local *or* some 'remote'/'shared' model/dataset impl.
+ * 
  */
 public class SpecialRepoLoader extends BasicDebugger implements UncaughtExceptionHandler {
 	public enum SheetLoadStatus {
@@ -122,8 +121,8 @@ public class SpecialRepoLoader extends BasicDebugger implements UncaughtExceptio
 	}
 
 	/**
-	 Wait for the last load to happens
-	*/
+	 * Wait for the last load to happens
+	 */
 	public void waitUntilLastJobComplete() {
 
 		int origTaskSize = 0;
@@ -175,7 +174,7 @@ public class SpecialRepoLoader extends BasicDebugger implements UncaughtExceptio
 		Task task = new Task(sheetNameURI, r);
 		//synchronized (synchronousAdderLock)
 		{
-			if (isSynchronous || taskNum < howManyTasksBeforeStartingPool) {
+			if (isSynchronous() || taskNum < howManyTasksBeforeStartingPool) {
 				taskNum++;
 				task.call();
 				return;
@@ -211,6 +210,7 @@ public class SpecialRepoLoader extends BasicDebugger implements UncaughtExceptio
 
 	public int totalTasks = 0;
 	public int workrNum = 0;
+	private boolean alwaysSingleThreaded;
 
 	/** Try to sheetLoad a URL. Return true only if successful. */
 	public final class Task implements Callable<Task>, Runnable {
@@ -288,7 +288,7 @@ public class SpecialRepoLoader extends BasicDebugger implements UncaughtExceptio
 			this.sheetLoadStatus = newLoadStatus;
 			Model saveEventsTo = loaderFor.getEventsModel();
 			Map eventProps = new HashMap();
-			eventProps.put(RepoModelEvent.loadStatus, saveEventsTo.createResource("ccrt:" + newLoadStatus.toString()));
+			eventProps.put(RepoModelEvent.loadStatus, saveEventsTo.createResource("urn:ftd:cogchar.org:2012:runtime#" + newLoadStatus.toString()));
 			eventProps.put(RepoModelEvent.timestamp, curMS);
 			eventProps.put(RepoModelEvent.sheetName, sheetName);
 			RepoModelEvent.createEvent(saveEventsTo, eventProps);
@@ -316,7 +316,7 @@ public class SpecialRepoLoader extends BasicDebugger implements UncaughtExceptio
 	}
 
 	public boolean isSynchronous() {
-		return isSynchronous;
+		return isSynchronous || alwaysSingleThreaded;
 	}
 
 	public void addTaskFirst(String n, Runnable v) {
@@ -327,6 +327,11 @@ public class SpecialRepoLoader extends BasicDebugger implements UncaughtExceptio
 		for (Runnable e : drainedArrayList) {
 			queue.add(e);
 		}
+
+	}
+
+	public void setSingleThreaded(boolean loadSingleThread) {
+		alwaysSingleThreaded = loadSingleThread;
 
 	}
 }

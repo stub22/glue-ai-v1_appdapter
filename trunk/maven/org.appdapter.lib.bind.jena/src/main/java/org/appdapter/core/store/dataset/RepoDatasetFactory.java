@@ -15,10 +15,11 @@
  */
 package org.appdapter.core.store.dataset;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -30,6 +31,7 @@ import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.core.debug.UIAnnotations.UIHidden;
 import org.appdapter.core.debug.UIAnnotations.UtilClass;
 import org.appdapter.core.log.Debuggable;
+import org.appdapter.core.name.FreeIdent;
 import org.appdapter.core.store.RepoOper;
 import org.appdapter.core.store.RepoOper.ReloadableDataset;
 import org.appdapter.core.store.StatementSync;
@@ -38,15 +40,9 @@ import org.appdapter.demo.DemoResources;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.hp.hpl.jena.graph.BulkUpdateHandler;
-import com.hp.hpl.jena.graph.Capabilities;
+import com.hp.hpl.jena.graph.Factory;
 import com.hp.hpl.jena.graph.Graph;
-import com.hp.hpl.jena.graph.GraphEventManager;
-import com.hp.hpl.jena.graph.GraphStatisticsHandler;
 import com.hp.hpl.jena.graph.Node;
-import com.hp.hpl.jena.graph.TransactionHandler;
-import com.hp.hpl.jena.graph.Triple;
-import com.hp.hpl.jena.graph.TripleMatch;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.query.DatasetFactory;
 import com.hp.hpl.jena.rdf.listeners.StatementListener;
@@ -58,211 +54,23 @@ import com.hp.hpl.jena.sdb.SDB;
 import com.hp.hpl.jena.sdb.SDBFactory;
 import com.hp.hpl.jena.sdb.Store;
 import com.hp.hpl.jena.sdb.store.StoreFormatter;
-import com.hp.hpl.jena.shared.AddDeniedException;
-import com.hp.hpl.jena.shared.DeleteDeniedException;
-import com.hp.hpl.jena.shared.Lock;
-import com.hp.hpl.jena.shared.PrefixMapping;
-import com.hp.hpl.jena.sparql.core.DatasetGraph;
-import com.hp.hpl.jena.sparql.core.DatasetGraphFactory;
-import com.hp.hpl.jena.sparql.core.DatasetImpl;
-import com.hp.hpl.jena.util.iterator.ExtendedIterator;
 
 /**
  * @author Logicmoo. <www.logicmoo.org>
- *
- * Handling for a local *or* some 'remote'/'shared' model/dataset impl.
- *
+ * 
+ *         Handling for a local *or* some 'remote'/'shared' model/dataset impl.
+ * 
  */
 @UIHidden
 public class RepoDatasetFactory implements AnyOper, UtilClass {
-	public static class DatasetNoRemove extends DatasetImpl implements Dataset {
+	static Logger theLogger = LoggerFactory.getLogger(RepoDatasetFactory.class);
 
-		private DatasetGraph dsg;
-
-		public DatasetNoRemove() {
-			this(DatasetGraphFactory.createMemFixed());
-		}
-
-		public DatasetNoRemove(DatasetGraph g) {
-			super(g);
-			this.dsg = g;
-		}
-
-		public DatasetNoRemove(Dataset g) {
-			super(g);
-			this.dsg = g.asDatasetGraph();
-		}
-
-		@Override public DatasetGraph asDatasetGraph() {
-			if (dsg == null)
-				return super.asDatasetGraph();
-			return dsg;
-		}
-
-		@Override public void close() {
-			asDatasetGraph().close();
-		}
-
-		@Override public boolean containsNamedModel(String n) {
-			Node gn = correctModelName(n);
-			DatasetGraph g = asDatasetGraph();
-			boolean contained = g.containsGraph(gn);
-			return contained;
-		}
-
-		@Override public void addNamedModel(String n, Model m) {
-			Node gn = correctModelName(n);
-			Model innerModel = null;
-			if (!containsNamedModel(n)) {
-				innerModel = createDefaultModel();
-			} else {
-				innerModel = getNamedModel(n);
-			}
-			innerModel.add(m);
-			addNoMods(m);
-			DatasetGraph g = asDatasetGraph();
-			g.addGraph(gn, innerModel.getGraph());
-		}
-
-		@Override public void removeNamedModel(String n) {
-			Node gn = correctModelName(n);
-			untested("remove named model + n");
-			DatasetGraph g = asDatasetGraph();
-			g.removeGraph(gn);
-		}
-
-		@Override public void replaceNamedModel(String n, Model m) {
-			untested("replaceNamedModel");
-			removeNamedModel(n);
-			addNamedModel(n, m);
-		}
-
-		@Override public Model getDefaultModel() {
-			DatasetGraph g = asDatasetGraph();
-			return ModelFactory.createModelForGraph(g.getDefaultGraph());
-		}
-
-		@Override public Lock getLock() {
-			DatasetGraph g = asDatasetGraph();
-			return g.getLock();
-		}
-
-		@Override public Model getNamedModel(String n) {
-			Node gn = correctModelName(n);
-			DatasetGraph g = asDatasetGraph();
-			Graph graph = g.getGraph(gn);
-			if (graph == null)
-				return null;
-			return ModelFactory.createModelForGraph(graph);
-		}
-
-		@Override public Iterator<String> listNames() {
-			ArrayList<String> nameList = new ArrayList<String>();
-			DatasetGraph g = asDatasetGraph();
-			Iterator<Node> nodeIt = g.listGraphNodes();
-			while (nodeIt.hasNext()) {
-				Node n = nodeIt.next();
-				nameList.add(n.getURI());
-			}
-			return nameList.iterator();
-		}
-
+	public static boolean verifyURI(String uri) {
+		return FreeIdent.verifyURI(uri);
 	}
 
-	public static class GraphNoRemove implements Graph {
-		private final Graph modelGraph;
-
-		public GraphNoRemove(Graph modelGraph) {
-			this.modelGraph = modelGraph;
-		}
-
-		@Override public void add(Triple t) throws AddDeniedException {
-			modelGraph.add(t);
-		}
-
-		private void checkRemove() throws DeleteDeniedException {
-			new DeleteDeniedException("" + Debuggable.notImplemented("cehckRemove=", this)).printStackTrace();
-		}
-
-		@Override public void clear() {
-			checkRemove();
-			modelGraph.clear();
-		}
-
-		@Override public void close() {
-			modelGraph.close();
-		}
-
-		@Override public boolean contains(Node s, Node p, Node o) {
-			return modelGraph.contains(s, p, o);
-		}
-
-		@Override public boolean contains(Triple t) {
-			return modelGraph.contains(t);
-		}
-
-		@Override public void delete(Triple t) throws DeleteDeniedException {
-			checkRemove();
-			modelGraph.delete(t);
-		}
-
-		@Override public boolean dependsOn(Graph g) {
-			return modelGraph.dependsOn(g);
-		}
-
-		@Override public ExtendedIterator<Triple> find(Node s, Node p, Node o) {
-			return modelGraph.find(s, p, o);
-		}
-
-		@Override public ExtendedIterator<Triple> find(TripleMatch m) {
-			return modelGraph.find(m);
-		}
-
-		@Override @Deprecated public BulkUpdateHandler getBulkUpdateHandler() {
-			return modelGraph.getBulkUpdateHandler();
-		}
-
-		@Override public Capabilities getCapabilities() {
-			return modelGraph.getCapabilities();
-		}
-
-		@Override public GraphEventManager getEventManager() {
-			return modelGraph.getEventManager();
-		}
-
-		@Override public PrefixMapping getPrefixMapping() {
-			return modelGraph.getPrefixMapping();
-		}
-
-		@Override public GraphStatisticsHandler getStatisticsHandler() {
-			return modelGraph.getStatisticsHandler();
-		}
-
-		@Override public TransactionHandler getTransactionHandler() {
-			return modelGraph.getTransactionHandler();
-		}
-
-		@Override public boolean isClosed() {
-			return modelGraph.isClosed();
-		}
-
-		@Override public boolean isEmpty() {
-			return modelGraph.isEmpty();
-		}
-
-		@Override public boolean isIsomorphicWith(Graph n) {
-			return modelGraph.isIsomorphicWith(n);
-		}
-
-		@Override public void remove(Node s, Node p, Node o) {
-			if (s == null)
-				checkRemove();
-			modelGraph.remove(s, p, o);
-		}
-
-		@Override public int size() {
-			return modelGraph.size();
-		}
+	public static String fixURI(String uri) {
+		return FreeIdent.previousURI(uri);
 	}
 
 	@UISalient
@@ -292,12 +100,9 @@ public class RepoDatasetFactory implements AnyOper, UtilClass {
 	static final List<UserDatasetFactory> registeredUserDatasetFactorys = new ArrayList<UserDatasetFactory>();
 
 	/**
-	 *  To share Repos between JVM instances
-	 *   alwaysShareDataset = true;
+	 * To share Repos between JVM instances alwaysShareDataset = true;
 	 */
 	public static String STORE_CONFIG_PATH = DemoResources.STORE_CONFIG_PATH;
-
-	static Logger theLogger = LoggerFactory.getLogger(RepoDatasetFactory.class);
 
 	static Model universalModel = null;
 
@@ -323,19 +128,23 @@ public class RepoDatasetFactory implements AnyOper, UtilClass {
 		}
 	}
 
-	static public void addNoMods(final Model m) {
+	public static Model createModelForGraph(Graph graph) {
+		return ModelFactory.createModelForGraph(graph);
+	}
+
+	static public void invalidateModel(final Model m) {
 		if (m == universalModel) {
 			return;
 		}
 		m.register(new StatementListener() {
 			@Override public void addedStatement(Statement s) {
 				super.addedStatement(s);
-				throw new RuntimeException("Dead Model " + m);
+				throw new RuntimeException("addNoMods: Dead Model " + m);
 			}
 
 			@Override public void removedStatement(Statement s) {
 				super.removedStatement(s);
-				throw new RuntimeException("Dead Model " + m);
+				throw new RuntimeException("addNoMods: Dead Model " + m);
 			}
 		});
 
@@ -421,13 +230,56 @@ public class RepoDatasetFactory implements AnyOper, UtilClass {
 		}
 		if (allModelNoDelete)
 			return createDefaultModelNoDelete();
-		return ModelFactory.createDefaultModel();
+		return RepoDatasetFactory.createDefaultModelUnshared();
+	}
+
+	public static Model createDefaultModelUnshared() {
+		if (allModelNoDelete)
+			return createDefaultModelNoDelete();
+		return wrapPrefixCheck(createDefaultModelImpl());
+	}
+
+	public static Model createUnion(Model m1, Model m2) {
+		if (allModelNoDelete)
+			return wrapNoDelete(ModelFactory.createUnion(m1, m2));
+		return wrapPrefixCheck(ModelFactory.createUnion(m1, m2));
 	}
 
 	public static Model createDefaultModelNoDelete() {
-		final Model nonuniversalModel = ModelFactory.createDefaultModel();
+		final Model nonuniversalModel = createDefaultModelImpl();
+		return wrapPrefixCheck(wrapNoDelete(nonuniversalModel));
+	}
+
+	private static Model createDefaultModelImpl() {
+		return new CheckedModel(Factory.createGraphMem(), false, false, false);
+	}
+
+	public static Model wrapNoDelete(final Model nonuniversalModel) {
 		final Graph modelGraph = nonuniversalModel.getGraph();
-		return ModelFactory.createModelForGraph(new GraphNoRemove(modelGraph));
+		if (modelGraph instanceof CheckedGraph) {
+			((CheckedGraph) modelGraph).setNoDelete(true);
+			return nonuniversalModel;
+		}
+		return ModelFactory.createModelForGraph(new CheckedGraph(modelGraph, false, true, true));
+	}
+
+	public static Model wrapReadOnly(final Model nonuniversalModel) {
+		final Graph modelGraph = nonuniversalModel.getGraph();
+		if (modelGraph instanceof CheckedGraph) {
+			((CheckedGraph) modelGraph).setNoAdd(true);
+			((CheckedGraph) modelGraph).setNoDelete(true);
+			return nonuniversalModel;
+		}
+		return ModelFactory.createModelForGraph(new CheckedGraph(modelGraph, true, true, true));
+	}
+
+	public static Model wrapPrefixCheck(Model nonuniversalModel) {
+		final Graph modelGraph = nonuniversalModel.getGraph();
+		if (modelGraph instanceof CheckedGraph) {
+			((CheckedGraph) modelGraph).setPrefixCheck(true);
+			return nonuniversalModel;
+		}
+		return ModelFactory.createModelForGraph(new CheckedGraph(modelGraph, false, false, true));
 	}
 
 	@UISalient public static Dataset createMem() {
@@ -528,7 +380,7 @@ public class RepoDatasetFactory implements AnyOper, UtilClass {
 
 		if (globalDS == null) {
 			if (allModelNoDelete) {
-				globalDS = new DatasetNoRemove();
+				globalDS = new CheckedDataset();
 			}
 		}
 		if (globalDS == null) {
@@ -580,31 +432,31 @@ public class RepoDatasetFactory implements AnyOper, UtilClass {
 		}
 	}
 
-	@UISalient public static void replaceViaFactory(ReloadableDataset myRepo, UserDatasetFactory factory, Resource unionOrReplace) {
+	@UISalient public static void addOrReplaceViaFactory(ReloadableDataset myRepo, UserDatasetFactory factory, Resource unionOrReplace) {
 		untested();
 		Dataset oldDs = myRepo.getMainQueryDataset();
 		Dataset newDs = factory.create(oldDs);
 		myRepo.setMyMainQueryDataset(newDs);
-		RepoOper.replaceDatasetElements(newDs, oldDs, unionOrReplace);
+		RepoOper.addOrReplaceDatasetElements(newDs, oldDs, unionOrReplace);
 	}
 
-	@UISalient public static void replaceWithDB(ReloadableDataset myRepo, Resource unionOrReplace) {
+	@UISalient public static void addOrReplaceWithDB(ReloadableDataset myRepo, Resource unionOrReplace) {
 		untested();
 		Dataset oldDs = myRepo.getMainQueryDataset();
 		Dataset newDs = getGlobalDShared();
 		myRepo.setMyMainQueryDataset(newDs);
-		RepoOper.replaceDatasetElements(newDs, oldDs, unionOrReplace);
+		RepoOper.addOrReplaceDatasetElements(newDs, oldDs, unionOrReplace);
 	}
 
-	@UISalient public static void replaceWitMemory(ReloadableDataset myRepo, Resource unionOrReplace) {
+	@UISalient public static void addOrReplaceWitMemory(ReloadableDataset myRepo, Resource unionOrReplace) {
 		untested();
 		Dataset oldDs = myRepo.getMainQueryDataset();
 		Dataset newDs = DatasetFactory.createMem();
 		myRepo.setMyMainQueryDataset(newDs);
-		RepoOper.replaceDatasetElements(newDs, oldDs, unionOrReplace);
+		RepoOper.addOrReplaceDatasetElements(newDs, oldDs, unionOrReplace);
 	}
 
-	private static void untested(Object... args) {
+	static void untested(Object... args) {
 		if (true)
 			Debuggable.notImplemented(args);
 	}

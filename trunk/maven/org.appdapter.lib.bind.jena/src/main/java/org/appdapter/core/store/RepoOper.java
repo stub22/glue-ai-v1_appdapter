@@ -50,6 +50,7 @@ import com.hp.hpl.jena.graph.Graph;
 import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.graph.NodeFactory;
 import com.hp.hpl.jena.graph.Triple;
+import com.hp.hpl.jena.n3.N3JenaWriterPP;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.query.DatasetFactory;
 import com.hp.hpl.jena.rdf.listeners.StatementListener;
@@ -73,22 +74,17 @@ import com.hp.hpl.jena.vocabulary.RDF;
 public class RepoOper implements AnyOper, UtilClass {
 	@UISalient
 	static public interface ISeeToString {
-		@Override
-		@UISalient(MenuName = "Call ToString")
-		public String toString();
+		@Override @UISalient(MenuName = "Call ToString") public String toString();
 	}
 
 	@UISalient
 	static public interface ReloadableDataset {
 
-		@UISalient(MenuName = "Reload Repo")
-		void reloadAllModels();
+		@UISalient(MenuName = "Reload Repo") void reloadAllModels();
 
-		@UISalient()
-		void reloadSingleModel(String modelName);
+		@UISalient() void reloadSingleModel(String modelName);
 
-		@UISalient(ToValueMethod = "toString")
-		Dataset getMainQueryDataset();
+		@UISalient(ToValueMethod = "toString") Dataset getMainQueryDataset();
 
 		/**
 		 * Causes a repo to replace its mainQueryDataset with the 'ds' param
@@ -107,8 +103,7 @@ public class RepoOper implements AnyOper, UtilClass {
 		 * @param ds
 		 * @return
 		 */
-		@UISalient(ToValueMethod = "toString")
-		void setMyMainQueryDataset(Dataset ds);
+		@UISalient(ToValueMethod = "toString") void setMyMainQueryDataset(Dataset ds);
 	}
 
 	// static class ConcBootstrapTF extends
@@ -126,8 +121,7 @@ public class RepoOper implements AnyOper, UtilClass {
 			m_repo = repo;
 		}
 
-		@Override
-		public void fire(RB targetBox) {
+		@Override public void fire(RB targetBox) {
 			String resolvedQueryURL = DemoResources.QUERY_PATH;
 			ClassLoader optCL = getClass().getClassLoader();
 			if (targetBox != null) {
@@ -154,8 +148,7 @@ public class RepoOper implements AnyOper, UtilClass {
 			m_repo = repo;
 		}
 
-		@Override
-		public void fire(RB targetBox) {
+		@Override public void fire(RB targetBox) {
 			m_repo.reloadSingleModel(graphURI);
 		}
 	}
@@ -164,29 +157,19 @@ public class RepoOper implements AnyOper, UtilClass {
 
 	@UISalient
 	public static boolean inPlaceReplacements = false;
-	@UISalient
+	@UISalient(Description = "isMergeDefault means addModelToDataset with some data will add withotu replacing")
 	public static boolean isMergeDefault = true;
 
-	@UISalient
-	public static void replaceModelElements(Model dest, Model src) {
-		if (src == dest) {
-			return;
-		}
-		dest.removeAll();
-		dest.add(src);
-		dest.setNsPrefixes(src.getNsPrefixMap());
-		// dest.getGraph().getPrefixMapping().equals(obj)
-		//if (src.getGraph() )dest.setNsPrefix("", src.getNsPrefixURI(""));
-		///dest.setNsPrefix("#", src.getNsPrefixURI("#"));
+	@UISalient public static void replaceModelElements(Model dest, Model src) {
+		addModelElements(dest, src, true);
 	}
 
-	@UISalient
-	public static void replaceModelElements(Model dest, Model src, Resource unionOrReplace) {
+	@UISalient public static void addModelElements(Model dest, Model src, boolean clearFirst) {
 		if (src == dest) {
 			return;
 		}
-		boolean isReplace = isReplace(unionOrReplace);
-		if (isReplace)
+
+		if (clearFirst)
 			dest.removeAll();
 		dest.add(src);
 		dest.setNsPrefixes(src.getNsPrefixMap());
@@ -195,22 +178,50 @@ public class RepoOper implements AnyOper, UtilClass {
 		///dest.setNsPrefix("#", src.getNsPrefixURI("#"));
 	}
 
-	public static void replaceDatasetElements(Dataset dest, Dataset src, String onlyModel) {
+	public static void addUnionModel(Dataset ds, String src, String dest) {
+		src = correctModelName(src);
+		dest = correctModelName(dest);
+		Model destM = ds.getNamedModel(dest);
+		Model srcM = ds.getNamedModel(src);
+		if (srcM == null) {
+			throw new RuntimeException("Missing Model named: " + srcM);
+		}
+		if (destM == null) {
+			destM = srcM;
+			ds.addNamedModel(dest, destM);
+		} else {
+			destM = RepoDatasetFactory.createUnion(destM, srcM);
+			ds.replaceNamedModel(dest, destM);
+			theLogger.warn("Made Merged Model from " + src);
+		}
+	}
+
+	public static void replaceSingleDatasetModel(Dataset dest, Dataset src, String onlyModel) {
 		onlyModel = correctModelName(onlyModel);
-		replaceDatasetElements(dest, src, onlyModel, null);
+		putSingleOrAllDatasetModel(dest, src, onlyModel, true);
 	}
 
 	public static String correctModelName(String onlyModel) {
 		return RepoDatasetFactory.correctModelName(onlyModel).getURI();
 	}
 
-	public static void replaceDatasetElements(Dataset dest, Dataset src, String onlyModel, Resource unionOrReplace) {
+	public static void putSingleDatasetModel(Dataset dest, Dataset src, String onlyModel, Resource unionOrReplace) {
+		putSingleOrAllDatasetModel(dest, src, onlyModel, isReplace(unionOrReplace));
+	}
+
+	public static void putAllDatasetModels(Dataset dest, Dataset src, Resource unionOrReplace) {
+		putSingleOrAllDatasetModel(dest, src, null, isReplace(unionOrReplace));
+	}
+
+	private static void putSingleOrAllDatasetModel(Dataset dest, Dataset src, String onlyModel, boolean isReplace) {
+		if (onlyModel == null) {
+			Debuggable.notImplemented("putAllDatasetModels...");
+		}
 		onlyModel = correctModelName(onlyModel);
 		if (!(dest instanceof Dataset)) {
 			theLogger.error("Destination is not a datasource! " + dest.getClass() + " " + dest);
 			return;
 		}
-		boolean isReplace = isReplace(unionOrReplace);
 		Dataset sdest = (Dataset) dest;
 		boolean onSrc = true, onDest = true;
 		if (!dest.containsNamedModel(onlyModel)) {
@@ -225,7 +236,7 @@ public class RepoOper implements AnyOper, UtilClass {
 		if (onSrc && onDest) {
 			Model destModel = src.getNamedModel(onlyModel);
 			Model srcModel = dest.getNamedModel(onlyModel);
-			replaceModelElements(destModel, srcModel, unionOrReplace);
+			addModelElements(destModel, srcModel, isReplace);
 			theLogger.info("Replaced model " + onlyModel);
 			return;
 		}
@@ -244,11 +255,11 @@ public class RepoOper implements AnyOper, UtilClass {
 	}
 
 	public static void readDatasetFromURL(String srcPath, Dataset target, Resource unionOrReplace) throws IOException {
-		final Model loaderModel = ModelFactory.createDefaultModel();
+		final Model loaderModel = RepoDatasetFactory.createDefaultModelUnshared();
 		final Dataset loaderDataset = DatasetFactory.createMem();
 		Model m = loaderDataset.getDefaultModel();
 		if (m == null) {
-			m = ModelFactory.createDefaultModel();
+			m = RepoDatasetFactory.createDefaultModelUnshared();
 			loaderDataset.setDefaultModel(m);
 		}
 		final Model[] currentModel = new Model[] { m, null, null };
@@ -256,8 +267,7 @@ public class RepoOper implements AnyOper, UtilClass {
 		final Map<String, Model> constits = new HashMap();
 		loaderModel.register(new StatementListener() {
 
-			@Override
-			public void addedStatement(Statement arg0) {
+			@Override public void addedStatement(Statement arg0) {
 				System.out.println("Adding statement: " + arg0);
 				String subjStr = "" + arg0.getSubject();
 				if (subjStr.equals("self")) {
@@ -266,7 +276,7 @@ public class RepoOper implements AnyOper, UtilClass {
 					if (r.isLiteral()) {
 						// is a model start declaration;
 						String baseURI = modelName[0] = r.asLiteral().getString();
-						Model newModel = currentModel[0] = ModelFactory.createDefaultModel();
+						currentModel[0] = RepoDatasetFactory.createDefaultModelUnshared();
 						currentModel[0].setNsPrefix("", baseURI);
 					} else if (r.isResource()) {
 						// is a model ending declaration (we dont clear)
@@ -298,10 +308,11 @@ public class RepoOper implements AnyOper, UtilClass {
 		for (Map.Entry<String, Model> entry : constits.entrySet()) {
 			loaderDataset.addNamedModel(entry.getKey(), entry.getValue());
 		}
-		replaceDatasetElements(target, loaderDataset, null, unionOrReplace);
+		putAllDatasetModels(target, loaderDataset, unionOrReplace);
 	}
 
-	public static void replaceNamedModel(Dataset dest, String urlModel, Model model, Resource unionOrReplace) {
+	public static void putNamedModel(Dataset dest, String urlModel, Model model, Resource unionOrReplace) {
+		boolean isReplace = isReplace(unionOrReplace);
 		urlModel = RepoOper.correctModelName(urlModel);
 		Lock lock = dest.getLock();
 		lock.enterCriticalSection(Lock.WRITE);
@@ -309,7 +320,6 @@ public class RepoOper implements AnyOper, UtilClass {
 		model.enterCriticalSection(Lock.READ);
 		try {
 			long size = model.size();
-			boolean isReplace = isReplace(unionOrReplace);
 			boolean onDest = true;
 			if (!dest.containsNamedModel(urlModel)) {
 				onDest = false;
@@ -321,7 +331,6 @@ public class RepoOper implements AnyOper, UtilClass {
 			}
 			Model old = dest.getNamedModel(urlModel);
 			if (old == model) {
-				old = null;
 				theLogger.warn("Nothing to do.. same model " + urlModel + " size=" + size);
 				return;
 			}
@@ -334,11 +343,14 @@ public class RepoOper implements AnyOper, UtilClass {
 				isReplace = false;
 			}
 			if (!isReplace) {
-				old.add(model);
 				sizeBefore = old.size();
-				old.getNsPrefixMap().putAll(model.getNsPrefixMap());
+				old.add(model);
+				if (!old.samePrefixMappingAs(model)) {
+					old.getNsPrefixMap().putAll(model.getNsPrefixMap());
+				}
 				long sizeNow = old.size();
 				theLogger.warn("Merging into old model " + urlModel + " size(" + sizeBefore + "+" + model.size() + ")->" + sizeNow);
+				RepoDatasetFactory.invalidateModel(old);
 				return;
 			}
 			theLogger.warn("Replacing old model " + urlModel + " size=" + sizeBefore + "->" + model.size());
@@ -383,10 +395,10 @@ public class RepoOper implements AnyOper, UtilClass {
 	}
 
 	public static void replaceDatasetElements(Dataset dest, Dataset src) {
-		replaceDatasetElements(dest, src, (Resource) null);
+		addOrReplaceDatasetElements(dest, src, (Resource) null);
 	}
 
-	public static void replaceDatasetElements(Dataset dest, Dataset src, Resource unionOrReplace) {
+	public static void addOrReplaceDatasetElements(Dataset dest, Dataset src, Resource unionOrReplace) {
 		if (!(dest instanceof Dataset)) {
 			theLogger.error("Destination is not a datasource! " + dest.getClass() + " " + dest);
 			return;
@@ -394,18 +406,20 @@ public class RepoOper implements AnyOper, UtilClass {
 		Dataset sdest = (Dataset) dest;
 		Model defDestModel = dest.getDefaultModel();
 		Model defSrcModel = src.getDefaultModel();
-		replaceModelElements(defDestModel, defSrcModel, unionOrReplace);
+		boolean isReplace = isReplace(unionOrReplace);
+
+		addModelElements(defDestModel, defSrcModel, isReplace);
+
 		HashSet<String> dnames = setOF(sdest.listNames());
 		HashSet<String> snames = setOF(src.listNames());
 		HashSet<String> replacedModels = new HashSet<String>();
-		boolean isReplace = isReplace(unionOrReplace);
 
 		for (String nym : snames) {
 			Model getsrc = src.getNamedModel(nym);
 			if (dest.containsNamedModel(nym)) {
 				Model getdest = dest.getNamedModel(nym);
 				replacedModels.add(nym);
-				replaceModelElements(getdest, getsrc, unionOrReplace);
+				addModelElements(getdest, getsrc, isReplace);
 				dnames.remove(nym);
 				continue;
 			}
@@ -473,11 +487,6 @@ public class RepoOper implements AnyOper, UtilClass {
 		RepoDatasetFactory.registerDatasetFactory(datasetTypeName, factory);
 	}
 
-	public static void writeDataset(Dataset wDataset, PrintStream originalErrStream) {
-		// TODO Auto-generated method stub
-
-	}
-
 	static private String bar = "########################################\n";
 
 	public static void writeToTTL(Repo boundRepo, Writer ow) throws IOException {
@@ -507,17 +516,18 @@ public class RepoOper implements AnyOper, UtilClass {
 		*/
 		writeToTTL(repoName, thiz, dirModel, ds, ow);
 	}
+
 	public static void writeToTTL(Repo boundRepo) throws IOException {
 		if (!(boundRepo instanceof Repo.WithDirectory)) {
-            return;
+			return;
 		}
 		Dataset ds = boundRepo.getMainQueryDataset();
-        Model dirModel = ((Repo.WithDirectory) boundRepo).getDirectoryModel();
-        String rname = new SimpleDateFormat("yyyyMMddHH_mmss_SSS").format(new Date());
-        String dir = "loaded_" + rname + "/";
-        String csiURI = dirModel.getNsPrefixURI("csi");
-        Node fileRepoName = dirModel.getResource(csiURI + "filerepo_" + rname).asNode();
-        saveRepoAsManyTTLs(fileRepoName, dir, dirModel, ds, false);
+		Model dirModel = ((Repo.WithDirectory) boundRepo).getDirectoryModel();
+		String rname = new SimpleDateFormat("yyyyMMddHH_mmss_SSS").format(new Date());
+		String dir = "loaded_" + rname + "/";
+		String csiURI = dirModel.getNsPrefixURI("csi");
+		Node fileRepoName = dirModel.getResource(csiURI + "filerepo_" + rname).asNode();
+		saveRepoAsManyTTLs(fileRepoName, dir, dirModel, ds, false);
 	}
 
 	public static void saveRepoAsManyTTLs(Node fileRepoName, String dir, Model dirModel, Dataset ds, boolean dontChangeDir) throws IOException {
@@ -549,7 +559,7 @@ public class RepoOper implements AnyOper, UtilClass {
 			File file = new File(dir, dontChangeDir ? "dir.ttl" : "dir.old");
 			PrintWriter ow = new PrintWriter(file);
 			ow.println("\n");
-			dirModel.write(ow, "TTL");
+			writeTTL(dirModel, ow, "TTL");
 			ow.println("\n");
 			ow.println("# modelSize=" + dirModel.size() + "\n\n");
 			ow.close();
@@ -592,10 +602,10 @@ public class RepoOper implements AnyOper, UtilClass {
 			PrintWriter ow = new PrintWriter(file);
 			ow.println("# load this with..  Repo repo = new UrlRepoSpec(\"" + file.toURL() + "\").makeRepo();\n");
 			ow.println("\n");
-			Model m = ModelFactory.createDefaultModel();
+			Model m = RepoDatasetFactory.createDefaultModelUnshared();
 			m.setNsPrefixes(dirModel);
 			m.add(ModelFactory.createModelForGraph(newGraph));
-			m.write(ow, "TTL");
+			writeTTL(m, ow, "TTL");
 			ow.println("\n");
 			ow.println("# modelSize=" + dirModel.size() + "\n\n");
 			ow.println("# dirModel = " + dirModel.size());
@@ -606,8 +616,14 @@ public class RepoOper implements AnyOper, UtilClass {
 		}
 	}
 
+	public static void writeTTL(Model model, PrintWriter owt, String base) {
+		N3JenaWriterPP jenaWriter = new RDFSortedWriter();
+
+		jenaWriter.write(model, owt, base);
+	}
+
 	private static void writeModelOnlyReferncedNamespace(PrintWriter ow, Model m, PrefixMapping pm) {
-		Model m2 = ModelFactory.createDefaultModel();
+		Model m2 = RepoDatasetFactory.createDefaultModelUnshared();
 		List<Statement> stmts = m.listStatements().toList();
 		Set<String> usedNS = new HashSet<String>(m.listNameSpaces().toList());
 
@@ -627,7 +643,7 @@ public class RepoOper implements AnyOper, UtilClass {
 			m2.setNsPrefix(prefix, ns);
 		}
 		m2.add(m);
-		m2.write(ow, "TTL");
+		writeTTL(m2, ow, "TTL");
 	}
 
 	public static void writeToTTL(String repoName, String thiz, Model dirModel, Dataset ds, Writer ow) throws IOException {
@@ -709,12 +725,11 @@ public class RepoOper implements AnyOper, UtilClass {
 		final Model[] currentDirModel = new Model[] { null };
 		final Model[] currentDefaultModel = new Model[] { null };
 		final String[] modelName = new String[] { null };
-		final Model loaderModel = ModelFactory.createDefaultModel();
+		final Model loaderModel = RepoDatasetFactory.createDefaultModelUnshared();
 		final PrefixMapping nsMap = loaderModel;
 		loaderModel.register(new StatementListener() {
 
-			@Override
-			public void addedStatement(Statement arg0) {
+			@Override public void addedStatement(Statement arg0) {
 
 				System.out.println("Adding statement: " + arg0);
 				String subjStr = "" + arg0.getSubject();
@@ -765,11 +780,15 @@ public class RepoOper implements AnyOper, UtilClass {
 		if (targetDataset.containsNamedModel(baseURI)) {
 			return targetDataset.getNamedModel(baseURI);
 		}
-		Model newModel = ModelFactory.createDefaultModel();
+		Model newModel = RepoDatasetFactory.createDefaultModelUnshared();
 		targetDataset.addNamedModel(baseURI, newModel);
 		newModel.setNsPrefixes(nsMap);
 		newModel.setNsPrefix("", baseURI);
 		return newModel;
+	}
+
+	public static Model makeReadOnly(Model model) {
+		return model;
 	}
 
 }

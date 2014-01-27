@@ -23,8 +23,9 @@ import org.appdapter.core.store.{ Repo, InitialBinding, ModelClient }
 import org.appdapter.help.repo.{ RepoClient, RepoClientImpl, InitialBindingImpl, SolutionList }
 import org.appdapter.impl.store.{ FancyRepo }
 import com.hp.hpl.jena.rdf.model.Model
-import com.hp.hpl.jena.rdf.model.ModelFactory
+import org.appdapter.core.store.dataset.RepoDatasetFactory
 import org.appdapter.core.log.Debuggable
+import org.appdapter.core.store.dataset.RepoDatasetFactory
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -87,13 +88,13 @@ case class DirectDerivedGraph(val mySpec: DerivedGraphSpec, val myUpstreamNMP: N
   private def makeModel(): Model = {
     mySpec.getStructureTypeID() match {
       case DerivedGraphNames.T_union => {
-        var cumUnionModel = ModelFactory.createDefaultModel();
+        var cumUnionModel = RepoDatasetFactory.createDefaultModelUnshared
         for (srcGraphID <- mySpec.myInGraphIDs) {
           val srcGraph = myUpstreamNMP.getNamedModel(srcGraphID)
           if (srcGraph == null) {
             getLogger().error("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ERRORR!!!! %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ERROR !! %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% \nUnknown srcGraphID = " + srcGraphID + " in " + myUpstreamNMP)
           } else {
-            // TODO : when upgrading (to Jena v2.8?) use  ModelFactory.createUnion();
+            // TODO : when upgrading (to Jena v2.8?) use  ModelFactory.createUnion(..,..);
             cumUnionModel = cumUnionModel.union(srcGraph)
           }
         }
@@ -101,7 +102,7 @@ case class DirectDerivedGraph(val mySpec: DerivedGraphSpec, val myUpstreamNMP: N
       }
       case x => {
         getLogger().warn("Unknown structure type {}", x)
-        ModelFactory.createDefaultModel()
+        RepoDatasetFactory.createDefaultModelUnshared()
       }
     }
   }

@@ -17,12 +17,12 @@
 package org.appdapter.core.matdat
 
 import scala.Array.canBuildFrom
-
 import org.appdapter.core.log.BasicDebugger
 import org.appdapter.impl.store.ResourceResolver
-
 import com.hp.hpl.jena.datatypes.{ RDFDatatype, TypeMapper }
 import com.hp.hpl.jena.rdf.model.{ Model, ModelFactory, Property, RDFNode, Resource, Statement }
+import org.appdapter.core.store.dataset.RepoDatasetFactory
+import org.appdapter.core.log.Debuggable
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -60,7 +60,9 @@ object SemSheet {
         val propNameCell: Option[String] = propNameCells.getPossibleColumnValueString(colIdx);
         val subKindCell: Option[String] = subKindCells.getPossibleColumnValueString(colIdx);
 
-        val optProp: Option[Property] = propNameCell.map { propResolver.findOrMakeProperty(myModel, _) }
+        val optProp: Option[Property] = propNameCell.map {
+          propResolver.findOrMakeProperty(myModel, _)
+        }
 
         val optColBind: Option[PropertyValueColumnBinding] = if (metaKindCell.isDefined) {
 
@@ -125,6 +127,7 @@ object SemSheet {
         getLogger.info("Row is commented out: " + cellRow.dump());
       }
       if ((myIndivColIdx >= 0) && (!rowIsCommentedOut)) {
+        Debuggable.putFrameVar("column", myIndivColIdx)
         val optIndivCell: Option[String] = cellRow.getPossibleColumnValueString(myIndivColIdx);
         val optIndiv: Option[Resource] = if (optIndivCell.isDefined) {
           val indivQNameOrURI = optIndivCell.get
@@ -134,6 +137,7 @@ object SemSheet {
         if (optIndiv.isDefined) {
           val indiv: Resource = optIndiv.get
           for (pcb <- myPropColBindings) {
+            Debuggable.putFrameVar("column", pcb.myColIdx)
             pcb.matrixCellToPossibleModelStmt(cellRow, indiv);
           }
         }
@@ -178,7 +182,7 @@ object SemSheet {
   }
 
   def readModelCSVFilesSheet00(sheetKey: String, sheetNum: String, nsJavaMap: java.util.Map[String, String]): Model = {
-    val tgtModel: Model = ModelFactory.createDefaultModel();
+    val tgtModel: Model = RepoDatasetFactory.createDefaultModelUnshared
 
     tgtModel.setNsPrefixes(nsJavaMap)
 

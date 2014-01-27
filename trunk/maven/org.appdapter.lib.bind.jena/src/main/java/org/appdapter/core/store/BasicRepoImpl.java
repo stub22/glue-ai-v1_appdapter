@@ -18,8 +18,6 @@ package org.appdapter.core.store;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -27,11 +25,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.appdapter.core.jvm.GetObject;
-import org.appdapter.core.log.Debuggable;
 import org.appdapter.bind.rdf.jena.assembly.AssemblerUtils;
 import org.appdapter.bind.rdf.jena.query.JenaArqQueryFuncs;
 import org.appdapter.bind.rdf.jena.query.JenaArqResultSetProcessor;
+import org.appdapter.core.jvm.GetObject;
+import org.appdapter.core.log.Debuggable;
 import org.appdapter.core.name.Ident;
 import org.appdapter.core.store.dataset.RemoteDatasetProviderSpec;
 import org.appdapter.core.store.dataset.RepoDatasetFactory;
@@ -53,6 +51,8 @@ import com.hp.hpl.jena.shared.Lock;
 
 public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements Repo, Repo.SharedModels, Repo.DatasetProvider {
 
+	public static boolean LOAD_SINGLE_THREADED = true;
+	public boolean loadSingleThread = LOAD_SINGLE_THREADED;
 	SpecialRepoLoader specialRepoLoader;
 
 	protected SpecialRepoLoader getRepoLoader() {
@@ -65,13 +65,14 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 
 	protected BasicRepoImpl() {
 		specialRepoLoader = new SpecialRepoLoader(this);
+		specialRepoLoader.setSingleThreaded(loadSingleThread);
 	}
 
 	Model repoEvents;
 
 	public Model getEventsModel() {
 		if (repoEvents == null) {
-			repoEvents = ModelFactory.createDefaultModel();
+			repoEvents = RepoDatasetFactory.createDefaultModel();
 			//repoEvents.add(getDirectoryModel());
 		}
 		return repoEvents;
@@ -240,11 +241,11 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 			isLoadingStarted = true;
 			isLoadingLocked = true;
 			isLoadingFinished = false;
-			addLoadTask("directoryModel", new Runnable() {
+			addLoadTask("beginLoading", new Runnable() {
 				@Override public void run() {
 					final SpecialRepoLoader repoLoader = getRepoLoader();
 					repoLoader.setSynchronous(false);
-					synchronized (loadingLock) {
+					synchronized (loadingLock) {						
 						callLoadingInLock();
 					}
 					isLoadingLocked = false;
@@ -290,7 +291,7 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 		Dataset wDataset = myMainQueryDataset;
 		try {
 			isLoadingFinished = true;
-			if (Debuggable.isTesting())
+			if (Debuggable.isTesting() && false)
 				RepoOper.writeToTTL(this, new FileWriter("finishedLoading.ttl"));
 		} catch (IOException e) {
 			e.printStackTrace();

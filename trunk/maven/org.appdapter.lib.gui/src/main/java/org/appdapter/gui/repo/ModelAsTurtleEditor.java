@@ -39,6 +39,7 @@ import javax.swing.text.BadLocationException;
 
 import org.appdapter.core.convert.NoSuchConversionException;
 import org.appdapter.core.store.RepoOper;
+import org.appdapter.core.store.dataset.RepoDatasetFactory;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.editors.ObjectPanel;
 import org.appdapter.gui.swing.JJPanel;
@@ -57,20 +58,18 @@ import com.hp.hpl.jena.shared.Lock;
 //import com.hp.hpl.jena.n3.N3Exception;
 
 /**
- * <p>A Swing-based GUI window that provides a simple Turtle-based
- * editor and inspector for Jena models. Useful for debugging GUI
- * and web applications. To open an editor window, pass the model
- * instance to the static {@link ModelAsTurtleEditor#open(Model)} method.</p>
- *
- * <p>The editor has basic reporting of Turtle syntax errors.
- * It also updates the namespace prefixes of the model.
- * Several windows for different models may be open at the same
- * time. Concurrent changes to the model are reported.</p>
- *
- * <p>The class has a {@link #main} method for demonstration purposes.
- * It loads one or more RDF files into Jena models and displays an editor
- * for each.</p>
- *
+ * <p>
+ * A Swing-based GUI window that provides a simple Turtle-based editor and inspector for Jena models. Useful for debugging GUI and web applications. To open an editor window, pass the model instance to the static {@link ModelAsTurtleEditor#open(Model)} method.
+ * </p>
+ * 
+ * <p>
+ * The editor has basic reporting of Turtle syntax errors. It also updates the namespace prefixes of the model. Several windows for different models may be open at the same time. Concurrent changes to the model are reported.
+ * </p>
+ * 
+ * <p>
+ * The class has a {@link #main} method for demonstration purposes. It loads one or more RDF files into Jena models and displays an editor for each.
+ * </p>
+ * 
  * @version $Id$
  * @author Richard Cyganiak (richard@cyganiak.de)
  * @author LogicMoo
@@ -102,7 +101,9 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 
 	/**
 	 * Opens a new editor window and binds it to the given model.
-	 * @param sourceModel A Jena model
+	 * 
+	 * @param sourceModel
+	 *            A Jena model
 	 * @return A reference to the new editor window
 	 */
 	@UISalient public static ModelAsTurtleEditor open(Model sourceModel) {
@@ -110,11 +111,12 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 	}
 
 	/**
-	 * Opens a new editor window and binds it to the given model.
-	 * A custom title is useful to distinguish multiple editor
-	 * windows for different models.
-	 * @param sourceModel A Jena model
-	 * @param title A custom title for the editor window
+	 * Opens a new editor window and binds it to the given model. A custom title is useful to distinguish multiple editor windows for different models.
+	 * 
+	 * @param sourceModel
+	 *            A Jena model
+	 * @param title
+	 *            A custom title for the editor window
 	 * @return A reference to the new editor window
 	 */
 	public static ModelAsTurtleEditor open(Model sourceModel, String title) {
@@ -122,11 +124,8 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 	}
 
 	/**
-	 * Main method for demonstration purposes. Takes a number of
-	 * filename or URL arguments. Reads them as RDF/XML or Turtle
-	 * (if ends with ".n3" or ".ttl"). Displays an editor for
-	 * each. If the same filename appears twice, then both editors
-	 * will use the same model.
+	 * Main method for demonstration purposes. Takes a number of filename or URL arguments. Reads them as RDF/XML or Turtle (if ends with ".n3" or ".ttl"). Displays an editor for each. If the same filename appears twice, then both editors will use the same model.
+	 * 
 	 * @param args
 	 */
 	public static void main(String[] args) {
@@ -140,7 +139,7 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 				if (url.indexOf(":") == -1) {
 					url = "file:" + url;
 				}
-				Model m = ModelFactory.createDefaultModel();
+				Model m = RepoDatasetFactory.createDefaultModelUnshared();
 				String lang = (url.endsWith(".n3") || url.endsWith(".ttl")) ? "N3" : "RDF/XML";
 				m.read(url, lang);
 				filenamesToGraph.put(args[i], m);
@@ -163,15 +162,12 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 	StatementListener listener;
 
 	/**
-	 * true when the model has been changed by another part of the
-	 * system
+	 * true when the model has been changed by another part of the system
 	 */
 	boolean outOfSync;
 
 	/**
-	 * true while we've locked the model. Assumption: All changes to
-	 * the model reported by the listener during this period have
-	 * been caused by us.
+	 * true while we've locked the model. Assumption: All changes to the model reported by the listener during this period have been caused by us.
 	 */
 	boolean weAreEditingTheModel = false;
 	protected String titleShouldBe;
@@ -182,8 +178,11 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 
 	/**
 	 * Creates and displays new ModelEditor.
-	 * @param sourceModel The model bound to the editor
-	 * @param title The full title of the editor window
+	 * 
+	 * @param sourceModel
+	 *            The model bound to the editor
+	 * @param title
+	 *            The full title of the editor window
 	 */
 	public ModelAsTurtleEditor(Model sourceModel, String title) {
 		this.window = Utility.getAppFrame();
@@ -206,9 +205,7 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 	}
 
 	/**
-	 * Parses the contents of the Turtle text area and adds
-	 * all statements and namespace prefixes to the model.
-	 * Displays an error message if the contents are invalid.
+	 * Parses the contents of the Turtle text area and adds all statements and namespace prefixes to the model. Displays an error message if the contents are invalid.
 	 */
 	protected synchronized void addTurtleToModel() {
 		inModelLock(false, new VoidFunc1<Model>() {
@@ -236,9 +233,7 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 	}
 
 	/**
-	 * Parses the contents of the Turtle text area and removes
-	 * all statements and namespace prefixes from the model.
-	 * Displays an error message if the contents are invalid.
+	 * Parses the contents of the Turtle text area and removes all statements and namespace prefixes from the model. Displays an error message if the contents are invalid.
 	 */
 	protected synchronized void removeTurtleFromModel() {
 		inModelLock(false, new VoidFunc1<Model>() {
@@ -265,10 +260,7 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 	}
 
 	/**
-	 * Parses the contents of the Turtle text area and replaces
-	 * all statements and namespace prefixes in the model with
-	 * those from the text area.
-	 * Displays an error message if the contents are invalid.
+	 * Parses the contents of the Turtle text area and replaces all statements and namespace prefixes in the model with those from the text area. Displays an error message if the contents are invalid.
 	 */
 	protected synchronized void replaceModelWithTurtle() {
 		inModelLock(false, new VoidFunc1<Model>() {
@@ -316,8 +308,7 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 	}
 
 	/**
-	 * Replaces the contents of the text area with a Turtle
-	 * serialization of the model.
+	 * Replaces the contents of the text area with a Turtle serialization of the model.
 	 */
 	protected void fetchTurtleFromModel() {
 		inModelLock(true, new VoidFunc1<Model>() {
@@ -343,14 +334,12 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 	}
 
 	/**
-	 * Parses the current contents of the Turtle text area
-	 * and returns them as a Jena model. Will show an error
-	 * message to the user and return null if the contents
-	 * are not syntactically valid.
+	 * Parses the current contents of the Turtle text area and returns them as a Jena model. Will show an error message to the user and return null if the contents are not syntactically valid.
+	 * 
 	 * @return The parsed contents of the Turtle text area
 	 */
 	protected Model getContentsAsModel() {
-		Model result = ModelFactory.createDefaultModel();
+		Model result = RepoDatasetFactory.createDefaultModelUnshared();
 
 		StringReader reader = new StringReader(getContentsAsTurtle());
 		try {
@@ -395,7 +384,9 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 
 	/**
 	 * Sets the contents of the Turtle text area.
-	 * @param text The new contents
+	 * 
+	 * @param text
+	 *            The new contents
 	 */
 	protected void setContents(String text) {
 		this.turtleTextArea.setText(text);
@@ -425,10 +416,12 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 	}
 
 	/**
-	 * Selects the character at the given position to indicate the
-	 * location of a syntax error.
-	 * @param line A cursor position
-	 * @param column A cursor position
+	 * Selects the character at the given position to indicate the location of a syntax error.
+	 * 
+	 * @param line
+	 *            A cursor position
+	 * @param column
+	 *            A cursor position
 	 */
 	protected void highlightCharacter(int line, int column) {
 		try {
@@ -443,8 +436,11 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 
 	/**
 	 * Moves the cursor to a given position.
-	 * @param line A cursor position
-	 * @param column A cursor position
+	 * 
+	 * @param line
+	 *            A cursor position
+	 * @param column
+	 *            A cursor position
 	 */
 	protected void moveCursorTo(int line, int column) {
 		try {
@@ -465,11 +461,7 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 	}
 
 	/**
-	 * Shows a message about a concurrent modification of the
-	 * model to the user, except if we have locked the model
-	 * (then we assume the change has been by ourselves), or if
-	 * model and text area are already out of sync (then the
-	 * user has already seen the message earlier).
+	 * Shows a message about a concurrent modification of the model to the user, except if we have locked the model (then we assume the change has been by ourselves), or if model and text area are already out of sync (then the user has already seen the message earlier).
 	 */
 	protected synchronized void notifyConcurrentChange(Model m, Statement statement) {
 		if (this.weAreEditingTheModel || this.outOfSync) {
@@ -652,7 +644,9 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 
 	/**
 	 * Helper function that creates a button
-	 * @param label The button's label
+	 * 
+	 * @param label
+	 *            The button's label
 	 * @param action
 	 */
 	public void makeButton(String label, ActionListener action) {

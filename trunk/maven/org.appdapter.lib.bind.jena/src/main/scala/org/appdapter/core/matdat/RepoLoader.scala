@@ -90,7 +90,7 @@ object FancyRepoLoader extends BasicDebugger {
   }*/
 
   def replaceOrUnion(mainDset: Dataset, unionOrReplaceRes: Resource, graphURI: String, sheetModel: Model) {
-    RepoOper.replaceNamedModel(mainDset, graphURI, sheetModel, unionOrReplaceRes)
+    RepoOper.putNamedModel(mainDset, graphURI, sheetModel, unionOrReplaceRes)
   }
 
   // Makes directory models (ussualy still unloaded)
@@ -114,7 +114,7 @@ object FancyRepoLoader extends BasicDebugger {
   // Makes single Models from xlsx/cvs/jenaURLs
   def readModelSheetFromURL(rdfURL: String, nsJavaMap: java.util.Map[String, String], clList: java.util.List[ClassLoader]): Model = {
     try {
-		val efsu = new ExtendedFileStreamUtils()
+      val efsu = new ExtendedFileStreamUtils()
       val ext: java.lang.String = org.appdapter.fileconv.FileStreamUtils.getFileExt(rdfURL);
       if (ext != null && (ext.equals("xlsx") || ext.equals("xls"))) {
         XLSXSheetRepoLoader.loadXLSXSheetRepo(rdfURL, "Nspc", "Dir", clList, null).

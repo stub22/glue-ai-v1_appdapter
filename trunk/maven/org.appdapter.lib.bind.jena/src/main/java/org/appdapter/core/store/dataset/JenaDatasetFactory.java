@@ -70,7 +70,7 @@ public class JenaDatasetFactory extends AbstractDatasetFactory implements UserDa
 	 */
 	public Dataset create(Dataset dataset) {
 		if (RepoDatasetFactory.datasetNoDeleteModels) {
-			return new RepoDatasetFactory.DatasetNoRemove(dataset);
+			return new CheckedDataset(dataset);
 		}
 		return new DatasetImpl(dataset);
 	}
@@ -81,7 +81,7 @@ public class JenaDatasetFactory extends AbstractDatasetFactory implements UserDa
 	 */
 	public Dataset create(DatasetGraph dataset) {
 		if (RepoDatasetFactory.datasetNoDeleteModels) {
-			return new RepoDatasetFactory.DatasetNoRemove(dataset);
+			return new CheckedDataset(dataset);
 		}
 		return DatasetImpl.wrap(dataset);
 	}
