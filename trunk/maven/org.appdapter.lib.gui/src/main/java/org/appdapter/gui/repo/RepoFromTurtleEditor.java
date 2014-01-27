@@ -198,7 +198,7 @@ public class RepoFromTurtleEditor extends ModelAsTurtleEditor implements ObjectP
 		return null;
 	}
 
-	void setRepoObject(final Repo boundRepo) {
+	public void setRepoObject(final Repo boundRepo) {
 		super.setObject(boundRepo);
 		String repoName = "" + boundRepo;
 		this.totalModel = RepoDatasetFactory.createDefaultModelUnshared();
@@ -231,7 +231,7 @@ public class RepoFromTurtleEditor extends ModelAsTurtleEditor implements ObjectP
 		Repo boundRepo = getRepo(getValue());
 		FileOutputStream os = new FileOutputStream(file);
 		OutputStreamWriter ow = new OutputStreamWriter(os);
-		RepoOper.writeToTTL(boundRepo, ow);
+		RepoOper.writeTriG(boundRepo, ow);
 		ow.close();
 	}
 

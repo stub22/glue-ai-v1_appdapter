@@ -18,12 +18,24 @@ import com.hp.hpl.jena.util.iterator.ClosableIterator;
 import edu.emory.mathcs.backport.java.util.Collections;
 
 public final class RDFSortedWriter extends N3JenaWriterPP {
+	private boolean skipWritingPrefixes = false;
+
 	{
 		useWellKnownPropertySymbols = false;
 	}
 
+	public RDFSortedWriter(boolean writePfxs) {
+		this.skipWritingPrefixes = !writePfxs;
+	}
+
 	protected ResIterator listSubjects(Model model) {
 		return model.listSubjects();
+	}
+
+	@Override protected void writePrefixes(Model model) {
+		if (!skipWritingPrefixes) {
+			super.writePrefixes(model);
+		}
 	}
 
 	protected void writeOneGraphNode(Resource subject)
