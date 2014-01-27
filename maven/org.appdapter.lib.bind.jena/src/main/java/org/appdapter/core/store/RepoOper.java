@@ -19,12 +19,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -34,10 +36,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.RDFFormat;
 import org.appdapter.api.trigger.AnyOper;
 import org.appdapter.core.debug.UIAnnotations.UIHidden;
 import org.appdapter.core.debug.UIAnnotations.UtilClass;
 import org.appdapter.core.log.Debuggable;
+import org.appdapter.core.matdat.OnlineSheetRepoSpec;
+import org.appdapter.core.matdat.RepoSpec;
+import org.appdapter.core.matdat.URLRepoSpec;
 import org.appdapter.core.store.dataset.RepoDatasetFactory;
 import org.appdapter.core.store.dataset.UserDatasetFactory;
 import org.appdapter.demo.DemoResources;
@@ -62,6 +70,7 @@ import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.shared.Lock;
 import com.hp.hpl.jena.shared.PrefixMapping;
 import com.hp.hpl.jena.sparql.graph.GraphFactory;
+import com.hp.hpl.jena.sparql.sse.writers.WriterOp;
 import com.hp.hpl.jena.vocabulary.RDF;
 
 // import com.hp.hpl.jena.query.DataSource;
@@ -487,47 +496,18 @@ public class RepoOper implements AnyOper, UtilClass {
 		RepoDatasetFactory.registerDatasetFactory(datasetTypeName, factory);
 	}
 
-	static private String bar = "########################################\n";
-
-	public static void writeToTTL(Repo boundRepo, Writer ow) throws IOException {
-
-		String repoName = "" + boundRepo;
-		Dataset ds = boundRepo.getMainQueryDataset();
-		String thiz = "<_:self>";
-		Model dirModel = null;
-		if (boundRepo instanceof Repo.WithDirectory) {
-			dirModel = ((Repo.WithDirectory) boundRepo).getDirectoryModel();
-		}
-		if (true) {
-			String rname = new SimpleDateFormat("yyyyMMddHH_mmss_SSS").format(new Date());
-			String dir = "loaded_" + rname + "/";
-			String csiURI = dirModel.getNsPrefixURI("csi");
-			Node fileRepoName = dirModel.getResource(csiURI + "filerepo_" + rname).asNode();
-			saveRepoAsManyTTLs(fileRepoName, dir, dirModel, ds, false);
+	public static void writeRepoToDirectory(Repo repo, String dir) throws IOException {
+		if (!(repo instanceof Repo.WithDirectory)) {
+			System.out.println("Not Repo.WithDirectory  " + repo.getClass() + " " + repo);
 			return;
 		}
-
-		ow.write("# reponame=" + repoName + "\n");
-		ow.write("# time=" + new Date().toString() + "\n");
-		/*if (dirModel == null) {
-			dirModel = ModelFactory.createDefaultModel();
-		}
-		String modelName = addNamedModel("", dirModel);
-		*/
-		writeToTTL(repoName, thiz, dirModel, ds, ow);
-	}
-
-	public static void writeToTTL(Repo boundRepo) throws IOException {
-		if (!(boundRepo instanceof Repo.WithDirectory)) {
-			return;
-		}
-		Dataset ds = boundRepo.getMainQueryDataset();
-		Model dirModel = ((Repo.WithDirectory) boundRepo).getDirectoryModel();
-		String rname = new SimpleDateFormat("yyyyMMddHH_mmss_SSS").format(new Date());
-		String dir = "loaded_" + rname + "/";
+		Dataset ds = repo.getMainQueryDataset();
+		Model dirModel = ((Repo.WithDirectory) repo).getDirectoryModel();
 		String csiURI = dirModel.getNsPrefixURI("csi");
+		String rname = new SimpleDateFormat("yyyyMMddHH_mmss_SSS").format(new Date());
 		Node fileRepoName = dirModel.getResource(csiURI + "filerepo_" + rname).asNode();
-		saveRepoAsManyTTLs(fileRepoName, dir, dirModel, ds, false);
+		RepoOper.saveRepoAsManyTTLs(fileRepoName, dir, dirModel, ds, false);
+
 	}
 
 	public static void saveRepoAsManyTTLs(Node fileRepoName, String dir, Model dirModel, Dataset ds, boolean dontChangeDir) throws IOException {
@@ -559,7 +539,7 @@ public class RepoOper implements AnyOper, UtilClass {
 			File file = new File(dir, dontChangeDir ? "dir.ttl" : "dir.old");
 			PrintWriter ow = new PrintWriter(file);
 			ow.println("\n");
-			writeTTL(dirModel, ow, "TTL");
+			writeModel(dirModel, ow, true);
 			ow.println("\n");
 			ow.println("# modelSize=" + dirModel.size() + "\n\n");
 			ow.close();
@@ -572,7 +552,6 @@ public class RepoOper implements AnyOper, UtilClass {
 			Node gname = dni.next();
 			String name = gname.getLocalName();
 			String filename = name + ".ttl";
-			PrintWriter ow = new PrintWriter(new File(dir, filename));
 			Model m = ds.getNamedModel(gname.toString());
 			for (Triple was : dirqGraph.find(gname, rdftype, Node.ANY).toList()) {
 				if (!sheetTypes.contains(was.getObject())) {
@@ -584,8 +563,10 @@ public class RepoOper implements AnyOper, UtilClass {
 				newGraph.add(new Triple(gname, rdftype, fileModel));
 				newGraph.add(new Triple(gname, sourcePath, NodeFactory.createLiteral(filename)));
 			}
+
+			PrintWriter ow = new PrintWriter(new File(dir, filename));
 			ow.println("\n");
-			writeModelOnlyReferncedNamespace(ow, m, dirModel);
+			writeModel(m, ow, true);
 			ow.println("\n");
 			ow.println("# modelName=" + gname);
 			ow.println("# modelSize=" + m.size() + "\n\n");
@@ -605,7 +586,7 @@ public class RepoOper implements AnyOper, UtilClass {
 			Model m = RepoDatasetFactory.createDefaultModelUnshared();
 			m.setNsPrefixes(dirModel);
 			m.add(ModelFactory.createModelForGraph(newGraph));
-			writeTTL(m, ow, "TTL");
+			writeModel(m, ow, true);
 			ow.println("\n");
 			ow.println("# modelSize=" + dirModel.size() + "\n\n");
 			ow.println("# dirModel = " + dirModel.size());
@@ -616,13 +597,7 @@ public class RepoOper implements AnyOper, UtilClass {
 		}
 	}
 
-	public static void writeTTL(Model model, PrintWriter owt, String base) {
-		N3JenaWriterPP jenaWriter = new RDFSortedWriter();
-
-		jenaWriter.write(model, owt, base);
-	}
-
-	private static void writeModelOnlyReferncedNamespace(PrintWriter ow, Model m, PrefixMapping pm) {
+	public static void writeModel(Model m, Writer ow, boolean includeNamespaces) {
 		Model m2 = RepoDatasetFactory.createDefaultModelUnshared();
 		List<Statement> stmts = m.listStatements().toList();
 		Set<String> usedNS = new HashSet<String>(m.listNameSpaces().toList());
@@ -635,60 +610,33 @@ public class RepoOper implements AnyOper, UtilClass {
 		}
 		for (String ns : usedNS) {
 			String prefix = m.getNsURIPrefix(ns);
-			if (prefix == null)
-				prefix = pm.getNsURIPrefix(ns);
+			//if (prefix == null)
+			//	prefix = pm.getNsURIPrefix(ns);
 			if (prefix == null) {
 				continue;
 			}
 			m2.setNsPrefix(prefix, ns);
 		}
 		m2.add(m);
-		writeTTL(m2, ow, "TTL");
+		N3JenaWriterPP jenaWriter = new RDFSortedWriter(includeNamespaces);
+		jenaWriter.write(m, ow, "TTL");
 	}
 
-	public static void writeToTTL(String repoName, String thiz, Model dirModel, Dataset ds, Writer ow) throws IOException {
+	public static void writeTriG(Repo boundRepo, Writer ow) throws IOException {
 
+		Dataset ds = boundRepo.getMainQueryDataset();
+		Dataset datasetw = DatasetFactory.create(ds);
+		Model defm = ds.getDefaultModel();
+
+		Model dirModel = null;
+		if (boundRepo instanceof Repo.WithDirectory) {
+			dirModel = ((Repo.WithDirectory) boundRepo).getDirectoryModel();
+		}
 		if (dirModel != null) {
-			ow.write("# dirModel = " + dirModel.size() + "\n");
-			ow.flush();
-			dirModel.write(ow, "TTL");
-			ow.write("\n\n");
-			ow.write(thiz + " a ccrt:DirectoryModel. \n");
-			ow.write("\n\n");
-			ow.flush();
+			datasetw.addNamedModel("#dir", dirModel);
 		}
-		Iterator dni = ds.listNames();
-		Model defaultModel = ds.getDefaultModel();
-		while (dni.hasNext()) {
-			String name = (String) dni.next();
-			ow.write("\n\n");
-			ow.write(bar);
-			ow.write("# modelName=" + name + "\n");
-			ow.write(thiz + " ccrt:sheetName \"" + name + "\".\n");
-			Model m = ds.getNamedModel(name);
-			ow.write(getModelSource(m) + "\n");
-			ow.write("# modelSize=" + m.size() + "\n");
-			ow.write(thiz + " a ccrt:RepoSheetModel. \n");
-			if (m == defaultModel) {
-				ow.write(thiz + " a ccrt:DatasetDefaultModel. \n");
-				defaultModel = null;
-			}
-			ow.write("\n\n");
-			ow.flush();
-		}
-		if (defaultModel != null) {
-			ow.write(bar);
-			ow.write("# defaultModel..." + "\n");
-			String name = getBaseURI(defaultModel, null);
-			ow.write("# modelName=" + name + "\n");
-			ow.write(thiz + " ccrt:sheetName \"" + name + "\".\n");
-			ow.write(getModelSource(defaultModel) + "\n");
-			ow.write("\n\n");
-			ow.write("# modelSize=" + defaultModel.size() + "\n");
-			ow.write(thiz + " a ccrt:DatasetDefaultModel. \n");
-			ow.write("\n\n");
-		}
-		ow.flush();
+
+		RDFDataMgr.write(ow, datasetw.asDatasetGraph(), RDFFormat.TRIG);
 	}
 
 	public static String getBaseURI(Model defaultModel, String name) {
@@ -721,59 +669,12 @@ public class RepoOper implements AnyOper, UtilClass {
 	}
 
 	static public Model loadTTLReturnDirModel(final Dataset targetDataset, InputStream fis) {
-		final Model[] currentLModel = new Model[] { null };
-		final Model[] currentDirModel = new Model[] { null };
-		final Model[] currentDefaultModel = new Model[] { null };
-		final String[] modelName = new String[] { null };
-		final Model loaderModel = RepoDatasetFactory.createDefaultModelUnshared();
-		final PrefixMapping nsMap = loaderModel;
-		loaderModel.register(new StatementListener() {
-
-			@Override public void addedStatement(Statement arg0) {
-
-				System.out.println("Adding statement: " + arg0);
-				String subjStr = "" + arg0.getSubject();
-				if (subjStr.equals("self")) {
-					// processing directive
-					RDFNode r = arg0.getObject();
-					if (r.isLiteral()) {
-						// is a model start declaration;
-						modelName[0] = r.asLiteral().getString();
-						currentLModel[0] = RepoOper.findOrCreate(targetDataset, modelName[0], nsMap);
-						return;
-					} else if (r.isResource()) {
-						// is a model ending declaration (we dont clear)
-						Resource rs = r.asResource();
-						String type = rs.getLocalName();
-						if (type.equals("DirectoryModel")) {
-							currentDirModel[0] = currentLModel[0];
-							return;
-						} else if (type.equals("RepoSheetModel")) {
-							currentLModel[0] = RepoOper.findOrCreate(targetDataset, modelName[0], nsMap);
-							return;
-						} else if (type.equals("DatasetDefaultModel")) {
-							currentDefaultModel[0] = currentLModel[0];
-							return;
-						}
-					}
-					throw new UnsupportedOperationException("Not sure how to load this: " + arg0);
-				} else {
-					//currentLModel[0] = RepoOper.findOrCreate(targetDataset, modelName[0], nsMap);
-					currentLModel[0].add(arg0);
-					return;
-				}
-			}
-		});
-		try {
-			InputStreamReader isr = new InputStreamReader(fis, Charset.defaultCharset().name());
-			loaderModel.read(isr, null, "TTL");
-		} catch (Throwable t) {
-			Debuggable.printStackTrace(t);
+		RDFDataMgr.read(targetDataset, fis, Lang.TRIG);
+		Model dirModel = targetDataset.getNamedModel("#dir");
+		if (dirModel == null) {
+			dirModel = targetDataset.getDefaultModel();
 		}
-
-		if (currentDefaultModel[0] != null)
-			targetDataset.setDefaultModel(currentDefaultModel[0]);
-		return currentDirModel[0];
+		return dirModel;
 	}
 
 	protected static Model findOrCreate(Dataset targetDataset, String baseURI, final PrefixMapping nsMap) {
@@ -791,4 +692,72 @@ public class RepoOper implements AnyOper, UtilClass {
 		return model;
 	}
 
+	public static void main(String[] args) {
+		int argslength = args.length;
+		if (argslength > 0) {
+			if (args[0].equals("--uri"))
+			{
+				if (argslength < 2) {
+					System.out.println("Not enough arguments.  "
+							+ "Expected: --uri [URI] [Output Directory] "
+							+ "(ex. --uri goog:/0AmvzRRq-Hhz7dFVpSDFaaHhMWmVPRFl4RllXSHVxb2c/9/8 GluePuma_R25_TestFull)");
+					return;
+				}
+				List<ClassLoader> fileModelCLs = Arrays.asList(ClassLoader.getSystemClassLoader());
+				String dirModelURL = args[1];
+				Repo repo;
+				try {
+					RepoSpec repospec = new URLRepoSpec(dirModelURL, fileModelCLs);
+					repo = repospec.makeRepo();
+				} catch (Exception ex) {
+					ex.printStackTrace();
+					System.out.println("Bad URI: " + args[1]);
+					return;
+				}
+
+				String dir = "OutputDir";
+				if (argslength > 2) {
+					dir = args[2];
+				}
+				writeRepo(repo, dir);
+				return;
+			}
+		}
+		if (args.length < 4) {
+			System.out.println("Not enough arguments.  "
+					+ "Expected: [SheetKey] [Namespace Tab] [Dir Tab] [Output Directory] "
+					+ "(ex. 0AmvzRRq-Hhz7dFVpSDFaaHhMWmVPRFl4RllXSHVxb2c 9 8 GluePuma_R25_TestFull)");
+			return;
+		}
+		String key = args[0].trim();
+		String out = args[3].trim();
+		Integer nmspc;
+		Integer dir;
+		try {
+			nmspc = Integer.parseInt(args[1].trim());
+			dir = Integer.parseInt(args[2].trim());
+		} catch (NumberFormatException ex) {
+			System.out.println("Bad Namespace or Dir number: " + args[1] + ", " + args[2]);
+			return;
+		}
+		List<ClassLoader> loaders = Arrays.asList(ClassLoader.getSystemClassLoader());
+		OnlineSheetRepoSpec repo = new OnlineSheetRepoSpec(key, nmspc, dir, loaders);
+		writeRepo(repo.makeRepo(), out);
+	}
+
+	private static void writeRepo(Repo repo, String dir) {
+		if (!(repo instanceof Repo.WithDirectory)) {
+			System.out.println("Not Repo.WithDirectory  " + repo.getClass() + " " + repo);
+			return;
+		}
+		try {
+			File d = new File(dir);
+			System.out.println("Writing repo to " + d.getAbsolutePath() + " ...");
+			d.delete();
+			RepoOper.writeRepoToDirectory(repo, dir);
+			System.out.println("Writing repo complete");
+		} catch (IOException ex) {
+			ex.printStackTrace();
+		}
+	}
 }

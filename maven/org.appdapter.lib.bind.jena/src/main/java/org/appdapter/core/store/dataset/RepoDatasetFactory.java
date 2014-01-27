@@ -129,6 +129,12 @@ public class RepoDatasetFactory implements AnyOper, UtilClass {
 	}
 
 	public static Model createModelForGraph(Graph graph) {
+		if (!(graph instanceof CheckedGraph)) {
+			graph = new CheckedGraph(graph, false, false, true);
+		}
+		if (true)
+			return new CheckedModel((CheckedGraph) graph);
+
 		return ModelFactory.createModelForGraph(graph);
 	}
 
@@ -260,7 +266,7 @@ public class RepoDatasetFactory implements AnyOper, UtilClass {
 			((CheckedGraph) modelGraph).setNoDelete(true);
 			return nonuniversalModel;
 		}
-		return ModelFactory.createModelForGraph(new CheckedGraph(modelGraph, false, true, true));
+		return createModelForGraph(new CheckedGraph(modelGraph, false, true, true));
 	}
 
 	public static Model wrapReadOnly(final Model nonuniversalModel) {
@@ -270,7 +276,7 @@ public class RepoDatasetFactory implements AnyOper, UtilClass {
 			((CheckedGraph) modelGraph).setNoDelete(true);
 			return nonuniversalModel;
 		}
-		return ModelFactory.createModelForGraph(new CheckedGraph(modelGraph, true, true, true));
+		return createModelForGraph(new CheckedGraph(modelGraph, true, true, true));
 	}
 
 	public static Model wrapPrefixCheck(Model nonuniversalModel) {
@@ -279,7 +285,7 @@ public class RepoDatasetFactory implements AnyOper, UtilClass {
 			((CheckedGraph) modelGraph).setPrefixCheck(true);
 			return nonuniversalModel;
 		}
-		return ModelFactory.createModelForGraph(new CheckedGraph(modelGraph, false, false, true));
+		return new CheckedModel(new CheckedGraph(modelGraph, false, false, true));
 	}
 
 	@UISalient public static Dataset createMem() {
