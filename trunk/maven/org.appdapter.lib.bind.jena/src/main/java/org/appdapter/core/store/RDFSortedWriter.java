@@ -1,6 +1,7 @@
 package org.appdapter.core.store;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -15,8 +16,6 @@ import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.ResIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.util.iterator.ClosableIterator;
-
-import edu.emory.mathcs.backport.java.util.Collections;
 
 public final class RDFSortedWriter extends N3JenaWriterPP {
 	private boolean skipWritingPrefixes = false;

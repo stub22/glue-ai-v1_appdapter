@@ -36,8 +36,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.liftweb.http.js.JE.Str;
-
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
@@ -64,8 +62,6 @@ import com.hp.hpl.jena.graph.Triple;
 import com.hp.hpl.jena.graph.compose.CompositionBase;
 import com.hp.hpl.jena.graph.compose.Dyadic;
 import com.hp.hpl.jena.graph.compose.Polyadic;
-import com.hp.hpl.jena.graph.compose.Union;
-import com.hp.hpl.jena.mem.GraphMem;
 import com.hp.hpl.jena.n3.N3JenaWriterPP;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.query.DatasetFactory;

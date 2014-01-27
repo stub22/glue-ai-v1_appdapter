@@ -40,7 +40,6 @@ import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.shared.Lock;
 // Removed in ARQ 2.9.3 - "Use Dataset" import com.hp.hpl.jena.query.DataSource;
 // http://svn.apache.org/repos/asf/jena/trunk/jena-arq/ReleaseNotes.txt

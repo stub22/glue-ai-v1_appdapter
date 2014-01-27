@@ -30,7 +30,7 @@ import com.hp.hpl.jena.sparql.core.DatasetImpl;
  *         Handling for a local *or* some 'remote'/'shared' model/dataset impls.
  * 
  */
-class JenaSDBWrappedDatasetFactory extends AbstractDatasetFactory implements UserDatasetFactory {
+public class JenaSDBWrappedDatasetFactory extends AbstractDatasetFactory implements UserDatasetFactory {
 
 	/**
 	 * Create a dataset with the given model as the default graph

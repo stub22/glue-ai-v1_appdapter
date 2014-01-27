@@ -1,6 +1,7 @@
 package org.appdapter.core.store.dataset;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -20,8 +21,6 @@ import com.hp.hpl.jena.shared.AddDeniedException;
 import com.hp.hpl.jena.shared.DeleteDeniedException;
 import com.hp.hpl.jena.shared.PrefixMapping;
 import com.hp.hpl.jena.util.iterator.ExtendedIterator;
-
-import edu.emory.mathcs.backport.java.util.Collections;
 
 public class CheckedGraph implements Graph, PrefixMapping {
 	final Graph modelGraph;
