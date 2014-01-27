@@ -19,7 +19,6 @@ import org.appdapter.core.store.StatementSync;
 
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.sdb.SDBFactory;
 import com.hp.hpl.jena.sdb.Store;
 import com.hp.hpl.jena.sparql.core.DatasetGraph;
@@ -27,13 +26,15 @@ import com.hp.hpl.jena.sparql.core.DatasetImpl;
 
 /**
  * @author Logicmoo. <www.logicmoo.org>
- *
- * Handling for a local *or* some 'remote'/'shared' model/dataset impls.
- *
+ * 
+ *         Handling for a local *or* some 'remote'/'shared' model/dataset impls.
+ * 
  */
-public class JenaSDBWrappedDatasetFactory extends AbstractDatasetFactory implements UserDatasetFactory {
+class JenaSDBWrappedDatasetFactory extends AbstractDatasetFactory implements UserDatasetFactory {
 
-	/** Create a dataset with the given model as the default graph
+	/**
+	 * Create a dataset with the given model as the default graph
+	 * 
 	 * @param model
 	 * @return Dataset
 	 */
@@ -50,8 +51,11 @@ public class JenaSDBWrappedDatasetFactory extends AbstractDatasetFactory impleme
 		return remote;
 	}
 
-	/** Wrap a datasetgraph to make a mutable dataset
-	 * @param dataset DatasetGraph
+	/**
+	 * Wrap a datasetgraph to make a mutable dataset
+	 * 
+	 * @param dataset
+	 *            DatasetGraph
 	 * @return Dataset
 	 */
 	public Dataset create(DatasetGraph dataset) {
@@ -90,7 +94,7 @@ public class JenaSDBWrappedDatasetFactory extends AbstractDatasetFactory impleme
 
 	@Override public Model createModelOfType(String typeOf, String modelName, String shareName) {
 		Store store = SDBFactory.connectStore(RepoDatasetFactory.STORE_CONFIG_PATH);
-		return SDBFactory.connectNamedModel(store, RepoDatasetFactory.getGlobalName(modelName , shareName));
+		return SDBFactory.connectNamedModel(store, RepoDatasetFactory.getGlobalName(modelName, shareName));
 	}
 
 }

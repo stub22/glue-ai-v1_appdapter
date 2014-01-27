@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.appdapter.core.log.Debuggable;
 
@@ -30,6 +29,10 @@ public class CheckedGraph implements Graph, PrefixMapping {
 	public boolean noDelete = false;
 	public boolean nameSpaceChecked = false;
 	private PrefixMapping prefixMap;
+
+	public Graph getDataGraph() {
+		return modelGraph;
+	}
 
 	@Override public String toString() {
 		StringBuffer sb = new StringBuffer();

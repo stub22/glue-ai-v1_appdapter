@@ -88,7 +88,7 @@ case class DirectDerivedGraph(val mySpec: DerivedGraphSpec, val myUpstreamNMP: N
   private def makeModel(): Model = {
     mySpec.getStructureTypeID() match {
       case DerivedGraphNames.T_union => {
-        var cumUnionModel = RepoDatasetFactory.createDefaultModelUnshared
+        var cumUnionModel = RepoDatasetFactory.createPrivateMemModel
         for (srcGraphID <- mySpec.myInGraphIDs) {
           val srcGraph = myUpstreamNMP.getNamedModel(srcGraphID)
           if (srcGraph == null) {
@@ -102,7 +102,7 @@ case class DirectDerivedGraph(val mySpec: DerivedGraphSpec, val myUpstreamNMP: N
       }
       case x => {
         getLogger().warn("Unknown structure type {}", x)
-        RepoDatasetFactory.createDefaultModelUnshared()
+        RepoDatasetFactory.createPrivateMemModel()
       }
     }
   }

@@ -14,10 +14,14 @@ import com.hp.hpl.jena.sparql.core.DatasetImpl;
 
 public class CheckedDataset extends DatasetImpl implements Dataset {
 
-	private DatasetGraph dsg;
+	//private DatasetGraph dsg;
 
 	public CheckedDataset() {
 		this(DatasetGraphFactory.createMemFixed());
+	}
+
+	public String toString() {
+		return getClass().getName() + "@" + Integer.toHexString(hashCode());
 	}
 
 	public CheckedDataset(DatasetGraph g) {
@@ -47,18 +51,38 @@ public class CheckedDataset extends DatasetImpl implements Dataset {
 		return contained;
 	}
 
+	boolean realPassedInModels = true;
+
 	@Override public void addNamedModel(String n, Model m) {
 		Node gn = RepoDatasetFactory.correctModelName(n);
 		Model innerModel = null;
-		if (!containsNamedModel(n)) {
+		boolean cm = containsNamedModel(n);
+		if (!cm) {
+			if (realPassedInModels) {
+				super.addNamedModel(n, m);
+				return;
+			}
 			innerModel = RepoDatasetFactory.createDefaultModel();
 		} else {
 			innerModel = getNamedModel(n);
+			if (innerModel == m)
+				return;
 		}
+		Graph mg = m.getGraph();
 		innerModel.add(m);
+		innerModel.withDefaultMappings(m);
 		RepoDatasetFactory.invalidateModel(m);
 		DatasetGraph g = asDatasetGraph();
 		g.addGraph(gn, innerModel.getGraph());
+	}
+
+	@Override public Model getNamedModel(String n) {
+		Node gn = RepoDatasetFactory.correctModelName(n);
+		DatasetGraph g = asDatasetGraph();
+		Graph graph = g.getGraph(gn);
+		if (graph == null)
+			return null;
+		return RepoDatasetFactory.createModelForGraph(graph);
 	}
 
 	@Override public void removeNamedModel(String n) {
@@ -69,28 +93,40 @@ public class CheckedDataset extends DatasetImpl implements Dataset {
 	}
 
 	@Override public void replaceNamedModel(String n, Model m) {
+		Node gn = RepoDatasetFactory.correctModelName(n);
+		Model innerModel = null;
+		boolean cm = containsNamedModel(n);
+		if (!cm) {
+			if (realPassedInModels) {
+				super.replaceNamedModel(n, m);
+				return;
+			}
+			innerModel = RepoDatasetFactory.createDefaultModel();
+		} else {
+			innerModel = getNamedModel(n);
+			if (innerModel == m)
+				return;
+		}
+		if (realPassedInModels) {
+			super.replaceNamedModel(n, m);
+			return;
+		}
 		RepoDatasetFactory.untested("replaceNamedModel");
 		removeNamedModel(n);
 		addNamedModel(n, m);
 	}
 
 	@Override public Model getDefaultModel() {
+		//	Model m = super.getDefaultModel();
 		DatasetGraph g = asDatasetGraph();
-		return RepoDatasetFactory.createModelForGraph(g.getDefaultGraph());
+		Model m = RepoDatasetFactory.createModelForGraph(g.getDefaultGraph());
+		setDefaultModel(m);
+		return m;
 	}
 
 	@Override public Lock getLock() {
 		DatasetGraph g = asDatasetGraph();
 		return g.getLock();
-	}
-
-	@Override public Model getNamedModel(String n) {
-		Node gn = RepoDatasetFactory.correctModelName(n);
-		DatasetGraph g = asDatasetGraph();
-		Graph graph = g.getGraph(gn);
-		if (graph == null)
-			return null;
-		return RepoDatasetFactory.createModelForGraph(graph);
 	}
 
 	@Override public Iterator<String> listNames() {

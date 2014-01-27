@@ -23,9 +23,6 @@ public final class NumericStringComparitor implements Comparator<Resource> {
 	public static int compare(String[] s1, String[] s2) {
 		int i = 0;
 		while (true) {
-			int comp = compare1(s1[i], s2[i]);
-			if (comp != 0)
-				return comp;
 			if (i == s1.length) {
 				if (s1.length == s2.length) {
 					return 0;
@@ -36,6 +33,9 @@ public final class NumericStringComparitor implements Comparator<Resource> {
 					return 1;
 				}
 			}
+			int comp = compare1(s1[i], s2[i]);
+			if (comp != 0)
+				return comp;
 			i++;
 		}
 	}
@@ -57,7 +57,18 @@ public final class NumericStringComparitor implements Comparator<Resource> {
 				return d1.compareTo(d2);
 			}
 		}
-		return s1.compareTo(s2);
+		int comp = s1.compareToIgnoreCase(s2);
+		if (comp == 0)
+			comp = s1.compareTo(s2);
+		if (comp == 0)
+			return 0;
+		if (s1.equals("type")) {
+			return -1;
+		}
+		if (s2.equals("type")) {
+			return 1;
+		}
+		return comp;
 	}
 
 	public static Double calcValue(String s2) {

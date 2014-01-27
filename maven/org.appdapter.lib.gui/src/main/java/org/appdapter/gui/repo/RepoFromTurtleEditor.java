@@ -201,7 +201,7 @@ public class RepoFromTurtleEditor extends ModelAsTurtleEditor implements ObjectP
 	public void setRepoObject(final Repo boundRepo) {
 		super.setObject(boundRepo);
 		String repoName = "" + boundRepo;
-		this.totalModel = RepoDatasetFactory.createDefaultModelUnshared();
+		this.totalModel = RepoDatasetFactory.createPrivateMemModel();
 		add(totalModel, repoName);
 		Model dirModel = null;
 		if (boundRepo instanceof Repo.WithDirectory) {
@@ -209,7 +209,7 @@ public class RepoFromTurtleEditor extends ModelAsTurtleEditor implements ObjectP
 			totalModel.add(dirModel);
 		}
 		if (dirModel == null) {
-			dirModel = RepoDatasetFactory.createDefaultModelUnshared();
+			dirModel = RepoDatasetFactory.createPrivateMemModel();
 		}
 		String modelName = addNamedModel("", dirModel);
 		Dataset ds = boundRepo.getMainQueryDataset();

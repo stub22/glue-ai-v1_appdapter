@@ -105,7 +105,7 @@ public class ResourceToFromString extends ToFromKeyConverterImpl<Object, String>
 				model = oenhmodel;
 			}
 			if (model == null) {
-				model = RepoDatasetFactory.createDefaultModelUnshared();
+				model = RepoDatasetFactory.createPrivateMemModel();
 				model.setNsPrefixes(knownNamespaces);
 			}
 

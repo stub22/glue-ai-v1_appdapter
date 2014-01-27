@@ -155,16 +155,22 @@ abstract class SheetRepo(directoryModel: Model, var fileModelCLs: java.util.List
           }
           reloadTries = reloadTries - 1
           trace("Loading OnmiRepo to make UpToDate")
-          this.isUpdatedFromDirModel = true;
           var dirModelSize = dirModel.size;
           // only load from non empty dir models
           // this is because we need to have non initialized repos at times
           if (dirModelSize == 0) {
             if (myMainQueryDataset != null) {
               RepoOper.clearAll(myMainQueryDataset);
+              this.isUpdatedFromDirModel = true;
             }
           } else {
-            reloadAllModelsFromDir
+            if (this.myMainQueryDataset == null) {
+              this.isUpdatedFromDirModel = true;
+              this.myMainQueryDataset = makeDatasetFromDirModel();
+            } else {
+              this.isUpdatedFromDirModel = true;
+              reloadAllModelsFromDir
+            }
             var newModelSize = dirModel.size;
             if (newModelSize != dirModelSize && dirModel == getDirectoryModel) {
               warn("OnmiRepo Dir.size changed durring load!  " + dirModelSize + " -> " + newModelSize)

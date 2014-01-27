@@ -1,12 +1,13 @@
 package org.appdapter.core.store;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
 
+import org.appdapter.core.store.dataset.CheckedGraph;
+
+import com.hp.hpl.jena.graph.Graph;
+import com.hp.hpl.jena.mem.GraphMem;
 import com.hp.hpl.jena.n3.N3JenaWriter;
 import com.hp.hpl.jena.n3.N3JenaWriterPP;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -33,8 +34,35 @@ public final class RDFSortedWriter extends N3JenaWriterPP {
 	}
 
 	@Override protected void writePrefixes(Model model) {
+		Graph graph = model.getGraph();
+		while (graph instanceof CheckedGraph) {
+			graph = ((CheckedGraph) graph).getDataGraph();
+		}
+		if (!(graph instanceof GraphMem)) {
+			out.println("# " + graph.getClass());
+		}
 		if (!skipWritingPrefixes) {
-			super.writePrefixes(model);
+			for (Iterator<String> pIter = prefixMap.keySet().iterator(); pIter.hasNext();)
+			{
+				String p = pIter.next();
+				String u = prefixMap.get(p);
+
+				// BaseURI - <#>            
+				//	            // Special cases: N3 handling of base names.
+				//	            if (doAbbreviatedBaseURIref && p.equals(""))
+				//	            {
+				//	                if (baseURIrefHash != null && u.equals(baseURIrefHash))
+				//	                    u = "#";
+				//	                if (baseURIref != null && u.equals(baseURIref))
+				//	                    u = "";
+				//	            }
+
+				String tmp = "@prefix " + p + ": ";
+				out.print(tmp);
+				out.print(pad(16 - tmp.length()));
+				// NB Starts with a space to ensure a gap.
+				out.println(" <" + u + "> .");
+			}
 		}
 	}
 
