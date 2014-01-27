@@ -30,7 +30,7 @@ import com.hp.hpl.jena.sparql.core.DatasetImpl;
  *         Handling for a local *or* some 'remote'/'shared' model/dataset impls.
  * 
  */
-class JenaDatasetFactory extends AbstractDatasetFactory implements UserDatasetFactory {
+public class JenaDatasetFactory extends AbstractDatasetFactory implements UserDatasetFactory {
 
 	@Override public String getDatasetType() {
 		return "memory";
