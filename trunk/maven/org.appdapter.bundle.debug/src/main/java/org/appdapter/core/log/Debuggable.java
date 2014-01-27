@@ -10,14 +10,18 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.core.debug.NoLeakThreadLocal;
 import org.appdapter.core.debug.UIAnnotations.UIHidden;
 import org.appdapter.core.debug.UIAnnotations.UISalient;
+import org.appdapter.core.log.Debuggable.DebuggableFrame;
+import org.slf4j.LoggerFactory;
 
 @UIHidden
 public abstract class Debuggable extends BasicDebugger {
@@ -317,8 +321,8 @@ public abstract class Debuggable extends BasicDebugger {
 		return gs2.trim();
 	}
 
-	public static Logger getLogger(Class<?> name) {
-		return Logger.getLogger(name.getSimpleName());
+	public static org.slf4j.Logger getLogger(Class<?> name) {
+		return LoggerFactory.getLogger(name.getSimpleName());
 	}
 
 	public static RuntimeException UnhandledException(Throwable e) {
@@ -562,6 +566,10 @@ public abstract class Debuggable extends BasicDebugger {
 	}
 
 	public static boolean isTesting() {
+		if (isDebugging())
+			return true;
+		if (false)
+			return true;
 		return INTESTS.get() == Boolean.TRUE;
 	}
 
@@ -578,6 +586,56 @@ public abstract class Debuggable extends BasicDebugger {
 
 	public static boolean breakpoint() {
 		return isDebugging();
+	}
+
+	static Map<String, Object> frameVars = new HashMap<String, Object>();
+
+	public static void putFrameVar(String name, Object value) {
+		synchronized (frameVars) {
+			frameVars.put(name, value);
+		}
+	}
+
+	public static DebuggableFrame createFrame(String msg) {
+		msg = msg + "\nframeVars = " + toInfoStringO(getStackVars());
+		Throwable t = new Throwable(msg);
+		t.fillInStackTrace();
+		DebuggableFrame f = new DebuggableFrame(msg, t);
+		return f;
+	}
+
+	@SuppressWarnings("serial")
+	static public class DebuggableFrame extends Throwable {
+
+		public String getMessage() {
+			return super.getMessage() + " vars=" + vars;
+		}
+
+		Throwable t;
+		Map<String, Object> vars;
+
+		public DebuggableFrame(String msg, Throwable t) {
+			super(msg, t);
+			this.t = t;
+			vars = getStackVars();
+		}
+
+		@Override public void printStackTrace(PrintStream s) {
+			synchronized (s) {
+				s.println(t);
+			}
+			//t.printStackTrace(s);
+		}
+	}
+
+	public static void showFrame(Throwable createFrame) {
+		createFrame.printStackTrace();
+	}
+
+	public static Map getStackVars() {
+		synchronized (frameVars) {
+			return new HashMap(frameVars);
+		}
 	}
 
 }
