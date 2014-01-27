@@ -785,7 +785,7 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 		public void ensureReady(String key) {
 			key = toKeyCase(key);
 			addServiceName(key);
-			if (!servicesBegun.contains(key)) {
+			if (!isBegun(key)) {
 				runNow(key);
 			}
 		}
@@ -817,7 +817,8 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 	}
 
 	public void addMacroService(String key, boolean enabled, Runnable value) {
-		macroStartupSettings.setServiceEnabled(key, enabled);
+		if (!macroStartupSettings.isDisabled(key))
+			macroStartupSettings.setServiceEnabled(key, enabled);
 		addMacroService(BootPhaseConst.RUNNING, key, value);
 	}
 
