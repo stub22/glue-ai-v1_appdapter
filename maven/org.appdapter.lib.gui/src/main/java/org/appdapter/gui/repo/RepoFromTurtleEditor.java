@@ -25,6 +25,7 @@ import org.appdapter.core.log.Debuggable;
 import org.appdapter.core.matdat.OmniLoaderRepo;
 import org.appdapter.core.store.Repo;
 import org.appdapter.core.store.Repo.WithDirectory;
+import org.appdapter.core.store.dataset.RepoDatasetFactory;
 import org.appdapter.core.store.RepoOper;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.demo.DemoBrowser;
@@ -47,20 +48,18 @@ import com.hp.hpl.jena.rdf.model.StmtIterator;
 //import com.hp.hpl.jena.n3.N3Exception;
 
 /**
- * <p>A Swing-based GUI window that provides a simple Turtle-based
- * editor and inspector for Jena models. Useful for debugging GUI
- * and web applications. To open an editor window, pass the model
- * instance to the static {@link RepoFromTurtleEditor#open(Repo)} method.</p>
- *
- * <p>The editor has basic reporting of Turtle syntax errors.
- * It also updates the namespace prefixes of the model.
- * Several windows for different models may be open at the same
- * time. Concurrent changes to the model are reported.</p>
- *
- * <p>The class has a {@link #main} method for demonstration purposes.
- * It loads one or more RDF files into Jena models and displays an editor
- * for each.</p>
- *
+ * <p>
+ * A Swing-based GUI window that provides a simple Turtle-based editor and inspector for Jena models. Useful for debugging GUI and web applications. To open an editor window, pass the model instance to the static {@link RepoFromTurtleEditor#open(Repo)} method.
+ * </p>
+ * 
+ * <p>
+ * The editor has basic reporting of Turtle syntax errors. It also updates the namespace prefixes of the model. Several windows for different models may be open at the same time. Concurrent changes to the model are reported.
+ * </p>
+ * 
+ * <p>
+ * The class has a {@link #main} method for demonstration purposes. It loads one or more RDF files into Jena models and displays an editor for each.
+ * </p>
+ * 
  * @version $Id$
  * @author Richard Cyganiak (richard@cyganiak.de)
  * @author LogicMoo
@@ -81,7 +80,9 @@ public class RepoFromTurtleEditor extends ModelAsTurtleEditor implements ObjectP
 
 	/**
 	 * Opens a new editor window and binds it to the given model.
-	 * @param sourceRepo A Jena model
+	 * 
+	 * @param sourceRepo
+	 *            A Jena model
 	 * @return A reference to the new editor window
 	 */
 	@UISalient public static RepoFromTurtleEditor open(Repo sourceRepo) {
@@ -89,11 +90,12 @@ public class RepoFromTurtleEditor extends ModelAsTurtleEditor implements ObjectP
 	}
 
 	/**
-	 * Opens a new editor window and binds it to the given model.
-	 * A custom title is useful to distinguish multiple editor
-	 * windows for different models.
-	 * @param sourceRepo A Jena model
-	 * @param title A custom title for the editor window
+	 * Opens a new editor window and binds it to the given model. A custom title is useful to distinguish multiple editor windows for different models.
+	 * 
+	 * @param sourceRepo
+	 *            A Jena model
+	 * @param title
+	 *            A custom title for the editor window
 	 * @return A reference to the new editor window
 	 */
 	public static ModelAsTurtleEditor open(Model sourceRepo, String title) {
@@ -101,11 +103,8 @@ public class RepoFromTurtleEditor extends ModelAsTurtleEditor implements ObjectP
 	}
 
 	/**
-	 * Main method for demonstration purposes. Takes a number of
-	 * filename or URL arguments. Reads them as RDF/XML or Turtle
-	 * (if ends with ".n3" or ".ttl"). Displays an editor for
-	 * each. If the same filename appears twice, then both editors
-	 * will use the same model.
+	 * Main method for demonstration purposes. Takes a number of filename or URL arguments. Reads them as RDF/XML or Turtle (if ends with ".n3" or ".ttl"). Displays an editor for each. If the same filename appears twice, then both editors will use the same model.
+	 * 
 	 * @param args
 	 */
 	public static void main(String[] args) {
@@ -127,8 +126,11 @@ public class RepoFromTurtleEditor extends ModelAsTurtleEditor implements ObjectP
 
 	/**
 	 * Creates and displays new RepoEditor.
-	 * @param sourceRepo The model bound to the editor
-	 * @param title The full title of the editor window
+	 * 
+	 * @param sourceRepo
+	 *            The model bound to the editor
+	 * @param title
+	 *            The full title of the editor window
 	 */
 	public RepoFromTurtleEditor(Repo sourceRepo, String title) {
 		this.window = Utility.getAppFrame();
@@ -199,7 +201,7 @@ public class RepoFromTurtleEditor extends ModelAsTurtleEditor implements ObjectP
 	void setRepoObject(final Repo boundRepo) {
 		super.setObject(boundRepo);
 		String repoName = "" + boundRepo;
-		this.totalModel = ModelFactory.createDefaultModel();
+		this.totalModel = RepoDatasetFactory.createDefaultModelUnshared();
 		add(totalModel, repoName);
 		Model dirModel = null;
 		if (boundRepo instanceof Repo.WithDirectory) {
@@ -207,7 +209,7 @@ public class RepoFromTurtleEditor extends ModelAsTurtleEditor implements ObjectP
 			totalModel.add(dirModel);
 		}
 		if (dirModel == null) {
-			dirModel = ModelFactory.createDefaultModel();
+			dirModel = RepoDatasetFactory.createDefaultModelUnshared();
 		}
 		String modelName = addNamedModel("", dirModel);
 		Dataset ds = boundRepo.getMainQueryDataset();

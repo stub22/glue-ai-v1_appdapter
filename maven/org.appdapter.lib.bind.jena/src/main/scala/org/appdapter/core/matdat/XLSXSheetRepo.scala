@@ -17,7 +17,7 @@
 package org.appdapter.core.matdat
 
 import com.hp.hpl.jena.query.{ ResultSetFactory, ResultSet, QuerySolution, Dataset }
-import com.hp.hpl.jena.rdf.model.{ Resource, RDFNode, ModelFactory, Model, Literal }
+import com.hp.hpl.jena.rdf.model.{ Resource, RDFNode, Model, Literal }
 import java.io.Reader
 import org.appdapter.core.store.{ ExtendedFileStreamUtils }
 import org.appdapter.impl.store.QueryHelper
@@ -25,6 +25,7 @@ import scala.collection.JavaConversions.asScalaBuffer
 import org.appdapter.impl.store.DirectRepo
 import org.appdapter.core.store.Repo
 import org.appdapter.core.log.BasicDebugger
+import org.appdapter.core.store.dataset.RepoDatasetFactory
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -98,10 +99,10 @@ object XLSXSheetRepoLoader extends BasicDebugger {
   }
 
   def readModelSheetX(sheetLocation: String, sheetName: String, nsJavaMap: java.util.Map[String, String], fileModelCLs: java.util.List[ClassLoader]): Model = {
-    val tgtModel: Model = ModelFactory.createDefaultModel();
+    val tgtModel: Model = RepoDatasetFactory.createDefaultModelUnshared
     tgtModel.setNsPrefixes(nsJavaMap)
     val modelInsertProc = new SemSheet.ModelInsertSheetProc(tgtModel);
-	val efsu = new ExtendedFileStreamUtils()
+    val efsu = new ExtendedFileStreamUtils()
     val reader: Reader = efsu.getWorkbookSheetCsvReaderAt(sheetLocation, sheetName, fileModelCLs);
     MatrixData.processSheetR(reader, modelInsertProc.processRow);
     getLogger.debug("tgtModel=" + tgtModel)
@@ -110,7 +111,7 @@ object XLSXSheetRepoLoader extends BasicDebugger {
 
   def readDirectoryModelFromXLSX(sheetLocation: String, namespaceSheetName: String, dirSheetName: String, fileModelCLs: java.util.List[ClassLoader] = null): Model = {
     getLogger.debug("readDirectoryModelFromXLSX - start")
-	val efsu = new ExtendedFileStreamUtils()
+    val efsu = new ExtendedFileStreamUtils()
     val namespaceSheetReader = efsu.getWorkbookSheetCsvReaderAt(sheetLocation, namespaceSheetName, fileModelCLs);
     val nsJavaMap: java.util.Map[String, String] = MatrixData.readJavaMapFromSheetR(namespaceSheetReader);
     getLogger.debug("Got NS map: " + nsJavaMap)

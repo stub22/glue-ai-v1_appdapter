@@ -24,7 +24,7 @@ import org.appdapter.impl.store.QueryHelper
 import com.hp.hpl.jena.query.Dataset
 import com.hp.hpl.jena.query.QuerySolution
 import com.hp.hpl.jena.rdf.model.Model
-import com.hp.hpl.jena.rdf.model.ModelFactory
+import org.appdapter.core.store.dataset.RepoDatasetFactory
 
 /**
  * @author LogicMOO <www.logicmoo.org>
@@ -38,7 +38,7 @@ class DerivedRepoSpec(val myDGSpecs: Set[DerivedGraphSpec], val mySrcRepo: Repo.
     "DerivedRepoSpec[pipeSpecs= " + myDGSpecs + "]";
   }
   override def makeRepo(): DerivedRepo = {
-    val emptyDirModel = ModelFactory.createDefaultModel();
+    val emptyDirModel = RepoDatasetFactory.createDefaultModelUnshared
     // TODO:  Copy over prefix-abbreviations from the source repo (need to confirm the line below does this correctly)
     emptyDirModel.setNsPrefixes(mySrcRepo.getDirectoryModel.getNsPrefixMap);
     val derivedRepo = new DerivedRepo(emptyDirModel, this)
@@ -64,7 +64,7 @@ class DerivedRepo(emptyDirModel: Model, val myRepoSpec: DerivedRepoSpec) extends
     val oldDataset = getMainQueryDataset();
     val myPNewMainQueryDataset = repo.getMainQueryDataset();
     getLogger.info("START: Trying to do reloading of model named.. " + modelName)
-    RepoOper.replaceDatasetElements(oldDataset, myPNewMainQueryDataset, modelName)
+    RepoOper.replaceSingleDatasetModel(oldDataset, myPNewMainQueryDataset, modelName)
     getLogger.info("START: Trying to do reloading of model named.. " + modelName)
   }
 }
@@ -131,6 +131,7 @@ object PipelineModelLoader extends BasicDebugger {
     }
   }
 }
+
 
 /// this is a registerable loader
 class DerivedModelLoader extends InstallableRepoReader {

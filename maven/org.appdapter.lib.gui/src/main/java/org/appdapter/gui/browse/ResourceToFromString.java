@@ -17,6 +17,7 @@ import org.appdapter.core.component.KnownComponent;
 import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.core.item.JenaResourceItem;
 import org.appdapter.core.name.ModelIdent;
+import org.appdapter.core.store.dataset.RepoDatasetFactory;
 
 import com.hp.hpl.jena.enhanced.EnhGraph;
 import com.hp.hpl.jena.graph.Node;
@@ -104,7 +105,7 @@ public class ResourceToFromString extends ToFromKeyConverterImpl<Object, String>
 				model = oenhmodel;
 			}
 			if (model == null) {
-				model = ModelFactory.createDefaultModel();
+				model = RepoDatasetFactory.createDefaultModelUnshared();
 				model.setNsPrefixes(knownNamespaces);
 			}
 

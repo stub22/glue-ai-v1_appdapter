@@ -16,19 +16,13 @@
 
 package org.appdapter.core.matdat
 
-import org.appdapter.core.store.{ ExtendedFileStreamUtils }
-import java.io.Reader
-import java.util.Iterator
-import org.appdapter.bind.csv.datmat.TestSheetReadMain
-import au.com.bytecode.opencsv.CSVReader
-import org.appdapter.core.log.BasicDebugger
-import com.hp.hpl.jena.rdf.model.{ Model, Statement, Resource, Property, Literal, RDFNode }
-import com.hp.hpl.jena.ontology.{ OntProperty, ObjectProperty, DatatypeProperty }
-import com.hp.hpl.jena.datatypes.{ RDFDatatype, TypeMapper }
-import com.hp.hpl.jena.datatypes.xsd.{ XSDDatatype }
-import com.hp.hpl.jena.shared.{ PrefixMapping }
 import java.io.FileNotFoundException
+import java.io.Reader
+
+import org.appdapter.core.log.BasicDebugger
 import org.appdapter.core.log.Debuggable
+
+import au.com.bytecode.opencsv.CSVReader
 /**
  * @author Stu B. <www.texpedient.com>
  */
@@ -40,6 +34,7 @@ trait MatrixRow {
     val rowLen = getPossibleColumnCount();
     val sbuf = new StringBuffer();
     for (colIdx <- 0 until rowLen) {
+      Debuggable.putFrameVar("column", colIdx)
       val cellVal: Option[String] = getPossibleColumnValueString(colIdx);
       if (colIdx > 0) {
         sbuf.append(", ");
@@ -74,6 +69,7 @@ class SheetProc(val myHeaderRowCount: Int) extends BasicDebugger {
   private val myHeaderRows = new Array[MatrixRow](myHeaderRowCount);
 
   def processRow(mtxRow: MatrixRow) {
+    Debuggable.putFrameVar("row", myRowIdx)
     if (myRowIdx < myHeaderRowCount) {
       myHeaderRows(myRowIdx) = mtxRow;
     } else {
@@ -124,6 +120,7 @@ object MatrixData extends BasicDebugger {
     if (rawReader == null) {
     	getLogger().error("No sheet found: " + url, new FileNotFoundException(url))
     } else {
+    	Debuggable.putFrameVar("sheetURL", url)
     	processSheetR(rawReader, processor);
     }
   }
@@ -154,6 +151,7 @@ object MatrixData extends BasicDebugger {
   }
   def readJavaMapFromSheet(sheetURL: String, headerCnt: Int = 1, keyColIdx: Int = 0, vlColIdx: Int = 1): java.util.Map[String, String] = {
     val mapProc = new MapSheetProc(headerCnt, keyColIdx, vlColIdx);
+    Debuggable.putFrameVar("sheetURL", sheetURL)
     processSheet(sheetURL, mapProc.processRow);
     mapProc.getJavaMap
   }
