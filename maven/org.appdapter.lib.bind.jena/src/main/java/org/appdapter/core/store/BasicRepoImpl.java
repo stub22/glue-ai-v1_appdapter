@@ -245,7 +245,7 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 				@Override public void run() {
 					final SpecialRepoLoader repoLoader = getRepoLoader();
 					repoLoader.setSynchronous(false);
-					synchronized (loadingLock) {						
+					synchronized (loadingLock) {
 						callLoadingInLock();
 					}
 					isLoadingLocked = false;
@@ -292,7 +292,7 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 		try {
 			isLoadingFinished = true;
 			if (Debuggable.isTesting() && false)
-				RepoOper.writeToTTL(this, new FileWriter("finishedLoading.ttl"));
+				RepoOper.writeTriG(this, new FileWriter("finishedLoading.ttl"));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
