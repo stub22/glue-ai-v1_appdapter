@@ -88,7 +88,7 @@ public class RepoOntologyPanel extends ScreenBoxPanel<MutableRepoBox> implements
 
 	@UISalient(IsFactoryMethod = true)//
 	static public Repo.WithDirectory createNewRepoWithBlankModelForDirectory() {
-		return new OmniLoaderRepo(RepoDatasetFactory.createDefaultModelUnshared());
+		return new OmniLoaderRepo(RepoDatasetFactory.createPrivateMemModel());
 	}
 
 	public static Type[] EDITTYPE = new Type[] { Repo.class, mapOf(Ident.class, makeParameterizedType(GetObject.class, Model.class)) };

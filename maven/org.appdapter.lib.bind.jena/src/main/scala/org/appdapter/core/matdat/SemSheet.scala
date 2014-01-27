@@ -182,7 +182,7 @@ object SemSheet {
   }
 
   def readModelCSVFilesSheet00(sheetKey: String, sheetNum: String, nsJavaMap: java.util.Map[String, String]): Model = {
-    val tgtModel: Model = RepoDatasetFactory.createDefaultModelUnshared
+    val tgtModel: Model = RepoDatasetFactory.createPrivateMemModel
 
     tgtModel.setNsPrefixes(nsJavaMap)
 

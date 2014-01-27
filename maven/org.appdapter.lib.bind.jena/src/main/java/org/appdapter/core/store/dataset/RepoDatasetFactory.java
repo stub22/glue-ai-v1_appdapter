@@ -15,8 +15,6 @@
  */
 package org.appdapter.core.store.dataset;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -41,13 +39,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.hp.hpl.jena.graph.Factory;
+//import com.hp.hpl.jena.graph.Factory;
 import com.hp.hpl.jena.graph.Graph;
 import com.hp.hpl.jena.graph.Node;
+import com.hp.hpl.jena.graph.compose.Union;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.query.DatasetFactory;
 import com.hp.hpl.jena.rdf.listeners.StatementListener;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
+//import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.sdb.SDB;
@@ -98,6 +99,7 @@ public class RepoDatasetFactory implements AnyOper, UtilClass {
 	static final UserDatasetFactory jenaUnsharedMemoryDatasetFactory = new JenaDatasetFactory();
 	static final Map<String, UserDatasetFactory> registeredUserDatasetFactoryByName = new HashMap<String, UserDatasetFactory>();
 	static final List<UserDatasetFactory> registeredUserDatasetFactorys = new ArrayList<UserDatasetFactory>();
+	private static final boolean VANILLA = false;
 
 	/**
 	 * To share Repos between JVM instances alwaysShareDataset = true;
@@ -132,10 +134,9 @@ public class RepoDatasetFactory implements AnyOper, UtilClass {
 		if (!(graph instanceof CheckedGraph)) {
 			graph = new CheckedGraph(graph, false, false, true);
 		}
-		if (true)
-			return new CheckedModel((CheckedGraph) graph);
+		//if (false)	return ModelFactory.createModelForGraph(graph);
+		return new CheckedModel((CheckedGraph) graph);
 
-		return ModelFactory.createModelForGraph(graph);
 	}
 
 	static public void invalidateModel(final Model m) {
@@ -224,31 +225,37 @@ public class RepoDatasetFactory implements AnyOper, UtilClass {
 		return jenaUnsharedMemoryDatasetFactory.createType(typeOf, shareName);
 	}
 
+	@UISalient public static Dataset createMem() {
+		if (alwaysShareDataset)
+			return createShared();
+		return createDataset(DATASET_TYPE_DEFAULT_MEMFILE_TYPE);
+	}
+
 	@UISalient public static Dataset createDefault() {
 		if (alwaysShareDataset)
 			return createShared();
 		return createDataset(DATASET_TYPE_DEFAULT);
 	}
 
-	public static Model createDefaultModel() {
-		if (allModelsTheSame) {
-			return getSharedModel();
-		}
-		if (allModelNoDelete)
-			return createDefaultModelNoDelete();
-		return RepoDatasetFactory.createDefaultModelUnshared();
-	}
-
-	public static Model createDefaultModelUnshared() {
-		if (allModelNoDelete)
-			return createDefaultModelNoDelete();
-		return wrapPrefixCheck(createDefaultModelImpl());
-	}
-
 	public static Model createUnion(Model m1, Model m2) {
+		Model shared = createUnionNoPrefixShare(m1, m2);
+		shared.withDefaultMappings(m1);
+		shared.withDefaultMappings(m2);
+		//ModelCom.class.getName();
+		return shared;
+	}
+
+	public static Model createUnionNoPrefixShare(Model m1, Model m2) {
 		if (allModelNoDelete)
-			return wrapNoDelete(ModelFactory.createUnion(m1, m2));
-		return wrapPrefixCheck(ModelFactory.createUnion(m1, m2));
+			return wrapNoDelete(createUnionImpl(m1, m2));
+		return wrapPrefixCheck(createUnionImpl(m1, m2));
+	}
+
+	private static Model createUnionImpl(Model m1, Model m2) {
+		if (VANILLA) {
+			ModelFactory.createUnion(m1, m2);
+		}
+		return createModelForGraph(new Union(m1.getGraph(), m2.getGraph()));
 	}
 
 	public static Model createDefaultModelNoDelete() {
@@ -257,7 +264,25 @@ public class RepoDatasetFactory implements AnyOper, UtilClass {
 	}
 
 	private static Model createDefaultModelImpl() {
+		if (false) {
+			return createModel(DATASET_TYPE_UNSHARED);
+		}
 		return new CheckedModel(Factory.createGraphMem(), false, false, false);
+	}
+
+	public static Model createPrivateMemModel() {
+		if (allModelNoDelete)
+			return createDefaultModelNoDelete();
+		return wrapPrefixCheck(createDefaultModelImpl());
+	}
+
+	public static Model createDefaultModel() {
+		if (allModelsTheSame) {
+			return getSharedModel();
+		}
+		if (allModelNoDelete)
+			return createDefaultModelNoDelete();
+		return RepoDatasetFactory.createPrivateMemModel();
 	}
 
 	public static Model wrapNoDelete(final Model nonuniversalModel) {
@@ -288,14 +313,12 @@ public class RepoDatasetFactory implements AnyOper, UtilClass {
 		return new CheckedModel(new CheckedGraph(modelGraph, false, false, true));
 	}
 
-	@UISalient public static Dataset createMem() {
-		if (alwaysShareDataset)
-			return createShared();
-		return createDataset(DATASET_TYPE_DEFAULT_MEMFILE_TYPE);
-	}
-
 	public static Model createModel(String typeOf) {
 		return createModel(typeOf, null, DATASET_SHARE_NAME);
+	}
+
+	private static Model createModelForDataset(String uri, Dataset newDs) {
+		return createDefaultModel();
 	}
 
 	@UISalient public static Model createModel(String typeOf, String modelName, String shareName) {
@@ -320,10 +343,6 @@ public class RepoDatasetFactory implements AnyOper, UtilClass {
 		return jenaUnsharedMemoryDatasetFactory.createModelOfType(typeOf, modelName, shareName);
 	}
 
-	private static Model createModelForDataset(String uri, Dataset newDs) {
-		return createDefaultModel();
-	}
-
 	static public String createNewName() {
 		serialNumber++;
 		if (true)
@@ -336,11 +355,7 @@ public class RepoDatasetFactory implements AnyOper, UtilClass {
 	public static Dataset createPrivateMem() {
 		if (alwaysShareDataset)
 			return getGlobalDShared();
-		return DatasetFactory.createMem();
-	}
-
-	public static Model createPrivateMemModel() {
-		return createModel(DATASET_TYPE_UNSHARED);
+		return new CheckedDataset(DatasetFactory.createMem());
 	}
 
 	@UISalient public static Dataset createShared() {

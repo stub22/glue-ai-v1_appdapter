@@ -139,7 +139,7 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 				if (url.indexOf(":") == -1) {
 					url = "file:" + url;
 				}
-				Model m = RepoDatasetFactory.createDefaultModelUnshared();
+				Model m = RepoDatasetFactory.createPrivateMemModel();
 				String lang = (url.endsWith(".n3") || url.endsWith(".ttl")) ? "N3" : "RDF/XML";
 				m.read(url, lang);
 				filenamesToGraph.put(args[i], m);
@@ -339,7 +339,7 @@ public class ModelAsTurtleEditor extends ScreenBoxPanel implements ObjectPanel {
 	 * @return The parsed contents of the Turtle text area
 	 */
 	protected Model getContentsAsModel() {
-		Model result = RepoDatasetFactory.createDefaultModelUnshared();
+		Model result = RepoDatasetFactory.createPrivateMemModel();
 
 		StringReader reader = new StringReader(getContentsAsTurtle());
 		try {

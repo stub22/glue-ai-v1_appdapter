@@ -67,7 +67,7 @@ public class ModelStuff {
 
 	protected static Model aModel = extendedModel();
 
-	protected static final Model empty = RepoOper.makeReadOnly(RepoDatasetFactory.createDefaultModelUnshared());
+	protected static final Model empty = RepoOper.makeReadOnly(RepoDatasetFactory.createPrivateMemModel());
 
 	public static void fail(String failMsg) {
 		System.out.println("ModelStuff-FAIL[" + failMsg + "]");

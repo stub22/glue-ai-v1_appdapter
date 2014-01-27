@@ -80,7 +80,7 @@ object PipelineSnapLoader extends BasicDebugger {
       val msqText2 = """
 			select ?model ?targetmodel
 				{
-					?targetmodel ccrt:sourceModel ?model.
+					?targetmodel <urn:ftd:cogchar.org:2012:runtime#sourceModel> ?model.
 				}
 		"""
       val pipelineModel = mainDset.getNamedModel(modelName);
