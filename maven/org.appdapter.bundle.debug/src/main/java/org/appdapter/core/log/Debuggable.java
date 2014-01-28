@@ -2,11 +2,13 @@ package org.appdapter.core.log;
 
 import java.io.ByteArrayOutputStream;
 import java.io.Console;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -20,7 +22,6 @@ import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.core.debug.NoLeakThreadLocal;
 import org.appdapter.core.debug.UIAnnotations.UIHidden;
 import org.appdapter.core.debug.UIAnnotations.UISalient;
-import org.appdapter.core.log.Debuggable.DebuggableFrame;
 import org.slf4j.LoggerFactory;
 
 @UIHidden
@@ -96,30 +97,46 @@ public abstract class Debuggable extends BasicDebugger {
 	public static String toInfoStringA(Object[] params, String sep, int depth) {
 		if (params == null)
 			return "<Null[]>";
-		if (params.length == 0)
+		int paramslength = params.length;
+		if (paramslength == 0) {
 			return "/*0*/";
-		if (params.length == 1)
-			return toInfoStringV(params[0], depth);
+		}
+		Object p0 = params[0];
+		if (paramslength == 1) {
+			return toInfoStringV(p0, depth);
+		} else if (p0 instanceof String) {
+			String fmt = (String) p0;
+			if (fmt.contains("%")) {
+
+			}
+		}
 		depth--;
 		boolean needComma = false;
 		StringBuffer sb = new StringBuffer();
-		for (int i = 0; i < params.length; i++) {
-			String str = "" + params[i];
+		for (int i = 0; i < paramslength; i++) {
+			String str = null;
 			Object next = params[i];
-			if ((next instanceof String) && (str.startsWith("=") || str.endsWith("]"))) {
-				sb.append(next);
-				continue;
+			if (next instanceof String) {
+				str = (String) next;
+				if (str.startsWith("=") || str.endsWith("]")) {
+					sb.append(next);
+					continue;
+				}
+				if (str.endsWith("=")) {
+					sb.append(str);
+					needComma = false;
+				}
 			}
 			if (needComma) {
 				sb.append(sep);
 			}
-			if (str.endsWith("=")) {
+			if (str != null && str.endsWith("=")) {
 				sb.append(str);
 				needComma = false;
-			} else {
-				sb.append(toInfoStringV(params[i], depth));
-				needComma = true;
+				continue;
 			}
+			sb.append(toInfoStringV(params[i], depth));
+			needComma = true;
 		}
 		return sb.toString();
 	}
@@ -622,7 +639,7 @@ public abstract class Debuggable extends BasicDebugger {
 
 		@Override public void printStackTrace(PrintStream s) {
 			synchronized (s) {
-				s.println(t);
+				s.println("" + t);
 			}
 			//t.printStackTrace(s);
 		}
@@ -638,4 +655,28 @@ public abstract class Debuggable extends BasicDebugger {
 		}
 	}
 
+	public static void oldBug(String msg, Object... params) {
+		oldBug(null, msg, params);
+	}
+
+	public static void oldBug(Writer w, String msg, Object... params) {
+		String msgf = toInfoStringCompound(msg, params);
+		String ob = "OLD BUG: " + msgf;
+		Throwable t = createFrame(ob);
+		if (w != null) {
+			try {
+				w.write(msgf + "\n");
+			} catch (IOException e) {
+			}
+		}
+		if (theFallbackLogger == null) {
+			theFallbackLogger = getLoggerForClass(Debuggable.class);
+		}
+		if (theFallbackLogger != null) {
+			theFallbackLogger.error(msgf);
+		} else {
+			t.printStackTrace(ORIGINAL_ERR_STREAM);
+		}
+
+	}
 }
