@@ -5,6 +5,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 
+import org.appdapter.core.store.RepoOper;
+
 import com.hp.hpl.jena.graph.Graph;
 import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.graph.compose.MultiUnion;
@@ -85,8 +87,10 @@ public class CheckedDataset extends DatasetImpl implements Dataset {
 	}
 
 	@Override public Model getNamedModel(String n) {
-		if (n == null || n.equals("#all")) {
-			return modelFor(new MultiUnion(getAllGraphs()));
+		if (n == null)
+			return super.getNamedModel(n);
+		if (n.equals("#all")) {
+			return modelFor(new MultiUnion(RepoOper.getAllGraphs(this)));
 		}
 		Node gn = RepoDatasetFactory.correctModelName(n);
 		DatasetGraph g = asDatasetGraph();
@@ -94,19 +98,6 @@ public class CheckedDataset extends DatasetImpl implements Dataset {
 		if (graph == null)
 			return null;
 		return RepoDatasetFactory.createModelForGraph(graph);
-	}
-
-	public Graph[] getAllGraphs() {
-		Iterator<String> names = listNames();
-		Collection<Graph> grpGraph = new HashSet<Graph>();
-		while (names.hasNext()) {
-			String nodeName = names.next();
-			if (nodeName == null || nodeName.equals("#all"))
-				continue;
-			Model m = getNamedModel(nodeName);
-			grpGraph.add(m.getGraph());
-		}
-		return grpGraph.toArray(new Graph[grpGraph.size()]);
 	}
 
 	private Model modelFor(MultiUnion graph) {

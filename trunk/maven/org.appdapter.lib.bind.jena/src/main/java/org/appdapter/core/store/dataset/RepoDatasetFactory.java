@@ -42,6 +42,9 @@ import com.hp.hpl.jena.graph.Factory;
 //import com.hp.hpl.jena.graph.Factory;
 import com.hp.hpl.jena.graph.Graph;
 import com.hp.hpl.jena.graph.Node;
+import com.hp.hpl.jena.graph.compose.Dyadic;
+import com.hp.hpl.jena.graph.compose.MultiUnion;
+import com.hp.hpl.jena.graph.compose.Polyadic;
 import com.hp.hpl.jena.graph.compose.Union;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.query.DatasetFactory;
@@ -75,9 +78,9 @@ public class RepoDatasetFactory implements AnyOper, UtilClass {
 	}
 
 	@UISalient
-	public static boolean allModelNoDelete = true;
+	public static boolean allModelNoDelete = false;
 	@UISalient
-	public static boolean datasetNoDeleteModels = true;
+	public static boolean datasetNoDeleteModels = false;
 	@UISalient
 	public static boolean allModelsTheSame = false;
 
@@ -506,5 +509,47 @@ public class RepoDatasetFactory implements AnyOper, UtilClass {
 			}
 		}
 		return Node.createURI(onlyModel);
+	}
+
+	public static Graph getUnderlyingGraph(Graph graph) {
+		while (graph instanceof CheckedGraph) {
+			graph = ((CheckedGraph) graph).getDataGraph();
+		}
+		return graph;
+	}
+
+	public static Model createGroup(Model srcM) {
+		Graph g = RepoOper.getUnderlyingGraph(srcM.getGraph());
+		return createModelForGraph(new MultiUnion(new Graph[] { g }));
+	}
+
+	public static Model createGroup(Model destM, Model srcM) {
+		Graph g = RepoOper.getUnderlyingGraph(destM.getGraph());
+		Graph sg = getUnderlyingGraph(srcM.getGraph());
+		if (subsumes(g, sg)) {
+			return destM;
+		}
+		if (g instanceof MultiUnion) {
+			if (g == sg) {
+				return destM;
+			}
+			((MultiUnion) g).addGraph(sg);
+			return destM;
+		}
+		return createModelForGraph(new MultiUnion(new Graph[] { g, sg }));
+	}
+
+	private static boolean subsumes(Graph g, Graph sg) {
+		g = RepoOper.getUnderlyingGraph(g);
+		sg = getUnderlyingGraph(sg);
+		return subsumes0(g, sg);
+	}
+
+	private static boolean subsumes0(Graph g, Graph sg) {
+		ArrayList<Graph> gl = new ArrayList<Graph>();
+		RepoOper.addConstituentGraphs(g, gl, true);
+		if (!gl.contains(sg))
+			return false;
+		return true;
 	}
 }
