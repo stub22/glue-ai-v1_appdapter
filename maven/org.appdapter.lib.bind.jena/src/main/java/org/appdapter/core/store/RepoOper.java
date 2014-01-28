@@ -26,6 +26,7 @@ import java.io.Writer;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -42,6 +43,7 @@ import org.appdapter.api.trigger.AnyOper;
 import org.appdapter.core.debug.UIAnnotations.UIHidden;
 import org.appdapter.core.debug.UIAnnotations.UtilClass;
 import org.appdapter.core.log.Debuggable;
+import org.appdapter.core.store.dataset.CheckedDataset;
 import org.appdapter.core.store.dataset.CheckedGraph;
 import org.appdapter.core.store.dataset.RepoDatasetFactory;
 import org.appdapter.core.store.dataset.UserDatasetFactory;
@@ -58,6 +60,7 @@ import com.hp.hpl.jena.graph.NodeFactory;
 import com.hp.hpl.jena.graph.Triple;
 import com.hp.hpl.jena.graph.compose.CompositionBase;
 import com.hp.hpl.jena.graph.compose.Dyadic;
+import com.hp.hpl.jena.graph.compose.MultiUnion;
 import com.hp.hpl.jena.graph.compose.Polyadic;
 import com.hp.hpl.jena.n3.N3JenaWriterPP;
 import com.hp.hpl.jena.query.Dataset;
@@ -189,21 +192,30 @@ public class RepoOper implements AnyOper, UtilClass {
 		///dest.setNsPrefix("#", src.getNsPrefixURI("#"));
 	}
 
+	public static Model unionAll(Dataset ds, Model... more) {
+		Graph[] gs = getAllGraphs(ds, more);
+		Model m = ModelFactory.createModelForGraph(new MultiUnion(gs));
+		return m;
+	}
+
 	public static void addUnionModel(Dataset ds, String src, String dest) {
 		src = correctModelName(src);
 		dest = correctModelName(dest);
+
 		Model destM = ds.getNamedModel(dest);
 		Model srcM = ds.getNamedModel(src);
+		if (destM == srcM)
+			return;
 		if (srcM == null) {
 			throw new RuntimeException("Missing Model named: " + srcM);
 		}
 		if (destM == null) {
-			destM = srcM;
+			destM = RepoDatasetFactory.createGroup(srcM);
 			ds.addNamedModel(dest, destM);
 		} else {
-			destM = RepoDatasetFactory.createUnion(destM, srcM);
+			destM = RepoDatasetFactory.createGroup(destM, srcM);
+			theLogger.warn("Made Merged Model from " + src + " and " + dest);
 			ds.replaceNamedModel(dest, destM);
-			theLogger.warn("Made Merged Model from " + src);
 		}
 	}
 
@@ -509,14 +521,16 @@ public class RepoOper implements AnyOper, UtilClass {
 		new File(dir).mkdir();
 
 		FileWriter fw = null;
-		try {
-			fw = new FileWriter(new File(new File(dir), "all.trig"));
-			writeTriG(repo, fw);
-		} catch (IOException io) {
+		if (false) {
+			try {
+				fw = new FileWriter(new File(new File(dir), "all.trig"));
+				writeTriG(repo, fw);
+			} catch (IOException io) {
 
-		} finally {
-			if (fw != null)
-				fw.close();
+			} finally {
+				if (fw != null)
+					fw.close();
+			}
 		}
 		String rname = new SimpleDateFormat("yyyyMMddHH_mmss_SSS").format(new Date());
 		Node fileRepoName = dirModel.getResource(csiURI + "filerepo_" + rname).asNode();
@@ -550,7 +564,6 @@ public class RepoOper implements AnyOper, UtilClass {
 		Node sourcePath = dirModel.createProperty(ccrtNS, "sourcePath").asNode();
 
 		DatasetGraph dsg = ds.asDatasetGraph();
-		Iterator<Node> dni = dsg.listGraphNodes();
 
 		Model defaultModel = ds.getDefaultModel();
 		Node defaultURI = null;
@@ -576,8 +589,12 @@ public class RepoOper implements AnyOper, UtilClass {
 		ArrayList<Node> sourceOf = new ArrayList<Node>();
 		ArrayList<Node> allNodes = new ArrayList<Node>();
 
+		Iterator<Node> dni = dsg.listGraphNodes();
 		while (dni.hasNext()) {
 			Node gname = dni.next();
+			String nodeName = gname.toString();
+			if (nodeName == null || nodeName.equals("#all") || nodeName.startsWith("#"))
+				continue;
 			allNodes.add(gname);
 			Model m = ds.getNamedModel(gname.toString());
 			nsUsed.putAll(m.getNsPrefixMap());
@@ -601,6 +618,9 @@ public class RepoOper implements AnyOper, UtilClass {
 
 		while (dni.hasNext()) {
 			Node gname = dni.next();
+			String nodeName = gname.toString();
+			if (nodeName == null || nodeName.equals("#all") || nodeName.startsWith("#"))
+				continue;
 			String name = gname.getLocalName();
 			String filename = name + ".ttl";
 			boolean addToDirModel = true;
@@ -709,27 +729,45 @@ public class RepoOper implements AnyOper, UtilClass {
 		}
 	}
 
-	private static void addConstituentGraphs(Object g, List<Object> list) {
+	public static void addConstituentGraphs(Graph g, Collection list) {
+		addConstituentGraphs(g, list, false);
+	}
+
+	public static void addConstituentGraphs(Graph g, Collection list, boolean retainMultis) {
 		if (g == null || list.contains(g))
 			return;
-		list.add(g);
-		if (g instanceof Dyadic) {
-			addConstituentGraphs(((Dyadic) g).getL(), list);
-			addConstituentGraphs(((Dyadic) g).getR(), list);
-			return;
-		}
-		if (g instanceof Polyadic) {
-			for (Graph g0 : ((Polyadic) g).getSubGraphs()) {
-				addConstituentGraphs(g0, list);
+		boolean retainG = false;
+		try {
+			list.add(g);
+			if (g instanceof Dyadic) {
+				addConstituentGraphs((Graph) ((Dyadic) g).getL(), list);
+				addConstituentGraphs((Graph) ((Dyadic) g).getR(), list);
+				if (retainMultis) {
+					retainG = true;
+				}
+				return;
 			}
-			return;
-		}
-		if (g instanceof Graph) {
+			if (g instanceof Polyadic) {
+				for (Graph g0 : ((Polyadic) g).getSubGraphs()) {
+					addConstituentGraphs(g0, list);
+				}
+				if (retainMultis) {
+					retainG = true;
+				}
+				return;
+			}
+
 			Graph ug = getUnderlyingGraph((Graph) g);
 			if (ug != g) {
 				addConstituentGraphs(ug, list);
+			} else {
+				retainG = true;
 			}
+		} finally {
+			if (!retainG)
+				list.remove(g);
 		}
+
 	}
 
 	public static void writeModel(Model m, Writer ow, boolean includeNamespaces, boolean trimNamepaces, PrefixMapping pm) throws IOException {
@@ -802,7 +840,7 @@ public class RepoOper implements AnyOper, UtilClass {
 		}
 	}
 
-	private static Graph getUnderlyingGraph(Graph graph) {
+	public static Graph getUnderlyingGraph(Graph graph) {
 		while (graph instanceof CheckedGraph) {
 			graph = ((CheckedGraph) graph).getDataGraph();
 		}
@@ -877,5 +915,24 @@ public class RepoOper implements AnyOper, UtilClass {
 
 	public static Model makeReadOnly(Model model) {
 		return model;
+	}
+
+	static public Graph[] getAllGraphs(Dataset ds, Model... more) {
+		Iterator<String> names = ds.listNames();
+		Collection<Graph> grpGraph = new HashSet<Graph>();
+		while (names.hasNext()) {
+			String nodeName = names.next();
+			if (nodeName == null || nodeName.equals("#all") || nodeName.startsWith("#"))
+				continue;
+			Model m = ds.getNamedModel(nodeName);
+			addConstituentGraphs(RepoOper.getUnderlyingGraph(m.getGraph()), grpGraph);
+		}
+		for (Model dm : more) {
+			if (dm != null) {
+				addConstituentGraphs(RepoOper.getUnderlyingGraph(dm.getGraph()), grpGraph);
+			}
+		}
+		Graph[] gs = grpGraph.toArray(new Graph[grpGraph.size()]);
+		return gs;
 	}
 }
