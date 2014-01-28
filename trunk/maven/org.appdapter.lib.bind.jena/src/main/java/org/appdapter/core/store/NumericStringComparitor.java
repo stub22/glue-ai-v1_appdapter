@@ -7,11 +7,23 @@ import org.appdapter.core.log.Debuggable;
 
 import com.hp.hpl.jena.rdf.model.Resource;
 
-public final class NumericStringComparitor implements Comparator<Resource> {
+public final class NumericStringComparitor implements Comparator {
 	final public static Comparator<Resource> resourceComparator = new NumericStringComparitor();
+	final public static Comparator<String> stringComparator = new NumericStringComparitor();
 
-	@Override public int compare(Resource o1, Resource o2) {
-		int c = compare(mostImportant(o1), mostImportant(o2));
+	public int compare(String s1, String s2) {
+		return compareStrings(s1, s2);
+	}
+
+	@Override public int compare(Object o1, Object o2) {
+		if (o1 instanceof Resource || o2 instanceof Resource) {
+			return compare((Resource) o1, (Resource) o2);
+		}
+		return compare((String) o1, (String) o2);
+	}
+
+	public int compare(Resource o1, Resource o2) {
+		int c = compare(mostImportant(o1), mostImportant(o2), true);
 		if (c != 0)
 			return c;
 		if (!o1.equals(o2)) {
@@ -20,7 +32,7 @@ public final class NumericStringComparitor implements Comparator<Resource> {
 		return 1;
 	}
 
-	public static int compare(String[] s1, String[] s2) {
+	public static int compare(String[] s1, String[] s2, boolean mayDemposeString) {
 		int i = 0;
 		while (true) {
 			if (i == s1.length) {
@@ -33,28 +45,45 @@ public final class NumericStringComparitor implements Comparator<Resource> {
 					return 1;
 				}
 			}
-			int comp = compare1(s1[i], s2[i]);
-			if (comp != 0)
-				return comp;
+			if (mayDemposeString) {
+				int comp = compareStrings(s1[i], s2[i]);
+				if (comp != 0)
+					return comp;
+			} else {
+				int comp = compareNoDecomp(s1[i], s2[i]);
+				if (comp != 0)
+					return comp;
+			}
 			i++;
 		}
 	}
 
-	public static int compare1(String s1, String s2) {
+	public static int compareNoDecomp(String s1, String s2) {
 		if (s1 == null) {
 			if (s2 == null) {
-				return 1;
+				return 0;
+			}
+			return 1;
+		}
+		if (s2 == null) {
+			return -1;
+		}
+		if (s1.length() == 0) {
+			if (s2.length() == 0) {
+				return 0;
 			}
 			return -1;
 		}
-		if (s2 == null) {
+		if (s2.length() == 0) {
 			return 1;
 		}
 		if (s1.length() > 0) {
-			if (Character.isDigit(s1.charAt(0))) {
+			if (Character.isDigit(s1.charAt(0)) && Character.isDigit(s2.charAt(0))) {
 				Double d1 = calcValue(s1);
 				Double d2 = calcValue(s2);
-				return d1.compareTo(d2);
+				int mcomp = (int) Math.signum(d1.compareTo(d2));
+				if (mcomp != 0)
+					return mcomp;
 			}
 		}
 		int comp = s1.compareToIgnoreCase(s2);
@@ -73,10 +102,28 @@ public final class NumericStringComparitor implements Comparator<Resource> {
 		}
 	}
 
-	public static int compare(String s1, String s2) {
+	public static int compareStrings(String s1, String s2) {
+		if (s1 == null) {
+			if (s2 == null) {
+				return 0;
+			}
+			return 1;
+		}
+		if (s2 == null) {
+			return -1;
+		}
+		if (s1.length() == 0) {
+			if (s2.length() == 0) {
+				return 0;
+			}
+			return -1;
+		}
+		if (s2.length() == 0) {
+			return 1;
+		}
 		String tokens1[] = tokens(s1);
 		String tokens2[] = tokens(s2);
-		return compare(tokens1, tokens2);
+		return compare(tokens1, tokens2, false);
 	}
 
 	public static String[] tokens(String s2) {
@@ -106,12 +153,15 @@ public final class NumericStringComparitor implements Comparator<Resource> {
 		showCompare("abc223", "223abc");
 		showCompare("a22", "a2");
 		showCompare("abcd", "a2");
+		showCompare("M1L3P1ForTablet_control_12", "M1L3P1ForTablet_control_13");
+		showCompare("M1L3P1ForTablet_control_12", "M1L3P1ForTablet_control_11");
+		showCompare("M1L3P1ForTablet_control_12", "M1L3P1ForTablet_control_2");
 	}
 
 	static String[] sgn = new String[] { "<", "==", ">" };
 
 	private static void showCompare(String s1, String s2) {
-		int comp = compare(s1, s2);
+		int comp = compareStrings(s1, s2);
 		System.out.println(s1 + " " + sgn[(int) Math.signum(comp) + 1] + " " + s2);
 	}
 
