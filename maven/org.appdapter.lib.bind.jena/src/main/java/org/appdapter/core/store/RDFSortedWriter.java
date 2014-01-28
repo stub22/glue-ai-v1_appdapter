@@ -102,8 +102,10 @@ public final class RDFSortedWriter extends N3JenaWriterPP {
 		if (!(graph instanceof GraphMem)) {
 			out.println("# " + graph.getClass());
 		}
+		ArrayList<String> keyBases = new ArrayList<String>(prefixMap.keySet());
+		Collections.sort(keyBases, NumericStringComparitor.stringComparator);
 		if (!skipWritingPrefixes) {
-			for (Iterator<String> pIter = prefixMap.keySet().iterator(); pIter.hasNext();)
+			for (Iterator<String> pIter = keyBases.iterator(); pIter.hasNext();)
 			{
 				String p = pIter.next();
 				String u = prefixMap.get(p);
