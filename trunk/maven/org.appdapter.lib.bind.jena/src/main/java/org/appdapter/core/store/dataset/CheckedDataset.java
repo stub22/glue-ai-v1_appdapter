@@ -1,10 +1,13 @@
 package org.appdapter.core.store.dataset;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 
 import com.hp.hpl.jena.graph.Graph;
 import com.hp.hpl.jena.graph.Node;
+import com.hp.hpl.jena.graph.compose.MultiUnion;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.shared.Lock;
@@ -13,6 +16,11 @@ import com.hp.hpl.jena.sparql.core.DatasetGraphFactory;
 import com.hp.hpl.jena.sparql.core.DatasetImpl;
 
 public class CheckedDataset extends DatasetImpl implements Dataset {
+
+	protected Model graph2model(Graph graph)
+	{
+		return super.graph2model(graph);
+	}
 
 	//private DatasetGraph dsg;
 
@@ -77,11 +85,31 @@ public class CheckedDataset extends DatasetImpl implements Dataset {
 	}
 
 	@Override public Model getNamedModel(String n) {
+		if (n == null || n.equals("#all")) {
+			return modelFor(new MultiUnion(getAllGraphs()));
+		}
 		Node gn = RepoDatasetFactory.correctModelName(n);
 		DatasetGraph g = asDatasetGraph();
 		Graph graph = g.getGraph(gn);
 		if (graph == null)
 			return null;
+		return RepoDatasetFactory.createModelForGraph(graph);
+	}
+
+	public Graph[] getAllGraphs() {
+		Iterator<String> names = listNames();
+		Collection<Graph> grpGraph = new HashSet<Graph>();
+		while (names.hasNext()) {
+			String nodeName = names.next();
+			if (nodeName == null || nodeName.equals("#all"))
+				continue;
+			Model m = getNamedModel(nodeName);
+			grpGraph.add(m.getGraph());
+		}
+		return grpGraph.toArray(new Graph[grpGraph.size()]);
+	}
+
+	private Model modelFor(MultiUnion graph) {
 		return RepoDatasetFactory.createModelForGraph(graph);
 	}
 

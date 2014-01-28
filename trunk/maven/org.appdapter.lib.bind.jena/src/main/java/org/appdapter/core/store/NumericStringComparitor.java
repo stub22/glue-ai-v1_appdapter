@@ -62,12 +62,6 @@ public final class NumericStringComparitor implements Comparator<Resource> {
 			comp = s1.compareTo(s2);
 		if (comp == 0)
 			return 0;
-		if (s1.equals("type")) {
-			return -1;
-		}
-		if (s2.equals("type")) {
-			return 1;
-		}
 		return comp;
 	}
 
@@ -126,7 +120,12 @@ public final class NumericStringComparitor implements Comparator<Resource> {
 			return new String[] { "", "" + o2.getId() };
 		}
 		if (o2.isURIResource()) {
-			return new String[] { o2.getLocalName(), o2.getNameSpace() };
+			String ns = o2.getNameSpace();
+			if (ns != null && ns.contains("w3.")) {
+				// push W3C higher 
+				return new String[] { "", o2.getLocalName() };
+			}
+			return new String[] { o2.getLocalName(), ns };
 		}
 		//if (o2.isLiteral()) {
 		return new String[] { null, "\"" + o2 };

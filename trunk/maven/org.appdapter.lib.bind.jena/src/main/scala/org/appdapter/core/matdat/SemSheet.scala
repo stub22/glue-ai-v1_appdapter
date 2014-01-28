@@ -18,11 +18,18 @@ package org.appdapter.core.matdat
 
 import scala.Array.canBuildFrom
 import org.appdapter.core.log.BasicDebugger
-import org.appdapter.impl.store.ResourceResolver
-import com.hp.hpl.jena.datatypes.{ RDFDatatype, TypeMapper }
-import com.hp.hpl.jena.rdf.model.{ Model, ModelFactory, Property, RDFNode, Resource, Statement }
-import org.appdapter.core.store.dataset.RepoDatasetFactory
 import org.appdapter.core.log.Debuggable
+import org.appdapter.core.store.dataset.RepoDatasetFactory
+import org.appdapter.impl.store.ResourceResolver
+import com.hp.hpl.jena.datatypes.RDFDatatype
+import com.hp.hpl.jena.datatypes.TypeMapper
+import com.hp.hpl.jena.rdf.model.Model
+import com.hp.hpl.jena.rdf.model.Property
+import com.hp.hpl.jena.rdf.model.RDFNode
+import com.hp.hpl.jena.rdf.model.Resource
+import com.hp.hpl.jena.rdf.model.Statement
+import org.appdapter.core.store.dataset.CheckedModel
+import com.hp.hpl.jena.datatypes.xsd.XSDDatatype
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -95,8 +102,24 @@ object SemSheet {
                 throw new Exception("Got MetaType='" + mt + "' but no RDF-datatype is specified at col# " + colIdx)
               }
               val tm = TypeMapper.getInstance();
+              XSDDatatype.loadXSDSimpleTypes(tm);
               // alternative:  getSafeTypeByName is more lenient
-              val dt = tm.getTypeByName(subKindCell.get);
+              var dtName = subKindCell.get;
+              var dt = tm.getTypeByName(dtName);
+              if (dt == null && dtName.startsWith("xsd:")) {
+                // expand the xsd prefix
+                val xsdName = XSDDatatype.XSD + "#" + dtName.substring(4)
+                dt = tm.getTypeByName(xsdName)
+              }
+              if (dt == null) {
+                // this one only fakes a datatype
+                theDbg.logError("OLD BUG: " + dtName + " is not a datatype! (try googling it and make sure you have the case correct)")
+                if (dtName.equalsIgnoreCase("xsd:datetime")) {
+                  dt = XSDDatatype.XSDdateTime;
+                } else {
+                  dt = tm.getSafeTypeByName(dtName)
+                }
+              }
               val binding = new ResDataColumnBinding(optProp.get, colIdx, dt);
               Some(binding);
             }
@@ -125,10 +148,10 @@ object SemSheet {
       val rowIsCommentedOut: Boolean = optComment.getOrElse("").trim.startsWith("#");
       if (rowIsCommentedOut) {
         getLogger.info("Row is commented out: " + cellRow.dump());
-      }
-      if ((myIndivColIdx >= 0) && (!rowIsCommentedOut)) {
+      } else if ((myIndivColIdx >= 0)) {
         Debuggable.putFrameVar("column", myIndivColIdx)
         val optIndivCell: Option[String] = cellRow.getPossibleColumnValueString(myIndivColIdx);
+
         val optIndiv: Option[Resource] = if (optIndivCell.isDefined) {
           val indivQNameOrURI = optIndivCell.get
           var indivRes = myIndivResResolver.findOrMakeResource(myModel, indivQNameOrURI)
@@ -170,14 +193,14 @@ object SemSheet {
     extends PropertyValueColumnBinding(linkProp, colIdx) {
 
     override def makeValueNode(cellString: String, model: Model): RDFNode = {
-      myResolver.findOrMakeResource(model, cellString);
+      CheckedModel.findOrMakeResource(myResolver, model, cellString)
     }
   }
   class ResDataColumnBinding(datProp: Property, colIdx: Int, val myDatatype: RDFDatatype)
     extends PropertyValueColumnBinding(datProp, colIdx) {
 
     override def makeValueNode(cellString: String, model: Model): RDFNode = {
-      model.createTypedLiteral(cellString, myDatatype);
+      CheckedModel.createTypedLiteral(model, cellString, myDatatype)
     }
   }
 

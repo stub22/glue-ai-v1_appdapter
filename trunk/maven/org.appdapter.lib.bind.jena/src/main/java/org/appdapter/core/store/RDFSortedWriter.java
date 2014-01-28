@@ -2,8 +2,10 @@ package org.appdapter.core.store;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 
 import org.appdapter.core.store.dataset.CheckedGraph;
 
@@ -30,6 +32,66 @@ public final class RDFSortedWriter extends N3JenaWriterPP {
 
 	protected ResIterator listSubjects(Model model) {
 		return model.listSubjects();
+	}
+
+	protected void processModel(Model model)
+	{
+		prefixMap = model.getNsPrefixMap();
+		bNodesMap = new HashMap<Resource, String>();
+
+		// PrefixMapping (to Jena 2.5.7 at least)
+		// is specialized to XML-isms and Turle prefixed names aren't quite qnames. 
+		// Build temporary maps of acceptable prefixes and URIs. 
+
+		// If no base defined for the model, but one given to writer,
+		// then use this.
+		String base2 = prefixMap.get("");
+
+		// BaseURI - <#>        
+		//	        if ( base2 == null && baseURIrefHash != null )
+		//	            prefixMap.put("", baseURIrefHash) ;
+
+		for (Iterator<Entry<String, String>> iter = prefixMap.entrySet().iterator(); iter.hasNext();)
+		{
+			Entry<String, String> e = iter.next();
+			String prefix = e.getKey();
+			String uri = e.getValue();
+
+			// XML namespaces name can include '.'
+			// Turtle prefixed names can't.
+			if (!checkPrefixPart(prefix))
+				iter.remove();
+			else
+			{
+				if (checkPrefixPart(prefix))
+					// Build acceptable reverse mapping  
+					reversePrefixMap.put(uri, prefix);
+			}
+		}
+
+		startWriting();
+		prepare(model);
+
+		writeHeader(model);
+		writePrefixes(model);
+
+		if (prefixMap.size() != 0)
+			out.println();
+
+		// Do the output.
+		writeModel(model);
+
+		// Release intermediate memory - allows reuse of a writer
+		finishWriting();
+		bNodesMap = null;
+	}
+
+	protected void writeHeader(Model model)
+	{
+		// BaseURI - <#>
+		String baseURIref = prefixMap.get("");
+		if (baseURIref != null && !baseURIref.equals(""))
+			out.println("# Base: " + baseURIref);
 	}
 
 	@Override protected void writePrefixes(Model model) {

@@ -69,7 +69,7 @@ class SheetProc(val myHeaderRowCount: Int) extends BasicDebugger {
   private val myHeaderRows = new Array[MatrixRow](myHeaderRowCount);
 
   def processRow(mtxRow: MatrixRow) {
-    Debuggable.putFrameVar("row", myRowIdx)
+    Debuggable.putFrameVar("row", myRowIdx + 1)
     if (myRowIdx < myHeaderRowCount) {
       myHeaderRows(myRowIdx) = mtxRow;
     } else {
@@ -102,7 +102,9 @@ class MapSheetProc(headerRowCount: Int, val keyColIdx: Int, val vColIdx: Int) ex
     if (key.isDefined && value.isDefined) {
       val rowIsCommentedOut: Boolean = key.get.trim.startsWith("#");
       if (!rowIsCommentedOut) {
-        myResultMap.put(key.get, value.get)
+        val k = key.get;
+        val v = value.get;
+        myResultMap.put(k, v)
       } else {
         getLogger.info("Row is commented out: " + cellRow.dump());
       }
@@ -118,17 +120,17 @@ object MatrixData extends BasicDebugger {
 
     val rawReader: Reader = org.appdapter.fileconv.FileStreamUtils.makeSheetURLDataReader(url);
     if (rawReader == null) {
-    	getLogger().error("No sheet found: " + url, new FileNotFoundException(url))
+      getLogger().error("No sheet found: " + url, new FileNotFoundException(url))
     } else {
-    	Debuggable.putFrameVar("sheetURL", url)
-    	processSheetR(rawReader, processor);
+      Debuggable.putFrameVar("sheetURL", url)
+      processSheetR(rawReader, processor);
     }
   }
 
   def processSheetR(rawReader: Reader, processor: MatrixRow => Unit) {
     if (rawReader == null) {
-    	getLogger().error("NUll reader")
-    	return
+      getLogger().error("NUll reader")
+      return
     }
     val csvr: CSVReader = new CSVReader(rawReader);
 
@@ -140,7 +142,7 @@ object MatrixData extends BasicDebugger {
         try {
           processor(matrixRow);
         } catch {
-          case e: Exception => getLogger().error(Debuggable.toInfoStringArgV("processing a row problem " + e,e,processor, rowArray))
+          case e: Exception => getLogger().error(Debuggable.toInfoStringArgV("processing a row problem " + e, e, processor, rowArray))
         }
       } else {
         done = true;

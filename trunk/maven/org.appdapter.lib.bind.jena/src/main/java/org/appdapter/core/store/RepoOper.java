@@ -26,7 +26,6 @@ import java.io.Writer;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -43,9 +42,6 @@ import org.appdapter.api.trigger.AnyOper;
 import org.appdapter.core.debug.UIAnnotations.UIHidden;
 import org.appdapter.core.debug.UIAnnotations.UtilClass;
 import org.appdapter.core.log.Debuggable;
-import org.appdapter.core.matdat.OnlineSheetRepoSpec;
-import org.appdapter.core.matdat.RepoSpec;
-import org.appdapter.core.matdat.URLRepoSpec;
 import org.appdapter.core.store.dataset.CheckedGraph;
 import org.appdapter.core.store.dataset.RepoDatasetFactory;
 import org.appdapter.core.store.dataset.UserDatasetFactory;
@@ -55,6 +51,7 @@ import org.appdapter.trigger.bind.jena.TriggerImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.hp.hpl.jena.datatypes.xsd.XSDDatatype;
 import com.hp.hpl.jena.graph.Graph;
 import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.graph.NodeFactory;
@@ -73,6 +70,7 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.shared.Lock;
 import com.hp.hpl.jena.shared.PrefixMapping;
+import com.hp.hpl.jena.shared.impl.PrefixMappingImpl;
 import com.hp.hpl.jena.sparql.core.DatasetGraph;
 import com.hp.hpl.jena.sparql.graph.GraphFactory;
 import com.hp.hpl.jena.vocabulary.RDF;
@@ -509,20 +507,34 @@ public class RepoOper implements AnyOper, UtilClass {
 		Model dirModel = ((Repo.WithDirectory) repo).getDirectoryModel();
 		String csiURI = dirModel.getNsPrefixURI("csi");
 		new File(dir).mkdir();
-		FileWriter fw = new FileWriter(new File(new File(dir), "all.trig"));
-		writeTriG(repo, fw);
-		fw.close();
+
+		FileWriter fw = null;
+		try {
+			fw = new FileWriter(new File(new File(dir), "all.trig"));
+			writeTriG(repo, fw);
+		} catch (IOException io) {
+
+		} finally {
+			if (fw != null)
+				fw.close();
+		}
 		String rname = new SimpleDateFormat("yyyyMMddHH_mmss_SSS").format(new Date());
 		Node fileRepoName = dirModel.getResource(csiURI + "filerepo_" + rname).asNode();
-		RepoOper.saveRepoAsManyTTLs(fileRepoName, dir, dirModel, ds, false, solidifyDerivedModels);
+		Map<String, String> nsUsed = new HashMap<String, String>();
+		RepoOper.saveRepoAsManyTTLs(fileRepoName, dir, nsUsed, dirModel, ds, false, solidifyDerivedModels);
 
 	}
 
-	public static void saveRepoAsManyTTLs(Node fileRepoName, String dir, Model dirModel, Dataset ds, boolean dontChangeDirModel, boolean solidifyDerivedModels) throws IOException {
+	public static void saveRepoAsManyTTLs(Node fileRepoName, String dir, Map<String, String> nsUsed, Model dirModel, Dataset ds,
+			boolean dontChangeDirModel, boolean solidifyDerivedModels) throws IOException {
 		new File(dir).mkdir();
 
+		PrefixMappingImpl pm = new PrefixMappingImpl();
+		pm.setNsPrefixes(nsUsed);
+		pm.withDefaultMappings(PrefixMappingImpl.Extended);
+
 		String ccrtNS = dirModel.getNsPrefixURI("ccrt");
-		String frtURI = dirModel.getNsPrefixURI("frt");
+		//String frtURI = dirModel.getNsPrefixURI("frt");
 		Node fileRepo = dirModel.getResource(ccrtNS + "FileRepo").asNode();
 		Node fileModel = dirModel.getResource(ccrtNS + "FileModel").asNode();
 		Set<Node> sheetTypes = new HashSet<Node>();
@@ -533,15 +545,16 @@ public class RepoOper implements AnyOper, UtilClass {
 		Set<Node> sheetTypesToLocalize = new HashSet<Node>();
 		sheetTypesToLocalize.addAll(sheetTypes);
 		sheetTypesToLocalize.add(fileModel);
-		Node repo = dirModel.createProperty(frtURI, "repo").asNode();
+		Node repo = dirModel.createProperty(ccrtNS, "repo").asNode();
 		Node rdftype = RDF.type.asNode();
-		Node sourcePath = dirModel.createProperty(frtURI, "sourcePath").asNode();
+		Node sourcePath = dirModel.createProperty(ccrtNS, "sourcePath").asNode();
 
 		DatasetGraph dsg = ds.asDatasetGraph();
 		Iterator<Node> dni = dsg.listGraphNodes();
 
 		Model defaultModel = ds.getDefaultModel();
 		Node defaultURI = null;
+		pm.withDefaultMappings(dirModel);
 
 		Graph dirqGraph = dirModel.getGraph();
 		{
@@ -549,7 +562,7 @@ public class RepoOper implements AnyOper, UtilClass {
 			File file = new File(dir, dontChangeDirModel ? "dir.ttl" : "dir.old");
 			PrintWriter ow = new PrintWriter(file);
 			ow.println("\n");
-			writeModel(dirModel, ow, true, dirModel);
+			writeModel(dirModel, ow, true, false, pm);
 			ow.println("\n");
 			ow.println("# modelSize=" + dirModel.size() + "\n\n");
 			ow.close();
@@ -562,10 +575,13 @@ public class RepoOper implements AnyOper, UtilClass {
 		ArrayList<Node> derived = new ArrayList<Node>();
 		ArrayList<Node> sourceOf = new ArrayList<Node>();
 		ArrayList<Node> allNodes = new ArrayList<Node>();
+
 		while (dni.hasNext()) {
 			Node gname = dni.next();
 			allNodes.add(gname);
 			Model m = ds.getNamedModel(gname.toString());
+			nsUsed.putAll(m.getNsPrefixMap());
+			pm.withDefaultMappings(m);
 			if (m == defaultModel) {
 				defaultURI = gname;
 			}
@@ -585,18 +601,22 @@ public class RepoOper implements AnyOper, UtilClass {
 
 		while (dni.hasNext()) {
 			Node gname = dni.next();
+			String name = gname.getLocalName();
+			String filename = name + ".ttl";
+			boolean addToDirModel = true;
 			if (derived.contains(gname)) {
 				if (!solidifyDerivedModels) {
-					continue;
+					filename = name + ".pipe_dest";
+					addToDirModel = false;
 				}
 			}
 			if (sourceOf.contains(gname)) {
 				if (skipMergedModels) {
-					continue;
+					filename = name + ".pipe_src";
+					addToDirModel = false;
 				}
 			}
-			String name = gname.getLocalName();
-			String filename = name + ".ttl";
+
 			Model m = ds.getNamedModel(gname.toString());
 			for (Triple was : dirqGraph.find(gname, rdftype, Node.ANY).toList()) {
 				if (!sheetTypes.contains(was.getObject())) {
@@ -604,9 +624,11 @@ public class RepoOper implements AnyOper, UtilClass {
 				}
 				//NodeIterator foo = 
 				// dirModel.listObjectsOfProperty(dirModel.createResource(gname.getURI()), dirModel.createProperty(sourcePath.getURI()));
-				newGraph.add(new Triple(gname, repo, fileRepoName));
-				newGraph.add(new Triple(gname, rdftype, fileModel));
-				newGraph.add(new Triple(gname, sourcePath, NodeFactory.createLiteral(filename)));
+				if (addToDirModel) {
+					newGraph.add(new Triple(gname, repo, fileRepoName));
+					newGraph.add(new Triple(gname, rdftype, fileModel));
+					newGraph.add(new Triple(gname, sourcePath, NodeFactory.createLiteral(filename)));
+				}
 			}
 
 			PrintWriter ow = new PrintWriter(new File(dir, filename));
@@ -625,7 +647,7 @@ public class RepoOper implements AnyOper, UtilClass {
 				}
 			}
 			ow.println("\n");
-			writeModel(m, ow, true, dirModel);
+			writeModel(m, ow, true, true, pm);
 			ow.println("\n");
 
 			ow.close();
@@ -639,7 +661,7 @@ public class RepoOper implements AnyOper, UtilClass {
 			Model m = RepoDatasetFactory.createPrivateMemModel();
 			m.setNsPrefixes(dirModel);
 			m.add(ModelFactory.createModelForGraph(newGraph));
-			writeModel(m, ow, true, dirModel);
+			writeModel(m, ow, true, false, pm);
 			ow.println("\n");
 			ow.println("# modelSize=" + dirModel.size() + "\n\n");
 			ow.println("# dirModel = " + dirModel.size());
@@ -651,7 +673,7 @@ public class RepoOper implements AnyOper, UtilClass {
 	}
 
 	private static boolean isDerivedModel(Model m, Dataset ds) {
-		Graph g = getUnderlyingGraph(m);
+		Graph g = getUnderlyingGraph(m.getGraph());
 		if (g instanceof CompositionBase) {
 			return true;
 		}
@@ -661,15 +683,18 @@ public class RepoOper implements AnyOper, UtilClass {
 	private static void derivedFromModels(Model m0, DatasetGraph ds, List<Graph> ums, List<Object> list, List<Node> named) {
 		if (list == null)
 			list = new ArrayList<Object>();
-		Graph m = getUnderlyingGraph(m0);
+		Graph m = getUnderlyingGraph(m0.getGraph());
 		addConstituentGraphs(m, list);
 		list.remove(m);
+		if (list.size() == 0) {
+			return;
+		}
 		Iterator<Node> ims = ds.listGraphNodes();
 		while (ims.hasNext()) {
 			Node name = ims.next();
 			if (named != null && named.contains(name))
 				continue;
-			Graph min = ds.getGraph(name);
+			Graph min = getUnderlyingGraph(ds.getGraph(name));
 			if (m == min)
 				continue;
 			if (ums != null && ums.contains(min))
@@ -691,50 +716,90 @@ public class RepoOper implements AnyOper, UtilClass {
 		if (g instanceof Dyadic) {
 			addConstituentGraphs(((Dyadic) g).getL(), list);
 			addConstituentGraphs(((Dyadic) g).getR(), list);
-		} else {
-			if (g instanceof Polyadic) {
-				for (Graph g0 : ((Polyadic) g).getSubGraphs()) {
-					addConstituentGraphs(g0, list);
-				}
+			return;
+		}
+		if (g instanceof Polyadic) {
+			for (Graph g0 : ((Polyadic) g).getSubGraphs()) {
+				addConstituentGraphs(g0, list);
+			}
+			return;
+		}
+		if (g instanceof Graph) {
+			Graph ug = getUnderlyingGraph((Graph) g);
+			if (ug != g) {
+				addConstituentGraphs(ug, list);
 			}
 		}
 	}
 
-	public static void writeModel(Model m, Writer ow, boolean includeNamespaces, PrefixMapping pm) throws IOException {
-		Graph graph = getUnderlyingGraph(m);
+	public static void writeModel(Model m, Writer ow, boolean includeNamespaces, boolean trimNamepaces, PrefixMapping pm) throws IOException {
+		Graph graph = getUnderlyingGraph(m.getGraph());
 		if (graph instanceof CompositionBase) {
 			ow.write("# CompositionBase = " + graph.getClass() + "\n");
 		}
 		Model m2 = ModelFactory.createDefaultModel();
 		List<Statement> stmts = m.listStatements().toList();
-		Set<String> usedNS = new HashSet<String>(m.listNameSpaces().toList());
-
+		HashMap<String, RDFNode> usedNS = new HashMap<String, RDFNode>();
 		for (Statement stmt : stmts) {
-			String ns = stmt.getSubject().getNameSpace();
-			if (ns != null) {
-				usedNS.add(ns);
-			}
+			addNamespace(usedNS, stmt.getSubject());
+			addNamespace(usedNS, stmt.getPredicate());
+			addNamespace(usedNS, stmt.getObject());
 		}
-		for (String ns : usedNS) {
+		int size0 = usedNS.size();
+		for (RDFNode s : m.listSubjects().toSet()) {
+			addNamespace(usedNS, s);
+		}
+		for (RDFNode s : m.listObjects().toSet()) {
+			addNamespace(usedNS, s);
+		}
+		int size1 = usedNS.size();
+		if (size0 != size1) {
+			Debuggable.oldBug(ow, "# nssize0 = " + size0 + "\n");
+			Debuggable.oldBug(ow, "# nssize1 = " + size1 + "\n");
+		}
+		for (String ns : usedNS.keySet()) {
 			String prefix = m.getNsURIPrefix(ns);
-			if (prefix == null)
-				prefix = pm.getNsURIPrefix(ns);
+			String why = "" + usedNS.get(ns);
 			if (prefix == null) {
+				prefix = pm.getNsURIPrefix(ns);
+			}
+			if (prefix == null) {
+				if (ns.endsWith(":")) {
+					Debuggable.oldBug(ow, "# ODD ns namespace ref " + ns + " caused by " + why + " writing " + ow);
+					prefix = ns.substring(0, ns.length() - 1);
+					ns = pm.getNsURIPrefix(prefix);
+				}
+			}
+			if (ns == null || prefix == null) {
+				Debuggable.oldBug(ow, "# missing namespace ref for " + prefix + "=" + ns + " caused by " + why);
 				continue;
 			}
 			m2.setNsPrefix(prefix, ns);
 		}
 		m2.add(m);
+		if (!trimNamepaces) {
+			m2.withDefaultMappings(m);
+		}
 		N3JenaWriterPP jenaWriter = new RDFSortedWriter(includeNamespaces);
 		jenaWriter.write(m2, ow, "TTL");
 	}
 
-	private static Graph getUnderlyingGraph(Model m) {
-		Graph graph = m.getGraph();
-		while (graph instanceof CheckedGraph) {
-			graph = ((CheckedGraph) graph).getDataGraph();
+	private static void addNamespace(HashMap<String, RDFNode> usedNS, RDFNode n) {
+		String ns;
+		if (n == null)
+			return;
+		if (n.isURIResource()) {
+			ns = n.asResource().getNameSpace();
+			if (ns != null) {
+				usedNS.put(ns, n);
+			}
 		}
-		return graph;
+		if (n.isLiteral()) {
+			if (n.asLiteral().getDatatype() != null) {
+				usedNS.put(XSDDatatype.XSD + "#", n);
+			}
+
+		}
 	}
 
 	private static Graph getUnderlyingGraph(Graph graph) {
@@ -812,74 +877,5 @@ public class RepoOper implements AnyOper, UtilClass {
 
 	public static Model makeReadOnly(Model model) {
 		return model;
-	}
-
-	public static void main(String[] args) {
-		int argslength = args.length;
-		if (argslength > 0) {
-			if (args[0].equals("--uri"))
-			{
-				if (argslength < 2) {
-					System.out.println("Not enough arguments.  "
-							+ "Expected: --uri [URI] [Output Directory] "
-							+ "(ex. --uri goog:/0AmvzRRq-Hhz7dFVpSDFaaHhMWmVPRFl4RllXSHVxb2c/9/8 GluePuma_R25_TestFull)");
-					return;
-				}
-				List<ClassLoader> fileModelCLs = Arrays.asList(ClassLoader.getSystemClassLoader());
-				String dirModelURL = args[1];
-				Repo repo;
-				try {
-					RepoSpec repospec = new URLRepoSpec(dirModelURL, fileModelCLs);
-					repo = repospec.makeRepo();
-				} catch (Exception ex) {
-					ex.printStackTrace();
-					System.out.println("Bad URI: " + args[1]);
-					return;
-				}
-
-				String dir = "OutputDir";
-				if (argslength > 2) {
-					dir = args[2];
-				}
-				writeRepo(repo, dir);
-				return;
-			}
-		}
-		if (args.length < 4) {
-			System.out.println("Not enough arguments.  "
-					+ "Expected: [SheetKey] [Namespace Tab] [Dir Tab] [Output Directory] "
-					+ "(ex. 0AmvzRRq-Hhz7dFVpSDFaaHhMWmVPRFl4RllXSHVxb2c 9 8 GluePuma_R25_TestFull)");
-			return;
-		}
-		String key = args[0].trim();
-		String out = args[3].trim();
-		Integer nmspc;
-		Integer dir;
-		try {
-			nmspc = Integer.parseInt(args[1].trim());
-			dir = Integer.parseInt(args[2].trim());
-		} catch (NumberFormatException ex) {
-			System.out.println("Bad Namespace or Dir number: " + args[1] + ", " + args[2]);
-			return;
-		}
-		List<ClassLoader> loaders = Arrays.asList(ClassLoader.getSystemClassLoader());
-		OnlineSheetRepoSpec repo = new OnlineSheetRepoSpec(key, nmspc, dir, loaders);
-		writeRepo(repo.makeRepo(), out);
-	}
-
-	private static void writeRepo(Repo repo, String dir) {
-		if (!(repo instanceof Repo.WithDirectory)) {
-			System.out.println("Not Repo.WithDirectory  " + repo.getClass() + " " + repo);
-			return;
-		}
-		try {
-			File d = new File(dir);
-			System.out.println("Writing repo to " + d.getAbsolutePath() + " ...");
-			d.delete();
-			RepoOper.writeRepoToDirectory(repo, dir, true);
-			System.out.println("Writing repo complete");
-		} catch (IOException ex) {
-			ex.printStackTrace();
-		}
 	}
 }
