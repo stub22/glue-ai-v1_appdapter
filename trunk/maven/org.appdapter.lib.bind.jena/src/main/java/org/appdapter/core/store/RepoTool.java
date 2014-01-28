@@ -11,7 +11,9 @@ import org.appdapter.core.matdat.RepoSpec;
 import org.appdapter.core.matdat.URLRepoSpec;
 
 public class RepoTool {
-	static String example = "--uri goog://0AmvzRRq-Hhz7dFVpSDFaaHhMWmVPRFl4RllXSHVxb2c/9/8 --test --write c:\\GluePuma_R25_TestFull";
+	static String example = "--uri goog://0AmvzRRq-Hhz7dFVpSDFaaHhMWmVPRFl4RllXSHVxb2c/9/8 --test --write c:\\GluePuma_R25_TestFull\\";
+	static String example1 = "--scandir ./loadAll/ --test --write c:\\GluePuma_R25_TestFull";
+	static String example2 = "0AmvzRRq-Hhz7dFVpSDFaaHhMWmVPRFl4RllXSHVxb2c 9 8 --write c:\\GluePuma_R25_TestFull\\";
 
 	public static void main(String[] args) {
 		if (args.length <= 2) {
