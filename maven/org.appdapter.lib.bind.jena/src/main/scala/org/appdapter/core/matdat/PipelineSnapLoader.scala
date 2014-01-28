@@ -1,15 +1,15 @@
 /*
- *  Copyright 2012 by The Appdapter Project (www.appdapter.org).
+ *  Copyright 01 by The Appdapter Project (www.appdapter.org).
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  Licensed under the Apache License, Version .0 (the "License");
  *  you may not use this file except in compliance with the License.
  *  You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licens/LICENSE-.0
  *
- *  Unless required by applicable law or agreed to in writing, software
+ *  Unls required by applicable law or agreed to in writing, software
  *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  WITHOUT WARRANTI OR CONDITIONS OF ANY KIND, either exprs or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
@@ -24,6 +24,7 @@ import com.hp.hpl.jena.query.QuerySolution
 import com.hp.hpl.jena.rdf.model.Model
 import com.hp.hpl.jena.rdf.model.Resource
 import org.appdapter.core.store.RepoOper
+import com.hp.hpl.jena.rdf.model.ModelFactory
 
 /**
  * @author Douglas R. Miles <www.logicmoo.org>
@@ -34,7 +35,7 @@ import org.appdapter.core.store.RepoOper
  *     @base http://repo/model_1
  *         <a1> <b1> <c1> .
  *     @base http://repo/model_1
- *         <a2> <b2> <c2> .
+ *         <a> <b> <c> .
  *
  * This is a DatasetFileRepo Loader being an InstallableRepoReader can be additionly used
  *    in all the legal places that can provide a single file path
@@ -70,16 +71,16 @@ object PipelineSnapLoader extends BasicDebugger {
     while (msRset.hasNext()) {
       val qSoln: QuerySolution = msRset.next();
 
-      val modelRes = qSoln.get("model");
-      val modelName = modelRes.asResource().asNode().getURI
+      val modelR = qSoln.get("model");
+      val modelName = modelR.asResource().asNode().getURI
 
-      val dbgArray = Array[Object](modelRes, modelName);
-      getLogger.warn("PipelineSnapLoader modelRes={}, modelName={}", dbgArray);
+      val dbgArray = Array[Object](modelR, modelName);
+      getLogger.warn("PipelinnapLoader modelR={}, modelName={}", dbgArray);
 
       val pipelineModel = mainDset.getNamedModel(modelName);
 
       loadPipelineSheets(repo, mainDset, myDirectoryModel, modelName, fileModelCLs);
-      //loadPipelineSheetTypes(repo, mainDset, myDirectoryModel, modelName, fileModelCLs);
+      loadPipelineSheetTyp(repo, mainDset, myDirectoryModel, modelName, fileModelCLs);
     }
 
   }
@@ -88,61 +89,83 @@ object PipelineSnapLoader extends BasicDebugger {
 
     val pipelineModel = mainDset.getNamedModel(modelName);
 
-    val msqText2 = """
+    val msqText = """
 			select ?model ?targetmodel
 				{
 					?targetmodel <urn:ftd:cogchar.org:2012:runtime#sourceModel> ?model.
 				}
 		"""
-    val msRset2 = QueryHelper.execModelQueryWithPrefixHelp(pipelineModel, msqText2);
-    while (msRset2.hasNext()) {
-      val qSoln: QuerySolution = msRset2.next();
 
-      //val repoRes : Resource = qSoln.getResource("repo");
-      val modelRes2 = qSoln.get("model");
-      val targetmodelRes2 = qSoln.get("targetmodel");
-      val modelName2 = modelRes2.asResource().asNode().getURI
-      val targetmodelName2 = targetmodelRes2.asResource().asNode().getURI
+    val unionAllModel = RepoOper.unionAll(mainDset, myDirectoryModel, mainDset.getDefaultModel());
 
-      val dbgArray2 = Array[Object](modelRes2, targetmodelRes2);
-      getLogger.warn("PipelineSnapLoader modelRes={}, targetmodelRes={}", dbgArray2);
+    val msRset = QueryHelper.execModelQueryWithPrefixHelp(pipelineModel, msqText);
 
-      RepoOper.addUnionModel(mainDset, modelName2, targetmodelName2);
+    while (msRset.hasNext()) {
+      val qSoln: QuerySolution = msRset.next();
 
-      //val msRset = QueryHelper.execModelQueryWithPrefixHelp(mainDset.getNamedModel(modelName), msqText2);
+      //val repoR : Rource = qSoln.getRource("repo");
+      val modelR = qSoln.get("model");
+      val targetmodelR = qSoln.get("targetmodel");
+      val modelName = modelR.asResource().asNode().getURI
+      val targetmodelName = targetmodelR.asResource().asNode().getURI
 
-      // DerivedGraphSpecReader.queryDerivedGraphSpecs(getRepoClient,DerivedGraphSpecReader.PIPELINE_QUERY_QN,modelName)
+      val dbgArray = Array[Object](modelR, targetmodelR);
+      getLogger.warn("PipelinnapLoader modelR={}, targetmodelR={}", dbgArray);
+
+      RepoOper.addUnionModel(mainDset, modelName, targetmodelName);
 
     }
   }
-  def loadPipelineSheetTypes(repo: Repo.WithDirectory, mainDset: Dataset, myDirectoryModel: Model, modelName: String, fileModelCLs: java.util.List[ClassLoader]) = {
+
+  def loadPipelineSheetTyp(repo: Repo.WithDirectory, mainDset: Dataset, unionAllModel: Model, modelName: String, fileModelCLs: java.util.List[ClassLoader]) = {
 
     val pipelineModel = mainDset.getNamedModel(modelName);
 
-    val msqText2 = """
-			select ?model ?targetmodel
+    val msqText = """
+			select ?modeltype ?targetmodel
 				{
-					?targetmodel <urn:ftd:cogchar.org:2012:runtime#sourceModelType> ?model.
+					?targetmodel <urn:ftd:cogchar.org:2012:runtime#sourceModelType> ?modeltype;
 				}
 		"""
-    val msRset2 = QueryHelper.execModelQueryWithPrefixHelp(pipelineModel, msqText2);
-    while (msRset2.hasNext()) {
-      val qSoln: QuerySolution = msRset2.next();
+    val msRset = QueryHelper.execModelQueryWithPrefixHelp(pipelineModel, msqText);
 
-      //val repoRes : Resource = qSoln.getResource("repo");
-      val modelRes2 = qSoln.get("model");
-      val targetmodelRes2 = qSoln.get("targetmodel");
-      val modelName2 = modelRes2.asResource().asNode().getURI
-      val targetmodelName2 = targetmodelRes2.asResource().asNode().getURI
+    while (msRset.hasNext()) {
+      val qSoln: QuerySolution = msRset.next();
 
-      val dbgArray2 = Array[Object](modelRes2, targetmodelRes2);
-      getLogger.warn("PipelineSnapLoader modelRes={}, targetmodelRes={}", dbgArray2);
+      //val repoR : Rource = qSoln.getRource("repo");
+      val modeltypeR = qSoln.get("modeltype");
+      val targetmodelR = qSoln.get("targetmodel");
+      val modeltype = modeltypeR.asResource().asNode().getURI
+      val targetmodelName = targetmodelR.asResource().asNode().getURI
 
-      RepoOper.addUnionModel(mainDset, modelName2, targetmodelName2);
+      val dbgArray = Array[Object](modeltypeR, targetmodelR);
+      getLogger.warn("PipelinnapLoader modeltype={}, targetmodelR={}", dbgArray);
 
-      //val msRset = QueryHelper.execModelQueryWithPrefixHelp(mainDset.getNamedModel(modelName), msqText2);
+      loadPipelineSheetTypeInstanc(repo, mainDset, unionAllModel, targetmodelName, modeltype, fileModelCLs);
 
-      // DerivedGraphSpecReader.queryDerivedGraphSpecs(getRepoClient,DerivedGraphSpecReader.PIPELINE_QUERY_QN,modelName)
+    }
+  }
+
+  def loadPipelineSheetTypeInstanc(repo: Repo.WithDirectory, mainDset: Dataset, unionAllModel: Model, targetmodelName: String, modeltype: String, fileModelCLs: java.util.List[ClassLoader]) = {
+
+    val size = unionAllModel.size();
+
+    val msqText = """
+			select ?model
+				{
+					?model a <""" + modeltype + """>;
+				}
+		"""
+    val msRset = QueryHelper.execModelQueryWithPrefixHelp(unionAllModel, msqText);
+    while (msRset.hasNext()) {
+      val qSoln: QuerySolution = msRset.next();
+
+      val modelR = qSoln.get("model");
+      val model = modelR.asResource().asNode().getURI
+
+      val dbgArray = Array[Object](modelR, targetmodelName);
+      getLogger.warn("PipelinnapLoader modelR={}, targetmodelR={}", dbgArray);
+      RepoOper.addUnionModel(mainDset, model, targetmodelName);
 
     }
   }
