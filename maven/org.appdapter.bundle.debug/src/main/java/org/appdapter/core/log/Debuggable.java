@@ -585,9 +585,11 @@ public abstract class Debuggable extends BasicDebugger {
 	public static boolean isTesting() {
 		if (isDebugging())
 			return true;
-		if (false)
-			return true;
 		return INTESTS.get() == Boolean.TRUE;
+	}
+
+	public static void setIsTesting(boolean val) {
+		INTESTS.set(val);
 	}
 
 	public static boolean isRelease() {
@@ -660,7 +662,7 @@ public abstract class Debuggable extends BasicDebugger {
 	}
 
 	public static void oldBug(Writer w, String msg, Object... params) {
-		if (true)
+		if (!isTesting())
 			return;
 		String msgf = toInfoStringCompound(msg, params);
 		String ob = "OLD BUG: " + msgf;
