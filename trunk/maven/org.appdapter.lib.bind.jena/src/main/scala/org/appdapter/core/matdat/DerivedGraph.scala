@@ -48,7 +48,7 @@ object DerivedGraphNames {
 
 class DerivedGraphSpec(val myTargetGraphTR: TypedResrc, var myInGraphIDs: Set[Ident]) extends BasicDebugger {
   override def toString(): String = {
-    "DerivedGraphSpec_UNUSED[targetTR=" + myTargetGraphTR + ", inGraphs=" + myInGraphIDs + "]";
+    "DerivedGraphSpec[targetTR=" + myTargetGraphTR + ", inGraphs=" + myInGraphIDs + "]";
   }
   def isUnion(): Boolean = myTargetGraphTR.hasTypeMark(DerivedGraphNames.T_union)
   def getStructureTypeID(): Ident = {
@@ -58,7 +58,7 @@ class DerivedGraphSpec(val myTargetGraphTR: TypedResrc, var myInGraphIDs: Set[Id
       DerivedGraphNames.T_union
     }
   }
-  def makeDerivedModelProvider(sourceRC: RepoClient): BoundModelProvider = new DirectDerivedGraph(this, new ClientModelProvider_UNUSED(sourceRC))
+  def makeDerivedModelProvider(sourceRC: RepoClient): BoundModelProvider = new DirectDerivedGraph(this, new ClientModelProvider(sourceRC))
   def makeDerivedModelProvider(srcRepo: Repo.WithDirectory): BoundModelProvider = new DirectDerivedGraph(this, new ServerModelProvider(srcRepo))
 }
 
@@ -74,7 +74,7 @@ case class IndirectDerivedGraph(myPipeQuerySpec: PipelineQuerySpec, val myPipeSp
   override def getModel() = myDirectDG.getModel
   override def getTypedName() = myDirectDG.getTypedName
 }
-case class DirectDerivedGraph(val mySpec: DerivedGraphSpec_UNUSED, val myUpstreamNMP: NamedModelProvider)
+case class DirectDerivedGraph(val mySpec: DerivedGraphSpec, val myUpstreamNMP: NamedModelProvider)
   extends BasicDebugger with BoundModelProvider {
   private var myCachedModel: Option[Model] = None
   override def getTypedName() = mySpec.myTargetGraphTR
@@ -111,15 +111,15 @@ case class DirectDerivedGraph(val mySpec: DerivedGraphSpec_UNUSED, val myUpstrea
 object DerivedGraphSpecReader extends BasicDebugger {
 
   // This form allows user to decide what repo/client to apply the spec against to yield actual DerivedGraph.
-  def findOneDerivedGraphSpec(rc: RepoClient, pqs: PipelineQuerySpec, outGraphID: Ident): DerivedGraphSpec_UNUSED = {
-    val dgSpecSet: Set[DerivedGraphSpec_UNUSED] = queryDerivedGraphSpecs(rc, pqs)
+  def findOneDerivedGraphSpec(rc: RepoClient, pqs: PipelineQuerySpec, outGraphID: Ident): DerivedGraphSpec = {
+    val dgSpecSet: Set[DerivedGraphSpec] = queryDerivedGraphSpecs(rc, pqs)
     dgSpecSet.find(x => outGraphID.equals(x.myTargetGraphTR)).get
   }
   def makeAllDerivedModelProviders(rc: RepoClient, pqs: PipelineQuerySpec): Set[BoundModelProvider] = {
     val dgSpecSet = queryDerivedGraphSpecs(rc, pqs)
     dgSpecSet.map(_.makeDerivedModelProvider(rc))
   }
-  def queryDerivedGraphSpecs(rc: RepoClient, pqs: PipelineQuerySpec): Set[DerivedGraphSpec_UNUSED] = {
+  def queryDerivedGraphSpecs(rc: RepoClient, pqs: PipelineQuerySpec): Set[DerivedGraphSpec] = {
 
     var pipeAttrSL: SolutionList = null;
     try {
@@ -128,7 +128,7 @@ object DerivedGraphSpecReader extends BasicDebugger {
       case t: Throwable => {
         getLogger().error("Problem executing querySpec {} on repoClient {} ", Array[Object](pqs, rc))
         getLogger().error("Stack trace: ", t)
-        return Set[DerivedGraphSpec_UNUSED]()
+        return Set[DerivedGraphSpec]()
       }
     }
 
@@ -150,11 +150,11 @@ object DerivedGraphSpecReader extends BasicDebugger {
       }
       outPipeTypeSetsByID.put(outPipeID, pipeTypeSet)
     })
-    val outDGSpecsByID = new scala.collection.mutable.HashMap[Ident, DerivedGraphSpec_UNUSED]()
+    val outDGSpecsByID = new scala.collection.mutable.HashMap[Ident, DerivedGraphSpec]()
     // In theory, there is no reason that we cannot use a FreeIdent, which is oft done elsewhere.
     val pipeSpecGraphID = rc.getRepo.makeIdentForQName(pqs.pplnGraphQN)
     val pipeSpecModel = rc.getRepo.getNamedModel(pipeSpecGraphID)
-    var dgSpecSet = Set[DerivedGraphSpec_UNUSED]()
+    var dgSpecSet = Set[DerivedGraphSpec]()
     for ((outPipeKeyID, typeSet) <- outPipeTypeSetsByID) {
       val outPipeDGSpecRes = pipeSpecModel.getResource(outPipeKeyID.getAbsUriString())
       val typedRes = new JenaTR(outPipeDGSpecRes, typeSet)
@@ -162,7 +162,7 @@ object DerivedGraphSpecReader extends BasicDebugger {
       // Note JavaConverters is not the same as JavaConversions
       import scala.collection.JavaConverters._
       val linkedUpstreamPipeIDSet: Set[Ident] = linkedPipeSrcItems.asScala.map(_.asInstanceOf[Ident]).toSet
-      val dgSpec = new DerivedGraphSpec_UNUSED(typedRes, linkedUpstreamPipeIDSet)
+      val dgSpec = new DerivedGraphSpec(typedRes, linkedUpstreamPipeIDSet)
       dgSpecSet = dgSpecSet + dgSpec
     }
     dgSpecSet

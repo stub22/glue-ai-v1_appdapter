@@ -46,7 +46,7 @@ class ServerModelProvider(mySrcRepo: Repo.WithDirectory) extends NamedModelProvi
     makeDirectBoundModelProvider(graphID, dirModelClient)
   }
 }
-class ClientModelProvider_UNUSED(myRepoClient: RepoClient) extends NamedModelProvider {
+class ClientModelProvider(myRepoClient: RepoClient) extends NamedModelProvider {
   override def getNamedModel(graphID: Ident): Model = myRepoClient.getRepo.getNamedModel(graphID)
   override def makeDirectBoundModelProvider(graphID: Ident): BoundModelProvider = {
     // TODO:  This line of code is an example of where RepoClient is not yet general enough in the
@@ -68,7 +68,7 @@ trait BoundModelProvider {
 
 object ModelProviderFactory extends BasicDebugger {
   def makeOneDirectModelProvider(rc: RepoClient, graphID: Ident): BoundModelProvider = {
-    val upstreamNMP = new ClientModelProvider_UNUSED(rc)
+    val upstreamNMP = new ClientModelProvider(rc)
     upstreamNMP.makeDirectBoundModelProvider(graphID);
   }
   def makeOneDerivedModelProvider(rc: RepoClient, pqs: PipelineQuerySpec, outGraphID: Ident): BoundModelProvider = {
