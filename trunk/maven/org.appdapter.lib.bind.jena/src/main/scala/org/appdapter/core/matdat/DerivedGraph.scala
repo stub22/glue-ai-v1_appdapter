@@ -46,7 +46,7 @@ object DerivedGraphNames {
   val P_sourceModel = new FreeIdent(RepoSpecDefaultNames.NS_CCRT_RT + "sourceModel");
 }
 
-class DerivedGraphSpec_UNUSED(val myTargetGraphTR: TypedResrc, var myInGraphIDs: Set[Ident]) extends BasicDebugger {
+class DerivedGraphSpec(val myTargetGraphTR: TypedResrc, var myInGraphIDs: Set[Ident]) extends BasicDebugger {
   override def toString(): String = {
     "DerivedGraphSpec_UNUSED[targetTR=" + myTargetGraphTR + ", inGraphs=" + myInGraphIDs + "]";
   }
