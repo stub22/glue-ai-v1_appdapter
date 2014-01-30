@@ -27,12 +27,12 @@ import com.hp.hpl.jena.rdf.model.{ Model }
  * @author Stu B. <www.texpedient.com>
  */
 
-object RepoTester extends BasicDebugger {
+object RepoTester_TESTS_ONLY extends BasicDebugger {
   // Modeled on SheetRepo.loadTestSheetRepo
   def loadGoogSheetRepo(sheetKey: String, namespaceSheetNum: Int, dirSheetNum: Int,
     fileModelCLs: java.util.List[ClassLoader]): SheetRepo = {
     // Read the namespaces and directory sheets into a single directory model.
-    val dirModel: Model = GoogSheetRepoLoader.readDirectoryModelFromGoog(sheetKey, namespaceSheetNum, dirSheetNum)
+    //val dirModel: Model = GoogSheetRepoLoader.readDirectoryModelFromGoog(sheetKey, namespaceSheetNum, dirSheetNum)
     // Construct a repo around that directory        
     // 2013-05-28: Stu temp restored old version of loader		
     val spec = new OnlineSheetRepoSpec(sheetKey, namespaceSheetNum, dirSheetNum, fileModelCLs);
@@ -41,13 +41,14 @@ object RepoTester extends BasicDebugger {
 
     // Load the rest of the repo's initial *sheet* models, as instructed by the directory.
     getLogger().debug("Loading Sheet Models")
+    shRepo.getMainQueryDataset();
     // if shRepo is an OmniLoaderRepo, this results in a call to ensureUpdated(), which does a lot of stuff.
-    shRepo.loadSheetModelsIntoMainDataset()
+    //shRepo.loadSheetModelsIntoMainDataset()
     // Load the rest of the repo's initial *file/resource* models, as instructed by the directory.
     // 2013-05-28: Stu temp restored old version of loader
-    getLogger().debug("Loading File Models")
+    // getLogger().debug("Loading File Models")
     // unnecessary if shRepo is an OmniLoaderRepo
-    shRepo.loadFileModelsIntoMainDataset(fileModelCLs)
+    //  shRepo.loadDerivedModelsIntoMainDataset(fileModelCLs)
     shRepo
   }
 
@@ -63,7 +64,9 @@ object RepoTester extends BasicDebugger {
     val shRepo = new OmniLoaderRepo(spec, "xlsx:" + sheetLocation + "/" + namespaceSheetName + "/" + dirSheetName, dirModel, fileModelCLs)
     // Load the rest of the repo's initial *sheet* models, as instructed by the directory.
     getLogger().debug("Loading Sheet Models")
-    shRepo.loadSheetModelsIntoMainDataset()
+    shRepo.getMainQueryDataset();
+
+    //    shRepo.loadSheetModelsIntoMainDataset()
     // Load the rest of the repo's initial *file/resource* models, as instructed by the directory.
     //getLogger().debug("Loading File Models")
     //shRepo.loadFileModelsIntoMainDataset(fileModelCLs)

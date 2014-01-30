@@ -27,12 +27,27 @@ import org.appdapter.impl.store.DirectRepo
 import org.appdapter.core.store.Repo
 import org.appdapter.core.store.RepoOper
 import org.appdapter.core.store.dataset.RepoDatasetFactory
+import org.appdapter.core.store.dataset.SpecialRepoLoader
 /**
  * @author Stu B. <www.texpedient.com>
  * @author Douglas R. Miles <www.logicmoo.org>
  *
  * This is a DirModel Loader it contains static methods for loading Google Docs Speedsheets
  */
+class OnlineSheetRepoSpec(sheetKey: String, namespaceSheetNum: Int, dirSheetNum: Int,
+  fileModelCLs: java.util.List[ClassLoader]) extends RepoSpecForDirectory {
+  def this(sheetKey: String, namespaceSheetNum: Int, dirSheetNum: Int) = this(sheetKey, namespaceSheetNum, dirSheetNum, null);
+  override def getDirectoryModel = GoogSheetRepoLoader.readModelFromGoog(sheetKey, namespaceSheetNum, dirSheetNum)
+  override def toString: String = "goog:/" + sheetKey + "/" + namespaceSheetNum + "/" + dirSheetNum
+}
+
+class GoogSheetRepoSpec(sheetKey: String, namespaceSheetNum: Int, dirSheetNum: Int,
+  fileModelCLs: java.util.List[ClassLoader]) extends RepoSpecForDirectory {
+  def this(sheetKey: String, namespaceSheetNum: Int, dirSheetNum: Int) = this(sheetKey, namespaceSheetNum, dirSheetNum, null);
+  override def getDirectoryModel = GoogSheetRepoLoader.readModelFromGoog(sheetKey, namespaceSheetNum, dirSheetNum)
+  override def toString: String = "goog:/" + sheetKey + "/" + namespaceSheetNum + "/" + dirSheetNum
+}
+
 class GoogSheetRepo(directoryModel: Model)
   extends OmniLoaderRepo(directoryModel, null) {
 }
@@ -50,9 +65,11 @@ object GoogSheetRepo {
 /// this is a registerable loader
 /////////////////////////////////////////
 class GoogSheetRepoLoader extends InstallableRepoReader {
+  override def makeRepoSpec(path: String, args: Array[String], cLs: java.util.List[ClassLoader]) = new GoogSheetRepoSpec(args(0), args(1).toInt, args(2).toInt, cLs)
+  override def getExt = "goog";
   override def getContainerType() = "ccrt:GoogSheetRepo"
   override def getSheetType() = "ccrt:GoogSheet"
-  override def loadModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
+  override def loadModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
     GoogSheetRepoLoader.loadSheetModelsIntoTargetDataset(repo, mainDset, dirModel, fileModelCLs)
   }
 }
@@ -79,7 +96,7 @@ object GoogSheetRepoLoader extends BasicDebugger {
   /////////////////////////////////////////
   /// Read sheet models
   /////////////////////////////////////////
-  def loadSheetModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) = {
+  def loadSheetModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) = {
 
     val nsJavaMap: java.util.Map[String, String] = dirModel.getNsPrefixMap()
     // getLogger().debug("Dir Model NS Prefix Map {} ", nsJavaMap)
@@ -105,7 +122,7 @@ object GoogSheetRepoLoader extends BasicDebugger {
       val sheetNum_Lit: Literal = qSoln.getLiteral("num")
       val sheetKey_Lit: Literal = qSoln.getLiteral("key")
       val unionOrReplaceRes: Resource = qSoln.getResource("unionOrReplace");
-      getLogger.debug("containerRes=" + containerRes + ", sheetRes=" + sheetRes + ", num=" + sheetNum_Lit + ", key=" + sheetKey_Lit)
+      getLogger.warn("Loading containerRes=" + containerRes + ", sheetRes=" + sheetRes + ", num=" + sheetNum_Lit + ", key=" + sheetKey_Lit)
 
       val sheetNum = sheetNum_Lit.getInt();
       val sheetKey = sheetKey_Lit.getString();
@@ -160,8 +177,8 @@ object GoogSheetRepoLoaderTest {
 
     val spec = new GoogSheetRepoSpec(keyForGoogBootSheet22, nsSheetNum22, dirSheetNum22)
     val sr = spec.makeRepo
-    sr.loadSheetModelsIntoMainDataset()
-    sr.loadDerivedModelsIntoMainDataset(null)
+    // sr.loadSheetModelsIntoMainDataset()
+    sr.getMainQueryDataset
     sr
   }
 

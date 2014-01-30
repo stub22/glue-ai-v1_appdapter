@@ -249,7 +249,11 @@ public class RepoFromTurtleEditor extends ModelAsTurtleEditor implements ObjectP
 			// nothing loaded.. probably just DirectoryModel
 			rwd = new OmniLoaderRepo(newDirModel);
 		} else {
-			rwd = new DirectRepo(newDirModel);
+			rwd = new DirectRepo(newDirModel) {
+				public void callLoadingInLock() {
+
+				}
+			};
 		}
 		newds = rwd.getMainQueryDataset();
 		RepoOper.replaceDatasetElements(oldds, newds);

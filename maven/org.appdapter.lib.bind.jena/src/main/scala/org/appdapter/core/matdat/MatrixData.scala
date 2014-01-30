@@ -82,11 +82,11 @@ class SheetProc(val myHeaderRowCount: Int) extends BasicDebugger {
   }
   def absorbHeaderRows(headRows: Array[MatrixRow]) {
     for (hrIdx <- 0 until headRows.length) {
-      getLogger.info("HEADER[" + hrIdx + "] = " + headRows(hrIdx).dump());
+      getLogger.debug("HEADER[" + hrIdx + "] = " + headRows(hrIdx).dump());
     }
   }
   def absorbDataRow(cells: MatrixRow) {
-    getLogger.info("DATA = " + cells.dump());
+    getLogger.debug("DATA = " + cells.dump());
   }
 }
 /**
@@ -106,7 +106,7 @@ class MapSheetProc(headerRowCount: Int, val keyColIdx: Int, val vColIdx: Int) ex
         val v = value.get;
         myResultMap.put(k, v)
       } else {
-        getLogger.info("Row is commented out: " + cellRow.dump());
+        getLogger.debug("Row is commented out: " + cellRow.dump());
       }
     }
   }

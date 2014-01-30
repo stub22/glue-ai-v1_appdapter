@@ -17,7 +17,6 @@
 package org.appdapter.core.matdat
 
 import java.util.ArrayList
-
 import org.appdapter.bind.rdf.jena.model.JenaFileManagerUtils
 import org.appdapter.core.boot.ClassLoaderUtils
 import org.appdapter.core.log.BasicDebugger
@@ -25,28 +24,93 @@ import org.appdapter.core.name.Ident
 import org.appdapter.core.store.{ Repo, RepoOper }
 import org.appdapter.impl.store.{ DirectRepo, QueryHelper }
 import org.appdapter.core.store.{ ExtendedFileStreamUtils }
-
 import com.hp.hpl.jena.query.{ Dataset, QuerySolution }
 import com.hp.hpl.jena.rdf.model.{ Literal, Model, Resource }
+import org.appdapter.core.store.dataset.SpecialRepoLoader
+import org.appdapter.core.store.ExtendedFileLoading.Paths
+import org.appdapter.impl.store.MultiRepoSpec
+import java.io.File
 /**
  * @author Stu B. <www.texpedient.com>
  * @author Douglas R. Miles <www.logicmoo.org>
  *
  * This is a FileModel Loader it contains the InstallableRepoReader and Loader class with static methods for loading FileRepos
  */
+class ScanURLDirModelRepoSpec(var dirModelURL: String, fileModelCLs: java.util.List[ClassLoader]) extends MultiRepoSpec(null, fileModelCLs) {
+  def createURIFromBase(fileDirMask: String) = "scan:/" + fileDirMask;
+
+  //toStringName = createURIFromBase(dirModelURL);
+
+  def populateDirModel(dir0: String) {
+    var dir = dir0
+    val all = new java.util.ArrayList[RepoSpec]
+    val fileFilter = new Paths();
+    if (new File(dir).isDirectory()) {
+      while (dir.endsWith("\\")) {
+        dir = dir.substring(0, dir.length() - 1);
+      }
+      while (dir.endsWith("/")) {
+        dir = dir.substring(0, dir.length() - 1);
+      }
+      fileFilter.glob(dir + "/", "dir.ttl");
+      fileFilter.glob(dir + "/**", "dir.ttl");
+    } else {
+      fileFilter.glob(".", dir);
+    }
+    var paths = fileFilter.getFiles();
+    for (f <- paths.toArray(new Array[java.io.File](0))) {
+      all.add(new URLDirModelRepoSpec(f.getPath(), fileModelCLs));
+    }
+  }
+
+  override def getDirectoryModel() = {
+    populateDirModel(dirModelURL)
+    super.getDirectoryModel
+  }
+
+  override def toString = if (toStringName != null) toStringName else createURIFromBase(dirModelURL)
+}
+
+class URLDirModelRepoSpecReader extends InstallableSpecReader {
+  override def getExt = "dir"
+  override def makeRepoSpec(path: String, args: Array[String], cLs: java.util.List[ClassLoader]) = new URLDirModelRepoSpec(path, cLs)
+}
+
+class ScanURLDirModelRepoSpecReader extends InstallableSpecReader {
+  override def getExt = "scandir"
+  override def makeRepoSpec(path: String, args: Array[String], cLs: java.util.List[ClassLoader]) = new ScanURLDirModelRepoSpec(path, cLs)
+}
+
+class URLModelRepoSpecReader extends InstallableSpecReader {
+  override def getExt = "ttl"
+  override def makeRepoSpec(path: String, args: Array[String], cLs: java.util.List[ClassLoader]) = new URLDirModelRepoSpec(path, cLs)
+}
+
+class ScanURLModelRepoSpecReader extends InstallableSpecReader {
+  override def getExt = "scanttl"
+  override def makeRepoSpec(path: String, args: Array[String], cLs: java.util.List[ClassLoader]) = new ScanURLDirModelRepoSpec(path, cLs)
+}
+
+class URLDirModelRepoSpec(dirModelURL: String, fileModelCLs: java.util.List[ClassLoader]) extends RepoSpecForDirectory {
+  //override def makeRepo = FancyRepoLoader.loadDetectedFileSheetRepo(dirModelURL, null, fileModelCLs, this)
+  override def getDirectoryModel = FancyRepoLoader.readDirectoryModelFromURL(dirModelURL, null, fileModelCLs)
+  override def toString = dirModelURL
+}
 
 /// this is a registerable loader
 class FileModelRepoLoader extends InstallableRepoReader {
+  override def makeRepoSpec(path: String, args: Array[String], cLs: java.util.List[ClassLoader]) = new URLDirModelRepoSpec(path, cLs)
+  override def getExt = "ttl"
   override def getContainerType() = "ccrt:FileRepo"
   override def getSheetType() = "ccrt:FileModel"
-  override def loadModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
+  override def loadModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
     FileModelRepoLoader.loadSheetModelsIntoTargetDataset(repo, mainDset, dirModel, fileModelCLs)
   }
 }
 
 object FileModelRepoLoader extends BasicDebugger {
 
-  def loadSheetModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: Dataset,
+  def loadSheetModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset,
     myDirectoryModel: Model, clList: java.util.List[ClassLoader]): Unit = {
 
     if (myDirectoryModel.size == 0) return

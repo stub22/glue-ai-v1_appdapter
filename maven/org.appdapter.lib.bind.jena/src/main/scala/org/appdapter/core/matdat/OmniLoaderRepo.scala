@@ -35,7 +35,7 @@ import org.appdapter.core.log.BasicDebugger
 class OmniLoaderRepo(myRepoSpecStart: RepoSpec, myDebugNameIn: String, myBasePathIn: String,
   directoryModel: Model, fmcls: java.util.List[ClassLoader] = null)
   extends SheetRepo(directoryModel, fmcls)
-  with RepoOper.ReloadableDataset  {
+  with RepoOper.ReloadableDataset {
 
   myRepoSpecForRef = myRepoSpecStart
   myDebugNameToStr = myDebugNameIn
@@ -51,37 +51,24 @@ class OmniLoaderRepo(myRepoSpecStart: RepoSpec, myDebugNameIn: String, myBasePat
     this(myRepoSpecStart, myDebugNameIn, myDebugNameIn, directoryModel, fmcls)
   }
 
-  override def loadSheetModelsIntoMainDataset() {
-    super.loadSheetModelsIntoMainDataset();
-  }
-
-  override def getDirectoryModel(): Model = {
-    super.getDirectoryModel
-  }
-
   def reloadAllModels = reloadAllModelsFromDir
 
   def reloadSingleModel(n: String) = { reloadSingleModelByName(n) }
 
   override def getMainQueryDataset(): Dataset = {
-    ensureUpdatedPrivate
+    ensureUpdated();
     super.getMainQueryDataset();
   }
-  /*
-  def loadPipeline(pplnGraphQN: String) = {
-    val mainDset: Dataset = getMainQueryDataset().asInstanceOf[Dataset];
-    PipelineRepoLoaderD.loadPipeline(pplnGraphQN, this, mainDset);
-  }
-*/
+
 }
 
 class SimplistRepoSpec(val wd: Repo.WithDirectory) extends RepoSpec {
-  override def makeRepo(): Repo.WithDirectory = {
-    wd;
-  }
+  override def getDirectoryModel = wd.getDirectoryModel
+  override def makeRepo = wd
   override def toString(): String = {
     "SimplestSpec[" + wd + "]";
   }
+
 }
 
 object OmniLoaderRepoTest {
@@ -126,8 +113,8 @@ object OmniLoaderRepoTest {
     print("Create a Goog Sheet Spec");
     val repoSpec = new GoogSheetRepoSpec(OmniLoaderRepoTest.BMC_SHEET_KEY, OmniLoaderRepoTest.BMC_NAMESPACE_SHEET_NUM, OmniLoaderRepoTest.BMC_DIRECTORY_SHEET_NUM);
     val repo = repoSpec.makeRepo;
-    repo.loadSheetModelsIntoMainDataset();
-    repo.loadDerivedModelsIntoMainDataset(null);
+    //repo.loadSheetModelsIntoMainDataset();
+    //repo.loadDerivedModelsIntoMainDataset(null);
     repoNav.addObject(repo.toString(), repo, true, false);
   }
 
