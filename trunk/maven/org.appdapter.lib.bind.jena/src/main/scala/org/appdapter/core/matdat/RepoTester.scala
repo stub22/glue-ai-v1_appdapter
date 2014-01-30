@@ -69,7 +69,9 @@ object RepoTester_TESTS_ONLY extends BasicDebugger {
     //    shRepo.loadSheetModelsIntoMainDataset()
     // Load the rest of the repo's initial *file/resource* models, as instructed by the directory.
     //getLogger().debug("Loading File Models")
-    //shRepo.loadFileModelsIntoMainDataset(fileModelCLs)
+    shRepo.loadSheetModelsIntoMainDataset();
+    shRepo.loadDerivedModelsIntoMainDataset(fileModelCLs)
+    shRepo.loadFileModelsIntoMainDataset(fileModelCLs)
     shRepo
   }
 

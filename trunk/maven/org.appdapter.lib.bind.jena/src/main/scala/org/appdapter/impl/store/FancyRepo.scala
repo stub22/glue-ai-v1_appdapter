@@ -182,7 +182,9 @@ trait FancyRepo extends Repo.WithDirectory with ModelClientCore with Loggable {
 // class DirectRepo(val myDirectoryModel : Model) extends FancyRepo {
 
 abstract class DirectRepo(directoryModel: Model) extends BasicRepoImpl with FancyRepo with Repo.Updatable {
-
+  def loadSheetModelsIntoMainDataset(): Unit = {}
+  def loadDerivedModelsIntoMainDataset(fileModelCLs: java.util.List[ClassLoader]): Unit = {}
+  def loadFileModelsIntoMainDataset(fileModelCLs: java.util.List[ClassLoader]): Unit = {}
   val myDirectoryModel: Model = directoryModel;
   override def getDirectoryModel: Model = myDirectoryModel;
 
