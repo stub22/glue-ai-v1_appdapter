@@ -18,31 +18,35 @@ package org.appdapter.core.matdat
 
 //  Booo - no promiscuous imports
 import java.util._
-
 import org.appdapter.bind.rdf.jena.model.JenaFileManagerUtils
 import org.appdapter.core.log.BasicDebugger
 import org.appdapter.core.name.Ident
 import org.appdapter.core.store.{ InitialBinding, Repo }
 import org.appdapter.core.store.ExtendedFileStreamUtils
 import org.appdapter.core.store.RepoOper
-
 import com.hp.hpl.jena.query.{ Dataset, QuerySolution }
 import com.hp.hpl.jena.rdf.model.Model
 import com.hp.hpl.jena.rdf.model.Resource
-//  Booo - no promiscuous imports
 import org.appdapter.impl.store._
 import org.appdapter.core.log.BasicDebugger
+import org.appdapter.core.name.FreeIdent
+import org.appdapter.core.store.dataset.SpecialRepoLoader
 
 /**
  * @author Stu B. <www.texpedient.com>
  * @author logicmoo
  */
-
-abstract class InstallableRepoReader {
+abstract class InstallableSpecReader {
+  def getExt(): String;
+  def makeRepoSpec(path: String, args: Array[String], cLs: java.util.List[ClassLoader]): RepoSpec;
+}
+abstract class InstallableRepoReader extends InstallableSpecReader {
+  override def getExt(): String = null
+  override def makeRepoSpec(path: String, args: Array[String], cLs: java.util.List[ClassLoader]): RepoSpec = null
   def getContainerType(): String
   def getSheetType(): String
   def isDerivedLoader(): Boolean = false
-  def loadModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader])
+  def loadModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader])
 }
 
 object FancyRepoLoader extends BasicDebugger {
@@ -60,10 +64,10 @@ object FancyRepoLoader extends BasicDebugger {
     }
     // Construct a repo around that directory        
     val shRepo = new OmniLoaderRepo(spec, specURI, myDebugName, dirModel, fileModelCLs)
-    shRepo.beginLoading();
+    //shRepo.beginLoading();
     // set to false to have concurrent background loading
     if (true) {
-      shRepo.finishLoading();
+      //shRepo.finishLoading();
     }
     shRepo
   }
@@ -142,9 +146,9 @@ object FancyRepoLoader extends BasicDebugger {
     // Construct a repo around that directory
     val shRepo = makeRepoWithDirectory(repoSpec, dirModel, fileModelCLs)
     // Load the rest of the repo's initial *sheet* models, as instructed by the directory.
-    shRepo.loadSheetModelsIntoMainDataset()
+    //shRepo.loadSheetModelsIntoMainDataset()
     // Load the rest of the repo's initial *file/resource* models, as instructed by the directory.
-    shRepo.loadDerivedModelsIntoMainDataset(fileModelCLs)
+    // shRepo.loadDerivedModelsIntoMainDataset(fileModelCLs)
     shRepo
   }
 

@@ -20,9 +20,9 @@ import org.appdapter.core.log.BasicDebugger
 import org.appdapter.core.store.Repo
 import org.appdapter.core.store.RepoOper
 import org.appdapter.impl.store.{ DirectRepo, QueryHelper }
-
 import com.hp.hpl.jena.query.{ Dataset, QuerySolution }
 import com.hp.hpl.jena.rdf.model.{ Literal, Model, Resource }
+import org.appdapter.core.store.dataset.SpecialRepoLoader
 
 /**
  * @author Douglas R. Miles <www.logicmoo.org>
@@ -41,16 +41,17 @@ import com.hp.hpl.jena.rdf.model.{ Literal, Model, Resource }
 
 /// this is a registerable loader
 class DatasetFileRepo extends InstallableRepoReader {
+  override def getExt = null;
   override def getContainerType() = "ccrt:DatasetFileRepo"
   override def getSheetType() = "ccrt:DatasetFileRepo"
-  override def loadModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
+  override def loadModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
     DatasetFileRepo.loadSheetModelsIntoTargetDataset(repo, mainDset, dirModel, fileModelCLs)
   }
 }
 
 object DatasetFileRepo extends BasicDebugger {
 
-  def loadSheetModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: Dataset,
+  def loadSheetModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset,
     myDirectoryModel: Model, clList: java.util.List[ClassLoader]): Unit = {
 
     if (myDirectoryModel.size == 0) return

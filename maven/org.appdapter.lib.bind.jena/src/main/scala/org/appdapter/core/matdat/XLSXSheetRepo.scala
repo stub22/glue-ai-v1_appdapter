@@ -26,6 +26,7 @@ import org.appdapter.impl.store.DirectRepo
 import org.appdapter.core.store.Repo
 import org.appdapter.core.log.BasicDebugger
 import org.appdapter.core.store.dataset.RepoDatasetFactory
+import org.appdapter.core.store.dataset.SpecialRepoLoader
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -35,19 +36,27 @@ import org.appdapter.core.store.dataset.RepoDatasetFactory
  *   (easier to Save a Google Doc to a Single XLSX Spreadsheet than several .Csv files!)
  *   Uses Apache POI (@see http://poi.apache.org/)
  */
+class OfflineXlsSheetRepoSpec(sheetLocation: String, namespaceSheet: String, dirSheet: String,
+  fileModelCLs: java.util.List[ClassLoader] = null) extends RepoSpecForDirectory {
+  override def getDirectoryModel = XLSXSheetRepoLoader.readDirectoryModelFromXLSX(sheetLocation, namespaceSheet, dirSheet, fileModelCLs: java.util.List[ClassLoader])
+  //override def makeRepo(): SheetRepo = XLSXSheetRepoLoader.loadXLSXSheetRepo(sheetLocation, namespaceSheet, dirSheet, fileModelCLs, this)
+  override def toString: String = "xlsx:/" + sheetLocation + "/" + namespaceSheet + "/" + dirSheet
+}
 
 /// this is a registerable loader
 class XLSXSheetRepoLoader extends InstallableRepoReader {
+  override def makeRepoSpec(path: String, v3: Array[String], cLs: java.util.List[ClassLoader]) = new OfflineXlsSheetRepoSpec(v3(0), v3(1), v3(3), cLs)
+  override def getExt = "xlsx"
   override def getContainerType() = "ccrt:XlsxWorkbookRepo"
   override def getSheetType() = "ccrt:XlsxSheet"
-  override def loadModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
+  override def loadModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
     XLSXSheetRepoLoader.loadSheetModelsIntoTargetDataset(repo, mainDset, dirModel, fileModelCLs)
   }
 }
 
 object XLSXSheetRepoLoader extends BasicDebugger {
 
-  def loadSheetModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: Dataset, myDirectoryModel: Model, fileModelCLs: java.util.List[ClassLoader]) = {
+  def loadSheetModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, myDirectoryModel: Model, fileModelCLs: java.util.List[ClassLoader]) = {
 
     val nsJavaMap: java.util.Map[String, String] = myDirectoryModel.getNsPrefixMap()
 
@@ -94,7 +103,7 @@ object XLSXSheetRepoLoader extends BasicDebugger {
   def loadXLSXSheetRepo(sheetLocation: String, namespaceSheetName: String, dirSheetName: String,
     fileModelCLs: java.util.List[ClassLoader], repoSpec: RepoSpec): SheetRepo = {
     // Read the namespaces and directory sheets into a single directory model.
-    val dirModel: Model = readDirectoryModelFromXLSX(sheetLocation, namespaceSheetName ?? nsSheetName22, dirSheetName ?? dirSheetName22, fileModelCLs: java.util.List[ClassLoader])
+    val dirModel: Model = XLSXSheetRepoLoader.readDirectoryModelFromXLSX(sheetLocation, namespaceSheetName ?? nsSheetName22, dirSheetName ?? dirSheetName22, fileModelCLs: java.util.List[ClassLoader])
     FancyRepoLoader.makeRepoWithDirectory(repoSpec, dirModel);
   }
 

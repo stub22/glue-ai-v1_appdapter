@@ -33,17 +33,21 @@ import com.hp.hpl.jena.sdb.util.StoreUtils;
 
 /**
  * @author Stu B. <www.texpedient.com>
- *
- * This impl uses a Jena SDB "Store".
- *
- * http://jena.apache.org/documentation/javadoc/sdb/com/hp/hpl/jena/sdb/Store.html
+ * 
+ *         This impl uses a Jena SDB "Store".
+ * 
+ *         http://jena.apache.org/documentation/javadoc/sdb/com/hp/hpl/jena/sdb/Store.html
  */
 public class BasicStoredMutableRepoImpl extends BasicRepoImpl implements Repo.Stored, Repo.Mutable {
+
+	@Override public void callLoadingInLock() {
+		formatRepoIfNeeded();
+	}
 
 	private Store myStore;
 
 	/**
-	 *
+	 * 
 	 * @param aStore
 	 */
 	protected BasicStoredMutableRepoImpl(Store aStore) {
@@ -88,12 +92,13 @@ public class BasicStoredMutableRepoImpl extends BasicRepoImpl implements Repo.St
 	}
 
 	/**
-	 * Uses a "GraphUploadTask" to read the contents of sourceURL into tgtGraph (named or default),
-	 * with copious debug output.
-	 *
-	 * @param tgtGraphName - resolved to a model using  SDBFactory.connectNamedModel.  If null, uses connectDefaultModel.
+	 * Uses a "GraphUploadTask" to read the contents of sourceURL into tgtGraph (named or default), with copious debug output.
+	 * 
+	 * @param tgtGraphName
+	 *            - resolved to a model using SDBFactory.connectNamedModel. If null, uses connectDefaultModel.
 	 * @param sourceURL
-	 * @param replaceTgtFlag - If true, model will first be cleared using tgtStoreModel.removeAll();
+	 * @param replaceTgtFlag
+	 *            - If true, model will first be cleared using tgtStoreModel.removeAll();
 	 */
 	@Override public void importGraphFromURL(String tgtGraphName, String sourceURL, boolean replaceTgtFlag) {
 		// Copied settings from dflt constructor
@@ -144,10 +149,8 @@ public class BasicStoredMutableRepoImpl extends BasicRepoImpl implements Repo.St
 	}
 
 	/**
-	 * For unit testing, this static convenience method constructs the "basic" version of Store repo.
-	 * See details in SdbStoreFactory.
-	 * For real application use cases, we instead usually  go through the FancyRepoFactory object defined in Scala Packages of
-	 * this proj.
+	 * For unit testing, this static convenience method constructs the "basic" version of Store repo. See details in SdbStoreFactory. For real application use cases, we instead usually go through the FancyRepoFactory object defined in Scala Packages of this proj.
+	 * 
 	 * @param storeConfigPath
 	 * @param optCL
 	 * @return
@@ -160,10 +163,8 @@ public class BasicStoredMutableRepoImpl extends BasicRepoImpl implements Repo.St
 	}
 
 	/**
-	 * Old sample store-iterator code, replaced by Dataset-level impls. in BasicRepoImpl.getGraphStats.
-	 * Iterating the store's graphs directly, rather than thru Dataset.
-	 * Will give absolutely equivalent results?
-	 *
+	 * Old sample store-iterator code, replaced by Dataset-level impls. in BasicRepoImpl.getGraphStats. Iterating the store's graphs directly, rather than thru Dataset. Will give absolutely equivalent results?
+	 * 
 	 * @param store
 	 * @return
 	 */

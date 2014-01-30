@@ -18,20 +18,18 @@ package org.appdapter.impl.store
 
 import org.appdapter.bind.rdf.jena.sdb.SdbStoreFactory
 import org.appdapter.core.log.BasicDebugger
-import org.appdapter.core.log.BasicDebugger
 import org.appdapter.core.name.FreeIdent
 import org.appdapter.core.name.Ident
 import org.appdapter.core.store._
 import org.appdapter.core.matdat._
-
-// Currently we're on   Jena 2.6.4, ARQ 2.8.7, SDB 1.3.4
 import com.hp.hpl.jena.query.{ ResultSet, Dataset, QuerySolution, QuerySolutionMap }
 import com.hp.hpl.jena.rdf.model.{ Model, Resource, Literal }
-import com.hp.hpl.jena.sdb.{ Store, SDBFactory };
+import com.hp.hpl.jena.sdb.{ Store, SDBFactory }
 import com.hp.hpl.jena.shared.PrefixMapping
 import com.hp.hpl.jena.sparql.modify.request.{ UpdateCreate, UpdateLoad }
 import com.hp.hpl.jena.sparql.sse.SSE
 import com.hp.hpl.jena.update.{ GraphStore, GraphStoreFactory, UpdateAction, UpdateRequest }
+import org.appdapter.core.store.dataset.SpecialRepoLoader
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -44,10 +42,17 @@ import com.hp.hpl.jena.update.{ GraphStore, GraphStoreFactory, UpdateAction, Upd
 /////////////////////////////////////////
 /// this is a registerable loader
 /////////////////////////////////////////
+
+class DatabaseRepoSpec(configPath: String, optConfResCL: ClassLoader, dirGraphID: Ident) extends RepoSpec {
+  def this(cPath: String, optCL: ClassLoader, dirGraphUriPrefix: String, dirGraphLocalName: String) = this(cPath, optCL, new FreeIdent(dirGraphUriPrefix + dirGraphLocalName, dirGraphLocalName))
+  override def makeRepo() = FancyRepoLoader.loadDatabaseRepo(configPath, optConfResCL, dirGraphID)
+}
+
 class DatabaseRepoLoader extends InstallableRepoReader {
+  override def getExt = null
   override def getContainerType() = "ccrt:DatabaseRepo"
   override def getSheetType() = "ccrt:DatabaseSheet"
-  override def loadModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
+  override def loadModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
     DatabaseRepoLoader.loadSheetModelsIntoTargetDataset(repo, mainDset, dirModel, fileModelCLs)
   }
 }
@@ -87,7 +92,7 @@ object DatabaseRepoLoader extends org.appdapter.core.log.BasicDebugger {
   /////////////////////////////////////////
   /// Read sheet models
   /////////////////////////////////////////
-  def loadSheetModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: Dataset,
+  def loadSheetModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset,
     myDirectoryModel: Model, clList: java.util.List[ClassLoader]): Unit = {
 
     if (myDirectoryModel.size == 0) return

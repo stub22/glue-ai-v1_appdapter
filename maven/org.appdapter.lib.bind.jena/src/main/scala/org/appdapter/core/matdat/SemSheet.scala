@@ -30,6 +30,8 @@ import com.hp.hpl.jena.rdf.model.Resource
 import com.hp.hpl.jena.rdf.model.Statement
 import org.appdapter.core.store.dataset.CheckedModel
 import com.hp.hpl.jena.datatypes.xsd.XSDDatatype
+import org.appdapter.core.log.Debuggable
+import org.appdapter.core.log.BasicDebugger
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -67,13 +69,13 @@ object SemSheet {
         val propNameCell: Option[String] = propNameCells.getPossibleColumnValueString(colIdx);
         val subKindCell: Option[String] = subKindCells.getPossibleColumnValueString(colIdx);
 
-        val optProp: Option[Property] = propNameCell.map {
-          propResolver.findOrMakeProperty(myModel, _)
-        }
-
-        val optColBind: Option[PropertyValueColumnBinding] = if (metaKindCell.isDefined) {
-
+        val optColBind: Option[PropertyValueColumnBinding] = if (metaKindCell.isDefined && !metaKindCell.get.startsWith("#")) {
           val metaKind = metaKindCell.get
+          //if (!propNameCell.isDefined && propNameCell.get.startsWith("#")) {          continue;        }
+          val optProp: Option[Property] = propNameCell.map {
+            propResolver.findOrMakeProperty(myModel, _)
+          }
+
           metaKind match {
             case MT_Individual => {
               if (myIndivColIdx != -1) {
@@ -113,7 +115,7 @@ object SemSheet {
               }
               if (dt == null) {
                 // this one only fakes a datatype
-                theDbg.logError("OLD BUG: " + dtName + " is not a datatype! (try googling it and make sure you have the case correct)")
+                Debuggable.oldBug( dtName + " is not a datatype! (try googling it and make sure you have the case correct)")
                 if (dtName.equalsIgnoreCase("xsd:datetime")) {
                   dt = XSDDatatype.XSDdateTime;
                 } else {
@@ -131,7 +133,10 @@ object SemSheet {
               }
             }
           }
-        } else None
+        } else {
+          // theDbg.logError("MISSING MetaType in column " + colIdx + " metaKindCell=" + metaKindCell);
+          None
+        }
         theDbg.logDebug("Got Col Binding: " + optColBind);
         if (optColBind.isDefined) {
           myPropColBindings = optColBind.get :: myPropColBindings;
@@ -141,14 +146,14 @@ object SemSheet {
     }
 
     override def absorbDataRow(cellRow: MatrixRow) {
-      getLogger.debug("Processing SEMANTIC data(!) = " + cellRow.dump());
 
       val commentCol = 0;
       val optComment: Option[String] = cellRow.getPossibleColumnValueString(commentCol);
       val rowIsCommentedOut: Boolean = optComment.getOrElse("").trim.startsWith("#");
       if (rowIsCommentedOut) {
-        getLogger.info("Row is commented out: " + cellRow.dump());
+        getLogger.debug("Row is commented out: " + cellRow.dump())
       } else if ((myIndivColIdx >= 0)) {
+        getLogger.debug("Processing SEMANTIC data(!) = " + cellRow.dump());
         Debuggable.putFrameVar("column", myIndivColIdx)
         val optIndivCell: Option[String] = cellRow.getPossibleColumnValueString(myIndivColIdx);
 
@@ -193,7 +198,7 @@ object SemSheet {
     extends PropertyValueColumnBinding(linkProp, colIdx) {
 
     override def makeValueNode(cellString: String, model: Model): RDFNode = {
-      CheckedModel.findOrMakeResource(myResolver, model, cellString)
+      myResolver.findOrMakeResource(model, cellString)
     }
   }
   class ResDataColumnBinding(datProp: Property, colIdx: Int, val myDatatype: RDFDatatype)

@@ -43,7 +43,6 @@ import org.appdapter.api.trigger.AnyOper;
 import org.appdapter.core.debug.UIAnnotations.UIHidden;
 import org.appdapter.core.debug.UIAnnotations.UtilClass;
 import org.appdapter.core.log.Debuggable;
-import org.appdapter.core.store.dataset.CheckedDataset;
 import org.appdapter.core.store.dataset.CheckedGraph;
 import org.appdapter.core.store.dataset.RepoDatasetFactory;
 import org.appdapter.core.store.dataset.UserDatasetFactory;
@@ -214,7 +213,7 @@ public class RepoOper implements AnyOper, UtilClass {
 			ds.addNamedModel(dest, destM);
 		} else {
 			destM = RepoDatasetFactory.createGroup(destM, srcM);
-			theLogger.warn("Made Merged Model from " + src + " and " + dest);
+			theLogger.info("Made Merged Model from " + src + " and " + dest);
 			ds.replaceNamedModel(dest, destM);
 		}
 	}
@@ -349,12 +348,12 @@ public class RepoOper implements AnyOper, UtilClass {
 			}
 			if (!onDest) {
 				dest.addNamedModel(urlModel, model);
-				theLogger.warn("Added new model " + urlModel + " size=" + size);
+				theLogger.info("Added new model " + urlModel + " size=" + size);
 				return;
 			}
 			Model old = dest.getNamedModel(urlModel);
 			if (old == model) {
-				theLogger.warn("Nothing to do.. same model " + urlModel + " size=" + size);
+				theLogger.info("Nothing to do.. same model " + urlModel + " size=" + size);
 				return;
 			}
 			oldLock = old.getLock();
@@ -362,7 +361,7 @@ public class RepoOper implements AnyOper, UtilClass {
 			long sizeBefore = old.size();
 			if (RepoOper.inPlaceReplacements) {
 				old.removeAll();
-				theLogger.warn("In place (Replacing) old model " + urlModel + " size=" + sizeBefore + "-> " + old.size());
+				theLogger.info("In place (Replacing) old model " + urlModel + " size=" + sizeBefore + "-> " + old.size());
 				isReplace = false;
 			}
 			if (!isReplace) {
@@ -372,11 +371,12 @@ public class RepoOper implements AnyOper, UtilClass {
 					old.withDefaultMappings(model);
 				}
 				long sizeNow = old.size();
-				theLogger.warn("Merging into old model " + urlModel + " size(" + sizeBefore + "+" + model.size() + ")->" + sizeNow);
-				RepoDatasetFactory.invalidateModel(old);
+				theLogger.info("Merging into old model " + urlModel + " size(" + sizeBefore + "+" + model.size() + ")->" + sizeNow);
+				RepoDatasetFactory.invalidateModel(model);
 				return;
 			}
-			theLogger.warn("Replacing old model " + urlModel + " size=" + sizeBefore + "->" + model.size());
+			RepoDatasetFactory.invalidateModel(old);
+			theLogger.info("Replacing old model " + urlModel + " size=" + sizeBefore + "->" + model.size());
 			dest.replaceNamedModel(urlModel, model);
 		} finally {
 			if (oldLock != null)
@@ -573,6 +573,7 @@ public class RepoOper implements AnyOper, UtilClass {
 		{
 			// letting dir models advertise all namespaces
 			File file = new File(dir, dontChangeDirModel ? "dir.ttl" : "dir.old");
+			file.getParentFile().mkdirs();
 			PrintWriter ow = new PrintWriter(file);
 			ow.println("\n");
 			writeModel(dirModel, ow, true, false, pm);

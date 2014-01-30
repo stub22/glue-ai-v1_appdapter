@@ -660,6 +660,8 @@ public abstract class Debuggable extends BasicDebugger {
 	}
 
 	public static void oldBug(Writer w, String msg, Object... params) {
+		if (true)
+			return;
 		String msgf = toInfoStringCompound(msg, params);
 		String ob = "OLD BUG: " + msgf;
 		Throwable t = createFrame(ob);

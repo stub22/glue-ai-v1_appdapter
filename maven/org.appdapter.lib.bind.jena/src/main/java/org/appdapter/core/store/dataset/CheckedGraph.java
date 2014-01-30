@@ -28,6 +28,11 @@ public class CheckedGraph implements Graph, PrefixMapping {
 	public boolean noDelete = false;
 	public boolean nameSpaceChecked = false;
 	private PrefixMapping prefixMap;
+	public String debuggingName;
+
+	public void setName(String n) {
+		this.debuggingName = n;
+	}
 
 	public Graph getDataGraph() {
 		return modelGraph;
@@ -38,6 +43,7 @@ public class CheckedGraph implements Graph, PrefixMapping {
 		sb.append(noAdd ? "-" : "+").append("A");
 		sb.append(noDelete ? "-" : "+").append("R");
 		sb.append(nameSpaceChecked ? "-" : "+").append("N");
+		sb.append("=" + debuggingName);
 		return sb.append(modelGraph.toString()).toString();
 	}
 
@@ -54,14 +60,15 @@ public class CheckedGraph implements Graph, PrefixMapping {
 
 	@Override public void add(Triple t) throws AddDeniedException {
 		checkAdd();
-		visitURIs(t);
-		modelGraph.add(t);
+		Triple t2 = visitURIs(t);
+		modelGraph.add(t2);
 	}
 
-	public void visitURIs(Triple t) {
+	public Triple visitURIs(Triple t) {
 		visitURIs(t.getSubject());
 		visitURIs(t.getPredicate());
 		visitURIs(t.getObject());
+		return t;
 	}
 
 	private void visitURIs(Node subject) {

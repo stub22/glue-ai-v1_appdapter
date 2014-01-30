@@ -39,14 +39,31 @@ import org.appdapter.help.repo.RepoClientImpl
 import org.osgi.framework.BundleContext
 import com.hp.hpl.jena.rdf.model.Model
 import org.appdapter.impl.store._
+import java.util.Map
+import java.util._
+import java.io._
+import org.appdapter.core.store.dataset.RepoDatasetFactory
+import org.appdapter.core.store._
+import org.appdapter.core.store.ExtendedFileLoading.Paths
+import java.io.File
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
 
+abstract class RepoSpecForDirectory extends RepoSpec {
+  override def makeRepo: SheetRepo = {
+    FancyRepoLoader.makeRepoWithDirectory(this, getDirectoryModel(), null);
+  }
+  def getDirectoryModel(): Model;
+}
 abstract class RepoSpec {
 
-  def makeRepo(): Repo.WithDirectory
+  def makeRepo(): Repo.WithDirectory;
+
+  def getDirectoryModel(): Model = {
+    makeRepo.getDirectoryModel();
+  }
 
   def makeRepoClient(repo: Repo.WithDirectory, getDfltQrySrcGraphQName: String): RepoClientImpl = {
     new RepoClientImpl(repo, getDfltTgtGraphSparqlVarName, getDfltQrySrcGraphQName);
@@ -57,58 +74,13 @@ abstract class RepoSpec {
     new RepoClientImpl(repo, getDfltTgtGraphSparqlVarName, getDfltQrySrcGraphQName);
   }
 
-  def getDfltQrySrcGraphQName = RepoSpecDefaultNames.DFLT_QRY_SRC_GRAPH_QN;
+  def getDfltQrySrcGraphQName = "(anyOf " + RepoSpecDefaultNames.DFLT_QRY_SRC_GRAPH_TYPE + ")";
   def getDfltTgtGraphSparqlVarName: String = RepoSpecDefaultNames.DFLT_TGT_GRAPH_SPARQL_VAR;
 }
 
-class OnlineSheetRepoSpec(sheetKey: String, namespaceSheetNum: Int, dirSheetNum: Int,
-  fileModelCLs: java.util.List[ClassLoader] = null) extends RepoSpec {
-  override def makeRepo(): SheetRepo = {
-    try {
-      GoogSheetRepoLoader.makeGoogSheetRepo(sheetKey, namespaceSheetNum, dirSheetNum, fileModelCLs, this)
-    } catch {
-      // trying to catch Errors (not just Exceptions)
-      case e: Throwable => {
-        e.printStackTrace();
-        throw e
-      }
-    }
-  }
-  override def toString: String = "goog:/" + sheetKey + "/" + namespaceSheetNum + "/" + dirSheetNum
+object URLRepoSpec {
+  val loaderMap = new HashMap[String, InstallableRepoReader]();
 }
-
-class GoogSheetRepoSpec(sheetKey: String, namespaceSheetNum: Int, dirSheetNum: Int,
-  fileModelCLs: java.util.List[ClassLoader]) extends RepoSpec {
-  def this(sheetKey: String, namespaceSheetNum: Int, dirSheetNum: Int) = this(sheetKey, namespaceSheetNum, dirSheetNum, null);
-  override def makeRepo(): SheetRepo = {
-    GoogSheetRepoLoader.makeGoogSheetRepo(sheetKey, namespaceSheetNum, dirSheetNum, fileModelCLs, this)
-  }
-  override def toString: String = "goog:/" + sheetKey + "/" + namespaceSheetNum + "/" + dirSheetNum
-}
-
-class OfflineXlsSheetRepoSpec(sheetLocation: String, namespaceSheet: String, dirSheet: String,
-  fileModelCLs: java.util.List[ClassLoader] = null) extends RepoSpec {
-  override def makeRepo(): SheetRepo = {
-    XLSXSheetRepoLoader.loadXLSXSheetRepo(sheetLocation, namespaceSheet, dirSheet, fileModelCLs, this)
-  }
-  override def toString: String = "xlsx:/" + sheetLocation + "/" + namespaceSheet + "/" + dirSheet
-}
-
-class CSVFileRepoSpec(dirSheet: String, namespaceSheet: String = null,
-  fileModelCLs: java.util.List[ClassLoader] = null) extends RepoSpec {
-  override def makeRepo(): SheetRepo = {
-    CsvFileSheetLoader.loadCsvFileSheetRepo(dirSheet, namespaceSheet, fileModelCLs, this)
-  }
-  override def toString: String = dirSheet
-}
-
-class DatabaseRepoSpec(configPath: String, optConfResCL: ClassLoader, dirGraphID: Ident) extends RepoSpec {
-  def this(cPath: String, optCL: ClassLoader, dirGraphUriPrefix: String, dirGraphLocalName: String) = this(cPath, optCL, new FreeIdent(dirGraphUriPrefix + dirGraphLocalName, dirGraphLocalName))
-  override def makeRepo(): DatabaseRepo = {
-    FancyRepoLoader.loadDatabaseRepo(configPath, optConfResCL, dirGraphID)
-  }
-}
-
 /**
  * Takes a directory model and uses Goog, Xlsx, Pipeline,CSV,.ttl,rdf sources and loads them
  */
@@ -135,23 +107,42 @@ class URLRepoSpec(var dirModelURL: String, var fileModelCLs: java.util.List[Clas
     val proto = trimString(dirModelURLParse.substring(0, colon + 1), "/", ":", " ")
     val path = trimString(dirModelURLParse.substring(colon + 1), "/", " ")
     val v3: Array[String] = (path + "//").split('/')
+    //for( loaderMap) {
+    // 
+    //}
     if (proto.equals("goog")) {
       (new GoogSheetRepoSpec(v3(0), v3(1).toInt, v3(2).toInt, fileModelCLs))
     } else if (proto.equals("xlsx")) {
       (new OfflineXlsSheetRepoSpec(v3(0), v3(1), v3(3), fileModelCLs))
+      /*
+    } else if (proto.equals("scan")) {
+      (new ScanURLRepoSpec(v3(0), fileModelCLs))
+    } else if (proto.equals("mult")) {
+      (new MultiRepoSpec(path, fileModelCLs))
+      
+      */
     } else {
-      (new URLDirModelRepoSpec(dirModelURL, fileModelCLs))
+      val dirModelLoaders: java.util.List[InstallableSpecReader] = SheetRepo.getSpecLoaders
+      val dirModelLoaderIter = dirModelLoaders.listIterator
+      while (dirModelLoaderIter.hasNext()) {
+        val irr = dirModelLoaderIter.next
+        try {
+          val ext = irr.getExt;
+          if (ext != null && ext.equalsIgnoreCase(proto)) {
+            val spec = Some(irr.makeRepoSpec(path, v3, fileModelCLs))
+            if (!spec.isEmpty) return spec.get;
+          }
+        } catch {
+          case except: Throwable =>
+            except.printStackTrace
+          //getLogger().error("Caught loading error in {}", Array[Object](irr, except))
+        }
+      }
+      new URLDirModelRepoSpec(dirModelURL, fileModelCLs)
     }
   }
-  override def makeRepo(): Repo.WithDirectory = detectedRepoSpec.makeRepo;
-  override def toString = dirModelURL
-
-}
-
-class URLDirModelRepoSpec(dirModelURL: String, fileModelCLs: java.util.List[ClassLoader]) extends RepoSpec {
-  override def makeRepo(): SheetRepo = {
-    FancyRepoLoader.loadDetectedFileSheetRepo(dirModelURL, null, fileModelCLs, this)
-  }
+  override def getDirectoryModel(): Model = detectedRepoSpec.getDirectoryModel
+  override def makeRepo(): Repo.WithDirectory = detectedRepoSpec.makeRepo
   override def toString = dirModelURL
 }
 
@@ -169,7 +160,7 @@ object RepoSpecDefaultNames {
   // at this time.   This query source graph may be overridden using the more general
   // forms of queryIndirect_.
 
-  val DFLT_QRY_SRC_GRAPH_QN = "ccrt:qry_sheet_22"
+  val DFLT_QRY_SRC_GRAPH_TYPE = NS_CCRT_RT + "QueryTxtModel"; //not "ccrt:qry_sheet_22"
 
   // 2) default variable name for a single target graph in a SPARQL query.
   // This is used in the convenience forms of queryIndirect that handle many common
@@ -191,15 +182,17 @@ object RepoSpecDefaultNames {
   val GOODY_NS = "urn:ftd:cogchar.org:2012:goody#"
   // Formal prefix for Cogchar Web
   //public static String WEB_NS = "http://www.cogchar.org/lift/config#";
+  // Formal prefix for Cogchar 2012 runtime
+  val NS_CC = "http://www.cogchar.org/schema/crazyRandom#"
 
   // Less formal web prefix still widely used:
   val NSP_Root = "http://www.cogchar.org/"
 
-  val PIPELINE_GRAPH_QN = "csi:pipeline_sheet_77";
-  val PIPE_QUERY_QN = "ccrt:find_pipes_77";
-  val PIPE_SOURCE_QUERY_QN = "ccrt:find_pipe_sources_78";
-  val PIPE_ATTR_QQN = PIPE_QUERY_QN;
-  val PIPE_SOURCE_QQN = PIPE_SOURCE_QUERY_QN;
+  val PIPELINE_GRAPH_TYPE = NS_CC + "PipelineModel"; /// "csi:pipeline_sheet_77";
+  //val PIPE_QUERY_QN = "ccrt:find_pipes_77";
+  //val PIPE_SOURCE_QUERY_QN = "ccrt:find_pipe_sources_78";
+  //val PIPE_ATTR_QQN = PIPE_QUERY_QN;
+  //val PIPE_SOURCE_QQN = PIPE_SOURCE_QUERY_QN;
 
   // These constants are used to test the ChanBinding model found in "GluePuma_BehavMasterDemo"
   //   https://docs.google.com/spreadsheet/ccc?key=0AlpQRNQ-L8QUdFh5YWswSzdYZFJMb1N6aEhJVWwtR3c
@@ -249,3 +242,4 @@ object RepoSpecDefaultNames {
   }
 
 }
+

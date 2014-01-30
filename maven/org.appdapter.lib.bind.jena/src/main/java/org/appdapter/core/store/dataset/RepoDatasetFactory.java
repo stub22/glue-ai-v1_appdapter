@@ -42,9 +42,7 @@ import com.hp.hpl.jena.graph.Factory;
 //import com.hp.hpl.jena.graph.Factory;
 import com.hp.hpl.jena.graph.Graph;
 import com.hp.hpl.jena.graph.Node;
-import com.hp.hpl.jena.graph.compose.Dyadic;
 import com.hp.hpl.jena.graph.compose.MultiUnion;
-import com.hp.hpl.jena.graph.compose.Polyadic;
 import com.hp.hpl.jena.graph.compose.Union;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.query.DatasetFactory;
@@ -146,6 +144,7 @@ public class RepoDatasetFactory implements AnyOper, UtilClass {
 		if (m == universalModel) {
 			return;
 		}
+		theLogger.error("Invalidating model: " + m);
 		m.register(new StatementListener() {
 			@Override public void addedStatement(Statement s) {
 				super.addedStatement(s);
@@ -481,6 +480,8 @@ public class RepoDatasetFactory implements AnyOper, UtilClass {
 	}
 
 	static void untested(Object... args) {
+		if (true)
+			throw new NullPointerException("" + args);
 		if (true)
 			Debuggable.notImplemented(args);
 	}

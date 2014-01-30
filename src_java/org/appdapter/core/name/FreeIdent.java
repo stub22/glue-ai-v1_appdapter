@@ -113,21 +113,21 @@ public class FreeIdent implements Ident {
 				URI good = URI.create(uri);
 				String fragment = getFragmentKey(good, uri);
 				if (fragment == null) {
-					theLogger.error("MAYBE BUG: (not a QNAME?) " + uri + " debuggable=" + Debuggable.getStackVars());
+					Debuggable.oldBug("(not a QNAME?) " + uri + " debuggable=" + Debuggable.getStackVars());
 					return uri;
 				}
 				if (fragment.length() < 3) {
 					if ("0123456789.".indexOf(fragment.charAt(0)) != -1) {
-						theLogger.error("MAYBE BUG: (number) " + uri + " debuggable=" + Debuggable.getStackVars());
+						Debuggable.showFrame(Debuggable.createFrame("(number) " + uri + " debuggable=" + Debuggable.getStackVars()));
 						return fragment;
 					} else {
-						theLogger.error("MAYBE BUG: (short name) " + uri + " debuggable=" + Debuggable.getStackVars());
+						theLogger.debug("MAYBE BUG: (short name) " + uri + " debuggable=" + Debuggable.getStackVars());
 					}
 					return uri;
 
 				}
 				String old = fragmentToURI.get(fragment);
-				checkChanged("OLD BUG: LocalName Prefix ", fragment, old, uri);
+				Debuggable.oldBug("LocalName Prefix ", fragment, old, uri);
 				if (old == null) {
 					uri = uri.intern();
 					fragmentToCreationFrame.put(fragment, Debuggable.createFrame("Creation frame for " + uri));
@@ -140,7 +140,7 @@ public class FreeIdent implements Ident {
 				if (rc != e && rc != null) {
 					e = rc;
 				}
-				theLogger.error("OLD BUG:  BAD JENA RESOURCE " + uri + " " + e);
+				Debuggable.oldBug("BAD JENA RESOURCE " + uri + " " + e);
 				return uri;
 			}
 
@@ -181,8 +181,10 @@ public class FreeIdent implements Ident {
 			if (!prevURI.equals(uri)) {
 				String err = what + " Change: " + uri + " WAS " + prevURI;
 				theLogger.error(err);
-				Debuggable.showFrame(fragmentToCreationFrame.get(localName));
-				Debuggable.showFrame(Debuggable.createFrame(err));
+				if (Debuggable.isTesting()) {
+					Debuggable.showFrame(fragmentToCreationFrame.get(localName));
+					Debuggable.showFrame(Debuggable.createFrame(err));
+				}
 				if (THROW_ON_CHANGE)
 					throw new RuntimeException(err);
 				return false;

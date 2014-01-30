@@ -14,26 +14,26 @@
  *  limitations under the License.
  */
 package org.appdapter.core.matdat
+
 import org.appdapter.core.log.BasicDebugger
 import org.appdapter.core.store.Repo
-import org.appdapter.core.store.RepoOper
-import org.appdapter.help.repo.RepoClientImpl
-import org.appdapter.impl.store.DirectRepo
+import org.appdapter.core.store.dataset.SpecialRepoLoader
 import org.appdapter.impl.store.QueryHelper
 
 import com.hp.hpl.jena.query.Dataset
 import com.hp.hpl.jena.query.QuerySolution
 import com.hp.hpl.jena.rdf.model.Model
-import org.appdapter.core.store.dataset.RepoDatasetFactory
 
 /**
  * @author LogicMOO <www.logicmoo.org>
+ *
  */
 
 // FIXME:  The srcRepo should really not be given to the RepoSpec, because it
 // is not serializable specData.
+/*
 
-class DerivedRepoSpec(val myDGSpecs: Set[DerivedGraphSpec], val mySrcRepo: Repo.WithDirectory) extends RepoSpec {
+class DerivedRepoSpec(val myDGSpecs: Set[DerivedGraphSpec_UNUSED], val mySrcRepo: Repo.WithDirectory) extends RepoSpec {
   override def toString(): String = {
     "DerivedRepoSpec[pipeSpecs= " + myDGSpecs + "]";
   }
@@ -69,26 +69,20 @@ class DerivedRepo(emptyDirModel: Model, val myRepoSpec: DerivedRepoSpec) extends
   }
 }
 
-
-
-
-
-
 /// this is a registerable loader
 class PipelineModelLoader extends InstallableRepoReader {
   override def getContainerType() = "cc:PipelineModel"
   override def getSheetType() = "ccrt:UnionModel"
   override def isDerivedLoader() = true
-  override def loadModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
+  override def loadModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
     PipelineModelLoader.loadSheetModelsIntoTargetDataset(repo, mainDset, dirModel, fileModelCLs)
   }
 }
 
 //================ LOADER
-
 object PipelineModelLoader extends BasicDebugger {
 
-  def loadSheetModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: Dataset, myDirectoryModel: Model, fileModelCLs: java.util.List[ClassLoader]) = {
+  def loadSheetModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, myDirectoryModel: Model, fileModelCLs: java.util.List[ClassLoader]) = {
 
     val nsJavaMap: java.util.Map[String, String] = myDirectoryModel.getNsPrefixMap()
 
@@ -116,6 +110,8 @@ object PipelineModelLoader extends BasicDebugger {
       // DerivedGraphSpecReader.queryDerivedGraphSpecs(getRepoClient,DerivedGraphSpecReader.PIPELINE_QUERY_QN,modelName)
     }
   }
+  
+  
 
   def loadPipeline(pplnGraphQN: String, repo: Repo.WithDirectory, mainDset: Dataset, myDirectoryModel: Model, fileModelCLs: java.util.List[ClassLoader]) = {
 
@@ -130,30 +126,32 @@ object PipelineModelLoader extends BasicDebugger {
       mainDset.replaceNamedModel(pplnGraphQN, model)
     }
   }
-}
-
+}*/
 
 /// this is a registerable loader
 class DerivedModelLoader extends InstallableRepoReader {
-  override def getContainerType() = "cc:PipelineModel"
+  override def getExt = null
+  override def getContainerType() = "ccrt:DerivedModel"
   override def getSheetType() = "ccrt:UnionModel"
   override def isDerivedLoader() = true
-  override def loadModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
+  override def loadModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
     DerivedModelLoader.loadSheetModelsIntoTargetDataset(repo, mainDset, dirModel, fileModelCLs)
   }
 }
 
 object DerivedModelLoader extends BasicDebugger {
 
-  def loadSheetModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: Dataset, myDirectoryModel: Model, fileModelCLs: java.util.List[ClassLoader]) = {
+  def loadSheetModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, myDirectoryModel: Model, fileModelCLs: java.util.List[ClassLoader]) = {
 
     val nsJavaMap: java.util.Map[String, String] = myDirectoryModel.getNsPrefixMap()
 
     val msqText = """
-			select ?model
-				{
-					?model a ccrt:DerivedModel;
-				}
+	select ?model ?unionOrReplace ?container ?key ?num
+		{
+			?container a ccrt:GoogSheetRepo; ccrt:key ?key.
+			?model a ccrt:DerivedModel; a ccrt:GoogSheet; ccrt:sheetNumber ?num; ccrt:repo ?container.
+			OPTIONAL { ?model a ?unionOrReplace. FILTER (?unionOrReplace = ccrt:UnionModel) }		
+		}     
 		"""
 
     val msRset = QueryHelper.execModelQueryWithPrefixHelp(myDirectoryModel, msqText);
@@ -166,28 +164,11 @@ object DerivedModelLoader extends BasicDebugger {
       val modelName = modelRes.asResource().asNode().getURI
 
       val dbgArray = Array[Object](modelRes, modelName);
-      loadPipeline(modelName, repo, mainDset);
       getLogger.warn("DerivedModelsIntoMainDataset modelRes={}, modelName={}", dbgArray);
-      //val msRset = QueryHelper.execModelQueryWithPrefixHelp(mainDset.getNamedModel(modelName), msqText2);
-
-      // DerivedGraphSpecReader.queryDerivedGraphSpecs(getRepoClient,DerivedGraphSpecReader.PIPELINE_QUERY_QN,modelName)
+      PipelineSnapLoader.loadPipelineSheets(repo, mainDset, myDirectoryModel, modelName, fileModelCLs)
+      PipelineSnapLoader.loadPipelineSheetTyp(repo, mainDset, myDirectoryModel, modelName, fileModelCLs)
     }
   }
-
-  def loadPipeline(pplnGraphQN: String, repo: Repo.WithDirectory, mainDset: Dataset) = {
-
-    val rc = new RepoClientImpl(repo, RepoSpecDefaultNames.DFLT_TGT_GRAPH_SPARQL_VAR, RepoSpecDefaultNames.DFLT_QRY_SRC_GRAPH_QN)
-    val pqs = new PipelineQuerySpec(RepoSpecDefaultNames.PIPE_ATTR_QQN, RepoSpecDefaultNames.PIPE_SOURCE_QQN, pplnGraphQN);
-    val dgSpecSet: Set[DerivedGraphSpec] = DerivedGraphSpecReader.queryDerivedGraphSpecs(rc, pqs);
-
-    for (dgSpec <- dgSpecSet) {
-      val derivedModelProvider = dgSpec.makeDerivedModelProvider(repo);
-      val derivedModel = derivedModelProvider.getModel()
-      // null for now
-      FancyRepoLoader.replaceOrUnion(mainDset, null, pplnGraphQN, derivedModel)
-    }
-  }
-
 }
 /*
 class SimplistRepoSpec(val wd: Repo.WithDirectory) extends RepoSpec {

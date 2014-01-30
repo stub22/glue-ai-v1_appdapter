@@ -33,7 +33,8 @@ public class BasicDebugger implements Loggable {
 
 	/**
 	 * We use this constructor when we don't want to extend BasicDebugger.
-	 * @param appClass 
+	 * 
+	 * @param appClass
 	 */
 	public BasicDebugger(Class appClass) {
 		myAppClass = appClass;
@@ -116,11 +117,13 @@ public class BasicDebugger implements Loggable {
 	}
 
 	/**
-	 *
-	 * @param importance must be >= current debug importance threshold.
+	 * 
+	 * @param importance
+	 *            must be >= current debug importance threshold.
 	 * @param timeStampFlag
 	 * @param oldStamp
-	 * @param msgObjs - will be converted to strings only if importance threshold passed.
+	 * @param msgObjs
+	 *            - will be converted to strings only if importance threshold passed.
 	 * @return
 	 */
 	public Long logInfoEvent(int importance, boolean timeStampFlag, Long oldStamp, String formatSpec, Object... msgObjs) {
@@ -155,7 +158,7 @@ public class BasicDebugger implements Loggable {
 	}
 
 	@Override public void logInfo(String msg) {
-		logInfo(IMPO_NORM, msg);
+		logInfo(IMPO_LOLO, msg);
 	}
 
 	protected void logWithException(MsgKind mk, String msg, Throwable t) {
@@ -202,22 +205,15 @@ public class BasicDebugger implements Loggable {
 	}
 
 	/**
-	 * This should usually be called only once during a system's runtime lifetime.
-	 * (To be tested:  works OK to update properties at runtime?)
+	 * This should usually be called only once during a system's runtime lifetime. (To be tested: works OK to update properties at runtime?)
 	 * 
-	 * Prints some debug to stdout about known classloaders, then builds a URL using the
-	 * *local* CL of this concrete class (which will be *your* class is you make subtypes
-	 * of BasicDebugger or BundleActivatorBase!) to create a resource URL into the classpath
-	 * (under OSGi, the bundle-classpath-of) of that concrete class, which under OSGi will 
-	 * look something like:
+	 * Prints some debug to stdout about known classloaders, then builds a URL using the *local* CL of this concrete class (which will be *your* class is you make subtypes of BasicDebugger or BundleActivatorBase!) to create a resource URL into the classpath (under OSGi, the bundle-classpath-of) of that concrete class, which under OSGi will look something like:
 	 * 
-	 *  bundle://221.0:1/log4j.properties
+	 * bundle://221.0:1/log4j.properties
 	 * 
 	 * ...which is then passed to Log4jFuncs.forceLog4jConfig.
 	 * 
-	 * What this means is that you can put a log4j.properties into any bundle of your own,
-	 * then call "forceLog4jConfig()" ONCE from that bundle's activator (or framework-START-event
-	 * handler), and then your properties should be in place.
+	 * What this means is that you can put a log4j.properties into any bundle of your own, then call "forceLog4jConfig()" ONCE from that bundle's activator (or framework-START-event handler), and then your properties should be in place.
 	 */
 	protected void forceLog4jConfig() {
 		// Logger logger = getLogger();
