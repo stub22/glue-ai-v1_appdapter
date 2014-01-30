@@ -28,7 +28,7 @@ import com.hp.hpl.jena.rdf.model.{ Model }
  * 	// Note that "QName" and QN refers to the prefixed style syntax, which is resolved against
  * // the repo's known prefixes.
  */
-object RepoClientTester_TESTS_ONLY {
+object RepoClientTester {
 
   // The first 3 params define the repo:
 
