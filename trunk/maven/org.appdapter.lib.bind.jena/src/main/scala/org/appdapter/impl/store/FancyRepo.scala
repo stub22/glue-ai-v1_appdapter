@@ -151,7 +151,7 @@ trait FancyRepo extends Repo.WithDirectory with ModelClientCore with Loggable {
     checkQueryText(qText, qSrcGraphQN, queryQN, true)
     queryDirectForAllSolutions(qText, qInitBinding)
   }
-  def checkQueryText(qText :String, qSrcGraphQN:Object,queryQN:Object, showStackTrace: Boolean) : Unit = {
+  def checkQueryText(qText: String, qSrcGraphQN: Object, queryQN: Object, showStackTrace: Boolean): Unit = {
     if (qText == null || qText.length == 0) {
       val msg = "Unable to find Query Called " + queryQN + " in Model " + qSrcGraphQN;
       val rte = new RuntimeException(msg);
@@ -181,7 +181,7 @@ trait FancyRepo extends Repo.WithDirectory with ModelClientCore with Loggable {
 
 // class DirectRepo(val myDirectoryModel : Model) extends FancyRepo {
 
-class DirectRepo(directoryModel: Model) extends BasicRepoImpl with FancyRepo with Repo.Updatable {
+abstract class DirectRepo(directoryModel: Model) extends BasicRepoImpl with FancyRepo with Repo.Updatable {
 
   val myDirectoryModel: Model = directoryModel;
   override def getDirectoryModel: Model = myDirectoryModel;
@@ -191,7 +191,7 @@ class DirectRepo(directoryModel: Model) extends BasicRepoImpl with FancyRepo wit
 // for appdapter 1.1.1 compatiblity
 /// if kept, maybe make this a big make every kind of repo one stop shop
 object FancyRepoFactory extends BasicDebugger {
-    def makeDatabaseRepo(repoConfResPath: String, optCL: ClassLoader, dirGraphID: Ident): DatabaseRepo = {
+  def makeDatabaseRepo(repoConfResPath: String, optCL: ClassLoader, dirGraphID: Ident): DatabaseRepo = {
     DatabaseRepoLoader.makeDatabaseRepo(repoConfResPath, optCL, dirGraphID)
   }
 }

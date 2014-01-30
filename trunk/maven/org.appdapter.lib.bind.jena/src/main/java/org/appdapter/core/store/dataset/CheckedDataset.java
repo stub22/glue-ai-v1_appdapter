@@ -1,8 +1,6 @@
 package org.appdapter.core.store.dataset;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 
 import org.appdapter.core.store.RepoOper;
@@ -65,6 +63,7 @@ public class CheckedDataset extends DatasetImpl implements Dataset {
 
 	@Override public void addNamedModel(String n, Model m) {
 		Node gn = RepoDatasetFactory.correctModelName(n);
+		offerName(m, n);
 		Model innerModel = null;
 		boolean cm = containsNamedModel(n);
 		if (!cm) {
@@ -86,6 +85,13 @@ public class CheckedDataset extends DatasetImpl implements Dataset {
 		g.addGraph(gn, innerModel.getGraph());
 	}
 
+	private void offerName(Model m, String n) {
+		if (m instanceof CheckedModel) {
+			((CheckedModel) m).setName(n);
+		}
+
+	}
+
 	@Override public Model getNamedModel(String n) {
 		if (n == null)
 			return super.getNamedModel(n);
@@ -97,7 +103,9 @@ public class CheckedDataset extends DatasetImpl implements Dataset {
 		Graph graph = g.getGraph(gn);
 		if (graph == null)
 			return null;
-		return RepoDatasetFactory.createModelForGraph(graph);
+		Model m = RepoDatasetFactory.createModelForGraph(graph);
+		offerName(m, n);
+		return m;
 	}
 
 	private Model modelFor(MultiUnion graph) {
@@ -114,6 +122,7 @@ public class CheckedDataset extends DatasetImpl implements Dataset {
 	@Override public void replaceNamedModel(String n, Model m) {
 		Node gn = RepoDatasetFactory.correctModelName(n);
 		Model innerModel = null;
+		offerName(m, n);
 		boolean cm = containsNamedModel(n);
 		if (!cm) {
 			if (realPassedInModels) {

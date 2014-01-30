@@ -34,12 +34,9 @@ public class CheckedModel extends ModelCom implements Model {
 			return model.createLiteral(cellString);//(cellString, null);
 		}
 	}
-
-	public static Resource findOrMakeResource(org.appdapter.impl.store.ResourceResolver resr, Model model, String cellString) {
-		return resr.findOrMakeResource(model, cellString);
-	}
-
+ 
 	private final Graph modelGraph;
+	private String debuggingName;
 
 	public CheckedModel(CheckedGraph modelGraph) {
 		super(modelGraph, BuiltinPersonalities.model);
@@ -111,7 +108,7 @@ public class CheckedModel extends ModelCom implements Model {
 
 	@Override public String toString()
 	{
-		return "<CheckedModel  " + getGraph() + " | " + reifiedToString() + ">";
+		return "<CheckedModel=" + debuggingName + " " + getGraph() + " | " + reifiedToString() + ">";
 	}
 
 	private CheckedGraph getGraphNoRemove() {
@@ -145,5 +142,9 @@ public class CheckedModel extends ModelCom implements Model {
 
 	@Override public long size() {
 		return modelGraph.size();
+	}
+
+	public void setName(String n) {
+		this.debuggingName = n;
 	}
 }

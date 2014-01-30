@@ -25,6 +25,7 @@ import com.hp.hpl.jena.rdf.model.Model
 import com.hp.hpl.jena.rdf.model.Resource
 import org.appdapter.core.store.RepoOper
 import com.hp.hpl.jena.rdf.model.ModelFactory
+import org.appdapter.core.store.dataset.SpecialRepoLoader
 
 /**
  * @author Douglas R. Miles <www.logicmoo.org>
@@ -43,10 +44,11 @@ import com.hp.hpl.jena.rdf.model.ModelFactory
 
 /// this is a registerable loader
 class PipelineSnapLoader extends InstallableRepoReader {
+  override def getExt = null;
   override def getContainerType() = "cc:PipelineModel"
   override def getSheetType() = "cc:UnionModel"
   override def isDerivedLoader() = true
-  override def loadModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
+  override def loadModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
     PipelineSnapLoader.loadSheetModelsIntoTargetDataset(repo, mainDset, dirModel, fileModelCLs)
   }
 }
@@ -55,7 +57,7 @@ class PipelineSnapLoader extends InstallableRepoReader {
 
 object PipelineSnapLoader extends BasicDebugger {
 
-  def loadSheetModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: Dataset, myDirectoryModel: Model, fileModelCLs: java.util.List[ClassLoader]) = {
+  def loadSheetModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, myDirectoryModel: Model, fileModelCLs: java.util.List[ClassLoader]) = {
 
     val nsJavaMap: java.util.Map[String, String] = myDirectoryModel.getNsPrefixMap()
 
@@ -85,7 +87,7 @@ object PipelineSnapLoader extends BasicDebugger {
 
   }
 
-  def loadPipelineSheets(repo: Repo.WithDirectory, mainDset: Dataset, myDirectoryModel: Model, modelName: String, fileModelCLs: java.util.List[ClassLoader]) = {
+  def loadPipelineSheets(repo: SpecialRepoLoader, mainDset: Dataset, myDirectoryModel: Model, modelName: String, fileModelCLs: java.util.List[ClassLoader]) = {
 
     val pipelineModel = mainDset.getNamedModel(modelName);
 
@@ -110,14 +112,14 @@ object PipelineSnapLoader extends BasicDebugger {
       val targetmodelName = targetmodelR.asResource().asNode().getURI
 
       val dbgArray = Array[Object](modelR, targetmodelR);
-      getLogger.warn("PipelinnapLoader modelR={}, targetmodelR={}", dbgArray);
+      getLogger.info("PipelineSnapLoader modelR={}, targetmodelR={}", dbgArray);
 
       RepoOper.addUnionModel(mainDset, modelName, targetmodelName);
 
     }
   }
 
-  def loadPipelineSheetTyp(repo: Repo.WithDirectory, mainDset: Dataset, unionAllModel: Model, modelName: String, fileModelCLs: java.util.List[ClassLoader]) = {
+  def loadPipelineSheetTyp(repo: SpecialRepoLoader, mainDset: Dataset, unionAllModel: Model, modelName: String, fileModelCLs: java.util.List[ClassLoader]) = {
 
     val pipelineModel = mainDset.getNamedModel(modelName);
 
@@ -139,14 +141,14 @@ object PipelineSnapLoader extends BasicDebugger {
       val targetmodelName = targetmodelR.asResource().asNode().getURI
 
       val dbgArray = Array[Object](modeltypeR, targetmodelR);
-      getLogger.warn("PipelinnapLoader modeltype={}, targetmodelR={}", dbgArray);
+      getLogger.info("PipelineSnapLoader modeltype={}, targetmodelR={}", dbgArray);
 
       loadPipelineSheetTypeInstanc(repo, mainDset, unionAllModel, targetmodelName, modeltype, fileModelCLs);
 
     }
   }
 
-  def loadPipelineSheetTypeInstanc(repo: Repo.WithDirectory, mainDset: Dataset, unionAllModel: Model, targetmodelName: String, modeltype: String, fileModelCLs: java.util.List[ClassLoader]) = {
+  def loadPipelineSheetTypeInstanc(repo: SpecialRepoLoader, mainDset: Dataset, unionAllModel: Model, targetmodelName: String, modeltype: String, fileModelCLs: java.util.List[ClassLoader]) = {
 
     val size = unionAllModel.size();
 
@@ -164,7 +166,7 @@ object PipelineSnapLoader extends BasicDebugger {
       val model = modelR.asResource().asNode().getURI
 
       val dbgArray = Array[Object](modelR, targetmodelName);
-      getLogger.warn("PipelinnapLoader modelR={}, targetmodelR={}", dbgArray);
+      getLogger.info("loadPipelineSheetTypeInstanc modelR={}, targetmodelR={}", dbgArray);
       RepoOper.addUnionModel(mainDset, model, targetmodelName);
 
     }

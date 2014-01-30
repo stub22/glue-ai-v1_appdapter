@@ -16,8 +16,6 @@
 
 package org.appdapter.core.store;
 
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -29,7 +27,6 @@ import org.appdapter.bind.rdf.jena.assembly.AssemblerUtils;
 import org.appdapter.bind.rdf.jena.query.JenaArqQueryFuncs;
 import org.appdapter.bind.rdf.jena.query.JenaArqResultSetProcessor;
 import org.appdapter.core.jvm.GetObject;
-import org.appdapter.core.log.Debuggable;
 import org.appdapter.core.name.Ident;
 import org.appdapter.core.store.dataset.RemoteDatasetProviderSpec;
 import org.appdapter.core.store.dataset.RepoDatasetFactory;
@@ -245,6 +242,7 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 					final SpecialRepoLoader repoLoader = getRepoLoader();
 					repoLoader.setSynchronous(false);
 					synchronized (loadingLock) {
+						// must submit all loading jobs now at least
 						callLoadingInLock();
 					}
 					isLoadingLocked = false;
@@ -255,28 +253,8 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 		}
 	}
 
-	final public void beginLoadingOldWay() {
-		if (isLoadingStarted || isLoadingLocked)
-			return;
-		synchronized (this.loadingLock) {
-			isLoadingStarted = true;
-			isLoadingLocked = true;
-			isLoadingFinished = false;
-			(new Thread("Loading " + this) {
-				@Override public void run() {
-					synchronized (loadingLock) {
-						callLoadingInLock();
-					}
-					isLoadingLocked = false;
-				}
-			}).start();
-		}
-	}
-
 	// this is meant to be overridden optionally
-	public void callLoadingInLock() {
-
-	}
+	abstract public void callLoadingInLock();
 
 	// call this and it will block untill load is complete
 	final public void finishLoading() {
@@ -287,15 +265,7 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 		}
 		final SpecialRepoLoader repoLoader = getRepoLoader();
 		repoLoader.waitUntilLastJobComplete();
-		Dataset wDataset = myMainQueryDataset;
-		try {
-			isLoadingFinished = true;
-			if (Debuggable.isTesting() && false)
-				RepoOper.writeTriG(this, new FileWriter("finishedLoading.ttl"));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
+		isLoadingFinished = true;
 	}
 
 	@Override public List<GraphStat> getGraphStats() {

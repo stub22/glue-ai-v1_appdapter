@@ -23,6 +23,7 @@ import org.appdapter.impl.store.QueryHelper
 import com.hp.hpl.jena.query.{ Dataset, QuerySolution, ResultSet, ResultSetFactory }
 import com.hp.hpl.jena.rdf.model.{ Literal, Model, RDFNode, Resource }
 import org.appdapter.core.store.dataset.RepoDatasetFactory
+import org.appdapter.core.store.dataset.SpecialRepoLoader
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -33,18 +34,26 @@ import org.appdapter.core.store.dataset.RepoDatasetFactory
  *   Uses Apache POI (@see http://poi.apache.org/)
  */
 
+class CSVFileRepoSpec(dirSheet: String, namespaceSheet: String = null,
+  fileModelCLs: java.util.List[ClassLoader] = null) extends RepoSpecForDirectory {
+  override def getDirectoryModel = CsvFileSheetLoader.readDirectoryModelFromCsvFile(dirSheet, fileModelCLs, namespaceSheet)
+  override def toString: String = dirSheet
+}
+
 /// this is a registerable loader
 class CsvFileSheetLoader extends InstallableRepoReader {
+  override def makeRepoSpec(path: String, args: Array[String], cLs: java.util.List[ClassLoader]) = new CSVFileRepoSpec(args(0), args(1), cLs)
+  override def getExt = "csv"
   override def getContainerType() = "ccrt:CsvFileRepo"
   override def getSheetType() = "ccrt:CsvFileSheet"
-  override def loadModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
+  override def loadModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
     CsvFileSheetLoader.loadSheetModelsIntoTargetDataset(repo, mainDset, dirModel, fileModelCLs)
   }
 }
 
 object CsvFileSheetLoader extends BasicDebugger {
 
-  def loadSheetModelsIntoTargetDataset(repo: Repo.WithDirectory, mainDset: Dataset,
+  def loadSheetModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset,
     myDirectoryModel: Model, clList: java.util.List[ClassLoader]) = {
 
     val nsJavaMap: java.util.Map[String, String] = myDirectoryModel.getNsPrefixMap()
@@ -93,7 +102,7 @@ object CsvFileSheetLoader extends BasicDebugger {
   }
 
   /// Loads a CSV File into a dir model (this is weird since you might need to have a Namespace Map .. to understand your CSV )
-  def loadCsvFileSheetRepo(dirSheet: String, nsSheetLocation: String, fileModelCLs: java.util.List[ClassLoader], repoSpec: RepoSpec): SheetRepo = {
+  /*def loadCsvFileSheetRepo(dirSheet: String, nsSheetLocation: String, fileModelCLs: java.util.List[ClassLoader], repoSpec: RepoSpec): SheetRepo = {
     // Read the namespaces and directory sheets into a single directory model.
     val dirModel: Model = readDirectoryModelFromCsvFile(dirSheet, fileModelCLs, nsSheetLocation)
     // Construct a repo around that directory
@@ -103,17 +112,17 @@ object CsvFileSheetLoader extends BasicDebugger {
     // Load the rest of the repo's initial *file/resource* models, as instructed by the directory.
     shRepo.loadDerivedModelsIntoMainDataset(fileModelCLs)
     shRepo
-  }
+  }*/
 
   def getCsvReaderAt(dirSheet: String, fileModelCLs: java.util.List[ClassLoader]): Reader = {
-	val efsu = new ExtendedFileStreamUtils();
+    val efsu = new ExtendedFileStreamUtils();
     val is = efsu.openInputStreamOrNull(dirSheet, fileModelCLs);
     if (is == null) {
       getLogger.error("Cant get getCsvReaderAt =" + dirSheet)
       return null;
     } else new InputStreamReader(is);
   }
- 
+
   def readModelSheet(dirSheet: String, nsJavaMap: java.util.Map[String, String], fileModelCLs: java.util.List[ClassLoader]): Model = {
     val tgtModel: Model = RepoDatasetFactory.createPrivateMemModel
     tgtModel.setNsPrefixes(nsJavaMap)
@@ -148,8 +157,8 @@ object CsvFileSheetLoader extends BasicDebugger {
     val clList: java.util.ArrayList[ClassLoader] = null;
     val spec = new CSVFileRepoSpec(dirSheetPath, nsSheetPath, clList)
     val sr = spec.makeRepo
-    sr.loadSheetModelsIntoMainDataset()
-    sr.loadDerivedModelsIntoMainDataset(clList)
+    sr.getMainQueryDataset()
+    // sr.loadDerivedModelsIntoMainDataset(clList)
     sr
   }
   import scala.collection.immutable.StringOps

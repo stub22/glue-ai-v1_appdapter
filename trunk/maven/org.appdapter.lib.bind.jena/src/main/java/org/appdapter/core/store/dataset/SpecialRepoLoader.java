@@ -50,6 +50,15 @@ public class SpecialRepoLoader extends BasicDebugger implements UncaughtExceptio
 		getLogger().warn(msg);
 	}
 
+	public void addLoadTask(String s, Runnable task) {
+		if (loaderFor != null) {
+			loaderFor.addLoadTask(s, task);
+		}
+		else {
+			addTask(s, task);
+		}
+	}
+
 	ExecutorService executor = null;
 	LinkedList<Task> tasks = new LinkedList<Task>();
 	boolean lastJobSubmitted = false;
