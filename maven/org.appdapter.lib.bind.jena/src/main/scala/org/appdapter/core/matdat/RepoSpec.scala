@@ -51,6 +51,12 @@ import java.io.File
  * @author Stu B. <www.texpedient.com>
  */
 
+// todo move me!
+class DatabaseRepoSpec(configPath: String, optConfResCL: ClassLoader, dirGraphID: Ident) extends RepoSpec {
+  def this(cPath: String, optCL: ClassLoader, dirGraphUriPrefix: String, dirGraphLocalName: String) = this(cPath, optCL, new FreeIdent(dirGraphUriPrefix + dirGraphLocalName, dirGraphLocalName))
+  override def makeRepo() = FancyRepoLoader.loadDatabaseRepo(configPath, optConfResCL, dirGraphID)
+}
+
 abstract class RepoSpecForDirectory extends RepoSpec {
   override def makeRepo: SheetRepo = {
     FancyRepoLoader.makeRepoWithDirectory(this, getDirectoryModel(), null);
