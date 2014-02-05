@@ -34,6 +34,7 @@ Version less parent will be allowed in Maven 3.1.
 		<module>../org.appdapter.modules.network</module>
 		<module>../org.appdapter.modules.math</module>	
 		<module>../org.appdapter.modules.gui</module>
+                <module>../org.appdapter.lib.bind.jflux</module>
 	</modules>
 
 	<build>
