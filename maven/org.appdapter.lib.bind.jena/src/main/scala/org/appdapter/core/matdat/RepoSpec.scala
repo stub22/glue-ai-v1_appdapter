@@ -80,7 +80,7 @@ abstract class RepoSpec {
     new RepoClientImpl(repo, getDfltTgtGraphSparqlVarName, getDfltQrySrcGraphQName);
   }
 
-  def getDfltQrySrcGraphQName = RepoSpecDefaultNames.DFLT_QRY_SRC_GRAPH_TYPE;
+  def getDfltQrySrcGraphQName = "(anyOf " + RepoSpecDefaultNames.DFLT_QRY_SRC_GRAPH_TYPE + ")";
   def getDfltTgtGraphSparqlVarName: String = RepoSpecDefaultNames.DFLT_TGT_GRAPH_SPARQL_VAR;
 }
 
@@ -166,7 +166,7 @@ object RepoSpecDefaultNames {
   // at this time.   This query source graph may be overridden using the more general
   // forms of queryIndirect_.
 
-  val DFLT_QRY_SRC_GRAPH_TYPE = "ccrt:qry_sheet_22"
+  val DFLT_QRY_SRC_GRAPH_TYPE = NS_CCRT_RT + "QueryTxtModel"; //not "ccrt:qry_sheet_22"
 
   // 2) default variable name for a single target graph in a SPARQL query.
   // This is used in the convenience forms of queryIndirect that handle many common
