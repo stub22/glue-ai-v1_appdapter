@@ -84,7 +84,7 @@ public class FreeIdent implements Ident {
 	}
 
 	public static boolean THROW_ON_CHANGE = false;
-	public static boolean AUTO_CORRECT_CHANGES = true;
+	public static boolean AUTO_CORRECT_CHANGES = false;
 	static Map<String, String> fragmentToURI = new HashMap<String, String>();
 	static Map<String, String> autoCorrectedURI = new HashMap<String, String>();
 	final static Map<String, Throwable> fragmentToCreationFrame = new HashMap<String, Throwable>();
