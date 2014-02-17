@@ -74,9 +74,13 @@ abstract class SubsystemHandle(val mySubsysName : String) extends BasicDebugger 
 }
 
 class BasicSubsystemHandle(subsysName : String, val credClaz : Class[_]) extends SubsystemHandle(subsysName) {
-	private def getVerySimpleRegistry() : VerySimpleRegistry = {
-		RegistryServiceFuncs.getTheWellKnownRegistry(credClaz);
-	}
+	// We now allow the wellKnownReg to be cached within this BasicSubsystemHandle, using the
+	// Scala "lazy" keyword.
+	
+	lazy val	myWellKnownRegistry = RegistryServiceFuncs.getTheWellKnownRegistry(credClaz);
+	
+	private def getVerySimpleRegistry() : VerySimpleRegistry = myWellKnownRegistry
+		
 	override protected def getRequiredOverRegistry( functionCtx : String) : VerySimpleRegistry = { 
 		val vsr = getVerySimpleRegistry(); 
 		if (vsr == null) {
