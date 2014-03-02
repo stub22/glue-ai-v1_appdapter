@@ -100,7 +100,9 @@ public abstract class BaseItem implements Item {
 	 * @return
 	 */
 	@Override public List<Item> getLinkedItemsSorted(Ident linkName, LinkDirection linkDir, List<SortKey> sortFieldNames) {
-		// theLogger.warn("These items are not yet really sorted by linkName: " + linkName);
+		if ((sortFieldNames != null) && (sortFieldNames.size() > 0)) {
+			theLogger.warn("Who actually uses sorting?  These items are not yet really sorted by: {}", sortFieldNames);
+		}
 		return getLinkedItems(linkName, linkDir);
 	}
 

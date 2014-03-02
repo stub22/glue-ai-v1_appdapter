@@ -55,12 +55,16 @@ public interface Item {
 		FORWARD,
 		REVERSE
 	}
-	// Currently we assume forward links
-	// TODO:  Add ability to find items linked to this one ("reverse" linked), which should 
-	// allow us to find 1) children using a parent-link, and 2) instances of a type (reverse linked to rdf:type).  
+
+	// The linkDirection arg allows searches to be "forward" (find values attached to this item as properties) or
+	// "reverse", which is useful to find both 1) children of a parent indiv-item, and 
+	// 2) instances of a type-item (which are reverse linked via rdf:type property).  
 	public Set<Item> getLinkedItemSet(Ident linkIdent, LinkDirection linkDir);
 	public int getLinkedItemCount(Ident linkIdent, LinkDirection linkDir);
+	// We *expect* there to be exactly one result, so this query should be unambiguous.  Failure is defined by impl,
+	// typically would return null.
 	public Item getSingleLinkedItem(Ident linkIdent, LinkDirection linkDir);
+	// Returns the single result or null.
 	public Item getOptionalSingleLinkedItem(Ident linkIdent, LinkDirection linkDir);
 
 	public static class SortKey {
