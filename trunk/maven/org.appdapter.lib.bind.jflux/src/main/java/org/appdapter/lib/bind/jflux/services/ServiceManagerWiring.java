@@ -93,96 +93,8 @@ public class ServiceManagerWiring {
 
         Set<Object> allSpecs = derivedBMP.assembleModelRoots();
 
-        // Load the lifecycles, triggering the ServiceLifecycleSpecBuilder 
-//        Set<Object> lifecycleSheetSpecs =
-//                loadSpecs(defaultDemoRepoClient, lifecycleDefSheetQN);
-//        
-        // Filter and Type check the specs
-//        List<ServiceLifecycleSpec> lifecycleSpecs =
-//                filterSpecs(ServiceLifecycleSpec.class, lifecycleSheetSpecs);
-//        
-//        // Register the filtered specs
-//        for( ServiceLifecycleSpec lifecycleSheetSpec : lifecycleSpecs ) {
-//            ManagedService<ServiceLifecycleSpec> lifecycleSpecManagedService = 
-//                    registerSpec(
-//                        context, 
-//                        ServiceLifecycleSpec.class, 
-//                        lifecycleSheetSpec, 
-//                        GROUP_KEY_FOR_LIFECYCLE_SPEC, 
-//                        LIFECYCLE_GROUP_QN);
-//            managedServicesForServiceManagerSpecs.add(
-//                    lifecycleSpecManagedService);
-//        }
-
-        // Now with the lifecycles registered and available, the serviceManagers
-        // can be created.
-
-        // Load the serviceManagers and thier components, triggering the related
-        // builders
-//        Set<Object> serviceManagerSheetSpecs = loadSpecs(
-//                defaultDemoRepoClient, serviceManagerSheetQN);
-//        
-//        
-//        Set<Object> lifecycleSheetSpecs2 =
-//                loadSpecs(defaultDemoRepoClient, mergedSheetQN);
-//        
-//        Set<Object> serviceManagerSheetSpecs2 = loadSpecs(
-//                defaultDemoRepoClient, mergedSheetQN);
-
-        // Filter and Type check the specs
-//        List<PropertySpec> propertySpecs =
-//                filterSpecs(PropertySpec.class, allSpecs);
-//        
-//        List<DefaultRegistrationStrategySpec> registrationStrategySpecs =
-//                filterSpecs(
-//                    DefaultRegistrationStrategySpec.class,
-//                    allSpecs);
-//        
-//        List<ServiceBindingSpec> serviceBindingSpecs =
-//                filterSpecs(ServiceBindingSpec.class, allSpecs);
-//        
         List<ServiceManagerSpec> serviceManagerSpecs =
                 filterSpecs(ServiceManagerSpec.class, allSpecs);
-
-        // Register the filtered Specs
-//        for( PropertySpec propertySpec : propertySpecs ) {
-//            ManagedService<PropertySpec> propertySpecManagedService = 
-//                    registerSpec(
-//                        context,
-//                        PropertySpec.class, 
-//                        propertySpec, 
-//                        GROUP_KEY_FOR_LIFECYCLE_SPEC, 
-//                        LIFECYCLE_GROUP_QN);
-//            managedServicesForServiceManagerSpecs.add(
-//                    propertySpecManagedService);
-//        }
-//
-//        for( DefaultRegistrationStrategySpec registrationStrategySpec :
-//                registrationStrategySpecs ) {
-//            
-//            ManagedService<DefaultRegistrationStrategySpec>
-//                    registrationStrategySpecManagedService = 
-//                        registerSpec(
-//                            context,
-//                            DefaultRegistrationStrategySpec.class, 
-//                            registrationStrategySpec, 
-//                            GROUP_KEY_FOR_LIFECYCLE_SPEC, 
-//                            LIFECYCLE_GROUP_QN);
-//            managedServicesForServiceManagerSpecs.add(
-//                    registrationStrategySpecManagedService);
-//        }
-//        
-//        for( ServiceBindingSpec serviceBindingSpec : serviceBindingSpecs ) {
-//            ManagedService<ServiceBindingSpec> serviceBindingSpecManagedService= 
-//                    registerSpec(
-//                        context,
-//                        ServiceBindingSpec.class, 
-//                        serviceBindingSpec, 
-//                        GROUP_KEY_FOR_LIFECYCLE_SPEC, 
-//                        LIFECYCLE_GROUP_QN);
-//            managedServicesForServiceManagerSpecs.add(
-//                    serviceBindingSpecManagedService);
-//        }
 
         for (ServiceManagerSpec serviceManagerSpec : serviceManagerSpecs) {
             ManagedService<ServiceManagerSpec> serviceManagerSpecManagedService =
@@ -217,23 +129,6 @@ public class ServiceManagerWiring {
                 bundleCtx, reg, optionalSpecFilter);
         serviceManagerSpecExtender.start();
         return serviceManagerSpecExtender;
-    }
-
-    /**
-     * Collects the data from the repo, building it into untyped spec objects
-     *
-     * @param defaultDemoRepoClient
-     * @param graphQN
-     * @return
-     */
-    private static Set<Object> loadSpecs(
-            EnhancedRepoClient defaultDemoRepoClient, String graphQN) {
-        // Determine the URI for the 'qualified name' which identifies the data 
-        // in the repo
-//        Ident graphID = defaultDemoRepoClient.makeIdentForQName(graphQN);
-
-        // Collect the objects from the repo, building them from RDF raw data
-        return defaultDemoRepoClient.assembleRootsFromNamedModel(graphQN);
     }
 
     /**
