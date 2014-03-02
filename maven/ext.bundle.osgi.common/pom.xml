@@ -131,7 +131,7 @@
 			<scope>test</scope>
 			<exclusions>
 				<!-- We exclude the normally embedded Log4J version, because it is not OSGi friendly.
-					We instead use the bundled version supplied by SpringSource below.
+					We instead use the bundled version supplied by SpringSource above.
 				-->			
 				<exclusion>
 					<artifactId>log4j</artifactId>
