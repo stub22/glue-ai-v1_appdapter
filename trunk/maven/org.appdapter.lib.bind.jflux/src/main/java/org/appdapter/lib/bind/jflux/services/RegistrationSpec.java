@@ -1,15 +1,13 @@
 package org.appdapter.lib.bind.jflux.services;
 
 import org.appdapter.bind.rdf.jena.assembly.KnownComponentImpl;
-import java.util.Map;
 import java.util.Properties;
 
 public class RegistrationSpec extends KnownComponentImpl {
 
     private Object spec;
-//    private Map<String,String> property;
     private Properties property;
-    private String registrationQN;
+//    private String registrationQN;
 
     public RegistrationSpec() {
         property=new Properties();
@@ -23,9 +21,9 @@ public class RegistrationSpec extends KnownComponentImpl {
         property.put(key, value);
     }
 
-    public void setQN(String name) {
-        registrationQN = name;
-    }
+//    public void setQN(String name) {
+//        registrationQN = name;
+//    }
 
     public Object getSpec() {
         return spec;
@@ -39,7 +37,7 @@ public class RegistrationSpec extends KnownComponentImpl {
         return property;
     }
 
-    public String getQN() {
-        return registrationQN;
-    }
+//    public String getQN() {
+//        return registrationQN;
+//    }
 }
