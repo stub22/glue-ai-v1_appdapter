@@ -17,19 +17,14 @@ package org.appdapter.lib.bind.jflux.services;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
-import org.appdapter.bind.rdf.jena.assembly.KnownComponentImpl;
 import org.appdapter.core.matdat.BoundModelProvider;
 import org.appdapter.core.matdat.EnhancedRepoClient;
 import org.appdapter.core.matdat.ModelProviderFactory;
 import org.appdapter.core.matdat.PipelineQuerySpec;
 import org.appdapter.core.name.Ident;
-import org.jflux.api.registry.Registry;
-import org.jflux.impl.registry.OSGiRegistry;
 import org.osgi.framework.BundleContext;
 import org.jflux.impl.services.rk.lifecycle.ManagedService;
-import org.jflux.impl.services.rk.lifecycle.ServiceLifecycleProvider;
 import org.jflux.impl.services.rk.lifecycle.utils.SimpleLifecycle;
 import org.jflux.impl.services.rk.osgi.lifecycle.OSGiComponent;
 
@@ -38,9 +33,6 @@ import org.jflux.impl.services.rk.osgi.lifecycle.OSGiComponent;
  * @author Major Jacquote II <mjacquote@gmail.com>
  */
 public class RegisterWiring {
-
-    private final static String contextKey = "bundleContextSpec";
-    private final static String contextURI = "http://www.w3.org/2002/07/owl#bundleContextSpec";
     public final static String PIPELINE_GRAPH_QN = "csi:pipeline_sheet_0";
     public final static String PIPE_QUERY_QN = "ccrt:find_pipes_77"; //"ccrt:find_sheets_77";
     public final static String PIPE_SOURCE_QUERY_QN = "ccrt:find_pipe_sources_99";
@@ -55,65 +47,21 @@ public class RegisterWiring {
                 defaultDemoRepoClient, myDefaultPipelineQuerySpec, derivedBehavGraphID);
 
         Set<Object> allSpecs = derivedBMP.assembleModelRoots();
-
-        List<RegistrationSpec> registrationSpecs = filterSpecs(RegistrationSpec.class, allSpecs);
-
+        List<RegistrationSpec> registrationSpecs = new ArrayList<RegistrationSpec>();
+        for (Object root : allSpecs) {
+            if (root == null || !RegistrationSpec.class.isAssignableFrom(root.getClass())) {
+                continue;
+            }
+            registrationSpecs.add((RegistrationSpec) root);
+        }
         for (RegistrationSpec root : registrationSpecs) {
-            ManagedService rs =
-                    registerSpec(context, root.getSpec().getClass(), root.getSpec(), root.getProperties());
-            managedServices.add(rs);
+            ManagedService ms = new OSGiComponent(context, 
+                    new SimpleLifecycle(root.getSpec(), root.getSpec().getClass()), 
+                    root.getProperties());
+            ms.start();
+            managedServices.add(ms);
         }
         return managedServices;
 
-    }
-
-    private static <T> List<T> filterSpecs(Class<T> classes, Set<Object> rawSpecs) {
-        List<T> specs = new ArrayList();
-        for (Object root : rawSpecs) {
-            // Ignore anything that is not of type T
-            if (root == null || !classes.isAssignableFrom(root.getClass())) {
-                continue;
-            }
-            specs.add((T) root);
-        }
-        return specs;
-    }
-
-    private static <T> ManagedService<T> registerSpec(
-            BundleContext context,
-            Class specClass,
-            Object spec, Properties props) {
-
-
-        ServiceLifecycleProvider lifecycle =
-                new SimpleLifecycle(spec, specClass);
-
-        ManagedService<T> ms = new OSGiComponent<T>(context, lifecycle, props);
-        ms.start();
-        return ms;
-    }
-
-    private static <T extends KnownComponentImpl> ManagedService<T> registerSpec(
-            BundleContext context,
-            String specClassName,
-            T spec, Properties props) {
-
-
-        ServiceLifecycleProvider<T> lifecycle =
-                new SimpleLifecycle<T>(spec, specClassName);
-
-        ManagedService<T> ms = new OSGiComponent<T>(context, lifecycle, props);
-        ms.start();
-        return ms;
-    }
-
-    private static ManagedService<RegistrationSpec> registerSpec(BundleContext context, RegistrationSpec spec) {
-
-        ServiceLifecycleProvider<RegistrationSpec> lifecycle =
-                new SimpleLifecycle<RegistrationSpec>(spec, RegistrationSpec.class);
-
-        ManagedService<RegistrationSpec> ms = new OSGiComponent<RegistrationSpec>(context, lifecycle, spec.getProperties());
-        ms.start();
-        return ms;
     }
 }
