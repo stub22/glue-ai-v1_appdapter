@@ -1,0 +1,403 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	
+	<!--
+	
+	This project is used only for releasing to Maven central.
+	It's purpose is to include all our source directories in the folder which gets 
+	tagged by release:prepare and checked-out+built+delivered by release:perform.
+	
+	Using Sonatype parent as described here:
+		https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide#SonatypeOSSMavenRepositoryUsageGuide-7a.1.POMandsettingsconfig
+		
+	Their pom.xml file is viewable here:
+	
+	http://repo1.maven.org/maven2/org/sonatype/oss/oss-parent/7/oss-parent-7.pom
+	-->
+	<parent>
+		<groupId>org.sonatype.oss</groupId>
+		<artifactId>oss-parent</artifactId>
+		<version>7</version>
+	</parent>	
+
+<!--
+http://stackoverflow.com/questions/3684664/maven-property-substitution-not-done-for-project-version-tag-of-pom/3685248#3685248
+
+hard code the version in the top project/version element.
+hard code the version in the project/parent/version element of children.
+children inherit the version unless they want to override it
+use ${project.groupId} and ${project.version} for inter module dependencies.	
+
+Version-less parent will be allowed in Maven 3.1.
+-->
+	<groupId>org.appdapter</groupId>
+	<artifactId>org.appdapter.project.root</artifactId>
+	<version>1.1.5</version>
+	<packaging>pom</packaging>
+	<name>${project.artifactId} - Root pom, linked to Sonatype repo parent</name>
+	<description>Project Root Folder pom.xml - includes all code + doc directories when snapped.</description>
+	<url>http://www.appdapter.org</url>
+	<inceptionYear>2010</inceptionYear>
+	<licenses>
+		<license>
+			<name>Apache License, Version 2.0</name>
+			<url>http://www.appdapter.org/license.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>	
+	<modules>
+		<module>maven/org.appdapter.modules.all</module>	
+	</modules>
+	
+	<!--
+	connection - used for read access to Maven (e.g. for svn-update)
+	developerConnection - requires a write-access connection (e.g. for svn-commit)
+	url - human-browsable view of SVN
+	-->
+
+	<scm>
+		<connection>scm:svn:https://subversion.assembla.com/svn/appdapter/tags/org.appdapter.project.root-1.1.5</connection>
+		<developerConnection>scm:svn:https://subversion.assembla.com/svn/appdapter/tags/org.appdapter.project.root-1.1.5</developerConnection>
+		<url>https://www.assembla.com/code/appdapter/subversion/nodes/tags/org.appdapter.project.root-1.1.5</url>
+	</scm>
+
+
+	<properties>
+		<maven.compiler.source>1.6</maven.compiler.source>
+		<maven.compiler.target>1.6</maven.compiler.target>
+		<encoding>UTF-8</encoding>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<netbeans.hint.license>appdapter-apache20</netbeans.hint.license>
+
+		<!-- global version settings -->
+		<jflux.version>0.1.9-SNAPSHOT</jflux.version>
+		<appdapter.msg.version>1.0.5</appdapter.msg.version>
+		<appdapter.jscience.version>1.0.9</appdapter.jscience.version>
+		<osgi.core.version>4.2.0</osgi.core.version>
+		<httpclient.version>4.3.1</httpclient.version>
+		<httpcore.version>4.3</httpcore.version>
+		<osgi.core.version>4.2.0</osgi.core.version>		
+		<avro.version>1.7.4</avro.version>
+		<scala.version>2.10.2</scala.version>
+		<slf4j.version>1.7.5</slf4j.version>
+		
+		<jscience.groupId>org.jscience</jscience.groupId>
+		<jscience.math.artifactId>jscience-mathematics</jscience.math.artifactId>
+		<jscience.version>5.0-SNAPSHOT</jscience.version>
+		<scalatest.version>1.4.1</scalatest.version>
+	</properties>	
+
+	<repositories>
+
+		<!-- Previously Used for JScience and Javolution -->
+		<!--
+		<repository>
+ 
+				<id>maven.java.net-SNAP</id>
+				<name>maven.java.net SNAPSHOTS Repo</name>
+				<url>https://maven.java.net/content/repositories/snapshots/</url>
+		</repository>
+		-->
+		<repository>
+			<id>sonatype-public</id>
+			<name>sonatype public</name>
+			<url>https://oss.sonatype.org/content/groups/public/</url>
+		</repository>
+
+		<repository>
+			<id>sonatype-snapshots</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+		</repository>
+
+		<!-- com.sun.xml.parses:jaxp-ri:1.4.4 is available in ServiceMix' repo -->
+		<repository>
+			<id>servicemix</id>
+			<name>Apache ServiceMix Repository</name>
+			<url>http://svn.apache.org/repos/asf/servicemix/m2-repo</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+
+		<!-- Needed for "good" log4J bundle -->
+		<repository>
+			<id>com.springsource.repository.bundles.external</id>
+			<name>Spring EBR External Release Repository</name>
+			<url>http://repository.springsource.com/maven/bundles/external</url>
+		</repository>
+
+		<repository>
+			<id>scala-tools.org</id>
+			<name>Scala-tools Maven2 Repository</name>
+			<url>http://scala-tools.org/repo-releases</url>
+		</repository>
+
+		<!-- Needed during staging tests -->
+		<repository>
+			<id>sonatype-staging</id>
+			<name>sonatype staging</name>
+			<url>https://oss.sonatype.org/content/groups/staging/</url>
+		</repository>
+	</repositories>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>scala-tools.org</id>
+			<name>Scala-tools Maven2 Repository</name>
+			<url>http://scala-tools.org/repo-releases</url>
+		</pluginRepository>
+	</pluginRepositories>
+
+	
+	<build>
+
+		<directory>target</directory>
+		<extensions>
+			<extension>
+				<groupId>org.apache.maven.wagon</groupId>
+				<artifactId>wagon-ftp</artifactId>
+				<version>1.0-beta-6</version>
+			</extension>
+		</extensions>
+
+
+		<plugins>
+
+		  <!--
+			plugin>
+			  <groupId>org.apache.maven.plugins</groupId>
+			  <artifactId>maven-gpg-plugin</artifactId>
+		  </plugin -->
+
+		  <plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-idea-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+			</plugin>
+
+			<!--
+				plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+			</plugin -->
+
+			<!--
+			plugin>
+					<groupId>org.apache.felix</groupId>
+					<artifactId>maven-bundle-plugin</artifactId>
+			</plugin -->
+
+		</plugins>
+
+
+		<!-- wouldn't be nice if we had a parent pom! (we'd get rid of everything below (and some above)) 
+		
+			Stu: It is conceivable that we could have a parent glue-ai template.
+			However, that means that glue-ai would need to be released into maven-central as yet another project.
+		
+		-->
+
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-release-plugin</artifactId>
+					<configuration>
+						<autoVersionSubmodules>true</autoVersionSubmodules>
+						<!--   allowTimestampedSnapshots>true</allowTimestampedSnapshots -->
+						<!-- New in plugin version 2.2, but does not work correctly yet.
+						See:   https://jira.codehaus.org/browse/MRELEASE-695
+						<tagNameFormat>v@{project.version}</tagNameFormat>
+						 -->
+					</configuration>
+				</plugin>
+
+			  <!--
+              <plugin>
+                 <groupId>org.apache.maven.plugins</groupId>
+                 <artifactId>maven-enforcer-plugin</artifactId>
+                 <version>1.3.1</version>
+                 <executions>
+                   <execution>
+                       <id>enforce</id>
+                       <configuration>
+                         <rules>
+                           <DependencyConvergence>
+                           </DependencyConvergence>
+                         </rules>
+                       </configuration>
+                       <goals>
+                         <goal>enforce</goal>
+                       </goals>
+					   </execution>
+                 </executions>
+               </plugin>
+			  -->
+
+				<plugin>
+					<groupId>org.scala-tools</groupId>
+					<artifactId>maven-scala-plugin</artifactId>
+					<configuration>
+		<!-- On Frogbait this option drops Scala proj build time about 20% -->
+						<jvmArgs>
+							<jvmArg>-XX:+TieredCompilation</jvmArg>
+						</jvmArgs>
+						<displayCmd>true</displayCmd>	
+							<!-- Compile ONLY the Scala code.  The Java code is compiled by a previous goal.
+								This works OK as long as we don't refer to Scala classes from Java.
+								
+								Without this instruction, the Scala compiler is unable to handle our
+								Tao/Zen coreferent types.   Don't know why these types are OK if
+								Java is compiled before Scala but not if everything is compiled together.
+								Will return to this issue later.
+							-->
+													
+
+						<sendJavaToScalac>false</sendJavaToScalac>		
+						<configuration>
+							<args>			
+								<arg>-make:transitive</arg>
+								<arg>-dependencyfile</arg>
+								<arg>${project.build.directory}/.scala_dependencies</arg>
+							</args>
+						</configuration>						
+					</configuration>
+				</plugin>
+		
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-gpg-plugin</artifactId>
+					<version>1.4</version>
+					<executions>
+						<execution>
+							<id>sign-artifacts</id>
+							<phase>deploy</phase>
+							<goals>
+								<goal>sign</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>2.3.2</version>
+					<configuration>
+						<source>1.6</source>
+						<target>1.6</target>
+						<encoding>${project.build.sourceEncoding}</encoding>
+					</configuration>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-resources-plugin</artifactId>
+					<version>2.4.3</version>
+					<configuration>
+						<encoding>${project.build.sourceEncoding}</encoding>
+					</configuration>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>2.9</version>
+					<configuration>
+						<!--  FIXME:  If we dont skipTests, then the build "fails" -->
+						<skipTests>true</skipTests>
+
+						<useFile>false</useFile>
+						<disableXmlReport>true</disableXmlReport>
+						<!-- If you have classpath issue like NoDefClassError,... -->
+						<!-- useManifestOnlyJar>false</useManifestOnlyJar -->
+						<includes>
+							<include>**/*Test.*</include>
+							<include>**/*Suite.*</include>
+						</includes>
+					</configuration>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-idea-plugin</artifactId>
+					<version>2.2</version>
+					<configuration>
+						<downloadSources>true</downloadSources>
+					</configuration>
+				</plugin>
+		
+			</plugins>
+		</pluginManagement>
+	</build>
+   <profiles>
+     <profile>
+       <id>release-sign-artifacts</id>
+         <activation>
+           <property>
+            <name>performRelease</name>
+             <value>true</value>
+           </property>
+       </activation>
+       <build>
+         <plugins>
+          <plugin>
+             <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-gpg-plugin</artifactId>
+                 <version>1.4</version>
+                  <executions>
+                     <execution>
+                      <id>sign-artifacts</id>
+                       <phase>verify</phase>
+                       <goals>
+                         <goal>sign</goal>
+                       </goals>
+                    </execution>
+                 </executions>
+             </plugin>
+         </plugins>
+       </build>
+     </profile>
+	</profiles>
+</project>
+<!--
+/*
+ *  Copyright 2013 by The Appdapter Project (www.appdapter.org).
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+-->
