@@ -30,7 +30,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.PropertyConfigurator;
-import org.jflux.api.core.Listener;
+// import org.jflux.api.core.Listener;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
@@ -790,14 +790,15 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 			}
 		}
 
-		private List<Listener<String>> myListeners = new ArrayList<Listener<String>>();
+	//	private List<Listener<String>> myListeners = new ArrayList<Listener<String>>();
 
 		public void handleEvent(String event) {
-			for (Listener<String> l : myListeners) {
-				l.handleEvent(event);
-			}
+			// STU SEZ:  CAn we see the tasty events we're missinggetLogger().info("Received event {}", event);
+	//		for (Listener<String> l : myListeners) {
+	//			l.handleEvent(event);
+	//		}
 		}
-
+/*
 		public void registerServiceChanged(Listener<String> listener) {
 			if (listener == this) {
 				return;
@@ -810,6 +811,7 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 		public void removeListener(Listener<String> listener) {
 			myListeners.remove(listener);
 		}
+		*/
 	}
 
 	public void addMacroService(String key, Runnable value) {
