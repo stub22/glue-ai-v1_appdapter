@@ -71,7 +71,9 @@ Version-less parent will be allowed in Maven 3.1.
 		<netbeans.hint.license>appdapter-apache20</netbeans.hint.license>
 
 		<!-- global version settings -->
+		<!--  Appdapter may not depend on JFlux, as of 2014-March 
 		<jflux.version>0.1.9-SNAPSHOT</jflux.version>
+		-->
 		<appdapter.msg.version>1.0.5</appdapter.msg.version>
 		<appdapter.jscience.version>1.0.9</appdapter.jscience.version>
 		<osgi.core.version>4.2.0</osgi.core.version>
