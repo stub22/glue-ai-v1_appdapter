@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.PropertyConfigurator;
-// import org.jflux.api.core.Listener;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
@@ -789,7 +788,9 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 				runNow(key);
 			}
 		}
-
+	//  This feature needs to move to JFlux.
+	//  Appdapter is no longer allowed to use
+	//  import org.jflux.api.core.Listener;
 	//	private List<Listener<String>> myListeners = new ArrayList<Listener<String>>();
 
 		public void handleEvent(String event) {
