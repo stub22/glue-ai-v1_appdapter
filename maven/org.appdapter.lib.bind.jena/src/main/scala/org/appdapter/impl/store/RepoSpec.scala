@@ -107,26 +107,27 @@ class URLRepoSpec(var dirModelURL: String, var fileModelCLs: java.util.List[Clas
     tmp
   }
   def detectedRepoSpec: RepoSpec = {
-
-    var dirModelURLParse = dirModelURL.trim().replace("//", "/").trim();
+  import scala.collection.JavaConversions._
+    var orig = dirModelURL.trim();
+    var multis: Array[String] = orig.split(",");
+    if (multis.length > 1) {
+      if (!orig.startsWith("mult:")) {
+	orig = "mult://["+ orig +"]"
+      }
+    }
+    var dirModelURLParse = orig.replace("//", "/").trim();
     val colon = dirModelURLParse.indexOf(":/");
     val proto = trimString(dirModelURLParse.substring(0, colon + 1), "/", ":", " ")
     val path = trimString(dirModelURLParse.substring(colon + 1), "/", " ")
     val v3: Array[String] = (path + "//").split('/')
-    //for( loaderMap) {
-    // 
-    //}
     if (proto.equals("goog")) {
       (new GoogSheetRepoSpec(v3(0), v3(1).toInt, v3(2).toInt, fileModelCLs))
     } else if (proto.equals("xlsx")) {
-      (new OfflineXlsSheetRepoSpec(v3(0), v3(1), v3(3), fileModelCLs))
-      /*
+      (new OfflineXlsSheetRepoSpec(v3(0), v3(1), v3(3), fileModelCLs))     
     } else if (proto.equals("scan")) {
-      (new ScanURLRepoSpec(v3(0), fileModelCLs))
+      (new ScanURLDirModelRepoSpec(v3(0), fileModelCLs))
     } else if (proto.equals("mult")) {
-      (new MultiRepoSpec(path, fileModelCLs))
-      
-      */
+      (new MultiRepoSpec(path, fileModelCLs))      
     } else {
       val dirModelLoaders: java.util.List[InstallableSpecReader] = SheetRepo.getSpecLoaders
       val dirModelLoaderIter = dirModelLoaders.listIterator
