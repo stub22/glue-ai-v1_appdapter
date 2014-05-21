@@ -92,6 +92,7 @@ trait FancyRepo extends Repo.WithDirectory with ModelClientCore with Loggable {
   }
   def parseQueryText(queryText: String): Query = {
     val dirModel = getDirectoryModel;
+    var ds = getMainQueryDataset
     JenaArqQueryFuncs.parseQueryText(queryText, dirModel);
   }
   override def makeInitialBinding(): InitialBinding = {
