@@ -37,14 +37,7 @@ class MultiRepoSpec(var many: String, protected var fileModelCLs: java.util.List
 
   var toStringName = many
 
-  if (many != null) {
-    if (many.startsWith("[") && many.endsWith("]")) {
-      many = many.substring(1, many.length() - 2);
-    }
-    for (s <- many.split(",")) {
-      addRepoSpec(s);
-    }
-  }
+   addRepoSpec(many)
 
   def createURIFromBase(specs: Array[Object]) = {
     var s = MultiRepoLoader.PROTO + ":/[";
@@ -59,29 +52,39 @@ class MultiRepoSpec(var many: String, protected var fileModelCLs: java.util.List
     s
   }
 
-  val repoSpecs = new java.util.HashSet[RepoSpec]
+  lazy val repoSpecs = new java.util.HashSet[RepoSpec]
 
-  def addRepoSpec(s: String): Unit = {
-    addRepoSpec(new URLRepoSpec(s, fileModelCLs));
+  def addRepoSpec(s0: String): Unit = {
+    var s = s0
+    if (s == null) throw new RuntimeException("Null RepoSpec definition")
+    if (s.startsWith("[") && s.endsWith("]")) s = s.substring(1, s.length() - 1)	   
+    println("makeing S = '" + s + "'")
+    for (rs <- s.split(",")) {
+      println("makeing RS = " + rs)
+      addRepoSpec(new URLRepoSpec(rs, fileModelCLs))
+    }	  
   }
-
+  
   def addRepoSpec(urlRepoSpec: URLRepoSpec) = {
-    repoSpecs.add(urlRepoSpec);
+      repoSpecs.add(urlRepoSpec)
   }
 
   override def getDirectoryModel(): Model = {
-    val dirModel = RepoDatasetFactory.createPrivateMemModel();
+    var dirModel : Model = RepoDatasetFactory.createPrivateMemModel();
     for (d <- repoSpecs.toArray(new Array[RepoSpec](0))) {
-      dirModel.add(d.getDirectoryModel)
+        println("repoSpec = "+ d )
+        var model = d.getDirectoryModel;
+        dirModel = dirModel.union(model)
+        dirModel.withDefaultMappings(model)
     }
-    dirModel
+    var map = dirModel.getNsPrefixMap
+    dirModel       
   }
 
   override def toString() =
-    if (toStringName != null)
+     if (toStringName != null)
       toStringName else createURIFromBase(repoSpecs.toArray());
-
-}
+  }
 
 class MultiRepoLoader extends InstallableRepoReader {
   override def makeRepoSpec(path: String, args: Array[String], cLs: java.util.List[ClassLoader]): RepoSpec = {
