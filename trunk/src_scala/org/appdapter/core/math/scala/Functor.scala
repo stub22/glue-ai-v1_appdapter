@@ -15,7 +15,7 @@
  */
 
 package org.appdapter.core.math.scala
-import org.appdapter.core.math.calculus.RealInterval;
+//import org.appdapter.core.math.calculus.RealInterval;
 /**
  * @author Stu B. <www.texpedient.com>
  */
