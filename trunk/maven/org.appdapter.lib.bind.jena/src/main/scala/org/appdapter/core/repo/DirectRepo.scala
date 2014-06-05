@@ -29,6 +29,12 @@ import com.hp.hpl.jena.datatypes.xsd.XSDDatatype
 import com.hp.hpl.jena.query.{ Dataset, Query, QuerySolution, QuerySolutionMap }
 import com.hp.hpl.jena.rdf.model.{ Literal, Model, Resource }
 import org.appdapter.core.matdat.GoogSheetRepoLoader
+import org.appdapter.impl.store.FancyRepo
+import org.appdapter.core.repo.URLModelRepoSpecReader
+import org.appdapter.core.repo.URLDirModelRepoSpecReader
+import org.appdapter.core.repo.ScanURLModelRepoSpecReader
+import org.appdapter.core.repo.ScanURLDirModelRepoSpecReader
+import org.appdapter.core.repo.FileModelRepoLoader
 
 // class GoogSheetRepo(val myDirectoryModel : Model) extends FancyRepo {
 
