@@ -20,8 +20,8 @@ import org.appdapter.bind.rdf.jena.assembly.AssemblerUtils
 import org.appdapter.core.log.BasicDebugger
 import org.appdapter.core.name.Ident
 import org.appdapter.core.store.{ ModelClient, Repo }
-
 import com.hp.hpl.jena.rdf.model.Model
+import org.appdapter.help.repo.RepoClient
 
 /**
  * @author Stu B. <www.texpedient.com>

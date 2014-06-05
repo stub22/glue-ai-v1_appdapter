@@ -14,10 +14,10 @@
  *  limitations under the License.
  */
 
-package org.appdapter.core.repo
+package org.appdapter.help.repo
 
 import org.appdapter.core.name.Ident
-import org.appdapter.core.store.{ InitialBinding, ModelClient, Repo }
+import org.appdapter.core.store.{InitialBinding, ModelClient, Repo}
 
 // import org.appdapter.core.repo.{FancyRepo};
 
