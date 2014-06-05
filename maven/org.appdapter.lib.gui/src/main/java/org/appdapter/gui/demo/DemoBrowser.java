@@ -55,8 +55,8 @@ import org.appdapter.api.trigger.Trigger;
 import org.appdapter.trigger.bind.jena.TriggerImpl;
 import org.appdapter.core.log.BasicDebugger;
 import org.appdapter.core.log.Debuggable;
-import org.appdapter.core.matdat.RepoSpec;
-import org.appdapter.core.matdat.URLRepoSpec;
+import org.appdapter.core.repo.RepoSpec;
+import org.appdapter.core.repo.URLRepoSpec;
 import org.appdapter.core.store.Repo;
 import org.appdapter.core.store.Repo.WithDirectory;
 import org.appdapter.core.store.RepoBox;
@@ -454,7 +454,7 @@ final public class DemoBrowser implements AnyOper.Singleton {
 		});
 		registerToolsTrigger("<toplevel>|Load Repo From|" + BMC_WORKBOOK_PATH, new Trigger() {
 			@Override public void fire(Box targetBox) {
-				Utility.showResult(new org.appdapter.core.matdat.OfflineXlsSheetRepoSpec(BMC_WORKBOOK_PATH, BMC_NAMESPACE_SHEET_NAME, BMC_DIRECTORY_SHEET_NAME, null).makeRepo());
+				Utility.showResult(new org.appdapter.core.repo.OfflineXlsSheetRepoSpec(BMC_WORKBOOK_PATH, BMC_NAMESPACE_SHEET_NAME, BMC_DIRECTORY_SHEET_NAME, null).makeRepo());
 			}
 		});
 		registerToolsTrigger("<toplevel>|Load Repo From|A Choosen a File", new Trigger() {

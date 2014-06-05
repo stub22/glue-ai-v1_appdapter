@@ -34,7 +34,7 @@ import org.appdapter.core.jvm.GetObject;
 import org.appdapter.core.debug.UIAnnotations.UISalient;
 import org.appdapter.core.debug.UIAnnotations.UtilClass;
 import org.appdapter.core.convert.ToFromKeyConverter;
-import org.appdapter.core.matdat.OmniLoaderRepo;
+import org.appdapter.core.repo.DirectRepo;
 import org.appdapter.core.name.Ident;
 import org.appdapter.core.store.Repo;
 import org.appdapter.core.store.dataset.RepoDatasetFactory;
@@ -83,12 +83,12 @@ public class RepoOntologyPanel extends ScreenBoxPanel<MutableRepoBox> implements
 	}
 
 	@UISalient static public Repo.WithDirectory createNewRepoWithModelForDirectory(final Model repo) {
-		return new OmniLoaderRepo(repo);
+		return new DirectRepo(repo);
 	}
 
 	@UISalient(IsFactoryMethod = true)//
 	static public Repo.WithDirectory createNewRepoWithBlankModelForDirectory() {
-		return new OmniLoaderRepo(RepoDatasetFactory.createPrivateMemModel());
+		return new DirectRepo(RepoDatasetFactory.createPrivateMemModel());
 	}
 
 	public static Type[] EDITTYPE = new Type[] { Repo.class, mapOf(Ident.class, makeParameterizedType(GetObject.class, Model.class)) };
