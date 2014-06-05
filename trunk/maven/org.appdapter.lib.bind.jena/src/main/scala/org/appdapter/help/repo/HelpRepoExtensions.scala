@@ -14,9 +14,9 @@
  *  limitations under the License.
  */
 
-package org.appdapter.core.repo
+package org.appdapter.help.repo
 
-import org.appdapter.help.repo.Solution
+import scala.collection.JavaConversions.mutableMapAsJavaMap
 
 // This class contains supplements to Solution/QueryEmitter/QueryInterface in org.appdapter.core.repo
 // which should be relocated there as soon as possible.
