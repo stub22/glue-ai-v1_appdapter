@@ -14,11 +14,11 @@
  *  limitations under the License.
  */
 
-package org.appdapter.core.repo
+package org.appdapter.help.repo
 
 import scala.collection.JavaConversions.{ asScalaBuffer, bufferAsJavaList, seqAsJavaList }
 
-import org.appdapter.core.name.{ FreeIdent, Ident }
+import org.appdapter.core.name.{FreeIdent, Ident}
 
 import com.hp.hpl.jena.query.QuerySolution
 

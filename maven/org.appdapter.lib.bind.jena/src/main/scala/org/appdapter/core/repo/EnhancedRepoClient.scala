@@ -17,6 +17,7 @@
 package org.appdapter.core.repo
 
 import org.appdapter.core.store.Repo
+import org.appdapter.help.repo.RepoClientImpl
 //import org.appdapter.impl.store.{FancyRepo}
 //import org.appdapter.help.repo.{ RepoClient, RepoClientImpl, InitialBindingImpl }
 

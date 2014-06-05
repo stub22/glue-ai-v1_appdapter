@@ -24,6 +24,7 @@ import org.appdapter.core.log.BasicDebugger
 import org.appdapter.core.name.{ FreeIdent, Ident }
 import org.appdapter.core.store.Repo
 import org.appdapter.core.store.dataset.RepoDatasetFactory
+import org.appdapter.help.repo.{ RepoClient, SolutionList }
 
 import com.hp.hpl.jena.rdf.model.Model
 
