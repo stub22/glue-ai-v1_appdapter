@@ -22,7 +22,7 @@ import javax.swing.JOptionPane;
 
 import org.appdapter.core.convert.NoSuchConversionException;
 import org.appdapter.core.log.Debuggable;
-import org.appdapter.core.matdat.OmniLoaderRepo;
+import org.appdapter.core.repo.DirectRepo;
 import org.appdapter.core.store.Repo;
 import org.appdapter.core.store.Repo.WithDirectory;
 import org.appdapter.core.store.dataset.RepoDatasetFactory;
@@ -30,7 +30,7 @@ import org.appdapter.core.store.RepoOper;
 import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.demo.DemoBrowser;
 import org.appdapter.gui.editors.ObjectPanel;
-import org.appdapter.impl.store.DirectRepo;
+import org.appdapter.core.repo.DirectRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -247,7 +247,7 @@ public class RepoFromTurtleEditor extends ModelAsTurtleEditor implements ObjectP
 		Repo.WithDirectory rwd;
 		if (!newds.listNames().hasNext()) {
 			// nothing loaded.. probably just DirectoryModel
-			rwd = new OmniLoaderRepo(newDirModel);
+			rwd = new DirectRepo(newDirModel);
 		} else {
 			rwd = new DirectRepo(newDirModel) {
 				public void callLoadingInLock() {

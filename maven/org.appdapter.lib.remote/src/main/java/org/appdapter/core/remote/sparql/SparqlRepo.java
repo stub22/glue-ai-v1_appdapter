@@ -16,12 +16,12 @@
 
 package org.appdapter.core.remote.sparql;
 
-import org.appdapter.core.matdat.OmniLoaderRepo;
+import org.appdapter.core.repo.*;
 
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Model;
 
-public class SparqlRepo extends OmniLoaderRepo {
+public class SparqlRepo extends DirectRepo {
 
 	private String endpointURI;
 	private String dirModelName;
