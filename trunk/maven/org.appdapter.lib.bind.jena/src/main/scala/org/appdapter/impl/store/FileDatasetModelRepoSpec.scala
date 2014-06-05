@@ -17,12 +17,12 @@
 package org.appdapter.impl.store
 
 import org.appdapter.core.log.BasicDebugger
+import org.appdapter.core.repo.InstallableRepoReader
 import org.appdapter.core.store.RepoOper
 import org.appdapter.core.store.dataset.SpecialRepoLoader
-import com.hp.hpl.jena.query.{ Dataset, QuerySolution }
-import com.hp.hpl.jena.rdf.model.{ Literal, Model, Resource }
-import org.appdapter.impl.store.QueryHelper
-import org.appdapter.core.repo.InstallableRepoReader
+
+import com.hp.hpl.jena.query.{Dataset, QuerySolution}
+import com.hp.hpl.jena.rdf.model.{Literal, Model, Resource}
 
 /**
  * @author Douglas R. Miles <www.logicmoo.org>
