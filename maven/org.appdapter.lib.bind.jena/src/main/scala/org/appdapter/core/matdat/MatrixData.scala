@@ -16,11 +16,9 @@
 
 package org.appdapter.core.matdat
 
-import java.io.FileNotFoundException
-import java.io.Reader
+import java.io.{ FileNotFoundException, Reader }
 
-import org.appdapter.core.log.BasicDebugger
-import org.appdapter.core.log.Debuggable
+import org.appdapter.core.log.{ BasicDebugger, Debuggable }
 
 import au.com.bytecode.opencsv.CSVReader
 /**
@@ -58,11 +56,18 @@ class MatrixRowCSV(val myRowArr: Array[String]) extends MatrixRow {
       if ((colVal == null) || (colVal.length() == 0)) {
         None;
       } else {
-        Some(colVal.trim());
+        Some(safelyTrim(colVal));
       }
     }
   }
+  def safelyTrim(s: String): String = {
+    var ss = s
+    while (s.startsWith(" ")) ss = ss.substring(1);
+    while (s.endsWith(" ")) ss = ss.substring(0, ss.length() - 1);
+    ss
+  }
 }
+
 class SheetProc(val myHeaderRowCount: Int) extends BasicDebugger {
   require(myHeaderRowCount > 0);
   private var myRowIdx = 0;

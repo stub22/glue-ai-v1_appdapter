@@ -17,11 +17,9 @@
 package org.appdapter.impl.store
 
 import com.hp.hpl.jena.shared.{PrefixMapping}
-import com.hp.hpl.jena.rdf.model.{Model, Statement, Resource, Property, Literal, RDFNode, ModelFactory}
-
-import com.hp.hpl.jena.query.{Query, QueryFactory, QueryExecution, QueryExecutionFactory, QuerySolution, Syntax};
-
-import com.hp.hpl.jena.query.{ResultSet, ResultSetFormatter, ResultSetRewindable, ResultSetFactory};
+import com.hp.hpl.jena.rdf.model.Model
+import com.hp.hpl.jena.query.{Query, QueryFactory, QueryExecutionFactory, QuerySolution, Syntax}
+import com.hp.hpl.jena.query.{ResultSet, ResultSetFormatter, ResultSetFactory}
 import org.appdapter.core.log.BasicDebugger;
 
 

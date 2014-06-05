@@ -205,7 +205,7 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 		return datasetType;
 	}
 
-	protected Dataset makeMainQueryDataset() {
+	public Dataset makeMainQueryDataset() {
 		if (datasetProvider != null)
 			return datasetProvider.createDefault();
 		if (datasetType != null)
@@ -221,7 +221,7 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 	@Override public Dataset getMainQueryDataset() {
 		beginLoading();
 		if (myMainQueryDataset == null) {
-			myMainQueryDataset = makeMainQueryDataset();
+			myMainQueryDataset = makeMainQueryDataset();			
 		}
 		if (!isLoadingFinished)
 			finishLoading();

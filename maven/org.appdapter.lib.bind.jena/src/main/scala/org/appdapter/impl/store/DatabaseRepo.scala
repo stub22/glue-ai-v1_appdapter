@@ -14,14 +14,12 @@
  *  limitations under the License.
  */
 
-package org.appdapter.impl.store
+package org.appdapter.core.repo
 
 import org.appdapter.bind.rdf.jena.sdb.SdbStoreFactory
 import org.appdapter.core.log.BasicDebugger
 import org.appdapter.core.name.FreeIdent
 import org.appdapter.core.name.Ident
-import org.appdapter.core.store._
-import org.appdapter.core.matdat._
 import com.hp.hpl.jena.query.{ ResultSet, Dataset, QuerySolution, QuerySolutionMap }
 import com.hp.hpl.jena.rdf.model.{ Model, Resource, Literal }
 import com.hp.hpl.jena.sdb.{ Store, SDBFactory }
@@ -30,6 +28,9 @@ import com.hp.hpl.jena.sparql.modify.request.{ UpdateCreate, UpdateLoad }
 import com.hp.hpl.jena.sparql.sse.SSE
 import com.hp.hpl.jena.update.{ GraphStore, GraphStoreFactory, UpdateAction, UpdateRequest }
 import org.appdapter.core.store.dataset.SpecialRepoLoader
+import org.appdapter.core.store.BasicStoredMutableRepoImpl
+import org.appdapter.core.store.Repo
+import org.appdapter.impl.store.QueryHelper
 
 /**
  * @author Stu B. <www.texpedient.com>

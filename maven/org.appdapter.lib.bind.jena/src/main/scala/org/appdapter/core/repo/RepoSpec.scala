@@ -30,35 +30,31 @@
  *  limitations under the License.
  */
 
-package org.appdapter.core.matdat
+package org.appdapter.core.repo
+
+import java.util.HashMap
 
 import org.appdapter.core.boot.ClassLoaderUtils
-import org.appdapter.core.name.{ Ident, FreeIdent }
-import org.appdapter.core.store.{ Repo }
-import org.appdapter.help.repo.RepoClientImpl
+import org.appdapter.core.matdat.{ GoogSheetRepoSpec, OnlineSheetRepoSpec }
+import org.appdapter.core.store.Repo
+import org.appdapter.demo.DemoBrowserUI
 import org.osgi.framework.BundleContext
+
 import com.hp.hpl.jena.rdf.model.Model
-import org.appdapter.impl.store._
-import java.util.Map
-import java.util._
-import java.io._
-import org.appdapter.core.store.dataset.RepoDatasetFactory
-import org.appdapter.core.store._
-import org.appdapter.core.store.ExtendedFileLoading.Paths
-import java.io.File
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
 
 // todo move me!
-class DatabaseRepoSpec(configPath: String, optConfResCL: ClassLoader, dirGraphID: Ident) extends RepoSpec {
+/*
+class DatabaseRepoSpec_REPEATED(configPath: String, optConfResCL: ClassLoader, dirGraphID: Ident) extends RepoSpec {
   def this(cPath: String, optCL: ClassLoader, dirGraphUriPrefix: String, dirGraphLocalName: String) = this(cPath, optCL, new FreeIdent(dirGraphUriPrefix + dirGraphLocalName, dirGraphLocalName))
-  override def makeRepo() = FancyRepoLoader.loadDatabaseRepo(configPath, optConfResCL, dirGraphID)
-}
+  override def makeRepo() = loadDatabaseRepo(configPath, optConfResCL, dirGraphID)
+}*/
 
 abstract class RepoSpecForDirectory extends RepoSpec {
-  override def makeRepo: SheetRepo = {
+  override def makeRepo: FancyRepo = {
     FancyRepoLoader.makeRepoWithDirectory(this, getDirectoryModel(), null);
   }
   def getDirectoryModel(): Model;
@@ -107,12 +103,12 @@ class URLRepoSpec(var dirModelURL: String, var fileModelCLs: java.util.List[Clas
     tmp
   }
   def detectedRepoSpec: RepoSpec = {
-  import scala.collection.JavaConversions._
+    import scala.collection.JavaConversions._
     var orig = dirModelURL.trim();
     var multis: Array[String] = orig.split(",");
     if (multis.length > 1) {
       if (!orig.startsWith("mult:")) {
-	orig = "mult://["+ orig +"]"
+        orig = "mult://[" + orig + "]"
       }
     }
     var dirModelURLParse = orig.replace("//", "/").trim();
@@ -123,13 +119,13 @@ class URLRepoSpec(var dirModelURL: String, var fileModelCLs: java.util.List[Clas
     if (proto.equals("goog")) {
       (new GoogSheetRepoSpec(v3(0), v3(1).toInt, v3(2).toInt, fileModelCLs))
     } else if (proto.equals("xlsx")) {
-      (new OfflineXlsSheetRepoSpec(v3(0), v3(1), v3(3), fileModelCLs))     
+      (new OfflineXlsSheetRepoSpec(v3(0), v3(1), v3(3), fileModelCLs))
     } else if (proto.equals("scan")) {
       (new ScanURLDirModelRepoSpec(v3(0), fileModelCLs))
     } else if (proto.equals("mult")) {
-      (new MultiRepoSpec(path, fileModelCLs))      
+      (new MultiRepoSpec(path, fileModelCLs))
     } else {
-      val dirModelLoaders: java.util.List[InstallableSpecReader] = SheetRepo.getSpecLoaders
+      val dirModelLoaders: java.util.List[InstallableSpecReader] = DirectRepo.getSpecLoaders
       val dirModelLoaderIter = dirModelLoaders.listIterator
       while (dirModelLoaderIter.hasNext()) {
         val irr = dirModelLoaderIter.next
@@ -220,7 +216,7 @@ object RepoSpecDefaultNames {
     val fileResModelCLs: java.util.List[ClassLoader] =
       ClassLoaderUtils.getFileResourceClassLoaders(null, ClassLoaderUtils.ALL_RESOURCE_CLASSLOADER_TYPES);
     val repoSpec = new OnlineSheetRepoSpec(RepoSpecDefaultNames.BMC_SHEET_KEY, RepoSpecDefaultNames.BMC_NAMESPACE_SHEET_NUM, RepoSpecDefaultNames.BMC_DIRECTORY_SHEET_NUM, fileResModelCLs);
-    val repo = repoSpec.makeRepo //.asInstanceOf[OmniLoaderRepo];
+    val repo = repoSpec.makeRepo //.asInstanceOf[GoogSheetRepo];
 
     print("Starting Whackamole");
     import org.appdapter.demo.DemoBrowserUI

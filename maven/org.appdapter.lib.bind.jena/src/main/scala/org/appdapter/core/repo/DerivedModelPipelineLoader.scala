@@ -14,18 +14,14 @@
  *  limitations under the License.
  */
 
-package org.appdapter.core.matdat
+package org.appdapter.core.repo
 
 import org.appdapter.core.log.BasicDebugger
-import org.appdapter.core.store.Repo
-import org.appdapter.impl.store.QueryHelper
-import com.hp.hpl.jena.query.Dataset
-import com.hp.hpl.jena.query.QuerySolution
-import com.hp.hpl.jena.rdf.model.Model
-import com.hp.hpl.jena.rdf.model.Resource
 import org.appdapter.core.store.RepoOper
-import com.hp.hpl.jena.rdf.model.ModelFactory
 import org.appdapter.core.store.dataset.SpecialRepoLoader
+import com.hp.hpl.jena.query.{ Dataset, QuerySolution }
+import com.hp.hpl.jena.rdf.model.Model
+import org.appdapter.impl.store.QueryHelper
 
 /**
  * @author Douglas R. Miles <www.logicmoo.org>
@@ -41,7 +37,38 @@ import org.appdapter.core.store.dataset.SpecialRepoLoader
  * This is a DatasetFileRepo Loader being an InstallableRepoReader can be additionly used
  *    in all the legal places that can provide a single file path
  */
+/// this is a registerable loader
+object DerivedModelLoader extends BasicDebugger {
 
+  def loadSheetModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, myDirectoryModel: Model, fileModelCLs: java.util.List[ClassLoader]) = {
+
+    val nsJavaMap: java.util.Map[String, String] = myDirectoryModel.getNsPrefixMap()
+
+    // we use container so that we find only repo members
+    val msqText = """
+	select ?model ?unionOrReplace
+		{
+			?model a ccrt:DerivedModel; ccrt:repo ?container.
+			OPTIONAL { ?model a ?unionOrReplace. FILTER (?unionOrReplace = ccrt:UnionModel) }		
+		}     
+		"""
+
+    val msRset = QueryHelper.execModelQueryWithPrefixHelp(myDirectoryModel, msqText);
+    import scala.collection.JavaConversions._;
+    while (msRset.hasNext()) {
+      val qSoln: QuerySolution = msRset.next();
+
+      //val repoRes : Resource = qSoln.getResource("repo");
+      val modelRes = qSoln.get("model");
+      val modelName = modelRes.asResource().asNode().getURI
+
+      val dbgArray = Array[Object](modelRes, modelName);
+      getLogger.warn("DerivedModelsIntoMainDataset modelRes={}, modelName={}", dbgArray);
+      PipelineSnapLoader.loadPipelineSheets(repo, mainDset, myDirectoryModel, modelName, fileModelCLs)
+      PipelineSnapLoader.loadPipelineSheetTyp(repo, mainDset, myDirectoryModel, modelName, fileModelCLs)
+    }
+  }
+}
 /// this is a registerable loader
 class PipelineSnapLoader extends InstallableRepoReader {
   override def getExt = null;
@@ -173,3 +200,17 @@ object PipelineSnapLoader extends BasicDebugger {
   }
 
 }
+
+/// this is a registerable loader
+class DerivedModelLoader extends InstallableRepoReader {
+  override def getExt = null
+  override def getContainerType() = "ccrt:DerivedModel"
+  override def getSheetType() = "ccrt:UnionModel"
+  override def isDerivedLoader() = true
+  override def loadModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
+    DerivedModelLoader.loadSheetModelsIntoTargetDataset(repo, mainDset, dirModel, fileModelCLs)
+  }
+}
+
+
+ 

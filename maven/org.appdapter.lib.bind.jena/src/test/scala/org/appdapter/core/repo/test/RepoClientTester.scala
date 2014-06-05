@@ -14,21 +14,23 @@
  *  limitations under the License.
  */
 
-package org.appdapter.core.matdat
-import org.appdapter.core.name.{ Ident, FreeIdent }
-import org.appdapter.core.store.{ Repo, InitialBinding }
-import org.appdapter.help.repo.{ RepoClient, RepoClientImpl, InitialBindingImpl }
-import org.appdapter.impl.store.{ FancyRepo };
-//import org.appdapter.core.matdat.{SheetRepo}
-import com.hp.hpl.jena.query.{ QuerySolution } // Query, QueryFactory, QueryExecution, QueryExecutionFactory, , QuerySolutionMap, Syntax};
-import com.hp.hpl.jena.rdf.model.{ Model }
+package org.appdapter.core.repo.test
+
+import java.io.ByteArrayOutputStream
+
+import scala.collection.JavaConversions.asScalaBuffer
+
+import org.appdapter.core.name.{ FreeIdent, Ident }
+import org.appdapter.core.repo.{ OnlineSheetRepoSpec, RepoClient, RepoClientImpl }
+import org.appdapter.core.store.Repo
+import org.appdapter.demo.DemoResources
 
 /**
  * Documenting and testing our query-based configuration systems.
  * 	// Note that "QName" and QN refers to the prefixed style syntax, which is resolved against
  * // the repo's known prefixes.
  */
-object RepoClientTester {
+object RepoClientTester_TEST_ONLY {
 
   // The first 3 params define the repo:
 
@@ -213,7 +215,7 @@ object RepoClientTester {
     println("Wrote turtle dump of lights model:\n" + lightsOutTurtle)
   }
 
-  def makeRepoClient(fr: FancyRepo, queryTargetVarName: String, querySheetQN: String): RepoClient = {
+  def makeRepoClient(fr: Repo.WithDirectory, queryTargetVarName: String, querySheetQN: String): RepoClient = {
     new RepoClientImpl(fr, queryTargetVarName, querySheetQN)
   }
 
