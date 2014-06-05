@@ -14,23 +14,18 @@
  *  limitations under the License.
  */
 
-package org.appdapter.core.matdat
+package org.appdapter.core.repo
 
-//  Booo - no promiscuous imports
-import java.util._
+import java.util.Date
+
 import org.appdapter.bind.rdf.jena.model.JenaFileManagerUtils
 import org.appdapter.core.log.BasicDebugger
 import org.appdapter.core.name.Ident
-import org.appdapter.core.store.{ InitialBinding, Repo }
-import org.appdapter.core.store.ExtendedFileStreamUtils
-import org.appdapter.core.store.RepoOper
-import com.hp.hpl.jena.query.{ Dataset, QuerySolution }
-import com.hp.hpl.jena.rdf.model.Model
-import com.hp.hpl.jena.rdf.model.Resource
-import org.appdapter.impl.store._
-import org.appdapter.core.log.BasicDebugger
-import org.appdapter.core.name.FreeIdent
+import org.appdapter.core.store.{ ExtendedFileStreamUtils, InitialBinding, Repo, RepoOper }
 import org.appdapter.core.store.dataset.SpecialRepoLoader
+
+import com.hp.hpl.jena.query.{ Dataset, QuerySolution }
+import com.hp.hpl.jena.rdf.model.{ Model, Resource }
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -55,7 +50,7 @@ object FancyRepoLoader extends BasicDebugger {
     in + "/*" + k + "=" + v + "*/"
   }
 
-  def makeRepoWithDirectory(spec: RepoSpec, dirModel: Model, fileModelCLs: java.util.List[ClassLoader] = null, dirGraphID: Ident = null): OmniLoaderRepo = {
+  def makeRepoWithDirectory(spec: RepoSpec, dirModel: Model, fileModelCLs: java.util.List[ClassLoader] = null, dirGraphID: Ident = null): DirectRepo = {
     val specURI = spec.toString();
     var serial = System.identityHashCode(this);
     var myDebugName = addInvisbleInfo(specURI, "time", "" + new Date());
@@ -63,7 +58,7 @@ object FancyRepoLoader extends BasicDebugger {
       myDebugName = addInvisbleInfo(myDebugName, "id", "" + dirGraphID);
     }
     // Construct a repo around that directory        
-    val shRepo = new OmniLoaderRepo(spec, specURI, myDebugName, dirModel, fileModelCLs)
+    val shRepo = new DirectRepo(spec, specURI, myDebugName, dirModel, fileModelCLs)
     //shRepo.beginLoading();
     // set to false to have concurrent background loading
     if (true) {
@@ -139,8 +134,8 @@ object FancyRepoLoader extends BasicDebugger {
     }
   }
 
-  ///. Modeled on SheetRepo.loadTestSheetRepo
-  def loadDetectedFileSheetRepo(rdfURL: String, nsJavaMap: java.util.Map[String, String], fileModelCLs: java.util.List[ClassLoader], repoSpec: RepoSpec): SheetRepo = {
+  ///. Modeled on GoogSheetRepo.loadTestSheetRepo
+  def loadDetectedFileSheetRepo(rdfURL: String, nsJavaMap: java.util.Map[String, String], fileModelCLs: java.util.List[ClassLoader], repoSpec: RepoSpec): FancyRepo = {
     // Read the namespaces and directory sheets into a single directory model.
     val dirModel: Model = readDirectoryModelFromURL(rdfURL, nsJavaMap, fileModelCLs)
     // Construct a repo around that directory

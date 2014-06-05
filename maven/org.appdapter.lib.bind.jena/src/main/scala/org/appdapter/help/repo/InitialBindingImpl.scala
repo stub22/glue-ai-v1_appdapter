@@ -14,35 +14,36 @@
  *  limitations under the License.
  */
 
-package org.appdapter.help.repo
+package org.appdapter.core.repo
 
-import org.appdapter.core.name.{Ident, FreeIdent}
-import org.appdapter.core.store.{ModelClient, InitialBinding};
-import com.hp.hpl.jena.query.{QuerySolutionMap};
-import com.hp.hpl.jena.rdf.model.{Model, Statement, Resource, Property, Literal, RDFNode, ModelFactory, InfModel}
+import org.appdapter.core.name.Ident
+import org.appdapter.core.store.{ InitialBinding, ModelClient }
+
+import com.hp.hpl.jena.query.QuerySolutionMap
+import com.hp.hpl.jena.rdf.model.RDFNode
 /**
  * @author Stu B. <www.texpedient.com>
  */
 
-class InitialBindingImpl(private val myModelClient : ModelClient) extends InitialBinding {
-	private val	mySolutionMap = new QuerySolutionMap();
-	
-	def getQSMap : QuerySolutionMap = mySolutionMap
-	
-	def bindNode(vName : String, node : RDFNode) = {
-		mySolutionMap.add(vName, node)
-	}
-	def bindQName(vName : String, resQName : String) : Unit = {
-		bindNode(vName, myModelClient.makeResourceForQName(resQName))
-	}
-	def bindURI(vName : String, resURI : String) : Unit = {
-		bindNode(vName, myModelClient.makeResourceForURI(resURI))
-	}
-	def bindIdent(vName : String, id : Ident) : Unit = {
-		bindNode(vName, myModelClient. makeResourceForIdent(id))
-	}
-	def bindLiteralString(vName : String, litString : String) : Unit = {
-		bindNode(vName, myModelClient.makeStringLiteral(litString))
-	}
-	
+class InitialBindingImpl(private val myModelClient: ModelClient) extends InitialBinding {
+  private val mySolutionMap = new QuerySolutionMap();
+
+  def getQSMap: QuerySolutionMap = mySolutionMap
+
+  def bindNode(vName: String, node: RDFNode) = {
+    mySolutionMap.add(vName, node)
+  }
+  def bindQName(vName: String, resQName: String): Unit = {
+    bindNode(vName, myModelClient.makeResourceForQName(resQName))
+  }
+  def bindURI(vName: String, resURI: String): Unit = {
+    bindNode(vName, myModelClient.makeResourceForURI(resURI))
+  }
+  def bindIdent(vName: String, id: Ident): Unit = {
+    bindNode(vName, myModelClient.makeResourceForIdent(id))
+  }
+  def bindLiteralString(vName: String, litString: String): Unit = {
+    bindNode(vName, myModelClient.makeStringLiteral(litString))
+  }
+
 }

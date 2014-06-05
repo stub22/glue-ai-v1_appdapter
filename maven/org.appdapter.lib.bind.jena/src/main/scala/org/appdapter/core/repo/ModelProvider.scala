@@ -14,15 +14,14 @@
  *  limitations under the License.
  */
 
-package org.appdapter.core.matdat
+package org.appdapter.core.repo
+
+import org.appdapter.bind.rdf.jena.assembly.AssemblerUtils
+import org.appdapter.core.log.BasicDebugger
+import org.appdapter.core.name.Ident
+import org.appdapter.core.store.{ ModelClient, Repo }
 
 import com.hp.hpl.jena.rdf.model.Model
-import com.hp.hpl.jena.rdf.model.ModelFactory
-
-import org.appdapter.core.log.{ BasicDebugger };
-import org.appdapter.core.name.{ Ident, FreeIdent };
-import org.appdapter.core.store.{ Repo, InitialBinding, ModelClient }
-import org.appdapter.help.repo.{ RepoClient, RepoClientImpl, InitialBindingImpl, SolutionList }
 
 /**
  * @author Stu B. <www.texpedient.com>

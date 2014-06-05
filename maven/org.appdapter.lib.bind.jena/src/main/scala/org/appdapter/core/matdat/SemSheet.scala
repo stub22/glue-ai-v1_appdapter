@@ -17,21 +17,14 @@
 package org.appdapter.core.matdat
 
 import scala.Array.canBuildFrom
-import org.appdapter.core.log.BasicDebugger
-import org.appdapter.core.log.Debuggable
-import org.appdapter.core.store.dataset.RepoDatasetFactory
+
+import org.appdapter.core.log.{ BasicDebugger, Debuggable }
+import org.appdapter.core.store.dataset.{ CheckedModel, RepoDatasetFactory }
 import org.appdapter.impl.store.ResourceResolver
-import com.hp.hpl.jena.datatypes.RDFDatatype
-import com.hp.hpl.jena.datatypes.TypeMapper
-import com.hp.hpl.jena.rdf.model.Model
-import com.hp.hpl.jena.rdf.model.Property
-import com.hp.hpl.jena.rdf.model.RDFNode
-import com.hp.hpl.jena.rdf.model.Resource
-import com.hp.hpl.jena.rdf.model.Statement
-import org.appdapter.core.store.dataset.CheckedModel
+
+import com.hp.hpl.jena.datatypes.{ RDFDatatype, TypeMapper }
 import com.hp.hpl.jena.datatypes.xsd.XSDDatatype
-import org.appdapter.core.log.Debuggable
-import org.appdapter.core.log.BasicDebugger
+import com.hp.hpl.jena.rdf.model.{ Model, Property, RDFNode, Resource, Statement }
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -115,7 +108,7 @@ object SemSheet {
               }
               if (dt == null) {
                 // this one only fakes a datatype
-                Debuggable.oldBug( dtName + " is not a datatype! (try googling it and make sure you have the case correct)")
+                Debuggable.oldBug(dtName + " is not a datatype! (try googling it and make sure you have the case correct)")
                 if (dtName.equalsIgnoreCase("xsd:datetime")) {
                   dt = XSDDatatype.XSDdateTime;
                 } else {
@@ -221,11 +214,5 @@ object SemSheet {
     theDbg.logDebug("tgtModel=" + tgtModel)
     tgtModel;
   }
-
-  def main(args: Array[String]): Unit = {
-    GoogSheetRepoLoaderTest.testSemSheet(args);
-    CsvFileSheetLoader.testSemSheet(args);
-    XLSXSheetRepoLoader.testSemSheet(args);
-  }
-
 }
+

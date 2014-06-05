@@ -14,13 +14,14 @@
  *  limitations under the License.
  */
 
-package org.appdapter.help.repo
+package org.appdapter.core.repo
 
-import org.appdapter.core.name.{ Ident, FreeIdent }
-import scala.collection.JavaConversions._
+import scala.collection.JavaConversions.{ asJavaIterator, asScalaBuffer, bufferAsJavaList }
 
-import com.hp.hpl.jena.query.{ QuerySolution, QuerySolutionMap }
-import com.hp.hpl.jena.rdf.model.{ Resource, Literal, RDFNode, ModelFactory, InfModel }
+import org.appdapter.core.name.{ FreeIdent, Ident }
+
+import com.hp.hpl.jena.query.QuerySolution
+import com.hp.hpl.jena.rdf.model.{ Literal, Resource }
 
 /**
  * @author Ryan Biggs

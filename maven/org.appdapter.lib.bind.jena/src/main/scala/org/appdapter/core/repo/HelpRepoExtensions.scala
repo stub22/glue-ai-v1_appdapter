@@ -14,17 +14,15 @@
  *  limitations under the License.
  */
 
-package org.appdapter.core.matdat
+package org.appdapter.core.repo
 
-import org.appdapter.help.repo.Solution;
-
-// This class contains supplements to Solution/QueryEmitter/QueryInterface in org.appdapter.help.repo
+// This class contains supplements to Solution/QueryEmitter/QueryInterface in org.appdapter.core.repo
 // which should be relocated there as soon as possible.
 object HelpRepoExtensions {
-  
+
   // In Solution.scala in class SolutionMap[T], we should add this line:
   // lazy val javaMap: java.util.Map[T, Solution] = map
   // This method provides that functionality for now
   import scala.collection.JavaConversions._
-  def convertToJavaMap[T](scalaMap:scala.collection.mutable.HashMap[T, Solution]): java.util.Map[T, Solution] = scalaMap
+  def convertToJavaMap[T](scalaMap: scala.collection.mutable.HashMap[T, Solution]): java.util.Map[T, Solution] = scalaMap
 }
