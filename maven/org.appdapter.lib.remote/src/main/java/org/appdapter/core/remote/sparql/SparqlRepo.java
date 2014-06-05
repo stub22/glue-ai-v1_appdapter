@@ -36,7 +36,7 @@ public class SparqlRepo extends DirectRepo {
 		return getMainQueryDataset().getNamedModel(this.dirModelName);
 	}
 
-	@Override protected Dataset makeMainQueryDataset() {
+	@Override public Dataset makeMainQueryDataset() {
 		return new SparqlDataset(new SparqlDatasetGraph(endpointURI));
 	}
 }
