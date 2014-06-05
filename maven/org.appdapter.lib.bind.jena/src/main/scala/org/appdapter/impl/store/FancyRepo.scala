@@ -17,16 +17,17 @@
 package org.appdapter.impl.store
 
 import scala.collection.immutable.StringOps
+
 import org.appdapter.bind.rdf.jena.query.JenaArqQueryFuncs
 import org.appdapter.core.log.{ BasicDebugger, Loggable }
 import org.appdapter.core.name.Ident
+import org.appdapter.core.repo.{ DatabaseRepo, DatabaseRepoLoader }
 import org.appdapter.core.store.{ InitialBinding, ModelClient, Repo }
+import org.appdapter.help.repo.InitialBindingImpl
+
 import com.hp.hpl.jena.query.{ Query, QuerySolution, QuerySolutionMap }
 import com.hp.hpl.jena.rdf.listeners.ObjectListener
 import com.hp.hpl.jena.rdf.model.Literal
-import org.appdapter.help.repo.InitialBindingImpl
-import org.appdapter.impl.store.ModelClientImpl
-import org.appdapter.impl.store.ModelClientCore
 
 /**
  * @author Stu B. <www.texpedient.com>

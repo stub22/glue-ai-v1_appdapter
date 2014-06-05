@@ -33,16 +33,16 @@
 package org.appdapter.core.repo
 
 import java.util.HashMap
+
 import org.appdapter.core.boot.ClassLoaderUtils
-import org.appdapter.core.matdat.{ GoogSheetRepoSpec, OnlineSheetRepoSpec }
+import org.appdapter.core.matdat.{GoogSheetRepoSpec, OnlineSheetRepoSpec}
 import org.appdapter.core.store.Repo
 import org.appdapter.demo.DemoBrowserUI
-import org.osgi.framework.BundleContext
-import com.hp.hpl.jena.rdf.model.Model
 import org.appdapter.help.repo.RepoClientImpl
 import org.appdapter.impl.store.FancyRepo
-import org.appdapter.core.repo.URLDirModelRepoSpec
-import org.appdapter.core.repo.ScanURLDirModelRepoSpec
+import org.osgi.framework.BundleContext
+
+import com.hp.hpl.jena.rdf.model.Model
 
 /**
  * @author Stu B. <www.texpedient.com>
