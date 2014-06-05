@@ -14,10 +14,16 @@
  *  limitations under the License.
  */
 
-package org.appdapter.core.repo
-import com.hp.hpl.jena.query.{ Query, QueryFactory, QueryExecution, QueryExecutionFactory, QuerySolution, QuerySolutionMap, Syntax }
-import org.appdapter.core.store.ModelClient
+package org.appdapter.help.repo
+
+import org.appdapter.core.repo._
+import org.appdapter.core.store._
+
+import scala.collection.JavaConversions.{ asScalaBuffer, bufferAsJavaList }
+
 import org.appdapter.core.store.Repo
+
+import com.hp.hpl.jena.query.{ Query, QuerySolution }
 
 /**
  * @author Stu B. <www.texpedient.com>

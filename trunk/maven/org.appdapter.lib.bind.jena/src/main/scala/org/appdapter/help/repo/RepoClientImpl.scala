@@ -14,13 +14,13 @@
  *  limitations under the License.
  */
 
-package org.appdapter.core.repo
+package org.appdapter.help.repo
 
-import org.appdapter.core.name.{ Ident }
-import com.hp.hpl.jena.rdf.model.{ Model }
-import org.appdapter.core.store.{ Repo, InitialBinding }
-import scala.collection.JavaConversions._
-import org.appdapter.core.store.ModelClient
+import org.appdapter.core.name.Ident
+import org.appdapter.core.repo.ModelClientCore
+import org.appdapter.core.store.{InitialBinding, Repo}
+
+import com.hp.hpl.jena.rdf.model.Model
 
 /**
  * @author Ryan Biggs
