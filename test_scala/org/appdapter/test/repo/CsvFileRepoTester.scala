@@ -18,7 +18,8 @@ package org.appdapter.test.repo
 
 import org.appdapter.core.name.{ Ident, FreeIdent }
 import org.appdapter.core.store.{ Repo, InitialBinding }
-import org.appdapter.help.repo.{ RepoClient, RepoClientImpl, InitialBindingImpl }
+import org.appdapter.core.repo._
+import org.appdapter.impl.store._
 import org.appdapter.core.matdat.{ GoogSheetRepo }
 import com.hp.hpl.jena.query.{ QuerySolution }
 import com.hp.hpl.jena.rdf.model.{ Model }
@@ -26,7 +27,7 @@ import com.hp.hpl.jena.sparql.sse.SSE
 import com.hp.hpl.jena.sparql.modify.request.{ UpdateCreate, UpdateLoad }
 import com.hp.hpl.jena.update.{ GraphStore, GraphStoreFactory, UpdateAction, UpdateRequest }
 import com.hp.hpl.jena.sdb.{ Store, SDBFactory };
-//import org.appdapter.core.matdat.{ CsvFilesSheetRepo};
+//import org.appdapter.core.repo.{ CsvFilesSheetRepo};
 /**
  * @author Stu B. <www.texpedient.com>
  */
@@ -36,7 +37,7 @@ import com.hp.hpl.jena.sdb.{ Store, SDBFactory };
  * 
 @TODO maybe revive 
 object CsvFileRepoTester {
-  // Modeled on SheetRepo.loadTestSheetRepo
+  // Modeled on GoogSheetRepo.loadTestSheetRepo
   def loadSheetRepo(sheetLoc: String, namespaceSheet: String, dirSheet: String,
     fileModelCLs: java.util.List[ClassLoader]): CsvFilesSheetRepo = {
     // Read the namespaces and directory sheets into a single directory model.

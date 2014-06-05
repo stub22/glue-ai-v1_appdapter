@@ -36,7 +36,7 @@ public class RepoFromClient extends DirectRepo {
 		return getMainQueryDataset().getNamedModel(this.dirModelName);
 	}
 
-	@Override protected Dataset makeMainQueryDataset() {
+	@Override public Dataset makeMainQueryDataset() {
 		return rc.getRepo().getMainQueryDataset();
 	}
 

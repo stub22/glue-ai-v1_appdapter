@@ -16,7 +16,7 @@
 		<module>../org.appdapter.lib.bind.jena</module>
 		<module>../org.appdapter.lib.core</module>
         <module>../org.appdapter.lib.registry</module>		
-        <!-- module>../org.appdapter.lib.remote</module -->		
+        <module>../org.appdapter.lib.remote</module>		
         <module>../org.appdapter.bundle.core</module>
 
 		<module>../org.appdapter.bundle.debug</module>
