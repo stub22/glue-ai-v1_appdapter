@@ -17,15 +17,14 @@
 package org.appdapter.core.repo
 
 import java.util.Date
-
 import org.appdapter.bind.rdf.jena.model.JenaFileManagerUtils
 import org.appdapter.core.log.BasicDebugger
 import org.appdapter.core.name.Ident
 import org.appdapter.core.store.{ ExtendedFileStreamUtils, InitialBinding, Repo, RepoOper }
 import org.appdapter.core.store.dataset.SpecialRepoLoader
-
 import com.hp.hpl.jena.query.{ Dataset, QuerySolution }
 import com.hp.hpl.jena.rdf.model.{ Model, Resource }
+import org.appdapter.impl.store.FancyRepo
 
 /**
  * @author Stu B. <www.texpedient.com>

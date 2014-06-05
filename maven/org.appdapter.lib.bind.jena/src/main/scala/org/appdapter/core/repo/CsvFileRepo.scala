@@ -28,6 +28,7 @@ import org.appdapter.core.store.dataset.SpecialRepoLoader
 import org.appdapter.core.matdat.SemSheet
 import org.appdapter.core.matdat.MatrixData
 import org.appdapter.impl.store.QueryHelper
+import org.appdapter.impl.store.FancyRepo
 
 /**
  * @author Stu B. <www.texpedient.com>

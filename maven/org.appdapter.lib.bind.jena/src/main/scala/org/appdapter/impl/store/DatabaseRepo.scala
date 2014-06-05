@@ -31,6 +31,7 @@ import org.appdapter.core.store.dataset.SpecialRepoLoader
 import org.appdapter.core.store.BasicStoredMutableRepoImpl
 import org.appdapter.core.store.Repo
 import org.appdapter.impl.store.QueryHelper
+import org.appdapter.impl.store.FancyRepo
 
 /**
  * @author Stu B. <www.texpedient.com>
