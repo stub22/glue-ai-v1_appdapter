@@ -14,19 +14,17 @@
  *  limitations under the License.
  */
 
-package org.appdapter.core.matdat
+package org.appdapter.core.repo
 
-import com.hp.hpl.jena.query.{ ResultSetFactory, ResultSet, QuerySolution, Dataset }
-import com.hp.hpl.jena.rdf.model.{ Resource, RDFNode, Model, Literal }
 import java.io.Reader
-import org.appdapter.core.store.{ ExtendedFileStreamUtils }
-import org.appdapter.impl.store.QueryHelper
-import scala.collection.JavaConversions.asScalaBuffer
-import org.appdapter.impl.store.DirectRepo
-import org.appdapter.core.store.Repo
 import org.appdapter.core.log.BasicDebugger
-import org.appdapter.core.store.dataset.RepoDatasetFactory
-import org.appdapter.core.store.dataset.SpecialRepoLoader
+import org.appdapter.core.matdat.SemSheet
+import org.appdapter.core.store.ExtendedFileStreamUtils
+import org.appdapter.core.store.dataset.{ RepoDatasetFactory, SpecialRepoLoader }
+import com.hp.hpl.jena.query.{ Dataset, QuerySolution, ResultSet, ResultSetFactory }
+import com.hp.hpl.jena.rdf.model.{ Literal, Model, RDFNode, Resource }
+import org.appdapter.core.matdat.MatrixData
+import org.appdapter.impl.store.QueryHelper
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -39,7 +37,7 @@ import org.appdapter.core.store.dataset.SpecialRepoLoader
 class OfflineXlsSheetRepoSpec(sheetLocation: String, namespaceSheet: String, dirSheet: String,
   fileModelCLs: java.util.List[ClassLoader] = null) extends RepoSpecForDirectory {
   override def getDirectoryModel = XLSXSheetRepoLoader.readDirectoryModelFromXLSX(sheetLocation, namespaceSheet, dirSheet, fileModelCLs: java.util.List[ClassLoader])
-  //override def makeRepo(): SheetRepo = XLSXSheetRepoLoader.loadXLSXSheetRepo(sheetLocation, namespaceSheet, dirSheet, fileModelCLs, this)
+  //override def makeRepo(): GoogSheetRepo = XLSXSheetRepoLoader.loadXLSXSheetRepo(sheetLocation, namespaceSheet, dirSheet, fileModelCLs, this)
   override def toString: String = "xlsx:/" + sheetLocation + "/" + namespaceSheet + "/" + dirSheet
 }
 
@@ -101,7 +99,7 @@ object XLSXSheetRepoLoader extends BasicDebugger {
   implicit def coalesce_string[A <: String](a: A) = new CoalesceStr(a)
 
   def loadXLSXSheetRepo(sheetLocation: String, namespaceSheetName: String, dirSheetName: String,
-    fileModelCLs: java.util.List[ClassLoader], repoSpec: RepoSpec): SheetRepo = {
+    fileModelCLs: java.util.List[ClassLoader], repoSpec: RepoSpec): FancyRepo = {
     // Read the namespaces and directory sheets into a single directory model.
     val dirModel: Model = XLSXSheetRepoLoader.readDirectoryModelFromXLSX(sheetLocation, namespaceSheetName ?? nsSheetName22, dirSheetName ?? dirSheetName22, fileModelCLs: java.util.List[ClassLoader])
     FancyRepoLoader.makeRepoWithDirectory(repoSpec, dirModel);
@@ -137,7 +135,7 @@ object XLSXSheetRepoLoader extends BasicDebugger {
   val dirSheetName22 = "Dir";
   val queriesSheetName22 = "Qry";
 
-  private def loadTestXLSXSheetRepo(): SheetRepo = {
+  private def loadTestXLSXSheetRepo(): FancyRepo = {
     val clList = new java.util.ArrayList[ClassLoader];
     loadXLSXSheetRepo(keyForXLSXBootSheet22, nsSheetName22, dirSheetName22, clList, null)
   }
@@ -155,7 +153,7 @@ object XLSXSheetRepoLoader extends BasicDebugger {
 
     // Run the resulting fully bound query, and print the results.
 
-    val sr: SheetRepo = loadTestXLSXSheetRepo()
+    val sr: FancyRepo = loadTestXLSXSheetRepo()
     val qib = sr.makeInitialBinding
 
     qib.bindQName(lightsGraphVarName, lightsGraphQName)

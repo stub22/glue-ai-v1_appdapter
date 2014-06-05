@@ -14,35 +14,20 @@
  *  limitations under the License.
  */
 
-package org.appdapter.core.matdat
+package org.appdapter.core.repo.test
 
-import org.appdapter.core.log.BasicDebugger
-import org.appdapter.core.store.{ Repo, RepoOper }
 import org.appdapter.demo.DemoBrowserUI
-import org.appdapter.help.repo.RepoClientImpl
-import org.appdapter.impl.store.QueryHelper
-
-import com.hp.hpl.jena.query.{ Dataset, QuerySolution, ResultSetFactory, ResultSet }
-import com.hp.hpl.jena.rdf.model.{ Resource, RDFNode, ModelFactory, Model, Literal }
-import java.io.Reader
-import org.appdapter.core.store.{ ExtendedFileStreamUtils }
-import org.appdapter.impl.store.QueryHelper
-import scala.collection.JavaConversions.asScalaBuffer
-import org.appdapter.impl.store.DirectRepo
-import org.appdapter.core.store.Repo
-import org.appdapter.core.log.BasicDebugger
-
-class OmniLoaderRepo(myRepoSpecStart: RepoSpec, myDebugNameIn: String, myBasePathIn: String,
-  directoryModel: Model, fmcls: java.util.List[ClassLoader] = null)
-  extends SheetRepo(directoryModel, fmcls)
+import org.appdapter.core.matdat.GoogSheetRepoSpec
+/*
+class this
+  extends GoogSheetRepo(directoryModel, fmcls)
   with RepoOper.ReloadableDataset {
 
   myRepoSpecForRef = myRepoSpecStart
   myDebugNameToStr = myDebugNameIn
   //myBasePath = myBasePathIn
 
-  def this(directoryModel: Model) =
-    this(null, null, null, directoryModel, null)
+  def this(directoryModel: Model) =     this(null, null, null, directoryModel, null)
 
   def this(directoryModel: Model, fmcls: java.util.List[ClassLoader]) =
     this(null, null, null, directoryModel, fmcls)
@@ -61,7 +46,7 @@ class OmniLoaderRepo(myRepoSpecStart: RepoSpec, myDebugNameIn: String, myBasePat
   }
 
 }
-
+*/ /*
 class SimplistRepoSpec(val wd: Repo.WithDirectory) extends RepoSpec {
   override def getDirectoryModel = wd.getDirectoryModel
   override def makeRepo = wd
@@ -70,7 +55,7 @@ class SimplistRepoSpec(val wd: Repo.WithDirectory) extends RepoSpec {
   }
 
 }
-
+*/
 object OmniLoaderRepoTest {
 
   // These constants are used to test the ChanBinding model found in "GluePuma_BehavMasterDemo"

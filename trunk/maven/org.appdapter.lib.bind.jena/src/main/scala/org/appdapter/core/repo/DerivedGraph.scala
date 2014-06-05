@@ -14,18 +14,18 @@
  *  limitations under the License.
  */
 
-package org.appdapter.core.matdat
+package org.appdapter.core.repo
 
-import org.appdapter.core.log.{ BasicDebugger }
-import org.appdapter.core.name.{ Ident, FreeIdent }
-import org.appdapter.core.item.{ Item }
-import org.appdapter.core.store.{ Repo, InitialBinding, ModelClient }
-import org.appdapter.help.repo.{ RepoClient, RepoClientImpl, InitialBindingImpl, SolutionList }
-import org.appdapter.impl.store.{ FancyRepo }
+import scala.collection.JavaConversions.asScalaBuffer
+import scala.collection.JavaConverters.asScalaSetConverter
+
+import org.appdapter.core.item.Item
+import org.appdapter.core.log.BasicDebugger
+import org.appdapter.core.name.{ FreeIdent, Ident }
+import org.appdapter.core.store.Repo
+import org.appdapter.core.store.dataset.RepoDatasetFactory
+
 import com.hp.hpl.jena.rdf.model.Model
-import org.appdapter.core.store.dataset.RepoDatasetFactory
-import org.appdapter.core.log.Debuggable
-import org.appdapter.core.store.dataset.RepoDatasetFactory
 
 /**
  * @author Stu B. <www.texpedient.com>

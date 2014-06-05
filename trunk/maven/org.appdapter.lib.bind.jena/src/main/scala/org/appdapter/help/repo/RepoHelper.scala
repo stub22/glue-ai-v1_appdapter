@@ -14,20 +14,21 @@
  *  limitations under the License.
  */
 
-package org.appdapter.help.repo
-import org.appdapter.impl.store.{FancyRepo, QueryHelper, ResourceResolver};
-import com.hp.hpl.jena.query.{Query, QueryFactory, QueryExecution, QueryExecutionFactory, QuerySolution, QuerySolutionMap, Syntax};
+package org.appdapter.core.repo
+import com.hp.hpl.jena.query.{ Query, QueryFactory, QueryExecution, QueryExecutionFactory, QuerySolution, QuerySolutionMap, Syntax }
+import org.appdapter.core.store.ModelClient
+import org.appdapter.core.store.Repo
 
 /**
  * @author Stu B. <www.texpedient.com>
  */
 
-class RepoHelper {
-	val mySH = new SolutionHelper();
-	
-    def findSolutionsAsSolutionList(fr:FancyRepo, parsedQ: Query, qInitBinding: QuerySolution) : SolutionList = {
-		import scala.collection.JavaConversions._
-		val natSL : scala.collection.mutable.Buffer[QuerySolution] = fr.findAllSolutions(parsedQ, qInitBinding);
-		mySH.makeSolutionList(natSL);
-	}
+class RepoHelper_UNUSED_MAYBE {
+  val mySH = new SolutionHelper();
+
+  def findSolutionsAsSolutionList(fr: Repo.WithDirectory, parsedQ: Query, qInitBinding: QuerySolution): SolutionList = {
+    import scala.collection.JavaConversions._
+    val natSL: scala.collection.mutable.Buffer[QuerySolution] = fr.findAllSolutions(parsedQ, qInitBinding);
+    mySH.makeSolutionList(natSL);
+  }
 }

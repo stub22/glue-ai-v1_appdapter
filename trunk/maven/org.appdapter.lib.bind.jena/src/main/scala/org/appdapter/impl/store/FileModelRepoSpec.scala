@@ -14,22 +14,15 @@
  *  limitations under the License.
  */
 
-package org.appdapter.core.matdat
+package org.appdapter.core.repo
 
-import java.util.ArrayList
-import org.appdapter.bind.rdf.jena.model.JenaFileManagerUtils
-import org.appdapter.core.boot.ClassLoaderUtils
+import java.io.File
 import org.appdapter.core.log.BasicDebugger
-import org.appdapter.core.name.Ident
-import org.appdapter.core.store.{ Repo, RepoOper }
-import org.appdapter.impl.store.{ DirectRepo, QueryHelper }
-import org.appdapter.core.store.{ ExtendedFileStreamUtils }
+import org.appdapter.core.store.ExtendedFileLoading.Paths
+import org.appdapter.core.store.dataset.SpecialRepoLoader
 import com.hp.hpl.jena.query.{ Dataset, QuerySolution }
 import com.hp.hpl.jena.rdf.model.{ Literal, Model, Resource }
-import org.appdapter.core.store.dataset.SpecialRepoLoader
-import org.appdapter.core.store.ExtendedFileLoading.Paths
-import org.appdapter.impl.store.MultiRepoSpec
-import java.io.File
+import org.appdapter.impl.store.QueryHelper
 /**
  * @author Stu B. <www.texpedient.com>
  * @author Douglas R. Miles <www.logicmoo.org>

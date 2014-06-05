@@ -14,28 +14,18 @@
  *  limitations under the License.
  */
 
-package org.appdapter.impl.store
+package org.appdapter.core.repo
 
-import com.hp.hpl.jena.rdf.model.{ Model, Statement, Resource, Property, Literal, RDFNode, ModelFactory, InfModel }
-import com.hp.hpl.jena.datatypes.xsd.XSDDatatype
-import com.hp.hpl.jena.query.{ Query, QueryFactory, QueryExecution, QueryExecutionFactory, QuerySolution, QuerySolutionMap, Syntax }
-import com.hp.hpl.jena.query.{ Dataset, DatasetFactory }
-import com.hp.hpl.jena.query.{ ResultSet, ResultSetFormatter, ResultSetRewindable, ResultSetFactory }
-import com.hp.hpl.jena.ontology.{ OntProperty, ObjectProperty, DatatypeProperty }
-import com.hp.hpl.jena.datatypes.{ RDFDatatype, TypeMapper }
-import com.hp.hpl.jena.datatypes.xsd.{ XSDDatatype }
-import com.hp.hpl.jena.shared.{ PrefixMapping }
-import com.hp.hpl.jena.rdf.listeners.{ ObjectListener }
-import org.appdapter.bind.rdf.jena.model.{ ModelStuff, JenaModelUtils }
-import org.appdapter.bind.rdf.jena.query.{ JenaArqQueryFuncs, JenaArqResultSetProcessor }
-import org.appdapter.bind.rdf.jena.sdb.{ SdbStoreFactory }
-import org.appdapter.core.store.{ Repo, BasicRepoImpl, BasicStoredMutableRepoImpl, QueryProcessor, InitialBinding, ModelClient }
+import scala.collection.immutable.StringOps
+
+import org.appdapter.bind.rdf.jena.query.JenaArqQueryFuncs
+import org.appdapter.core.log.{ BasicDebugger, Loggable }
 import org.appdapter.core.name.Ident
-import org.appdapter.help.repo.InitialBindingImpl
-import org.appdapter.core.log.Loggable
-import org.appdapter.core.log.BasicDebugger
-import com.hp.hpl.jena.sdb.Store
-import org.appdapter.core.store.RepoOper
+import org.appdapter.core.store.{ InitialBinding, ModelClient, Repo }
+
+import com.hp.hpl.jena.query.{ Query, QuerySolution, QuerySolutionMap }
+import com.hp.hpl.jena.rdf.listeners.ObjectListener
+import com.hp.hpl.jena.rdf.model.Literal
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -182,14 +172,14 @@ trait FancyRepo extends Repo.WithDirectory with ModelClientCore with Loggable {
 
 // class DirectRepo(val myDirectoryModel : Model) extends FancyRepo {
 
-abstract class DirectRepo(directoryModel: Model) extends BasicRepoImpl with FancyRepo with Repo.Updatable {
+/*abstract class DirectRepo(directoryModel: Model) extends BasicRepoImpl with FancyRepo with Repo.Updatable {
   def loadSheetModelsIntoMainDataset(): Unit = {}
   def loadDerivedModelsIntoMainDataset(fileModelCLs: java.util.List[ClassLoader]): Unit = {}
   def loadFileModelsIntoMainDataset(fileModelCLs: java.util.List[ClassLoader]): Unit = {}
   val myDirectoryModel: Model = directoryModel;
   override def getDirectoryModel: Model = myDirectoryModel;
 
-}
+}*/
 
 // for appdapter 1.1.1 compatiblity
 /// if kept, maybe make this a big make every kind of repo one stop shop

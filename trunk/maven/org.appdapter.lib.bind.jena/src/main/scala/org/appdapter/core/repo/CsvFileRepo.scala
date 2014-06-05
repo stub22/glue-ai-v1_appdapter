@@ -14,16 +14,20 @@
  *  limitations under the License.
  */
 
-package org.appdapter.core.matdat
+package org.appdapter.core.repo
 
-import java.io.{ InputStreamReader, Reader }
 import org.appdapter.core.log.BasicDebugger
-import org.appdapter.core.store.{ ExtendedFileStreamUtils, Repo }
-import org.appdapter.impl.store.QueryHelper
+import java.io._
+import org.appdapter.core.store._
+import org.appdapter.core.repo._
+import org.appdapter.core.repo._
 import com.hp.hpl.jena.query.{ Dataset, QuerySolution, ResultSet, ResultSetFactory }
 import com.hp.hpl.jena.rdf.model.{ Literal, Model, RDFNode, Resource }
 import org.appdapter.core.store.dataset.RepoDatasetFactory
 import org.appdapter.core.store.dataset.SpecialRepoLoader
+import org.appdapter.core.matdat.SemSheet
+import org.appdapter.core.matdat.MatrixData
+import org.appdapter.impl.store.QueryHelper
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -102,7 +106,7 @@ object CsvFileSheetLoader extends BasicDebugger {
   }
 
   /// Loads a CSV File into a dir model (this is weird since you might need to have a Namespace Map .. to understand your CSV )
-  /*def loadCsvFileSheetRepo(dirSheet: String, nsSheetLocation: String, fileModelCLs: java.util.List[ClassLoader], repoSpec: RepoSpec): SheetRepo = {
+  /*def loadCsvFileSheetRepo(dirSheet: String, nsSheetLocation: String, fileModelCLs: java.util.List[ClassLoader], repoSpec: RepoSpec): GoogSheetRepo = {
     // Read the namespaces and directory sheets into a single directory model.
     val dirModel: Model = readDirectoryModelFromCsvFile(dirSheet, fileModelCLs, nsSheetLocation)
     // Construct a repo around that directory
@@ -153,7 +157,7 @@ object CsvFileSheetLoader extends BasicDebugger {
   val dirSheetPath = "Dir.Csv";
   val queriesSheetPath = "Qry.Csv"
 
-  private def loadTestCsvFileSheetRepo(): SheetRepo = {
+  private def loadTestCsvFileSheetRepo(): FancyRepo = {
     val clList: java.util.ArrayList[ClassLoader] = null;
     val spec = new CSVFileRepoSpec(dirSheetPath, nsSheetPath, clList)
     val sr = spec.makeRepo

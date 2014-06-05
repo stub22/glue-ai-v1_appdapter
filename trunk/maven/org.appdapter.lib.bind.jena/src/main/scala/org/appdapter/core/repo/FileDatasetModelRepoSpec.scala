@@ -14,15 +14,14 @@
  *  limitations under the License.
  */
 
-package org.appdapter.core.matdat
+package org.appdapter.core.repo
 
 import org.appdapter.core.log.BasicDebugger
-import org.appdapter.core.store.Repo
 import org.appdapter.core.store.RepoOper
-import org.appdapter.impl.store.{ DirectRepo, QueryHelper }
+import org.appdapter.core.store.dataset.SpecialRepoLoader
 import com.hp.hpl.jena.query.{ Dataset, QuerySolution }
 import com.hp.hpl.jena.rdf.model.{ Literal, Model, Resource }
-import org.appdapter.core.store.dataset.SpecialRepoLoader
+import org.appdapter.impl.store.QueryHelper
 
 /**
  * @author Douglas R. Miles <www.logicmoo.org>
