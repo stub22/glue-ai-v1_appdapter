@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.appdapter.core.repo
+package org.appdapter.impl.store
 
 import scala.collection.immutable.StringOps
 import org.appdapter.bind.rdf.jena.query.JenaArqQueryFuncs
@@ -25,6 +25,8 @@ import com.hp.hpl.jena.query.{ Query, QuerySolution, QuerySolutionMap }
 import com.hp.hpl.jena.rdf.listeners.ObjectListener
 import com.hp.hpl.jena.rdf.model.Literal
 import org.appdapter.help.repo.InitialBindingImpl
+import org.appdapter.impl.store.ModelClientImpl
+import org.appdapter.impl.store.ModelClientCore
 
 /**
  * @author Stu B. <www.texpedient.com>

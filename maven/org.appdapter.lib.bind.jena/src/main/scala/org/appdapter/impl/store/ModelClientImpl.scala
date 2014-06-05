@@ -14,24 +14,13 @@
  *  limitations under the License.
  */
 
-package org.appdapter.core.repo
-import com.hp.hpl.jena.rdf.model.{Model, Statement, Resource, Property, Literal, RDFNode, ModelFactory, InfModel}
+package org.appdapter.impl.store
+
+import com.hp.hpl.jena.rdf.model.{Model, Resource, Literal}
 import com.hp.hpl.jena.datatypes.xsd.XSDDatatype
-import com.hp.hpl.jena.query.{Query, QueryFactory, QueryExecution, QueryExecutionFactory, QuerySolution, QuerySolutionMap, Syntax};
-import com.hp.hpl.jena.query.{Dataset, DatasetFactory};
-import com.hp.hpl.jena.query.{ResultSet, ResultSetFormatter, ResultSetRewindable, ResultSetFactory};
-
-import com.hp.hpl.jena.ontology.{OntProperty, ObjectProperty, DatatypeProperty}
-import com.hp.hpl.jena.datatypes.{RDFDatatype, TypeMapper}
+import com.hp.hpl.jena.datatypes.RDFDatatype
 import com.hp.hpl.jena.datatypes.xsd.{XSDDatatype}
-import com.hp.hpl.jena.shared.{PrefixMapping}
-
-import com.hp.hpl.jena.rdf.listeners.{ObjectListener};
-
-import org.appdapter.bind.rdf.jena.model.{ModelStuff, JenaModelUtils};
-import org.appdapter.bind.rdf.jena.query.{JenaArqQueryFuncs, JenaArqResultSetProcessor};
-
-import org.appdapter.core.name.{Ident, FreeIdent}
+import org.appdapter.core.name.Ident
 import org.appdapter.core.item.{Item, JenaResourceItem}
 /**
  * @author Stu B. <www.texpedient.com>

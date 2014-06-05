@@ -17,7 +17,7 @@
 package org.appdapter.help.repo
 
 import org.appdapter.core.name.Ident
-import org.appdapter.core.repo.ModelClientCore
+import org.appdapter.impl.store.ModelClientCore
 import org.appdapter.core.store.{InitialBinding, Repo}
 
 import com.hp.hpl.jena.rdf.model.Model

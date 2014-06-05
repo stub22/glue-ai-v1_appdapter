@@ -40,6 +40,9 @@ import org.appdapter.demo.DemoBrowserUI
 import org.osgi.framework.BundleContext
 import com.hp.hpl.jena.rdf.model.Model
 import org.appdapter.help.repo.RepoClientImpl
+import org.appdapter.impl.store.FancyRepo
+import org.appdapter.core.repo.URLDirModelRepoSpec
+import org.appdapter.core.repo.ScanURLDirModelRepoSpec
 
 /**
  * @author Stu B. <www.texpedient.com>

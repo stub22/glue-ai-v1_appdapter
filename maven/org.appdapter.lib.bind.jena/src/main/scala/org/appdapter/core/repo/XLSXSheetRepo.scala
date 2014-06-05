@@ -25,6 +25,7 @@ import com.hp.hpl.jena.query.{ Dataset, QuerySolution, ResultSet, ResultSetFacto
 import com.hp.hpl.jena.rdf.model.{ Literal, Model, RDFNode, Resource }
 import org.appdapter.core.matdat.MatrixData
 import org.appdapter.impl.store.QueryHelper
+import org.appdapter.impl.store.FancyRepo
 
 /**
  * @author Stu B. <www.texpedient.com>
