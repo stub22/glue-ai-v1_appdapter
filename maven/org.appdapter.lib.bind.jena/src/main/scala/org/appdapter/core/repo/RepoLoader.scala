@@ -22,7 +22,7 @@ import org.appdapter.bind.rdf.jena.model.JenaFileManagerUtils
 import org.appdapter.core.log.BasicDebugger
 import org.appdapter.core.matdat.{CsvFileSheetLoader, GoogSheetRepoLoader, XLSXSheetRepoLoader}
 import org.appdapter.core.name.Ident
-import org.appdapter.core.store.{ExtendedFileStreamUtils, InitialBinding, InstallableRepoLoader, InstallableSpecReader, Repo, RepoOper}
+import org.appdapter.core.store.{ExtendedFileStreamUtils, InitialBinding, Repo, RepoOper}
 import org.appdapter.core.store.dataset.SpecialRepoLoader
 import org.appdapter.impl.store.FancyRepo
 
@@ -33,13 +33,17 @@ import com.hp.hpl.jena.rdf.model.{Model, Resource}
  * @author logicmoo
  */
 
-abstract class InstallableRepoReader extends InstallableSpecReader with InstallableRepoLoader {
+abstract class InstallableSpecReader {
+  def getExt(): String;
+  def makeRepoSpec(path: String, args: Array[String], cLs: java.util.List[ClassLoader]): RepoSpec;
+}
+abstract class InstallableRepoReader extends InstallableSpecReader {
   //override def getExt(): String = null
   override def makeRepoSpec(path: String, args: Array[String], cLs: java.util.List[ClassLoader]): RepoSpec = null
   def getContainerType(): String
   def getSheetType(): String
   def isDerivedLoader(): Boolean = false
-  //def loadModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader])
+  def loadModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader])
 }
 
 object FancyRepoLoader extends BasicDebugger {
@@ -50,8 +54,8 @@ object FancyRepoLoader extends BasicDebugger {
 
   var initedOnce = false;
   val specLoaders: java.util.List[InstallableSpecReader] = new java.util.ArrayList
-  val dirModelLoaders: java.util.List[InstallableRepoLoader] = new java.util.ArrayList
-  def getDirModelLoaders(): java.util.List[InstallableRepoLoader] = {
+  val dirModelLoaders: java.util.List[InstallableRepoReader] = new java.util.ArrayList
+  def getDirModelLoaders(): java.util.List[InstallableRepoReader] = {
     dirModelLoaders.synchronized {
       if (dirModelLoaders.size() < 4) {
         dirModelLoaders.add(new GoogSheetRepoLoader())
@@ -69,7 +73,7 @@ object FancyRepoLoader extends BasicDebugger {
         //dirModelLoaders.add(new LastModelLoader())
 
       }
-      return new ArrayList[InstallableRepoLoader](dirModelLoaders)
+      return new ArrayList[InstallableRepoReader](dirModelLoaders)
     }
   }
   def getSpecLoaders(): java.util.List[InstallableSpecReader] = {
@@ -88,7 +92,7 @@ object FancyRepoLoader extends BasicDebugger {
   }
 
   def updateDatasetFromDirModel(repoLoader: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
-    val dirModelLoaders: java.util.List[InstallableRepoLoader] = getDirModelLoaders
+    val dirModelLoaders: java.util.List[InstallableRepoReader] = getDirModelLoaders
     val dirModelLoaderIter = dirModelLoaders.listIterator
     repoLoader.setSynchronous(false)
     while (dirModelLoaderIter.hasNext()) {
