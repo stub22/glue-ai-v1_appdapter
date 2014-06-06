@@ -425,8 +425,7 @@ public class RepoOper implements AnyOper, UtilClass {
 	}
 
 	private static void theLoggerInfo(String string) {
-		System.out.println("RepoOper: " + string);
-
+		theLogger.info("RepoOper: " + string);
 	}
 
 	public static void clearAll(Dataset ds) {
