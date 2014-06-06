@@ -24,6 +24,7 @@ import com.hp.hpl.jena.query.{ Dataset, QuerySolution }
 import com.hp.hpl.jena.rdf.model.{ Literal, Model, Resource }
 import org.appdapter.impl.store.QueryHelper
 import org.appdapter.core.store.InstallableSpecReader
+
 /**
  * @author Stu B. <www.texpedient.com>
  * @author Douglas R. Miles <www.logicmoo.org>

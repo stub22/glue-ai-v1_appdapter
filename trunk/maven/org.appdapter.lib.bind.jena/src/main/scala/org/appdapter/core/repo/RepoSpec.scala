@@ -55,13 +55,13 @@ class DatabaseRepoSpec_REPEATED(configPath: String, optConfResCL: ClassLoader, d
   override def makeRepo() = loadDatabaseRepo(configPath, optConfResCL, dirGraphID)
 }*/
 
-abstract class RepoSpecForDirectory extends RepoSpec {
+abstract class RepoSpecForDirectory extends RepoSpecScala {
   override def makeRepo: FancyRepo = {
     FancyRepoLoader.makeRepoWithDirectory(this, getDirectoryModel(), null);
   }
   def getDirectoryModel(): Model;
 }
-abstract class RepoSpec {
+abstract class RepoSpecScala extends RepoSpec {
 
   def makeRepo(): Repo.WithDirectory;
 
@@ -89,7 +89,7 @@ object URLRepoSpec {
  * Takes a directory model and uses Goog, Xlsx, Pipeline,CSV,.ttl,rdf sources and loads them
  */
 class URLRepoSpec(var dirModelURL: String, var fileModelCLs: java.util.List[ClassLoader] = null)
-  extends RepoSpec {
+  extends RepoSpecScala {
 
   def trimString(str: String, outers: String*): String = {
     var tmp = str;
