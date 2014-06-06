@@ -454,7 +454,7 @@ final public class DemoBrowser implements AnyOper.Singleton {
 		});
 		registerToolsTrigger("<toplevel>|Load Repo From|" + BMC_WORKBOOK_PATH, new Trigger() {
 			@Override public void fire(Box targetBox) {
-				Utility.showResult(new org.appdapter.core.repo.OfflineXlsSheetRepoSpec(BMC_WORKBOOK_PATH, BMC_NAMESPACE_SHEET_NAME, BMC_DIRECTORY_SHEET_NAME, null).makeRepo());
+				Utility.showResult(new org.appdapter.core.matdat.OfflineXlsSheetRepoSpec(BMC_WORKBOOK_PATH, BMC_NAMESPACE_SHEET_NAME, BMC_DIRECTORY_SHEET_NAME, null).makeRepo());
 			}
 		});
 		registerToolsTrigger("<toplevel>|Load Repo From|A Choosen a File", new Trigger() {

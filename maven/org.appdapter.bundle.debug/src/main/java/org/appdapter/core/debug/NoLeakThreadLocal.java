@@ -1,6 +1,5 @@
 package org.appdapter.core.debug;
 
-import org.apache.log4j.helpers.ThreadLocalMap;
 
 public class NoLeakThreadLocal<T> {
 

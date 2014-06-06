@@ -4,7 +4,6 @@ import static org.appdapter.core.convert.ReflectUtils.DEFAULT_CONVERTER;
 import static org.appdapter.core.convert.ReflectUtils.isStatic;
 import static org.appdapter.core.convert.ReflectUtils.noSuchConversion;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 
@@ -21,7 +20,8 @@ public class ConverterFromMember extends Debuggable implements Converter {
 	ConverterMethod info;
 	CallableWithParameters callable;
 
-	@Override public String toString() {
+	@Override
+	public String toString() {
 		return "{" + toInfoStringArgV(from, "=", to, getFunction()) + "}";
 	}
 
@@ -37,7 +37,8 @@ public class ConverterFromMember extends Debuggable implements Converter {
 		callable = new CallableWithParameters() {
 			final Method m = this.m;
 
-			@Override public Object call(Object o, Object... params) {
+			@Override
+			public Object call(Object o, Object... params) {
 				try {
 					if (isStatic) {
 						return m.invoke(null, o);
@@ -52,11 +53,14 @@ public class ConverterFromMember extends Debuggable implements Converter {
 		};
 	}
 
-	@Override public boolean equals(Object obj) {
-		return super.equals(obj) || ((obj instanceof ConverterFromMember) && (((ConverterFromMember) obj).m == m));
+	@Override
+	public boolean equals(Object obj) {
+		return super.equals(obj)
+				|| ((obj instanceof ConverterFromMember) && (((ConverterFromMember) obj).m == m));
 	}
 
-	@Override public int hashCode() {
+	@Override
+	public int hashCode() {
 		return m.hashCode();
 	}
 
@@ -80,7 +84,9 @@ public class ConverterFromMember extends Debuggable implements Converter {
 		}
 	}
 
-	public <F, T> ConverterFromMember(Class<F> from, Class<T> to, CallableWithParameters<F, T> callable, boolean transitive, ConverterMethod cmi) {
+	public <F, T> ConverterFromMember(Class<F> from, Class<T> to,
+			CallableWithParameters<F, T> callable, boolean transitive,
+			ConverterMethod cmi) {
 		m = null;
 		this.callable = callable;
 		info = cmi;
@@ -91,7 +97,8 @@ public class ConverterFromMember extends Debuggable implements Converter {
 		allowOptionalArgs = false;
 	}
 
-	public Integer isAssignableFromL(Class objNeedsToBe, Class from, List maxConverts) {
+	public Integer isAssignableFromL(Class objNeedsToBe, Class from,
+			List maxConverts) {
 		if (from == objNeedsToBe)
 			return WILL;
 		if (objNeedsToBe == null || from == null)
@@ -101,16 +108,21 @@ public class ConverterFromMember extends Debuggable implements Converter {
 		if (!allowTransitive || maxConverts.size() > 3) {
 			return WONT;
 		}
-		return DEFAULT_CONVERTER.declaresConverts(null, from, objNeedsToBe, maxConverts);
+		return DEFAULT_CONVERTER.declaresConverts(null, from, objNeedsToBe,
+				maxConverts);
 	}
 
-	@Override public Integer declaresConverts(Object val, Class valClass, Class objNeedsToBe, List maxConverts) {
+	@Override
+	public Integer declaresConverts(Object val, Class valClass,
+			Class objNeedsToBe, List maxConverts) {
 		if (!objNeedsToBe.isAssignableFrom(to))
 			return WONT;
 		return isAssignableFromL(from, valClass, maxConverts);
 	}
 
-	@Override public <T> T convert(Object obj, Class<T> objNeedsToBe, List maxConverts) throws NoSuchConversionException {
+	@Override
+	public <T> T convert(Object obj, Class<T> objNeedsToBe, List maxConverts)
+			throws NoSuchConversionException {
 		try {
 			Object o = DEFAULT_CONVERTER.convert(obj, from, maxConverts);
 			Object mid;
@@ -123,7 +135,8 @@ public class ConverterFromMember extends Debuggable implements Converter {
 			} else {
 				mid = this.callable.call(o);
 			}
-			return (T) DEFAULT_CONVERTER.convert(mid, objNeedsToBe, maxConverts);
+			return (T) DEFAULT_CONVERTER
+					.convert(mid, objNeedsToBe, maxConverts);
 		} catch (Throwable e) {
 			return noSuchConversion(obj, objNeedsToBe, e);
 		}

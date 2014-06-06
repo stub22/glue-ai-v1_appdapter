@@ -16,20 +16,18 @@
 
 package org.appdapter.core.repo
 
-import java.util.{ ArrayList, Date }
+import java.util.{ArrayList, Date}
+
 import org.appdapter.bind.rdf.jena.model.JenaFileManagerUtils
 import org.appdapter.core.log.BasicDebugger
-import org.appdapter.core.matdat.{ CsvFileSheetLoader, GoogSheetRepoLoader, XLSXSheetRepoLoader }
+import org.appdapter.core.matdat.{CsvFileSheetLoader, GoogSheetRepoLoader, XLSXSheetRepoLoader}
 import org.appdapter.core.name.Ident
-import org.appdapter.core.store.{ ExtendedFileStreamUtils, InitialBinding, Repo, RepoOper }
+import org.appdapter.core.store.{ExtendedFileStreamUtils, InitialBinding, InstallableRepoLoader, InstallableSpecReader, LastModelLoader, Repo, RepoOper}
 import org.appdapter.core.store.dataset.SpecialRepoLoader
 import org.appdapter.impl.store.FancyRepo
-import com.hp.hpl.jena.query.{ Dataset, QuerySolution }
-import com.hp.hpl.jena.rdf.model.{ Model, Resource }
-import org.appdapter.core.store.InstallableSpecReader
-import org.appdapter.core.store.InstallableRepoLoader
-import org.appdapter.core.store.LastModelLoader
-import org.appdapter.core.repo._
+
+import com.hp.hpl.jena.query.{Dataset, QuerySolution}
+import com.hp.hpl.jena.rdf.model.{Model, Resource}
 /*
  * @author Stu B. <www.texpedient.com>
  * @author logicmoo
@@ -68,7 +66,7 @@ object FancyRepoLoader extends BasicDebugger {
         // the next is loaded loadDerivedModelsIntoMainDataset (which are pipeline models)
         //dirModelLoaders.add(new PipelineModelLoader())
         dirModelLoaders.add(new PipelineSnapLoader())
-        dirModelLoaders.add(new LastModelLoader())
+        //dirModelLoaders.add(new LastModelLoader())
 
       }
       return new ArrayList[InstallableRepoLoader](dirModelLoaders)

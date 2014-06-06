@@ -17,6 +17,7 @@
 package org.appdapter.fileconv;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -47,18 +48,40 @@ import com.hp.hpl.jena.util.FileManager;
 
 /**
  * @author Stu B. <www.texpedient.com>
- *
+ * 
  * @author logicmoo
  */
 
 public abstract class FileStreamUtils {
 
-	static private Logger theLogger = LoggerFactory.getLogger(FileStreamUtils.class);
+	static InputStreamReader getInputStreamReaderAtOnce(InputStream inputStream)
+			throws IOException {
+		ByteArrayOutputStream writer = new ByteArrayOutputStream();
+		copyIt(inputStream, writer);
+		return new InputStreamReader(new ByteArrayInputStream(
+				writer.toByteArray()));
+	}
+
+	private static void copyIt(InputStream inputStream,
+			ByteArrayOutputStream writer) throws IOException {
+		byte[] buff = new byte[4096];
+		int count;
+		while ((count = inputStream.read(buff)) != -1) {
+			if (count > 0) {
+				writer.write(buff, 0, count);
+			}
+		}
+	}
+
+	static private Logger theLogger = LoggerFactory
+			.getLogger(FileStreamUtils.class);
 
 	public static boolean SheetURLDataReaderMayReturnNullOnError = true;
 
-	public static Reader makeSheetURLDataReader(String fullUrlTxt) throws IOException {
+	public static Reader makeSheetURLDataReader(String fullUrlTxt)
+			throws IOException {
 		try {
+
 			return new InputStreamReader((new URL(fullUrlTxt)).openStream());
 		} catch (Throwable t) {
 			theLogger.error("Cannot read[" + fullUrlTxt + "]", t);
@@ -101,7 +124,8 @@ public abstract class FileStreamUtils {
 		return false;
 	}
 
-	public static Workbook getWorkbook(InputStream is, String extHint) throws IOException, InvalidFormatException {
+	public static Workbook getWorkbook(InputStream is, String extHint)
+			throws IOException, InvalidFormatException {
 		if (is == null)
 			throw new IOException("Not input stream for hint: " + extHint);
 		try {
@@ -125,21 +149,28 @@ public abstract class FileStreamUtils {
 		}
 	}
 
-	abstract public InputStream openInputStream(String srcPath, java.util.List<ClassLoader> cls) throws IOException;
+	abstract public InputStream openInputStream(String srcPath,
+			java.util.List<ClassLoader> cls) throws IOException;
 
-	abstract public InputStream openInputStreamOrNull(String srcPath, java.util.List<ClassLoader> cls);
+	abstract public InputStream openInputStreamOrNull(String srcPath,
+			java.util.List<ClassLoader> cls);
 
-	public Workbook getWorkbook(String sheetLocation, java.util.List<ClassLoader> fileModelCLs) throws InvalidFormatException, IOException {
+	public Workbook getWorkbook(String sheetLocation,
+			java.util.List<ClassLoader> fileModelCLs)
+			throws InvalidFormatException, IOException {
 		InputStream stream = openInputStreamOrNull(sheetLocation, fileModelCLs);
 		if (stream == null)
 			throw new IOException("Location not found: " + sheetLocation);
 		return getWorkbook(stream, getFileExt(sheetLocation));
 	}
 
-	public Reader getSheetReaderAt(String sheetLocation, String sheetName, java.util.List<ClassLoader> fileModelCLs) {
+	public Reader getSheetReaderAt(String sheetLocation, String sheetName,
+			java.util.List<ClassLoader> fileModelCLs) {
 		try {
-			theLogger.info("getSheetReaderAt: " + sheetLocation + "!" + sheetName);
-			return getWorkbookSheetCsvReaderAt(sheetLocation, sheetName, fileModelCLs);
+			theLogger.info("getSheetReaderAt: " + sheetLocation + "!"
+					+ sheetName);
+			return getWorkbookSheetCsvReaderAt(sheetLocation, sheetName,
+					fileModelCLs);
 		} catch (InvalidFormatException e) {
 			theLogger.error("getWorkbookSheetCsvReaderAt ", e);
 		} catch (IOException e) {
@@ -167,7 +198,8 @@ public abstract class FileStreamUtils {
 		return str.split("!");
 	}
 
-	public static String combineLocationAndSheet(String sheetLocation, String sheetName) {
+	public static String combineLocationAndSheet(String sheetLocation,
+			String sheetName) {
 		boolean missingSheetLocation = isNullOrEmptyString(sheetLocation);
 		boolean missingSheetName = isNullOrEmptyString(sheetName);
 		if (missingSheetLocation && missingSheetName) {
@@ -181,7 +213,9 @@ public abstract class FileStreamUtils {
 		return combined;
 	}
 
-	public Reader getWorkbookSheetCsvReaderAt(String sheetLocation, String sheetName, java.util.List<ClassLoader> fileModelCLs) throws InvalidFormatException, IOException {
+	public Reader getWorkbookSheetCsvReaderAt(String sheetLocation,
+			String sheetName, java.util.List<ClassLoader> fileModelCLs)
+			throws InvalidFormatException, IOException {
 		boolean missingSheetLocation = isNullOrEmptyString(sheetLocation);
 		boolean missingSheetName = isNullOrEmptyString(sheetName);
 		if (missingSheetLocation && missingSheetName) {
@@ -236,7 +270,8 @@ public abstract class FileStreamUtils {
 	public static String matchableName(String sheetName) {
 		if (sheetName == null)
 			return "";
-		return (sheetName + " ").replace(".csv ", "").replace(".xlsx ", "").replaceAll("-", "").replaceAll(" ", "").toLowerCase();
+		return (sheetName + " ").replace(".csv ", "").replace(".xlsx ", "")
+				.replaceAll("-", "").replaceAll(" ", "").toLowerCase();
 	}
 
 	private static Reader NotFound(String string) throws IOException {
@@ -253,7 +288,8 @@ public abstract class FileStreamUtils {
 	public static Reader sheetToReader(Sheet sheet) {
 		String str = sheetToString(sheet);
 		String sn = sheet.getSheetName();
-		getLogger().debug("Reading Sheet " + sn + " " + str.length() + " bytes");
+		getLogger()
+				.debug("Reading Sheet " + sn + " " + str.length() + " bytes");
 		saveFileString(sn, str);
 		return new StringReader(str);
 	}
@@ -272,14 +308,19 @@ public abstract class FileStreamUtils {
 				result = bis.read();
 			}
 
-			saveFileString(sn.replaceAll(":", "-").replaceAll("/", "-").replaceAll(".", "-").replaceAll("?", "-").replaceAll("=", "-").replaceAll("--", "-"), buf.toString());
+			saveFileString(
+					sn.replaceAll(":", "-").replaceAll("/", "-")
+							.replaceAll(".", "-").replaceAll("?", "-")
+							.replaceAll("=", "-").replaceAll("--", "-"),
+					buf.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
 	}
 
-	@SuppressWarnings("unused") private static void saveFileString(String sn, String str) {
+	@SuppressWarnings("unused")
+	private static void saveFileString(String sn, String str) {
 		if (true)
 			return;
 		try {
@@ -287,7 +328,8 @@ public abstract class FileStreamUtils {
 			fw.write(str);
 			fw.close();
 		} catch (IOException e) {
-			getLogger().error(" Saving Sheet " + sn + " { \n " + str + "\n }", e);
+			getLogger().error(" Saving Sheet " + sn + " { \n " + str + "\n }",
+					e);
 			e.printStackTrace();
 		}
 	}
@@ -334,7 +376,8 @@ public abstract class FileStreamUtils {
 			rwInclusve = width;
 		StringBuffer strBuff = new StringBuffer();
 		if (debugString) {
-			strBuff.append("##;; " + row.getSheet().getSheetName() + " rownum= " + row.getRowNum() + "\n\n");
+			strBuff.append("##;; " + row.getSheet().getSheetName()
+					+ " rownum= " + row.getRowNum() + "\n\n");
 		}
 
 		for (int j = 0; j <= rwInclusve; j++) {
@@ -358,7 +401,8 @@ public abstract class FileStreamUtils {
 
 			case Cell.CELL_TYPE_NUMERIC: {
 				t = "CELL_TYPE_NUMERIC";
-				c = ("" + cell.getNumericCellValue() + " ").replace(".0 ", "").trim();
+				c = ("" + cell.getNumericCellValue() + " ").replace(".0 ", "")
+						.trim();
 				break;
 			}
 			case Cell.CELL_TYPE_FORMULA: {
@@ -401,9 +445,12 @@ public abstract class FileStreamUtils {
 
 			if (s == null || s.length() < 1) {
 				if (!debugString) {
-					String msg = Debuggable.toInfoStringArgV(t + " really? " + c, "cell=" + cell, "cellAsString=" + s, //
-							"row.getClass= " + row.getClass(), "sheet=" + cell.getSheet().getSheetName(), //
-							"row=" + cell.getRow(), "rowstr = " + getRowDebugString(row, width));
+					String msg = Debuggable.toInfoStringArgV(t + " really? "
+							+ c, "cell=" + cell, "cellAsString=" + s, //
+							"row.getClass= " + row.getClass(), "sheet="
+									+ cell.getSheet().getSheetName(), //
+							"row=" + cell.getRow(), "rowstr = "
+									+ getRowDebugString(row, width));
 					if (!Debuggable.isRelease())
 						Debuggable.doBreak(msg);
 				}
@@ -439,7 +486,8 @@ public abstract class FileStreamUtils {
 	private static String escapeEmbeddedCharacters(String field) {
 		if (field == null)
 			return "";
-		field = field.replace("\r\n", "\n").replace("\r", "\n").replace("\n", " ").trim();
+		field = field.replace("\r\n", "\n").replace("\r", "\n")
+				.replace("\n", " ").trim();
 		if (field.length() == 0)
 			return field;
 

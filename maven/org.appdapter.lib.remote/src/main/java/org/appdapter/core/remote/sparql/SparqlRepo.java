@@ -16,7 +16,7 @@
 
 package org.appdapter.core.remote.sparql;
 
-import org.appdapter.core.repo.*;
+import org.appdapter.core.repo.DirectRepo;
 
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -32,11 +32,13 @@ public class SparqlRepo extends DirectRepo {
 		this.dirModelName = dirModelName;
 	}
 
-	@Override public Model getDirectoryModel() {
+	@Override
+	public Model getDirectoryModel() {
 		return getMainQueryDataset().getNamedModel(this.dirModelName);
 	}
 
-	@Override public Dataset makeMainQueryDataset() {
+	@Override
+	public Dataset makeMainQueryDataset() {
 		return new SparqlDataset(new SparqlDatasetGraph(endpointURI));
 	}
 }

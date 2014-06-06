@@ -2,6 +2,7 @@ package org.appdapter.core.store;
 
 import org.appdapter.core.repo.RepoSpec;
 
+
 /*
  *  Copyright 2013 by The Appdapter Project (www.appdapter.org).
  *

@@ -26,7 +26,7 @@ import org.appdapter.impl.store.QueryHelper
 import org.appdapter.impl.store.FancyRepo
 import org.appdapter.core.repo.InstallableRepoReader
 import org.appdapter.core.repo._
-import org.appdapter.core.repo.RepoSpec
+import org.appdapter.core.repo.RepoSpecScala
 import org.appdapter.core.repo.FancyRepoLoader
 
 /**

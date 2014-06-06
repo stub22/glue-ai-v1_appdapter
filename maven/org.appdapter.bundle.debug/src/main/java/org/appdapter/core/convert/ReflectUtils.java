@@ -46,7 +46,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.jena.atlas.lib.Lib;
-
+import org.appdapter.core.convert.Converter.ConverterMethod;
 import org.appdapter.core.debug.NoLeakThreadLocal;
 import org.appdapter.core.debug.UIAnnotations.AskIfEqual;
 import org.appdapter.core.debug.UIAnnotations.DontAdd;
@@ -54,10 +54,8 @@ import org.appdapter.core.debug.UIAnnotations.HRKRefinement;
 import org.appdapter.core.debug.UIAnnotations.UIHidden;
 import org.appdapter.core.debug.UIAnnotations.UISalient;
 import org.appdapter.core.debug.UIAnnotations.UtilClass;
-
 import org.appdapter.core.jvm.GetObject;
 import org.appdapter.core.jvm.SetObject;
-import org.appdapter.core.convert.Converter.ConverterMethod;
 import org.appdapter.core.log.Debuggable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
