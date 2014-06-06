@@ -1,8 +1,5 @@
 package org.appdapter.core.convert;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class OptionalArgFromCollectionAndConvertor implements OptionalArg {
 
