@@ -9,7 +9,7 @@ import java.util.Map;
 
 import org.appdapter.core.repo.URLRepoSpec;
 import org.appdapter.core.store.Repo;
-import org.appdapter.core.store.RepoOper;
+import org.appdapter.core.store.*;
 
 import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.query.Dataset;
@@ -19,7 +19,11 @@ public class RepoCopy {
 
 	public static void main(String[] paths) {
 		if (paths.length < 1) {
-			paths = new String[] { "file://./saveme/dir.ttl", "roundtrip/" };
+			main(new String[] {
+					"goog://0AsAJ7pzOB_F2dGVkcUlTSkJ1ZXhzUFVIckhxN25tQkE/9/8, goog://0AsAJ7pzOB_F2dDZYMUw0bHZSM1BZZTRYaFI5dGtTRGc/1/6",
+					"./saveme/" });
+			main(new String[] { "./saveme/dir.ttl", "roundtrip/" });
+			return;
 		}
 		copy(paths[0], paths[1]);
 	}

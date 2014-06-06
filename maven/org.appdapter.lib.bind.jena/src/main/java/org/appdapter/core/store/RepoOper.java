@@ -87,24 +87,30 @@ import com.hp.hpl.jena.vocabulary.RDF;
 public class RepoOper implements AnyOper, UtilClass {
 	@UISalient
 	static public interface ISeeToString {
-		@Override @UISalient(MenuName = "Call ToString") public String toString();
+		@Override
+		@UISalient(MenuName = "Call ToString")
+		public String toString();
 	}
 
 	@UISalient
 	static public interface ReloadableDataset {
 
-		@UISalient(MenuName = "Reload Repo") void reloadAllModels();
+		@UISalient(MenuName = "Reload Repo")
+		void reloadAllModels();
 
-		@UISalient() void reloadSingleModel(String modelName);
+		@UISalient()
+		void reloadSingleModel(String modelName);
 
-		@UISalient(ToValueMethod = "toString") Dataset getMainQueryDataset();
+		@UISalient(ToValueMethod = "toString")
+		Dataset getMainQueryDataset();
 
 		/**
 		 * Causes a repo to replace its mainQueryDataset with the 'ds' param
 		 * 
 		 * To switch from a file repo to a database repo
 		 * 
-		 * ReloadableDataset myRepo = new URLRepoSpec("myturtle.ttl").makeRepo();
+		 * ReloadableDataset myRepo = new
+		 * URLRepoSpec("myturtle.ttl").makeRepo();
 		 * 
 		 * Dataset old = myRepo.mainQueryDataset();
 		 * 
@@ -116,13 +122,15 @@ public class RepoOper implements AnyOper, UtilClass {
 		 * @param ds
 		 * @return
 		 */
-		@UISalient(ToValueMethod = "toString") void setMyMainQueryDataset(Dataset ds);
+		@UISalient(ToValueMethod = "toString")
+		void setMyMainQueryDataset(Dataset ds);
 	}
 
 	// static class ConcBootstrapTF extends
 	// BootstrapTriggerFactory<TriggerImpl<BoxImpl<TriggerImpl>>> {
 	// } // TT extends TriggerImpl<BT>
-	public static class ReloadAllModelsTrigger<RB extends RepoBox<TriggerImpl<RB>>> extends TriggerImpl<RB> {
+	public static class ReloadAllModelsTrigger<RB extends RepoBox<TriggerImpl<RB>>>
+			extends TriggerImpl<RB> {
 
 		Repo.WithDirectory m_repo;
 
@@ -134,7 +142,8 @@ public class RepoOper implements AnyOper, UtilClass {
 			m_repo = repo;
 		}
 
-		@Override public void fire(RB targetBox) {
+		@Override
+		public void fire(RB targetBox) {
 			String resolvedQueryURL = DemoResources.QUERY_PATH;
 			ClassLoader optCL = getClass().getClassLoader();
 			if (targetBox != null) {
@@ -146,12 +155,15 @@ public class RepoOper implements AnyOper, UtilClass {
 				RepoOper.ReloadableDataset reloadme = (RepoOper.ReloadableDataset) targetBox;
 				reloadme.reloadAllModels();
 			}
-			String resultXML = targetBox.processQueryAtUrlAndProduceXml(resolvedQueryURL, optCL);
-			logInfo("ResultXML\n-----------------------------------" + resultXML + "\n---------------------------------");
+			String resultXML = targetBox.processQueryAtUrlAndProduceXml(
+					resolvedQueryURL, optCL);
+			logInfo("ResultXML\n-----------------------------------"
+					+ resultXML + "\n---------------------------------");
 		}
 	}
 
-	static public class ReloadSingleModelTrigger<RB extends RepoBox<TriggerImpl<RB>>> extends TriggerImpl<RB> {
+	static public class ReloadSingleModelTrigger<RB extends RepoBox<TriggerImpl<RB>>>
+			extends TriggerImpl<RB> {
 
 		final String graphURI;
 		final ReloadableDataset m_repo;
@@ -161,7 +173,8 @@ public class RepoOper implements AnyOper, UtilClass {
 			m_repo = repo;
 		}
 
-		@Override public void fire(RB targetBox) {
+		@Override
+		public void fire(RB targetBox) {
 			m_repo.reloadSingleModel(graphURI);
 		}
 	}
@@ -173,11 +186,14 @@ public class RepoOper implements AnyOper, UtilClass {
 	@UISalient(Description = "isMergeDefault means addModelToDataset with some data will add withotu replacing")
 	public static boolean isMergeDefault = true;
 
-	@UISalient public static void replaceModelElements(Model dest, Model src) {
+	@UISalient
+	public static void replaceModelElements(Model dest, Model src) {
 		addModelElements(dest, src, true);
 	}
 
-	@UISalient public static void addModelElements(Model dest, Model src, boolean clearFirst) {
+	@UISalient
+	public static void addModelElements(Model dest, Model src,
+			boolean clearFirst) {
 		if (src == dest) {
 			return;
 		}
@@ -187,8 +203,8 @@ public class RepoOper implements AnyOper, UtilClass {
 		dest.add(src);
 		dest.setNsPrefixes(src.getNsPrefixMap());
 		// dest.getGraph().getPrefixMapping().equals(obj)
-		//if (src.getGraph() )dest.setNsPrefix("", src.getNsPrefixURI(""));
-		///dest.setNsPrefix("#", src.getNsPrefixURI("#"));
+		// if (src.getGraph() )dest.setNsPrefix("", src.getNsPrefixURI(""));
+		// /dest.setNsPrefix("#", src.getNsPrefixURI("#"));
 	}
 
 	public static Model unionAll(Dataset ds, Model... more) {
@@ -206,19 +222,21 @@ public class RepoOper implements AnyOper, UtilClass {
 		if (destM == srcM)
 			return;
 		if (srcM == null) {
-			throw new RuntimeException("Missing Model named: " + srcM);
+			srcM = RepoDatasetFactory.findOrCreateModel(ds, src);
+			// throw new RuntimeException("Missing Model named: " + srcM);
 		}
 		if (destM == null) {
 			destM = RepoDatasetFactory.createGroup(srcM);
 			ds.addNamedModel(dest, destM);
 		} else {
 			destM = RepoDatasetFactory.createGroup(destM, srcM);
-			theLogger.info("Made Merged Model from " + src + " and " + dest);
+			theLoggerInfo("Made Merged Model from " + src + " and " + dest);
 			ds.replaceNamedModel(dest, destM);
 		}
 	}
 
-	public static void replaceSingleDatasetModel(Dataset dest, Dataset src, String onlyModel) {
+	public static void replaceSingleDatasetModel(Dataset dest, Dataset src,
+			String onlyModel) {
 		onlyModel = correctModelName(onlyModel);
 		putSingleOrAllDatasetModel(dest, src, onlyModel, true);
 	}
@@ -227,21 +245,26 @@ public class RepoOper implements AnyOper, UtilClass {
 		return RepoDatasetFactory.correctModelName(onlyModel).getURI();
 	}
 
-	public static void putSingleDatasetModel(Dataset dest, Dataset src, String onlyModel, Resource unionOrReplace) {
-		putSingleOrAllDatasetModel(dest, src, onlyModel, isReplace(unionOrReplace));
+	public static void putSingleDatasetModel(Dataset dest, Dataset src,
+			String onlyModel, Resource unionOrReplace) {
+		putSingleOrAllDatasetModel(dest, src, onlyModel,
+				isReplace(unionOrReplace));
 	}
 
-	public static void putAllDatasetModels(Dataset dest, Dataset src, Resource unionOrReplace) {
+	public static void putAllDatasetModels(Dataset dest, Dataset src,
+			Resource unionOrReplace) {
 		putSingleOrAllDatasetModel(dest, src, null, isReplace(unionOrReplace));
 	}
 
-	private static void putSingleOrAllDatasetModel(Dataset dest, Dataset src, String onlyModel, boolean isReplace) {
+	private static void putSingleOrAllDatasetModel(Dataset dest, Dataset src,
+			String onlyModel, boolean isReplace) {
 		if (onlyModel == null) {
 			Debuggable.notImplemented("putAllDatasetModels...");
 		}
 		onlyModel = correctModelName(onlyModel);
 		if (!(dest instanceof Dataset)) {
-			theLogger.error("Destination is not a datasource! " + dest.getClass() + " " + dest);
+			theLogger.error("Destination is not a datasource! "
+					+ dest.getClass() + " " + dest);
 			return;
 		}
 		Dataset sdest = (Dataset) dest;
@@ -259,24 +282,25 @@ public class RepoOper implements AnyOper, UtilClass {
 			Model destModel = src.getNamedModel(onlyModel);
 			Model srcModel = dest.getNamedModel(onlyModel);
 			addModelElements(destModel, srcModel, isReplace);
-			theLogger.info("Replaced model " + onlyModel);
+			theLoggerInfo("Replaced model " + onlyModel);
 			return;
 		}
 		if (onSrc) {
 			sdest.addNamedModel(onlyModel, src.getNamedModel(onlyModel));
-			theLogger.info("Added model " + onlyModel);
+			theLoggerInfo("Added model " + onlyModel);
 			return;
 		}
 		if (onDest) {
 			if (isReplace) {
 				dest.getNamedModel(onlyModel).removeAll();
-				theLogger.info("clearing model " + onlyModel);
+				theLoggerInfo("clearing model " + onlyModel);
 			}
 			return;
 		}
 	}
 
-	public static void readDatasetFromURL(String srcPath, Dataset target, Resource unionOrReplace) throws IOException {
+	public static void readDatasetFromURL(String srcPath, Dataset target,
+			Resource unionOrReplace) throws IOException {
 		final Model loaderModel = RepoDatasetFactory.createPrivateMemModel();
 		final Dataset loaderDataset = DatasetFactory.createMem();
 		Model m = loaderDataset.getDefaultModel();
@@ -289,7 +313,8 @@ public class RepoOper implements AnyOper, UtilClass {
 		final Map<String, Model> constits = new HashMap();
 		loaderModel.register(new StatementListener() {
 
-			@Override public void addedStatement(Statement arg0) {
+			@Override
+			public void addedStatement(Statement arg0) {
 				System.out.println("Adding statement: " + arg0);
 				String subjStr = "" + arg0.getSubject();
 				if (subjStr.equals("self")) {
@@ -297,8 +322,10 @@ public class RepoOper implements AnyOper, UtilClass {
 					RDFNode r = arg0.getObject();
 					if (r.isLiteral()) {
 						// is a model start declaration;
-						String baseURI = modelName[0] = r.asLiteral().getString();
-						currentModel[0] = RepoDatasetFactory.createPrivateMemModel();
+						String baseURI = modelName[0] = r.asLiteral()
+								.getString();
+						currentModel[0] = RepoDatasetFactory
+								.createPrivateMemModel();
 						currentModel[0].setNsPrefix("", baseURI);
 					} else if (r.isResource()) {
 						// is a model ending declaration (we dont clear)
@@ -321,7 +348,8 @@ public class RepoOper implements AnyOper, UtilClass {
 		});
 		FileStreamUtils fus = new ExtendedFileStreamUtils();
 		InputStream fis = fus.openInputStream(srcPath, null);
-		InputStreamReader isr = new InputStreamReader(fis, Charset.defaultCharset().name());
+		InputStreamReader isr = new InputStreamReader(fis, Charset
+				.defaultCharset().name());
 		loaderModel.read(isr, null, "TTL");
 
 		if (currentModel[2] != null)
@@ -333,13 +361,15 @@ public class RepoOper implements AnyOper, UtilClass {
 		putAllDatasetModels(target, loaderDataset, unionOrReplace);
 	}
 
-	public static void putNamedModel(Dataset dest, String urlModel, Model model, Resource unionOrReplace) {
+	public static void putNamedModel(Dataset dest, String urlModel,
+			Model model, Resource unionOrReplace) {
 		boolean isReplace = isReplace(unionOrReplace);
 		urlModel = RepoOper.correctModelName(urlModel);
 		Lock lock = dest.getLock();
 		lock.enterCriticalSection(Lock.WRITE);
 		Lock oldLock = null;
 		model.enterCriticalSection(Lock.READ);
+
 		try {
 			long size = model.size();
 			boolean onDest = true;
@@ -348,12 +378,13 @@ public class RepoOper implements AnyOper, UtilClass {
 			}
 			if (!onDest) {
 				dest.addNamedModel(urlModel, model);
-				theLogger.info("Added new model " + urlModel + " size=" + size);
+				theLoggerInfo("Added new model " + urlModel + " size=" + size);
 				return;
 			}
 			Model old = dest.getNamedModel(urlModel);
 			if (old == model) {
-				theLogger.info("Nothing to do.. same model " + urlModel + " size=" + size);
+				theLoggerInfo("Nothing to do.. same model " + urlModel
+						+ " size=" + size);
 				return;
 			}
 			oldLock = old.getLock();
@@ -361,7 +392,8 @@ public class RepoOper implements AnyOper, UtilClass {
 			long sizeBefore = old.size();
 			if (RepoOper.inPlaceReplacements) {
 				old.removeAll();
-				theLogger.info("In place (Replacing) old model " + urlModel + " size=" + sizeBefore + "-> " + old.size());
+				theLoggerInfo("In place (Replacing) old model " + urlModel
+						+ " size=" + sizeBefore + "-> " + old.size());
 				isReplace = false;
 			}
 			if (!isReplace) {
@@ -371,12 +403,14 @@ public class RepoOper implements AnyOper, UtilClass {
 					old.withDefaultMappings(model);
 				}
 				long sizeNow = old.size();
-				theLogger.info("Merging into old model " + urlModel + " size(" + sizeBefore + "+" + model.size() + ")->" + sizeNow);
+				theLoggerInfo("Merging into old model " + urlModel + " size("
+						+ sizeBefore + "+" + model.size() + ")->" + sizeNow);
 				RepoDatasetFactory.invalidateModel(model);
 				return;
 			}
 			RepoDatasetFactory.invalidateModel(old);
-			theLogger.info("Replacing old model " + urlModel + " size=" + sizeBefore + "->" + model.size());
+			theLoggerInfo("Replacing old model " + urlModel + " size="
+					+ sizeBefore + "->" + model.size());
 			dest.replaceNamedModel(urlModel, model);
 		} finally {
 			if (oldLock != null)
@@ -388,6 +422,11 @@ public class RepoOper implements AnyOper, UtilClass {
 			if (lock != null)
 				lock.leaveCriticalSection();
 		}
+	}
+
+	private static void theLoggerInfo(String string) {
+		System.out.println("RepoOper: " + string);
+
 	}
 
 	public static void clearAll(Dataset ds) {
@@ -421,9 +460,11 @@ public class RepoOper implements AnyOper, UtilClass {
 		addOrReplaceDatasetElements(dest, src, (Resource) null);
 	}
 
-	public static void addOrReplaceDatasetElements(Dataset dest, Dataset src, Resource unionOrReplace) {
+	public static void addOrReplaceDatasetElements(Dataset dest, Dataset src,
+			Resource unionOrReplace) {
 		if (!(dest instanceof Dataset)) {
-			theLogger.error("Destination is not a datasource! " + dest.getClass() + " " + dest);
+			theLogger.error("Destination is not a datasource! "
+					+ dest.getClass() + " " + dest);
 			return;
 		}
 		Dataset sdest = (Dataset) dest;
@@ -506,13 +547,16 @@ public class RepoOper implements AnyOper, UtilClass {
 		return hs;
 	}
 
-	public static void registerDatasetFactory(String datasetTypeName, UserDatasetFactory factory) {
+	public static void registerDatasetFactory(String datasetTypeName,
+			UserDatasetFactory factory) {
 		RepoDatasetFactory.registerDatasetFactory(datasetTypeName, factory);
 	}
 
-	public static void writeRepoToDirectory(Repo repo, String dir, boolean solidifyDerivedModels) throws IOException {
+	public static void writeRepoToDirectory(Repo repo, String dir,
+			boolean solidifyDerivedModels) throws IOException {
 		if (!(repo instanceof Repo.WithDirectory)) {
-			System.out.println("Not Repo.WithDirectory  " + repo.getClass() + " " + repo);
+			System.out.println("Not Repo.WithDirectory  " + repo.getClass()
+					+ " " + repo);
 			return;
 		}
 		Dataset ds = repo.getMainQueryDataset();
@@ -532,15 +576,20 @@ public class RepoOper implements AnyOper, UtilClass {
 					fw.close();
 			}
 		}
-		String rname = new SimpleDateFormat("yyyyMMddHH_mmss_SSS").format(new Date());
-		Node fileRepoName = dirModel.getResource(csiURI + "filerepo_" + rname).asNode();
+		String rname = new SimpleDateFormat("yyyyMMddHH_mmss_SSS")
+				.format(new Date());
+		Node fileRepoName = dirModel.getResource(csiURI + "filerepo_" + rname)
+				.asNode();
 		Map<String, String> nsUsed = new HashMap<String, String>();
-		RepoOper.saveRepoAsManyTTLs(fileRepoName, dir, nsUsed, dirModel, ds, false, solidifyDerivedModels);
+		RepoOper.saveRepoAsManyTTLs(fileRepoName, dir, nsUsed, dirModel, ds,
+				false, solidifyDerivedModels);
 
 	}
 
-	public static void saveRepoAsManyTTLs(Node fileRepoName, String dir, Map<String, String> nsUsed, Model dirModel, Dataset ds,
-			boolean dontChangeDirModel, boolean solidifyDerivedModels) throws IOException {
+	public static void saveRepoAsManyTTLs(Node fileRepoName, String dir,
+			Map<String, String> nsUsed, Model dirModel, Dataset ds,
+			boolean dontChangeDirModel, boolean solidifyDerivedModels)
+			throws IOException {
 		new File(dir).mkdir();
 
 		PrefixMappingImpl pm = new PrefixMappingImpl();
@@ -548,7 +597,7 @@ public class RepoOper implements AnyOper, UtilClass {
 		pm.withDefaultMappings(PrefixMappingImpl.Extended);
 
 		String ccrtNS = dirModel.getNsPrefixURI("ccrt");
-		//String frtURI = dirModel.getNsPrefixURI("frt");
+		// String frtURI = dirModel.getNsPrefixURI("frt");
 		Node fileRepo = dirModel.getResource(ccrtNS + "FileRepo").asNode();
 		Node fileModel = dirModel.getResource(ccrtNS + "FileModel").asNode();
 		Set<Node> sheetTypes = new HashSet<Node>();
@@ -561,7 +610,8 @@ public class RepoOper implements AnyOper, UtilClass {
 		sheetTypesToLocalize.add(fileModel);
 		Node repo = dirModel.createProperty(ccrtNS, "repo").asNode();
 		Node rdftype = RDF.type.asNode();
-		Node sourcePath = dirModel.createProperty(ccrtNS, "sourcePath").asNode();
+		Node sourcePath = dirModel.createProperty(ccrtNS, "sourcePath")
+				.asNode();
 
 		DatasetGraph dsg = ds.asDatasetGraph();
 
@@ -572,7 +622,8 @@ public class RepoOper implements AnyOper, UtilClass {
 		Graph dirqGraph = dirModel.getGraph();
 		{
 			// letting dir models advertise all namespaces
-			File file = new File(dir, dontChangeDirModel ? "dir.ttl" : "dir.old");
+			File file = new File(dir, dontChangeDirModel ? "dir.ttl"
+					: "dir.old");
 			file.getParentFile().mkdirs();
 			PrintWriter ow = new PrintWriter(file);
 			ow.println("\n");
@@ -583,7 +634,8 @@ public class RepoOper implements AnyOper, UtilClass {
 		}
 		Graph newGraph = GraphFactory.createGraphMem();
 
-		newGraph.add(new Triple(fileRepoName, sourcePath, NodeFactory.createLiteral(dir)));
+		newGraph.add(new Triple(fileRepoName, sourcePath, NodeFactory
+				.createLiteral(dir)));
 		newGraph.add(new Triple(fileRepoName, rdftype, fileRepo));
 
 		ArrayList<Node> derived = new ArrayList<Node>();
@@ -594,7 +646,8 @@ public class RepoOper implements AnyOper, UtilClass {
 		while (dni.hasNext()) {
 			Node gname = dni.next();
 			String nodeName = gname.toString();
-			if (nodeName == null || nodeName.equals("#all") || nodeName.startsWith("#"))
+			if (nodeName == null || nodeName.equals("#all")
+					|| nodeName.startsWith("#"))
 				continue;
 			allNodes.add(gname);
 			Model m = ds.getNamedModel(gname.toString());
@@ -620,7 +673,8 @@ public class RepoOper implements AnyOper, UtilClass {
 		while (dni.hasNext()) {
 			Node gname = dni.next();
 			String nodeName = gname.toString();
-			if (nodeName == null || nodeName.equals("#all") || nodeName.startsWith("#"))
+			if (nodeName == null || nodeName.equals("#all")
+					|| nodeName.startsWith("#"))
 				continue;
 			String name = gname.getLocalName();
 			String filename = name + ".ttl";
@@ -643,12 +697,14 @@ public class RepoOper implements AnyOper, UtilClass {
 				if (!sheetTypes.contains(was.getObject())) {
 					newGraph.add(was);
 				}
-				//NodeIterator foo = 
-				// dirModel.listObjectsOfProperty(dirModel.createResource(gname.getURI()), dirModel.createProperty(sourcePath.getURI()));
+				// NodeIterator foo =
+				// dirModel.listObjectsOfProperty(dirModel.createResource(gname.getURI()),
+				// dirModel.createProperty(sourcePath.getURI()));
 				if (addToDirModel) {
 					newGraph.add(new Triple(gname, repo, fileRepoName));
 					newGraph.add(new Triple(gname, rdftype, fileModel));
-					newGraph.add(new Triple(gname, sourcePath, NodeFactory.createLiteral(filename)));
+					newGraph.add(new Triple(gname, sourcePath, NodeFactory
+							.createLiteral(filename)));
 				}
 			}
 
@@ -677,7 +733,8 @@ public class RepoOper implements AnyOper, UtilClass {
 		if (dirModel != null && !dontChangeDirModel) {
 			File file = new File(dir, "dir.ttl");
 			PrintWriter ow = new PrintWriter(file);
-			ow.println("# load this with..  Repo repo = new UrlRepoSpec(\"" + file.toURL() + "\").makeRepo();\n");
+			ow.println("# load this with..  Repo repo = new UrlRepoSpec(\""
+					+ file.toURL() + "\").makeRepo();\n");
 			ow.println("\n");
 			Model m = RepoDatasetFactory.createPrivateMemModel();
 			m.setNsPrefixes(dirModel);
@@ -701,7 +758,8 @@ public class RepoOper implements AnyOper, UtilClass {
 		return false;
 	}
 
-	private static void derivedFromModels(Model m0, DatasetGraph ds, List<Graph> ums, List<Object> list, List<Node> named) {
+	private static void derivedFromModels(Model m0, DatasetGraph ds,
+			List<Graph> ums, List<Object> list, List<Node> named) {
 		if (list == null)
 			list = new ArrayList<Object>();
 		Graph m = getUnderlyingGraph(m0.getGraph());
@@ -734,7 +792,8 @@ public class RepoOper implements AnyOper, UtilClass {
 		addConstituentGraphs(g, list, false);
 	}
 
-	public static void addConstituentGraphs(Graph g, Collection list, boolean retainMultis) {
+	public static void addConstituentGraphs(Graph g, Collection list,
+			boolean retainMultis) {
 		if (g == null || list.contains(g))
 			return;
 		boolean retainG = false;
@@ -771,7 +830,9 @@ public class RepoOper implements AnyOper, UtilClass {
 
 	}
 
-	public static void writeModel(Model m, Writer ow, boolean includeNamespaces, boolean trimNamepaces, PrefixMapping pm) throws IOException {
+	public static void writeModel(Model m, Writer ow,
+			boolean includeNamespaces, boolean trimNamepaces, PrefixMapping pm)
+			throws IOException {
 		Graph graph = getUnderlyingGraph(m.getGraph());
 		if (graph instanceof CompositionBase) {
 			ow.write("# CompositionBase = " + graph.getClass() + "\n");
@@ -804,13 +865,15 @@ public class RepoOper implements AnyOper, UtilClass {
 			}
 			if (prefix == null) {
 				if (ns.endsWith(":")) {
-					Debuggable.oldBug(ow, "# ODD ns namespace ref " + ns + " caused by " + why + " writing " + ow);
+					Debuggable.oldBug(ow, "# ODD ns namespace ref " + ns
+							+ " caused by " + why + " writing " + ow);
 					prefix = ns.substring(0, ns.length() - 1);
 					ns = pm.getNsURIPrefix(prefix);
 				}
 			}
 			if (ns == null || prefix == null) {
-				Debuggable.oldBug(ow, "# missing namespace ref for " + prefix + "=" + ns + " caused by " + why);
+				Debuggable.oldBug(ow, "# missing namespace ref for " + prefix
+						+ "=" + ns + " caused by " + why);
 				continue;
 			}
 			m2.setNsPrefix(prefix, ns);
@@ -871,14 +934,15 @@ public class RepoOper implements AnyOper, UtilClass {
 			baseURI = name;
 		}
 		if (baseURI == null)
-			baseURI = "http://modelToOntoModel/modelToOntoModel_model_" + System.identityHashCode(defaultModel) + "#";
+			baseURI = "http://modelToOntoModel/modelToOntoModel_model_"
+					+ System.identityHashCode(defaultModel) + "#";
 		return baseURI;
 	}
 
 	public static String getModelSource(Model boundModel) {
 		// Serialize model and update text area
 		StringWriter writer = new StringWriter();
-		//xferPrefixes(boundModel, null);
+		// xferPrefixes(boundModel, null);
 		Map<String, String> pmap = boundModel.getNsPrefixMap();
 		boundModel.write(writer, "TTL");
 		String turtle = writer.toString();
@@ -887,14 +951,16 @@ public class RepoOper implements AnyOper, UtilClass {
 			String prefix = (String) it.next();
 			String uri = pmap.get(prefix);
 			if (prefix.length() > 0) {
-				String remove = "\\@prefix " + prefix + "\\:.*\\<" + uri + "\\> .\n";
+				String remove = "\\@prefix " + prefix + "\\:.*\\<" + uri
+						+ "\\> .\n";
 				turtle = turtle.replaceAll(remove, "");
 			}
 		}
 		return turtle;
 	}
 
-	static public Model loadTTLReturnDirModel(final Dataset targetDataset, InputStream fis) {
+	static public Model loadTTLReturnDirModel(final Dataset targetDataset,
+			InputStream fis) {
 		RDFDataMgr.read(targetDataset, fis, Lang.TRIG);
 		Model dirModel = targetDataset.getNamedModel("#dir");
 		if (dirModel == null) {
@@ -903,7 +969,8 @@ public class RepoOper implements AnyOper, UtilClass {
 		return dirModel;
 	}
 
-	protected static Model findOrCreate(Dataset targetDataset, String baseURI, final PrefixMapping nsMap) {
+	protected static Model findOrCreate(Dataset targetDataset, String baseURI,
+			final PrefixMapping nsMap) {
 		if (targetDataset.containsNamedModel(baseURI)) {
 			return targetDataset.getNamedModel(baseURI);
 		}
@@ -923,14 +990,17 @@ public class RepoOper implements AnyOper, UtilClass {
 		Collection<Graph> grpGraph = new HashSet<Graph>();
 		while (names.hasNext()) {
 			String nodeName = names.next();
-			if (nodeName == null || nodeName.equals("#all") || nodeName.startsWith("#"))
+			if (nodeName == null || nodeName.equals("#all")
+					|| nodeName.startsWith("#"))
 				continue;
 			Model m = ds.getNamedModel(nodeName);
-			addConstituentGraphs(RepoOper.getUnderlyingGraph(m.getGraph()), grpGraph);
+			addConstituentGraphs(RepoOper.getUnderlyingGraph(m.getGraph()),
+					grpGraph);
 		}
 		for (Model dm : more) {
 			if (dm != null) {
-				addConstituentGraphs(RepoOper.getUnderlyingGraph(dm.getGraph()), grpGraph);
+				addConstituentGraphs(
+						RepoOper.getUnderlyingGraph(dm.getGraph()), grpGraph);
 			}
 		}
 		Graph[] gs = grpGraph.toArray(new Graph[grpGraph.size()]);

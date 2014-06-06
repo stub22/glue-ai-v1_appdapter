@@ -23,23 +23,23 @@ package org.appdapter.core.matdat
 /// Goog Doc Sheet Reading
 /////////////////////////////////////////
 
-object WebSheet {
-  val gdocSheetBaseURL = "https://docs.google.com/spreadsheet/pub";
+final private[matdat] object WebSheet {
+  final private[matdat] val gdocSheetBaseURL = "https://docs.google.com/spreadsheet/pub";
   //  Building a param string like ?key=0ArBjkBo&single=true&gid=7&range=A2%3AK999&output=csv
-  val gdocParamDocKey = "key";
-  val gdocParamSingleSheet = "single";
-  val gdocParamSheetNum = "gid";
-  val gdocParamCellRange = "range";
-  val gdocParamOutputFormat = "output";
-  val gdocFormatCSV = "csv";
-  val gdocFlagTrue = "true";
-  val queryIndicator = "?";
-  val paramSeperator = "&";
-  val paramAssign = "=";
+  final private[matdat] val gdocParamDocKey = "key";
+  final private[matdat] val gdocParamSingleSheet = "single";
+  final private[matdat] val gdocParamSheetNum = "gid";
+  final private[matdat] val gdocParamCellRange = "range";
+  final private[matdat] val gdocParamOutputFormat = "output";
+  final private[matdat] val gdocFormatCSV = "csv";
+  final private[matdat] val gdocFlagTrue = "true";
+  final private[matdat] val queryIndicator = "?";
+  final private[matdat] val paramSeperator = "&";
+  final private[matdat] val paramAssign = "=";
 
-  def makeParamBinding(name: String, v: String) = name + paramAssign + v;
+  final private[matdat] def makeParamBinding(name: String, v: String) = name + paramAssign + v;
 
-  def makeGdocSheetQueryURL(docKey: String, sheetNum: Int, optRange: Option[String]): String = {
+  final private[matdat] def makeGdocSheetQueryURL(docKey: String, sheetNum: Int, optRange: Option[String]): String = {
     val builder = new StringBuilder(gdocSheetBaseURL)
     builder.append(queryIndicator);
     builder.append(makeParamBinding(gdocParamDocKey, docKey));

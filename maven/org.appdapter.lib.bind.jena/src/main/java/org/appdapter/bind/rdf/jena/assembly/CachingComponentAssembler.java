@@ -16,31 +16,24 @@
 
 package org.appdapter.bind.rdf.jena.assembly;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.appdapter.core.component.ComponentAssemblyNames;
 import org.appdapter.core.component.ComponentCache;
-import org.appdapter.core.component.ComponentAssemblyNames;
-import org.appdapter.core.name.Ident;
-import org.appdapter.core.item.Item;
-import org.appdapter.core.item.JenaResourceItem;
 import org.appdapter.core.component.KnownComponent;
 import org.appdapter.core.component.MutableKnownComponent;
+import org.appdapter.core.item.Item;
+import org.appdapter.core.item.JenaResourceItem;
+import org.appdapter.core.name.Ident;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.hp.hpl.jena.assembler.Assembler;
 import com.hp.hpl.jena.assembler.Mode;
 import com.hp.hpl.jena.assembler.assemblers.AssemblerBase;
 import com.hp.hpl.jena.rdf.model.Resource;
-import java.util.HashMap;
-import java.util.Map;
 //import org.appdapter.bind.rdf.jena.assembly.ItemAssemblyReader;
 //import org.appdapter.bind.rdf.jena.assembly.ItemAssemblyReaderImpl;
-
-import org.appdapter.core.log.BasicDebugger;
-import org.appdapter.core.log.Loggable;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  *
