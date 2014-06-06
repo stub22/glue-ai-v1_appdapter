@@ -45,7 +45,7 @@ import org.appdapter.impl.store.FancyRepo
 /// this is a registerable loader
 /////////////////////////////////////////
 
-class DatabaseRepoSpec(configPath: String, optConfResCL: ClassLoader, dirGraphID: Ident) extends RepoSpecScala {
+class DatabaseRepoSpec(configPath: String, optConfResCL: ClassLoader, dirGraphID: Ident) extends RepoSpec {
   def this(cPath: String, optCL: ClassLoader, dirGraphUriPrefix: String, dirGraphLocalName: String) = this(cPath, optCL, new FreeIdent(dirGraphUriPrefix + dirGraphLocalName, dirGraphLocalName))
   override def makeRepo() = DatabaseRepoFactoryLoader.makeDatabaseRepo(configPath, optConfResCL, dirGraphID)
 }
