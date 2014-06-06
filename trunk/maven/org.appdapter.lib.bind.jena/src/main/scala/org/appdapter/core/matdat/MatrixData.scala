@@ -62,8 +62,8 @@ class MatrixRowCSV(val myRowArr: Array[String]) extends MatrixRow {
   }
   def safelyTrim(s: String): String = {
     var ss = s
-    while (s.startsWith(" ")) ss = ss.substring(1);
-    while (s.endsWith(" ")) ss = ss.substring(0, ss.length() - 1);
+    while (ss.startsWith(" ")) ss = ss.substring(1);
+    while (ss.endsWith(" ")) ss = ss.substring(0, ss.length() - 1);
     ss
   }
 }
