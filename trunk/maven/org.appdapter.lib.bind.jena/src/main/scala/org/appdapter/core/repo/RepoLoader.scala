@@ -22,7 +22,7 @@ import org.appdapter.bind.rdf.jena.model.JenaFileManagerUtils
 import org.appdapter.core.log.BasicDebugger
 import org.appdapter.core.matdat.{CsvFileSheetLoader, GoogSheetRepoLoader, XLSXSheetRepoLoader}
 import org.appdapter.core.name.Ident
-import org.appdapter.core.store.{ExtendedFileStreamUtils, InitialBinding, InstallableRepoLoader, InstallableSpecReader, LastModelLoader, Repo, RepoOper}
+import org.appdapter.core.store.{ExtendedFileStreamUtils, InitialBinding, InstallableRepoLoader, InstallableSpecReader, Repo, RepoOper}
 import org.appdapter.core.store.dataset.SpecialRepoLoader
 import org.appdapter.impl.store.FancyRepo
 
