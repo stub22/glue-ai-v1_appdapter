@@ -33,16 +33,16 @@
 package org.appdapter.core.repo
 
 import java.util.HashMap
+
 import org.appdapter.core.boot.ClassLoaderUtils
-import org.appdapter.core.matdat.{ GoogSheetRepoSpec, OnlineSheetRepoSpec }
-import org.appdapter.core.store.Repo
+import org.appdapter.core.matdat.{GoogSheetRepoSpec, OfflineXlsSheetRepoSpec, OnlineSheetRepoSpec}
+import org.appdapter.core.store.{InstallableSpecReader, Repo}
 import org.appdapter.demo.DemoBrowserUI
 import org.appdapter.help.repo.RepoClientImpl
 import org.appdapter.impl.store.FancyRepo
 import org.osgi.framework.BundleContext
+
 import com.hp.hpl.jena.rdf.model.Model
-import org.appdapter.core.matdat.OfflineXlsSheetRepoSpec
-import org.appdapter.core.store.InstallableSpecReader
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -55,13 +55,13 @@ class DatabaseRepoSpec_REPEATED(configPath: String, optConfResCL: ClassLoader, d
   override def makeRepo() = loadDatabaseRepo(configPath, optConfResCL, dirGraphID)
 }*/
 
-abstract class RepoSpecForDirectory extends RepoSpecScala {
+abstract class RepoSpecForDirectory extends RepoSpec {
   override def makeRepo: FancyRepo = {
     FancyRepoLoader.makeRepoWithDirectory(this, getDirectoryModel(), null);
   }
   def getDirectoryModel(): Model;
 }
-abstract class RepoSpecScala extends RepoSpec {
+abstract class RepoSpec {
 
   def makeRepo(): Repo.WithDirectory;
 
@@ -75,7 +75,7 @@ abstract class RepoSpecScala extends RepoSpec {
 
   //depricated("uses hardcoded query sheet like ccrt:qry_sheet_77")
   def makeRepoClient(repo: Repo.WithDirectory): RepoClientImpl = {
-    new RepoClientImpl(repo, getDfltTgtGraphSparqlVarName, getDfltQrySrcGraphQName);
+   new RepoClientImpl(repo, getDfltTgtGraphSparqlVarName, getDfltQrySrcGraphQName);
   }
 
   def getDfltQrySrcGraphQName = RepoSpecDefaultNames.DFLT_QRY_SRC_GRAPH_TYPE;
@@ -89,7 +89,7 @@ object URLRepoSpec {
  * Takes a directory model and uses Goog, Xlsx, Pipeline,CSV,.ttl,rdf sources and loads them
  */
 class URLRepoSpec(var dirModelURL: String, var fileModelCLs: java.util.List[ClassLoader] = null)
-  extends RepoSpecScala {
+  extends RepoSpec {
 
   def trimString(str: String, outers: String*): String = {
     var tmp = str;

@@ -169,7 +169,7 @@ public interface Repo extends QueryProcessor {
 		public ModelClient getFallbackModelClient();
 	}
 
-	public static interface WithDirectory extends WithFallbackModelClient {
+	public static interface WithDirectory extends WithFallbackModelClient, Updatable {
 		public Model getDirectoryModel();
 
 		public ModelClient getDirectoryModelClient();

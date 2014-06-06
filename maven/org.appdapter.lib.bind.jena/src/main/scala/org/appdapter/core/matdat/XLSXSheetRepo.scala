@@ -17,17 +17,17 @@
 package org.appdapter.core.matdat
 
 import java.io.Reader
+
 import org.appdapter.core.log.BasicDebugger
+import org.appdapter.core.repo.{InstallableRepoReader, FancyRepoLoader, _}
 import org.appdapter.core.store.ExtendedFileStreamUtils
-import org.appdapter.core.store.dataset.{ RepoDatasetFactory, SpecialRepoLoader }
-import com.hp.hpl.jena.query.{ Dataset, QuerySolution, ResultSet, ResultSetFactory }
-import com.hp.hpl.jena.rdf.model.{ Literal, Model, RDFNode, Resource }
-import org.appdapter.impl.store.QueryHelper
-import org.appdapter.impl.store.FancyRepo
-import org.appdapter.core.repo.InstallableRepoReader
-import org.appdapter.core.repo._
-import org.appdapter.core.repo.RepoSpecScala
-import org.appdapter.core.repo.FancyRepoLoader
+import org.appdapter.core.store.dataset.{RepoDatasetFactory, SpecialRepoLoader}
+import org.appdapter.impl.store.{FancyRepo, QueryHelper}
+
+import com.hp.hpl.jena.query.{Dataset, QuerySolution, ResultSet}
+import com.hp.hpl.jena.rdf.model.{Literal, Model, Resource}
+
+
 
 /**
  * @author Stu B. <www.texpedient.com>
