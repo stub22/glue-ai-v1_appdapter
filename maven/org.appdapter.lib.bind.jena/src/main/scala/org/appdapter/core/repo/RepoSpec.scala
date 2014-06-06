@@ -36,7 +36,7 @@ import java.util.HashMap
 
 import org.appdapter.core.boot.ClassLoaderUtils
 import org.appdapter.core.matdat.{GoogSheetRepoSpec, OfflineXlsSheetRepoSpec, OnlineSheetRepoSpec}
-import org.appdapter.core.store.{InstallableSpecReader, Repo}
+import org.appdapter.core.store.{Repo}
 import org.appdapter.demo.DemoBrowserUI
 import org.appdapter.help.repo.RepoClientImpl
 import org.appdapter.impl.store.FancyRepo
