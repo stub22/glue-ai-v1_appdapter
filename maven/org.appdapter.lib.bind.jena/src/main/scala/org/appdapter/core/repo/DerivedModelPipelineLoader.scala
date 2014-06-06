@@ -19,9 +19,10 @@ package org.appdapter.core.repo
 import org.appdapter.core.log.BasicDebugger
 import org.appdapter.core.store.RepoOper
 import org.appdapter.core.store.dataset.SpecialRepoLoader
+import org.appdapter.impl.store.QueryHelper
 import com.hp.hpl.jena.query.{ Dataset, QuerySolution }
 import com.hp.hpl.jena.rdf.model.Model
-import org.appdapter.impl.store.QueryHelper
+import org.appdapter.core.store.dataset.RepoDatasetFactory
 
 /**
  * @author Douglas R. Miles <www.logicmoo.org>
@@ -38,9 +39,21 @@ import org.appdapter.impl.store.QueryHelper
  *    in all the legal places that can provide a single file path
  */
 /// this is a registerable loader
+/// this is a registerable loader
+class DerivedModelLoader extends InstallableRepoReader {
+  override def getExt = null
+  override def getContainerType() = "ccrt:DerivedModel"
+  override def getSheetType() = "ccrt:UnionModel"
+  override def isDerivedLoader() = true
+  override def loadModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
+    //DerivedModelLoader.loadSheetModelsIntoTargetDataset(repo, mainDset, dirModel, fileModelCLs)
+  }
+}
+//================ LOADER
+
 object DerivedModelLoader extends BasicDebugger {
 
-  def loadSheetModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, myDirectoryModel: Model, fileModelCLs: java.util.List[ClassLoader]) = {
+  final private def loadSheetModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, myDirectoryModel: Model, fileModelCLs: java.util.List[ClassLoader]) = {
 
     val nsJavaMap: java.util.Map[String, String] = myDirectoryModel.getNsPrefixMap()
 
@@ -48,12 +61,13 @@ object DerivedModelLoader extends BasicDebugger {
     val msqText = """
 	select ?model ?unionOrReplace
 		{
-			?model a ccrt:DerivedModel; ccrt:repo ?container.
-			OPTIONAL { ?model a ?unionOrReplace. FILTER (?unionOrReplace = ccrt:UnionModel) }		
+			?model a ccrt:DerivedModel; 
 		}     
 		"""
 
-    val msRset = QueryHelper.execModelQueryWithPrefixHelp(myDirectoryModel, msqText);
+    val unionAllModel = RepoOper.unionAll(mainDset, myDirectoryModel, mainDset.getDefaultModel());
+
+    val msRset = QueryHelper.execModelQueryWithPrefixHelp(unionAllModel, msqText);
     import scala.collection.JavaConversions._;
     while (msRset.hasNext()) {
       val qSoln: QuerySolution = msRset.next();
@@ -64,8 +78,8 @@ object DerivedModelLoader extends BasicDebugger {
 
       val dbgArray = Array[Object](modelRes, modelName);
       getLogger.warn("DerivedModelsIntoMainDataset modelRes={}, modelName={}", dbgArray);
-      PipelineSnapLoader.loadPipelineSheets(repo, mainDset, myDirectoryModel, modelName, fileModelCLs)
-      PipelineSnapLoader.loadPipelineSheetTyp(repo, mainDset, myDirectoryModel, modelName, fileModelCLs)
+      PipelineSnapLoader.loadPipelineSheets(repo, mainDset, myDirectoryModel, fileModelCLs)
+      PipelineSnapLoader.loadPipelineSheetTyp(repo, mainDset, myDirectoryModel, fileModelCLs)
     }
   }
 }
@@ -82,12 +96,16 @@ class PipelineSnapLoader extends InstallableRepoReader {
 
 //================ LOADER
 
+/*
+ *  "Shared between Loader instances"
+ *  Static/private/final to higher Likelyhood of JIT 
+ */
 object PipelineSnapLoader extends BasicDebugger {
 
-  def loadSheetModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, myDirectoryModel: Model, fileModelCLs: java.util.List[ClassLoader]) = {
+  private final def loadSheetModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, myDirectoryModel: Model, fileModelCLs: java.util.List[ClassLoader]) = {
 
-    val nsJavaMap: java.util.Map[String, String] = myDirectoryModel.getNsPrefixMap()
-
+    //val nsJavaMap: java.util.Map[String, String] = myDirectoryModel.getNsPrefixMap()
+    /*
     val msqText = """
 			select ?model
 				{
@@ -105,77 +123,75 @@ object PipelineSnapLoader extends BasicDebugger {
 
       val dbgArray = Array[Object](modelR, modelName);
       getLogger.warn("PipelinnapLoader modelR={}, modelName={}", dbgArray);
-
-      val pipelineModel = mainDset.getNamedModel(modelName);
-
-      loadPipelineSheets(repo, mainDset, myDirectoryModel, modelName, fileModelCLs);
-      loadPipelineSheetTyp(repo, mainDset, myDirectoryModel, modelName, fileModelCLs);
-    }
-
-  }
-
-  def loadPipelineSheets(repo: SpecialRepoLoader, mainDset: Dataset, myDirectoryModel: Model, modelName: String, fileModelCLs: java.util.List[ClassLoader]) = {
-
-    val pipelineModel = mainDset.getNamedModel(modelName);
-
-    val msqText = """
-			select ?model ?targetmodel
-				{
-					?targetmodel <urn:ftd:cogchar.org:2012:runtime#sourceModel> ?model.
-				}
-		"""
-
+ */
+    //      val pipelineModel = mainDset.getNamedModel(modelName);
+    //  }
     val unionAllModel = RepoOper.unionAll(mainDset, myDirectoryModel, mainDset.getDefaultModel());
 
-    val msRset = QueryHelper.execModelQueryWithPrefixHelp(pipelineModel, msqText);
+    loadPipelineSheets(repo, mainDset, myDirectoryModel, fileModelCLs);
+    loadPipelineSheetTyp(repo, mainDset, myDirectoryModel, fileModelCLs);
 
-    while (msRset.hasNext()) {
-      val qSoln: QuerySolution = msRset.next();
-
-      //val repoR : Rource = qSoln.getRource("repo");
-      val modelR = qSoln.get("model");
-      val targetmodelR = qSoln.get("targetmodel");
-      val modelName = modelR.asResource().asNode().getURI
-      val targetmodelName = targetmodelR.asResource().asNode().getURI
-
-      val dbgArray = Array[Object](modelR, targetmodelR);
-      getLogger.info("PipelineSnapLoader modelR={}, targetmodelR={}", dbgArray);
-
-      RepoOper.addUnionModel(mainDset, modelName, targetmodelName);
-
-    }
   }
 
-  def loadPipelineSheetTyp(repo: SpecialRepoLoader, mainDset: Dataset, unionAllModel: Model, modelName: String, fileModelCLs: java.util.List[ClassLoader]) = {
+  private[repo] final def loadPipelineSheets(repo: SpecialRepoLoader, mainDset: Dataset, unionAllModel: Model, fileModelCLs: java.util.List[ClassLoader]) = {
 
-    val pipelineModel = mainDset.getNamedModel(modelName);
+    //val pipelineModel = RepoDatasetFactory.findOrCreateModel(mainDset, modelName)
 
     val msqText = """
-			select ?modeltype ?targetmodel
+			select ?srcmodel ?targetmodel
 				{
-					?targetmodel <urn:ftd:cogchar.org:2012:runtime#sourceModelType> ?modeltype;
+					?targetmodel <urn:ftd:cogchar.org:2012:runtime#sourceModel> ?srcmodel.
 				}
 		"""
-    val msRset = QueryHelper.execModelQueryWithPrefixHelp(pipelineModel, msqText);
+
+    val msRset = QueryHelper.execModelQueryWithPrefixHelp(unionAllModel, msqText);
 
     while (msRset.hasNext()) {
       val qSoln: QuerySolution = msRset.next();
 
       //val repoR : Rource = qSoln.getRource("repo");
-      val modeltypeR = qSoln.get("modeltype");
+      val srcmodelR = qSoln.get("srcmodel");
       val targetmodelR = qSoln.get("targetmodel");
-      val modeltype = modeltypeR.asResource().asNode().getURI
+      val srcmodelName = srcmodelR.asResource().asNode().getURI
       val targetmodelName = targetmodelR.asResource().asNode().getURI
 
-      val dbgArray = Array[Object](modeltypeR, targetmodelR);
-      getLogger.info("PipelineSnapLoader modeltype={}, targetmodelR={}", dbgArray);
+      val dbgArray = Array[Object](srcmodelR, targetmodelR);
+      getLogger.info("PipelineSnapLoader srcmodelR={}, targetmodelR={}", dbgArray);
 
-      loadPipelineSheetTypeInstanc(repo, mainDset, unionAllModel, targetmodelName, modeltype, fileModelCLs);
+      RepoOper.addUnionModel(mainDset, srcmodelName, targetmodelName);
 
     }
   }
 
-  def loadPipelineSheetTypeInstanc(repo: SpecialRepoLoader, mainDset: Dataset, unionAllModel: Model, targetmodelName: String, modeltype: String, fileModelCLs: java.util.List[ClassLoader]) = {
+  private[repo] final def loadPipelineSheetTyp(repo: SpecialRepoLoader, mainDset: Dataset, unionAllModel: Model, fileModelCLs: java.util.List[ClassLoader]): Unit = {
+
+    val msqText = """
+			select ?targetmodel ?srcmodel
+				{
+					?targetmodel <urn:ftd:cogchar.org:2012:runtime#sourceModelType> ?modeltype.
+    			    ?srcmodel a ?modeltype.
+				}
+		"""
+    val msRset = QueryHelper.execModelQueryWithPrefixHelp(unionAllModel, msqText);
+
+    while (msRset.hasNext()) {
+      val qSoln: QuerySolution = msRset.next();
+
+      //val repoR : Rource = qSoln.getRource("repo");
+      val targetmodelR = qSoln.get("targetmodel");
+      val srcmodelR = qSoln.get("srcmodel");
+      val srcmodel = srcmodelR.asResource().asNode().getURI
+      val targetmodelName = targetmodelR.asResource().asNode().getURI
+
+      val dbgArray = Array[Object](srcmodelR, targetmodelR);
+      getLogger.info("PipelineSnapLoader srcmodelR={}, targetmodelR={}", dbgArray);
+
+      RepoOper.addUnionModel(mainDset, srcmodel, targetmodelName);
+
+    }
+  }
+  /*
+  private final def loadPipelineSheetTypeInstanc(repo: SpecialRepoLoader, mainDset: Dataset, unionAllModel: Model, targetmodelName: String, modeltype: String, fileModelCLs: java.util.List[ClassLoader]) = {
 
     val size = unionAllModel.size();
 
@@ -198,19 +214,9 @@ object PipelineSnapLoader extends BasicDebugger {
 
     }
   }
-
+*/
 }
 
-/// this is a registerable loader
-class DerivedModelLoader extends InstallableRepoReader {
-  override def getExt = null
-  override def getContainerType() = "ccrt:DerivedModel"
-  override def getSheetType() = "ccrt:UnionModel"
-  override def isDerivedLoader() = true
-  override def loadModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
-    DerivedModelLoader.loadSheetModelsIntoTargetDataset(repo, mainDset, dirModel, fileModelCLs)
-  }
-}
 
 
  
