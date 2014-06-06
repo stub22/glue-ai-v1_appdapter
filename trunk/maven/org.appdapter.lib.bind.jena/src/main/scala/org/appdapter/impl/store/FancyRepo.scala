@@ -17,17 +17,17 @@
 package org.appdapter.impl.store
 
 import scala.collection.immutable.StringOps
-
 import org.appdapter.bind.rdf.jena.query.JenaArqQueryFuncs
 import org.appdapter.core.log.{ BasicDebugger, Loggable }
 import org.appdapter.core.name.Ident
-import org.appdapter.core.repo.{ DatabaseRepo, DatabaseRepoLoader }
+import org.appdapter.core.repo.{ DatabaseRepo_BROKER, _ }
 import org.appdapter.core.store.{ InitialBinding, ModelClient, Repo }
 import org.appdapter.help.repo.InitialBindingImpl
-
 import com.hp.hpl.jena.query.{ Query, QuerySolution, QuerySolutionMap }
 import com.hp.hpl.jena.rdf.listeners.ObjectListener
 import com.hp.hpl.jena.rdf.model.Literal
+import org.appdapter.core.repo.DatabaseRepo_BROKER
+import org.appdapter.core.repo.DatabaseRepoFactoryLoader
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -185,8 +185,8 @@ trait FancyRepo extends Repo.WithDirectory with ModelClientCore with Loggable {
 
 // for appdapter 1.1.1 compatiblity
 /// if kept, maybe make this a big make every kind of repo one stop shop
-object FancyRepoFactory extends BasicDebugger {
-  def makeDatabaseRepo(repoConfResPath: String, optCL: ClassLoader, dirGraphID: Ident): DatabaseRepo = {
-    DatabaseRepoLoader.makeDatabaseRepo(repoConfResPath, optCL, dirGraphID)
-  }
-}
+//object FancyRepoFactory extends BasicDebugger {
+ // def makeDatabaseRepo(repoConfResPath: String, optCL: ClassLoader, dirGraphID: Ident): DatabaseRepo_BROKER = {
+  //  DatabaseRepoFactoryLoader.makeDatabaseRepo(repoConfResPath, optCL, dirGraphID)
+  //}
+//}

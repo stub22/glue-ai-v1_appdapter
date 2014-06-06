@@ -47,7 +47,7 @@ import org.appdapter.impl.store.FancyRepo
 
 class DatabaseRepoSpec(configPath: String, optConfResCL: ClassLoader, dirGraphID: Ident) extends RepoSpec {
   def this(cPath: String, optCL: ClassLoader, dirGraphUriPrefix: String, dirGraphLocalName: String) = this(cPath, optCL, new FreeIdent(dirGraphUriPrefix + dirGraphLocalName, dirGraphLocalName))
-  override def makeRepo() = FancyRepoLoader.loadDatabaseRepo(configPath, optConfResCL, dirGraphID)
+  override def makeRepo() = DatabaseRepoFactoryLoader.makeDatabaseRepo(configPath, optConfResCL, dirGraphID)
 }
 
 class DatabaseRepoLoader extends InstallableRepoReader {
@@ -55,11 +55,11 @@ class DatabaseRepoLoader extends InstallableRepoReader {
   override def getContainerType() = "ccrt:DatabaseRepo"
   override def getSheetType() = "ccrt:DatabaseSheet"
   override def loadModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
-    DatabaseRepoLoader.loadSheetModelsIntoTargetDataset(repo, mainDset, dirModel, fileModelCLs)
+    DatabaseRepoFactoryLoader.loadSheetModelsIntoTargetDataset(repo, mainDset, dirModel, fileModelCLs)
   }
 }
 
-class DatabaseRepo(store: Store, val myDirGraphID: Ident)
+class DatabaseRepo_BROKER(store: Store, val myDirGraphID: Ident)
   extends BasicStoredMutableRepoImpl(store) with FancyRepo with Repo.Mutable with Repo.Stored {
 
   formatRepoIfNeeded();
@@ -68,19 +68,19 @@ class DatabaseRepo(store: Store, val myDirGraphID: Ident)
 
 }
 
-object DatabaseRepoLoader extends org.appdapter.core.log.BasicDebugger {
-  def makeDatabaseRepo(repoConfResPath: String, optCL: ClassLoader, dirGraphID: Ident): DatabaseRepo = {
+object DatabaseRepoFactoryLoader extends org.appdapter.core.log.BasicDebugger {
+  def makeDatabaseRepo(repoConfResPath: String, optCL: ClassLoader, dirGraphID: Ident): Repo.WithDirectory = {
     val s: Store = SdbStoreFactory.connectSdbStoreFromResPath(repoConfResPath, optCL);
-    new DatabaseRepo(s, dirGraphID);
+    new DatabaseRepo_BROKER(s, dirGraphID);
   }
 
   /////////////////////////////////////////
   /// Make a Repo.WithDirectory
   /////////////////////////////////////////
-  def makeSdbDirectoryRepo(repoConfResPath: String, optCL: ClassLoader, dirGraphID: Ident): Repo.WithDirectory = {
+  //def makeSdbDirectoryRepo(repoConfResPath: String, optCL: ClassLoader, dirGraphID: Ident): Repo.WithDirectory = {
     // Read the namespaces and directory sheets into a single directory model.
-    FancyRepoLoader.makeRepoWithDirectory(null, readDirectoryModelFromDatabase(repoConfResPath, optCL, dirGraphID));
-  }
+    //FancyRepoLoader.makeRepoWithDirectory(null, readDirectoryModelFromDatabase(repoConfResPath, optCL, dirGraphID));
+  //}
 
   /////////////////////////////////////////
   /// Read dir model
@@ -88,7 +88,7 @@ object DatabaseRepoLoader extends org.appdapter.core.log.BasicDebugger {
   def readDirectoryModelFromDatabase(repoConfResPath: String, optCL: ClassLoader, dirGraphID: Ident): Model = {
     // Read the single directory sheets into a single directory model.
     val s: Store = SdbStoreFactory.connectSdbStoreFromResPath(repoConfResPath, optCL);
-    new DatabaseRepo(s, dirGraphID).getDirectoryModel
+    new DatabaseRepo_BROKER(s, dirGraphID).getDirectoryModel
   }
 
   /////////////////////////////////////////
@@ -131,7 +131,7 @@ object DatabaseRepoLoader extends org.appdapter.core.log.BasicDebugger {
         def run() {
           try {
             val graphURI = modelRes.getURI();
-            val databaseModel = FancyRepoLoader.loadDatabaseRepo(configPath, null, modelIdent).getNamedModel(modelIdent);
+            val databaseModel = makeDatabaseRepo(configPath, null, modelIdent).getNamedModel(modelIdent);
             getLogger.warn("Read databaseModel: {}", databaseModel)
             FancyRepoLoader.replaceOrUnion(mainDset, unionOrReplaceRes, graphURI, databaseModel);
           } catch {
@@ -154,7 +154,7 @@ object DatabaseRepoLoaderTest {
   val configPath = "database connetion string/config path";
   val dirGraphID = "dirGraph Ident";
 
-  private def loadTestSdbDirectoryRepo(): DatabaseRepo = {
+  private def loadTestSdbDirectoryRepo(): Repo.WithDirectory = {
     val spec = new DatabaseRepoSpec(configPath, null, new FreeIdent(dirGraphID))
     val sr = spec.makeRepo
     //  sr.loadSheetModelsIntoMainDataset()
@@ -177,7 +177,7 @@ object DatabaseRepoLoaderTest {
     val lightsGraphQName = "ccrt:lights_camera_sheet_22"
 
     // Run the resulting fully bound query, and print the results.
-    val sr: DatabaseRepo = loadTestSdbDirectoryRepo()
+    val sr = loadTestSdbDirectoryRepo
 
     val qib = sr.makeInitialBinding
 
@@ -190,7 +190,7 @@ object DatabaseRepoLoaderTest {
 
 }
 
-class BetterDatabaseRepo(sdbStore: Store, dirGraphID: Ident) extends DatabaseRepo(sdbStore, dirGraphID) {
+class BetterDatabaseRepo(sdbStore: Store, dirGraphID: Ident) extends DatabaseRepo_BROKER(sdbStore, dirGraphID) {
   //	Current docs for GraphStoreFactory (more recent than the code version we're using) say,
   //	regarding   GraphStoreFactory. reate(Dataset dataset)
   //	 Create a GraphStore from a dataset so that updates apply to the graphs in the dataset.

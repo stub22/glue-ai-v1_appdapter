@@ -16,31 +16,32 @@
 
 package org.appdapter.core.repo
 
-import java.util.Date
+import java.util.{ ArrayList, Date }
 import org.appdapter.bind.rdf.jena.model.JenaFileManagerUtils
 import org.appdapter.core.log.BasicDebugger
+import org.appdapter.core.matdat.{ CsvFileSheetLoader, GoogSheetRepoLoader, XLSXSheetRepoLoader }
 import org.appdapter.core.name.Ident
 import org.appdapter.core.store.{ ExtendedFileStreamUtils, InitialBinding, Repo, RepoOper }
 import org.appdapter.core.store.dataset.SpecialRepoLoader
+import org.appdapter.impl.store.FancyRepo
 import com.hp.hpl.jena.query.{ Dataset, QuerySolution }
 import com.hp.hpl.jena.rdf.model.{ Model, Resource }
-import org.appdapter.impl.store.FancyRepo
-
-/**
+import org.appdapter.core.store.InstallableSpecReader
+import org.appdapter.core.store.InstallableRepoLoader
+import org.appdapter.core.store.LastModelLoader
+import org.appdapter.core.repo._
+/*
  * @author Stu B. <www.texpedient.com>
  * @author logicmoo
  */
-abstract class InstallableSpecReader {
-  def getExt(): String;
-  def makeRepoSpec(path: String, args: Array[String], cLs: java.util.List[ClassLoader]): RepoSpec;
-}
-abstract class InstallableRepoReader extends InstallableSpecReader {
-  override def getExt(): String = null
+
+abstract class InstallableRepoReader extends InstallableSpecReader with InstallableRepoLoader {
+  //override def getExt(): String = null
   override def makeRepoSpec(path: String, args: Array[String], cLs: java.util.List[ClassLoader]): RepoSpec = null
   def getContainerType(): String
   def getSheetType(): String
   def isDerivedLoader(): Boolean = false
-  def loadModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader])
+  //def loadModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader])
 }
 
 object FancyRepoLoader extends BasicDebugger {
@@ -49,6 +50,70 @@ object FancyRepoLoader extends BasicDebugger {
     in + "/*" + k + "=" + v + "*/"
   }
 
+  var initedOnce = false;
+  val specLoaders: java.util.List[InstallableSpecReader] = new java.util.ArrayList
+  val dirModelLoaders: java.util.List[InstallableRepoLoader] = new java.util.ArrayList
+  def getDirModelLoaders(): java.util.List[InstallableRepoLoader] = {
+    dirModelLoaders.synchronized {
+      if (dirModelLoaders.size() < 4) {
+        dirModelLoaders.add(new GoogSheetRepoLoader())
+        dirModelLoaders.add(new XLSXSheetRepoLoader())
+        dirModelLoaders.add(new CsvFileSheetLoader())
+        dirModelLoaders.add(new DatabaseRepoLoader())
+        dirModelLoaders.add(new FileModelRepoLoader())
+        dirModelLoaders.add(new MultiRepoLoader())
+
+        //this should be made to work so far Doug hadnt done it
+        dirModelLoaders.add(new DerivedModelLoader())
+        // the next is loaded loadDerivedModelsIntoMainDataset (which are pipeline models)
+        //dirModelLoaders.add(new PipelineModelLoader())
+        dirModelLoaders.add(new PipelineSnapLoader())
+        dirModelLoaders.add(new LastModelLoader())
+
+      }
+      return new ArrayList[InstallableRepoLoader](dirModelLoaders)
+    }
+  }
+  def getSpecLoaders(): java.util.List[InstallableSpecReader] = {
+    specLoaders.synchronized {
+      if (specLoaders.size < 3) {
+        specLoaders.add(new ScanURLDirModelRepoSpecReader())
+        specLoaders.add(new URLDirModelRepoSpecReader())
+        specLoaders.add(new URLModelRepoSpecReader())
+        specLoaders.add(new ScanURLModelRepoSpecReader())
+        for (l <- getDirModelLoaders.toArray(new Array[InstallableRepoReader](0))) {
+          specLoaders.add(l);
+        }
+      }
+      return new ArrayList[InstallableSpecReader](specLoaders)
+    }
+  }
+
+  def updateDatasetFromDirModel(repoLoader: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
+    val dirModelLoaders: java.util.List[InstallableRepoLoader] = getDirModelLoaders
+    val dirModelLoaderIter = dirModelLoaders.listIterator
+    repoLoader.setSynchronous(false)
+    while (dirModelLoaderIter.hasNext()) {
+      val irr = dirModelLoaderIter.next
+      getLogger().trace("Loading ... " + irr.getContainerType + "/" + irr)
+      try {
+        if (irr.isDerivedLoader) {
+          // this means what we are doing might need previous requests to complete
+          repoLoader.setSynchronous(true)
+        } else {
+          //repoLoader.setSynchronous(false)
+          repoLoader.setSynchronous(true)
+        }
+        irr.loadModelsIntoTargetDataset(repoLoader, mainDset, dirModel, fileModelCLs)
+      } catch {
+        case except: Throwable =>
+          except.printStackTrace
+          getLogger().error("Caught loading error in {}", Array[Object](irr, except))
+      }
+    }
+    // not done until the last task completes
+    repoLoader.setSynchronous(true)
+  }
   def makeRepoWithDirectory(spec: RepoSpec, dirModel: Model, fileModelCLs: java.util.List[ClassLoader] = null, dirGraphID: Ident = null): DirectRepo = {
     val specURI = spec.toString();
     var serial = System.identityHashCode(this);
@@ -66,10 +131,17 @@ object FancyRepoLoader extends BasicDebugger {
     shRepo
   }
 
-  def loadDatabaseRepo(configPath: String, optConfigResolveCL: ClassLoader, dirGraphID: Ident): DatabaseRepo = {
-    val dbRepo = DatabaseRepoLoader.makeDatabaseRepo(configPath, optConfigResolveCL, dirGraphID)
-    dbRepo;
+  def updateDatasetFromDirModel(dirModel: Model, mainDset: Dataset, fileModelCLs: java.util.List[ClassLoader], repoLoader: SpecialRepoLoader) {
+    repoLoader.setSynchronous(false)
+    FancyRepoLoader.updateDatasetFromDirModel(repoLoader, mainDset, dirModel, fileModelCLs)
+    // not done until the last task completes
+    repoLoader.setSynchronous(true)
   }
+
+  //def loadDatabaseRepo(configPath: String, optConfigResolveCL: ClassLoader, dirGraphID: Ident): FancyRepo = {
+  // val dbRepo = DatabaseRepoFactoryLoader.makeDatabaseRepo(configPath, optConfigResolveCL, dirGraphID)
+  //// dbRepo;
+  //}
 
   def testRepoDirect(repo: Repo.WithDirectory, querySheetQName: String, queryQName: String, tgtGraphSparqlVN: String, tgtGraphQName: String): Unit = {
     // Here we manually set up a binding, as you would usually allow RepoClient
@@ -115,8 +187,7 @@ object FancyRepoLoader extends BasicDebugger {
       val efsu = new ExtendedFileStreamUtils()
       val ext: java.lang.String = org.appdapter.fileconv.FileStreamUtils.getFileExt(rdfURL);
       if (ext != null && (ext.equals("xlsx") || ext.equals("xls"))) {
-        XLSXSheetRepoLoader.loadXLSXSheetRepo(rdfURL, "Nspc", "Dir", clList, null).
-          getMainQueryDataset().asInstanceOf[Dataset].getDefaultModel
+        XLSXSheetRepoLoader.loadXLSXSheetRepo(rdfURL, "Nspc", "Dir", clList).getMainQueryDataset().asInstanceOf[Dataset].getDefaultModel
       } else if (ext != null && (ext.equals("csv"))) {
         CsvFileSheetLoader.readModelSheet(rdfURL, nsJavaMap, clList);
       } else {

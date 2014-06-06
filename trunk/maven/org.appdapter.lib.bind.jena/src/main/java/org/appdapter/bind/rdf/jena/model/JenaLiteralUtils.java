@@ -17,7 +17,6 @@
 package org.appdapter.bind.rdf.jena.model;
 
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
 import org.appdapter.api.trigger.AnyOper.HasIdent;
@@ -25,7 +24,6 @@ import org.appdapter.bind.rdf.jena.assembly.AssemblerUtils;
 import org.appdapter.core.component.ComponentCache;
 import org.appdapter.core.component.IdentToObjectListener;
 import org.appdapter.core.component.KnownComponent;
-import org.appdapter.core.convert.Converter;
 import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.core.name.FreeIdent;

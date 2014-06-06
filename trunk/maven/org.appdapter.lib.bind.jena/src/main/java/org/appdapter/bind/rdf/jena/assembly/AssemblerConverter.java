@@ -11,8 +11,6 @@ import java.util.Map;
 
 import org.appdapter.api.trigger.AnyOper.HasIdent;
 import org.appdapter.bind.rdf.jena.model.JenaLiteralUtils;
-import org.appdapter.core.component.KnownComponent;
-import org.appdapter.core.convert.AggregateConverter;
 import org.appdapter.core.convert.Converter;
 import org.appdapter.core.convert.NoSuchConversionException;
 import org.appdapter.core.convert.ReflectUtils;
@@ -21,7 +19,6 @@ import org.appdapter.core.item.JenaResourceItem;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.core.name.FreeIdent;
 import org.appdapter.core.name.Ident;
-import org.appdapter.core.name.ModelIdent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +26,6 @@ import com.hp.hpl.jena.assembler.Assembler;
 import com.hp.hpl.jena.assembler.Mode;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.Resource;
 
 public class AssemblerConverter implements Converter {
 	static Logger theLogger = LoggerFactory.getLogger(AssemblerConverter.class);

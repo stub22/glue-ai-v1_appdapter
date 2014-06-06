@@ -30,16 +30,16 @@ import com.hp.hpl.jena.rdf.model.{ Model, Property, RDFNode, Resource, Statement
  * @author Stu B. <www.texpedient.com>
  */
 
-object SemSheet {
+final private[matdat] object SemSheet {
 
-  val theDbg = new BasicDebugger();
+  final private[matdat] val theDbg = new BasicDebugger();
 
-  val MT_Individual = "Individual";
-  val MT_TypeProperty = "TypeProperty";
-  val MT_ObjectProperty = "ObjectProperty";
-  val MT_DatatypeProperty = "DatatypeProperty";
+  final private[matdat] val MT_Individual = "Individual";
+  final private[matdat] val MT_TypeProperty = "TypeProperty";
+  final private[matdat] val MT_ObjectProperty = "ObjectProperty";
+  final private[matdat] val MT_DatatypeProperty = "DatatypeProperty";
 
-  class ModelInsertSheetProc(val myModel: Model) extends SheetProc(3) {
+  final private[core] class ModelInsertSheetProc(val myModel: Model) extends SheetProc(3) {
     var myIndivColIdx = -1;
     var myIndivResResolver: ResourceResolver = null;
 
@@ -138,7 +138,7 @@ object SemSheet {
       myPropColBindings = myPropColBindings.reverse
     }
 
-    override def absorbDataRow(cellRow: MatrixRow) {
+    final override def absorbDataRow(cellRow: MatrixRow) {
 
       val commentCol = 0;
       val optComment: Option[String] = cellRow.getPossibleColumnValueString(commentCol);

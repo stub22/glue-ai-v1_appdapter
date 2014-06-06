@@ -91,6 +91,7 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 	}
 
 	protected Dataset myMainQueryDataset;
+	
 	final public Object loadingLock = new Object();
 	public boolean isLoadingStarted = false;
 	public boolean isLoadingLocked = false;

@@ -18,10 +18,10 @@ package org.appdapter.trigger.bind.jena;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.appdapter.api.trigger.BoxContext;
 import org.appdapter.api.trigger.MutableBox;
 import org.appdapter.api.trigger.Trigger;
-
 import org.appdapter.bind.rdf.jena.assembly.KnownComponentImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

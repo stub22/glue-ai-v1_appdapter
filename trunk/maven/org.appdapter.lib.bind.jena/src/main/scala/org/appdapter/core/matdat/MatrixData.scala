@@ -60,11 +60,21 @@ class MatrixRowCSV(val myRowArr: Array[String]) extends MatrixRow {
       }
     }
   }
+
   def safelyTrim(s: String): String = {
     var ss = s
-    while (ss.startsWith(" ")) ss = ss.substring(1);
-    while (ss.endsWith(" ")) ss = ss.substring(0, ss.length() - 1);
+    while (isWhitespace(ss.charAt(0))) ss = ss.substring(1);
+    var len = ss.length() - 1;
+    while (isWhitespace(ss.charAt(len))) {
+      ss = ss.substring(0, len)
+      len = len - 1
+    }
     ss
+  }
+
+  def isWhitespace(c: Char): Boolean = {
+    //if (c=='\\') return false;
+    c <= ' '
   }
 }
 
