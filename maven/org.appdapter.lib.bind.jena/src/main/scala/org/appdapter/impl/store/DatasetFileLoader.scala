@@ -78,11 +78,11 @@ object DatasetFileRepo extends BasicDebugger {
       val unionOrReplaceRes: Resource = qSoln.getResource("unionOrReplace");
       val repoPath_Lit: Literal = qSoln.getLiteral("repoPath")
       val dbgArray = Array[Object](repoRes, repoPath_Lit, dirmodelRes);
-      getLogger.warn("repo={}, repoPath={}, defaultmodel={}", dbgArray);
+      getLogger.debug("repo={}, repoPath={}, defaultmodel={}", dbgArray);
 
       val rPath = repoPath_Lit.getString();
 
-      getLogger().warn("Ready to read from [{}] / [{}]", Array[Object](rPath, dirmodelRes));
+      getLogger.debug("Ready to read from [{}] / [{}]", Array[Object](rPath, dirmodelRes));
 
       // @todo set the Query and DirModels
 
@@ -90,10 +90,10 @@ object DatasetFileRepo extends BasicDebugger {
         def run() {
           try {
             val graphURI = dirmodelRes.getURI();
-            getLogger.warn("Read fileModel: {}", rPath)
+            getLogger.debug("Read fileModel: {}", rPath)
             RepoOper.readDatasetFromURL(rPath, mainDset, unionOrReplaceRes)
           } catch {
-            case except: Throwable => getLogger().error("Caught error loading file {}", Array[Object](dirmodelRes, except))
+            case except: Throwable => getLogger.error("Caught error loading file {}", Array[Object](dirmodelRes, except))
           }
         }
       })

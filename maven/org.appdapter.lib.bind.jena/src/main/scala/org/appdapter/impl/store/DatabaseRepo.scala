@@ -119,12 +119,12 @@ object DatabaseRepoFactoryLoader extends org.appdapter.core.log.BasicDebugger {
       val unionOrReplaceRes: Resource = qSoln.getResource("unionOrReplace");
       val configPath_Lit: Literal = qSoln.getLiteral("configPath")
       val dbgArray = Array[Object](repoRes, configPath_Lit, modelRes);
-      getLogger.warn("repo={}, configPath={}, model={}", dbgArray);
+      getLogger.debug("repo={}, configPath={}, model={}", dbgArray);
 
       val configPath = configPath_Lit.getString();
       val modelURI = modelRes.getURI();
 
-      getLogger().warn("Ready to read database from [{}] / [{}]", Array[Object](configPath, modelURI));
+      getLogger.debug("Ready to read database from [{}] / [{}]", Array[Object](configPath, modelURI));
 
       val modelIdent = new FreeIdent(modelURI);
       repo.addLoadTask(configPath + "/" + modelURI, new Runnable() {
@@ -135,7 +135,7 @@ object DatabaseRepoFactoryLoader extends org.appdapter.core.log.BasicDebugger {
             getLogger.warn("Read databaseModel: {}", databaseModel)
             FancyRepoLoader.replaceOrUnion(mainDset, unionOrReplaceRes, graphURI, databaseModel);
           } catch {
-            case except: Throwable => getLogger().error("Caught error loading database [{}] / [{}]", Array[Object](configPath, modelURI))
+            case except: Throwable => getLogger.error("Caught error loading database [{}] / [{}]", Array[Object](configPath, modelURI))
           }
         }
       })
