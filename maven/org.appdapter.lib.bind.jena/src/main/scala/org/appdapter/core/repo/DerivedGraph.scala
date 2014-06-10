@@ -93,7 +93,7 @@ case class DirectDerivedGraph(val mySpec: DerivedGraphSpec, val myUpstreamNMP: N
         for (srcGraphID <- mySpec.myInGraphIDs) {
           val srcGraph = myUpstreamNMP.getNamedModel(srcGraphID)
           if (srcGraph == null) {
-            getLogger().error("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ERRORR!!!! %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ERROR !! %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% \nUnknown srcGraphID = " + srcGraphID + " in " + myUpstreamNMP)
+            getLogger.error("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ERRORR!!!! %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ERROR !! %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% \nUnknown srcGraphID = " + srcGraphID + " in " + myUpstreamNMP)
           } else {
             // TODO : when upgrading (to Jena v2.8?) use  ModelFactory.createUnion(..,..);
             cumUnionModel = cumUnionModel.union(srcGraph)
@@ -102,7 +102,7 @@ case class DirectDerivedGraph(val mySpec: DerivedGraphSpec, val myUpstreamNMP: N
         cumUnionModel
       }
       case x => {
-        getLogger().warn("Unknown structure type {}", x)
+        getLogger.warn("Unknown structure type {}", x)
         RepoDatasetFactory.createPrivateMemModel()
       }
     }
@@ -127,8 +127,8 @@ object DerivedGraphSpecReader extends BasicDebugger {
       pipeAttrSL = rc.queryIndirectForAllSolutions(pqs.pplnAttrQueryQN, pqs.pplnGraphQN)
     } catch {
       case t: Throwable => {
-        getLogger().error("Problem executing querySpec {} on repoClient {} ", Array[Object](pqs, rc))
-        getLogger().error("Stack trace: ", t)
+        getLogger.error("Problem executing querySpec {} on repoClient {} ", Array[Object](pqs, rc))
+        getLogger.error("Stack trace: ", t)
         return Set[DerivedGraphSpec]()
       }
     }
@@ -136,7 +136,7 @@ object DerivedGraphSpecReader extends BasicDebugger {
     val outPipeTypeSetsByID = new scala.collection.mutable.HashMap[Ident, Set[Ident]]()
     import scala.collection.JavaConversions._
     val pjl = pipeAttrSL.javaList
-    getLogger().info("Got pipeAttribute list : {}", pjl)
+    getLogger.info("Got pipeAttribute list : {}", pjl)
     pjl foreach (psp => {
       // A pipe is the result of a single operation applied to a (poss. ordered by query) set of sources
       val outPipeID = psp.getIdentResultVar(DerivedGraphNames.V_pipeID)

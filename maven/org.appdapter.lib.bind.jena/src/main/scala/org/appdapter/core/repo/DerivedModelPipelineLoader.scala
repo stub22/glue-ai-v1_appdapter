@@ -77,7 +77,7 @@ object DerivedModelLoader extends BasicDebugger {
       val modelName = modelRes.asResource().asNode().getURI
 
       val dbgArray = Array[Object](modelRes, modelName);
-      getLogger.warn("DerivedModelsIntoMainDataset modelRes={}, modelName={}", dbgArray);
+      getLogger.debug("DerivedModelsIntoMainDataset modelRes={}, modelName={}", dbgArray);
       PipelineSnapLoader.loadPipelineSheets(repo, mainDset, myDirectoryModel, fileModelCLs)
       PipelineSnapLoader.loadPipelineSheetTyp(repo, mainDset, myDirectoryModel, fileModelCLs)
     }
@@ -122,7 +122,7 @@ object PipelineSnapLoader extends BasicDebugger {
       val modelName = modelR.asResource().asNode().getURI
 
       val dbgArray = Array[Object](modelR, modelName);
-      getLogger.warn("PipelinnapLoader modelR={}, modelName={}", dbgArray);
+      getLogger.debug("PipelinnapLoader modelR={}, modelName={}", dbgArray);
  */
     //      val pipelineModel = mainDset.getNamedModel(modelName);
     //  }
