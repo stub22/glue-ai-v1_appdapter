@@ -1,12 +1,13 @@
 package org.appdapter.core.repo
 
 import org.appdapter.core.name.FreeIdent
-import org.appdapter.core.store.{RepoOper}
-import org.appdapter.core.store.dataset.{RepoDatasetFactory, SpecialRepoLoader}
+import org.appdapter.core.store.{ RepoOper }
+import org.appdapter.core.store.dataset.{ RepoDatasetFactory, SpecialRepoLoader }
 import org.appdapter.impl.store.QueryHelper
-
-import com.hp.hpl.jena.query.{Dataset, QuerySolution}
-import com.hp.hpl.jena.rdf.model.{Model, Resource}
+import com.hp.hpl.jena.query.{ Dataset, QuerySolution }
+import com.hp.hpl.jena.rdf.model.{ Model, Resource }
+import org.appdapter.core.log.Debuggable
+import org.appdapter.core.log.BasicDebugger
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -46,9 +47,9 @@ class MultiRepoSpec(var many: String, protected var fileModelCLs: java.util.List
     var s = s0
     if (s == null) throw new RuntimeException("Null RepoSpec definition")
     if (s.startsWith("[") && s.endsWith("]")) s = s.substring(1, s.length() - 1)
-    println("makeing S = '" + s + "'")
+    getLogger.debug("makeing S = '" + s + "'")
     for (rs <- s.split(",")) {
-      println("makeing RS = " + rs)
+      getLogger.debug("makeing RS = " + rs)
       addRepoSpec(new URLRepoSpec(rs, fileModelCLs))
     }
   }
@@ -148,12 +149,12 @@ object MultiRepoLoader extends org.appdapter.core.log.BasicDebugger {
       val modelPath = qSoln.getLiteral("modelPath");
       val unionOrReplace: Resource = qSoln.getResource("unionOrReplace");
       val dbgArray = Array[Object](dirModel, modelPath, unionOrReplace);
-      getLogger.warn("dirModel={}, modelPath={}, model={}", dbgArray);
+      getLogger.debug("dirModel={}, modelPath={}, model={}", dbgArray);
 
       val configPath = modelPath.getString();
       val modelURI = dirModel.getURI();
 
-      getLogger().warn("Ready to read Multi from [{}] / [{}]", Array[Object](configPath, modelURI));
+      getLogger.debug("Ready to read Multi from [{}] / [{}]", Array[Object](configPath, modelURI));
 
       val modelIdent = new FreeIdent(modelURI);
       repo.addLoadTask(configPath + "/" + modelURI, new Runnable() {
@@ -167,7 +168,7 @@ object MultiRepoLoader extends org.appdapter.core.log.BasicDebugger {
             // getLogger.warn("Read MultiModel: {}", MultiModel)
             //FancyRepoLoader.replaceOrUnion(mainDset, unionOrReplaceRes, graphURI, MultiModel);
           } catch {
-            case except: Throwable => getLogger().error("Caught error loading Multi [{}] / [{}]", Array[Object](configPath, modelURI))
+            case except: Throwable => getLogger.error("Caught error loading Multi [{}] / [{}]", Array[Object](configPath, modelURI))
           }
         }
       })

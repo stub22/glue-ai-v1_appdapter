@@ -80,8 +80,8 @@ object GoogSheetRepoLoader extends BasicDebugger {
   def loadSheetModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) = {
 
     val nsJavaMap: java.util.Map[String, String] = dirModel.getNsPrefixMap()
-    // getLogger().debug("Dir Model NS Prefix Map {} ", nsJavaMap)
-    // getLogger().debug("Dir Model {}", dirModel)
+    // getLogger.debug("Dir Model NS Prefix Map {} ", nsJavaMap)
+    // getLogger.debug("Dir Model {}", dirModel)
     val msqText = """
 			select ?container ?key ?sheet ?num ?unionOrReplace
 				{
@@ -97,13 +97,13 @@ object GoogSheetRepoLoader extends BasicDebugger {
     while (msRset.hasNext()) {
 
       val qSoln: QuerySolution = msRset.next();
-      // getLogger().debug("Got apparent solution {}", qSoln);
-      val containerRes: Resource = qSoln.getResource("container");
+      // getLogger.debug("Got apparent solution {}", qSoln);
+      //val containerRes: Resource = qSoln.getResource("container");
       val sheetRes: Resource = qSoln.getResource("sheet");
       val sheetNum_Lit: Literal = qSoln.getLiteral("num")
       val sheetKey_Lit: Literal = qSoln.getLiteral("key")
       val unionOrReplaceRes: Resource = qSoln.getResource("unionOrReplace");
-      getLogger.warn("Loading containerRes=" + containerRes + ", sheetRes=" + sheetRes + ", num=" + sheetNum_Lit + ", key=" + sheetKey_Lit)
+      getLogger.debug("Loading sheetRes=" + sheetRes + ", num=" + sheetNum_Lit + ", key=" + sheetKey_Lit)
 
       val sheetNum = sheetNum_Lit.getInt();
       val sheetKey = sheetKey_Lit.getString();
