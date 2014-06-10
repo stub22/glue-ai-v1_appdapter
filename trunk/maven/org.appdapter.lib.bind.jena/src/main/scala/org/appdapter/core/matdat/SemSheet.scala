@@ -45,9 +45,15 @@ final private[matdat] object SemSheet {
 
     var myOptLastIndiv: Option[Resource] = None;
 
-    var myPropColBindings: List[PropertyValueColumnBinding] = List();
-
+    var myPropColBindingsReal: List[PropertyValueColumnBinding] = List();
+    var knowsHeaders = false;
+    
+    
     override def absorbHeaderRows(headRows: Array[MatrixRow]) {
+      super.absorbHeaderRows(headRows)
+      if (knowsHeaders==true) throw new RuntimeException("absorbHeaderRows called twice")
+      knowsHeaders = true;
+      var myPropColBindingsLocal: List[PropertyValueColumnBinding] = List();
       val headRowLengths = headRows.map(_.getPossibleColumnCount());
       val headRowLengthMax = headRowLengths.max;
       val propNameCells = headRows(0);
@@ -109,6 +115,7 @@ final private[matdat] object SemSheet {
               if (dt == null) {
                 // this one only fakes a datatype
                 Debuggable.oldBug(dtName + " is not a datatype! (try googling it and make sure you have the case correct)")
+                getLogger.error(dtName + " is not a datatype! (try googling it and make sure you have the case correct)")
                 if (dtName.equalsIgnoreCase("xsd:datetime")) {
                   dt = XSDDatatype.XSDdateTime;
                 } else {
@@ -132,14 +139,13 @@ final private[matdat] object SemSheet {
         }
         theDbg.logDebug("Got Col Binding: " + optColBind);
         if (optColBind.isDefined) {
-          myPropColBindings = optColBind.get :: myPropColBindings;
+          myPropColBindingsLocal = optColBind.get :: myPropColBindingsLocal;
         }
       }
-      myPropColBindings = myPropColBindings.reverse
+      myPropColBindingsReal = myPropColBindingsLocal.reverse
     }
 
     final override def absorbDataRow(cellRow: MatrixRow) {
-
       val commentCol = 0;
       val optComment: Option[String] = cellRow.getPossibleColumnValueString(commentCol);
       val rowIsCommentedOut: Boolean = optComment.getOrElse("").trim.startsWith("#");
@@ -149,15 +155,16 @@ final private[matdat] object SemSheet {
         getLogger.debug("Processing SEMANTIC data(!) = " + cellRow.dump());
         Debuggable.putFrameVar("column", myIndivColIdx)
         val optIndivCell: Option[String] = cellRow.getPossibleColumnValueString(myIndivColIdx);
-
         val optIndiv: Option[Resource] = if (optIndivCell.isDefined) {
           val indivQNameOrURI = optIndivCell.get
           var indivRes = myIndivResResolver.findOrMakeResource(myModel, indivQNameOrURI)
           Some(indivRes)
         } else myOptLastIndiv;
+        
         if (optIndiv.isDefined) {
           val indiv: Resource = optIndiv.get
-          for (pcb <- myPropColBindings) {
+          for (pcb <- myPropColBindingsReal) {
+           
             Debuggable.putFrameVar("column", pcb.myColIdx)
             pcb.matrixCellToPossibleModelStmt(cellRow, indiv);
           }

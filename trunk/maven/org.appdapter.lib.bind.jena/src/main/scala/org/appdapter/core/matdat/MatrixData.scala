@@ -28,7 +28,7 @@ import au.com.bytecode.opencsv.CSVReader
 trait MatrixRow {
   def getPossibleColumnValueString(colIdx: Int): Option[String];
   def getPossibleColumnCount(): Int;
-  def dump(): String = {
+  def dump(): String = {   
     val rowLen = getPossibleColumnCount();
     val sbuf = new StringBuffer();
     for (colIdx <- 0 until rowLen) {
@@ -101,7 +101,7 @@ class SheetProc(val myHeaderRowCount: Int) extends BasicDebugger {
     }
   }
   def absorbDataRow(cells: MatrixRow) {
-    getLogger.debug("DATA = " + cells.dump());
+    getLogger.error("DATA = " + cells.dump());
   }
 }
 /**
@@ -152,9 +152,9 @@ object MatrixData extends BasicDebugger {
     var done = false;
     while (!done) {
       val rowArray: Array[String] = csvr.readNext();
-      val matrixRow = new MatrixRowCSV(rowArray);
       if (rowArray != null) {
         try {
+          val matrixRow = new MatrixRowCSV(rowArray);
           processor(matrixRow);
         } catch {
           case e: Exception => getLogger().error(Debuggable.toInfoStringArgV("processing a row problem " + e, e, processor, rowArray))
