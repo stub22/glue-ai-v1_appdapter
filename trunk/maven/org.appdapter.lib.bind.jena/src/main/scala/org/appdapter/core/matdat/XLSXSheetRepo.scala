@@ -129,12 +129,12 @@ object XLSXSheetRepoLoader extends BasicDebugger {
     val spec = new OfflineXlsSheetRepoSpec(sheetLocation, namespaceSheetName, dirSheetName, fileModelCLs);
     val shRepo = new DirectRepo(spec, "xlsx:" + sheetLocation + "/" + namespaceSheetName + "/" + dirSheetName, dirModel, fileModelCLs)
     // Load the rest of the repo's initial *sheet* models, as instructed by the directory.
-    getLogger().debug("Loading Sheet Models")
+    getLogger.debug("Loading Sheet Models")
     shRepo.getMainQueryDataset();
 
     //    shRepo.loadSheetModelsIntoMainDataset()
     // Load the rest of the repo's initial *file/resource* models, as instructed by the directory.
-    //getLogger().debug("Loading File Models")
+    //getLogger.debug("Loading File Models")
     shRepo.loadSheetModelsIntoMainDataset();
     //shRepo.loadDerivedModelsIntoMainDataset(fileModelCLs)
     //shRepo.loadFileModelsIntoMainDataset(fileModelCLs)

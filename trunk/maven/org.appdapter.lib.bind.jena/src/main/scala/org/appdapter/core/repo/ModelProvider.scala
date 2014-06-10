@@ -77,7 +77,7 @@ object ModelProviderFactory extends BasicDebugger {
       dgSpec.makeDerivedModelProvider(rc)
     } catch {
       case except: Throwable => {
-        getLogger().error("Caught error makeOneDerivedModelProvider {}", Array[Object](pqs, except))
+        getLogger.error("Caught error makeOneDerivedModelProvider {}", Array[Object](pqs, except))
         throw except
       }
     }
