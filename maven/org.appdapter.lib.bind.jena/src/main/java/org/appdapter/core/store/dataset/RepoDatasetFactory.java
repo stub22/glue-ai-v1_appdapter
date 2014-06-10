@@ -144,19 +144,23 @@ public class RepoDatasetFactory implements AnyOper, UtilClass {
 		if (m == universalModel) {
 			return;
 		}
-		theLogger.error("Invalidating model: " + m);
+		theLogger.debug("Invalidating model: " + m);
 		m.register(new StatementListener() {
 			@Override public void addedStatement(Statement s) {
 				super.addedStatement(s);
-				throw new RuntimeException("addNoMods: Dead Model " + m);
+				error("addNoMods: Dead Model " + m);
 			}
 
 			@Override public void removedStatement(Statement s) {
 				super.removedStatement(s);
-				throw new RuntimeException("addNoMods: Dead Model " + m);
+				error("addNoMods: Dead Model " + m);
 			}
 		});
 
+	}
+
+	protected static void error(String string) {
+		theLogger.error(string);
 	}
 
 	@UISalient public static void addModelSync(Model m1, Model m2) {

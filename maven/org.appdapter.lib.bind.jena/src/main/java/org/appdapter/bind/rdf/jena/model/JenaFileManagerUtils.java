@@ -71,7 +71,7 @@ public class JenaFileManagerUtils {
 		FileManager fManagerE = Env.fileManager();
 		FileManager fManager = FileManager.get();
 		if (fManager != fManagerE) {
-			theLogger.error("Mismatched Jena FMs: " + fManagerE + "!=" + fManager);
+			theLogger.info("Mismatched Jena FMs: " + fManagerE + "!=" + fManager);
 		}
 		return fManagerE;
 	}
