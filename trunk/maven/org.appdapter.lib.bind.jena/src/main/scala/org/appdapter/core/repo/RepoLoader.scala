@@ -97,7 +97,7 @@ object FancyRepoLoader extends BasicDebugger {
     repoLoader.setSynchronous(false)
     while (dirModelLoaderIter.hasNext()) {
       val irr = dirModelLoaderIter.next
-      getLogger().trace("Loading ... " + irr.getContainerType + "/" + irr)
+      getLogger.trace("Loading ... " + irr.getContainerType + "/" + irr)
       try {
         if (irr.isDerivedLoader) {
           // this means what we are doing might need previous requests to complete
@@ -110,7 +110,7 @@ object FancyRepoLoader extends BasicDebugger {
       } catch {
         case except: Throwable =>
           except.printStackTrace
-          getLogger().error("Caught loading error in {}", Array[Object](irr, except))
+          getLogger.error("Caught loading error in {}", Array[Object](irr, except))
       }
     }
     // not done until the last task completes
@@ -177,7 +177,7 @@ object FancyRepoLoader extends BasicDebugger {
       } else readModelSheetFromURL(rdfURL, nsJavaMap, fileModelCLs);
     } catch {
       case except: Throwable => {
-        getLogger().error("Caught error loading file {}", Array[Object](rdfURL, except))
+        getLogger.error("Caught error loading file {}", Array[Object](rdfURL, except))
         throw except
       }
     }
@@ -200,7 +200,7 @@ object FancyRepoLoader extends BasicDebugger {
       }
     } catch {
       case except: Throwable => {
-        getLogger().error("Caught error loading file {}", Array[Object](rdfURL, except))
+        getLogger.error("Caught error loading file {}", Array[Object](rdfURL, except))
         throw except
       }
     }

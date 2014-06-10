@@ -33,16 +33,15 @@
 package org.appdapter.core.repo
 
 import java.util.HashMap
-
 import org.appdapter.core.boot.ClassLoaderUtils
-import org.appdapter.core.matdat.{GoogSheetRepoSpec, OfflineXlsSheetRepoSpec, OnlineSheetRepoSpec}
-import org.appdapter.core.store.{Repo}
+import org.appdapter.core.matdat.{ GoogSheetRepoSpec, OfflineXlsSheetRepoSpec, OnlineSheetRepoSpec }
+import org.appdapter.core.store.{ Repo }
 import org.appdapter.demo.DemoBrowserUI
 import org.appdapter.help.repo.RepoClientImpl
 import org.appdapter.impl.store.FancyRepo
 import org.osgi.framework.BundleContext
-
 import com.hp.hpl.jena.rdf.model.Model
+import org.appdapter.core.log.BasicDebugger
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -61,7 +60,7 @@ abstract class RepoSpecForDirectory extends RepoSpec {
   }
   def getDirectoryModel(): Model;
 }
-abstract class RepoSpec {
+abstract class RepoSpec extends BasicDebugger {
 
   def makeRepo(): Repo.WithDirectory;
 
@@ -75,7 +74,7 @@ abstract class RepoSpec {
 
   //depricated("uses hardcoded query sheet like ccrt:qry_sheet_77")
   def makeRepoClient(repo: Repo.WithDirectory): RepoClientImpl = {
-   new RepoClientImpl(repo, getDfltTgtGraphSparqlVarName, getDfltQrySrcGraphQName);
+    new RepoClientImpl(repo, getDfltTgtGraphSparqlVarName, getDfltQrySrcGraphQName);
   }
 
   def getDfltQrySrcGraphQName = RepoSpecDefaultNames.DFLT_QRY_SRC_GRAPH_TYPE;
@@ -140,7 +139,7 @@ class URLRepoSpec(var dirModelURL: String, var fileModelCLs: java.util.List[Clas
         } catch {
           case except: Throwable =>
             except.printStackTrace
-          //getLogger().error("Caught loading error in {}", Array[Object](irr, except))
+          //getLogger.error("Caught loading error in {}", Array[Object](irr, except))
         }
       }
       new URLDirModelRepoSpec(dirModelURL, fileModelCLs)
