@@ -1,0 +1,85 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.appdapter</groupId>
+		<artifactId>org.appdapter.modules.core</artifactId>
+		<version>1.1.7</version>
+		<relativePath>../org.appdapter.modules.core/pom.xml</relativePath>
+	</parent>	
+
+	<artifactId>org.appdapter.bundle.gui</artifactId>
+	<packaging>bundle</packaging>
+	<name>${project.artifactId} - OSGi</name>
+    <description>Appdapter GUI  OSGi Bundle</description>	
+
+	<dependencies>
+		<dependency>
+           <groupId>${project.groupId}</groupId>
+           <artifactId>org.appdapter.bundle.core</artifactId>
+           <version>${project.version}</version>
+		</dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>org.appdapter.lib.gui</artifactId>
+            <version>${project.version}</version>
+			<!-- We are exporting these contents, hence we don't need to propagate our dependency on them. -->
+			<scope>provided</scope>
+        </dependency>
+		<dependency>
+			<groupId>org.apache.servicemix.bundles</groupId>
+			<artifactId>org.apache.servicemix.bundles.junit</artifactId>
+			<version>4.7_3</version>
+			<scope>test</scope>
+		</dependency>
+		<!-- We now get all Log4J + SLF4J wiring from o.a.b.core -->
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<version>2.3.7</version>
+				<extensions>true</extensions>
+				<configuration>
+                    <instructions>
+                        <Bundle-Activator>org.appdapter.bundle.gui.osgi.Activator</Bundle-Activator>
+						<Import-Package>
+							<!-- Platform-specific GUI packages are optional -->
+							apple.laf.*;resolution:='optional',
+							com.apple.laf.*;resolution:='optional',
+							com.sun.*;resolution:='optional',
+							sun.*;resolution:='optional',
+							<!-- The rest of our imports are required -->
+							*
+						</Import-Package>
+						<Export-Package>
+							org.appdapter.gui.*,
+							org.appdapter.bundle.gui.osgi.*
+						</Export-Package>
+						<Private-Package>
+							com.jidesoft.*
+						</Private-Package>
+                    </instructions>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>
+<!--
+/*
+ *  Copyright 2011 by The Appdapter Project (www.appdapter.org).
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+-->

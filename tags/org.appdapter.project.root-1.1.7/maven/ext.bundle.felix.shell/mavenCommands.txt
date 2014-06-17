@@ -1,0 +1,24 @@
+
+# First you need to install Java, Maven, and Ant, and setup your
+# JAVA_HOME, M2_HOME, ANT_HOME and PATH variables.
+# Then you need to open up a shell and go to this directory.
+
+#In cygwin you will do something like:
+
+cd /cygdrive/p/_prj/appdapter_trunk/maven/ext.bundle.felix.shell
+
+#From Windows prompt, it will be more like:
+
+cd \your\awesome\windows\path
+
+#From there, assuming your JAVA_HOME, M2_HOME, ANT_HOME, and PATH are set up well, you can do:
+
+mvn clean
+mvn package
+mvn -Prun-on-felix antrun:run
+
+After success on those, you can then use ant directly to run with a standard felix console,
+using either    run.sh,  run.bat, or, even more directly:
+
+ant -f ant_run.xml -propertyfile target/felix.ant.run.props
+
