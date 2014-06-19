@@ -15,6 +15,7 @@
  */
 package org.appdapter.core.name;
 
+import java.io.Serializable;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,7 +28,7 @@ import org.slf4j.Logger;
  * 
  *         TODO: This should extend BaseIdent, wherein it should share hashCode() + equals() impls with all other possible Idents (i.e. JenaResourceItems). These are only 2 impls extant as of 2013-06-01.
  */
-public class FreeIdent implements Ident {
+public class FreeIdent implements SerIdent {
 	final private String myAbsUri;
 	final private String myLocalName;
 
