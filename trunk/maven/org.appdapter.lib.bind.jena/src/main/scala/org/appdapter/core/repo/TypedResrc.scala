@@ -22,6 +22,7 @@ import org.appdapter.core.name.Ident
 import org.appdapter.core.store.ModelClient
 
 import com.hp.hpl.jena.rdf.model.Resource
+import org.appdapter.bind.rdf.jena.model.SerialJenaResItem;
 
 trait TypedResrc extends Ident with Item {
   def hasTypeMark(typeID: Ident): Boolean = false
@@ -31,7 +32,7 @@ trait ExtensiblyTypedResrc extends TypedResrc {
   // Consider:  This would be difficult for a virtually-backed TypedResrc to implement.
   def addTypeMarkings(moreTypeMarks: Set[Ident]): TypedResrc
 }
-class JenaTR(r: Resource, private val myTypes: Set[Ident]) extends JenaResourceItem(r) with ExtensiblyTypedResrc {
+class JenaTR(r: Resource, private val myTypes: Set[Ident]) extends SerialJenaResItem(r) with ExtensiblyTypedResrc {
   override def hasTypeMark(typeID: Ident): Boolean = myTypes.contains(typeID)
   override def getTypeIdents: Set[Ident] = myTypes
   def addTypeMarkings(moreTypeMarks: Set[Ident]): TypedResrc = {

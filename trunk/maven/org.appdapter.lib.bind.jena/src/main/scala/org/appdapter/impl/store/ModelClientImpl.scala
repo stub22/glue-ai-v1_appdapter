@@ -22,6 +22,7 @@ import com.hp.hpl.jena.datatypes.RDFDatatype
 import com.hp.hpl.jena.datatypes.xsd.{XSDDatatype}
 import org.appdapter.core.name.Ident
 import org.appdapter.core.item.{Item, JenaResourceItem}
+import org.appdapter.bind.rdf.jena.model.SerialJenaResItem;
 /**
  * @author Stu B. <www.texpedient.com>
  */
@@ -57,18 +58,18 @@ trait ModelClientCore extends org.appdapter.core.store.ModelClient {
 
 	private def makeJenaResourceItemForQName(qName : String) : JenaResourceItem = {	
 		val res = makeResourceForQName(qName)
-		new JenaResourceItem(res)
+		new SerialJenaResItem(res)
 	}
 	override  def makeIdentForURI(uri : String) : Ident = {
 		val res = makeResourceForURI(uri)
-		new JenaResourceItem(res);
+		new SerialJenaResItem(res);
 	}
 	override  def makeItemForIdent(id : Ident) : Item = {
 		id match {
 			case itemAlready : Item  => itemAlready
 			case otherIdent : Ident => { 
 				val res = makeResourceForIdent (otherIdent); 
-				new JenaResourceItem(res)
+				new SerialJenaResItem(res)
 			}
 		}
 	}
