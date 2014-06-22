@@ -32,23 +32,39 @@ import com.hp.hpl.jena.rdf.model.RDFList;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.ResIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Stu B. <www.texpedient.com>
+ * 
+ * We rely on the ability of myResource to perform getModel().
+ * 
+ * Resources created by ResourceFactory will not refer to any model, 
+ * and will not permit operations which require 
+ * a model. Such resources are useful as general constants.
  */
 public class JenaResourceItem extends BaseItem implements ModelIdent {
-	// We rely on the ability of the resource to perform getModel().
-	Resource myResource;
+	private static Logger theLogger = LoggerFactory.getLogger(JenaResourceItem.class);
+	private transient Resource myResource;
 
+	protected JenaResourceItem() {
+		
+	}
 	public JenaResourceItem(Resource r) {
 		if (r == null) {
 			throw new RuntimeException("Cannot create JenaResourceItem with null resource.");
 		}
 		myResource = r;
 	}
-
+/**
+ * We attempt to compare based on the absUriString.
+ * @param o
+ * @return 
+ */
 	@Override public boolean equals(Object o) {
 		if ((o != null) && (o instanceof Ident)) {
 			String absUri = getAbsUriString();
@@ -64,12 +80,6 @@ public class JenaResourceItem extends BaseItem implements ModelIdent {
 		return false;
 	}
 
-	/*		if (o instanceof JenaResourceItem) {
-				return myResource.equals(((JenaResourceItem) o).myResource);
-			} else {
-				return false;
-			}
-	 */
 
 	@Override public int hashCode() {
 		// Blank-nodes do not have an absUriString
@@ -81,6 +91,10 @@ public class JenaResourceItem extends BaseItem implements ModelIdent {
 		}
 	}
 
+	/**
+	 * 
+	 * @return  this same object (This item *is* an ident!)
+	 */
 	@Override public Ident getIdent() {
 		return this;
 	}
@@ -89,28 +103,46 @@ public class JenaResourceItem extends BaseItem implements ModelIdent {
 		return "JenaResourceItem[res=" + myResource.toString() + "]";
 	}
 
+	/**
+	 * If there *is* no model, then we return another resource that has no model.
+	 * @param absURI
+	 * @return 
+	 */
 	@Override public Ident getIdentInSameModel(String absURI) {
-		Resource res = myResource.getModel().createResource(absURI);
-		return new JenaResourceItem(res);
+		Model m = getModel();
+		Resource createdRes = null;
+		if (m != null) {
+			createdRes = m.createResource(absURI);
+		} else {
+			createdRes = ResourceFactory.createResource(absURI);
+		}
+		JenaResourceItem itemInSameJClazz = makeItemOfMyJClazz(createdRes);
+		return itemInSameJClazz;
 	}
 
 	public String getAbsUriString() {
-		return myResource.getURI();
+		Resource mr = getJenaResource();
+		return mr.getURI();
 	}
 
 	public String getLocalName() {
-		return myResource.getLocalName();
+		Resource mr = getJenaResource();
+		return mr.getLocalName();
 	}
 
 	public Map<Property, List<RDFNode>> getPropertyMap() {
 		Model model = getModel();
+		if (model == null) {
+			throw new RuntimeException("This item is not connected to a model: " + this.toString());
+		}
 		Map<Property, List<RDFNode>> properties = new HashMap<Property, List<RDFNode>>();
 		StmtIterator iter = model.listStatements();
+		Resource meRes = getJenaResource();
 		// TODO this is slow
 		while (iter.hasNext()) {
 			Statement stmt = iter.nextStatement(); // get next statement
 			Resource subject = stmt.getSubject(); // get the subject
-			if (subject.equals(myResource)) {
+			if (subject.equals(meRes)) {
 				Property predicate = stmt.getPredicate(); // get the predicate
 				List<RDFNode> results = properties.get(predicate);
 				if (results == null) {
@@ -127,9 +159,13 @@ public class JenaResourceItem extends BaseItem implements ModelIdent {
 	protected List<RDFNode> getPropertyValues(Ident fieldID, LinkDirection linkDir) {
 		List<RDFNode> results = new ArrayList<RDFNode>();
 		Model model = getModel();
+		if (model == null) {
+			throw new RuntimeException("This item is not connected to a model: " + this.toString());
+		}		
 		Resource fieldPropertyRes = null;
+		Resource meRes = getJenaResource();
 		if (fieldID instanceof JenaResourceItem) {
-			fieldPropertyRes = ((JenaResourceItem) fieldID).myResource;
+			fieldPropertyRes = ((JenaResourceItem) fieldID).getJenaResource();
 		} else {
 			String fieldPropURI = fieldID.getAbsUriString();
 			if (fieldPropURI != null) {
@@ -140,12 +176,12 @@ public class JenaResourceItem extends BaseItem implements ModelIdent {
 			Property fieldProperty = fieldPropertyRes.as(Property.class);
 		
 			if (linkDir == LinkDirection.FORWARD) {
-				NodeIterator nodeIt = model.listObjectsOfProperty(myResource, fieldProperty);
+				NodeIterator nodeIt = model.listObjectsOfProperty(meRes, fieldProperty);
 				while (nodeIt.hasNext()) {
 					results.add(nodeIt.nextNode());
 				}
 			} else if (linkDir == LinkDirection.REVERSE) {
-				ResIterator resIt = model.listResourcesWithProperty(fieldProperty, myResource);
+				ResIterator resIt = model.listResourcesWithProperty(fieldProperty, meRes);
 				while (resIt.hasNext()) {
 					results.add(resIt.nextResource());
 				}
@@ -185,7 +221,7 @@ public class JenaResourceItem extends BaseItem implements ModelIdent {
 		List<Item> results = new ArrayList<Item>();
 		for (RDFNode rn : linkedNodes) {
 			Resource res = rn.asResource();
-			JenaResourceItem jri = new JenaResourceItem(res);
+			JenaResourceItem jri =  makeItemOfMyJClazz(res); //  new JenaResourceItem(res);
 			results.add(jri);
 		}
 		return results;
@@ -202,7 +238,7 @@ public class JenaResourceItem extends BaseItem implements ModelIdent {
 				// System.out.println("JavaNodeList = " + javaNodeList);
 				for (RDFNode elementNode : javaNodeList) {
 					Resource res = elementNode.asResource();
-					JenaResourceItem jri = new JenaResourceItem(res);
+					JenaResourceItem jri = makeItemOfMyJClazz(res); // new JenaResourceItem(res);
 					results.add(jri);
 				}
 			}
@@ -210,9 +246,14 @@ public class JenaResourceItem extends BaseItem implements ModelIdent {
 		return results;
 
 	}
-
 	public Resource getJenaResource() {
 		return myResource;
 	}
-
+	protected void setJenaResource(Resource r) {
+		myResource = r;
+	}
+	protected JenaResourceItem makeItemOfMyJClazz(Resource res) {
+		return new JenaResourceItem(res);
+	}
+	
 }

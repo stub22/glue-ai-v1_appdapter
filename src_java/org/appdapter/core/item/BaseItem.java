@@ -34,7 +34,7 @@ import com.hp.hpl.jena.rdf.model.Literal;
  * TODO:  BaseItem can extend BaseIdent to ensure we can have same hashCode() + equals() for all idents + items.
  */
 public abstract class BaseItem implements Item {
-	static Logger theLogger = LoggerFactory.getLogger(BaseItem.class);
+	private static Logger theLogger = LoggerFactory.getLogger(BaseItem.class);
 
 	// @TODO figure out if we are OK when a Item property is really missing
 	Item MISSING_ITEM = null;

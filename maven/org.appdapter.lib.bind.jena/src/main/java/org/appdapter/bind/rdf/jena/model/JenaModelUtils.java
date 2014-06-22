@@ -239,6 +239,6 @@ public class JenaModelUtils implements AnyOper.UtilClass {
 	}
 
 	@ConverterMethod public static Ident toIdent(Resource item) {
-		return new JenaResourceItem(item);
+		return new SerialJenaResItem(item);
 	}
 }
