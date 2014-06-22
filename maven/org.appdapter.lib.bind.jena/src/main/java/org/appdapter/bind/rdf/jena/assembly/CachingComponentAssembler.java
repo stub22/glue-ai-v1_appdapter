@@ -28,6 +28,8 @@ import org.appdapter.core.name.Ident;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.appdapter.bind.rdf.jena.model.SerialJenaResItem;
+
 import com.hp.hpl.jena.assembler.Assembler;
 import com.hp.hpl.jena.assembler.Mode;
 import com.hp.hpl.jena.assembler.assemblers.AssemblerBase;
@@ -164,7 +166,7 @@ public abstract class CachingComponentAssembler<MKC extends MutableKnownComponen
 		 */
 	final public Object open(Assembler asmblr, Resource rsrc, Mode mode) {
 		getLogger().debug("Assembler[{}] is opening component at: {}", this, rsrc);
-		JenaResourceItem wrapperItem = new JenaResourceItem(rsrc);
+		JenaResourceItem wrapperItem = new SerialJenaResItem(rsrc);
 		//Class<MKC> componentClass = decideComponentClass(wrapperItem, wrapperItem);
 		//MKC comp = null;
 		//if (componentClass != null) {
@@ -172,28 +174,5 @@ public abstract class CachingComponentAssembler<MKC extends MutableKnownComponen
 		//}
 		return comp;
 	}
-	/*
-	@Override public void logInfo(int importance, String msg) {
-		myDebugger.logInfo(importance, msg);
-	}
-	@Override public void logInfo(String msg) {
-		myDebugger.logInfo(msg);
-	}
-	@Override public void logError(String msg, Throwable t) {
-		myDebugger.logError(msg, t);
-	}
-	@Override public void logError(String msg) {
-		myDebugger.logError(msg);
-	}
-	@Override public void logWarning(String msg, Throwable t) {
-		myDebugger.logWarning(msg, t);
-	}
-	@Override public void logWarning(String msg) {
-		myDebugger.logWarning(msg);
-	}
-	public void logDebug(String msg) {
-		myDebugger.logDebug(msg);
-	}
-	* 
-	*/
+
 }
