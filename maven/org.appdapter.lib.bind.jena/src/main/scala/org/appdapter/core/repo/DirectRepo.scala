@@ -26,7 +26,8 @@ import org.appdapter.core.store.dataset.SpecialRepoLoader
 import com.hp.hpl.jena.query.DatasetFactory
 
 class DirectRepo(val myRepoSpecForRef: RepoSpec, val myDebugNameToStr: String, val myBasePath: String,
-  val myDirectoryModel: Model, var fileModelCLs: java.util.List[ClassLoader] = null) extends BasicRepoImpl with FancyRepo with Repo.Updatable with Repo.WithDirectory with RepoOper.ReloadableDataset {
+	val myDirectoryModel: Model, var fileModelCLs: java.util.List[ClassLoader] = null) 
+	extends BasicRepoImpl with FancyRepo with Repo.Updatable with Repo.WithDirectory with RepoOper.ReloadableDataset {
 
   def this(directoryModel: Model) =
     this(null, null, null, directoryModel, null)
