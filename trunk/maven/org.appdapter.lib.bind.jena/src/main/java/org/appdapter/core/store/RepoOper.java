@@ -123,8 +123,10 @@ public class RepoOper implements AnyOper, UtilClass {
 		 * @param ds
 		 * @return
 		 */
+		/*   DISABLED - the implementation of this method is now protected.
 		@UISalient(ToValueMethod = "toString")
-		void setMyMainQueryDataset(Dataset ds);
+		void setMainQueryDataset(Dataset ds);
+		*/
 	}
 
 	// static class ConcBootstrapTF extends

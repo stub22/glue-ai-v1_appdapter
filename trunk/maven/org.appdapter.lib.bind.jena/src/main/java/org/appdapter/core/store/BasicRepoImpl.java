@@ -56,7 +56,7 @@ import com.hp.hpl.jena.shared.Lock;
  */
 
 public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements Repo, Repo.SharedModels, Repo.DatasetProvider {
-	protected Dataset myMainQueryDataset;
+	private Dataset myMainQueryDataset;
 
 	protected BasicRepoImpl(SpecialRepoLoader srepoLoader) {
 		mySpecialRepoLoader = srepoLoader;
@@ -66,8 +66,32 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 		mySpecialRepoLoader = new SpecialRepoLoader(this);
 		mySpecialRepoLoader.setSingleThreaded(loadSingleThread);
 	}
+	
+	protected void setMainQueryDataset(Dataset dset) { 
+		myMainQueryDataset = dset;
+	}
+/*
+	public void setMyMainQueryDataset(Dataset myMainQueryDataset) {
+		this.myMainQueryDataset = myMainQueryDataset;
+	}
+*/
+	@Override public Dataset getMainQueryDataset() {
+		/* This is far too sophisticated an impl for BasicRepoImpl.
+		 * It should be quite possible for me to treat any wrapped dataset as an impl.
+		 * But here, we embed the unavoidable assumption that there "may" always be loading and locking,
+		 * hidden behind the basic public "getDataset" method.
+		 */
+		beginLoading();
+		if (myMainQueryDataset == null) {
+			myMainQueryDataset = makeMainQueryDataset();			
+		}
+		if (!isLoadingFinished) {
+			finishLoading();
+		}
+		return myMainQueryDataset;
+	}
 
-
+	// This is not an Override, but may match the mixin  Repo.Updatable 
 	public void replaceNamedModel(Ident modelID, Model jenaModel) {
 		Dataset repoDset = getMainQueryDataset();
 		Lock lock = repoDset.getLock();
@@ -102,8 +126,7 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 		}
 	}
 
-
-	public Model getNamedModel(Ident modelID, boolean createIfMissing) {
+	@Override public Model getNamedModel(Ident modelID, boolean createIfMissing) {
 		Dataset repoDset = getMainQueryDataset();
 		// DataSource repoDsource = (DataSource) repoDset;
 		Lock lock = repoDset.getLock();
@@ -123,47 +146,6 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 		}
 		return jenaModel;
 	}
-
-	public Model createLocalNamedModel(Ident modelID) {
-		String name = modelID.getAbsUriString();
-		name = RepoOper.correctModelName(name);
-		return RepoDatasetFactory.createModel(getDatasetType(), name, getShareName());
-	}
-
-	public String getShareName() {
-		return RepoDatasetFactory.DATASET_SHARE_NAME;
-	}
-
-	public String getDatasetType() {
-		if (datasetProvider != null)
-			return datasetProvider.getDatasetType();
-		return datasetType;
-	}
-
-	public Dataset makeMainQueryDataset() {
-		if (datasetProvider != null)
-			return datasetProvider.createDefault();
-		if (datasetType != null)
-			return datasetProvider.createDefault();
-		Dataset ds = RepoDatasetFactory.createDefault(); // becomes   createMem() in later Jena versions.
-		return ds;
-	}
-
-	public void setMyMainQueryDataset(Dataset myMainQueryDataset) {
-		this.myMainQueryDataset = myMainQueryDataset;
-	}
-
-	@Override public Dataset getMainQueryDataset() {
-		beginLoading();
-		if (myMainQueryDataset == null) {
-			myMainQueryDataset = makeMainQueryDataset();			
-		}
-		if (!isLoadingFinished)
-			finishLoading();
-		return myMainQueryDataset;
-	}
-
-
 
 	@Override public List<GraphStat> getGraphStats() {
 		List<GraphStat> stats = new ArrayList<GraphStat>();
@@ -215,6 +197,34 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 		Set<Object> results = AssemblerUtils.buildAllRootsInModel(loadedModel);
 		return results;
 	}
+/*
+ * Construction features
+ */	
+	protected Model createLocalNamedModel(Ident modelID) {
+		String name = modelID.getAbsUriString();
+		name = RepoOper.correctModelName(name);
+		return RepoDatasetFactory.createModel(getDatasetType(), name, getShareName());
+	}
+
+	protected String getShareName() {
+		return RepoDatasetFactory.DATASET_SHARE_NAME;
+	}
+
+	protected String getDatasetType() {
+		if (datasetProvider != null)
+			return datasetProvider.getDatasetType();
+		return datasetType;
+	}
+
+	protected Dataset makeMainQueryDataset() {
+		if (datasetProvider != null)
+			return datasetProvider.createDefault();
+		if (datasetType != null)
+			return datasetProvider.createDefault();
+		Dataset ds = RepoDatasetFactory.createDefault(); // becomes   createMem() in later Jena versions.
+		return ds;
+	}
+
 	
 	/**** TODO - move these sharing features (and the "implements Repo.SharedModels" designation
 	 * into a subclass (or stackable trait) - SharingRepoImpl or somesuch.
