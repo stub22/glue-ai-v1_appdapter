@@ -158,7 +158,14 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 		}
 		return stats;
 	}
-
+/**
+ * Uses transactions (existing or new) if appropriate.
+ * @param <ResType>
+ * @param parsedQuery
+ * @param initBinding
+ * @param resProc
+ * @return 
+ */
 	@Override public <ResType> ResType processQuery(Query parsedQuery, QuerySolution initBinding, JenaArqResultSetProcessor<ResType> resProc) {
 		ResType result = null;
 		try {
@@ -170,21 +177,37 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 		}
 		return result;
 	}
-
+/**
+ *  * Uses transactions (existing or new) if appropriate.
+ * @param parsedQuery
+ * @param initBinding
+ * @return 
+ */
 	@Override public List<QuerySolution> findAllSolutions(Query parsedQuery, QuerySolution initBinding) {
 		Dataset ds = getMainQueryDataset();
 		// return JenaArqQueryFuncs.findAllSolutions(ds, parsedQuery, initBinding);
 		// Using a transaction in this read protects us from concurrent writes (if those writes are properly transactional).
 		return  JenaArqQueryFuncs_TxAware.findAllSolutions_TX(ds, parsedQuery, initBinding);
 	}
-
+/**
+ * Should only be used in a proper transactional context, and hence should not be public.<br/>
+ * TODO:  Make this method protected, allow users to ship in a transact to exec against named models.
+ * 
+ * @param graphNameIdent
+ * @return 
+ */
 	@Override public Model getNamedModel(Ident graphNameIdent) {
 		Dataset mqd = getMainQueryDataset();
 		String absURI = graphNameIdent.getAbsUriString();
 		absURI = RepoOper.correctModelName(absURI);
 		return mqd.getNamedModel(absURI);
 	}
-
+/**
+ * This *can* be done in a proper xactional context.
+ * TODO:  Make it happen.
+ * @param graphNameIdent
+ * @return 
+ */
 	@Override public Set<Object> assembleRootsFromNamedModel(Ident graphNameIdent) {
 		Model loadedModel = getNamedModel(graphNameIdent);
 		if (loadedModel == null) {
@@ -195,8 +218,11 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 		Set<Object> results = AssemblerUtils.buildAllRootsInModel(loadedModel);
 		return results;
 	}
-/*
- * Construction features
+/*  Above here is actual BasicRepoImpl, below here is not.
+ * ************************************************************************************
+ * Graph construction features - Presumed factory wrappers - move out of base-impl.
+ * 
+ * TODO:  These belong out a layer - they are not "BasicRepoImpl" concepts.
  */	
 	protected Model createLocalNamedModel(Ident modelID) {
 		String name = modelID.getAbsUriString();
