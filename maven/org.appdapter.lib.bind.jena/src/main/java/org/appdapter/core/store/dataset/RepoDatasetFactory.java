@@ -460,7 +460,9 @@ public class RepoDatasetFactory implements AnyOper, UtilClass {
 			lst.add(0, udf);
 		}
 	}
-
+/*   These methods disabled because they are unused, but they want to use the now-protected method
+ * setMainQueryDataset
+ * 
 	@UISalient public static void addOrReplaceViaFactory(ReloadableDataset myRepo, UserDatasetFactory factory, Resource unionOrReplace) {
 		untested();
 		Dataset oldDs = myRepo.getMainQueryDataset();
@@ -484,7 +486,7 @@ public class RepoDatasetFactory implements AnyOper, UtilClass {
 		myRepo.setMyMainQueryDataset(newDs);
 		RepoOper.addOrReplaceDatasetElements(newDs, oldDs, unionOrReplace);
 	}
-
+*/
 	static void untested(Object... args) {
 		if (true)
 			throw new NullPointerException("" + args);
