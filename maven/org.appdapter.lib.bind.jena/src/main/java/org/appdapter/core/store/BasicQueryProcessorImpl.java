@@ -16,6 +16,7 @@
 
 package org.appdapter.core.store;
 
+import org.appdapter.bind.rdf.jena.query.QueryProcessor;
 import org.appdapter.core.log.BasicDebugger;
 /**
  * @author Stu B. <www.texpedient.com>

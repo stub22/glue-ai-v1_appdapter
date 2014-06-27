@@ -15,6 +15,8 @@
  */
 package org.appdapter.core.store.dataset;
 
+import org.appdapter.bind.rdf.jena.model.CheckedModel;
+import org.appdapter.bind.rdf.jena.model.CheckedGraph;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;

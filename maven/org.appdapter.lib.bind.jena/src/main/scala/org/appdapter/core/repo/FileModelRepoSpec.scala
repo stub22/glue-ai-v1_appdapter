@@ -18,8 +18,8 @@ package org.appdapter.core.repo
 
 import java.io.File
 import org.appdapter.core.log.BasicDebugger
-import org.appdapter.core.store.ExtendedFileLoading.Paths
-import org.appdapter.core.store.dataset.SpecialRepoLoader
+import org.appdapter.core.loader.ExtendedFileLoading.Paths
+import org.appdapter.core.loader.SpecialRepoLoader
 import com.hp.hpl.jena.query.{ Dataset, QuerySolution }
 import com.hp.hpl.jena.rdf.model.{ Literal, Model, Resource }
 import org.appdapter.impl.store.QueryHelper

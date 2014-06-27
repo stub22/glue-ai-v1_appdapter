@@ -22,7 +22,7 @@ import org.appdapter.core.store.dataset.RepoDatasetFactory
 import org.appdapter.impl.store.FancyRepo
 import com.hp.hpl.jena.query.Dataset
 import com.hp.hpl.jena.rdf.model.Model
-import org.appdapter.core.store.dataset.SpecialRepoLoader
+import org.appdapter.core.loader.SpecialRepoLoader
 import com.hp.hpl.jena.query.DatasetFactory
 
 class DirectRepo(val myRepoSpecForRef: RepoSpec, val myDebugNameToStr: String, val myBasePath: String,
@@ -74,7 +74,7 @@ class DirectRepo(val myRepoSpecForRef: RepoSpec, val myDebugNameToStr: String, v
     val dm = getDirectoryModel
     var dmstr = "noDirModel";
     if (dm != null) dmstr = "dir=" + dm.size
-    if (isLoadingLocked || !isLoadingStarted) {
+	if (isLoadingLockedOrNotStarted()) { //   if (isLoadingLocked || !isLoadingStarted) {
       getClass.getSimpleName + "[name=" + myDebugNameToStr + "  " + dmstr + " setof=Loading...]";
     } else {
       getClass.getSimpleName + "[name=" + myDebugNameToStr + "  " + dmstr + " setof=" + RepoOper.setOF(getMainQueryDataset.listNames) + "]";
@@ -91,7 +91,7 @@ class DirectRepo(val myRepoSpecForRef: RepoSpec, val myDebugNameToStr: String, v
   }
 
   private[core] def loadSheetModelsIntoMainDataset() {
-    if (!isUpdatedFromDirModel) {
+    if (!isUpdatedFromDirModel()) {
       beginLoading
     }
     finishLoading
@@ -113,21 +113,21 @@ class DirectRepo(val myRepoSpecForRef: RepoSpec, val myDebugNameToStr: String, v
         if (dirModelSize == 0) {
           if (myMainQueryDataset != null) {
             RepoOper.clearAll(myMainQueryDataset)
-            this.isUpdatedFromDirModel = true;
+			setUpdatedFromDirModel(true);
           }
         } else {
           if (this.myMainQueryDataset == null) {
-            this.isUpdatedFromDirModel = true;
+            setUpdatedFromDirModel(true);
             myMainQueryDataset = makeMainQueryDataset
             FancyRepoLoader.updateDatasetFromDirModel(dirModel, myMainQueryDataset, getClassLoaderList(fileModelCLs), getRepoLoader)
           } else {
-            this.isUpdatedFromDirModel = true;
+            setUpdatedFromDirModel(true);
             reloadAllModels
           }
           var newModelSize = dirModel.size;
           if (newModelSize != dirModelSize && dirModel == getDirectoryModel) {
             getLogger.warn("OnmiRepo Dir.size changed durring load!  " + dirModelSize + " -> " + newModelSize)
-            this.isUpdatedFromDirModel = false;
+            setUpdatedFromDirModel(true);
             // we should just should call updateFromDirModel function again
             // but likely there is already a bug that cause the size changed
             // and we'd be in an infinate loop if we didn't use reloadTries

@@ -16,6 +16,8 @@
 
 package org.appdapter.core.store;
 
+import org.appdapter.core.share.ShareSpec;
+import org.appdapter.core.share.ShareSpecImpl;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -28,9 +30,9 @@ import org.appdapter.bind.rdf.jena.query.JenaArqQueryFuncs;
 import org.appdapter.bind.rdf.jena.query.JenaArqResultSetProcessor;
 import org.appdapter.core.jvm.GetObject;
 import org.appdapter.core.name.Ident;
-import org.appdapter.core.store.dataset.RemoteDatasetProviderSpec;
+import org.appdapter.core.share.RemoteDatasetProviderSpec;
 import org.appdapter.core.store.dataset.RepoDatasetFactory;
-import org.appdapter.core.store.dataset.SpecialRepoLoader;
+import org.appdapter.core.loader.SpecialRepoLoader;
 import org.appdapter.core.store.dataset.UserDatasetFactory;
 
 import com.hp.hpl.jena.query.Dataset;
@@ -43,61 +45,25 @@ import com.hp.hpl.jena.shared.Lock;
 
 /**
  * @author Stu B. <www.texpedient.com>
+ * 
+ * TODO:
+ * The goal of a BasicRepoImpl is just to provide common dataset-wrapper functionality,
+ * not to be the pivot of a concurrent data loading system.  We need to move
+ * all that loading/locking state into separate classes.
  */
 
 public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements Repo, Repo.SharedModels, Repo.DatasetProvider {
-
-	public static boolean LOAD_SINGLE_THREADED = true;
-	public boolean loadSingleThread = LOAD_SINGLE_THREADED;
-	SpecialRepoLoader specialRepoLoader;
-
-	protected SpecialRepoLoader getRepoLoader() {
-		return specialRepoLoader;
-	}
+	protected Dataset myMainQueryDataset;
 
 	protected BasicRepoImpl(SpecialRepoLoader srepoLoader) {
-		specialRepoLoader = srepoLoader;
+		mySpecialRepoLoader = srepoLoader;
 	}
 
 	protected BasicRepoImpl() {
-		specialRepoLoader = new SpecialRepoLoader(this);
-		specialRepoLoader.setSingleThreaded(loadSingleThread);
+		mySpecialRepoLoader = new SpecialRepoLoader(this);
+		mySpecialRepoLoader.setSingleThreaded(loadSingleThread);
 	}
 
-	Model repoEvents;
-
-	public Model getEventsModel() {
-		if (repoEvents == null) {
-			repoEvents = RepoDatasetFactory.createDefaultModel();
-			//repoEvents.add(getDirectoryModel());
-		}
-		return repoEvents;
-	}
-
-	protected boolean isUpdatedFromDirModel = false;
-
-	public void addLoadTask(String nym, Runnable r) {
-		final SpecialRepoLoader repoLoader = getRepoLoader();
-		repoLoader.addTask(nym, r);
-	}
-
-	public void addLoadTask(String nym, Runnable r, boolean forGround) {
-		if (forGround) {
-			r.run();
-			return;
-		}
-		final SpecialRepoLoader repoLoader = getRepoLoader();
-		repoLoader.addTask(nym, r);
-	}
-
-	protected Dataset myMainQueryDataset;
-	
-	final public Object loadingLock = new Object();
-	public boolean isLoadingStarted = false;
-	public boolean isLoadingLocked = false;
-	public boolean isLoadingFinished = false;
-	protected UserDatasetFactory datasetProvider = RepoDatasetFactory.DEFAULT;
-	public String datasetType;
 
 	public void replaceNamedModel(Ident modelID, Model jenaModel) {
 		Dataset repoDset = getMainQueryDataset();
@@ -229,6 +195,104 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 		return myMainQueryDataset;
 	}
 
+
+
+	@Override public List<GraphStat> getGraphStats() {
+		List<GraphStat> stats = new ArrayList<GraphStat>();
+		final Dataset mainDset = getMainQueryDataset();
+		Iterator<String> nameIt = mainDset.listNames();
+		while (nameIt.hasNext()) {
+			final String modelName = nameIt.next();
+			Repo.GraphStat gs = new GraphStat(modelName, new GetObject<Model>() {
+				@Override public Model getValue() {
+					return mainDset.getNamedModel(modelName);
+				}
+			});
+			stats.add(gs);
+		}
+		return stats;
+	}
+
+	@Override public <ResType> ResType processQuery(Query parsedQuery, QuerySolution initBinding, JenaArqResultSetProcessor<ResType> resProc) {
+		ResType result = null;
+		try {
+			Dataset ds = getMainQueryDataset();
+			result = JenaArqQueryFuncs.processDatasetQuery(ds, parsedQuery, initBinding, resProc);
+		} catch (Throwable t) {
+			getLogger().error("problem in processQuery [{}]", parsedQuery, t);
+		}
+		return result;
+	}
+
+	
+	@Override public List<QuerySolution> findAllSolutions(Query parsedQuery, QuerySolution initBinding) {
+		Dataset ds = getMainQueryDataset();
+		// if (ds.supportsTransactions()) {
+		return JenaArqQueryFuncs.findAllSolutions(ds, parsedQuery, initBinding);
+	}
+
+	@Override public Model getNamedModel(Ident graphNameIdent) {
+		Dataset mqd = getMainQueryDataset();
+		String absURI = graphNameIdent.getAbsUriString();
+		absURI = RepoOper.correctModelName(absURI);
+		return mqd.getNamedModel(absURI);
+	}
+
+	@Override public Set<Object> assembleRootsFromNamedModel(Ident graphNameIdent) {
+		Model loadedModel = getNamedModel(graphNameIdent);
+		if (loadedModel == null) {
+			getLogger().error("No model found at {}", graphNameIdent);
+			// We *could* return an empty set, instead.
+			return null;
+		}
+		Set<Object> results = AssemblerUtils.buildAllRootsInModel(loadedModel);
+		return results;
+	}
+	
+	
+	/* This loader-task stuff obscures the intent of the BasicRepoImpl.
+	 * TODO:  Move it out into subclasses/wrappers/delegates.
+	 * 
+	 */
+	private static boolean LOAD_SINGLE_THREADED = true;
+	private boolean loadSingleThread = LOAD_SINGLE_THREADED;
+	private SpecialRepoLoader mySpecialRepoLoader;
+
+	protected SpecialRepoLoader getRepoLoader() {
+		return mySpecialRepoLoader;
+	}
+
+	
+	private Object loadingLock = new Object();
+	private boolean isLoadingStarted = false;
+	private boolean isLoadingLocked = false;
+	private boolean isLoadingFinished = false;
+	private boolean myFlag_updatedFromDirModel = false;
+	
+	// What is the semantic meaning of this condition, used in DirectRepo toString()?
+	protected boolean isLoadingLockedOrNotStarted() {
+		return (isLoadingLocked || !isLoadingStarted);
+	}
+	protected boolean isUpdatedFromDirModel() { 
+		return myFlag_updatedFromDirModel;
+	}
+	protected void setUpdatedFromDirModel(boolean updatedFlag) { 
+		myFlag_updatedFromDirModel = updatedFlag;
+	}
+	public void addLoadTask(String nym, Runnable r) { // used from SpecialRepoLoader
+		final SpecialRepoLoader repoLoader = getRepoLoader();
+		repoLoader.addTask(nym, r);
+	}
+	private void addLoadTask(String nym, Runnable r, boolean forGround) {
+		if (forGround) {
+			r.run();
+			return;
+		}
+		final SpecialRepoLoader repoLoader = getRepoLoader();
+		repoLoader.addTask(nym, r);
+	}
+	
+	
 	// this will make sure that loadingLock is locked so all callers that want to use the repo will need to call finishLoading();
 	// (getMainQueryDataset you'll notice calls finishLoading() )
 	final public void beginLoading() {
@@ -267,55 +331,18 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 		final SpecialRepoLoader repoLoader = getRepoLoader();
 		repoLoader.waitUntilLastJobComplete();
 		isLoadingFinished = true;
-	}
+	}	
+	
+	
+	private UserDatasetFactory datasetProvider = RepoDatasetFactory.DEFAULT;
+	private String datasetType;
+	private	Model myRepoEvents;
 
-	@Override public List<GraphStat> getGraphStats() {
-		List<GraphStat> stats = new ArrayList<GraphStat>();
-		final Dataset mainDset = getMainQueryDataset();
-		Iterator<String> nameIt = mainDset.listNames();
-		while (nameIt.hasNext()) {
-			final String modelName = nameIt.next();
-			Repo.GraphStat gs = new GraphStat(modelName, new GetObject<Model>() {
-				@Override public Model getValue() {
-					return mainDset.getNamedModel(modelName);
-				}
-			});
-			stats.add(gs);
+	public Model getEventsModel() {
+		if (myRepoEvents == null) {
+			myRepoEvents = RepoDatasetFactory.createDefaultModel();
+			//repoEvents.add(getDirectoryModel());
 		}
-		return stats;
-	}
-
-	@Override public <ResType> ResType processQuery(Query parsedQuery, QuerySolution initBinding, JenaArqResultSetProcessor<ResType> resProc) {
-		ResType result = null;
-		try {
-			Dataset ds = getMainQueryDataset();
-			result = JenaArqQueryFuncs.processDatasetQuery(ds, parsedQuery, initBinding, resProc);
-		} catch (Throwable t) {
-			getLogger().error("problem in processQuery [{}]", parsedQuery, t);
-		}
-		return result;
-	}
-
-	@Override public List<QuerySolution> findAllSolutions(Query parsedQuery, QuerySolution initBinding) {
-		Dataset ds = getMainQueryDataset();
-		return JenaArqQueryFuncs.findAllSolutions(ds, parsedQuery, initBinding);
-	}
-
-	@Override public Model getNamedModel(Ident graphNameIdent) {
-		Dataset mqd = getMainQueryDataset();
-		String absURI = graphNameIdent.getAbsUriString();
-		absURI = RepoOper.correctModelName(absURI);
-		return mqd.getNamedModel(absURI);
-	}
-
-	@Override public Set<Object> assembleRootsFromNamedModel(Ident graphNameIdent) {
-		Model loadedModel = getNamedModel(graphNameIdent);
-		if (loadedModel == null) {
-			getLogger().error("No model found at {}", graphNameIdent);
-			// We *could* return an empty set, instead.
-			return null;
-		}
-		Set<Object> results = AssemblerUtils.buildAllRootsInModel(loadedModel);
-		return results;
-	}
+		return myRepoEvents;
+	}	
 }

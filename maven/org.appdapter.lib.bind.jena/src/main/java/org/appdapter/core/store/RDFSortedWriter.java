@@ -7,7 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 
-import org.appdapter.core.store.dataset.CheckedGraph;
+import org.appdapter.bind.rdf.jena.model.CheckedGraph;
 
 import com.hp.hpl.jena.graph.Graph;
 import com.hp.hpl.jena.mem.GraphMem;

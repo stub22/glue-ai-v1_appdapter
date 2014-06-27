@@ -1,4 +1,4 @@
-package org.appdapter.core.store.dataset;
+package org.appdapter.bind.rdf.jena.model;
 
 import org.appdapter.core.log.Debuggable;
 
@@ -15,6 +15,7 @@ import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.impl.ModelCom;
+import org.appdapter.core.store.dataset.RepoDatasetFactory;
 
 public class CheckedModel extends ModelCom implements Model {
 	public static RDFNode createTypedLiteral(Model model, String cellString, RDFDatatype myDatatype) {

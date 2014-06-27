@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.appdapter.core.store;
+package org.appdapter.core.loader;
 
 import java.io.File;
 import java.io.FileInputStream;

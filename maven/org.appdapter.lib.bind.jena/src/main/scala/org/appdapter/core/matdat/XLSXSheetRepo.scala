@@ -20,8 +20,8 @@ import java.io.Reader
 
 import org.appdapter.core.log.BasicDebugger
 import org.appdapter.core.repo.{InstallableRepoReader, FancyRepoLoader, _}
-import org.appdapter.core.store.ExtendedFileStreamUtils
-import org.appdapter.core.store.dataset.{RepoDatasetFactory, SpecialRepoLoader}
+import org.appdapter.core.loader.{ExtendedFileStreamUtils, SpecialRepoLoader}
+import org.appdapter.core.store.dataset.{RepoDatasetFactory }
 import org.appdapter.impl.store.{FancyRepo, QueryHelper}
 
 import com.hp.hpl.jena.query.{Dataset, QuerySolution, ResultSet}
