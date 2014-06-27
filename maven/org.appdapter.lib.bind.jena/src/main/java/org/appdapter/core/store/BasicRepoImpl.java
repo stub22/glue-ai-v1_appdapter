@@ -48,8 +48,11 @@ import com.hp.hpl.jena.shared.Lock;
  * 
  * TODO:
  * The goal of a BasicRepoImpl is just to provide common dataset-wrapper functionality,
- * not to be the pivot of a concurrent data loading system.  We need to move
+ * needed by the end-consumers of that Dataset (after it's loaded), not to be the pivot of a concurrent 
+ * data loading system for arbitrary ways of *creating* datasets.  We need to move
  * all that loading/locking state into separate classes.
+ * 
+ * The SharedModels-impl part should be at least one level further down the inheritance tree.
  */
 
 public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements Repo, Repo.SharedModels, Repo.DatasetProvider {
@@ -99,41 +102,6 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 		}
 	}
 
-	public enum TaskState {
-		TaskNeedsStart, TaskStarting, TaskClearingCaches, TaskMerging, TaskBranching, TaskComplete, TaskPretasks
-	}
-
-	protected final Map<Ident, ShareSpec> sharedModelSpecs = new HashMap<Ident, ShareSpec>();
-
-	@Override public boolean isRemote() {
-		return false;
-	}
-
-	public void setNamedModelShareType(List<Ident> modelIDs, String shareName, boolean clearRemote, boolean clearLocal, boolean mergeAfterClear, boolean isSharedAfterMerge,
-			RemoteDatasetProviderSpec remoteDatasetProviderSpec) {
-		List<ShareSpec> shareSpecs = new ArrayList<ShareSpec>();
-		for (Ident modelId : modelIDs) {
-			shareSpecs.add(new ShareSpecImpl(modelId, shareName, clearRemote, clearLocal, mergeAfterClear, isSharedAfterMerge, remoteDatasetProviderSpec, TaskState.TaskNeedsStart));
-		}
-		setNamedModelShareType(shareSpecs, remoteDatasetProviderSpec.getRemoteDatasetProvider());
-	}
-
-	public void setNamedModelShareType(List<ShareSpec> shareSpecs, RemoteDatasetProviderSpec remoteDatasetProvider) {
-		finishLoading();
-		Map<Ident, ShareSpec> prev = getSharedModelSpecs();
-		for (ShareSpec shareSpec : shareSpecs) {
-			ShareSpec shareSpecBefore = prev.get(shareSpec.getLocalModelId());
-			Runnable work = shareSpecBefore.requiredWork(this, shareSpec, remoteDatasetProvider);
-			if (work == null)
-				continue;
-			addLoadTask("setNamedModelShareType " + work, work);
-		}
-		finishLoading();
-	}
-
-	public Map<Ident, ShareSpec> getSharedModelSpecs() {
-		return this.sharedModelSpecs;
-	}
 
 	public Model getNamedModel(Ident modelID, boolean createIfMissing) {
 		Dataset repoDset = getMainQueryDataset();
@@ -227,7 +195,6 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 	
 	@Override public List<QuerySolution> findAllSolutions(Query parsedQuery, QuerySolution initBinding) {
 		Dataset ds = getMainQueryDataset();
-		// if (ds.supportsTransactions()) {
 		return JenaArqQueryFuncs.findAllSolutions(ds, parsedQuery, initBinding);
 	}
 
@@ -249,10 +216,49 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 		return results;
 	}
 	
-	
-	/* This loader-task stuff obscures the intent of the BasicRepoImpl.
-	 * TODO:  Move it out into subclasses/wrappers/delegates.
+	/**** TODO - move these sharing features (and the "implements Repo.SharedModels" designation
+	 * into a subclass (or stackable trait) - SharingRepoImpl or somesuch.
 	 * 
+	 */
+	public enum TaskState {
+		TaskNeedsStart, TaskStarting, TaskClearingCaches, TaskMerging, TaskBranching, TaskComplete, TaskPretasks
+	}
+
+	protected final Map<Ident, ShareSpec> sharedModelSpecs = new HashMap<Ident, ShareSpec>();
+
+	@Override public boolean isRemote() {
+		return false;
+	}
+
+	public void setNamedModelShareType(List<Ident> modelIDs, String shareName, boolean clearRemote, boolean clearLocal, boolean mergeAfterClear, boolean isSharedAfterMerge,
+			RemoteDatasetProviderSpec remoteDatasetProviderSpec) {
+		List<ShareSpec> shareSpecs = new ArrayList<ShareSpec>();
+		for (Ident modelId : modelIDs) {
+			shareSpecs.add(new ShareSpecImpl(modelId, shareName, clearRemote, clearLocal, mergeAfterClear, isSharedAfterMerge, remoteDatasetProviderSpec, TaskState.TaskNeedsStart));
+		}
+		setNamedModelShareType(shareSpecs, remoteDatasetProviderSpec.getRemoteDatasetProvider());
+	}
+
+	public void setNamedModelShareType(List<ShareSpec> shareSpecs, RemoteDatasetProviderSpec remoteDatasetProvider) {
+		finishLoading();
+		Map<Ident, ShareSpec> prev = getSharedModelSpecs();
+		for (ShareSpec shareSpec : shareSpecs) {
+			ShareSpec shareSpecBefore = prev.get(shareSpec.getLocalModelId());
+			Runnable work = shareSpecBefore.requiredWork(this, shareSpec, remoteDatasetProvider);
+			if (work == null)
+				continue;
+			addLoadTask("setNamedModelShareType " + work, work);
+		}
+		finishLoading();
+	}
+
+	public Map<Ident, ShareSpec> getSharedModelSpecs() {
+		return this.sharedModelSpecs;
+	}
+
+	/* This loader-task stuff is probably useful, but locating it here obscures the intent of the BasicRepoImpl.
+	 * TODO:  Move it out into adapter/oper traits.
+	 * Ration: oper is repo backwards, and loader is an oper.
 	 */
 	private static boolean LOAD_SINGLE_THREADED = true;
 	private boolean loadSingleThread = LOAD_SINGLE_THREADED;
