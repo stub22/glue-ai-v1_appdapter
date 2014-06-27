@@ -130,6 +130,7 @@ object FancyRepoLoader extends BasicDebugger {
     if (true) {
       //shRepo.finishLoading();
     }
+	getLogger().info("Finished making RepoWithDirectory with debugName {}", myDebugName)
     shRepo
   }
 
@@ -168,7 +169,7 @@ object FancyRepoLoader extends BasicDebugger {
   // Makes directory models (ussualy still unloaded)
   def readDirectoryModelFromURL(rdfURL: String, nsJavaMap: java.util.Map[String, String], fileModelCLs: java.util.List[ClassLoader]): Model = {
     try {
-      getLogger.debug("readDirectoryModelFromURL - start {}", rdfURL)
+      getLogger.info("readDirectoryModelFromURL - start {}", rdfURL)
       val ext: java.lang.String = org.appdapter.fileconv.FileStreamUtils.getFileExt(rdfURL);
       if (ext != null && (ext.equals("xlsx") || ext.equals("xls"))) {
         XLSXSheetRepoLoader.readDirectoryModelFromXLSX(rdfURL, "Nspc", "Dir", fileModelCLs);
