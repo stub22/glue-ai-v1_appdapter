@@ -84,7 +84,7 @@ public class JenaArqQueryFuncs {
 		return parsedQuery;
 	}
 
-	public static <ResType> ResType processQueryExecution(QueryExecution qe, JenaArqResultSetProcessor<ResType> resProc) {
+	protected static <ResType> ResType processQueryExecution(QueryExecution qe, JenaArqResultSetProcessor<ResType> resProc) {
 		ResType result = null;
 		try {
 			try {
@@ -100,12 +100,19 @@ public class JenaArqQueryFuncs {
 		return result;
 	}
 
-	public static <ResType> ResType processDatasetQuery(Dataset ds, Query parsedQuery, QuerySolution initBinding, JenaArqResultSetProcessor<ResType> resProc) {
+	protected static <ResType> ResType processDatasetQuery(Dataset ds, Query parsedQuery, QuerySolution initBinding, JenaArqResultSetProcessor<ResType> resProc) {
 		QueryExecution qe = QueryExecutionFactory.create(parsedQuery, ds, initBinding);
 		return processQueryExecution(qe, resProc);
 	}
 
-	public static List<QuerySolution> findAllSolutions(Dataset ds, Query parsedQuery, QuerySolution initBinding) {
+	/**
+	 * Now marked protected, because we want user to access through _TxAware variant.
+	 * @param ds
+	 * @param parsedQuery
+	 * @param initBinding
+	 * @return 
+	 */
+	protected static List<QuerySolution> findAllSolutions(Dataset ds, Query parsedQuery, QuerySolution initBinding) {
 		JenaArqResultSetProcessor<List<QuerySolution>> resProc = new JenaArqResultSetProcessor<List<QuerySolution>>() {
 			@Override public List<QuerySolution> processResultSet(ResultSet rset) {
 				List<QuerySolution> solnList = new ArrayList<QuerySolution>();

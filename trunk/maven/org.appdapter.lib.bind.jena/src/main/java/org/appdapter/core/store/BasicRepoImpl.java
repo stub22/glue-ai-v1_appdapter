@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.appdapter.bind.rdf.jena.assembly.AssemblerUtils;
-import org.appdapter.bind.rdf.jena.query.JenaArqQueryFuncs;
+import org.appdapter.bind.rdf.jena.query.JenaArqQueryFuncs_TxAware;
 import org.appdapter.bind.rdf.jena.query.JenaArqResultSetProcessor;
 import org.appdapter.core.jvm.GetObject;
 import org.appdapter.core.name.Ident;
@@ -70,11 +70,7 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 	protected void setMainQueryDataset(Dataset dset) { 
 		myMainQueryDataset = dset;
 	}
-/*
-	public void setMyMainQueryDataset(Dataset myMainQueryDataset) {
-		this.myMainQueryDataset = myMainQueryDataset;
-	}
-*/
+
 	@Override public Dataset getMainQueryDataset() {
 		/* This is far too sophisticated an impl for BasicRepoImpl.
 		 * It should be quite possible for me to treat any wrapped dataset as an impl.
@@ -167,17 +163,19 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 		ResType result = null;
 		try {
 			Dataset ds = getMainQueryDataset();
-			result = JenaArqQueryFuncs.processDatasetQuery(ds, parsedQuery, initBinding, resProc);
+			// result = JenaArqQueryFuncs.processDatasetQuery(ds, parsedQuery, initBinding, resProc);
+			result = JenaArqQueryFuncs_TxAware.processDatasetQuery_TX(ds, parsedQuery, initBinding, resProc);
 		} catch (Throwable t) {
 			getLogger().error("problem in processQuery [{}]", parsedQuery, t);
 		}
 		return result;
 	}
 
-	
 	@Override public List<QuerySolution> findAllSolutions(Query parsedQuery, QuerySolution initBinding) {
 		Dataset ds = getMainQueryDataset();
-		return JenaArqQueryFuncs.findAllSolutions(ds, parsedQuery, initBinding);
+		// return JenaArqQueryFuncs.findAllSolutions(ds, parsedQuery, initBinding);
+		// Using a transaction in this read protects us from concurrent writes (if those writes are properly transactional).
+		return  JenaArqQueryFuncs_TxAware.findAllSolutions_TX(ds, parsedQuery, initBinding);
 	}
 
 	@Override public Model getNamedModel(Ident graphNameIdent) {
