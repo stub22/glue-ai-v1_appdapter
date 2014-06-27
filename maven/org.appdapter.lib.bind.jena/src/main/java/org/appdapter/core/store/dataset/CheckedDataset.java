@@ -1,5 +1,6 @@
 package org.appdapter.core.store.dataset;
 
+import org.appdapter.bind.rdf.jena.model.CheckedModel;
 import java.util.ArrayList;
 import java.util.Iterator;
 

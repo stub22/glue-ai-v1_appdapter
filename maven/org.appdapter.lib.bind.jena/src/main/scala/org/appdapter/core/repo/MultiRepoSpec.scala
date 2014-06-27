@@ -2,7 +2,8 @@ package org.appdapter.core.repo
 
 import org.appdapter.core.name.FreeIdent
 import org.appdapter.core.store.{ RepoOper }
-import org.appdapter.core.store.dataset.{ RepoDatasetFactory, SpecialRepoLoader }
+import org.appdapter.core.store.dataset.{ RepoDatasetFactory }
+import org.appdapter.core.loader.{  SpecialRepoLoader }
 import org.appdapter.impl.store.QueryHelper
 import com.hp.hpl.jena.query.{ Dataset, QuerySolution }
 import com.hp.hpl.jena.rdf.model.{ Model, Resource }

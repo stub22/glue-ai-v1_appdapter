@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.appdapter.core.store;
+package org.appdapter.bind.rdf.jena.query;
 import java.util.List;
 
 import org.appdapter.bind.rdf.jena.query.JenaArqResultSetProcessor;

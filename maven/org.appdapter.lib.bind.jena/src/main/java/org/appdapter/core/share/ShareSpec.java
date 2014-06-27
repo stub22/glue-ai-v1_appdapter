@@ -1,5 +1,11 @@
+package org.appdapter.core.share;
+
+import org.appdapter.core.name.Ident;
+import org.appdapter.core.store.BasicRepoImpl.TaskState;
+import org.appdapter.core.store.Repo.DatasetProvider;
+
 /*
- *  Copyright 2011 by The Appdapter Project (www.appdapter.org).
+ *  Copyright 2013 by The Appdapter Project (www.appdapter.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -13,21 +19,16 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.appdapter.core.store.dataset;
+public interface ShareSpec {
 
-import org.appdapter.core.store.Repo.DatasetProvider;
+	String getGlobalName();
 
-import com.hp.hpl.jena.query.Dataset;
+	TaskState getTaskState();
 
-/**
- * @author Logicmoo. <www.logicmoo.org>
- *
- * Handling for a local *or* some 'remote'/'shared' model/dataset impl.
- *
- */
+	boolean sameOutcome(ShareSpec shareSpecImpl);
 
-public interface RemoteDatasetProvider extends RemoteDatasetProviderSpec, DatasetProvider {
-	public Dataset getRemoteDataset(String shareName);
+	Runnable requiredWork(DatasetProvider basicRepoImpl, ShareSpec shareSpec, RemoteDatasetProviderSpec remoteDatasetProvider);
 
-	RemoteDatasetProviderSpec getSpec();
+	Ident getLocalModelId();
+
 }

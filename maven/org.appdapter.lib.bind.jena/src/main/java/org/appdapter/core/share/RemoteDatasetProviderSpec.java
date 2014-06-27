@@ -1,12 +1,5 @@
-package org.appdapter.core.store;
-
-import org.appdapter.core.store.dataset.SpecialRepoLoader;
-
-import com.hp.hpl.jena.query.Dataset;
-import com.hp.hpl.jena.rdf.model.Model;
-
 /*
- *  Copyright 2013 by The Appdapter Project (www.appdapter.org).
+ *  Copyright 2011 by The Appdapter Project (www.appdapter.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -20,13 +13,16 @@ import com.hp.hpl.jena.rdf.model.Model;
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-public interface InstallableRepoLoader {
+package org.appdapter.core.share;
 
-	boolean isDerivedLoader();
+/**
+ * @author Logicmoo. <www.logicmoo.org>
+ *
+ * Handling for a local *or* some 'remote'/'shared' model/dataset impl.
+ *
+ */
+public interface RemoteDatasetProviderSpec {
+	public RemoteDatasetProvider getRemoteDatasetProvider();
 
-	String getContainerType();
-
-	void loadModelsIntoTargetDataset(SpecialRepoLoader repo, Dataset mainDset,
-			Model dirModel, java.util.List<ClassLoader> fileModelCLs);
-
+	public String getProviderBase();
 }

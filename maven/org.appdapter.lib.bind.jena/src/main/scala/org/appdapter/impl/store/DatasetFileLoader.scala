@@ -19,7 +19,7 @@ package org.appdapter.impl.store
 import org.appdapter.core.log.BasicDebugger
 import org.appdapter.core.repo.InstallableRepoReader
 import org.appdapter.core.store.RepoOper
-import org.appdapter.core.store.dataset.SpecialRepoLoader
+import org.appdapter.core.loader.SpecialRepoLoader
 
 import com.hp.hpl.jena.query.{Dataset, QuerySolution}
 import com.hp.hpl.jena.rdf.model.{Literal, Model, Resource}
