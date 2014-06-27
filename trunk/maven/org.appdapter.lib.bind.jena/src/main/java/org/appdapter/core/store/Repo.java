@@ -15,6 +15,8 @@
  */
 package org.appdapter.core.store;
 
+import org.appdapter.bind.rdf.jena.query.QueryProcessor;
+import org.appdapter.core.share.ShareSpec;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +26,7 @@ import org.appdapter.core.jvm.GetObject;
 import org.appdapter.core.jvm.SetObject;
 import org.appdapter.core.name.FreeIdent;
 import org.appdapter.core.name.Ident;
-import org.appdapter.core.store.dataset.RemoteDatasetProviderSpec;
+import org.appdapter.core.share.RemoteDatasetProviderSpec;
 
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.query.QuerySolution;

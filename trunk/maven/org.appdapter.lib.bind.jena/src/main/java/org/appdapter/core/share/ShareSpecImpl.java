@@ -1,15 +1,14 @@
-package org.appdapter.core.store;
+package org.appdapter.core.share;
 
 import org.appdapter.core.name.FreeIdent;
 import org.appdapter.core.name.Ident;
 import org.appdapter.core.store.BasicRepoImpl.TaskState;
 import org.appdapter.core.store.Repo.DatasetProvider;
-import org.appdapter.core.store.dataset.RemoteDatasetProvider;
-import org.appdapter.core.store.dataset.RemoteDatasetProviderSpec;
 import org.appdapter.core.store.dataset.RepoDatasetFactory;
 
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Model;
+import org.appdapter.core.store.StatementSync;
 
 public class ShareSpecImpl implements Runnable, ShareSpec {
 	private TaskState taskState;

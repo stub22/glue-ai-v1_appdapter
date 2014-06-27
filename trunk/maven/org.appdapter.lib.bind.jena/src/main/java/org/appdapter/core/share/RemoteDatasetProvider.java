@@ -13,7 +13,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.appdapter.core.store.dataset;
+package org.appdapter.core.share;
+
+import org.appdapter.core.store.Repo.DatasetProvider;
+
+import com.hp.hpl.jena.query.Dataset;
 
 /**
  * @author Logicmoo. <www.logicmoo.org>
@@ -21,8 +25,9 @@ package org.appdapter.core.store.dataset;
  * Handling for a local *or* some 'remote'/'shared' model/dataset impl.
  *
  */
-public interface RemoteDatasetProviderSpec {
-	public RemoteDatasetProvider getRemoteDatasetProvider();
 
-	public String getProviderBase();
+public interface RemoteDatasetProvider extends RemoteDatasetProviderSpec, DatasetProvider {
+	public Dataset getRemoteDataset(String shareName);
+
+	RemoteDatasetProviderSpec getSpec();
 }

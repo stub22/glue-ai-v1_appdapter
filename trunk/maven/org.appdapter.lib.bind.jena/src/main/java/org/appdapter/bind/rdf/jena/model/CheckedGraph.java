@@ -1,4 +1,4 @@
-package org.appdapter.core.store.dataset;
+package org.appdapter.bind.rdf.jena.model;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,6 +21,7 @@ import com.hp.hpl.jena.shared.AddDeniedException;
 import com.hp.hpl.jena.shared.DeleteDeniedException;
 import com.hp.hpl.jena.shared.PrefixMapping;
 import com.hp.hpl.jena.util.iterator.ExtendedIterator;
+import org.appdapter.core.store.dataset.RepoDatasetFactory;
 
 public class CheckedGraph implements Graph, PrefixMapping {
 	final Graph modelGraph;

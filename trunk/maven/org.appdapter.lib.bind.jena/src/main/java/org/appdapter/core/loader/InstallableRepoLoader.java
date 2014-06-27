@@ -1,9 +1,9 @@
-package org.appdapter.core.store;
+package org.appdapter.core.loader;
 
-import org.appdapter.core.name.Ident;
-import org.appdapter.core.store.BasicRepoImpl.TaskState;
-import org.appdapter.core.store.Repo.DatasetProvider;
-import org.appdapter.core.store.dataset.RemoteDatasetProviderSpec;
+import org.appdapter.core.loader.SpecialRepoLoader;
+
+import com.hp.hpl.jena.query.Dataset;
+import com.hp.hpl.jena.rdf.model.Model;
 
 /*
  *  Copyright 2013 by The Appdapter Project (www.appdapter.org).
@@ -20,16 +20,13 @@ import org.appdapter.core.store.dataset.RemoteDatasetProviderSpec;
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-public interface ShareSpec {
+public interface InstallableRepoLoader {
 
-	String getGlobalName();
+	boolean isDerivedLoader();
 
-	TaskState getTaskState();
+	String getContainerType();
 
-	boolean sameOutcome(ShareSpec shareSpecImpl);
-
-	Runnable requiredWork(DatasetProvider basicRepoImpl, ShareSpec shareSpec, RemoteDatasetProviderSpec remoteDatasetProvider);
-
-	Ident getLocalModelId();
+	void loadModelsIntoTargetDataset(SpecialRepoLoader repo, Dataset mainDset,
+			Model dirModel, java.util.List<ClassLoader> fileModelCLs);
 
 }

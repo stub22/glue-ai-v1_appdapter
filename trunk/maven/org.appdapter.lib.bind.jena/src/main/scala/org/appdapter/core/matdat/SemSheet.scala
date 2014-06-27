@@ -19,7 +19,8 @@ package org.appdapter.core.matdat
 import scala.Array.canBuildFrom
 
 import org.appdapter.core.log.{ BasicDebugger, Debuggable }
-import org.appdapter.core.store.dataset.{ CheckedModel, RepoDatasetFactory }
+import org.appdapter.bind.rdf.jena.model.CheckedModel
+import org.appdapter.core.store.dataset.{ RepoDatasetFactory }
 import org.appdapter.impl.store.ResourceResolver
 
 import com.hp.hpl.jena.datatypes.{ RDFDatatype, TypeMapper }

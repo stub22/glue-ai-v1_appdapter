@@ -27,7 +27,7 @@ import com.hp.hpl.jena.shared.PrefixMapping
 import com.hp.hpl.jena.sparql.modify.request.{ UpdateCreate, UpdateLoad }
 import com.hp.hpl.jena.sparql.sse.SSE
 import com.hp.hpl.jena.update.{ GraphStore, GraphStoreFactory, UpdateAction, UpdateRequest }
-import org.appdapter.core.store.dataset.SpecialRepoLoader
+import org.appdapter.core.loader.SpecialRepoLoader
 import org.appdapter.core.store.BasicStoredMutableRepoImpl
 import org.appdapter.core.store.Repo
 import org.appdapter.impl.store.QueryHelper

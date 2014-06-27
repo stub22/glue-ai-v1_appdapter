@@ -18,7 +18,8 @@ package org.appdapter.core.matdat
 
 import org.appdapter.core.log.BasicDebugger
 import org.appdapter.core.repo.{ DirectRepo, FancyRepoLoader, InstallableRepoReader, RepoSpecForDirectory, RepoSpec}
-import org.appdapter.core.store.dataset.{ RepoDatasetFactory, SpecialRepoLoader }
+import org.appdapter.core.store.dataset.{ RepoDatasetFactory }
+import org.appdapter.core.loader.{  SpecialRepoLoader }
 import org.appdapter.impl.store.QueryHelper
 import com.hp.hpl.jena.query.{ Dataset, QuerySolution }
 import com.hp.hpl.jena.rdf.model.{ Literal, Model, Resource }

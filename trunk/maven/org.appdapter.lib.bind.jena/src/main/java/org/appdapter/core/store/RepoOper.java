@@ -15,6 +15,7 @@
  */
 package org.appdapter.core.store;
 
+import org.appdapter.core.loader.ExtendedFileStreamUtils;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -43,7 +44,7 @@ import org.appdapter.api.trigger.AnyOper;
 import org.appdapter.core.debug.UIAnnotations.UIHidden;
 import org.appdapter.core.debug.UIAnnotations.UtilClass;
 import org.appdapter.core.log.Debuggable;
-import org.appdapter.core.store.dataset.CheckedGraph;
+import org.appdapter.bind.rdf.jena.model.CheckedGraph;
 import org.appdapter.core.store.dataset.RepoDatasetFactory;
 import org.appdapter.core.store.dataset.UserDatasetFactory;
 import org.appdapter.demo.DemoResources;

@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.appdapter.core.store.dataset;
+package org.appdapter.core.loader;
 
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.ArrayList;
@@ -51,29 +51,29 @@ public class SpecialRepoLoader extends BasicDebugger implements UncaughtExceptio
 	}
 
 	public void addLoadTask(String s, Runnable task) {
-		if (loaderFor != null) {
-			loaderFor.addLoadTask(s, task);
+		if (myTargetRepoImpl != null) {
+			myTargetRepoImpl.addLoadTask(s, task);
 		}
 		else {
 			addTask(s, task);
 		}
 	}
 
-	ExecutorService executor = null;
-	LinkedList<Task> tasks = new LinkedList<Task>();
-	boolean lastJobSubmitted = false;
-	Object synchronousAdderLock = new Object();
-	Object executorLock = new Object();
-	boolean isSynchronous = true;
-	int taskNum = 0;
-	BasicRepoImpl loaderFor = null;
-	public String repoStr = "REPO";
+	private ExecutorService executor = null;
+	private LinkedList<Task> tasks = new LinkedList<Task>();
+	private boolean lastJobSubmitted = false;
+	private Object synchronousAdderLock = new Object();
+	private Object executorLock = new Object();
+	private boolean isSynchronous = true;
+	private int taskNum = 0;
+	private BasicRepoImpl myTargetRepoImpl = null;
+	private String repoStr = "REPO";
 	// sounds like a lot.. but it is over with quickly!
-	int numThreads = 32;
-	int howManyTasksBeforeStartingPool = 0;
+	private int numThreads = 32;
+	private int howManyTasksBeforeStartingPool = 0;
 
 	public SpecialRepoLoader(BasicRepoImpl repo) {
-		loaderFor = repo;
+		myTargetRepoImpl = repo;
 	}
 
 	public void setSynchronous(boolean isSync) {
@@ -196,7 +196,7 @@ public class SpecialRepoLoader extends BasicDebugger implements UncaughtExceptio
 				logWarning("Creating executor for " + repoStr);
 				executor = Executors.newFixedThreadPool(numThreads, new ThreadFactory() {
 					@Override public Thread newThread(final Runnable r) {
-						return new Thread("Worker " + ++workrNum + " for " + loaderFor) {
+						return new Thread("Worker " + ++workrNum + " for " + myTargetRepoImpl) {
 							public void run() {
 								r.run();
 							}
@@ -295,7 +295,7 @@ public class SpecialRepoLoader extends BasicDebugger implements UncaughtExceptio
 				this.start = curMS;
 			}
 			this.sheetLoadStatus = newLoadStatus;
-			Model saveEventsTo = loaderFor.getEventsModel();
+			Model saveEventsTo = myTargetRepoImpl.getEventsModel();
 			Map eventProps = new HashMap();
 			eventProps.put(RepoModelEvent.loadStatus, saveEventsTo.createResource("urn:ftd:cogchar.org:2012:runtime#" + newLoadStatus.toString()));
 			eventProps.put(RepoModelEvent.timestamp, curMS);
