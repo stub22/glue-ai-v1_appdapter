@@ -32,13 +32,11 @@ public class SparqlRepo extends DirectRepo {
 		this.dirModelName = dirModelName;
 	}
 
-	@Override
-	public Model getDirectoryModel() {
+	@Override public Model getDirectoryModel() {
 		return getMainQueryDataset().getNamedModel(this.dirModelName);
 	}
 
-	@Override
-	public Dataset makeMainQueryDataset() {
+	@Override protected Dataset makeMainQueryDataset() {
 		return new SparqlDataset(new SparqlDatasetGraph(endpointURI));
 	}
 }
