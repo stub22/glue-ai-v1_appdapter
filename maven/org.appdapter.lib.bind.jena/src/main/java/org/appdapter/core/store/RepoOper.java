@@ -361,8 +361,29 @@ public class RepoOper implements AnyOper, UtilClass {
 		putAllDatasetModels(target, loaderDataset, unionOrReplace);
 	}
 
+	static boolean firstTime = true;
+	static public boolean extremeDebug = false;
+	/**
+	 * Currently known to be called only from core.repo.RepoLoader.replaceOrUnion
+	 * @param dest
+	 * @param urlModel
+	 * @param model
+	 * @param unionOrReplace 
+	 */
 	public static void putNamedModel(Dataset dest, String urlModel,
-			Model model, Resource unionOrReplace) {
+					Model model, Resource unionOrReplace) {
+
+		try {
+			if (firstTime) {
+				firstTime = false;
+				theLogger.info("First call ever to putNamedModel, url={}", urlModel);
+				if (extremeDebug) {
+					throw new RuntimeException("Show the stack");
+				}
+			}
+		} catch (Throwable t) {
+			theLogger.error("Showing the stack on the first call to putNamedModel, because extremeDebug=true", t);
+		}
 		boolean isReplace = isReplace(unionOrReplace);
 		urlModel = RepoOper.correctModelName(urlModel);
 		Lock lock = dest.getLock();

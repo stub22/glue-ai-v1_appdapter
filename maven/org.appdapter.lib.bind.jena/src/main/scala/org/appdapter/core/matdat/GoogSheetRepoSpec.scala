@@ -71,6 +71,7 @@ object GoogSheetRepoLoader extends BasicDebugger {
   /// Read dir models
   /////////////////////////////////////////
   def readDirectoryModelFromGoog(sheetLocation: String, namespaceSheet: Int, dirSheet: Int): Model = {
+	  getLogger().info("Reading *directory* model from Goog!");
     // Read the single directory sheets into a single directory model.
     readModelFromGoog(sheetLocation, namespaceSheet, dirSheet)
   }
@@ -125,18 +126,18 @@ object GoogSheetRepoLoader extends BasicDebugger {
 
     val modelInsertProc = new SemSheet.ModelInsertSheetProc(tgtModel);
     val sheetURL = WebSheet.makeGdocSheetQueryURL(sheetKey, sheetNum, None);
-
+	getLogger.info("About to read data from sheetURL: {}", sheetURL)
     MatrixData.processSheet(sheetURL, modelInsertProc.processRow);
-    getLogger.debug("tgtModel=" + tgtModel)
+    getLogger.debug("tgtModel={}", tgtModel)
     tgtModel;
   }
 
   def readModelFromGoog(sheetKey: String, namespaceSheetNum: Int, dirSheetNum: Int): Model = {
-    getLogger.debug("readDirectoryModelFromGoog - start")
+    getLogger.debug("readModelFromGoog - start")
     val namespaceSheetURL = WebSheet.makeGdocSheetQueryURL(sheetKey, namespaceSheetNum, None);
-    getLogger.debug("Made Namespace Sheet URL: " + namespaceSheetURL);
+    getLogger.info("About to read from namespace Sheet URL: {} ", namespaceSheetURL);
     val nsJavaMap: java.util.Map[String, String] = MatrixData.readJavaMapFromSheet(namespaceSheetURL);
-    getLogger.debug("Got NS map: " + nsJavaMap)
+    getLogger.debug("Got NS map {} ", nsJavaMap)
     val dirModel: Model = readModelSheet(sheetKey, dirSheetNum, nsJavaMap);
     dirModel;
   }
