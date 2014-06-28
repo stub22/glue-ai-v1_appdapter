@@ -40,7 +40,8 @@ import com.hp.hpl.jena.sdb.util.StoreUtils;
  */
 public class BasicStoredMutableRepoImpl extends BasicRepoImpl implements Repo.Stored, Repo.Mutable {
 
-	@Override public void callLoadingInLock() {
+	// @Override 
+	public void callLoadingInLock() {
 		formatRepoIfNeeded();
 	}
 
@@ -168,6 +169,7 @@ public class BasicStoredMutableRepoImpl extends BasicRepoImpl implements Repo.St
 	 * @param store
 	 * @return
 	 */
+	/*
 	protected List<GraphStat> unusedDirectGraphStatFetcher(Store store) {
 		List<GraphStat> stats = new ArrayList<GraphStat>();
 		Iterator<Node> nodeIt = StoreUtils.storeGraphNames(store);
@@ -180,6 +182,6 @@ public class BasicStoredMutableRepoImpl extends BasicRepoImpl implements Repo.St
 			stats.add(stat);
 		}
 		return stats;
-	}
+	} */
 
 }

@@ -92,10 +92,14 @@ public class RepoDatasetFactory implements AnyOper, UtilClass {
 	
 	private static Dataset globalDS = null;
 	private static long serialNumber = 111666;
+	
 	private static final UserDatasetFactory jenaSDBDatasetFactory=  new JenaSDBWrappedDatasetFactory();
 	private static final UserDatasetFactory jenaUnsharedMemoryDatasetFactory = new JenaDatasetFactory();
+	private static final UserDatasetFactory jenaTDB_MemDF = new JenaTDB_MemoryDatasetFactory();
+	
 	private static final Map<String, UserDatasetFactory> registeredUserDatasetFactoryByName = new HashMap<String, UserDatasetFactory>();
 	private static final List<UserDatasetFactory> registeredUserDatasetFactorys = new ArrayList<UserDatasetFactory>();
+	
 	private static final boolean VANILLA = false;
 
 	// Why do we need this variable AND all the registration maps? 
@@ -125,8 +129,8 @@ public class RepoDatasetFactory implements AnyOper, UtilClass {
 	static public final String DFF_TDB_Disk = "tdb_disk";
 
 		// Do these have the same meaning as the hardcoded values present in the shiny static-init block before?
-	final private static String DATASET_TYPE_DEFAULT_MEMFILE_TYPE = "memory";
-	final private static String DATASET_TYPE_DEFAULT_SHARE_TYPE = "shared";
+	final private static String DATASET_TYPE_DEFAULT_MEMFILE_TYPE = DFF_Memory; //     "memory";
+	final private static String DATASET_TYPE_DEFAULT_SHARE_TYPE = DFF_Shared; // "shared";
 
 	public static String DATASET_SHARE_NAME = "robot01"; // used in BasicRepoImpl.getShareName, from createLocalNamedModel.
 	
@@ -135,14 +139,16 @@ public class RepoDatasetFactory implements AnyOper, UtilClass {
 	private static String DATASET_TYPE_SHARED = DATASET_TYPE_DEFAULT_SHARE_TYPE;
 	
 	static {
-		registerDatasetFactory(DFF_Default,  jenaUnsharedMemoryDatasetFactory); // "default",
-		registerDatasetFactory(DFF_Jena, jenaUnsharedMemoryDatasetFactory); // "jena"
-		registerDatasetFactory(DFF_Memory,  jenaUnsharedMemoryDatasetFactory); // "memory" sameAs? DATASET_TYPE_DEFAULT_MEMFILE_TYPE?
+		registerDatasetFactory(DFF_Default,  jenaTDB_MemDF); //  jenaUnsharedMemoryDatasetFactory); // "default",
+		registerDatasetFactory(DFF_Jena,  jenaTDB_MemDF); // jenaUnsharedMemoryDatasetFactory); // "jena"
+		registerDatasetFactory(DFF_Memory, jenaTDB_MemDF); //  jenaUnsharedMemoryDatasetFactory); // "memory" sameAs? DATASET_TYPE_DEFAULT_MEMFILE_TYPE?
+		registerDatasetFactory(DFF_TDB_Mem, jenaTDB_MemDF); 
 		registerDatasetFactory(DFF_Instance,  jenaSDBDatasetFactory); //"instance", 
 		registerDatasetFactory(DFF_Database, jenaSDBDatasetFactory); // "database"
 		registerDatasetFactory(DFF_Shared, jenaSDBDatasetFactory);  //  "shared"  sameAs? DATASET_TYPE_DEFAULT_SHARE_TYPE?
-		registerDatasetFactory(DATASET_TYPE_DEFAULT_MEMFILE_TYPE, jenaUnsharedMemoryDatasetFactory); 
-		registerDatasetFactory(DATASET_TYPE_DEFAULT_SHARE_TYPE, jenaSDBDatasetFactory);
+		// These appear to be duplicate registrations
+		// registerDatasetFactory(DATASET_TYPE_DEFAULT_MEMFILE_TYPE, jenaUnsharedMemoryDatasetFactory); 
+		// registerDatasetFactory(DATASET_TYPE_DEFAULT_SHARE_TYPE, jenaSDBDatasetFactory);
 	}
 
 	/**

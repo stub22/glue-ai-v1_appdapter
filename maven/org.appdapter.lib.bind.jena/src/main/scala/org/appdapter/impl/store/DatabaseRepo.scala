@@ -59,7 +59,7 @@ class DatabaseRepoLoader extends InstallableRepoReader {
   }
 }
 
-class DatabaseRepo_BROKER(store: Store, val myDirGraphID: Ident)
+ class DatabaseRepo_BROKER(store: Store, val myDirGraphID: Ident)
   extends BasicStoredMutableRepoImpl(store) with FancyRepo with Repo.Mutable with Repo.Stored {
 
   formatRepoIfNeeded();

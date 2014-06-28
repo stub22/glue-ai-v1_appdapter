@@ -29,7 +29,6 @@ import org.appdapter.impl.store.FancyRepo
 import com.hp.hpl.jena.query.{Dataset, QuerySolution}
 import com.hp.hpl.jena.rdf.model.{Model, Resource}
 /*
- * @author Stu B. <www.texpedient.com>
  * @author logicmoo
  */
 
