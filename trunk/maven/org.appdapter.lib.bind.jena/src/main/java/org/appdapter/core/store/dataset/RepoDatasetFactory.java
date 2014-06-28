@@ -85,25 +85,28 @@ public class RepoDatasetFactory implements AnyOper, UtilClass {
 	public static boolean allModelsTheSame = false;
 
 	public static boolean alwaysShareDataset = false;
-
 	public static boolean allwaysRenameModels = false;
 
-	final public static String DATASET_TYPE_DEFAULT_MEMFILE_TYPE = "memory";
-	final public static String DATASET_TYPE_DEFAULT_SHARE_TYPE = "shared";
-	public static String DATASET_SHARE_NAME = "robot01";
-	public static String DATASET_TYPE_UNSHARED = DATASET_TYPE_DEFAULT_MEMFILE_TYPE;
-	public static String DATASET_TYPE_DEFAULT = DATASET_TYPE_UNSHARED;
-	public static String DATASET_TYPE_SHARED = DATASET_TYPE_DEFAULT_SHARE_TYPE;
-	static final Map<String, String> datasetClassTypesMap = new HashMap();
-	public static UserDatasetFactory DEFAULT;
-	public static Dataset globalDS = null;
-	static long serialNumber = 111666;
-	static final UserDatasetFactory jenaSDBDatasetFactory = new JenaSDBWrappedDatasetFactory();
-	static final UserDatasetFactory jenaUnsharedMemoryDatasetFactory = new JenaDatasetFactory();
-	static final Map<String, UserDatasetFactory> registeredUserDatasetFactoryByName = new HashMap<String, UserDatasetFactory>();
-	static final List<UserDatasetFactory> registeredUserDatasetFactorys = new ArrayList<UserDatasetFactory>();
+
+	private static final Map<String, String> datasetClassTypesMap = new HashMap();
+	
+	private static Dataset globalDS = null;
+	private static long serialNumber = 111666;
+	private static final UserDatasetFactory jenaSDBDatasetFactory=  new JenaSDBWrappedDatasetFactory();
+	private static final UserDatasetFactory jenaUnsharedMemoryDatasetFactory = new JenaDatasetFactory();
+	private static final Map<String, UserDatasetFactory> registeredUserDatasetFactoryByName = new HashMap<String, UserDatasetFactory>();
+	private static final List<UserDatasetFactory> registeredUserDatasetFactorys = new ArrayList<UserDatasetFactory>();
 	private static final boolean VANILLA = false;
 
+	// Why do we need this variable AND all the registration maps? 
+	private static UserDatasetFactory DEFAULT;
+	// Used to populate the myProvider value in BasicRepoImpl...
+	public static UserDatasetFactory getDefaultUserDF() { 
+		return DEFAULT; 
+	} 
+	public static UserDatasetFactory getUserDF_forName(String name) {
+		return registeredUserDatasetFactoryByName.get(name);
+	}
 	/**
 	 * To share Repos between JVM instances alwaysShareDataset = true;
 	 */
@@ -111,20 +114,46 @@ public class RepoDatasetFactory implements AnyOper, UtilClass {
 
 	static Model universalModel = null;
 
+	// Here are constants Stu made in hopes that other references can be referred back to them.
+	static public final String DFF_Default = "default";
+	static public final String DFF_Jena = "jena";
+	static public final String DFF_Memory = "memory";
+	static public final String DFF_Instance = "instance";
+	static public final String DFF_Database = "database";
+	static public final String DFF_Shared = "shared";
+	static public final String DFF_TDB_Mem = "tdb_mem";
+	static public final String DFF_TDB_Disk = "tdb_disk";
+
+		// Do these have the same meaning as the hardcoded values present in the shiny static-init block before?
+	final private static String DATASET_TYPE_DEFAULT_MEMFILE_TYPE = "memory";
+	final private static String DATASET_TYPE_DEFAULT_SHARE_TYPE = "shared";
+
+	public static String DATASET_SHARE_NAME = "robot01"; // used in BasicRepoImpl.getShareName, from createLocalNamedModel.
+	
+	private static String DATASET_TYPE_UNSHARED = DATASET_TYPE_DEFAULT_MEMFILE_TYPE;
+	private static String DATASET_TYPE_DEFAULT = DATASET_TYPE_UNSHARED;
+	private static String DATASET_TYPE_SHARED = DATASET_TYPE_DEFAULT_SHARE_TYPE;
+	
 	static {
-		registerDatasetFactory("default", jenaUnsharedMemoryDatasetFactory);
-		registerDatasetFactory("jena", jenaUnsharedMemoryDatasetFactory);
-		registerDatasetFactory("memory", jenaUnsharedMemoryDatasetFactory);
-		registerDatasetFactory("instance", jenaSDBDatasetFactory);
-		registerDatasetFactory("database", jenaSDBDatasetFactory);
-		registerDatasetFactory("shared", jenaSDBDatasetFactory);
-		registerDatasetFactory(DATASET_TYPE_DEFAULT_MEMFILE_TYPE, jenaUnsharedMemoryDatasetFactory);
+		registerDatasetFactory(DFF_Default,  jenaUnsharedMemoryDatasetFactory); // "default",
+		registerDatasetFactory(DFF_Jena, jenaUnsharedMemoryDatasetFactory); // "jena"
+		registerDatasetFactory(DFF_Memory,  jenaUnsharedMemoryDatasetFactory); // "memory" sameAs? DATASET_TYPE_DEFAULT_MEMFILE_TYPE?
+		registerDatasetFactory(DFF_Instance,  jenaSDBDatasetFactory); //"instance", 
+		registerDatasetFactory(DFF_Database, jenaSDBDatasetFactory); // "database"
+		registerDatasetFactory(DFF_Shared, jenaSDBDatasetFactory);  //  "shared"  sameAs? DATASET_TYPE_DEFAULT_SHARE_TYPE?
+		registerDatasetFactory(DATASET_TYPE_DEFAULT_MEMFILE_TYPE, jenaUnsharedMemoryDatasetFactory); 
 		registerDatasetFactory(DATASET_TYPE_DEFAULT_SHARE_TYPE, jenaSDBDatasetFactory);
 	}
 
-	@UISalient public static void addDatasetSync(Dataset d1, Dataset d2) {
-		if (true)
+	/**
+	 * Used internally and from JenaSDBWrappedDatasetFactory.
+	 * @param d1
+	 * @param d2 
+	 */
+	@UISalient protected static void addDatasetSync(Dataset d1, Dataset d2) {
+		if (true) {
 			Debuggable.notImplemented("AddDatasetSync", d1, d2);
+		}
 		HashSet<String> nameSet = new HashSet<String>();
 		ReflectUtils.addAllNew(nameSet, d1.listNames());
 		ReflectUtils.addAllNew(nameSet, d2.listNames());
@@ -132,8 +161,12 @@ public class RepoDatasetFactory implements AnyOper, UtilClass {
 			addModelSync(uri, d1, d2);
 		}
 	}
-
-	public static Model createModelForGraph(Graph graph) {
+/**
+ * Used internally *and* from CheckedDataset.
+ * @param graph
+ * @return 
+ */
+	protected static Model createModelForGraph(Graph graph) {
 		if (!(graph instanceof CheckedGraph)) {
 			graph = new CheckedGraph(graph, false, false, true);
 		}
@@ -141,7 +174,11 @@ public class RepoDatasetFactory implements AnyOper, UtilClass {
 		return new CheckedModel((CheckedGraph) graph);
 
 	}
-
+	
+	/**
+	 * Used from RepoOper and CheckedDataset
+	 * @param m 
+	 */
 	static public void invalidateModel(final Model m) {
 		if (m == universalModel) {
 			return;
@@ -165,9 +202,10 @@ public class RepoDatasetFactory implements AnyOper, UtilClass {
 		theLogger.error(string);
 	}
 
-	@UISalient public static void addModelSync(Model m1, Model m2) {
-		if (true)
+	@UISalient private static void addModelSync(Model m1, Model m2) {
+		if (true) {
 			Debuggable.notImplemented("addModelSync", m1, m2);
+		}
 		StatementSync ss = StatementSync.getStatementSyncerOfModels(m1, m2);
 		ss.enableSync();
 		ss.completeSync();
@@ -197,11 +235,11 @@ public class RepoDatasetFactory implements AnyOper, UtilClass {
 		return dataset;
 	}
 
-	@UISalient public static Dataset createDataset(String typeOf) {
+	@UISalient private static Dataset createDataset(String typeOf) {
 		return createDataset(typeOf, DATASET_SHARE_NAME);
 	}
 
-	@UISalient public static Dataset createDataset(String typeOf, String shareName) {
+	@UISalient private static Dataset createDataset(String typeOf, String shareName) {
 		Dataset ds = createDataset0(typeOf, shareName);
 		if (typeOf != null) {
 			synchronized (datasetClassTypesMap) {
@@ -211,7 +249,7 @@ public class RepoDatasetFactory implements AnyOper, UtilClass {
 		return ds;
 	}
 
-	static Dataset createDataset0(String typeOf, String shareName) {
+	private static Dataset createDataset0(String typeOf, String shareName) {
 		if (typeOf == null) {
 			typeOf = DATASET_TYPE_DEFAULT;
 		} else {
@@ -233,15 +271,17 @@ public class RepoDatasetFactory implements AnyOper, UtilClass {
 		return jenaUnsharedMemoryDatasetFactory.createType(typeOf, shareName);
 	}
 
-	@UISalient public static Dataset createMem() {
-		if (alwaysShareDataset)
+	@UISalient private static Dataset createMem() {
+		if (alwaysShareDataset) {
 			return createShared();
+		}
 		return createDataset(DATASET_TYPE_DEFAULT_MEMFILE_TYPE);
 	}
 
 	@UISalient public static Dataset createDefault() {
-		if (alwaysShareDataset)
+		if (alwaysShareDataset) {
 			return createShared();
+		}
 		return createDataset(DATASET_TYPE_DEFAULT);
 	}
 
@@ -253,7 +293,7 @@ public class RepoDatasetFactory implements AnyOper, UtilClass {
 		return shared;
 	}
 
-	public static Model createUnionNoPrefixShare(Model m1, Model m2) {
+	private static Model createUnionNoPrefixShare(Model m1, Model m2) {
 		if (allModelNoDelete)
 			return wrapNoDelete(createUnionImpl(m1, m2));
 		return wrapPrefixCheck(createUnionImpl(m1, m2));
@@ -279,8 +319,9 @@ public class RepoDatasetFactory implements AnyOper, UtilClass {
 	}
 
 	public static Model createPrivateMemModel() {
-		if (allModelNoDelete)
+		if (allModelNoDelete) {
 			return createDefaultModelNoDelete();
+		}
 		return wrapPrefixCheck(createDefaultModelImpl());
 	}
 
@@ -288,8 +329,9 @@ public class RepoDatasetFactory implements AnyOper, UtilClass {
 		if (allModelsTheSame) {
 			return getSharedModel();
 		}
-		if (allModelNoDelete)
+		if (allModelNoDelete) {
 			return createDefaultModelNoDelete();
+		}
 		return RepoDatasetFactory.createPrivateMemModel();
 	}
 
@@ -351,18 +393,20 @@ public class RepoDatasetFactory implements AnyOper, UtilClass {
 		return jenaUnsharedMemoryDatasetFactory.createModelOfType(typeOf, modelName, shareName);
 	}
 
-	static public String createNewName() {
+	static private String createNewName() {
 		serialNumber++;
-		if (true)
+		if (true) {
 			return "S" + serialNumber;
+		}
 		String newID = UUID.randomUUID().toString();
 		String newName = (newID).replace('-', '_');
 		return newName;
 	}
 
 	public static Dataset createPrivateMem() {
-		if (alwaysShareDataset)
+		if (alwaysShareDataset) {
 			return getGlobalDShared();
+		}
 		return new CheckedDataset(DatasetFactory.createMem());
 	}
 
@@ -382,10 +426,16 @@ public class RepoDatasetFactory implements AnyOper, UtilClass {
 		formaterObject.addIndexes();
 	}
 
-	public static Model findOrCreateGlobalModel(String uri) {
+	private static Model findOrCreateGlobalModel(String uri) {
 		return findOrCreateModel(getGlobalDShared(), uri);
 	}
 
+	/**
+	 * Used from RepoOper
+	 * @param newDs
+	 * @param uri
+	 * @return 
+	 */
 	public static Model findOrCreateModel(Dataset newDs, String uri) {
 		uri = RepoOper.correctModelName(uri);
 		if (!newDs.containsNamedModel(uri)) {
@@ -526,12 +576,22 @@ public class RepoDatasetFactory implements AnyOper, UtilClass {
 		}
 		return graph;
 	}
-
+/**
+ * Used from RepoOper.addUnionModel
+ * @param srcM
+ * @return 
+ */
 	public static Model createGroup(Model srcM) {
 		Graph g = RepoOper.getUnderlyingGraph(srcM.getGraph());
 		return createModelForGraph(new MultiUnion(new Graph[] { g }));
 	}
 
+	/**
+	 * Used from RepoOper.addUnionModel
+	 * @param destM
+	 * @param srcM
+	 * @return 
+	 */
 	public static Model createGroup(Model destM, Model srcM) {
 		Graph g = RepoOper.getUnderlyingGraph(destM.getGraph());
 		Graph sg = getUnderlyingGraph(srcM.getGraph());
@@ -557,8 +617,9 @@ public class RepoDatasetFactory implements AnyOper, UtilClass {
 	private static boolean subsumes0(Graph g, Graph sg) {
 		ArrayList<Graph> gl = new ArrayList<Graph>();
 		RepoOper.addConstituentGraphs(g, gl, true);
-		if (!gl.contains(sg))
+		if (!gl.contains(sg)) {
 			return false;
+		}
 		return true;
 	}
 }

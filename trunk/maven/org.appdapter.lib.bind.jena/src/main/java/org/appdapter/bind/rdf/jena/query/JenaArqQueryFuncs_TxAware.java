@@ -49,8 +49,14 @@ public class JenaArqQueryFuncs_TxAware {
 	
 	public static List<QuerySolution> findAllSolutions_TX(Dataset ds, Query parsedQuery, QuerySolution initBinding) {
 		List<QuerySolution> solns = null;
-		if (ds.supportsTransactions() && (!ds.isInTransaction())) {
+		Boolean supportsTrans = ds.supportsTransactions();
+		Boolean alreadyInTrans = null;
+		if (supportsTrans) {
+			alreadyInTrans = ds.isInTransaction();
+		}
+		if (supportsTrans  && (!alreadyInTrans)) {
 			try {
+				theLogger.info("Bracketing for TRANSACTIONAL read on dataset {}", ds);
 				ds.begin(ReadWrite.READ);
 				solns = JenaArqQueryFuncs.findAllSolutions(ds, parsedQuery, initBinding);
 				ds.commit(); // Same effect as abort unless we promoted to Write (which shouldn't happen in this case)
@@ -59,6 +65,7 @@ public class JenaArqQueryFuncs_TxAware {
 				ds.abort();
 			} 
 		} else {
+			theLogger.info("Performing unbracketed read on dataset {}, supportsTrans={}, alreadyInTrans={}", ds, supportsTrans, alreadyInTrans);
 			// If isInTransaction, then we don't need to worry about starting, committing, or rollback - 
 			// so we can act just like (and share code with) a non-TX-aware consumer!
 			solns = JenaArqQueryFuncs.findAllSolutions(ds, parsedQuery, initBinding);
@@ -68,9 +75,15 @@ public class JenaArqQueryFuncs_TxAware {
 	
 	public static <ResType> ResType processDatasetQuery_TX(Dataset ds, Query parsedQuery, 
 			QuerySolution initBinding, JenaArqResultSetProcessor<ResType> resProc) {
-		
 		ResType res = null;
-		if (ds.supportsTransactions() && (!ds.isInTransaction())) {
+		List<QuerySolution> solns = null;
+		Boolean supportsTrans = ds.supportsTransactions();
+		Boolean alreadyInTrans = null;
+		if (supportsTrans) {
+			alreadyInTrans = ds.isInTransaction();
+		}	
+		if (supportsTrans  && (!alreadyInTrans)) {
+			theLogger.info("Bracketing for TRANSACTIONAL read on dataset {}", ds);
 			try {
 				ds.begin(ReadWrite.READ);
 				res = JenaArqQueryFuncs.processDatasetQuery(ds, parsedQuery, initBinding, resProc);
@@ -80,6 +93,7 @@ public class JenaArqQueryFuncs_TxAware {
 				ds.abort();
 			} 
 		} else {
+			theLogger.info("Performing unbracketed read on dataset {}, supportsTrans={}, alreadyInTrans={}", ds, supportsTrans, alreadyInTrans);
 			// If isInTransaction, then we don't need to worry about starting, committing, or rollback - 
 			// so we can act just like (and share code with) a non-TX-aware consumer!
 			res = JenaArqQueryFuncs.processDatasetQuery(ds, parsedQuery, initBinding, resProc);

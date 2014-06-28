@@ -23,6 +23,8 @@ import com.hp.hpl.jena.sdb.Store;
 import com.hp.hpl.jena.sparql.core.DatasetGraph;
 import com.hp.hpl.jena.sparql.core.DatasetGraphFactory;
 import com.hp.hpl.jena.sparql.core.DatasetImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Logicmoo. <www.logicmoo.org>
@@ -31,9 +33,9 @@ import com.hp.hpl.jena.sparql.core.DatasetImpl;
  * 
  */
 public class JenaDatasetFactory extends AbstractDatasetFactory implements UserDatasetFactory {
-
+	private static Logger theLogger = LoggerFactory.getLogger(JenaDatasetFactory.class);
 	@Override public String getDatasetType() {
-		return "memory";
+		return RepoDatasetFactory.DFF_Memory; // "memory";
 	}
 
 	@Override public Dataset createDefault() {
@@ -41,19 +43,24 @@ public class JenaDatasetFactory extends AbstractDatasetFactory implements UserDa
 	}
 
 	/** Create an in-memory, modifiable Dataset */
-	public Dataset createMem() {
-		return create(DatasetGraphFactory.createMem());
+	@Override public Dataset createMem() {
+		Dataset dset = create(DatasetGraphFactory.createMem());
+		theLogger.warn("Dataset created with DatasetGraphFactory.createMem(), supportsTransactions={}", dset.supportsTransactions());
+		return dset;
 	}
 
 	/**
 	 * Create an in-memory, modifiable Dataset. New graphs must be explicitly added using .addGraph.
 	 */
-	public Dataset createMemFixed() {
-		return create(DatasetGraphFactory.createMemFixed());
+	@Override public Dataset createMemFixed() {
+		Dataset dset = create(DatasetGraphFactory.createMemFixed());
+		theLogger.warn("Dataset created with DatasetGraphFactory.createMemFixed(), supportsTransactions={}", dset.supportsTransactions());
+		return dset;
 	}
 
-	public Dataset createMemFixedDS() {
-		return create(DatasetFactory.createMemFixed());
+	private Dataset createMemFixedDS() {
+		Dataset dset = create(DatasetFactory.createMemFixed());
+		return dset;
 	}
 
 	/**
@@ -62,7 +69,7 @@ public class JenaDatasetFactory extends AbstractDatasetFactory implements UserDa
 	 * @param model
 	 * @return Dataset
 	 */
-	public Dataset create(Model model) {
+	@Override public Dataset create(Model model) {
 		return new DatasetImpl(model);
 	}
 
@@ -72,9 +79,11 @@ public class JenaDatasetFactory extends AbstractDatasetFactory implements UserDa
 	 * @param dataset
 	 * @return Dataset
 	 */
-	public Dataset create(Dataset dataset) {
+	@Override public Dataset create(Dataset dataset) {
 		if (RepoDatasetFactory.datasetNoDeleteModels) {
-			return new CheckedDataset(dataset);
+			Dataset dset = new CheckedDataset(dataset);
+			theLogger.warn("CheckedDataset created as wrapper, supportsTransactions={}", dset.supportsTransactions());
+			return dset;
 		}
 		return new DatasetImpl(dataset);
 	}
@@ -86,9 +95,11 @@ public class JenaDatasetFactory extends AbstractDatasetFactory implements UserDa
 	 *            DatasetGraph
 	 * @return Dataset
 	 */
-	public Dataset create(DatasetGraph dataset) {
+	@Override public Dataset create(DatasetGraph dataset) {
 		if (RepoDatasetFactory.datasetNoDeleteModels) {
-			return new CheckedDataset(dataset);
+			Dataset dset = new CheckedDataset(dataset);
+			theLogger.warn("CheckedDataset created as wrapper, supportsTransactions={}", dset.supportsTransactions());
+			return dset;
 		}
 		return DatasetImpl.wrap(dataset);
 	}

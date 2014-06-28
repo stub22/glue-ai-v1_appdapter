@@ -63,12 +63,13 @@ public class JenaSDBWrappedDatasetFactory extends AbstractDatasetFactory impleme
 	}
 
 	@Override public String getDatasetType() {
-		return "instance";
+		return RepoDatasetFactory.DFF_Instance; //  "instance";
 	}
 
 	public Dataset createDefault() {
-		if (true)
+		if (true) {
 			return createRemotePeer();
+		}
 		return create(createMem());
 	}
 

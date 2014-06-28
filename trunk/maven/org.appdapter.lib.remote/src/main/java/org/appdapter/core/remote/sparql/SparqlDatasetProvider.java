@@ -36,7 +36,7 @@ import com.hp.hpl.jena.sparql.graph.GraphDistinctDataBag;
 public class SparqlDatasetProvider extends JenaSDBWrappedDatasetFactory implements UserDatasetFactory {
 
 	static SparqlDatasetProvider SINGLETON = new SparqlDatasetProvider();
-
+/*
 	public static void install() {
 
 		RepoDatasetFactory.DEFAULT = SINGLETON;
@@ -52,7 +52,7 @@ public class SparqlDatasetProvider extends JenaSDBWrappedDatasetFactory implemen
 		RepoOper.registerDatasetFactory("private", SINGLETON);
 		RepoOper.registerDatasetFactory("sparql", SINGLETON);
 	}
-
+*/
 	/** Create a graph that is a Jena memory graph
 	 * @see #createDefaultGraph
 	 */
