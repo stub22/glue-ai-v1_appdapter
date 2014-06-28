@@ -22,12 +22,12 @@ import org.appdapter.core.store.dataset.RepoDatasetFactory
 import org.appdapter.impl.store.FancyRepo
 import com.hp.hpl.jena.query.Dataset
 import com.hp.hpl.jena.rdf.model.Model
-import org.appdapter.core.loader.SpecialRepoLoader
+import org.appdapter.core.loader.{SpecialRepoLoader, LoadingRepoImpl}
 import com.hp.hpl.jena.query.DatasetFactory
 
 class DirectRepo(val myRepoSpecForRef: RepoSpec, val myDebugNameToStr: String, val myBasePath: String,
 	val myDirectoryModel: Model, var fileModelCLs: java.util.List[ClassLoader] = null) 
-	extends BasicRepoImpl with FancyRepo with Repo.Updatable with Repo.WithDirectory with RepoOper.ReloadableDataset {
+	extends LoadingRepoImpl with FancyRepo with Repo.Updatable with Repo.WithDirectory with RepoOper.ReloadableDataset {
 
   def this(directoryModel: Model) =
     this(null, null, null, directoryModel, null)

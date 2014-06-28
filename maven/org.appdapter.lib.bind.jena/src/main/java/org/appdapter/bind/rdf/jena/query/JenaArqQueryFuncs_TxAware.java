@@ -47,57 +47,74 @@ import org.slf4j.LoggerFactory;
 public class JenaArqQueryFuncs_TxAware {
 	private static Logger theLogger = LoggerFactory.getLogger(JenaArqQueryFuncs_TxAware.class);
 	
-	public static List<QuerySolution> findAllSolutions_TX(Dataset ds, Query parsedQuery, QuerySolution initBinding) {
-		List<QuerySolution> solns = null;
-		Boolean supportsTrans = ds.supportsTransactions();
-		Boolean alreadyInTrans = null;
-		if (supportsTrans) {
-			alreadyInTrans = ds.isInTransaction();
+	public static interface Oper<RT> {
+		public	RT	perform();
+	}
+	public static <RetType> RetType execBracketedTrans(Dataset ds, ReadWrite privs, RetType onFailure, Oper<RetType> oper) {
+		RetType result = onFailure;
+		try {
+			ds.begin(privs);
+			result = oper.perform();
+			ds.commit(); // Same effect as abort unless we promoted to Write, somehow. 
+		} catch (Throwable t) {
+			theLogger.error("Caught error during transactional op of type " + privs + ", aborting", t);
+			ds.abort();
+		} finally {
+			ds.end();   // Superfluous, as far as we know.
 		}
-		if (supportsTrans  && (!alreadyInTrans)) {
-			try {
-				theLogger.info("Bracketing for TRANSACTIONAL read on dataset {}", ds);
-				ds.begin(ReadWrite.READ);
-				solns = JenaArqQueryFuncs.findAllSolutions(ds, parsedQuery, initBinding);
-				ds.commit(); // Same effect as abort unless we promoted to Write (which shouldn't happen in this case)
-			} catch (Throwable t) {
-				theLogger.error("Caught error during transactional query, aborting", t);
-				ds.abort();
-			} 
-		} else {
-			theLogger.info("Performing unbracketed read on dataset {}, supportsTrans={}, alreadyInTrans={}", ds, supportsTrans, alreadyInTrans);
-			// If isInTransaction, then we don't need to worry about starting, committing, or rollback - 
-			// so we can act just like (and share code with) a non-TX-aware consumer!
-			solns = JenaArqQueryFuncs.findAllSolutions(ds, parsedQuery, initBinding);
-		}
-		return solns;
+		return result;			
 	}
 	
-	public static <ResType> ResType processDatasetQuery_TX(Dataset ds, Query parsedQuery, 
-			QuerySolution initBinding, JenaArqResultSetProcessor<ResType> resProc) {
-		ResType res = null;
-		List<QuerySolution> solns = null;
+	public static <RetType> RetType execBracketedReadTrans(Dataset ds, RetType onFailure, Oper<RetType> oper) {
+		return execBracketedTrans(ds, ReadWrite.READ, onFailure, oper);
+	}
+	public static <RetType> RetType execBracketedWriteTrans(Dataset ds, RetType onFailure, Oper<RetType> oper) {
+		return execBracketedTrans(ds, ReadWrite.WRITE, onFailure, oper);
+	}
+	public static <RetType> RetType execTransCompatible(Dataset ds, ReadWrite privs, RetType onFailure, Oper<RetType> oper) {
+		RetType result = onFailure;
 		Boolean supportsTrans = ds.supportsTransactions();
 		Boolean alreadyInTrans = null;
 		if (supportsTrans) {
 			alreadyInTrans = ds.isInTransaction();
-		}	
-		if (supportsTrans  && (!alreadyInTrans)) {
-			theLogger.info("Bracketing for TRANSACTIONAL read on dataset {}", ds);
-			try {
-				ds.begin(ReadWrite.READ);
-				res = JenaArqQueryFuncs.processDatasetQuery(ds, parsedQuery, initBinding, resProc);
-				ds.commit(); // Same effect as abort unless we promoted to Write (which shouldn't happen in this case)
-			} catch (Throwable t) {
-				theLogger.error("Caught error during transactional query, aborting", t);
-				ds.abort();
-			} 
-		} else {
-			theLogger.info("Performing unbracketed read on dataset {}, supportsTrans={}, alreadyInTrans={}", ds, supportsTrans, alreadyInTrans);
-			// If isInTransaction, then we don't need to worry about starting, committing, or rollback - 
-			// so we can act just like (and share code with) a non-TX-aware consumer!
-			res = JenaArqQueryFuncs.processDatasetQuery(ds, parsedQuery, initBinding, resProc);
 		}
+		if (supportsTrans  && (!alreadyInTrans)) {
+			theLogger.debug("Bracketing for TRANSACTIONAL {} on dataset {}", privs, ds);
+			result = execBracketedTrans(ds, privs, onFailure, oper);
+		} else {
+			theLogger.debug("Performing UN-bracketed {} on dataset {}, supportsTrans={}, alreadyInTrans={}", privs, ds,
+					supportsTrans, alreadyInTrans);
+			try {
+				result = oper.perform();
+			} catch (Throwable t) {
+				theLogger.error("Caught error during NON-transactional " + privs, t);
+			}
+		}
+		return result;
+	}
+	public static <RetType> RetType execReadTransCompatible(Dataset ds, RetType onFailure, Oper<RetType> oper) {
+		return execTransCompatible(ds, ReadWrite.READ, onFailure, oper);
+	}
+	public static <RetType> RetType execWriteTransCompatible(Dataset ds, RetType onFailure, Oper<RetType> oper) {
+		return execTransCompatible(ds, ReadWrite.WRITE, onFailure, oper);
+	}	
+	public static List<QuerySolution> findAllSolutions_TX(final Dataset ds, final Query parsedQuery, final QuerySolution initBinding) {
+		List<QuerySolution> solns = null;
+		solns = execReadTransCompatible(ds, null, new Oper<List<QuerySolution>>() {
+			@Override public List<QuerySolution> perform() {
+				return JenaArqQueryFuncs.findAllSolutions(ds, parsedQuery, initBinding);
+			}
+		});
+		return solns;
+	}
+	public static <ResType> ResType processDatasetQuery_TX(final Dataset ds, final Query parsedQuery, 
+			final QuerySolution initBinding, final JenaArqResultSetProcessor<ResType> resProc) {
+		ResType res = null;
+		res = execReadTransCompatible(ds, null, new Oper<ResType>() {
+			@Override public ResType perform() {
+				return JenaArqQueryFuncs.processDatasetQuery(ds, parsedQuery, initBinding, resProc);
+			}
+		});
 		return res;
 	}
 
