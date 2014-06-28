@@ -16,6 +16,7 @@
 
 package org.appdapter.help.repo
 
+import org.appdapter.bind.rdf.jena.query.JenaArqQueryFuncs_TxAware
 import org.appdapter.core.name.Ident
 import org.appdapter.core.store.{InitialBinding, ModelClient, Repo}
 
@@ -91,4 +92,42 @@ trait RepoClient extends ModelClient {
   def assembleRootsFromNamedModel(graphNameIdent: Ident): java.util.Set[Object];
 
   def assembleRootsFromNamedModel(graphQName: String): java.util.Set[Object];
+  
+	def assembleRootsFromNamedModel_TX(graphNameIdent: Ident): java.util.Set[Object] = {
+		RepoClientFuncs_TxAware.execReadTransCompatible(this, null, new JenaArqQueryFuncs_TxAware.Oper[java.util.Set[Object]] {
+			override def perform() :  java.util.Set[Object] = 	assembleRootsFromNamedModel(graphNameIdent)
+		});
+	}
+	def assembleRootsFromNamedModel_TX(graphQName: String): java.util.Set[Object] = {
+		RepoClientFuncs_TxAware.execReadTransCompatible(this, null, new JenaArqQueryFuncs_TxAware.Oper[java.util.Set[Object]] {
+			override def perform() :  java.util.Set[Object] = 	assembleRootsFromNamedModel(graphQName)
+		});
+	}
+	
+}
+
+import org.appdapter.bind.rdf.jena.query.JenaArqQueryFuncs_TxAware;
+import org.appdapter.core.store.RepoQueryFuncs_TxAware;
+import com.hp.hpl.jena.query.Dataset;
+import org.appdapter.core.log.BasicDebugger
+
+object RepoClientFuncs_TxAware extends BasicDebugger {
+	def  execReadTransCompatible[RetType](rc : RepoClient, onFailure : RetType, oper : JenaArqQueryFuncs_TxAware.Oper[RetType]) : RetType = {
+		val assumedRepo = rc.getRepo;
+		if (assumedRepo != null) {
+			RepoQueryFuncs_TxAware.execReadTransCompatible(assumedRepo, onFailure, oper)
+		} else {
+			getLogger().warn("Could not find assumedRepo - remote repoClient?");
+			onFailure;
+		}
+	}
+	def  execWriteTransCompatible[RetType](rc : RepoClient, onFailure : RetType, oper : JenaArqQueryFuncs_TxAware.Oper[RetType]) : RetType = {
+		val assumedRepo = rc.getRepo;
+		if (assumedRepo != null) {
+			RepoQueryFuncs_TxAware.execWriteTransCompatible(assumedRepo, onFailure, oper)
+		} else {
+			getLogger().warn("Could not find assumedRepo - remote repoClient?");
+			onFailure;
+		}
+	}	
 }

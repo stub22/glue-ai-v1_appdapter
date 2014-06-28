@@ -1,8 +1,8 @@
 package org.appdapter.core.share;
 
 import org.appdapter.core.name.Ident;
-import org.appdapter.core.store.BasicRepoImpl.TaskState;
-import org.appdapter.core.store.Repo.DatasetProvider;
+
+import org.appdapter.core.store.DatasetProvider;
 
 /*
  *  Copyright 2013 by The Appdapter Project (www.appdapter.org).
@@ -23,7 +23,7 @@ public interface ShareSpec {
 
 	String getGlobalName();
 
-	TaskState getTaskState();
+	SharableRepoImpl.TaskState getTaskState();
 
 	boolean sameOutcome(ShareSpec shareSpecImpl);
 

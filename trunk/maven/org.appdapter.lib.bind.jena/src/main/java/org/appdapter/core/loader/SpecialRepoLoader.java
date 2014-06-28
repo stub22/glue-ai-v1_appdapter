@@ -34,6 +34,7 @@ import org.appdapter.core.store.BasicRepoImpl;
 import org.appdapter.core.store.RepoModelEvent;
 
 import com.hp.hpl.jena.rdf.model.Model;
+import org.appdapter.core.share.SharableRepoImpl;
 
 /**
  * @author Logicmoo. <www.logicmoo.org>
@@ -45,20 +46,6 @@ public class SpecialRepoLoader extends BasicDebugger implements UncaughtExceptio
 	public enum SheetLoadStatus {
 		Pending, Loading, Loaded, Unloading, Unloaded, Cancelling, Cancelled, Error
 	}
-
-	public void logWarning(String msg) {
-		getLogger().warn(msg);
-	}
-
-	public void addLoadTask(String s, Runnable task) {
-		if (myTargetRepoImpl != null) {
-			myTargetRepoImpl.addLoadTask(s, task);
-		}
-		else {
-			addTask(s, task);
-		}
-	}
-
 	private ExecutorService executor = null;
 	private LinkedList<Task> tasks = new LinkedList<Task>();
 	private boolean lastJobSubmitted = false;
@@ -66,14 +53,24 @@ public class SpecialRepoLoader extends BasicDebugger implements UncaughtExceptio
 	private Object executorLock = new Object();
 	private boolean isSynchronous = true;
 	private int taskNum = 0;
-	private BasicRepoImpl myTargetRepoImpl = null;
+	private LoadingRepoImpl myTargetRepoImpl = null;
 	private String repoStr = "REPO";
 	// sounds like a lot.. but it is over with quickly!
 	private int numThreads = 32;
 	private int howManyTasksBeforeStartingPool = 0;
 
-	public SpecialRepoLoader(BasicRepoImpl repo) {
+
+	public SpecialRepoLoader(LoadingRepoImpl repo) {
 		myTargetRepoImpl = repo;
+	}
+	
+	public void addLoadTask(String s, Runnable task) {
+		if (myTargetRepoImpl != null) {
+			myTargetRepoImpl.addLoadTask(s, task);
+		}
+		else {
+			addTask(s, task);
+		}
 	}
 
 	public void setSynchronous(boolean isSync) {
@@ -342,5 +339,8 @@ public class SpecialRepoLoader extends BasicDebugger implements UncaughtExceptio
 	public void setSingleThreaded(boolean loadSingleThread) {
 		alwaysSingleThreaded = loadSingleThread;
 
+	}
+	public void logWarning(String msg) {
+		getLogger().warn(msg);
 	}
 }

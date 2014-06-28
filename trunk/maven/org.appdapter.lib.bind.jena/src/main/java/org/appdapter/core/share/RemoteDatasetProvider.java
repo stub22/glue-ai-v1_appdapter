@@ -15,7 +15,7 @@
  */
 package org.appdapter.core.share;
 
-import org.appdapter.core.store.Repo.DatasetProvider;
+import org.appdapter.core.store.DatasetProvider;
 
 import com.hp.hpl.jena.query.Dataset;
 
