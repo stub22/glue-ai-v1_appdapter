@@ -230,21 +230,27 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 		return RepoDatasetFactory.createModel(getDatasetType(), name, getShareName());
 	}
 
-	protected String getShareName() {
+	private String getShareName() {
 		return RepoDatasetFactory.DATASET_SHARE_NAME;
 	}
 
 	protected String getDatasetType() {
-		if (datasetProvider != null)
-			return datasetProvider.getDatasetType();
+		if (myDatasetProvider != null)
+			return myDatasetProvider.getDatasetType();
 		return datasetType;
 	}
 
 	protected Dataset makeMainQueryDataset() {
-		if (datasetProvider != null)
-			return datasetProvider.createDefault();
-		if (datasetType != null)
-			return datasetProvider.createDefault();
+		if (myDatasetProvider != null) {
+			getLogger().info("Using datasetProvider {}", myDatasetProvider);
+			return myDatasetProvider.createDefault();
+		}
+		if (datasetType != null) {
+			getLogger().warn("Would use datasetType ?{} if we knew how, but we don't, and the datasetProvider is null!", datasetType);
+			// Stu found this dead code layin here, would produce NPE every time, right?
+			// return datasetProvider.createDefault();
+		}
+		getLogger().info("Using RepoDatasetFactory.createDefault()", myDatasetProvider);
 		Dataset ds = RepoDatasetFactory.createDefault(); // becomes   createMem() in later Jena versions.
 		return ds;
 	}
@@ -374,12 +380,17 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 	}	
 	
 	
-	private UserDatasetFactory datasetProvider = RepoDatasetFactory.DEFAULT;
+	private UserDatasetFactory myDatasetProvider = RepoDatasetFactory.getDefaultUserDF();
 	private String datasetType;
 	private	Model myRepoEvents;
 
+	/**
+	 * Called from SpecialRepoLoader, in pursuit of maximum entropy!
+	 * @return 
+	 */
 	public Model getEventsModel() {
 		if (myRepoEvents == null) {
+			getLogger().info("Creating repoEventsModel for repo {}", this);
 			myRepoEvents = RepoDatasetFactory.createDefaultModel();
 			//repoEvents.add(getDirectoryModel());
 		}
