@@ -177,18 +177,11 @@
 				<extensions>true</extensions>
 				<configuration>
 					<instructions>
-						<!-- This 'optional' resolution of all deps is inappropriate.
-							Which deps are we having trouble resolving?
 
-							<Import-Package>*;resolution:='optional'</Import-Package>
-								
-							2013-10-28 In progress:  Whittling this down to the minimum set of stuff that 
-							really needs to be 'optional'.
-
-						-->
 						<Bundle-Activator>org.appdapter.osgi.core.AppdapterCoreBundleActivator</Bundle-Activator>
 						<Export-Package>
-							<!-- Need to exclude all the packages from o.a.bundle.debug, or they will get re-exported.
+							<!-- Need to exclude all the packages from o.a.bundle.debug, or they will get re-exported
+								by our broad wilcard at bottom.
 								TODO:  Rename these packages so they are easier to exclude en-masse.
 							-->
 							!org.appdapter.bind.log4j,
@@ -205,18 +198,12 @@
 							(contents of lib.core, lib.registry, lib.bind.{math,jena}	-->
 							org.appdapter.*
 						</Export-Package>
-
-						<!--Export-Package>org.appdapter.*, org.apache.xmlbeans.*,com.hp.hpl.jena.graph.query</Export-Package-->
-						<!-- Horrid workaround for Class.forName() used in DynamicCachingComponentAssembler, could widen it to "*",
-							but better to get Jena code fixed to allow classloader setup.
-						-->
-						<DynamicImport-Package>org.cogchar.*</DynamicImport-Package>                        						
 						<!--
-						arq.*,com.hp.hpl.jena.*,org.openjena.*,etc.*,vocabularies.*						
-						<Private-Package>org.xmldb.*,riotcmd.*</Private-Package>
-                        <Private-Package>org.apache.poi.*,  org.openxmlformats.*, schemaorg_apache_xmlbeans.*, schemasMicrosoftComOfficeExcel.*, schemasMicrosoftComOfficeOffice.*, schemasMicrosoftComVml.*,org.joda.*</Private-Package>
-                        -->						
-
+						2014-07-05 - removed this DynamicImport which is presumed vestigal.  
+						The relevant host bundle for Jena Assembly class lookup has been ext.bundle.jena_all for 
+						many months now.
+						<DynamicImport-Package>org.cogchar.*</DynamicImport-Package> 
+						-->
 					</instructions>
 				</configuration>
 			</plugin>
@@ -226,7 +213,7 @@
 </project>
 <!--
 /*
- *  Copyright 2011 by The Appdapter Project (www.appdapter.org).
+ *  Copyright 2011-2014 by The Appdapter Project (www.appdapter.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
