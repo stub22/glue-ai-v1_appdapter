@@ -317,10 +317,14 @@
 						-->
 							*
 						</Import-Package>
-						<!-- Horrid workaround for Class.forName() used in AssemberHelp, could widen it to "*",
-							but better to get Jena code fixed to allow classloader setup.
+						<!-- DynamicImport-Package is a horrid workaround for Class.forName() used in AssemberHelp.
+							We have successfully been using Fragment-Host to inject buildable classes from JFlux
+							and other artifact locations.  	
+
+							Newer Jena riot-RDFDataMgr may allow for some cleaner code on the appdapter side.			
 							
-							TODO:  Implement a Fragment-Host approach to allow Assembler to process injected classes.
+							Cogchar TODO:  Use Fragment-Host to allow Assembler to process injected classes from Cogchar,
+							then remove at least that part of the DynamicImport-Package.  
 						-->
 						<DynamicImport-Package>org.appdapter.*,org.cogchar.*</DynamicImport-Package>
 						<Bundle-Activator>ext.bundle.jena.full.Activator</Bundle-Activator>
