@@ -325,6 +325,8 @@
 							
 							Cogchar TODO:  Use Fragment-Host to allow Assembler to process injected classes from Cogchar,
 							then remove at least that part of the DynamicImport-Package.  
+							
+							A similar concern applies in o.a.b.core.
 						-->
 						<DynamicImport-Package>org.appdapter.*,org.cogchar.*</DynamicImport-Package>
 						<Bundle-Activator>ext.bundle.jena.full.Activator</Bundle-Activator>
