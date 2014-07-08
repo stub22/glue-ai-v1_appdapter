@@ -206,6 +206,8 @@
 						to call findClass directly.     This happens during scene wiring, specifically in assembly
 						of o.c.impl.perform.FancyPerfChanSpec.  TODO:  Move Cogchar spec classes into a fragment that
 						can be inserted.
+						
+						A similar concern applies in ext.bundle.jena.
 						-->
 						<DynamicImport-Package>org.cogchar.*</DynamicImport-Package> 
 
