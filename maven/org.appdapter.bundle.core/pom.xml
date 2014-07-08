@@ -202,8 +202,13 @@
 						2014-07-05 - removed this DynamicImport which is presumed vestigal.  
 						The relevant host bundle for Jena Assembly class lookup has been ext.bundle.jena_all for 
 						many months now.
-						<DynamicImport-Package>org.cogchar.*</DynamicImport-Package> 
+						2004-07-08 - oops, put it back, because sometimes DynamicCachingComponentAssembler needs
+						to call findClass directly.     This happens during scene wiring, specifically in assembly
+						of o.c.impl.perform.FancyPerfChanSpec.  TODO:  Move Cogchar spec classes into a fragment that
+						can be inserted.
 						-->
+						<DynamicImport-Package>org.cogchar.*</DynamicImport-Package> 
+
 					</instructions>
 				</configuration>
 			</plugin>
