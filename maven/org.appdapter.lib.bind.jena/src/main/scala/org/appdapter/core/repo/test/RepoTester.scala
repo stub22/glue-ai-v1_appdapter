@@ -21,10 +21,10 @@ import org.appdapter.core.name.Ident
 import org.appdapter.core.store.{ InitialBinding, Repo }
 import com.hp.hpl.jena.query.QuerySolution
 import com.hp.hpl.jena.rdf.model.Model
-import org.appdapter.core.repo.DatabaseRepo
-import org.appdapter.core.repo.DatabaseRepoLoader
+import org.appdapter.impl.store.{DatabaseRepo_BROKER, DatabaseRepoLoader}
+// import org.appdapter.core.repo.DatabaseRepoLoader
 import org.appdapter.core.repo.DirectRepo
-import org.appdapter.core.repo.FancyRepo
+import org.appdapter.impl.store.FancyRepo
 import org.appdapter.core.matdat.OfflineXlsSheetRepoSpec
 import org.appdapter.core.matdat.OnlineSheetRepoSpec
 import org.appdapter.core.matdat.XLSXSheetRepoLoader
@@ -34,6 +34,7 @@ import org.appdapter.core.matdat.XLSXSheetRepoLoader
  */
 
 object RepoTester_TESTS_ONLY extends BasicDebugger {
+/*
   // Modeled on GoogSheetRepo.loadTestSheetRepo
   def loadGoogSheetRepo(sheetKey: String, namespaceSheetNum: Int, dirSheetNum: Int,
     fileModelCLs: java.util.List[ClassLoader]): FancyRepo = {
@@ -195,5 +196,5 @@ object RepoTester_TESTS_ONLY extends BasicDebugger {
     val dirModel: Model = XLSXSheetRepoLoader.readDirectoryModelFromXLSX(sheetLocation, namespaceSheetName, dirSheetName, fileModelCLs: java.util.List[ClassLoader])
     FancyRepoLoader.makeRepoWithDirectory(repoSpec, dirModel);
   }
-
+*/
 }

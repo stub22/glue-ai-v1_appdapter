@@ -142,7 +142,7 @@ object FileModelRepoLoader extends BasicDebugger {
         def run() {
           try {
             val graphURI = modelRes.getURI();
-            val fileModel = FancyRepoLoader.readModelSheetFromURL(rdfURL, nsJavaMap, clList);
+            val fileModel = FancyRepoLoader.readRdfGraphFromURL(rdfURL, nsJavaMap, clList);
             getLogger.debug("Read fileModel: {}", fileModel)
             FancyRepoLoader.replaceOrUnion(mainDset, unionOrReplaceRes, graphURI, fileModel);
           } catch {
