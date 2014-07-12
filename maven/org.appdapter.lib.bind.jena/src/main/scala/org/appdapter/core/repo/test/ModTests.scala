@@ -19,7 +19,13 @@ package org.appdapter.core.repo.test
 import scala.collection.JavaConversions.asScalaIterator
 import org.appdapter.bind.rdf.jena.model.ModelStuff
 import org.appdapter.core.matdat.WebSheet
-import org.appdapter.core.repo.{ CsvFileSheetLoader, FancyRepo, GoogSheetRepoLoader, GoogSheetRepoSpec, QueryHelper, XLSXSheetRepoLoader }
+
+import org.appdapter.core.matdat.{CsvFileSheetLoader, GoogSheetRepoLoader, GoogSheetRepoSpec, XLSXSheetRepoLoader}
+import org.appdapter.core.name.Ident
+import org.appdapter.core.store.{InitialBinding, Repo, RepoOper}
+import org.appdapter.core.loader.{SpecialRepoLoader, ExtendedFileStreamUtils}
+import org.appdapter.impl.store.{FancyRepo, QueryHelper}
+
 import org.appdapter.core.store.dataset.RepoDatasetFactory
 import com.hp.hpl.jena.query.{ QuerySolution, ResultSet, ResultSetFactory }
 import com.hp.hpl.jena.rdf.listeners.ObjectListener
@@ -46,6 +52,7 @@ class PrintinListener(val prefix: String) extends ObjectListener {
 object ModTests {
   def main(args: Array[String]): Unit = {
     println("ModTests - start")
+	/*
     val namespaceSheetNum = 9;
     val namespaceSheetURL = WebSheet.makeGdocSheetQueryURL(GoogSheetRepoLoaderTest.keyForGoogBootSheet22, namespaceSheetNum, None);
     println("Made Namespace Sheet URL: " + namespaceSheetURL);
@@ -59,6 +66,7 @@ object ModTests {
     val reposModel: Model = GoogSheetRepoLoader.readModelSheet(GoogSheetRepoLoaderTest.keyForGoogBootSheet22, reposSheetNum, nsJavaMap);
 
     val prinListener = new PrintinListener("underlying repo model");
+	*/
     /* ModelCom 
  http://grepcode.com/file/repo1.maven.org/maven2/com.hp.hpl.jena/jena/2.6.3/com/hp/hpl/jena/rdf/model/impl/ModelCom.java#ModelCom.register
  
@@ -74,6 +82,7 @@ classes to handle more complicated matters such as reification, query handling, 
 event management, and transaction handling.
 
  */
+/*
     reposModel.register(prinListener);
 
     val emptyModel = RepoDatasetFactory.createPrivateMemModel
@@ -133,6 +142,7 @@ event management, and transaction handling.
     println("reposModel Graph [class=" + repoGraph.getClass().getName() + "]  : " + repoGraph)
     reposModel.add(queriesModel);
     println("Finished first add")
+	*/
     /**
      * Finished first add
      * Exception in thread "main" java.lang.UnsupportedOperationException: this model does not support transactions
@@ -179,12 +189,13 @@ http://grepcode.com/file/repo1.maven.org/maven2/com.hp.hpl.jena/jena/2.6.3/com/h
 25     @Override protected TripleStore createTripleStore()
 26         { return new FasterTripleStore( this ); }		 
  */
+/*
     reposModel.add(queriesModel);
     println("Finished second add")
     val wackyStmtText01 = " a B c ; d E f "
     println("Parsing statements [" + wackyStmtText01 + "]")
     val sArray: Array[Statement] = ModelStuff.statements(reposModel, wackyStmtText01)
-
+*/
     /*
  * Parsed statements: 
 Found stmt: [eh:/a, eh:/B, eh:/c]
@@ -192,6 +203,7 @@ Found stmt: [eh:/d, eh:/E, eh:/f]
 --------------------------------------------
  * 
  */
+/*
     sArray foreach (x => {
       println("Found stmt: " + x)
       reposModel.add(x)
@@ -210,6 +222,7 @@ Found stmt: [eh:/d, eh:/E, eh:/f]
     println("---------------- Well -----------------")
     println("DeductionsModel[class=" + deductionsModel.getClass().getName() + ", size=" + deductionsModel.size() + "]= " + deductionsModel)
     deductionsModel.listStatements() foreach (stmt => { println("[d-stmt] " + stmt.toString()) })
+	*/
   }
 
 }
@@ -258,7 +271,7 @@ object GoogSheetRepoLoaderTest {
 
     println("Found solutions: " + solnJavaList)
   }
-
+/*
   def testSemSheet(args: Array[String]): Unit = {
     println("SemSheet test ");
     val namespaceSheetNum = nsSheetNum22;
@@ -315,11 +328,13 @@ object GoogSheetRepoLoaderTest {
     }
 
   }
-
+*/
   def main123(args: Array[String]): Unit = {
+	  /*
     GoogSheetRepoLoaderTest.testSemSheet(args);
     CsvFileSheetLoader.testSemSheet(args);
     XLSXSheetRepoLoader.testSemSheet(args);
+	*/
   }
 
 }

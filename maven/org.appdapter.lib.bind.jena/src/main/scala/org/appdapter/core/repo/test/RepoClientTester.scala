@@ -21,7 +21,8 @@ import java.io.ByteArrayOutputStream
 import scala.collection.JavaConversions.asScalaBuffer
 
 import org.appdapter.core.name.{ FreeIdent, Ident }
-import org.appdapter.core.repo.{ OnlineSheetRepoSpec, RepoClient, RepoClientImpl }
+import org.appdapter.help.repo.{  RepoClient, RepoClientImpl }
+import org.appdapter.core.matdat.{OnlineSheetRepoSpec}
 import org.appdapter.core.store.Repo
 import org.appdapter.demo.DemoResources
 
@@ -47,7 +48,7 @@ object RepoClientTester_TEST_ONLY {
    */
 
   final val TEST_REPO_SHEET_KEY = "0ArBjkBoH40tndDdsVEVHZXhVRHFETTB5MGhGcWFmeGc"
-
+/*
   // This value is now specified by applications using overrides of the PumaContextMediator.
   // See, for example the Activator for the org.friendularity.bundle.demo.ccrk project.
 
@@ -218,7 +219,7 @@ object RepoClientTester_TEST_ONLY {
   def makeRepoClient(fr: Repo.WithDirectory, queryTargetVarName: String, querySheetQN: String): RepoClient = {
     new RepoClientImpl(fr, queryTargetVarName, querySheetQN)
   }
-
+*/
   /*
 	 def loadRepoSQL(configResPath: String) : DatabaseRepo = {
 		

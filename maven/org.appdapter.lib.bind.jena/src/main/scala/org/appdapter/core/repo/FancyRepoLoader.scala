@@ -24,7 +24,7 @@ import org.appdapter.core.matdat.{CsvFileSheetLoader, GoogSheetRepoLoader, XLSXS
 import org.appdapter.core.name.Ident
 import org.appdapter.core.store.{InitialBinding, Repo, RepoOper}
 import org.appdapter.core.loader.{SpecialRepoLoader, ExtendedFileStreamUtils}
-import org.appdapter.impl.store.FancyRepo
+import org.appdapter.impl.store.{FancyRepo, DatabaseRepoLoader}
 
 import com.hp.hpl.jena.query.{Dataset, QuerySolution}
 import com.hp.hpl.jena.rdf.model.{Model, Resource}
@@ -32,18 +32,7 @@ import com.hp.hpl.jena.rdf.model.{Model, Resource}
  * @author logicmoo
  */
 
-abstract class InstallableSpecReader {
-  def getExt(): String;
-  def makeRepoSpec(path: String, args: Array[String], cLs: java.util.List[ClassLoader]): RepoSpec;
-}
-abstract class InstallableRepoReader extends InstallableSpecReader {
-  //override def getExt(): String = null
-  override def makeRepoSpec(path: String, args: Array[String], cLs: java.util.List[ClassLoader]): RepoSpec = null
-  def getContainerType(): String
-  def getSheetType(): String
-  def isDerivedLoader(): Boolean = false
-  def loadModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader])
-}
+
 
 object FancyRepoLoader extends BasicDebugger {
 
@@ -96,7 +85,7 @@ object FancyRepoLoader extends BasicDebugger {
     repoLoader.setSynchronous(false)
     while (dirModelLoaderIter.hasNext()) {
       val irr = dirModelLoaderIter.next
-      getLogger.trace("Loading ... " + irr.getContainerType + "/" + irr)
+      getLogger.trace("Loading ... {}/{}",  Seq(irr.getContainerType, irr) :_*)
       try {
         if (irr.isDerivedLoader) {
           // this means what we are doing might need previous requests to complete
@@ -174,7 +163,7 @@ object FancyRepoLoader extends BasicDebugger {
         XLSXSheetRepoLoader.readDirectoryModelFromXLSX(rdfURL, "Nspc", "Dir", fileModelCLs);
       } else if (ext != null && (ext.equals("csv"))) {
         CsvFileSheetLoader.readModelSheet(rdfURL, nsJavaMap, fileModelCLs);
-      } else readModelSheetFromURL(rdfURL, nsJavaMap, fileModelCLs);
+      } else readRdfGraphFromURL(rdfURL, nsJavaMap, fileModelCLs);
     } catch {
       case except: Throwable => {
         getLogger.error("Caught error loading file {}", Array[Object](rdfURL, except))
@@ -184,8 +173,12 @@ object FancyRepoLoader extends BasicDebugger {
   }
 
   // Makes single Models from xlsx/cvs/jenaURLs
-  def readModelSheetFromURL(rdfURL: String, nsJavaMap: java.util.Map[String, String], clList: java.util.List[ClassLoader]): Model = {
+  // Caled from:
+  // FileModelRepoLoader - task.run()
+  // CsvFileSheetLoader - task.run()
+  def readRdfGraphFromURL(rdfURL: String, nsJavaMap: java.util.Map[String, String], clList: java.util.List[ClassLoader]): Model = {
     try {
+		getLogger.info("Reading RDF graph from URL {} into a jena model.", rdfURL);
       val efsu = new ExtendedFileStreamUtils()
       val ext: java.lang.String = org.appdapter.fileconv.FileStreamUtils.getFileExt(rdfURL);
       if (ext != null && (ext.equals("xlsx") || ext.equals("xls"))) {
@@ -200,7 +193,7 @@ object FancyRepoLoader extends BasicDebugger {
       }
     } catch {
       case except: Throwable => {
-        getLogger.error("Caught error loading file {}", Array[Object](rdfURL, except))
+        getLogger.error("Error loading from URL=[" + rdfURL + "]", except);
         throw except
       }
     }

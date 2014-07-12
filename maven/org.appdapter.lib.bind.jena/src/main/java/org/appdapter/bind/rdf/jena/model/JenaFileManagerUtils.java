@@ -62,8 +62,13 @@ public class JenaFileManagerUtils {
 	}
 
 	public static void ensureClassLoadersRegisteredWithJenaFM(FileManager fm, List<ClassLoader> clList) {
-		for (ClassLoader cl : clList) {
-			ensureClassLoaderRegisteredWithJenaFM(fm, cl);
+		if (clList != null) { 
+			theLogger.info("Registering list of {} loaders", clList.size());
+			for (ClassLoader cl : clList) {
+				ensureClassLoaderRegisteredWithJenaFM(fm, cl);
+			}
+		} else {
+			theLogger.warn("classLoader list is null, ignoring");
 		}
 	}
 
@@ -72,6 +77,10 @@ public class JenaFileManagerUtils {
 		FileManager fManager = FileManager.get();
 		if (fManager != fManagerE) {
 			theLogger.info("Mismatched Jena FMs: " + fManagerE + "!=" + fManager);
+			//  2014-07-11 - this happens during turtle load, also during online sheet load?
+			// (JenaFileManagerUtils.java:74) getDefaultJenaFM 
+			// - Mismatched Jena FMs: com.hp.hpl.jena.util.FileManager@4ac34fd9
+			// !=org.apache.jena.riot.adapters.AdapterFileManager@5418f143			
 		}
 		return fManagerE;
 	}
