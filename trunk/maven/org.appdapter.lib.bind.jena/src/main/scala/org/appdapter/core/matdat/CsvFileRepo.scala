@@ -92,7 +92,7 @@ object CsvFileSheetLoader extends BasicDebugger {
         def run() {
           try {
             val graphURI = modelRes.getURI();
-            val fileModel = FancyRepoLoader.readModelSheetFromURL(rdfURL, nsJavaMap, clList);
+            val fileModel = FancyRepoLoader.readRdfGraphFromURL(rdfURL, nsJavaMap, clList);
             getLogger.info("Read fileModel: {}", Array[Object](fileModel))
             FancyRepoLoader.replaceOrUnion(mainDset, unionOrReplaceRes, graphURI, fileModel);
           } catch {

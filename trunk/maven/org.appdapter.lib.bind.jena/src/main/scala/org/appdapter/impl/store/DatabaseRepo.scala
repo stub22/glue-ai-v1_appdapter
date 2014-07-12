@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.appdapter.core.repo
+package org.appdapter.impl.store
 
 import org.appdapter.bind.rdf.jena.sdb.SdbStoreFactory
 import org.appdapter.core.log.BasicDebugger
@@ -30,8 +30,9 @@ import com.hp.hpl.jena.update.{ GraphStore, GraphStoreFactory, UpdateAction, Upd
 import org.appdapter.core.loader.SpecialRepoLoader
 import org.appdapter.core.store.BasicStoredMutableRepoImpl
 import org.appdapter.core.store.Repo
-import org.appdapter.impl.store.QueryHelper
-import org.appdapter.impl.store.FancyRepo
+// import org.appdapter.impl.store.QueryHelper
+// import org.appdapter.impl.store.FancyRepo
+import org.appdapter.core.repo.{InstallableRepoReader, FancyRepoLoader, RepoSpec}
 
 /**
  * @author Stu B. <www.texpedient.com>
