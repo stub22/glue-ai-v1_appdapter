@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.appdapter</groupId>
+		<artifactId>org.appdapter.modules.core</artifactId>
+		<version>1.2.0</version>
+		<relativePath>../org.appdapter.modules.core/pom.xml</relativePath>
+	</parent>
+
+	<artifactId>ext.bundle.openconverters</artifactId>
+	<packaging>bundle</packaging>
+	<name>${project.artifactId} - OSGi - Open Converters Bundler</name>
+    <description>${project.artifactId} - OSGi - Open Converters Bundler</description>
+
+	<dependencies>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>ext.bundle.osgi.common</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>ext.bundle.xml.dom4j_161</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi</artifactId>
+			<version>3.9</version>
+			<!-- For all these POI inputs, we are exporting the contents, so we don't want the dep to propagate -->
+			<scope>provided</scope>
+            <exclusions>
+            <exclusion>
+                <artifactId>commons-codec</artifactId>
+                <groupId>commons-codec</groupId>
+            </exclusion></exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>ooxml-schemas</artifactId>
+			<version>1.0</version>
+			<scope>provided</scope>
+            <exclusions>
+              <exclusion>
+                <artifactId>xmlbeans</artifactId>
+                <groupId>org.apache.xmlbeans</groupId>
+              </exclusion>
+            </exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml-schemas</artifactId>
+			<version>3.9</version>
+			<scope>provided</scope>
+            <exclusions>
+              <exclusion>
+                <artifactId>xmlbeans</artifactId>
+                <groupId>org.apache.xmlbeans</groupId>
+              </exclusion>
+            </exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
+			<version>3.9</version>
+			<scope>provided</scope>
+			<exclusions>
+				<!-- Exclude Dom4J and use our nice Bundled version -->
+				<exclusion>
+					<groupId>dom4j</groupId>
+					<artifactId>dom4j</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>				
+
+
+
+		<dependency>
+			<groupId>org.openl.rules</groupId>
+			<artifactId>org.openl.lib.poi.dev</artifactId>
+			<version>5.9.4.1</version>
+			<scope>runtime</scope>
+			<exclusions>
+				<exclusion>
+                  <artifactId>commons-logging</artifactId>
+                  <groupId>commons-logging</groupId>
+              </exclusion>
+              <exclusion>
+                  <artifactId>commons-codec</artifactId>
+                  <groupId>commons-codec</groupId>
+              </exclusion>
+              <exclusion>
+					<artifactId>xmlbeans</artifactId>
+					<groupId>org.apache.xmlbeans</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>xml-apis</artifactId>
+					<groupId>xml-apis</groupId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.poi</groupId>
+					<artifactId>ooxml-schemas</artifactId>
+				</exclusion>
+				<exclusion>
+					<artifactId>dom4j</artifactId>
+					<groupId>dom4j</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>junit</artifactId>
+					<groupId>junit</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<!-- We excluded XMLBeans above.  Here we add a specific but non-OSGi-aware version, 
+		and we private-package it below -->
+		<dependency>
+			<groupId>org.apache.xmlbeans</groupId>
+			<artifactId>xmlbeans</artifactId>
+			<version>2.5.0</version>
+			<!-- We do not want this dep to propagate! -->
+			<scope>provided</scope>
+		</dependency>
+
+
+		
+		<!-- CSV library used for parsing - indepdendent of the POI stuff-->
+		<dependency>
+			<groupId>net.sf.opencsv</groupId>
+			<artifactId>opencsv</artifactId>
+			<version>2.3</version>
+			<scope>provided</scope>
+		</dependency>
+		
+		<!-- We *could* get this dep from ext.bundle.xml.xerces -->
+		<dependency>
+			<groupId>org.apache.servicemix.bundles</groupId>
+			<artifactId>org.apache.servicemix.bundles.xmlresolver</artifactId>
+			<version>1.2_3</version>
+			<scope>runtime</scope>
+		</dependency>		
+
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<version>2.3.7</version>
+				<extensions>true</extensions>
+				<configuration>
+                    <instructions>
+
+                        <Import-Package>
+							<!-- au.com.bytecode.opencsv wants   com.sun.javadoc -->
+							com.sun.*;resolution:=optional,  
+							<!-- POI stuff wants these packages, which perhaps we don't really need at runtime. -->
+							org.apache.crimson.*;resolution:=optional,
+							org.apache.tools.*;resolution:=optional,
+							*
+						</Import-Package>
+
+                        <Bundle-Activator>ext.bundle.openconverters.osgi.Activator</Bundle-Activator>
+	
+                        <Export-Package>
+							ext.bundle.openconverters.*,
+							au.com.bytecode.opencsv.*,
+							<!-- See note below under Private-Package about the split-package directive -->
+							org.apache.poi.*;-split-package:=merge-first
+						</Export-Package>
+						
+						<Private-Package>
+							<!-- These special-purpose facilities will be used nowhere outside the impl of this bundle -->
+							org.apache.xmlbeans.*,
+							<!-- We need the split-package stuff because BND is pulling together these packages from
+								multiple source jars.  This directive should be applied only when actually needed,
+								as indicated by warnings from BND.  
+							-->
+							schemaorg_apache_xmlbeans.*;-split-package:=merge-first,
+							org.openxmlformats.*;-split-package:=merge-first,							
+							schemasMicrosoftComOfficeOffice.*;-split-package:=merge-first,
+							schemasMicrosoftComOfficeExcel.*;-split-package:=merge-first,
+							schemasMicrosoftComVml.*;-split-package:=merge-first			
+						</Private-Package>
+                    </instructions>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
+				<!--		Might need a couple of these back at runtime, don't know yet.					
+                        org.openxmlformats.schemas.spreadsheetml.x2006,
+					
+                        com.ibm.uvm.tools,                     
+
+                        org.apache.avalon.framework.logger, 
+						org.apache.crimson.jaxp, 
+						org.apache.log, 
+						org.apache.tools.ant, 
+						
+                        org.apache.tools.ant.taskdefs, 
+						org.apache.tools.ant.types, 
+						org.apache.xml.resolver, 
+						org.apache.xml.resolver.tools, 
+						org.gjt.xpp, 
+						org.jaxen,
+                        org.jaxen.dom4j, 
+						org.jaxen.pattern, 
+						org.jaxen.saxpath, 
+						org.relaxng.datatype, 
+						org.xmlpull.v1,
+                        schemasMicrosoftComOfficeVml,
+						schemaorg_apache_xmlbeans,
+						org.openxmlformats.schemas.drawingml.x2006.chart.impl,
+						org.openxmlformats
+					-->
+<!--
+/*
+ *  Copyright 2013 by The Appdapter Project (www.appdapter.org).
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+-->
+

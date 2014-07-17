@@ -1,0 +1,80 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.appdapter</groupId>
+		<artifactId>org.appdapter.modules.core</artifactId>
+		<version>1.2.0</version>
+		<relativePath>../org.appdapter.modules.core/pom.xml</relativePath>
+	</parent>	
+
+    <artifactId>org.appdapter.bundle.debug</artifactId>
+	<packaging>bundle</packaging>
+    <name>${project.artifactId} - OSGi Bundle</name>
+
+	<!-- This debug bundle should not depend on anything but ext.bundles .
+	-->
+    <dependencies>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>ext.bundle.osgi.common</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>ext.bundle.xml.dom4j_161</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		
+		<dependency>
+			<!-- ReflectUtils and AggregateConverter uses org.apache.jena.atlas.lib.
+			-->
+			<groupId>${project.groupId}</groupId>
+			<artifactId>ext.bundle.jena_all_2_10_1</artifactId>
+            <version>${project.version}</version>
+		</dependency>			
+		<dependency>
+			
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.7.5</version>
+			<!-- Set to "runtime" to test standalone launch, but commit only at "test" scope -->
+			<scope>test</scope>
+			<exclusions>
+				<!-- This embedded Log4J version is not OSGi friendly, so we exclude it.
+					The "good" one is already inherited from ext.bundle.osgi.common.
+				-->				
+				<exclusion>
+					<artifactId>log4j</artifactId>
+					<groupId>log4j</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>				
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <version>2.3.7</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <instructions>
+
+                        <Bundle-Activator>org.appdapter.bundle.debug.Activator</Bundle-Activator>
+						<!-- If we are not specific enough in our Export-Package, BND will re-export imported packages 
+							(e.g. the Activator packages it finds in the ext-bundles).
+						-->
+						<Export-Package>
+							org.appdapter.core.*, 
+							org.appdapter.bundle.debug, 
+							org.appdapter.bind.log4j
+						</Export-Package>
+                    </instructions>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

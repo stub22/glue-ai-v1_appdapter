@@ -1,0 +1,237 @@
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.appdapter</groupId>
+		<artifactId>org.appdapter.modules.core</artifactId>
+		<version>1.2.0</version>
+		<relativePath>../org.appdapter.modules.core/pom.xml</relativePath>
+	</parent>	
+
+	<artifactId>org.appdapter.bundle.core</artifactId>
+	<packaging>bundle</packaging>
+	<name>${project.artifactId} - OSGi - core + registry</name>
+	<description>Primary Appdapter OSGi Bundle, "depend on me!", has no dependencies on a particular 
+			OSGi framework implementation, no SLF4J concrete binding, and no builtin shell.
+			Includes the contents of both the "core" and "registry" bundes from the "lib" tier.
+	</description>	
+
+	<dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>ext.bundle.osgi.common</artifactId>
+            <version>${project.version}</version>
+        </dependency>		
+		<dependency>
+           <groupId>${project.groupId}</groupId>
+           <artifactId>org.appdapter.lib.core</artifactId>
+           <version>${project.version}</version>
+		   <!-- We use "provided" scope for the code we are exporting, because we don't want our dependency on the
+				lib to propagate out to users of this bundle.
+			-->
+           <scope>provided</scope>
+		</dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>org.appdapter.lib.bind.jena</artifactId>
+            <version>${project.version}</version>
+			<!-- We are exporting these packages -->
+            <scope>provided</scope>
+        </dependency>	
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>org.appdapter.lib.bind.math</artifactId>
+            <version>${project.version}</version>
+			<!-- We are exporting these packages -->
+            <scope>provided</scope>
+        </dependency>			   
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>org.appdapter.lib.registry</artifactId>
+            <version>${project.version}</version>
+			<!-- We are exporting these packages -->
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+			<!-- We exclude all the packages of this bundle from Export-Package below, so they don't get 
+					exported in two different places.
+					This dependency is propagated with compile-time scope.
+			-->
+            <groupId>${project.groupId}</groupId>
+            <artifactId>org.appdapter.bundle.debug</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+			<!-- We exclude all the packages of this bundle from Export-Package below, so they don't get 
+					exported in two different places.
+					This dependency is propagated with compile-time scope.
+			-->
+            <groupId>${project.groupId}</groupId>
+            <artifactId>org.appdapter.bundle.fileconv</artifactId>
+            <version>${project.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>xml-apis</artifactId>
+                    <groupId>xml-apis</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>			
+        <!-- Disabled this "remote" adaptation of Jena client code as an ingredient of o.a.bundle.core, 
+				until it is complete. 
+		-->
+        <!--dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>org.appdapter.lib.remote</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency-->
+
+		<dependency>
+			<artifactId>ext.bundle.jena_all_2_10_1</artifactId>
+			<groupId>${project.groupId}</groupId>
+			<version>${project.version}</version>
+			<!-- 2013-10-28 - after some dithering, decided we want compile scope, since the user can
+				always exclude the dep if its not wanted.
+			-->
+			<scope>compile</scope>
+
+		</dependency>
+
+
+        <dependency>
+			<!-- Jena wants this HTTP-client lib, which is also useful to end-users of this bundle.
+				We propagate it at compile scope to ensure noone tries to duplicate anything it provides,
+				since it can be a bit of a sneaky dep that we want to proactively guard "against", as it were.
+				"Keep your friends close ...", and so forth!
+            -->
+            <groupId>${project.groupId}</groupId>
+            <artifactId>ext.bundle.apache_httpclient</artifactId>
+            <version>${project.version}</version>
+        </dependency>	
+			
+		<dependency>
+			<!-- Still used in our stale old o.a.lib.bind.math, which is due for some rejuvenation, Symja-wise -->
+			<groupId>${project.groupId}</groupId>
+			<artifactId>ext.bundle.math.jscience_50SNAP</artifactId>
+			<!-- This external component bundle-snapshot version is now fixed at Appdapter rev 1.0.9 (Spring 2013) -->
+			<version>1.0.9</version>
+			<!--  We would like to see JScience keep going, but we aren't encouraging further coding directly
+					against it at this time.  Our appdapter and cogchar APIs should offer increasing abstraction 
+					between	the JScience and Symja/JAS approaches.
+					
+				Any user who wants to actually code against the JScience API can add it as an explicit compile dep
+				in their own project.
+			-->
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>ext.bundle.xml.dom4j_161</artifactId>
+			<version>${project.version}</version>
+			<!-- Dom4J is useful, and it makes sense for us to encourage it's use, but
+				we have not retested any of the fancier XPath/Jaxen stuff in awhile.
+				
+				Any user who wants to actually code against the Dom4J API can add it as an explicit compile dep
+				in their own project.   Also see ext.bundles.xml.xerces.				
+			-->
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<!-- Jena-SDB no longer propagates this dep to us.  -->
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>1.3.157</version>
+		</dependency>	
+       		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.7.5</version>
+			<!-- Please see extensive comments about this scope, and how to use this style of dependency
+				 in the pom.xml for project:  	ext.bundle.osgi.common.
+				 
+				 We are now exposing this dependency at runtime scope, by default, for all users of
+				 org.appdapter bundle.core.  It is permissible for users to exclude this dependency
+				 when it is undesirable.
+				 
+				 TODO:  Verify that nothing in our Manifest's imports make OSGi think this dep is required.
+			-->
+			<scope>runtime</scope>
+			<exclusions>
+				<!-- This embedded Log4J version is not OSGi friendly, so we need to exclude it.
+					The "good" Log4J is applied transitively through   ext.bundle.osgi.common.
+				-->				
+				<exclusion>
+					<artifactId>log4j</artifactId>
+					<groupId>log4j</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<version>2.3.7</version>
+				<extensions>true</extensions>
+				<configuration>
+					<instructions>
+
+						<Bundle-Activator>org.appdapter.osgi.core.AppdapterCoreBundleActivator</Bundle-Activator>
+						<Export-Package>
+							<!-- Need to exclude all the packages from o.a.bundle.debug, or they will get re-exported
+								by our broad wilcard at bottom.
+								TODO:  Rename these packages so they are easier to exclude en-masse.
+							-->
+							!org.appdapter.bind.log4j,
+							!org.appdapter.bundle.debug,
+							!org.appdapter.core.convert,
+							!org.appdapter.core.debug,
+							!org.appdapter.core.jvm,
+							!org.appdapter.core.log,
+							<!-- Exclude these packages from o.a.bundle.fileconv -->
+							!org.appdapter.bind.csv.datmat,
+							!org.appdapter.bundle.fileconv,
+							!org.appdapter.fileconv,
+							<!-- NOW, we can export the rest of appdapter-core 
+							(contents of lib.core, lib.registry, lib.bind.{math,jena}	-->
+							org.appdapter.*
+						</Export-Package>
+						<!--
+						2014-07-05 - removed this DynamicImport which is presumed vestigal.  
+						The relevant host bundle for Jena Assembly class lookup has been ext.bundle.jena_all for 
+						many months now.
+						2004-07-08 - oops, put it back, because sometimes DynamicCachingComponentAssembler needs
+						to call findClass directly.     This happens during scene wiring, specifically in assembly
+						of o.c.impl.perform.FancyPerfChanSpec.  TODO:  Move Cogchar spec classes into a fragment that
+						can be inserted.
+						
+						A similar concern applies in ext.bundle.jena.
+						-->
+						<DynamicImport-Package>org.cogchar.*</DynamicImport-Package> 
+
+					</instructions>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
+<!--
+/*
+ *  Copyright 2011-2014 by The Appdapter Project (www.appdapter.org).
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+-->
