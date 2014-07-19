@@ -16,7 +16,7 @@
 
 package org.appdapter.core.remote.sparql;
 
-import org.appdapter.core.repo.DirectRepo;
+import org.appdapter.fancy.repo.DirectRepo;
 
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Model;

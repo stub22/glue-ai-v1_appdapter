@@ -34,7 +34,7 @@ import org.appdapter.core.log.Debuggable;
 import org.appdapter.core.name.FreeIdent;
 import org.appdapter.core.store.RepoOper;
 import org.appdapter.core.store.RepoOper.ReloadableDataset;
-import org.appdapter.core.store.StatementSync;
+import org.appdapter.core.model.StatementSync;
 import org.appdapter.demo.DemoDatabase;
 import org.appdapter.demo.DemoResources;
 import org.slf4j.Logger;

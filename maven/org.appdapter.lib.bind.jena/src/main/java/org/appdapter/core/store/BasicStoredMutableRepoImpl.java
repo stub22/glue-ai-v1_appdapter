@@ -38,7 +38,7 @@ import com.hp.hpl.jena.sdb.util.StoreUtils;
  * 
  *         http://jena.apache.org/documentation/javadoc/sdb/com/hp/hpl/jena/sdb/Store.html
  */
-public class BasicStoredMutableRepoImpl extends BasicRepoImpl implements Repo.Stored, Repo.Mutable {
+public class BasicStoredMutableRepoImpl extends BasicRepoImpl implements StoredRepo, Repo.Mutable {
 
 	// @Override 
 	public void callLoadingInLock() {

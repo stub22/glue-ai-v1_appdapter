@@ -9,7 +9,7 @@ import org.appdapter.core.store.dataset.RepoDatasetFactory;
 
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Model;
-import org.appdapter.core.store.StatementSync;
+import org.appdapter.core.model.StatementSync;
 
 public class ShareSpecImpl implements Runnable, ShareSpec {
 	private TaskState taskState;

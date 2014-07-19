@@ -55,8 +55,10 @@ import org.appdapter.api.trigger.Trigger;
 import org.appdapter.trigger.bind.jena.TriggerImpl;
 import org.appdapter.core.log.BasicDebugger;
 import org.appdapter.core.log.Debuggable;
-import org.appdapter.core.repo.RepoSpec;
-import org.appdapter.core.repo.URLRepoSpec;
+import org.appdapter.fancy.rspec.RepoSpec;
+import org.appdapter.fancy.rspec.URLRepoSpec;
+import org.appdapter.fancy.rspec.GoogSheetRepoSpec;
+import org.appdapter.fancy.rspec.OfflineXlsSheetRepoSpec;
 import org.appdapter.core.store.Repo;
 import org.appdapter.core.store.Repo.WithDirectory;
 import org.appdapter.core.store.RepoBox;
@@ -443,18 +445,18 @@ final public class DemoBrowser implements AnyOper.Singleton {
 		});
 		registerToolsTrigger("<toplevel>|Load Repo From|Google Doc GluePuma_BehavMasterDemo", new Trigger() {
 			@Override public void fire(Box targetBox) {
-				Utility.showResult(new org.appdapter.core.matdat.GoogSheetRepoSpec(BMC_SHEET_KEY, BMC_NAMESPACE_SHEET_NUM, BMC_DIRECTORY_SHEET_NUM).makeRepo());
+				Utility.showResult(new GoogSheetRepoSpec(BMC_SHEET_KEY, BMC_NAMESPACE_SHEET_NUM, BMC_DIRECTORY_SHEET_NUM).makeRepo());
 			}
 		});
 		registerToolsTrigger("<toplevel>|Load Repo From|GluePuma_HRKR50_TestFull", new TriggerImpl() {
 			@Override public void fire(Box targetBox) {
-				Utility.showResult(new org.appdapter.core.matdat.GoogSheetRepoSpec(GluePuma_HRKR50_TestFull_SHEET_KEY, GluePuma_HRKR50_TestFull_NAMESPACE_SHEET_NUM,
+				Utility.showResult(new GoogSheetRepoSpec(GluePuma_HRKR50_TestFull_SHEET_KEY, GluePuma_HRKR50_TestFull_NAMESPACE_SHEET_NUM,
 						GluePuma_HRKR50_TestFull_DIRECTORY_SHEET_NUM).makeRepo());
 			}
 		});
 		registerToolsTrigger("<toplevel>|Load Repo From|" + BMC_WORKBOOK_PATH, new Trigger() {
 			@Override public void fire(Box targetBox) {
-				Utility.showResult(new org.appdapter.core.matdat.OfflineXlsSheetRepoSpec(BMC_WORKBOOK_PATH, BMC_NAMESPACE_SHEET_NAME, BMC_DIRECTORY_SHEET_NAME, null).makeRepo());
+				Utility.showResult(new OfflineXlsSheetRepoSpec(BMC_WORKBOOK_PATH, BMC_NAMESPACE_SHEET_NAME, BMC_DIRECTORY_SHEET_NAME, null).makeRepo());
 			}
 		});
 		registerToolsTrigger("<toplevel>|Load Repo From|A Choosen a File", new Trigger() {
@@ -472,7 +474,7 @@ final public class DemoBrowser implements AnyOper.Singleton {
 					Utility.showError(null, "ERROR While trying to load a file repo...", error);
 				}
 
-				new org.appdapter.core.matdat.GoogSheetRepoSpec(BMC_SHEET_KEY, BMC_NAMESPACE_SHEET_NUM, BMC_DIRECTORY_SHEET_NUM).makeRepo();
+				new GoogSheetRepoSpec(BMC_SHEET_KEY, BMC_NAMESPACE_SHEET_NUM, BMC_DIRECTORY_SHEET_NUM).makeRepo();
 			}
 		});
 
@@ -831,7 +833,7 @@ final public class DemoBrowser implements AnyOper.Singleton {
 	}
 
 	public static WithDirectory getDemoRepo() {
-		return new org.appdapter.core.matdat.GoogSheetRepoSpec(BMC_SHEET_KEY, BMC_NAMESPACE_SHEET_NUM, BMC_DIRECTORY_SHEET_NUM).makeRepo();
+		return new GoogSheetRepoSpec(BMC_SHEET_KEY, BMC_NAMESPACE_SHEET_NUM, BMC_DIRECTORY_SHEET_NUM).makeRepo();
 	}
 
 	static UISettings defaultSettings = new UISettings();

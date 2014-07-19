@@ -25,11 +25,11 @@ import com.hp.hpl.jena.query.Dataset;
 
 public class RepoQueryFuncs_TxAware {
 	public static <RetType> RetType execReadTransCompatible(Repo r, RetType onFailure, JenaArqQueryFuncs_TxAware.Oper<RetType> oper) {
-		Dataset dset = r.getMainQueryDataset();
+		Dataset dset = (r != null) ? (r.getMainQueryDataset()) : null;
 		return JenaArqQueryFuncs_TxAware.execReadTransCompatible(dset, onFailure, oper);
 	}
 	public static <RetType> RetType execWriteTransCompatible(Repo r, RetType onFailure, JenaArqQueryFuncs_TxAware.Oper<RetType> oper) {
-		Dataset dset = r.getMainQueryDataset();
+		Dataset dset = (r != null) ? (r.getMainQueryDataset()) : null;
 		return JenaArqQueryFuncs_TxAware.execWriteTransCompatible(dset, onFailure, oper);
 	}
 	

@@ -50,6 +50,15 @@ public class JenaArqQueryFuncs_TxAware {
 	public static interface Oper<RT> {
 		public	RT	perform();
 	}
+	/**
+	 * 
+	 * @param <RetType>
+	 * @param ds - dataset supporting transactions
+	 * @param privs
+	 * @param onFailure
+	 * @param oper
+	 * @return 
+	 */
 	public static <RetType> RetType execBracketedTrans(Dataset ds, ReadWrite privs, RetType onFailure, Oper<RetType> oper) {
 		RetType result = onFailure;
 		try {
@@ -73,7 +82,7 @@ public class JenaArqQueryFuncs_TxAware {
 	}
 	public static <RetType> RetType execTransCompatible(Dataset ds, ReadWrite privs, RetType onFailure, Oper<RetType> oper) {
 		RetType result = onFailure;
-		Boolean supportsTrans = ds.supportsTransactions();
+		Boolean supportsTrans = (ds != null) && ds.supportsTransactions();
 		Boolean alreadyInTrans = null;
 		if (supportsTrans) {
 			alreadyInTrans = ds.isInTransaction();
@@ -82,7 +91,7 @@ public class JenaArqQueryFuncs_TxAware {
 			theLogger.debug("Bracketing for TRANSACTIONAL {} on dataset {}", privs, ds);
 			result = execBracketedTrans(ds, privs, onFailure, oper);
 		} else {
-			theLogger.debug("Performing UN-bracketed {} on dataset {}, supportsTrans={}, alreadyInTrans={}", privs, ds,
+			theLogger.debug("Performing UN-bracketed {} on dataset {} (where null implies 'remote' implies nontrans), supportsTrans={}, alreadyInTrans={}", privs, ds,
 					supportsTrans, alreadyInTrans);
 			try {
 				result = oper.perform();
