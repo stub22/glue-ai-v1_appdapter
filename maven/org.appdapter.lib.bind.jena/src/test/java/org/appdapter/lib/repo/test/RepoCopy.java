@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.appdapter.bind.log4j.Log4jFuncs;
-import org.appdapter.core.repo.URLRepoSpec;
+import org.appdapter.fancy.rspec.URLRepoSpec;
 import org.appdapter.core.store.Repo;
 import org.appdapter.core.store.RepoOper;
 

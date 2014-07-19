@@ -34,7 +34,7 @@ import org.appdapter.core.jvm.GetObject;
 import org.appdapter.core.debug.UIAnnotations.UISalient;
 import org.appdapter.core.debug.UIAnnotations.UtilClass;
 import org.appdapter.core.convert.ToFromKeyConverter;
-import org.appdapter.core.repo.DirectRepo;
+import org.appdapter.fancy.repo.DirectRepo;
 import org.appdapter.core.name.Ident;
 import org.appdapter.core.store.Repo;
 import org.appdapter.core.store.dataset.RepoDatasetFactory;
@@ -42,18 +42,18 @@ import org.appdapter.gui.browse.Utility;
 import org.appdapter.gui.editors.ObjectPanel;
 import org.appdapter.gui.swing.CantankerousJob;
 import org.appdapter.gui.swing.ScreenBoxPanel;
-import org.appdapter.gui.table.GenericBeansPanel;
+// import org.appdapter.gui.table.GenericBeansPanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.hp.hpl.jena.graph.Graph;
+// import com.hp.hpl.jena.graph.Graph;
 //package org.protege.owl.jena;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.query.DatasetFactory;
 import com.hp.hpl.jena.rdf.listeners.StatementListener;
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.RDFNode;
+// import com.hp.hpl.jena.rdf.model.ModelFactory;
+// import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Statement;
 
 public class RepoOntologyPanel extends ScreenBoxPanel<MutableRepoBox> implements Customizer, UtilClass, ObjectPanel {
