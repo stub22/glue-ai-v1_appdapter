@@ -16,6 +16,7 @@
 
 package org.appdapter.core.store;
 
+import org.appdapter.core.query.BasicQueryProcessorImpl;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;

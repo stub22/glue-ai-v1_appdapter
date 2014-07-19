@@ -15,7 +15,7 @@
  */
 package org.appdapter.core.store.dataset;
 
-import org.appdapter.core.store.StatementSync;
+import org.appdapter.core.model.StatementSync;
 
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Model;

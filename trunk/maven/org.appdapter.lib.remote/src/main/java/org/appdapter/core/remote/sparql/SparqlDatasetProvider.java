@@ -20,7 +20,7 @@ import java.util.UUID;
 import org.apache.jena.atlas.data.ThresholdPolicy;
 import org.appdapter.core.log.Debuggable;
 import org.appdapter.core.store.RepoOper;
-import org.appdapter.core.store.StatementSync;
+import org.appdapter.core.model.StatementSync;
 import org.appdapter.core.store.dataset.JenaSDBWrappedDatasetFactory;
 import org.appdapter.core.store.dataset.RepoDatasetFactory;
 import org.appdapter.core.store.dataset.UserDatasetFactory;

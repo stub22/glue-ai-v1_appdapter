@@ -15,6 +15,7 @@
  */
 package org.appdapter.core.store;
 
+import org.appdapter.core.model.RDFSortedWriter;
 import org.appdapter.core.loader.ExtendedFileStreamUtils;
 import java.io.File;
 import java.io.FileWriter;

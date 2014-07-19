@@ -15,6 +15,8 @@
  */
 package org.appdapter.core.store;
 
+import org.appdapter.core.model.RdfNodeTranslator;
+import org.appdapter.core.query.InitialBinding;
 import org.appdapter.bind.rdf.jena.query.QueryProcessor;
 import org.appdapter.core.share.ShareSpec;
 import java.lang.reflect.InvocationTargetException;
@@ -30,7 +32,7 @@ import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.query.QuerySolution;
 
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.sdb.Store;
+
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -79,15 +81,7 @@ public interface Repo extends QueryProcessor {
 			return statementCount;
 		}
 	}
-	public static interface Stored extends Repo {
 
-		public Store getStore();
-
-		// public void setStore(Store store);
-
-		// public void mountStoreUsingFileConfig(String storeConfigPath);
-
-	}
 	// for loading operations does not claim persistence
 	public static interface Updatable extends Repo {
 
@@ -109,14 +103,14 @@ public interface Repo extends QueryProcessor {
 		public void formatRepoIfNeeded();
 	}
 
-	public static interface WithFallbackModelClient extends Repo, ModelClient {
-		public ModelClient getFallbackModelClient();
+	public static interface WithFallbackRdfNodeTranslator extends Repo, RdfNodeTranslator {
+		public RdfNodeTranslator getFallbackRdfNodeTranslator();
 	}
 
-	public static interface WithDirectory extends WithFallbackModelClient, Updatable {
+	public static interface WithDirectory extends WithFallbackRdfNodeTranslator, Updatable {
 		public Model getDirectoryModel();
 
-		public ModelClient getDirectoryModelClient();
+		public RdfNodeTranslator getDefaultRdfNodeTranslator();
 
 		public InitialBinding makeInitialBinding();
 
