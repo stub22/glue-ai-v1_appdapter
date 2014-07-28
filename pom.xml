@@ -129,12 +129,6 @@ Version-less parent will be allowed in Maven 3.1.
 			<url>http://repository.springsource.com/maven/bundles/external</url>
 		</repository>
 
-		<repository>
-			<id>scala-tools.org</id>
-			<name>Scala-tools Maven2 Repository</name>
-			<url>http://scala-tools.org/repo-releases</url>
-		</repository>
-
 		<!-- Needed during staging tests -->
 		<repository>
 			<id>sonatype-staging</id>
@@ -142,15 +136,12 @@ Version-less parent will be allowed in Maven 3.1.
 			<url>https://oss.sonatype.org/content/groups/staging/</url>
 		</repository>
 	</repositories>
+<!--  Scala Tools are now in MavenCentral.
 
 	<pluginRepositories>
-		<pluginRepository>
-			<id>scala-tools.org</id>
-			<name>Scala-tools Maven2 Repository</name>
-			<url>http://scala-tools.org/repo-releases</url>
-		</pluginRepository>
-	</pluginRepositories>
 
+	</pluginRepositories>
+-->
 	
 	<build>
 
