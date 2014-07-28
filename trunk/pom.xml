@@ -99,6 +99,10 @@ Version-less parent will be allowed in Maven 3.1.
 		</repository>
 		-->
 		<repository>
+			<id>maven-central</id>
+			<url>http://repo.maven.apache.org/maven2/</url>
+		</repository>
+		<repository>
 			<id>sonatype-public</id>
 			<name>sonatype public</name>
 			<url>https://oss.sonatype.org/content/groups/public/</url>
@@ -137,11 +141,15 @@ Version-less parent will be allowed in Maven 3.1.
 		</repository>
 	</repositories>
 <!--  Scala Tools are now in MavenCentral.
-
+-->
 	<pluginRepositories>
+		<pluginRepository>
+			<id>maven-central</id>
+			<url>http://repo.maven.apache.org/maven2/</url>
+		</pluginRepository>
 
 	</pluginRepositories>
--->
+
 	
 	<build>
 
