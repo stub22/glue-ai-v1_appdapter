@@ -98,20 +98,27 @@ Version-less parent will be allowed in Maven 3.1.
 				<url>https://maven.java.net/content/repositories/snapshots/</url>
 		</repository>
 		-->
+		<!-- 	Explicit reference to Maven central ... ensures it is always checked first (we think),
+				which prevents downloads of broken files from sonatype-public, in particular: 
+				scala-library-2.10.2.jar.
+		-->
 		<repository>
 			<id>maven-central</id>
 			<url>http://repo.maven.apache.org/maven2/</url>
 		</repository>
+		
 		<repository>
 			<id>sonatype-public</id>
 			<name>sonatype public</name>
 			<url>https://oss.sonatype.org/content/groups/public/</url>
 		</repository>
 
+		<!-- Snapshots are included in sonatype-public.
 		<repository>
 			<id>sonatype-snapshots</id>
 			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
 		</repository>
+		-->
 
 		<!-- com.sun.xml.parses:jaxp-ri:1.4.4 is available in ServiceMix' repo -->
 		<repository>
@@ -133,26 +140,23 @@ Version-less parent will be allowed in Maven 3.1.
 			<url>http://repository.springsource.com/maven/bundles/external</url>
 		</repository>
 
-		<!-- Needed during staging tests -->
+		<!-- Needed during staging tests, this repo should be (TODO!) used only when an appropriate profile is enabled. -->
 		<repository>
 			<id>sonatype-staging</id>
 			<name>sonatype staging</name>
 			<url>https://oss.sonatype.org/content/groups/staging/</url>
 		</repository>
 	</repositories>
-<!--  Scala Tools are now in MavenCentral.
--->
+
 	<pluginRepositories>
 		<pluginRepository>
 			<id>maven-central</id>
 			<url>http://repo.maven.apache.org/maven2/</url>
 		</pluginRepository>
-
 	</pluginRepositories>
 
 	
 	<build>
-
 		<directory>target</directory>
 		<extensions>
 			<extension>
