@@ -21,7 +21,6 @@
 		<dependency>
 			<groupId>org.apache.servicemix.bundles</groupId>
 			<artifactId>org.apache.servicemix.bundles.xerces</artifactId>
-			<version>2.11.0_1</version>
 			<!--  2013-10-28 updated from this old version, life seems better now: 		<version>2.9.1_5</version>
 			
 			We allow the xml-apis to come along with this dep.  It is handy at compile time,
@@ -33,14 +32,12 @@
 		<dependency>
 			<groupId>org.apache.servicemix.bundles</groupId>
 			<artifactId>org.apache.servicemix.bundles.xmlresolver</artifactId>
-			<version>1.2_3</version>
 			<scope>runtime</scope>
 		</dependency>	
 		<dependency>
 			<!-- Local SLF4J-Log4J binding used during bundle dev testing only -->
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.7.5</version>
 			<!-- Can be changed to "runtime" for a solo-launch test, but do not commit other than at "test",
 			because we do not want this binding to propagate out from this bundle. -->
 			<scope>test</scope>
@@ -61,7 +58,6 @@
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
-                <version>2.3.7</version>
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
@@ -80,8 +76,6 @@
                 <dependency>
                     <groupId>org.apache.felix</groupId>
                     <artifactId>org.apache.felix.main</artifactId>
-                    <version>4.2.1</version>
-                    <scope>provided</scope>
                 </dependency>
                 <!-- To include a shell:
                 <dependency>
@@ -96,7 +90,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-antrun-plugin</artifactId>
-                        <version>1.7</version>
                         <executions>
                             <execution>
                                 <id>compile</id>
@@ -132,7 +125,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-assembly-plugin</artifactId>
-                        <version>2.3</version>
                         <executions>
                             <execution>
                                 <id>create-executable-jar</id>
@@ -158,8 +150,6 @@
                 <dependency>
                     <groupId>org.apache.felix</groupId>
                     <artifactId>org.apache.felix.main</artifactId>
-                    <version>4.2.1</version>
-                    <scope>provided</scope>
                 </dependency>
                 <!-- org.apache.felix:org.apache.felix.gogo.shell:0.6.1 useless from Maven since stdin is swallowed -->
             </dependencies>
@@ -168,7 +158,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-antrun-plugin</artifactId>
-                        <version>1.7</version>
                         <configuration>
                             <target>
                                 <property name="vm.args" value="" />

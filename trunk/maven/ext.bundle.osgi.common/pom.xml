@@ -20,14 +20,10 @@
         <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.core</artifactId>
-			<!-- TODO:  Are we ready for 4.3? -->
-            <version>${osgi.core.version}</version>		
         </dependency>
         <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.compendium</artifactId>
-			<!-- TODO:  Are we ready for 4.3? -->
-            <version>${osgi.core.version}</version>
         </dependency>
 
 
@@ -39,7 +35,6 @@
 			-->
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
-			<version>1.6</version>
 			<scope>runtime</scope>
 		</dependency>		
 
@@ -50,17 +45,14 @@
 		<dependency>
 			<groupId>org.scala-lang</groupId>
 			<artifactId>scala-library</artifactId>
-			<version>2.10.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.scala-lang</groupId>
 			<artifactId>scala-reflect</artifactId>
-			<version>2.10.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.scala-lang</groupId>
 			<artifactId>scala-compiler</artifactId>
-			<version>2.10.2</version>
 		</dependency>
 		
 		<!-- BEGIN logging section.
@@ -74,13 +66,12 @@
 			-->
 			<groupId>commons-logging</groupId>
 			<artifactId>commons-logging</artifactId>
-			<version>1.1.3</version>
+			<!--version>1.1.3</version-->
 		</dependency>		
 				
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.7.5</version>
 		</dependency>
 		
 		<dependency>
@@ -97,14 +88,13 @@
 			-->			
 			<groupId>org.apache.log4j</groupId>
 			<artifactId>com.springsource.org.apache.log4j</artifactId>
-			<version>1.2.16</version>
+			<!--version>1.2.16</version-->
 			
 		</dependency>
 		<dependency>
 			<!-- Local SLF4J-Log4J binding used during bundle dev testing only -->
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.7.5</version>
 			<!-- 
 				To use the SLF4J-Log4J binding from any bundle, either
 					1) Depend on org.appdapter.bundle.core, which applies this dep at "runtime" scope.
@@ -138,7 +128,6 @@
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
-                <version>2.3.7</version>
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
@@ -162,8 +151,6 @@
                 <dependency>
                     <groupId>org.apache.felix</groupId>
                     <artifactId>org.apache.felix.main</artifactId>
-                    <version>4.2.1</version>
-                    <scope>provided</scope>
                 </dependency>
             </dependencies>
             <build>
@@ -171,7 +158,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-antrun-plugin</artifactId>
-                        <version>1.6</version>
                         <executions>
                             <execution>
                                 <id>compile</id>
@@ -207,7 +193,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-assembly-plugin</artifactId>
-                        <version>2.2</version>
                         <executions>
                             <execution>
                                 <id>create-executable-jar</id>
@@ -233,8 +218,6 @@
                 <dependency>
                     <groupId>org.apache.felix</groupId>
                     <artifactId>org.apache.felix.main</artifactId>
-                    <version>4.2.1</version>
-                    <scope>provided</scope>
                 </dependency>
             </dependencies>
             <build>
@@ -242,7 +225,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-antrun-plugin</artifactId>
-                        <version>1.6</version>
                         <configuration>
                             <target>
                                 <property name="vm.args" value="" />

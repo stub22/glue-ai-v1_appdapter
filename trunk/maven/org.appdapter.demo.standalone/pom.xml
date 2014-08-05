@@ -12,30 +12,6 @@
 	<packaging>jar</packaging>
 	<name>org.appdapter.demo.standalone - POJO - runnable</name>
 	<description>Wraps lib.core and adds a concrete SLF4J binding to Log4J.</description>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
-                <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-    <properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	</properties>
-	<repositories>
-		<repository>
-			<id>com.springsource.repository.bundles.external</id>
-			<name>Spring EBR External Release Repository</name>
-			<url>http://repository.springsource.com/maven/bundles/external</url>
-		</repository>		
-	</repositories>
 	
 	<dependencies>
 		<dependency>
@@ -44,17 +20,15 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<artifactId>com.springsource.org.apache.log4j</artifactId>
 			<groupId>org.apache.log4j</groupId>
+			<artifactId>com.springsource.org.apache.log4j</artifactId>
 			<type>jar</type>
-			<version>1.2.16</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<artifactId>slf4j-log4j12</artifactId>
 			<groupId>org.slf4j</groupId>
 			<type>jar</type>
-			<version>1.7.5</version>
 			<scope>runtime</scope>
 		    <exclusions>
 		        <exclusion>
@@ -67,7 +41,6 @@
 		<dependency>
 			<groupId>org.apache.servicemix.bundles</groupId>
 			<artifactId>org.apache.servicemix.bundles.junit</artifactId>
-			<version>4.7_3</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

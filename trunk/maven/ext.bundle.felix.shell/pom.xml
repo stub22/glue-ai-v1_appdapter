@@ -24,8 +24,6 @@
         <dependency>
             <artifactId>org.apache.felix.gogo.shell</artifactId>
             <groupId>org.apache.felix</groupId>
-			
-            <version>0.10.0</version>
 			<scope>runtime</scope>
             <exclusions>
                 <exclusion>
@@ -37,7 +35,6 @@
         <dependency>
             <artifactId>org.apache.felix.gogo.command</artifactId>
             <groupId>org.apache.felix</groupId>
-            <version>0.10.0</version>
 			<scope>runtime</scope>
             <exclusions>
                 <exclusion>
@@ -61,7 +58,6 @@
         <dependency>
             <artifactId>org.apache.felix.gogo.runtime</artifactId>
             <groupId>org.apache.felix</groupId>
-            <version>0.10.0</version>
 			<scope>runtime</scope>
             <exclusions>
                 <exclusion>
@@ -81,7 +77,6 @@
         <dependency>
             <artifactId>org.apache.felix.shell.remote</artifactId>
             <groupId>org.apache.felix</groupId>
-            <version>1.1.2</version>
 			<scope>runtime</scope>
             <exclusions>
                 <exclusion>
@@ -109,7 +104,6 @@
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
-                <version>2.3.7</version>
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
@@ -129,18 +123,14 @@
 				<dependency>
 					<groupId>org.apache.felix</groupId>
 					<artifactId>org.apache.felix.main</artifactId>
-					<version>4.2.1</version>
-					<scope>provided</scope>
 				</dependency>
 				<dependency>
 					<groupId>org.slf4j</groupId>
 					<artifactId>slf4j-api</artifactId>
-					<version>1.7.5</version>
 				</dependency>
 				<dependency>
 					<groupId>org.slf4j</groupId>
 					<artifactId>slf4j-log4j12</artifactId>
-					<version>1.7.5</version>
 				</dependency>
                 <!-- org.apache.felix:org.apache.felix.gogo.shell:0.6.1 useless from Maven since stdin is swallowed -->
 			</dependencies>
@@ -149,7 +139,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-antrun-plugin</artifactId>
-                        <version>1.6</version>
                         <configuration>
                             <target>
                                 <property name="vm.args" value="" />
