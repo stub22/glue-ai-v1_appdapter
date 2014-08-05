@@ -17,25 +17,21 @@
 		<dependency>
 			<groupId>org.apache.felix</groupId>
 			<artifactId>org.osgi.core</artifactId>
-			<version>1.4.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.7.5</version>
 			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.servicemix.bundles</groupId>
 			<artifactId>org.apache.servicemix.bundles.javax-inject</artifactId>
-			<version>1_2</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.avro</groupId>
 			<artifactId>avro</artifactId>
-			<version>${avro.version}</version>
 			<scope>provided</scope>
 			<exclusions>
 				<exclusion>
@@ -55,7 +51,6 @@
 		<dependency>
 			<groupId>org.apache.avro</groupId>
 			<artifactId>avro-ipc</artifactId>
-			<version>${avro.version}</version>
 			<scope>provided</scope>
 			<exclusions>
 				<exclusion>
@@ -65,61 +60,52 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-			<artifactId>paranamer</artifactId>
 			<groupId>com.thoughtworks.paranamer</groupId>
+			<artifactId>paranamer</artifactId>
 			<type>jar</type>
-			<version>2.3</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<artifactId>snappy-java</artifactId>
 			<groupId>org.xerial.snappy</groupId>
+			<artifactId>snappy-java</artifactId>
 			<type>jar</type>
-			<version>1.0.1-rc3</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<artifactId>jetty</artifactId>
 			<groupId>org.mortbay.jetty</groupId>
+			<artifactId>jetty</artifactId>
 			<type>jar</type>
-			<version>6.1.26</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
-			<artifactId>jetty-util</artifactId>
 			<groupId>org.mortbay.jetty</groupId>
+			<artifactId>jetty-util</artifactId>
 			<type>jar</type>
-			<version>6.1.26</version>
 			<scope>runtime</scope>
 		</dependency>
 	  <dependency>
 		  <groupId>io.netty</groupId>
 		  <artifactId>netty</artifactId>
-		  <version>3.4.0.Final</version>
 		  <scope>runtime</scope>
 	  </dependency>            
 		<dependency>
-			<artifactId>netty</artifactId>
 			<groupId>org.jboss.netty</groupId>
-			<version>3.2.7.Final</version>
+			<artifactId>netty</artifactId>			
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
-			<artifactId>velocity</artifactId>
 			<groupId>org.apache.velocity</groupId>
+			<artifactId>velocity</artifactId>
 			<type>jar</type>
-			<version>1.7</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
-			<artifactId>jackson-mapper-asl</artifactId>
 			<groupId>org.codehaus.jackson</groupId>
-			<version>1.8.8</version>
+			<artifactId>jackson-mapper-asl</artifactId>
 		</dependency>
 		<dependency>
-			<artifactId>jackson-core-asl</artifactId>
 			<groupId>org.codehaus.jackson</groupId>
-			<version>1.8.8</version>
+			<artifactId>jackson-core-asl</artifactId>
 		</dependency>
 	</dependencies>
 
@@ -128,7 +114,6 @@
 			<plugin>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
-				<version>2.3.7</version>
 				<extensions>true</extensions>
 				<configuration>
 					<instructions>
@@ -140,7 +125,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.3.2</version><!--$NO-MVN-MAN-VER$-->
+				<!--version>2.3.2</version--><!--$NO-MVN-MAN-VER$-->
 			</plugin>
 		</plugins>
 	</build>

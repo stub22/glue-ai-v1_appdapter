@@ -29,7 +29,8 @@
 		<module>../ext.bundle.jetty_osgi</module>
 	</modules>
 	
-	<repositories>
+	<!-- Moved to parent pom.xml as part of refactoring -->
+	<!--repositories>
 
 		<repository>
 			<id>org.apache.respository-SNAPSHOTS</id>
@@ -44,7 +45,7 @@
 			<url>http://repository.springsource.com/maven/bundles/external</url>
 		</repository>
 	
-	</repositories>	
+	</repositories-->	
 
 </project>
 <!--
