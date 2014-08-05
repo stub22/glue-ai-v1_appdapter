@@ -11,9 +11,9 @@
 	<properties>
 		<jena.version>2.10.1</jena.version>
 		<jena-sdb.version>1.3.6</jena-sdb.version>
-		<jena-tdb.version>0.10.1</jena-tdb.version>
+		<!--jena-tdb.version>0.10.1</jena-tdb.version>
 		<jena-iri.version>0.9.6</jena-iri.version>
-		<jena-fuseki.version>0.2.7</jena-fuseki.version>
+		<jena-fuseki.version>0.2.7</jena-fuseki.version-->
 		<!--	LogicMoo was experimenting with plugging Sesame in here as well, but we decided it is too bulky and 
 				deserves its own wrappers if we are going to use it.
 		<sesame.version>2.7.4</sesame.version>
@@ -28,10 +28,10 @@
 	<name>${project.artifactId} - OSGi - Jena wrapper</name>
 	<description>Jena ${jena.version}, ARQ + SDB ${jena-sdb.version}</description>
 
-	<repositories>
-		<repository>
+	<!--repositories>
+		<repository-->
 			<!-- Which deps do we still need this for? -->
-			<id>apache-repo-snapshots</id>
+			<!--id>apache-repo-snapshots</id>
 			<url>https://repository.apache.org/content/repositories/snapshots/</url>
 			<releases>
 				<enabled>true</enabled>
@@ -40,7 +40,7 @@
 				<enabled>true</enabled>
 			</snapshots>
 		</repository>
-	</repositories>
+	</repositories-->
 	
 	<dependencies>
 		<dependency>
@@ -64,7 +64,6 @@
 			<groupId>org.apache.jena</groupId>
 			<artifactId>apache-jena-libs</artifactId>
 			<type>pom</type>
-			<version>${jena.version}</version>
 			<!-- We use "provided" scope because we are exporting the contents of these libraries, and we don't want our
 				bundle consumers to see and be confused by these additional copies of the classes, as transitive
 				dependencies.  "provided" prevents that from happening.
@@ -116,7 +115,6 @@
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-core</artifactId>
-			<version>${jena.version}</version>
 			<scope>provided</scope>
 			<exclusions>
 				<exclusion>
@@ -141,7 +139,6 @@
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-tdb</artifactId>
-			<version>${jena-tdb.version}</version>
 			<scope>provided</scope>
 			<exclusions>
 				<!-- We want the OSGi-friendly version -->
@@ -171,7 +168,6 @@
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-iri</artifactId>
-			<version>${jena-iri.version}</version>
 			<scope>provided</scope>
 			<exclusions>
 				<exclusion>
@@ -198,7 +194,6 @@
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-sdb</artifactId>
 			<type>jar</type>
-			<version>${jena-sdb.version}</version>
 			<scope>provided</scope>
 			<exclusions>
 				<!-- Exclude bindings that we provide elsewhere in more OSGi-friendly form -->
@@ -245,13 +240,11 @@
 		<dependency>
 			<groupId>com.ibm.icu</groupId>
 			<artifactId>com.springsource.com.ibm.icu</artifactId>
-			<version>3.4.5</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.servicemix.bundles</groupId>
 			<artifactId>org.apache.servicemix.bundles.lucene</artifactId>
-			<version>3.0.3_2</version>
 			<scope>runtime</scope>
 		</dependency>
 
@@ -259,13 +252,11 @@
 		<dependency>
 			<groupId>org.apache.servicemix.bundles</groupId>
 			<artifactId>org.apache.servicemix.bundles.javax.mail</artifactId>
-			<version>1.4.1_4</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.servicemix.specs</groupId>
 			<artifactId>org.apache.servicemix.specs.activation-api-1.1</artifactId>
-			<version>1.8.0</version>
 			<scope>runtime</scope>
 		</dependency>		
 		
@@ -282,7 +273,6 @@
 			<!-- Local SLF4J-Log4J binding used during bundle dev testing only -->
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.7.5</version>
 			<!-- Can be changed to "runtime" for a solo-launch test, but do not commit other than at "test"
 			- we do not want this binding to propagate from here. -->
 			<scope>test</scope>
@@ -304,7 +294,6 @@
 			<plugin>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
-				<version>2.3.7</version>
 				<extensions>true</extensions>
 				<configuration>
 					<instructions>
