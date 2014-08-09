@@ -49,7 +49,9 @@ trait LocalGraphAbsorber extends DsaccGraphAbsorber with LocalGraphPortal
 	lazy val myDacc : DatasetAccessor = DatasetAccessorFactory.create(myDataset)
 	override def getDatasetAccessor = myDacc
 } */
-trait RemoteGraphAbsorber extends DsaccGraphAbsorber with RemoteGraphPortal 
+trait RemoteGraphAbsorber extends DsaccGraphAbsorber with RemoteGraphPortal {
+	
+}
 /*{
 	lazy val myDacc : DatasetAccessor = DatasetAccessorFactory.createHTTP(myServiceURL);
 	override def getDatasetAccessor = myDacc

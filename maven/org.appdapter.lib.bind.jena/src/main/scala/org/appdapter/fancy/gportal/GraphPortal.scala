@@ -37,6 +37,9 @@ trait GraphPortal {
 	def getPortalLogger : Logger 
 	def getVarargsLogger : VarargsLogging
 	
+	/**
+	 * Default impl is not actually transaction aware, so it will work with a remote dataset.
+	 */
 	def  execReadTransCompatible[RetType](oper : Oper[RetType], onFailure : RetType) : RetType = {
 		var result : RetType = onFailure
 		try {
@@ -48,6 +51,9 @@ trait GraphPortal {
 		}			
 		result;
 	}
+	/**
+	 * Default impl is not actually transaction aware, so it will work with a remote dataset.
+	 */
 	def  execWriteTransCompatible[RetType](oper : Oper[RetType], onFailure : RetType) : RetType = {
 		var result : RetType = onFailure
 		try {
@@ -71,7 +77,7 @@ trait  DsaccGraphPortal extends GraphPortal {
 }
 
 trait LocalGraphPortal extends DsaccGraphPortal {
-	protected def getLocalDataset : Dataset = null
+	protected def getLocalDataset : Dataset
 	lazy val myDacc : DatasetAccessor = DatasetAccessorFactory.create(getLocalDataset)
 	override def getDatasetAccessor = myDacc
 	
@@ -88,9 +94,12 @@ trait LocalGraphPortal extends DsaccGraphPortal {
 }
 
 trait RemoteGraphPortal extends DsaccGraphPortal {
-	protected def getRemoteServiceURL : String = null
-	lazy val myDacc : DatasetAccessor = DatasetAccessorFactory.createHTTP(getRemoteServiceURL);
+	protected def getRemoteDataServiceURL : String
+	lazy val myDacc : DatasetAccessor = DatasetAccessorFactory.createHTTP(getRemoteDataServiceURL);
 	override def getDatasetAccessor = myDacc
+	
+	protected def getRemoteQueryServiceURL : String
+	protected def getRemoteUpdateServiceURL : String
 }
 
 trait DelegatingPortal extends GraphPortal {
@@ -110,14 +119,23 @@ class LazyLocalDelegatingPortal(val myDataset : Dataset) extends LoggingPortal w
 	override def getAbsorber : GraphAbsorber = myAbsorber
 	override def getSupplier : GraphSupplier = mySupplier
 }
-class LazyRemoteDelegatingPortal(val myRemoteSvcURL : String) extends LoggingPortal with RemoteGraphPortal with DelegatingPortal   {
+class LazyRemoteDelegatingPortal(protected val myDefaultRemoteDataSvcURL : String, protected val myDefaultRemoteQuerySvcURL : String,
+			protected val myDefaultRemoteUpdateSvcURL : String) extends LoggingPortal with RemoteGraphPortal with DelegatingPortal   {
 	// override protected def getLocalDataset : Dataset = myDataset
-	override protected def getRemoteServiceURL : String = myRemoteSvcURL
+	override protected def getRemoteDataServiceURL : String = myDefaultRemoteDataSvcURL
+	override protected def getRemoteQueryServiceURL : String = myDefaultRemoteQuerySvcURL
+	override protected def getRemoteUpdateServiceURL : String = myDefaultRemoteUpdateSvcURL
+	
 	lazy val myAbsorber = new LoggingPortal with RemoteGraphAbsorber {
-		override protected def getRemoteServiceURL : String = myRemoteSvcURL
+		override protected def getRemoteDataServiceURL : String = LazyRemoteDelegatingPortal.this.getRemoteDataServiceURL
+		override protected def getRemoteUpdateServiceURL : String = LazyRemoteDelegatingPortal.this.myDefaultRemoteUpdateSvcURL
+		override protected def getRemoteQueryServiceURL : String = { throw new Exception ("Absorber does not support Query")}
 	}
+	
 	lazy val mySupplier = new LoggingPortal with RemoteGraphSupplier {
-		override protected def getRemoteServiceURL : String = myRemoteSvcURL
+		override protected def getRemoteDataServiceURL : String = LazyRemoteDelegatingPortal.this.getRemoteDataServiceURL
+		override protected def getRemoteQueryServiceURL : String = LazyRemoteDelegatingPortal.this.myDefaultRemoteQuerySvcURL
+		override protected def getRemoteUpdateServiceURL : String = { throw new Exception ("Supplier does not support Update")}
 	}
 	override def getAbsorber : GraphAbsorber = myAbsorber
 	override def getSupplier : GraphSupplier = mySupplier	
