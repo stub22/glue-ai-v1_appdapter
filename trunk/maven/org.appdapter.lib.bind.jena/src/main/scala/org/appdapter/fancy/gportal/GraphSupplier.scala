@@ -99,6 +99,18 @@ trait LocalGraphSupplier // (private val myDataset : Dataset)
 }
 
 trait RemoteGraphSupplier extends DsaccGraphSupplier with RemoteGraphPortal {
-	// TODO:  Come up with a decent impl of fetchStats_Naive.   DatasetAccessor interface does not directly support 
-	// "list named graphs", but we can use a SPARQL query.
+	
+	val myGraphNameQueryText = "SELECT DISTINCT ?g WHERE { GRAPH ?g  {?s ?p ?o}}";
+	
+	override protected def fetchStats_Naive() : List[SuppliedGraphStat] = {
+		val vl : VarargsLogging = getVarargsLogger
+		var numModels : Int = 0
+		var stats : List[SuppliedGraphStat] = Nil
+		
+		val remoteQueryURL = getRemoteQueryServiceURL
+		
+		//  DatasetAccessor interface does not directly support "list named graphs", so instead we use a SPARQL query.
+		vl.debug1("Found {} models in total", numModels : java.lang.Integer)
+		stats		
+	}
 }
