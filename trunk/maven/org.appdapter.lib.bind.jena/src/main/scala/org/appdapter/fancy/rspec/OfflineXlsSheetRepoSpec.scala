@@ -19,7 +19,7 @@ import org.appdapter.fancy.loader.{XLSXSheetRepoLoader}
 
 class OfflineXlsSheetRepoSpec(sheetLocation: String, namespaceSheet: String, dirSheet: String,
   fileModelCLs: java.util.List[ClassLoader] = null) extends RepoSpecForDirectory {
-  override def getDirectoryModel = XLSXSheetRepoLoader.readDirectoryModelFromXLSX(sheetLocation, namespaceSheet, dirSheet, fileModelCLs: java.util.List[ClassLoader])
+  override protected def makeDirectoryModel = XLSXSheetRepoLoader.readDirectoryModelFromXLSX(sheetLocation, namespaceSheet, dirSheet, fileModelCLs: java.util.List[ClassLoader])
   //override def makeRepo(): GoogSheetRepo = XLSXSheetRepoLoader.loadXLSXSheetRepo(sheetLocation, namespaceSheet, dirSheet, fileModelCLs, this)
   override def toString: String = "xlsx:/" + sheetLocation + "/" + namespaceSheet + "/" + dirSheet
 }

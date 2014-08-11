@@ -47,7 +47,7 @@ object GoogSheetRepoLoader extends BasicDebugger {
   /// Make a Repo.WithDirectory from a Spec
   /////////////////////////////////////////
   def makeGoogSheetRepo(sheetLocation: String, namespaceSheetName: Int, dirSheetName: Int,
-    fileModelCLs: java.util.List[ClassLoader], repoSpec: RepoSpec): DirectRepo = {
+			fileModelCLs: java.util.List[ClassLoader], repoSpec: RepoSpec): DirectRepo = {
     // Read the namespaces and directory sheets into a single directory model.
     val dirModel: Model = readModelFromGoog(sheetLocation, namespaceSheetName, dirSheetName)
     FancyRepoLoader.makeRepoWithDirectory(repoSpec, dirModel);

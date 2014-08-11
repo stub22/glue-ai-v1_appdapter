@@ -14,8 +14,6 @@
  *  limitations under the License.
  */
 
-
-
 package org.appdapter.fancy.rspec
 
 import java.util.HashMap
@@ -30,9 +28,7 @@ import org.appdapter.fancy.repo.{ FancyRepo }
 import com.hp.hpl.jena.rdf.model.Model
 import org.appdapter.core.log.BasicDebugger
 
-/**
- * 
- */
+
 abstract class RepoClientSpec extends BasicDebugger {
 /**
  * Provide the name of a graph that can supply us with the text of queries to use, in the form of a
@@ -57,24 +53,66 @@ abstract class LocalRepoClientSpec extends RepoClientSpec {
   }	
 }
 
+/**
+ * Could be either the Repo itself or the Dir-model that is found/created first.
+ */
 abstract class RepoSpec extends LocalRepoClientSpec {
 
-  def makeRepo(): Repo.WithDirectory;
+	/**
+	 * This might call getOrMakeDirectoryModel.
+	 */
+  protected def makeRepo(): Repo.WithDirectory;
 
-/* FIXME: The semantics here are bad - "getting" a directory model leads to "making" a repo first? */
-	
-  def getDirectoryModel(): Model = {
-    makeRepo.getDirectoryModel();
-  }
-
+  def getOrMakeRepo() : Repo.WithDirectory = makeRepo()
+  
+	/**
+	 * This might call getOrMakeRepo.
+	 */
+  protected def makeDirectoryModel(): Model 
+  
+  def getOrMakeDirectoryModel(): Model = makeDirectoryModel() 
 }
 
+/**
+ *  In the case of RepoSpecForDirectory, assume that a dir-model will be found first,
+ *  and we will build the repo around it.
+ */
 abstract class RepoSpecForDirectory extends RepoSpec {
-  override def makeRepo: FancyRepo = {
-    FancyRepoLoader.makeRepoWithDirectory(this, getDirectoryModel(), null);
+  override protected def makeRepo: FancyRepo = {
+    FancyRepoLoader.makeRepoWithDirectory(this, getOrMakeDirectoryModel(), null);
   }
-  def getDirectoryModel(): Model;
+   override def getOrMakeRepo: FancyRepo =  makeRepo
+  
 }
+/**
+ grep -rin    --include=*.{java,scala,xml,ttl,owl,html} --exclude="*\.svn*" --exclude-dir=target RepoSpecForDir appda
+pter_trunk/maven/ cogchar_trunk/maven/ friendularity_trunk/maven/ 
 
+appdapter_trunk/maven/org.appdapter.lib.bind.jena/src/main/scala/org/appdapter/fancy/rspec/CSVFileRepoSpec.scala:35:  fi
+leModelCLs: java.util.List[ClassLoader] = null) extends RepoSpecForDirectory {
+
+appdapter_trunk/maven/org.appdapter.lib.bind.jena/src/main/scala/org/appdapter/fancy/rspec/GoogSheetRepoSpec.scala:21://
+ import org.appdapter.fancy.rspec.{RepoSpec, RepoSpecForDirectory}
+ 
+appdapter_trunk/maven/org.appdapter.lib.bind.jena/src/main/scala/org/appdapter/fancy/rspec/GoogSheetRepoSpec.scala:37:
+fileModelCLs: java.util.List[ClassLoader]) extends RepoSpecForDirectory {
+
+appdapter_trunk/maven/org.appdapter.lib.bind.jena/src/main/scala/org/appdapter/fancy/rspec/GoogSheetRepoSpec.scala:43:
+fileModelCLs: java.util.List[ClassLoader]) extends RepoSpecForDirectory {
+
+appdapter_trunk/maven/org.appdapter.lib.bind.jena/src/main/scala/org/appdapter/fancy/rspec/MultiRepoSpec.scala:27:  exte
+nds RepoSpecForDirectory {
+
+appdapter_trunk/maven/org.appdapter.lib.bind.jena/src/main/scala/org/appdapter/fancy/rspec/OfflineXlsSheetRepoSpec.scala
+:21:  fileModelCLs: java.util.List[ClassLoader] = null) extends RepoSpecForDirectory {
+
+appdapter_trunk/maven/org.appdapter.lib.bind.jena/src/main/scala/org/appdapter/fancy/rspec/RepoSpec.scala:72:abstract cl
+ass RepoSpecForDirectory extends RepoSpec {
+
+appdapter_trunk/maven/org.appdapter.lib.bind.jena/src/main/scala/org/appdapter/fancy/rspec/UrlDirModelRepoSpec.scala:73:
+class URLDirModelRepoSpec(dirModelURL: String, fileModelCLs: java.util.List[ClassLoader]) extends RepoSpecForDirectory {
+
+
+ */
 
 

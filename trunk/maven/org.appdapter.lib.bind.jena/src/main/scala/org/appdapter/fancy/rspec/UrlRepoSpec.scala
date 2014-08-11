@@ -34,8 +34,8 @@ object URLRepoSpec {
 /**
  * Takes a directory model and uses Goog, Xlsx, Pipeline,CSV,.ttl,rdf sources and loads them
  */
-class URLRepoSpec(var dirModelURL: String, var fileModelCLs: java.util.List[ClassLoader] = null)
-  extends RepoSpec {
+class URLRepoSpec(val dirModelURL: String, val fileModelCLs: java.util.List[ClassLoader] = null)
+			extends RepoSpec {
 
   def trimString(str: String, outers: String*): String = {
     var tmp = str;
@@ -50,7 +50,8 @@ class URLRepoSpec(var dirModelURL: String, var fileModelCLs: java.util.List[Clas
     }
     tmp
   }
-  def detectedRepoSpec: RepoSpec = {
+  lazy val myDetectedRepoSpec = detectRepoSpec
+  private def detectRepoSpec: RepoSpec = {
     import scala.collection.JavaConversions._
     var orig = dirModelURL.trim();
     var multis: Array[String] = orig.split(",");
@@ -69,16 +70,16 @@ class URLRepoSpec(var dirModelURL: String, var fileModelCLs: java.util.List[Clas
     } else if (proto.equals("xlsx")) {
       (new OfflineXlsSheetRepoSpec(v3(0), v3(1), v3(3), fileModelCLs))
     } else if (proto.equals("scan")) {
-      (new ScanURLDirModelRepoSpec(v3(0), fileModelCLs))
+      (new FolderScanRepoSpec(v3(0), fileModelCLs))
     } else if (proto.equals("mult")) {
       (new MultiRepoSpec(path, fileModelCLs))
     } else {
-      val dirModelLoaders: java.util.List[InstallableSpecReader] = FancyRepoLoader.getSpecLoaders
-      val dirModelLoaderIter = dirModelLoaders.listIterator
-      while (dirModelLoaderIter.hasNext()) {
-        val irr = dirModelLoaderIter.next
+      val dirModelRSPecReaders: java.util.List[RepoSpecReader] = FancyRepoLoader.getRSpecReaders
+      val dirModelRSRIter = dirModelRSPecReaders.listIterator
+      while (dirModelRSRIter.hasNext()) {
+        val irr : RepoSpecReader = dirModelRSRIter.next
         try {
-          val ext = irr.getExt;
+          val ext : String = irr.getExt;
           if (ext != null && ext.equalsIgnoreCase(proto)) {
             val spec = Some(irr.makeRepoSpec(path, v3, fileModelCLs))
             if (!spec.isEmpty) return spec.get;
@@ -92,7 +93,7 @@ class URLRepoSpec(var dirModelURL: String, var fileModelCLs: java.util.List[Clas
       new URLDirModelRepoSpec(dirModelURL, fileModelCLs)
     }
   }
-  override def getDirectoryModel(): Model = detectedRepoSpec.getDirectoryModel
-  override def makeRepo(): Repo.WithDirectory = detectedRepoSpec.makeRepo
+  override protected def makeDirectoryModel(): Model = myDetectedRepoSpec.getOrMakeDirectoryModel
+  override protected def makeRepo(): Repo.WithDirectory = myDetectedRepoSpec.getOrMakeRepo
   override def toString = dirModelURL
 }

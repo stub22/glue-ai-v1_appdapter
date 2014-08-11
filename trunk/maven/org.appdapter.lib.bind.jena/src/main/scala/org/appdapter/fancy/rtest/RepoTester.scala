@@ -22,7 +22,7 @@ import org.appdapter.core.query.{ InitialBinding }
 import org.appdapter.core.store.{ Repo }
 import com.hp.hpl.jena.query.QuerySolution
 import com.hp.hpl.jena.rdf.model.Model
-import org.appdapter.fancy.loader.{DatabaseRepo_BROKER, DatabaseRepoLoader, XLSXSheetRepoLoader}
+import org.appdapter.fancy.loader.{SdbSqlRepo_BROKER, SdbSqlRepoLoader, XLSXSheetRepoLoader}
 // import org.appdapter.core.repo.DatabaseRepoLoader
 import org.appdapter.fancy.repo.{DirectRepo, FancyRepo}
 import org.appdapter.fancy.rspec.{OfflineXlsSheetRepoSpec, OnlineSheetRepoSpec }

@@ -149,7 +149,7 @@ object CsvFileSheetLoader extends BasicDebugger {
   private def loadTestCsvFileSheetRepo(): FancyRepo = {
     val clList: java.util.ArrayList[ClassLoader] = null;
     val spec = new CSVFileRepoSpec(dirSheetPath, nsSheetPath, clList)
-    val sr = spec.makeRepo
+    val sr = spec.getOrMakeRepo
     sr.getMainQueryDataset()
     // sr.loadDerivedModelsIntoMainDataset(clList)
     sr

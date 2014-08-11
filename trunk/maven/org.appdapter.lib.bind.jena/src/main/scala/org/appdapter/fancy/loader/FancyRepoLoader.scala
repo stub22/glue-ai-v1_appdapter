@@ -20,7 +20,8 @@ import java.util.{ArrayList, Date}
 
 import org.appdapter.bind.rdf.jena.model.JenaFileManagerUtils
 import org.appdapter.core.log.BasicDebugger
-import org.appdapter.fancy.rspec.{RepoSpec, InstallableSpecReader}
+import org.appdapter.fancy.rspec.{RepoSpec, RepoSpecReader, RSpecReader_UrlDir_Dir, RSpecReader_UrlDir_Turtle,
+			RSpecReader_FolderScan_Dir, RSpecReader_FolderScan_Turtle}
 import org.appdapter.core.name.Ident
 import org.appdapter.core.store.{Repo, RepoOper}
 import org.appdapter.core.query.{InitialBinding}
@@ -41,7 +42,7 @@ object FancyRepoLoader extends BasicDebugger {
   }
 
   var initedOnce = false;
-  val specLoaders: java.util.List[InstallableSpecReader] = new java.util.ArrayList
+  val myRSpecReaders: java.util.List[RepoSpecReader] = new java.util.ArrayList
   val dirModelLoaders: java.util.List[InstallableRepoLoader] = new java.util.ArrayList
   def getDirModelLoaders(): java.util.List[InstallableRepoLoader] = {
     dirModelLoaders.synchronized {
@@ -49,7 +50,7 @@ object FancyRepoLoader extends BasicDebugger {
         dirModelLoaders.add(new GoogSheetRepoLoader())
         dirModelLoaders.add(new XLSXSheetRepoLoader())
         dirModelLoaders.add(new CsvFileSheetLoader())
-        dirModelLoaders.add(new DatabaseRepoLoader())
+        dirModelLoaders.add(new SdbSqlRepoLoader())
         dirModelLoaders.add(new FileModelRepoLoader())
         dirModelLoaders.add(new MultiRepoLoader())
 
@@ -64,18 +65,18 @@ object FancyRepoLoader extends BasicDebugger {
       return new ArrayList[InstallableRepoLoader](dirModelLoaders)
     }
   }
-  def getSpecLoaders(): java.util.List[InstallableSpecReader] = {
-    specLoaders.synchronized {
-      if (specLoaders.size < 3) {
-        specLoaders.add(new ScanURLDirModelRepoSpecReader())
-        specLoaders.add(new URLDirModelRepoSpecReader())
-        specLoaders.add(new URLModelRepoSpecReader())
-        specLoaders.add(new ScanURLModelRepoSpecReader())
+  def getRSpecReaders(): java.util.List[RepoSpecReader] = {
+    myRSpecReaders.synchronized {
+      if (myRSpecReaders.size < 3) {
+        myRSpecReaders.add(new RSpecReader_FolderScan_Dir())
+        myRSpecReaders.add(new RSpecReader_UrlDir_Dir())
+        myRSpecReaders.add(new RSpecReader_UrlDir_Turtle())
+        myRSpecReaders.add(new RSpecReader_FolderScan_Turtle())
         for (l <- getDirModelLoaders.toArray(new Array[InstallableRepoLoader](0))) {
-          specLoaders.add(l);
+          myRSpecReaders.add(l);
         }
       }
-      return new ArrayList[InstallableSpecReader](specLoaders)
+      return new ArrayList[RepoSpecReader](myRSpecReaders)
     }
   }
 
@@ -200,7 +201,8 @@ object FancyRepoLoader extends BasicDebugger {
   }
 
   ///. Modeled on GoogSheetRepo.loadTestSheetRepo
-  def loadDetectedFileSheetRepo(rdfURL: String, nsJavaMap: java.util.Map[String, String], fileModelCLs: java.util.List[ClassLoader], repoSpec: RepoSpec): FancyRepo = {
+  def loadDetectedFileSheetRepo(rdfURL: String, nsJavaMap: java.util.Map[String, String], 
+								fileModelCLs: java.util.List[ClassLoader], repoSpec: RepoSpec): FancyRepo = {
     // Read the namespaces and directory sheets into a single directory model.
     val dirModel: Model = readDirectoryModelFromURL(rdfURL, nsJavaMap, fileModelCLs)
     // Construct a repo around that directory
@@ -213,3 +215,53 @@ object FancyRepoLoader extends BasicDebugger {
   }
 
 }
+
+/*
+winston@topia ~/e_mount
+$  grep -rin    --include=*.{java,scala,xml,ttl,owl,html} --exclude="*\.svn*" --exclude-dir=target readRdfGraphFromURL
+appdapter_trunk/maven/ cogchar_trunk/maven/ friendularity_trunk/maven/ hrk_tools_trunk/maven/
+
+appdapter_trunk/maven/org.appdapter.lib.bind.jena/src/main/scala/org/appdapter/fancy/loader/CsvFileSheetLoader.scala:86:
+            val fileModel = FancyRepoLoader.readRdfGraphFromURL(rdfURL, nsJavaMap, clList);
+appdapter_trunk/maven/org.appdapter.lib.bind.jena/src/main/scala/org/appdapter/fancy/loader/FancyRepoLoader.scala:166:
+    } else readRdfGraphFromURL(rdfURL, nsJavaMap, fileModelCLs);
+appdapter_trunk/maven/org.appdapter.lib.bind.jena/src/main/scala/org/appdapter/fancy/loader/FancyRepoLoader.scala:179:
+def readRdfGraphFromURL(rdfURL: String, nsJavaMap: java.util.Map[String, String], clList: java.util.List[ClassLoader]):
+Model = {
+appdapter_trunk/maven/org.appdapter.lib.bind.jena/src/main/scala/org/appdapter/fancy/loader/FileModelRepoLoader.scala:80
+:            val fileModel = FancyRepoLoader.readRdfGraphFromURL(rdfURL, nsJavaMap, clList);
+
+winston@topia ~/e_mount
+$  grep -rin   --include=*.{java,scala,xml,ttl,owl,html} --exclude="*\.svn*" --exclude-dir=target readDirectoryModelFro
+mURL appdapter_trunk/maven/ cogchar_trunk/maven/ friendularity_trunk/maven/ hrk_tools_trunk/maven/
+
+ appdapter_trunk/maven/org.appdapter.lib.bind.jena/src/main/scala/org/appdapter/fancy/loader/FancyRepoLoader.scala:158:
+def readDirectoryModelFromURL(rdfURL: String, nsJavaMap: java.util.Map[String, String], fileModelCLs: java.util.List[Cla
+ssLoader]): Model = {
+
+ appdapter_trunk/maven/org.appdapter.lib.bind.jena/src/main/scala/org/appdapter/fancy/loader/FancyRepoLoader.scala:160:
+    getLogger.info("readDirectoryModelFromURL - start {}", rdfURL)
+
+ appdapter_trunk/maven/org.appdapter.lib.bind.jena/src/main/scala/org/appdapter/fancy/loader/FancyRepoLoader.scala:205:
+  val dirModel: Model = readDirectoryModelFromURL(rdfURL, nsJavaMap, fileModelCLs)
+
+ appdapter_trunk/maven/org.appdapter.lib.bind.jena/src/main/scala/org/appdapter/fancy/rspec/UrlDirModelRepoSpec.scala:75:
+  override def getDirectoryModel = FancyRepoLoader.readDirectoryModelFromURL(dirModelURL, null, fileModelCLs)
+
+ friendularity_trunk/maven/org.friendularity.lib.viz/src/main/scala/org/friendularity/ignore/nexjen/BehavTrix.scala:530:a
+t org.appdapter.core.matdat.FancyRepoLoader$.readDirectoryModelFromURL(RepoLoader.scala:109)
+
+winston@topia ~/e_mount
+$  grep -rin    --include=*.{java,scala,xml,ttl,owl,html} --exclude="*\.svn*" --exclude-dir=target loadDetectedFileShee
+tRepo appdapter_trunk/maven/ cogchar_trunk/maven/ friendularity_trunk/maven/ hrk_tools_trunk/maven/
+
+appdapter_trunk/maven/org.appdapter.lib.bind.jena/src/main/scala/org/appdapter/fancy/loader/FancyRepoLoader.scala:203:
+def loadDetectedFileSheetRepo(rdfURL: String, nsJavaMap: java.util.Map[String, String], fileModelCLs: java.util.List[Cla
+ssLoader], repoSpec: RepoSpec): FancyRepo = {
+appdapter_trunk/maven/org.appdapter.lib.bind.jena/src/main/scala/org/appdapter/fancy/loader/MultiRepoLoader.scala:119:
+          //val MultiModel = FancyRepoLoader.loadDetectedFileSheetRepo(configPath, null, modelIdent).getNamedModel(model
+Ident);
+appdapter_trunk/maven/org.appdapter.lib.bind.jena/src/main/scala/org/appdapter/fancy/rspec/UrlDirModelRepoSpec.scala:74:
+  //override def makeRepo = FancyRepoLoader.loadDetectedFileSheetRepo(dirModelURL, null, fileModelCLs, this)
+
+ */

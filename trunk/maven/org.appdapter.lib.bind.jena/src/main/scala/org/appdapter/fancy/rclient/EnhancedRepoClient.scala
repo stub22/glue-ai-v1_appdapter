@@ -32,7 +32,7 @@ class EnhancedRepoClient(val myRepoSpec: RepoSpec, repo: Repo.WithDirectory, dfl
   extends LocalRepoClientImpl(repo, dfltTgtGraphVarName, dfltQrySrcGrphName) {
 
   def reloadRepoAndClient(): EnhancedRepoClient = {
-    val reloadedRepo = myRepoSpec.makeRepo()
+    val reloadedRepo = myRepoSpec.getOrMakeRepo()
     val reloadedClient = new EnhancedRepoClient(myRepoSpec, reloadedRepo, dfltTgtGraphVarName, dfltQrySrcGrphName)
     reloadedClient
   }

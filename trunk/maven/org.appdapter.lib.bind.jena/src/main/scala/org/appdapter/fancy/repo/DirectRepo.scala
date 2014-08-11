@@ -60,7 +60,7 @@ class DirectRepo(val myRepoSpecForRef: RepoSpec, val myDebugNameToStr: String, v
 	 *  
 	 */
   private def reloadAllModelsNow {
-    val dirModel: Model = if (myRepoSpecForRef != null) myRepoSpecForRef.getDirectoryModel else getDirectoryModel
+    val dirModel: Model = if (myRepoSpecForRef != null) myRepoSpecForRef.getOrMakeDirectoryModel else getDirectoryModel
 	val targetMainDS = getMainQueryDataset
     if (targetMainDS != null) {
 		getLogger.info("Refreshing existing dataset at {}", this)
@@ -92,7 +92,7 @@ class DirectRepo(val myRepoSpecForRef: RepoSpec, val myDebugNameToStr: String, v
   }
 
   def reloadSingleModel(modelName: String) = {
-    val repo = myRepoSpecForRef.makeRepo
+    val repo = myRepoSpecForRef.getOrMakeRepo
     val oldDataset = getMainQueryDataset
     val myPNewMainQueryDataset = repo.getMainQueryDataset
     getLogger.info("START: Trying to do reloading of model named.. " + modelName)
