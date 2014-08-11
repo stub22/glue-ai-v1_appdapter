@@ -17,7 +17,7 @@
 package org.appdapter.fancy.loader
 import org.appdapter.core.loader.{SpecialRepoLoader, ExtendedFileStreamUtils}
 import org.appdapter.fancy.repo.FancyRepo
-import org.appdapter.fancy.rspec.{RepoSpec, InstallableSpecReader}
+import org.appdapter.fancy.rspec.{RepoSpec, RepoSpecReader}
 import com.hp.hpl.jena.query.{Dataset, QuerySolution}
 import com.hp.hpl.jena.rdf.model.{Model, Resource}
 /*
@@ -25,7 +25,7 @@ import com.hp.hpl.jena.rdf.model.{Model, Resource}
  */
 
 
-abstract class InstallableRepoLoader extends InstallableSpecReader {
+abstract class InstallableRepoLoader extends RepoSpecReader {
   //override def getExt(): String = null
   override def makeRepoSpec(path: String, args: Array[String], cLs: java.util.List[ClassLoader]): RepoSpec = null
   def getContainerType(): String

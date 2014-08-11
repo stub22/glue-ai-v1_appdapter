@@ -60,11 +60,11 @@ class MultiRepoSpec(var many: String, protected var fileModelCLs: java.util.List
     repoSpecs.add(urlRepoSpec)
   }
 
-  override def getDirectoryModel(): Model = {
+  override protected def makeDirectoryModel(): Model = {
     var dirModel: Model = RepoDatasetFactory.createPrivateMemModel();
-    for (d <- repoSpecs.toArray(new Array[RepoSpec](0))) {
+    for (d : RepoSpec  <- repoSpecs.toArray(new Array[RepoSpec](0))) {
       println("repoSpec = " + d)
-      var model = d.getDirectoryModel;
+      var model = d.getOrMakeDirectoryModel;
       dirModel = dirModel.union(model)
       dirModel.withDefaultMappings(model)
     }

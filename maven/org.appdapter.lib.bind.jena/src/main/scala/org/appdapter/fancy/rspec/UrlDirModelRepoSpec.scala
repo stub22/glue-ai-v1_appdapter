@@ -28,52 +28,32 @@ import com.hp.hpl.jena.rdf.model.{ Literal, Model, Resource }
 
 
 /**
- * @author Stu B. <www.texpedient.com>
  * @author Douglas R. Miles <www.logicmoo.org>
+ * @author Stu B. <www.texpedient.com>
  *
- * This is a FileModel Loader it contains the InstallableRepoReader and Loader class with static methods for loading FileRepos
  */
-class ScanURLDirModelRepoSpec(var dirModelURL: String, fileModelCLs: java.util.List[ClassLoader]) extends MultiRepoSpec(null, fileModelCLs) {
-  def createURIFromBase(fileDirMask: String) = "scan:/" + fileDirMask;
-
-  //toStringName = createURIFromBase(dirModelURL);
-
-  def populateDirModel(dir0: String) {
-    var dir = dir0
-    val all = new java.util.ArrayList[RepoSpec]
-    val fileFilter = new Paths();
-    if (new File(dir).isDirectory()) {
-      while (dir.endsWith("\\")) {
-        dir = dir.substring(0, dir.length() - 1);
-      }
-      while (dir.endsWith("/")) {
-        dir = dir.substring(0, dir.length() - 1);
-      }
-      fileFilter.glob(dir + "/", "dir.ttl");
-      fileFilter.glob(dir + "/**", "dir.ttl");
-    } else {
-      fileFilter.glob(".", dir);
-    }
-    var paths = fileFilter.getFiles();
-    for (f <- paths.toArray(new Array[java.io.File](0))) {
-      all.add(new URLDirModelRepoSpec(f.getPath(), fileModelCLs));
-    }
-  }
-
-  override def getDirectoryModel() = {
-    populateDirModel(dirModelURL)
-    super.getDirectoryModel
-  }
-
-  override def toString = if (toStringName != null) toStringName else createURIFromBase(dirModelURL)
-}
 
 
 
 class URLDirModelRepoSpec(dirModelURL: String, fileModelCLs: java.util.List[ClassLoader]) extends RepoSpecForDirectory {
   //override def makeRepo = FancyRepoLoader.loadDetectedFileSheetRepo(dirModelURL, null, fileModelCLs, this)
-  override def getDirectoryModel = FancyRepoLoader.readDirectoryModelFromURL(dirModelURL, null, fileModelCLs)
+  override protected def makeDirectoryModel = FancyRepoLoader.readDirectoryModelFromURL(dirModelURL, null, fileModelCLs)
   override def toString = dirModelURL
 }
 
 
+/*
+ * 	 
+appdapter_trunk/maven/org.appdapter.lib.bind.jena/src/main/scala/org/appdapter/fancy/loader/FileModelRepoLoader.scala:31
+:  override def makeRepoSpec(path: String, args: Array[String], cLs: java.util.List[ClassLoader]) = new URLDirModelRepoS
+pec(path, cLs)
+
+appdapter_trunk/maven/org.appdapter.lib.bind.jena/src/main/scala/org/appdapter/fancy/rspec/UrlDirModelRepoSpec.scala:59:
+      all.add(new URLDirModelRepoSpec(f.getPath(), fileModelCLs));
+	  
+appdapter_trunk/maven/org.appdapter.lib.bind.jena/src/main/scala/org/appdapter/fancy/rspec/UrlRepoSpec.scala:72:      (n
+ew ScanURLDirModelRepoSpec(v3(0), fileModelCLs))
+
+appdapter_trunk/maven/org.appdapter.lib.bind.jena/src/main/scala/org/appdapter/fancy/rspec/UrlRepoSpec.scala:92:      ne
+w URLDirModelRepoSpec(dirModelURL, fileModelCLs)
+ */

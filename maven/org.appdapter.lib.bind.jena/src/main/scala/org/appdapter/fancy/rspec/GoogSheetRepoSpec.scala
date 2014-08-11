@@ -34,15 +34,17 @@ import com.hp.hpl.jena.rdf.model.{ Literal, Model, Resource }
  */
 
 class GoogSheetRepoSpec(sheetKey: String, namespaceSheetNum: Int, dirSheetNum: Int,
-  fileModelCLs: java.util.List[ClassLoader]) extends RepoSpecForDirectory {
+		fileModelCLs: java.util.List[ClassLoader]) extends RepoSpecForDirectory {
+
   def this(sheetKey: String, namespaceSheetNum: Int, dirSheetNum: Int) = this(sheetKey, namespaceSheetNum, dirSheetNum, null);
-  override def getDirectoryModel = GoogSheetRepoLoader.readModelFromGoog(sheetKey, namespaceSheetNum, dirSheetNum)
+  override protected def makeDirectoryModel = GoogSheetRepoLoader.readModelFromGoog(sheetKey, namespaceSheetNum, dirSheetNum)
   override def toString: String = "goog:/" + sheetKey + "/" + namespaceSheetNum + "/" + dirSheetNum
 }
 class OnlineSheetRepoSpec(sheetKey: String, namespaceSheetNum: Int, dirSheetNum: Int,
-  fileModelCLs: java.util.List[ClassLoader]) extends RepoSpecForDirectory {
+		fileModelCLs: java.util.List[ClassLoader]) extends RepoSpecForDirectory {
+	
   def this(sheetKey: String, namespaceSheetNum: Int, dirSheetNum: Int) = this(sheetKey, namespaceSheetNum, dirSheetNum, null);
-  override def getDirectoryModel = GoogSheetRepoLoader.readModelFromGoog(sheetKey, namespaceSheetNum, dirSheetNum)
+  override protected def makeDirectoryModel = GoogSheetRepoLoader.readModelFromGoog(sheetKey, namespaceSheetNum, dirSheetNum)
   override def toString: String = "goog:/" + sheetKey + "/" + namespaceSheetNum + "/" + dirSheetNum
 }
 
