@@ -82,7 +82,7 @@ object GraphPortalFuncs {
 		bracketedPortalTransfer(sourceGS, targetGA, copyOp, null)		
 	}
 	
-	def copyGraphsAndShowStats(sourcePortal : DelegatingPortal, targetPortal : DelegatingPortal) {
+	def copyGraphsAndShowStats(sourcePortal : DelegatingPortal, targetPortal : DelegatingPortal, flag_overwriteTgtGraphs : Boolean) {
 		val vl = targetPortal.getVarargsLogger
 		val sourceGS = sourcePortal.getSupplier
 		val sourceStats = sourceGS.fetchStats(None)
@@ -94,7 +94,8 @@ object GraphPortalFuncs {
 		val tgtUriChooseFunc = new SGS_Mapper() { 
 			override def apply(sgs:SuppliedGraphStat) = Some(sgs.myAbsUriTxt)
 		}
-		copyGraphs_SingleTx(sourceGS, None, tgtUriChooseFunc, targetGA,  false)
+	 
+		copyGraphs_SingleTx(sourceGS, None, tgtUriChooseFunc, targetGA,  flag_overwriteTgtGraphs)
 		// AbsorberFuncs.copyRepoGraphsToLocalDset_OneTx(legacyRepo, tgtUriChooseFunc, inMemDSet, false)
 		
 		val tgtStatsAfter  = targetGS.fetchStats(None)

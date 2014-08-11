@@ -15,8 +15,18 @@
  */
 
 package org.appdapter.fancy.rspec
+import org.appdapter.core.name.{Ident, FreeIdent}
+import org.appdapter.fancy.loader.{SdbSqlRepoFactoryLoader}
+import com.hp.hpl.jena.rdf.model.Model
 
-abstract class InstallableSpecReader {
-  def getExt(): String;
-  def makeRepoSpec(path: String, args: Array[String], cLs: java.util.List[ClassLoader]): RepoSpec;
+class SdbSqlRepoSpec(configPath: String, optConfResCL: ClassLoader, dirGraphID: Ident) extends RepoSpec {
+	
+  def this(cPath: String, optCL: ClassLoader, dirGraphUriPrefix: String, dirGraphLocalName: String) =
+	  this(cPath, optCL, new FreeIdent(dirGraphUriPrefix + dirGraphLocalName, dirGraphLocalName))
+  
+  override protected def makeRepo() = SdbSqlRepoFactoryLoader.makeSdbSqlRepo(configPath, optConfResCL, dirGraphID)
+  
+  override protected def   makeDirectoryModel(): Model  = getOrMakeRepo.getDirectoryModel
+  
+ 
 }

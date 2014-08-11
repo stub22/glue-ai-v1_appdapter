@@ -242,7 +242,7 @@ object GoogSheetRepoLoaderTest {
   private def loadTestGoogSheetRepo(): FancyRepo = {
 
     val spec = new GoogSheetRepoSpec(keyForGoogBootSheet22, nsSheetNum22, dirSheetNum22)
-    val sr = spec.makeRepo
+    val sr = spec.getOrMakeRepo
     // sr.loadSheetModelsIntoMainDataset()
     sr.getMainQueryDataset
     sr

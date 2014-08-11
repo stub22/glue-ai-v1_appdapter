@@ -32,7 +32,9 @@ import org.appdapter.fancy.loader.{ CsvFileSheetLoader }
  */
 
 class CSVFileRepoSpec(dirSheet: String, namespaceSheet: String = null,
-  fileModelCLs: java.util.List[ClassLoader] = null) extends RepoSpecForDirectory {
-  override def getDirectoryModel = CsvFileSheetLoader.readDirectoryModelFromCsvFile(dirSheet, fileModelCLs, namespaceSheet)
+		fileModelCLs: java.util.List[ClassLoader] = null) extends RepoSpecForDirectory {
+
+		
+  override protected def makeDirectoryModel = CsvFileSheetLoader.readDirectoryModelFromCsvFile(dirSheet, fileModelCLs, namespaceSheet)
   override def toString: String = dirSheet
 }

@@ -87,7 +87,7 @@ object RepoSpecDefaultNames {
     val fileResModelCLs: java.util.List[ClassLoader] =
       ClassLoaderUtils.getFileResourceClassLoaders(null, ClassLoaderUtils.ALL_RESOURCE_CLASSLOADER_TYPES);
     val repoSpec = new OnlineSheetRepoSpec(RepoSpecDefaultNames.BMC_SHEET_KEY, RepoSpecDefaultNames.BMC_NAMESPACE_SHEET_NUM, RepoSpecDefaultNames.BMC_DIRECTORY_SHEET_NUM, fileResModelCLs);
-    val repo = repoSpec.makeRepo //.asInstanceOf[GoogSheetRepo];
+    val repo = repoSpec.getOrMakeRepo //.asInstanceOf[GoogSheetRepo];
 
     print("Starting Whackamole");
     import org.appdapter.demo.DemoBrowserUI

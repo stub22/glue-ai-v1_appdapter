@@ -97,7 +97,7 @@ object OmniLoaderRepoTest {
     val repoNav = DemoBrowserUI.makeDemoNavigatorCtrl(args);
     print("Create a Goog Sheet Spec");
     val repoSpec = new GoogSheetRepoSpec(OmniLoaderRepoTest.BMC_SHEET_KEY, OmniLoaderRepoTest.BMC_NAMESPACE_SHEET_NUM, OmniLoaderRepoTest.BMC_DIRECTORY_SHEET_NUM);
-    val repo = repoSpec.makeRepo;
+    val repo = repoSpec.getOrMakeRepo;
     //repo.loadSheetModelsIntoMainDataset();
     //repo.loadDerivedModelsIntoMainDataset(null);
     repoNav.addObject(repo.toString(), repo, true, false);

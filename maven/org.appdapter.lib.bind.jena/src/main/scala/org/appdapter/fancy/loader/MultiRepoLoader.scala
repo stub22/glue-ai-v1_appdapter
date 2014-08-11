@@ -113,7 +113,7 @@ object MultiRepoLoader extends org.appdapter.core.log.BasicDebugger {
         def run() {
           try {
             val graphURI = modelURI
-            val otherRepo = (new URLRepoSpec(configPath, clList)).makeRepo
+            val otherRepo = (new URLRepoSpec(configPath, clList)).getOrMakeRepo
             val src = otherRepo.getMainQueryDataset
             RepoOper.addOrReplaceDatasetElements(mainDset, src, unionOrReplace);
             //val MultiModel = FancyRepoLoader.loadDetectedFileSheetRepo(configPath, null, modelIdent).getNamedModel(modelIdent);
