@@ -71,6 +71,18 @@ abstract class RepoSpec extends LocalRepoClientSpec {
   protected def makeDirectoryModel(): Model 
   
   def getOrMakeDirectoryModel(): Model = makeDirectoryModel() 
+  
+  def getBasePath() : String = null
+  
+	protected def guessBasePath(dirPath : String) : String = {
+		val fullLength = dirPath.length
+		val lastSlashPos = dirPath.lastIndexOf('/')
+		if ((lastSlashPos >= 0) && (lastSlashPos < (fullLength - 1))) {
+			dirPath.substring(0, lastSlashPos + 1)
+		} else {
+			dirPath
+		}	
+	}
 }
 
 /**

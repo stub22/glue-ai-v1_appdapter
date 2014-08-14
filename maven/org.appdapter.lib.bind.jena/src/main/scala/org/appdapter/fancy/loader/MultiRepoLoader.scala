@@ -34,7 +34,8 @@ class MultiRepoLoader extends InstallableRepoLoader {
   override def getExt = MultiRepoLoader.PROTO
   override def getContainerType() = "ccrt:MultiRepo"
   override def getSheetType() = "ccrt:DirectoryModelSheet"
-  override def loadModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
+  override def loadModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, 
+										   fileModelCLs: java.util.List[ClassLoader], optPrefixURL : String) {
     MultiRepoLoader.loadSheetModelsIntoTargetDataset(repo, mainDset, dirModel, fileModelCLs)
   }
 }

@@ -48,7 +48,8 @@ class XLSXSheetRepoLoader extends InstallableRepoLoader {
   override def getExt = "xlsx"
   override def getContainerType() = "ccrt:XlsxWorkbookRepo"
   override def getSheetType() = "ccrt:XlsxSheet"
-  override def loadModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
+  override def loadModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, 
+										   fileModelCLs: java.util.List[ClassLoader], optPrefixURL : String) {
     XLSXSheetRepoLoader.loadSheetModelsIntoTargetDataset(repo, mainDset, dirModel, fileModelCLs)
   }
 }
@@ -125,7 +126,7 @@ object XLSXSheetRepoLoader extends BasicDebugger {
     //val shRepo = new XLSXSheetRepo(dirModel, fileModelCLs);   
     // Doug's locally testing this replacement   
     val spec = new OfflineXlsSheetRepoSpec(sheetLocation, namespaceSheetName, dirSheetName, fileModelCLs);
-    val shRepo = new DirectRepo(spec, "xlsx:" + sheetLocation + "/" + namespaceSheetName + "/" + dirSheetName, dirModel, fileModelCLs)
+    val shRepo = new DirectRepo(spec, "xlsx:" + sheetLocation + "/" + namespaceSheetName + "/" + dirSheetName, null, dirModel, fileModelCLs)
     // Load the rest of the repo's initial *sheet* models, as instructed by the directory.
     getLogger.debug("Loading Sheet Models")
     shRepo.getMainQueryDataset();

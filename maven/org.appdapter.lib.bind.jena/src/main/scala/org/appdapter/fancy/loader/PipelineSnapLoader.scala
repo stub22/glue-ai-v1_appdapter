@@ -31,7 +31,8 @@ class PipelineSnapLoader extends InstallableRepoLoader {
   override def getContainerType() = "cc:PipelineModel"
   override def getSheetType() = "cc:UnionModel"
   override def isDerivedLoader() = true
-  override def loadModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
+  override def loadModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, 
+									fileModelCLs: java.util.List[ClassLoader], optPrefixURL : String) {
     PipelineSnapLoader.loadSheetModelsIntoTargetDataset(repo, mainDset, dirModel, fileModelCLs)
   }
 }

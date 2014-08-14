@@ -31,5 +31,6 @@ abstract class InstallableRepoLoader extends RepoSpecReader {
   def getContainerType(): String
   def getSheetType(): String
   def isDerivedLoader(): Boolean = false
-  def loadModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader])
+  def loadModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader],
+		optUrlPrefix : String)
 }
