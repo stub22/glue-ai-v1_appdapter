@@ -39,14 +39,15 @@ class CsvFileSheetLoader extends InstallableRepoLoader {
   override def getExt = "csv"
   override def getContainerType() = "ccrt:CsvFileRepo"
   override def getSheetType() = "ccrt:CsvFileSheet"
-  override def loadModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
-    CsvFileSheetLoader.loadSheetModelsIntoTargetDataset(repo, mainDset, dirModel, fileModelCLs)
+  override def loadModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, 
+							fileModelCLs: java.util.List[ClassLoader], optPrefixURL : String) {
+    CsvFileSheetLoader.loadCsvModelsIntoTargetDataset(repo, mainDset, dirModel, fileModelCLs)
   }
 }
 
 object CsvFileSheetLoader extends BasicDebugger {
 
-  def loadSheetModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset,
+  def loadCsvModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset,
     myDirectoryModel: Model, clList: java.util.List[ClassLoader]) = {
 
     val nsJavaMap: java.util.Map[String, String] = myDirectoryModel.getNsPrefixMap()

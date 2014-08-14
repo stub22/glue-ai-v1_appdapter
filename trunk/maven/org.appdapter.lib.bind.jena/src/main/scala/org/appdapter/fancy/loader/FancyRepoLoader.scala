@@ -80,7 +80,8 @@ object FancyRepoLoader extends BasicDebugger {
     }
   }
 
-  def updateDatasetFromDirModel(repoLoader: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
+  def updateDatasetFromDirModel(repoLoader: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, 
+								fileModelCLs: java.util.List[ClassLoader], optUrlPrefix : String) {
     val dirModelLoaders: java.util.List[InstallableRepoLoader] = getDirModelLoaders
     val dirModelLoaderIter = dirModelLoaders.listIterator
     repoLoader.setSynchronous(false)
@@ -95,7 +96,7 @@ object FancyRepoLoader extends BasicDebugger {
           //repoLoader.setSynchronous(false)
           repoLoader.setSynchronous(true)
         }
-        irr.loadModelsIntoTargetDataset(repoLoader, mainDset, dirModel, fileModelCLs)
+        irr.loadModelsIntoTargetDataset(repoLoader, mainDset, dirModel, fileModelCLs, optUrlPrefix)
       } catch {
         case except: Throwable =>
           except.printStackTrace
@@ -106,26 +107,27 @@ object FancyRepoLoader extends BasicDebugger {
     repoLoader.setSynchronous(true)
   }
   def makeRepoWithDirectory(spec: RepoSpec, dirModel: Model, fileModelCLs: java.util.List[ClassLoader] = null, dirGraphID: Ident = null): DirectRepo = {
-    val specURI = spec.toString();
+   
     var serial = System.identityHashCode(this);
-    var myDebugName = addInvisbleInfo(specURI, "time", "" + new Date());
+    var repoDebugName = addInvisbleInfo(spec.toString, "time", "" + new Date());
     if (dirGraphID != null) {
-      myDebugName = addInvisbleInfo(myDebugName, "id", "" + dirGraphID);
+      repoDebugName = addInvisbleInfo(repoDebugName, "id", "" + dirGraphID);
     }
     // Construct a repo around that directory        
-    val shRepo = new DirectRepo(spec, specURI, myDebugName, dirModel, fileModelCLs)
+	val repoBasePath = spec.getBasePath();
+    val shRepo = new DirectRepo(spec, repoDebugName, repoBasePath, dirModel, fileModelCLs)
     //shRepo.beginLoading();
     // set to false to have concurrent background loading
     if (true) {
       //shRepo.finishLoading();
     }
-	getLogger().info("Finished making RepoWithDirectory with debugName {}", myDebugName)
+	getLogger().info("Finished making RepoWithDirectory with debugName {}", repoDebugName)
     shRepo
   }
 
-  def updateDatasetFromDirModel(dirModel: Model, mainDset: Dataset, fileModelCLs: java.util.List[ClassLoader], repoLoader: SpecialRepoLoader) {
+  def updateDatasetFromDirModel(dirModel: Model, mainDset: Dataset, fileModelCLs: java.util.List[ClassLoader], optUrlPrefix : String, repoLoader: SpecialRepoLoader) {
     repoLoader.setSynchronous(false)
-    FancyRepoLoader.updateDatasetFromDirModel(repoLoader, mainDset, dirModel, fileModelCLs)
+    FancyRepoLoader.updateDatasetFromDirModel(repoLoader, mainDset, dirModel, fileModelCLs, optUrlPrefix)
     // not done until the last task completes
     repoLoader.setSynchronous(true)
   }
@@ -177,7 +179,8 @@ object FancyRepoLoader extends BasicDebugger {
   // Caled from:
   // FileModelRepoLoader - task.run()
   // CsvFileSheetLoader - task.run()
-  def readRdfGraphFromURL(rdfURL: String, nsJavaMap: java.util.Map[String, String], clList: java.util.List[ClassLoader]): Model = {
+  def readRdfGraphFromURL(rdfURL: String, nsJavaMap: java.util.Map[String, String], 
+						clList: java.util.List[ClassLoader]): Model = {
     try {
 		getLogger.info("Reading RDF graph from URL {} into a jena model.", rdfURL);
       val efsu = new ExtendedFileStreamUtils()

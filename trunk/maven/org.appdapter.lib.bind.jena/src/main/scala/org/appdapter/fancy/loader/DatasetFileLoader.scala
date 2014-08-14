@@ -45,7 +45,8 @@ class DatasetFileRepo extends InstallableRepoLoader {
   override def getExt = null;
   override def getContainerType() = "ccrt:DatasetFileRepo"
   override def getSheetType() = "ccrt:DatasetFileRepo"
-  override def loadModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
+  override def loadModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, 
+				fileModelCLs: java.util.List[ClassLoader], optPrefixURL : String) {
     DatasetFileRepo.loadSheetModelsIntoTargetDataset(repo, mainDset, dirModel, fileModelCLs)
   }
 }
@@ -83,7 +84,7 @@ object DatasetFileRepo extends BasicDebugger {
 
       val rPath = repoPath_Lit.getString();
 
-      getLogger.debug("Ready to read from [{}] / [{}]", Array[Object](rPath, dirmodelRes));
+      getLogger.debug("Ready to read from [{}] / [{}]", Seq(rPath, dirmodelRes) : _*);
 
       // @todo set the Query and DirModels
 
