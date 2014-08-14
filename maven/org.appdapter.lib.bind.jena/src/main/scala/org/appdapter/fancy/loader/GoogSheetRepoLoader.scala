@@ -36,7 +36,8 @@ class GoogSheetRepoLoader extends InstallableRepoLoader {
   override def getExt = "goog";
   override def getContainerType() = "ccrt:GoogSheetRepo"
   override def getSheetType() = "ccrt:GoogSheet"
-  override def loadModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
+  override def loadModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, 
+								fileModelCLs: java.util.List[ClassLoader], optPrefixURL : String) {
     GoogSheetRepoLoader.loadSheetModelsIntoTargetDataset(repo, mainDset, dirModel, fileModelCLs)
   }
 }

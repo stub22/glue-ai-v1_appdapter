@@ -39,6 +39,9 @@ class URLDirModelRepoSpec(dirModelURL: String, fileModelCLs: java.util.List[Clas
   //override def makeRepo = FancyRepoLoader.loadDetectedFileSheetRepo(dirModelURL, null, fileModelCLs, this)
   override protected def makeDirectoryModel = FancyRepoLoader.readDirectoryModelFromURL(dirModelURL, null, fileModelCLs)
   override def toString = dirModelURL
+  
+	override def getBasePath : String = guessBasePath(dirModelURL)
+
 }
 
 

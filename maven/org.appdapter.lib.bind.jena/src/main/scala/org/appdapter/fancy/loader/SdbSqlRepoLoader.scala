@@ -53,7 +53,8 @@ class SdbSqlRepoLoader extends InstallableRepoLoader {
   override def getExt = null
   override def getContainerType() = "ccrt:DatabaseRepo"
   override def getSheetType() = "ccrt:DatabaseSheet"
-  override def loadModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
+  override def loadModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, 
+										   fileModelCLs: java.util.List[ClassLoader], optPrefixURL : String) {
     SdbSqlRepoFactoryLoader.loadSheetModelsIntoTargetDataset(repo, mainDset, dirModel, fileModelCLs)
   }
 }

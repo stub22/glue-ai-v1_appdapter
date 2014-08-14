@@ -45,7 +45,8 @@ class DerivedModelLoader extends InstallableRepoLoader {
   override def getContainerType() = "ccrt:DerivedModel"
   override def getSheetType() = "ccrt:UnionModel"
   override def isDerivedLoader() = true
-  override def loadModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
+  override def loadModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, 
+								fileModelCLs: java.util.List[ClassLoader], optPrefixURL : String) {
     //DerivedModelLoader.loadSheetModelsIntoTargetDataset(repo, mainDset, dirModel, fileModelCLs)
   }
 }

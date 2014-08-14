@@ -28,24 +28,25 @@ import org.appdapter.fancy.rspec.{URLDirModelRepoSpec}
 
 /// this is a registerable loader
 class FileModelRepoLoader extends InstallableRepoLoader {
-  override def makeRepoSpec(path: String, args: Array[String], cLs: java.util.List[ClassLoader]) = new URLDirModelRepoSpec(path, cLs)
-  override def getExt = "ttl"
-  override def getContainerType() = "ccrt:FileRepo"
-  override def getSheetType() = "ccrt:FileModel"
-  override def loadModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, fileModelCLs: java.util.List[ClassLoader]) {
-    FileModelRepoLoader.loadSheetModelsIntoTargetDataset(repo, mainDset, dirModel, fileModelCLs)
-  }
+	override def makeRepoSpec(path: String, args: Array[String], cLs: java.util.List[ClassLoader]) = new URLDirModelRepoSpec(path, cLs)
+	override def getExt = "ttl"
+	override def getContainerType() = "ccrt:FileRepo"
+	override def getSheetType() = "ccrt:FileModel"
+	override def loadModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset, dirModel: Model, 
+											 fileModelCLs: java.util.List[ClassLoader], optPrefixURL : String) {
+		FileModelRepoLoader.loadFileModelsIntoTargetDataset(repo, mainDset, dirModel, fileModelCLs, optPrefixURL)
+	}
 }
 
 object FileModelRepoLoader extends BasicDebugger {
 
-  def loadSheetModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset,
-    myDirectoryModel: Model, clList: java.util.List[ClassLoader]): Unit = {
+	def loadFileModelsIntoTargetDataset(repo: SpecialRepoLoader, mainDset: Dataset,
+										directoryModel: Model, clList: java.util.List[ClassLoader], optPrefixURL : String): Unit = {
 
-    if (myDirectoryModel.size == 0) return
-    val nsJavaMap: java.util.Map[String, String] = myDirectoryModel.getNsPrefixMap()
+		if (directoryModel.size == 0) return
+		val nsJavaMap: java.util.Map[String, String] = directoryModel.getNsPrefixMap()
 
-    val msqText = """
+		val msqText = """
 			select ?repo ?repoPath ?model ?modelPath ?unionOrReplace
 				{
 					?repo  a ccrt:FileRepo; ccrt:sourcePath ?repoPath.
@@ -54,38 +55,58 @@ object FileModelRepoLoader extends BasicDebugger {
 				}
 		"""
 
-    val msRset = QueryHelper.execModelQueryWithPrefixHelp(myDirectoryModel, msqText);
-    import scala.collection.JavaConversions._;
-    while (msRset.hasNext()) {
-      val qSoln: QuerySolution = msRset.next();
+		val msRset = QueryHelper.execModelQueryWithPrefixHelp(directoryModel, msqText);
+		import scala.collection.JavaConversions._;
+		while (msRset.hasNext()) {
+			val qSoln: QuerySolution = msRset.next();
 
-      val repoRes: Resource = qSoln.getResource("repo");
-      val modelRes: Resource = qSoln.getResource("model");
-      val unionOrReplaceRes: Resource = qSoln.getResource("unionOrReplace");
-      val repoPath_Lit: Literal = qSoln.getLiteral("repoPath")
-      val modelPath_Lit: Literal = qSoln.getLiteral("modelPath")
-      val dbgArray = Array[Object](repoRes, repoPath_Lit, modelRes, modelPath_Lit);
-      getLogger.debug("repo={}, repoPath={}, model={}, modelPath={}", dbgArray);
+			val repoRes: Resource = qSoln.getResource("repo");
+			val modelRes: Resource = qSoln.getResource("model");
+			val unionOrReplaceRes: Resource = qSoln.getResource("unionOrReplace");
+			val repoPath_Lit: Literal = qSoln.getLiteral("repoPath")
+			val modelPath_Lit: Literal = qSoln.getLiteral("modelPath")
+			val dbgSeq = Seq(repoRes, repoPath_Lit, modelRes, modelPath_Lit);
+			getLogger.info("repo={}, repoPathLit={}, modelRes={}, modelPath_Lit={}", dbgSeq :_*);
 
-      val rPath = repoPath_Lit.getString();
-      val mPath = modelPath_Lit.getString();
+			val rPath = repoPath_Lit.getString();
+			val mPath = modelPath_Lit.getString();
 
-      getLogger.debug("Ready to read from [{}] / [{}]", Array[Object](rPath, mPath));
-      val rdfURL = rPath + mPath;
+			
+			// Check to see if the rPath is a partial tail-match for optPrefixURL.
+	  
+			val folderPath = if (optPrefixURL != null) {
+				// TODO:  Make this work with/without trailing slashes.
+				if (optPrefixURL.endsWith(rPath)) {
+					optPrefixURL
+				} else {
+					if (rPath.startsWith("/") || rPath.contains(':')) {
+						// rPath appears to be "absolute", so let's pass it through untouched
+						rPath
+					} else {
+						//rPath appears to be relative, let's prefix it!
+						optPrefixURL + rPath
+					}
+				}
+			} else {
+				rPath
+			}	  
+			val rdfURL = folderPath + mPath;
+			getLogger.info("Computed URL as [{}] based on repoPath=[{}] / modelPath=[{}], using opt prefix [{}]", 
+						   Seq(rdfURL, rPath, mPath, optPrefixURL) :_*);
 
-      repo.addLoadTask(rdfURL, new Runnable() {
-        def run() {
-          try {
-            val graphURI = modelRes.getURI();
-            val fileModel = FancyRepoLoader.readRdfGraphFromURL(rdfURL, nsJavaMap, clList);
-            getLogger.debug("Read fileModel: {}", fileModel)
-            FancyRepoLoader.replaceOrUnion(mainDset, unionOrReplaceRes, graphURI, fileModel);
-          } catch {
-            case except: Throwable => getLogger.error("Caught error loading file {}", Array[Object](rdfURL, except))
-          }
-        }
-      })
+			repo.addLoadTask(rdfURL, new Runnable() {
+					def run() {
+						try {
+							val graphURI = modelRes.getURI();
+							val fileModel = FancyRepoLoader.readRdfGraphFromURL(rdfURL, nsJavaMap, clList);
+							getLogger.debug("Read fileModel contents: {}", fileModel)
+							FancyRepoLoader.replaceOrUnion(mainDset, unionOrReplaceRes, graphURI, fileModel);
+						} catch {
+							case except: Throwable => getLogger.error("Caught error loading file {}", Seq(rdfURL, except) :_*)
+						}
+					}
+				})
 
-    }
-  }
+		}
+	}
 }

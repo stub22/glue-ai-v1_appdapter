@@ -95,5 +95,6 @@ class URLRepoSpec(val dirModelURL: String, val fileModelCLs: java.util.List[Clas
   }
   override protected def makeDirectoryModel(): Model = myDetectedRepoSpec.getOrMakeDirectoryModel
   override protected def makeRepo(): Repo.WithDirectory = myDetectedRepoSpec.getOrMakeRepo
+  override def getBasePath : String = guessBasePath(dirModelURL)
   override def toString = dirModelURL
 }
