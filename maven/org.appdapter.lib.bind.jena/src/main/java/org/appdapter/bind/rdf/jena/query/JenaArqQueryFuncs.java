@@ -52,7 +52,9 @@ public class JenaArqQueryFuncs {
 		String qBaseURI = null;
 		Query query = new Query();
 		// Query prefixes must be applied before the query is parsed.
-		query.setPrefixMapping(pmap);
+		if (pmap != null) {
+			query.setPrefixMapping(pmap);
+		}
 		try {
 			QueryFactory.parse(query, inlineQueryText, qBaseURI, Syntax.syntaxSPARQL);
 			return query;
@@ -113,6 +115,10 @@ public class JenaArqQueryFuncs {
 	 * @return 
 	 */
 	protected static List<QuerySolution> findAllSolutions(Dataset ds, Query parsedQuery, QuerySolution initBinding) {
+		JenaArqResultSetProcessor<List<QuerySolution>> resProc = makeResultGulpingProc();
+		return processDatasetQuery(ds, parsedQuery, initBinding, resProc);
+	}
+	public static JenaArqResultSetProcessor<List<QuerySolution>> makeResultGulpingProc() {
 		JenaArqResultSetProcessor<List<QuerySolution>> resProc = new JenaArqResultSetProcessor<List<QuerySolution>>() {
 			@Override public List<QuerySolution> processResultSet(ResultSet rset) {
 				List<QuerySolution> solnList = new ArrayList<QuerySolution>();
@@ -123,9 +129,8 @@ public class JenaArqQueryFuncs {
 				return solnList;
 			}
 		};
-		return processDatasetQuery(ds, parsedQuery, initBinding, resProc);
+		return resProc;
 	}
-
 	public static String dumpResultSetToXML(ResultSet rs) {
 		ResultSetRewindable rsr = ResultSetFactory.makeRewindable(rs);
 		// Does this print to console in table format? 

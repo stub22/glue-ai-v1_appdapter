@@ -18,7 +18,7 @@ package org.appdapter.fancy.gportal
 
 import com.hp.hpl.jena.rdf.model.{ Model, Resource, Literal }
 import com.hp.hpl.jena.query.{DatasetAccessor, DatasetAccessorFactory}
-import com.hp.hpl.jena.query.{ Dataset, DatasetFactory, ReadWrite }
+import com.hp.hpl.jena.query.{ Dataset, DatasetFactory, ReadWrite , Query, QueryExecution, QuerySolution}
 
 import org.appdapter.bind.rdf.jena.query.JenaArqQueryFuncs_TxAware.Oper
 
@@ -58,7 +58,6 @@ trait  GraphSupplier extends GraphPortal {
 	
 }
 
-
 trait DsaccGraphSupplier extends GraphSupplier with DsaccGraphPortal {
 	// def getDatasetAccessor : DatasetAccessor
 	override protected def getNamedGraph_Naive(graphURI : String) : Model = {
@@ -94,23 +93,42 @@ trait LocalGraphSupplier // (private val myDataset : Dataset)
 		})			
 		vl.debug1("Found {} models in total", numModels : java.lang.Integer)
 		stats
-	}	
-		
+	}			
 }
-
-trait RemoteGraphSupplier extends DsaccGraphSupplier with RemoteGraphPortal {
+trait StatsSupplierByQuery extends GraphSupplier with GraphQuerier {
+	val myStatsQueryText = """
+SELECT ?g (COUNT(*) AS ?stmtCnt)
+WHERE { GRAPH ?g  {?s ?p ?o}}
+GROUP BY ?g
+ORDER BY DESC (?stmtCnt)	
+"""
 	
-	val myGraphNameQueryText = "SELECT DISTINCT ?g WHERE { GRAPH ?g  {?s ?p ?o}}";
+	lazy val myParsedStatsQuery : Query = QueryParseHelper.parseQuery(myStatsQueryText)
 	
 	override protected def fetchStats_Naive() : List[SuppliedGraphStat] = {
 		val vl : VarargsLogging = getVarargsLogger
 		var numModels : Int = 0
 		var stats : List[SuppliedGraphStat] = Nil
+
+		// QueryExec can only be used once.
+		val queryExec : QueryExecution = makeQueryExec(myParsedStatsQuery)
+		val qsols : List[QuerySolution] = gulpingSelect_ReadTransCompatible(queryExec)
 		
-		val remoteQueryURL = getRemoteQueryServiceURL
+		for (qs <- qsols) {
+			numModels += 1
+			val gRes = qs.getResource("g")
+			val absUri = gRes.getURI
+			val label = gRes.getLocalName
+			val size = qs.getLiteral("stmtCnt").getInt
+			val stat = new SuppliedGraphStat(absUri, label, size)
+			stats = stats :+ stat
+		}
 		
 		//  DatasetAccessor interface does not directly support "list named graphs", so instead we use a SPARQL query.
 		vl.debug1("Found {} models in total", numModels : java.lang.Integer)
 		stats		
 	}
+}
+trait RemoteGraphSupplierAndQuerier extends DsaccGraphSupplier 
+		with RemoteGraphPortal with RemoteGraphQuerier with StatsSupplierByQuery {
 }
