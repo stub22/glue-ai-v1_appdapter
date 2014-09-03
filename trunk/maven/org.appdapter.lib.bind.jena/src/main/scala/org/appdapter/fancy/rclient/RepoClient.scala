@@ -33,6 +33,13 @@ trait RepoClient { // extends RdfNodeTranslator {
    */
   def getRepoIfLocal: Repo.WithDirectory = null
 
+	/**
+	 * Under what circumstances is this "readonly" model a copy of the original graph held in the source repo?
+	 * - remote repo:  the local result is always a copy of what the remote repo supplied.
+	 * - local repo:   it must either be a copy, or we must be bracketed inside a read-trans, managed by the caller.
+	 *     The latter is a potential performance optimization in (unusual, not expected) cases where the repo-graph is 
+	 *     very large, and we don't want to use memory and time to copy it.  
+	 */
 	def getNamedModelReadonly(graphID : Ident) : com.hp.hpl.jena.rdf.model.Model;
 	// def makeIdentForQName(qn : String) : Ident
 	
