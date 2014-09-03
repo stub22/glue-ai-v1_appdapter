@@ -61,8 +61,8 @@ class LocalRepoClientImpl(private val myRepo: Repo.WithDirectory,  dTgtGraphVarN
 		if (r != null) {
 			// See comment about copies in the RepoClient trait.
 			
-			// Repo returns a handle to a local model (typically within a jena-arq-dataset).
-			// We (usually) must be in a transaction when we make this call.
+			// Repo.getNamedModel returns a handle to a local model (typically within a jena-arq-dataset).
+			// We (usually) must be in a transaction when we call Repo.getNamedModel, or Jena will throw an exception.
 			// IF we are already in a transaction, then it would be permitted to return the handle, rather than a copy.
 			// However, that would be purely as a performance optimization, and should not have any logical impact,
 			// because the same data is contained in a read-locked model as in a copy of that model.
