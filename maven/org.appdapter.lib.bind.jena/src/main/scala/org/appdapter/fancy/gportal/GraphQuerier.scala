@@ -33,7 +33,7 @@ trait GraphQuerier extends GraphPortal {
 	// http://article.gmane.org/gmane.comp.apache.jena.user/2534/match=values+block
 	def makeQueryExec(query : Query) : QueryExecution
 	// This closes the queryExec, leaving it not reusable
-	protected def execSelectQuery_ReadTransCompatible[ResType](queryExec : QueryExecution, rProc : JenaArqResultSetProcessor[ResType], onFail : ResType ) : ResType = {
+	def execSelectQuery_ReadTransCompatible[ResType](queryExec : QueryExecution, rProc : JenaArqResultSetProcessor[ResType], onFail : ResType ) : ResType = {
 		val op = new Oper[ResType] {
 			override def perform(): ResType = {
 				// Javadoc shows this method, but can't find it in any recent Jena versions.
@@ -49,7 +49,7 @@ trait GraphQuerier extends GraphPortal {
 		execReadTransCompatible(op, onFail)
 	}
 	import scala.collection.JavaConversions._
-	protected def gulpingSelect_ReadTransCompatible(queryExec : QueryExecution) : List[QuerySolution] = {
+	def gulpingSelect_ReadTransCompatible(queryExec : QueryExecution) : List[QuerySolution] = {
 		val gulpingProc = JenaArqQueryFuncs.makeResultGulpingProc();
 		val jList : java.util.List[QuerySolution] = execSelectQuery_ReadTransCompatible(queryExec, gulpingProc, null)
 		jList.toList
