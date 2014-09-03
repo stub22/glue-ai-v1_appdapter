@@ -26,10 +26,7 @@ import org.appdapter.fancy.gportal._
 
 object RemoteFusekiTest extends VarargsLogging {
 	val remotePortalBaseURL = "http://lima.nodeset.com:4001/temp_major_L5SG_4001";
-	val remoteGraphStoreURL = remotePortalBaseURL + "/data"
-	val remoteQueryURL = remotePortalBaseURL + "/query"
-	val remoteUpdateURL = remotePortalBaseURL + "/update"
-	val remoteUploadURL = remotePortalBaseURL + "/upload"
+
 
 	def main(args: Array[String]) : Unit = {
 		org.apache.log4j.BasicConfigurator.configure();
@@ -38,7 +35,7 @@ object RemoteFusekiTest extends VarargsLogging {
 		dumpGraphStats()
 	}
 	def dumpGraphStats() {
-		val remotePortal = new LazyRemoteDelegatingPortal(remoteGraphStoreURL, remoteQueryURL, remoteUpdateURL)
+		val remotePortal = new FusekiRemotePortal(remotePortalBaseURL) 
 		val rSupplier : GraphSupplier = remotePortal.getSupplier
 		val rStats : List[SuppliedGraphStat] = rSupplier.fetchStats(None)
 		info2("Got {} stats: {}", rStats.size : java.lang.Integer, rStats)
