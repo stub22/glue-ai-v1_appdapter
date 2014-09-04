@@ -23,7 +23,7 @@ Version less parent will be allowed in Maven 3.1.
 	<artifactId>org.appdapter.modules.all</artifactId>
 
 	<packaging>pom</packaging>
-	<name>${project.artifactId} - "All Modules" parent pom</name>
+	<name>${project.artifactId} - 'All Modules' parent pom</name>
 	<description>Ancestor pom.xml for all Appdapter modules, includes all build config.  
 			Is not the root for release purposes.</description>
 

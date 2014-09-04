@@ -9,7 +9,7 @@
 	</parent>	
 	<artifactId>org.appdapter.modules.gui</artifactId>
 	<packaging>pom</packaging>
-	<name>${project.artifactId} - "GUI Modules" parent pom</name>
+	<name>${project.artifactId} - 'GUI Modules' parent pom</name>
 	<description>
 	</description>
 	<modules>

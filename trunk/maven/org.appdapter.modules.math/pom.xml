@@ -10,7 +10,7 @@
   <artifactId>org.appdapter.modules.math</artifactId>
   
   <packaging>pom</packaging>
-  <name>${project.artifactId} - "Math Modules" parent pom</name>
+  <name>${project.artifactId} - 'Math Modules' parent pom</name>
   <description>Parent module for all Appdapter math/numeric/probability related projects.</description>
   
 	<modules>
