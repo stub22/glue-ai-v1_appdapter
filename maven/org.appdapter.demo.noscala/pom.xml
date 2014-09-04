@@ -76,53 +76,10 @@
 			<type>jar</type>
 		</dependency>		
 		<!-- *************** Test Deps *********************** 
-		
-		2013-07-13 these are out of date, now that we are using Jena 2.10.1.
-		
+		 Junit itself is picked up transitively by SDB.  
+		 Same comment regarding explicit/implicit applies as for runtime above.
 		-->
-			<!-- Junit itself is picked up transitively by SDB.  
-				 Same comment regarding explicit/implicit applies as for runtime above.
-			-->
-		<dependency>
-			<groupId>com.hp.hpl.jena</groupId>
-			<artifactId>arq</artifactId>
-			<classifier>tests</classifier>
-			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<artifactId>log4j</artifactId>
-					<groupId>log4j</groupId>
-				</exclusion>
-			  <exclusion>
-				  <artifactId>slf4j-log4j12</artifactId>
-				  <groupId>org.slf4j</groupId>
-			  </exclusion>
-			  <exclusion>
-				   <artifactId>slf4j-api</artifactId>
-				   <groupId>org.slf4j</groupId>
-			   </exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>com.hp.hpl.jena</groupId>
-			<artifactId>jena</artifactId>
-			<classifier>tests</classifier>
-			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<artifactId>log4j</artifactId>
-					<groupId>log4j</groupId>
-				</exclusion>
-			  <exclusion>
-				  <artifactId>slf4j-log4j12</artifactId>
-				  <groupId>org.slf4j</groupId>
-			  </exclusion>
-			  <exclusion>
-				   <artifactId>slf4j-api</artifactId>
-				   <groupId>org.slf4j</groupId>
-			   </exclusion>
-			</exclusions>
-		</dependency>
+
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>ext.bundle.xml.dom4j_161</artifactId>
