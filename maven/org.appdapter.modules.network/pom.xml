@@ -9,7 +9,7 @@
 	</parent>	
 	<artifactId>org.appdapter.modules.network</artifactId>
 	<packaging>pom</packaging>
-	<name>${project.artifactId} - "Network Modules" parent pom</name>
+	<name>${project.artifactId} - 'Network Modules' parent pom</name>
 	<description>
 	</description>
 	<modules>

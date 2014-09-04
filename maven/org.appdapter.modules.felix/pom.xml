@@ -9,7 +9,7 @@
 	</parent>		
 	<artifactId>org.appdapter.modules.felix</artifactId>
 	<packaging>pom</packaging>
-	<name>${project.artifactId} - "Felix Modules" parent pom </name>
+	<name>${project.artifactId} - 'Felix Modules' parent pom </name>
 	<description>Parent of all Apache Felix-specific projects in Appdapter.</description>
 	
 	<modules>

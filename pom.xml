@@ -589,7 +589,13 @@ Version-less parent will be allowed in Maven 3.1.
 		</pluginRepository>
 	</pluginRepositories>
 
-	
+        <distributionManagement>
+            <site>
+                <id>nexus-site</id>
+                <url>dav:http://localhost:8081/nexus/content/sites/site/org/appdapter</url>
+            </site>
+        </distributionManagement>
+        
 	<build>
 		<directory>target</directory>
 		<extensions>
@@ -598,8 +604,13 @@ Version-less parent will be allowed in Maven 3.1.
 				<artifactId>wagon-ftp</artifactId>
 				<version>${version.wagon.ftp}</version>
 			</extension>
+                        <extension>
+                            <groupId>org.apache.maven.wagon</groupId>
+                            <artifactId>wagon-webdav-jackrabbit</artifactId>
+                            <version>1.0-beta-7</version>
+                        </extension>
 		</extensions>
-
+                
 		<plugins>
 
 		  <!--
@@ -644,6 +655,11 @@ Version-less parent will be allowed in Maven 3.1.
 					<groupId>org.apache.felix</groupId>
 					<artifactId>maven-bundle-plugin</artifactId>
 			</plugin -->
+                        
+                        <plugin>
+                            <artifactId>maven-site-plugin</artifactId>
+                            <version>3.4</version>
+                        </plugin>
 
 		</plugins>
 
@@ -795,6 +811,18 @@ Version-less parent will be allowed in Maven 3.1.
             </plugins>
         </pluginManagement>
     </build>
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <version>1.7</version>
+                <configuration>
+                    <goal>third-party-report</goal>
+                </configuration>
+            </plugin>
+        </plugins>
+    </reporting>
     <profiles>
         <profile>
             <id>release-sign-artifacts</id>
