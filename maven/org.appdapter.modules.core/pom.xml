@@ -9,7 +9,7 @@
 	</parent>	
 	<artifactId>org.appdapter.modules.core</artifactId>
 	<packaging>pom</packaging>
-	<name>${project.artifactId} - "Core Modules" parent pom</name>
+	<name>${project.artifactId} - 'Core Modules' parent pom</name>
 	<description>Parent module for all Core Appdapter projects.</description>
 	<modules>
 		<module>../ext.bundle.osgi.common</module>
