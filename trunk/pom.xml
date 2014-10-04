@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	
+
 	<!--
 	
 	This project is used only for releasing to Maven central.
@@ -21,7 +21,7 @@
 		<version>7</version>
 	</parent>	
 
-<!--
+	<!--
 http://stackoverflow.com/questions/3684664/maven-property-substitution-not-done-for-project-version-tag-of-pom/3685248#3685248
 
 hard code the version in the top project/version element.
@@ -49,7 +49,7 @@ Version-less parent will be allowed in Maven 3.1.
 	<modules>
 		<module>maven/org.appdapter.modules.all</module>	
 	</modules>
-	
+
 	<!--
 	connection - used for read access to Maven (e.g. for svn-update)
 	developerConnection - requires a write-access connection (e.g. for svn-commit)
@@ -63,440 +63,441 @@ Version-less parent will be allowed in Maven 3.1.
 	</scm>
 
 
-		<properties>
-			<maven.compiler.source>1.6</maven.compiler.source>
-			<maven.compiler.target>1.6</maven.compiler.target>
-			<encoding>UTF-8</encoding>
-			<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-			<netbeans.hint.license>appdapter-apache20</netbeans.hint.license>
+	<properties>
+		<maven.compiler.source>1.6</maven.compiler.source>
+		<maven.compiler.target>1.6</maven.compiler.target>
+		<encoding>UTF-8</encoding>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<netbeans.hint.license>appdapter-apache20</netbeans.hint.license>
 
-			<!-- global version settings -->
-			 <activemq.version>5.4.2</activemq.version>
-			<appdapter.msg.version>1.0.5</appdapter.msg.version>
-			<appdapter.jscience.version>1.0.9</appdapter.jscience.version>
-			<avro.version>1.7.4</avro.version>
-			<backport.version>2.2</backport.version>
-			<com.ibm.icu.version>3.4.5</com.ibm.icu.version>
-			<commons.codec.version>1.6</commons.codec.version>
-			<commons.math3.version>3.1.1</commons.math3.version>
-			<commons.logging.version>1.1.3</commons.logging.version>
-			<commons.lang.version>2.4</commons.lang.version>
-			<dom4j.version>1.6.1</dom4j.version>
-			<felix.gogo.shell.version>0.10.0</felix.gogo.shell.version>
-			<felix.gogo.command.version>0.10.0</felix.gogo.command.version>
-			<felix.gogo.runtime.version>0.10.0</felix.gogo.runtime.version>
-			<felix.shell.remote.version>1.1.2</felix.shell.remote.version>
-			<felix.org.osgi.core.version>1.4.0</felix.org.osgi.core.version>
-			<geronimo.version>1.1.1</geronimo.version>
-			<guava.version>11.0</guava.version>
-			<httpclient.version>4.3.1</httpclient.version>
-			<httpcore.version>4.3</httpcore.version>
-			<h2database.version>1.3.157</h2database.version>
-			<io.netty.version>3.4.0.Final</io.netty.version>
-			<jena.version>2.10.1</jena.version>
-			<jena-sdb.version>1.3.6</jena-sdb.version>
-			<jena-tdb.version>0.10.1</jena-tdb.version>
-			<jena-iri.version>0.9.6</jena-iri.version>
-			<jena-fuseki.version>0.2.7</jena-fuseki.version>
-			<jide.version>3.5.5</jide.version>
-			<jscience.groupId>org.jscience</jscience.groupId>
-			<jscience.math.artifactId>jscience-mathematics</jscience.math.artifactId>
-			<jscience.version>5.0-SNAPSHOT</jscience.version>
-			<junit.version>4.8.2</junit.version>
-			<lib.poi.dev.version>5.9.4.1</lib.poi.dev.version>
-			<log4j.version>1.2.16</log4j.version>
-			<mina.version>1.0.1</mina.version>
-			<opencsv.version>2.3</opencsv.version>
-			<org.codehaus.jackson.version>1.8.8</org.codehaus.jackson.version>
-			<org.jboss.netty.version>3.2.7.Final</org.jboss.netty.version>
-			<org.mortbay.jetty.version>6.1.26</org.mortbay.jetty.version>
-			<osgi.core.version>4.2.0</osgi.core.version>
-			<ooxml.schemas.version>1.0</ooxml.schemas.version>
-			<paranamer.version>2.3</paranamer.version>
-			<pax.version>1.1.2</pax.version>
-			<poi.version>3.9</poi.version>
-			<qpid.version>0.10</qpid.version>
-			<scala.version>2.10.2</scala.version>		
-			<scalatest.version>1.4.1</scalatest.version>                
-			<servlet.api.version>2.5</servlet.api.version>
-			<servicemix.bundles.javax.mail.version>1.4.1_4</servicemix.bundles.javax.mail.version>
-			<servicemix.bundles.javax.inject.version>1_2</servicemix.bundles.javax.inject.version>
-			<servicemix.bundles.junit.version>4.7_3</servicemix.bundles.junit.version>
-			<servicemix.bundles.lucene.version>3.0.3_2</servicemix.bundles.lucene.version>
-			<servicemix.bundles.xerces.version>2.11.0_1</servicemix.bundles.xerces.version>
-			<servicemix.bundles.xmlresolver.version>1.2_3</servicemix.bundles.xmlresolver.version>
-			<servicemix.specs.activation.api.version>1.8.0</servicemix.specs.activation.api.version>
-			<slf4j.version>1.7.5</slf4j.version>
-			<snappy.version>1.0.1-rc3</snappy.version>
-			<velocity.version>1.7</velocity.version>
-			<wagon.webdav.version>1.0-beta-7</wagon.webdav.version>
-			<xmlbeans.version>2.5.0</xmlbeans.version>
-			<!-- Plugin versions -->
-			<version.license.maven.plugin>1.7</version.license.maven.plugin>
-			<version.maven.antrun.plugin>1.6</version.maven.antrun.plugin>
-			<version.maven.assembly.plugin>2.2</version.maven.assembly.plugin>
-			<version.maven.bundle.plugin>2.3.7</version.maven.bundle.plugin>
-			<version.maven.compiler.plugin>2.3.2</version.maven.compiler.plugin>
-			<version.maven.enforcer.plugin>1.3.1</version.maven.enforcer.plugin>
-			<version.maven.gpg.plugin>1.4</version.maven.gpg.plugin>
-			<version.maven.idea.plugin>2.2</version.maven.idea.plugin>
-			<version.maven.resources.plugin>2.4.3</version.maven.resources.plugin>
-			<version.maven.site.plugin>3.4</version.maven.site.plugin>
-			<version.maven.surefire.plugin>2.9</version.maven.surefire.plugin>
-			<version.maven.scala.plugin>2.15.2</version.maven.scala.plugin>
-			<version.wagon.ftp>1.0-beta-6</version.wagon.ftp>
-			<version.org.apache.felix.main>4.2.1</version.org.apache.felix.main>
-		</properties>	
-        
-		<dependencyManagement>
-			<dependencies>
-				<dependency>
-					<groupId>backport-util-concurrent</groupId>
-					<artifactId>backport-util-concurrent</artifactId>
-					<version>${backport.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>com.google.guava</groupId>
-					<artifactId>guava</artifactId>
-					<version>${guava.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>com.h2database</groupId>
-					<artifactId>h2</artifactId>
-					<version>${h2database.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>com.ibm.icu</groupId>
-					<artifactId>com.springsource.com.ibm.icu</artifactId>
-					<version>${com.ibm.icu.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>com.jidesoft</groupId>
-					<artifactId>jide-oss</artifactId>
-					<version>${jide.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>com.thoughtworks.paranamer</groupId>
-					<artifactId>paranamer</artifactId>
-					<type>jar</type>
-					<version>${paranamer.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>commons-lang</groupId>
-					<artifactId>commons-lang</artifactId>
-					<version>${commons.lang.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>commons-logging</groupId>
-					<artifactId>commons-logging</artifactId>
-					<version>${commons.logging.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>commons-codec</groupId>
-					<artifactId>commons-codec</artifactId>
-					<version>${commons.codec.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>dom4j</groupId>
-					<artifactId>dom4j</artifactId>
-					<version>${dom4j.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>io.netty</groupId>
-					<artifactId>netty</artifactId>
-					<version>${io.netty.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>javax.servlet</groupId>
-					<artifactId>servlet-api</artifactId>   
-					<version>${servlet.api.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>junit</groupId>
-					<artifactId>junit</artifactId>
-					<version>${junit.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>net.sf.opencsv</groupId>
-					<artifactId>opencsv</artifactId>
-					<version>${opencsv.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.appdapter</groupId>
-					<artifactId>ext.bundle.math.jscience_50SNAP</artifactId>
-					<version>${appdapter.jscience.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.activemq</groupId>
-					<artifactId>activemq-all</artifactId>
-					<version>${activemq.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.avro</groupId>
-					<artifactId>avro</artifactId>
-					<version>${avro.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.avro</groupId>
-					<artifactId>avro-ipc</artifactId>
-					<version>${avro.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.commons</groupId>
-					<artifactId>commons-math3</artifactId>
-					<version>${commons.math3.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.felix</groupId>
-					<artifactId>org.apache.felix.main</artifactId>
-					<version>${version.org.apache.felix.main}</version>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.felix</groupId>
-					<artifactId>org.osgi.core</artifactId>
-					<version>${felix.org.osgi.core.version}</version>
-				</dependency>
-				<dependency>
-					<artifactId>org.apache.felix.gogo.shell</artifactId>
-					<groupId>org.apache.felix</groupId>	
-					<version>${felix.gogo.shell.version}</version>
-				</dependency>
-				<dependency>
-					<artifactId>org.apache.felix.gogo.command</artifactId>
-					<groupId>org.apache.felix</groupId>
-					<version>${felix.gogo.command.version}</version>
-				</dependency>
-				<dependency>
-					<artifactId>org.apache.felix.gogo.runtime</artifactId>
-					<groupId>org.apache.felix</groupId>
-					<version>${felix.gogo.runtime.version}</version>
-				</dependency>
-				<dependency>
-					<artifactId>org.apache.felix.shell.remote</artifactId>
-					<groupId>org.apache.felix</groupId>
-					<version>${felix.shell.remote.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.geronimo.specs</groupId>
-					<artifactId>geronimo-jms_1.1_spec</artifactId>
-					<version>${geronimo.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.jena</groupId>
-					<artifactId>apache-jena-libs</artifactId>
-					<type>pom</type>
-					<version>${jena.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.jena</groupId>
-					<artifactId>jena-core</artifactId>
-					<version>${jena.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.jena</groupId>
-					<artifactId>jena-tdb</artifactId>
-					<version>${jena-tdb.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.jena</groupId>
-					<artifactId>jena-iri</artifactId>
-					<version>${jena-iri.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.jena</groupId>
-					<artifactId>jena-sdb</artifactId>
-					<type>jar</type>
-					<version>${jena-sdb.version}</version>
-				</dependency>
-				<dependency>		
-					<groupId>org.apache.log4j</groupId>
-					<artifactId>com.springsource.org.apache.log4j</artifactId>
-					<version>${log4j.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.mina</groupId>
-					<artifactId>mina-core</artifactId>
-					<version>${mina.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.mina</groupId>
-					<artifactId>mina-filter-ssl</artifactId>
-					<version>${mina.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.poi</groupId>
-					<artifactId>poi</artifactId>
-					<version>${poi.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.poi</groupId>
-					<artifactId>ooxml-schemas</artifactId>
-					<version>${ooxml.schemas.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.poi</groupId>
-					<artifactId>poi-ooxml-schemas</artifactId>
-					<version>${poi.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.poi</groupId>
-					<artifactId>poi-ooxml</artifactId>
-					<version>${poi.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.qpid</groupId>
-					<artifactId>qpid-client</artifactId>
-					<version>${qpid.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.qpid</groupId>
-					<artifactId>qpid-common</artifactId>
-					<version>${qpid.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.servicemix.bundles</groupId>
-					<artifactId>org.apache.servicemix.bundles.junit</artifactId>
-					<version>${servicemix.bundles.junit.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.servicemix.bundles</groupId>
-					<artifactId>org.apache.servicemix.bundles.lucene</artifactId>
-					<version>${servicemix.bundles.lucene.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.servicemix.bundles</groupId>
-					<artifactId>org.apache.servicemix.bundles.javax.mail</artifactId>
-					<version>${servicemix.bundles.javax.mail.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.servicemix.specs</groupId>
-					<artifactId>org.apache.servicemix.specs.activation-api-1.1</artifactId>
-					<version>${servicemix.specs.activation.api.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.servicemix.bundles</groupId>
-					<artifactId>org.apache.servicemix.bundles.xmlresolver</artifactId>
-					<version>${servicemix.bundles.xmlresolver.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.servicemix.bundles</groupId>
-					<artifactId>org.apache.servicemix.bundles.xerces</artifactId>
-					<version>${servicemix.bundles.xerces.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.servicemix.bundles</groupId>
-					<artifactId>org.apache.servicemix.bundles.javax-inject</artifactId>
-					<version>${servicemix.bundles.javax.inject.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.velocity</groupId>
-					<artifactId>velocity</artifactId>
-					<type>jar</type>
-					<version>${velocity.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.xmlbeans</groupId>
-					<artifactId>xmlbeans</artifactId>
-					<version>${xmlbeans.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.codehaus.jackson</groupId>
-					<artifactId>jackson-mapper-asl</artifactId>
-					<version>${org.codehaus.jackson.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.codehaus.jackson</groupId>
-					<artifactId>jackson-core-asl</artifactId>
-					<version>${org.codehaus.jackson.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.jboss.netty</groupId>
-					<artifactId>netty</artifactId>			
-					<version>${org.jboss.netty.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.mortbay.jetty</groupId>
-					<artifactId>jetty</artifactId>
-					<type>jar</type>
-					<version>${org.mortbay.jetty.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.mortbay.jetty</groupId>
-					<artifactId>jetty-util</artifactId>
-					<type>jar</type>
-					<version>${org.mortbay.jetty.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.osgi</groupId>
-					<artifactId>org.osgi.core</artifactId>
-					<!-- TODO:  Are we ready for 4.3? -->
-					<version>${osgi.core.version}</version>		
-				</dependency>
-				<dependency>
-					<groupId>org.osgi</groupId>
-					<artifactId>org.osgi.compendium</artifactId>
-					<!-- TODO:  Are we ready for 4.3? -->
-					<version>${osgi.core.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.openl.rules</groupId>
-					<artifactId>org.openl.lib.poi.dev</artifactId>
-					<version>${lib.poi.dev.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.ops4j.pax.web</groupId>
-					<artifactId>pax-web-jetty-bundle</artifactId>
-					<version>${pax.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.ops4j.pax.web</groupId>
-					<artifactId>pax-web-extender-war</artifactId>
-					<version>${pax.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.ops4j.pax.web</groupId>
-					<artifactId>pax-web-jsp</artifactId>
-					<version>${pax.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.ops4j.pax.web</groupId>
-					<artifactId>pax-web-extender-whiteboard</artifactId>
-					<version>${pax.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.scala-lang</groupId>
-					<artifactId>scala-library</artifactId>
-					<version>${scala.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.scala-lang</groupId>
-					<artifactId>scala-reflect</artifactId>
-					<version>${scala.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.scala-lang</groupId>
-					<artifactId>scala-compiler</artifactId>
-					<version>${scala.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-api</artifactId>
-					<version>${slf4j.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-log4j12</artifactId>
-					<version>${slf4j.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.xerial.snappy</groupId>
-					<artifactId>snappy-java</artifactId>
-					<type>jar</type>
-					<version>${snappy.version}</version>
-				</dependency>
-			</dependencies>
-		</dependencyManagement>
+		<!-- global version settings -->
+		<activemq.version>5.4.2</activemq.version>
+		<appdapter.msg.version>1.0.5</appdapter.msg.version>
+		<appdapter.jscience.version>1.0.9</appdapter.jscience.version>
+		<avro.version>1.7.4</avro.version>
+		<backport.version>2.2</backport.version>
+		<com.ibm.icu.version>3.4.5</com.ibm.icu.version>
+		<commons.codec.version>1.6</commons.codec.version>
+		<commons.math3.version>3.1.1</commons.math3.version>
+		<commons.logging.version>1.1.3</commons.logging.version>
+		<commons.lang.version>2.4</commons.lang.version>
+		<dom4j.version>1.6.1</dom4j.version>
+		<felix.gogo.shell.version>0.10.0</felix.gogo.shell.version>
+		<felix.gogo.command.version>0.10.0</felix.gogo.command.version>
+		<felix.gogo.runtime.version>0.10.0</felix.gogo.runtime.version>
+		<felix.shell.remote.version>1.1.2</felix.shell.remote.version>
+		<felix.org.osgi.core.version>1.4.0</felix.org.osgi.core.version>
+		<geronimo.version>1.1.1</geronimo.version>
+		<guava.version>11.0</guava.version>
+		<httpclient.version>4.3.1</httpclient.version>
+		<httpcore.version>4.3</httpcore.version>
+		<h2database.version>1.3.157</h2database.version>
+		<io.netty.version>3.4.0.Final</io.netty.version>
+		<jena.version>2.10.1</jena.version>
+		<jena-sdb.version>1.3.6</jena-sdb.version>
+		<jena-tdb.version>0.10.1</jena-tdb.version>
+		<jena-iri.version>0.9.6</jena-iri.version>
+		<jena-fuseki.version>0.2.7</jena-fuseki.version>
+		<jide.version>3.5.5</jide.version>
+		<jscience.groupId>org.jscience</jscience.groupId>
+		<jscience.math.artifactId>jscience-mathematics</jscience.math.artifactId>
+		<jscience.version>5.0-SNAPSHOT</jscience.version>
+		<junit.version>4.8.2</junit.version>
+		<lib.poi.dev.version>5.9.4.1</lib.poi.dev.version>
+		<log4j.version>1.2.16</log4j.version>
+		<mina.version>1.0.1</mina.version>
+		<opencsv.version>2.3</opencsv.version>
+		<org.codehaus.jackson.version>1.8.8</org.codehaus.jackson.version>
+		<org.jboss.netty.version>3.2.7.Final</org.jboss.netty.version>
+		<org.mortbay.jetty.version>6.1.26</org.mortbay.jetty.version>
+		<osgi.core.version>4.2.0</osgi.core.version>
+		<ooxml.schemas.version>1.0</ooxml.schemas.version>
+		<paranamer.version>2.3</paranamer.version>
+		<pax.version>1.1.2</pax.version>
+		<poi.version>3.9</poi.version>
+		<qpid.version>0.10</qpid.version>
+		<scala.version>2.10.2</scala.version>		
+		<scalatest.version>1.4.1</scalatest.version>                
+		<servlet.api.version>2.5</servlet.api.version>
+		<servicemix.bundles.javax.mail.version>1.4.1_4</servicemix.bundles.javax.mail.version>
+		<servicemix.bundles.javax.inject.version>1_2</servicemix.bundles.javax.inject.version>
+		<servicemix.bundles.junit.version>4.7_3</servicemix.bundles.junit.version>
+		<servicemix.bundles.lucene.version>3.0.3_2</servicemix.bundles.lucene.version>
+		<servicemix.bundles.xerces.version>2.11.0_1</servicemix.bundles.xerces.version>
+		<servicemix.bundles.xmlresolver.version>1.2_3</servicemix.bundles.xmlresolver.version>
+		<servicemix.specs.activation.api.version>1.8.0</servicemix.specs.activation.api.version>
+		<slf4j.version>1.7.5</slf4j.version>
+		<snappy.version>1.0.1-rc3</snappy.version>
+		<velocity.version>1.7</velocity.version>
+		<wagon.webdav.version>1.0-beta-7</wagon.webdav.version>
+		<xmlbeans.version>2.5.0</xmlbeans.version>
+		<!-- Plugin versions -->
+		<version.license.maven.plugin>1.7</version.license.maven.plugin>
+		<version.maven.antrun.plugin>1.6</version.maven.antrun.plugin>
+		<version.maven.assembly.plugin>2.2</version.maven.assembly.plugin>
+		<version.maven.bundle.plugin>2.3.7</version.maven.bundle.plugin>
+		<version.maven.compiler.plugin>2.3.2</version.maven.compiler.plugin>
+		<version.maven.enforcer.plugin>1.3.1</version.maven.enforcer.plugin>
+		<version.maven.javadoc.plugin>2.10.1</version.maven.javadoc.plugin>
+		<version.maven.gpg.plugin>1.4</version.maven.gpg.plugin>
+		<version.maven.idea.plugin>2.2</version.maven.idea.plugin>
+		<version.maven.resources.plugin>2.4.3</version.maven.resources.plugin>
+		<version.maven.site.plugin>3.4</version.maven.site.plugin>
+		<version.maven.surefire.plugin>2.9</version.maven.surefire.plugin>
+		<version.maven.scala.plugin>2.15.2</version.maven.scala.plugin>
+		<version.wagon.ftp>1.0-beta-6</version.wagon.ftp>
+		<version.org.apache.felix.main>4.2.1</version.org.apache.felix.main>
+	</properties>	
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>backport-util-concurrent</groupId>
+				<artifactId>backport-util-concurrent</artifactId>
+				<version>${backport.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.google.guava</groupId>
+				<artifactId>guava</artifactId>
+				<version>${guava.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.h2database</groupId>
+				<artifactId>h2</artifactId>
+				<version>${h2database.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.ibm.icu</groupId>
+				<artifactId>com.springsource.com.ibm.icu</artifactId>
+				<version>${com.ibm.icu.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.jidesoft</groupId>
+				<artifactId>jide-oss</artifactId>
+				<version>${jide.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.thoughtworks.paranamer</groupId>
+				<artifactId>paranamer</artifactId>
+				<type>jar</type>
+				<version>${paranamer.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>commons-lang</groupId>
+				<artifactId>commons-lang</artifactId>
+				<version>${commons.lang.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>commons-logging</groupId>
+				<artifactId>commons-logging</artifactId>
+				<version>${commons.logging.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>commons-codec</groupId>
+				<artifactId>commons-codec</artifactId>
+				<version>${commons.codec.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>dom4j</groupId>
+				<artifactId>dom4j</artifactId>
+				<version>${dom4j.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.netty</groupId>
+				<artifactId>netty</artifactId>
+				<version>${io.netty.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>javax.servlet</groupId>
+				<artifactId>servlet-api</artifactId>   
+				<version>${servlet.api.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>junit</groupId>
+				<artifactId>junit</artifactId>
+				<version>${junit.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>net.sf.opencsv</groupId>
+				<artifactId>opencsv</artifactId>
+				<version>${opencsv.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.appdapter</groupId>
+				<artifactId>ext.bundle.math.jscience_50SNAP</artifactId>
+				<version>${appdapter.jscience.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.activemq</groupId>
+				<artifactId>activemq-all</artifactId>
+				<version>${activemq.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.avro</groupId>
+				<artifactId>avro</artifactId>
+				<version>${avro.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.avro</groupId>
+				<artifactId>avro-ipc</artifactId>
+				<version>${avro.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-math3</artifactId>
+				<version>${commons.math3.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>org.apache.felix.main</artifactId>
+				<version>${version.org.apache.felix.main}</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>org.osgi.core</artifactId>
+				<version>${felix.org.osgi.core.version}</version>
+			</dependency>
+			<dependency>
+				<artifactId>org.apache.felix.gogo.shell</artifactId>
+				<groupId>org.apache.felix</groupId>	
+				<version>${felix.gogo.shell.version}</version>
+			</dependency>
+			<dependency>
+				<artifactId>org.apache.felix.gogo.command</artifactId>
+				<groupId>org.apache.felix</groupId>
+				<version>${felix.gogo.command.version}</version>
+			</dependency>
+			<dependency>
+				<artifactId>org.apache.felix.gogo.runtime</artifactId>
+				<groupId>org.apache.felix</groupId>
+				<version>${felix.gogo.runtime.version}</version>
+			</dependency>
+			<dependency>
+				<artifactId>org.apache.felix.shell.remote</artifactId>
+				<groupId>org.apache.felix</groupId>
+				<version>${felix.shell.remote.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.geronimo.specs</groupId>
+				<artifactId>geronimo-jms_1.1_spec</artifactId>
+				<version>${geronimo.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.jena</groupId>
+				<artifactId>apache-jena-libs</artifactId>
+				<type>pom</type>
+				<version>${jena.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.jena</groupId>
+				<artifactId>jena-core</artifactId>
+				<version>${jena.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.jena</groupId>
+				<artifactId>jena-tdb</artifactId>
+				<version>${jena-tdb.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.jena</groupId>
+				<artifactId>jena-iri</artifactId>
+				<version>${jena-iri.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.jena</groupId>
+				<artifactId>jena-sdb</artifactId>
+				<type>jar</type>
+				<version>${jena-sdb.version}</version>
+			</dependency>
+			<dependency>		
+				<groupId>org.apache.log4j</groupId>
+				<artifactId>com.springsource.org.apache.log4j</artifactId>
+				<version>${log4j.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.mina</groupId>
+				<artifactId>mina-core</artifactId>
+				<version>${mina.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.mina</groupId>
+				<artifactId>mina-filter-ssl</artifactId>
+				<version>${mina.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.poi</groupId>
+				<artifactId>poi</artifactId>
+				<version>${poi.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.poi</groupId>
+				<artifactId>ooxml-schemas</artifactId>
+				<version>${ooxml.schemas.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.poi</groupId>
+				<artifactId>poi-ooxml-schemas</artifactId>
+				<version>${poi.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.poi</groupId>
+				<artifactId>poi-ooxml</artifactId>
+				<version>${poi.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.qpid</groupId>
+				<artifactId>qpid-client</artifactId>
+				<version>${qpid.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.qpid</groupId>
+				<artifactId>qpid-common</artifactId>
+				<version>${qpid.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.servicemix.bundles</groupId>
+				<artifactId>org.apache.servicemix.bundles.junit</artifactId>
+				<version>${servicemix.bundles.junit.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.servicemix.bundles</groupId>
+				<artifactId>org.apache.servicemix.bundles.lucene</artifactId>
+				<version>${servicemix.bundles.lucene.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.servicemix.bundles</groupId>
+				<artifactId>org.apache.servicemix.bundles.javax.mail</artifactId>
+				<version>${servicemix.bundles.javax.mail.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.servicemix.specs</groupId>
+				<artifactId>org.apache.servicemix.specs.activation-api-1.1</artifactId>
+				<version>${servicemix.specs.activation.api.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.servicemix.bundles</groupId>
+				<artifactId>org.apache.servicemix.bundles.xmlresolver</artifactId>
+				<version>${servicemix.bundles.xmlresolver.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.servicemix.bundles</groupId>
+				<artifactId>org.apache.servicemix.bundles.xerces</artifactId>
+				<version>${servicemix.bundles.xerces.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.servicemix.bundles</groupId>
+				<artifactId>org.apache.servicemix.bundles.javax-inject</artifactId>
+				<version>${servicemix.bundles.javax.inject.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.velocity</groupId>
+				<artifactId>velocity</artifactId>
+				<type>jar</type>
+				<version>${velocity.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.xmlbeans</groupId>
+				<artifactId>xmlbeans</artifactId>
+				<version>${xmlbeans.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.codehaus.jackson</groupId>
+				<artifactId>jackson-mapper-asl</artifactId>
+				<version>${org.codehaus.jackson.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.codehaus.jackson</groupId>
+				<artifactId>jackson-core-asl</artifactId>
+				<version>${org.codehaus.jackson.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jboss.netty</groupId>
+				<artifactId>netty</artifactId>			
+				<version>${org.jboss.netty.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.mortbay.jetty</groupId>
+				<artifactId>jetty</artifactId>
+				<type>jar</type>
+				<version>${org.mortbay.jetty.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.mortbay.jetty</groupId>
+				<artifactId>jetty-util</artifactId>
+				<type>jar</type>
+				<version>${org.mortbay.jetty.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.osgi</groupId>
+				<artifactId>org.osgi.core</artifactId>
+				<!-- TODO:  Are we ready for 4.3? -->
+				<version>${osgi.core.version}</version>		
+			</dependency>
+			<dependency>
+				<groupId>org.osgi</groupId>
+				<artifactId>org.osgi.compendium</artifactId>
+				<!-- TODO:  Are we ready for 4.3? -->
+				<version>${osgi.core.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.openl.rules</groupId>
+				<artifactId>org.openl.lib.poi.dev</artifactId>
+				<version>${lib.poi.dev.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.ops4j.pax.web</groupId>
+				<artifactId>pax-web-jetty-bundle</artifactId>
+				<version>${pax.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.ops4j.pax.web</groupId>
+				<artifactId>pax-web-extender-war</artifactId>
+				<version>${pax.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.ops4j.pax.web</groupId>
+				<artifactId>pax-web-jsp</artifactId>
+				<version>${pax.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.ops4j.pax.web</groupId>
+				<artifactId>pax-web-extender-whiteboard</artifactId>
+				<version>${pax.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.scala-lang</groupId>
+				<artifactId>scala-library</artifactId>
+				<version>${scala.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.scala-lang</groupId>
+				<artifactId>scala-reflect</artifactId>
+				<version>${scala.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.scala-lang</groupId>
+				<artifactId>scala-compiler</artifactId>
+				<version>${scala.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-api</artifactId>
+				<version>${slf4j.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-log4j12</artifactId>
+				<version>${slf4j.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.xerial.snappy</groupId>
+				<artifactId>snappy-java</artifactId>
+				<type>jar</type>
+				<version>${snappy.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 	<repositories>
 
@@ -513,10 +514,10 @@ Version-less parent will be allowed in Maven 3.1.
 				which prevents downloads of broken files from sonatype-public, in particular: 
 				scala-library-2.10.2.jar.
 		-->
-                
-                <!--repository-->
-			<!-- Which deps do we still need this for? Moved from ext.bundle.jena.full -->
-			<!--id>apache-repo-snapshots</id>
+
+		<!--repository-->
+		<!-- Which deps do we still need this for? Moved from ext.bundle.jena.full -->
+		<!--id>apache-repo-snapshots</id>
 			<url>https://repository.apache.org/content/repositories/snapshots/</url>
 			<releases>
 				<enabled>true</enabled>
@@ -529,7 +530,7 @@ Version-less parent will be allowed in Maven 3.1.
 			<id>maven-central</id>
 			<url>http://repo.maven.apache.org/maven2/</url>
 		</repository>
-		
+
 		<repository>
 			<id>sonatype-public</id>
 			<name>sonatype public</name>
@@ -578,13 +579,14 @@ Version-less parent will be allowed in Maven 3.1.
 		</pluginRepository>
 	</pluginRepositories>
 
-        <distributionManagement>
-            <site>
-                <id>nexus-site</id>
-                <url>dav:http://localhost:8081/nexus/content/sites/site/org/appdapter</url>
-            </site>
-        </distributionManagement>
-        
+	<distributionManagement>
+		<site>
+			<id>nexus-site</id>
+			<!--url>dav:http://maple.robokind.us:8081/nexus/content/sites/site/org/appdapter</url-->
+			<url>file://maple.robokind.us:8081/nexus/content/sites/site/org/appdapter</url>
+		</site>
+	</distributionManagement>
+
 	<build>
 		<directory>target</directory>
 		<extensions>
@@ -593,13 +595,13 @@ Version-less parent will be allowed in Maven 3.1.
 				<artifactId>wagon-ftp</artifactId>
 				<version>${version.wagon.ftp}</version>
 			</extension>
-                        <extension>
-                            <groupId>org.apache.maven.wagon</groupId>
-                            <artifactId>wagon-webdav-jackrabbit</artifactId>
-                            <version>${wagon.webdav.version}</version>
-                        </extension>
+			<extension>
+				<groupId>org.apache.maven.wagon</groupId>
+				<artifactId>wagon-webdav-jackrabbit</artifactId>
+				<version>${wagon.webdav.version}</version>
+			</extension>
 		</extensions>
-                
+
 		<plugins>
 
 			<!--
@@ -644,7 +646,7 @@ Version-less parent will be allowed in Maven 3.1.
 					<groupId>org.apache.felix</groupId>
 					<artifactId>maven-bundle-plugin</artifactId>
 			</plugin -->
-                        
+
 			<plugin>
 				<artifactId>maven-site-plugin</artifactId>
 				<version>${version.maven.site.plugin}</version>
@@ -675,7 +677,7 @@ Version-less parent will be allowed in Maven 3.1.
 					</configuration>
 				</plugin>
 
-			  <!--
+				<!--
               <plugin>
                  <groupId>org.apache.maven.plugins</groupId>
                  <artifactId>maven-enforcer-plugin</artifactId>
@@ -696,22 +698,22 @@ Version-less parent will be allowed in Maven 3.1.
                  </executions>
                </plugin>
 			  -->
-                           <plugin>
-                                <groupId>org.apache.maven.plugins</groupId>
-                                <artifactId>maven-enforcer-plugin</artifactId>
-                                <version>${version.maven.enforcer.plugin}</version>
-                           </plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-enforcer-plugin</artifactId>
+					<version>${version.maven.enforcer.plugin}</version>
+				</plugin>
 
 				<plugin>
 					<groupId>org.scala-tools</groupId>
 					<artifactId>maven-scala-plugin</artifactId>
 					<configuration>
-		<!-- On Frogbait this option drops Scala proj build time about 20% -->
+						<!-- On Frogbait this option drops Scala proj build time about 20% -->
 						<jvmArgs>
 							<jvmArg>-XX:+TieredCompilation</jvmArg>
 						</jvmArgs>
 						<displayCmd>true</displayCmd>	
-							<!-- Compile ONLY the Scala code.  The Java code is compiled by a previous goal.
+						<!-- Compile ONLY the Scala code.  The Java code is compiled by a previous goal.
 								This works OK as long as we don't refer to Scala classes from Java.
 								
 								Without this instruction, the Scala compiler is unable to handle our
@@ -719,7 +721,7 @@ Version-less parent will be allowed in Maven 3.1.
 								Java is compiled before Scala but not if everything is compiled together.
 								Will return to this issue later.
 						-->
-													
+
 
 						<sendJavaToScalac>false</sendJavaToScalac>		
 						<configuration>
@@ -731,7 +733,7 @@ Version-less parent will be allowed in Maven 3.1.
 						</configuration>						
 					</configuration>
 				</plugin>
-		
+
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-gpg-plugin</artifactId>
@@ -809,6 +811,21 @@ Version-less parent will be allowed in Maven 3.1.
 				<configuration>
 					<goal>third-party-report</goal>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>${version.maven.javadoc.plugin}</version>
+				<reportSets>
+					<reportSet>
+						<id>aggregate</id>
+						<configuration>
+						</configuration>
+						<reports>
+							<report>aggregate</report>
+						</reports>
+					</reportSet>
+				</reportSets>
 			</plugin>
 		</plugins>
 	</reporting>
