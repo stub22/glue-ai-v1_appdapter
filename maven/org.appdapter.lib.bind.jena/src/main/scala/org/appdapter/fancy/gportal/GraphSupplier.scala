@@ -33,14 +33,16 @@ trait SGS_Mapper extends Function1[SuppliedGraphStat, Option[String]]
 trait SGS_Filter extends Function1[SuppliedGraphStat, Boolean]
 
 trait  GraphSupplier extends GraphPortal {
-	// These options are possible with both remote and local graph hosts.
+	// public methods (both of them!)  should work with both remote and local graph hosts, with or without existing local xaction
 	def getNamedGraph_Readonly(graphURI : String) : Model = null
-	protected def getNamedGraph_Naive(graphURI : String) : Model = null
-	protected def fetchStats_Naive() : List[SuppliedGraphStat] = Nil
 	
 	def fetchStats(optFilter : Option[SGS_Filter]) : List[SuppliedGraphStat] = {
 		fetchStats_ReadTxCompat(optFilter)
 	}
+	
+	protected def getNamedGraph_Naive(graphURI : String) : Model = null
+	protected def fetchStats_Naive() : List[SuppliedGraphStat] = Nil
+	
 	protected def fetchStats_ReadTxCompat(optFilter : Option[SGS_Filter]) : List[SuppliedGraphStat] = {
 		val oper = new Oper[List[SuppliedGraphStat]]() {
 			override def perform(): List[SuppliedGraphStat] = {
