@@ -9,7 +9,7 @@
     <artifactId>org.appdapter.lib.bind.jena</artifactId>
     <packaging>jar</packaging>
 
-    <name>${project.artifactId} - POJO</name>
+    <name>${project.artifactId} - POJO + Scala</name>
 
 
     <dependencies>
