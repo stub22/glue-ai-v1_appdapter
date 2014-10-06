@@ -22,7 +22,7 @@ import org.appdapter.core.store.{ Repo}
 import org.appdapter.core.model.{RdfNodeTranslator}
 import org.appdapter.core.query.{InitialBinding}
 import org.appdapter.fancy.query.{SolutionList}
-
+import com.hp.hpl.jena.rdf.model.Model;
 // import org.appdapter.core.repo.{FancyRepo};
 
 // maybe trait RepoClientScala extends RepoClientJava {
@@ -36,12 +36,21 @@ trait RepoClient { // extends RdfNodeTranslator {
 	/**
 	 * Under what circumstances is this "readonly" model a copy of the original graph held in the source repo?
 	 * - remote repo:  the local result is always a copy of what the remote repo supplied.
-	 * - local repo:   it must either be a copy, or we must be bracketed inside a read-trans, managed by the caller.
+	 * - local repo:   it must either be a copy, or [Not currently implemented, but in theory:]  
+	 *					we must be bracketed inside a read-trans, managed by the caller.
 	 *     The latter is a potential performance optimization in (unusual, not expected) cases where the repo-graph is 
-	 *     very large, and we don't want to use memory and time to copy it.  
+	 *     very large, and we don't want to use memory and time to copy it. Again, this case is NOT YET IMPLEMENTED
+	 *     (as of 2014-10-06)
 	 */
-	def getNamedModelReadonly(graphID : Ident) : com.hp.hpl.jena.rdf.model.Model;
+	def getNamedModelReadonly(graphID : Ident) : Model;
 	// def makeIdentForQName(qn : String) : Ident
+	
+	// 2014-October new API methods added to allow RepoClient to expose more portal-style features, although we
+	// recommend that new code be written against the Portal API when possible.
+	// put=overwrite target, post=add/merge to target, clear=delete from target dataset
+	def putNamedModel(graphID : Ident, contents : Model) : Unit
+	def postNamedModel(graphID : Ident, contents : Model) : Unit
+	def clearNamedModel(graphID : Ident) : Unit
 	
 	def getDefaultRdfNodeTranslator : RdfNodeTranslator
 	// def getDirModelClientOrNull() : ModelClient
