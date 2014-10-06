@@ -21,7 +21,7 @@ package org.appdapter.fancy.gportal
  */
 
 trait GraphUpdater extends GraphPortal {
-
+	// TODO:  Define SPARQL-Update API
 }
 
 trait LocalGraphUpdater extends GraphUpdater with LocalGraphPortal

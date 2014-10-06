@@ -54,13 +54,19 @@ import org.appdapter.fancy.gportal.{DelegatingPortal}
  *		public List<QuerySolution> queryDirectForAllSolutions(String qText, QuerySolution qInitBinding);
  *	... which are impemented in
 */
-class GraphPortalRepoClient (private val myPortal : DelegatingPortal, val myDfltResGraphID : Ident,  
+class GraphPortalRepoClient (protected val myPortal : DelegatingPortal, val myDfltResGraphID : Ident,  
 								dTgtGraphVarName: String, dQrySrcGrphQName:String) 
 		extends RepoClientImpl(dTgtGraphVarName, dQrySrcGrphQName) {
 
 	override def getDefaultRdfNodeTranslator: org.appdapter.core.model.RdfNodeTranslator = ???
 	override def getNamedModelReadonly(graphID: org.appdapter.core.name.Ident): com.hp.hpl.jena.rdf.model.Model = ???
-
+	
+  override def postNamedModel(graphID:  Ident,contents:  Model): Unit = {
+	  myPortal.getAbsorber.addStatementsToNamedModel(graphID, contents)
+  }
+  override def putNamedModel(graphID: Ident,contents: Model): Unit = ???  
+  override def clearNamedModel(graphID: Ident): Unit = ???  
+  
 	override def makeInitialBinding: InitialBinding = getRepoIfLocal.makeInitialBinding 
 		//   new InitialBindingImpl(getFallbackRdfNodeTranslator)
 	

@@ -19,6 +19,7 @@ package org.appdapter.fancy.gportal
 /**
  * @author Stu B. <www.texpedient.com>
  */
+import org.appdapter.core.name.Ident
 
 import com.hp.hpl.jena.rdf.model.{ Model, Resource, Literal }
 import com.hp.hpl.jena.query.{DatasetAccessor, DatasetAccessorFactory}
@@ -28,20 +29,29 @@ import org.appdapter.fancy.log.VarargsLogging
 trait GraphAbsorber extends GraphPortal {
 	// These options are possible with both remote and local graph hosts.
 	// If remote, add => HTTP "post"
-	def addStatementsToNamedModel(graphURI : String, srcModel : Model);
+	def addStatementsToNamedModel(graphURI : String, srcModel : Model) : Unit;
+	def addStatementsToNamedModel(graphID : Ident, srcModel : Model) : Unit = addStatementsToNamedModel(graphID.getAbsUriString, srcModel)
 	// If remote, replace => HTTP "put"
-	def replaceNamedModel(graphURI : String, srcModel : Model);
+	def replaceNamedModel(graphURI : String, srcModel : Model) : Unit;
+	def replaceNamedModel(graphID : Ident, srcModel : Model) : Unit = replaceNamedModel(graphID.getAbsUriString, srcModel)
+	
+	// clear = HTTP "delete"
+	def clearNamedModel(graphURI : String) : Unit;
+	def clearNamedModel(graphID : Ident) : Unit = clearNamedModel(graphID.getAbsUriString)
 }
 /* TODO:  Since this is local we may need TX support.
  * For the moment, assume it is handled by caller.
  */
 trait DsaccGraphAbsorber extends GraphAbsorber with DsaccGraphPortal {
 	
-	override def addStatementsToNamedModel(graphURI : String, srcModel : Model) {
+	override def addStatementsToNamedModel(graphURI : String, srcModel : Model) : Unit = {
 		getDatasetAccessor.add(graphURI, srcModel)
 	}
-	override def replaceNamedModel(graphURI : String, srcModel : Model) {
+	override def replaceNamedModel(graphURI : String, srcModel : Model) : Unit = {
 		getDatasetAccessor.putModel(graphURI, srcModel)
+	}
+	override def clearNamedModel(graphURI : String) : Unit = {
+		getDatasetAccessor.deleteModel(graphURI)
 	}
 }
 trait LocalGraphAbsorber extends DsaccGraphAbsorber with LocalGraphPortal 
