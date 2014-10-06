@@ -29,6 +29,8 @@ import org.appdapter.fancy.model.{ModelClientCore, ModelClientImpl}
 import org.appdapter.fancy.query.{SolutionList, SolutionHelper}
 
 import com.hp.hpl.jena.rdf.model.ModelFactory;
+
+import org.appdapter.fancy.gportal.{DelegatingPortal, LazyLocalDelegatingPortal}
 /**
  * @author Stu B. <www.texpedient.com>
  */
@@ -42,6 +44,8 @@ class LocalRepoClientImpl(private val myRepo: Repo.WithDirectory,  dTgtGraphVarN
     myRepo
   }
   var	myFixmeCachedModelClient : RdfNodeTranslator = null
+  
+	lazy val myEmbeddedPortal = new LazyLocalDelegatingPortal(getRepoIfLocal.getMainQueryDataset)
   
   override def getDefaultRdfNodeTranslator: org.appdapter.core.model.RdfNodeTranslator = {
 		if (myFixmeCachedModelClient == null) {
@@ -101,4 +105,9 @@ class LocalRepoClientImpl(private val myRepo: Repo.WithDirectory,  dTgtGraphVarN
   override def assembleRootsFromNamedModel(graphNameIdent: Ident): java.util.Set[Object] = {
     getRepoIfLocal.assembleRootsFromNamedModel(graphNameIdent);  
   }
+  // 2014-October new API methods added to allow RepoClient to expose more portal-style features, although we
+  // recommend that new code be written against the Portal API when possible.
+  override def postNamedModel(graphID:  Ident,contents:  Model): Unit = myEmbeddedPortal.myAbsorber.addStatementsToNamedModel(graphID, contents)
+  override def putNamedModel(graphID: Ident, contents: Model): Unit = myEmbeddedPortal.myAbsorber.replaceNamedModel(graphID, contents)  
+  override def clearNamedModel(graphID: Ident): Unit = myEmbeddedPortal.myAbsorber.clearNamedModel(graphID)
 }

@@ -16,10 +16,11 @@
 
 package org.appdapter.fancy.rclient
 
+import org.appdapter.core.name.Ident
 import org.appdapter.core.store.Repo
 import org.appdapter.fancy.rspec.{RepoSpec}
 
-
+import org.appdapter.fancy.gportal.{DelegatingPortal}
 /**
  * @author Stu B. <www.texpedient.com>
  * 
@@ -28,17 +29,37 @@ import org.appdapter.fancy.rspec.{RepoSpec}
  * independent.
  */
 
-class EnhancedRepoClient(val myRepoSpec: RepoSpec, repo: Repo.WithDirectory, dfltTgtGraphVarName: String, dfltQrySrcGrphName: String)
-  extends LocalRepoClientImpl(repo, dfltTgtGraphVarName, dfltQrySrcGrphName) {
+trait EnhancedRepoClient extends RepoClient {
+	 def reloadRepoAndClient(): EnhancedRepoClient = ???
+}
+case class EnhancedLocalRepoClient(val myRepoSpec: RepoSpec, repo: Repo.WithDirectory, dfltTgtGraphVarName: String, dfltQrySrcGrphName: String)
+  extends LocalRepoClientImpl(repo, dfltTgtGraphVarName, dfltQrySrcGrphName) with EnhancedRepoClient {
 
-  def reloadRepoAndClient(): EnhancedRepoClient = {
+  override def reloadRepoAndClient(): EnhancedRepoClient = {
     val reloadedRepo = myRepoSpec.getOrMakeRepo()
-    val reloadedClient = new EnhancedRepoClient(myRepoSpec, reloadedRepo, dfltTgtGraphVarName, dfltQrySrcGrphName)
+    val reloadedClient = new EnhancedLocalRepoClient(myRepoSpec, reloadedRepo, dfltTgtGraphVarName, dfltQrySrcGrphName)
     reloadedClient
   }
-
+/** "case" takes care of generating toString method - but does it emit inherited fields as well?  
+ * Probably not the "private" ones in RepoClientImpl, eh?
   override def toString(): String = {
     getClass.getName + "[repoSpec=" + myRepoSpec + ", dfltTgtGraphVar=" + dfltTgtGraphVarName +
       ", dfltQrySrcGrphName=" + dfltQrySrcGrphName + ", repo=" + repo + "]"
   }
+  */
+}
+
+case class EnhancedPortalRepoClient(dgPortal : DelegatingPortal, dfltResGraphID : Ident, 
+						dfltTgtGraphVarName: String, dfltQrySrcGrphName: String)
+	extends GraphPortalRepoClient(dgPortal, dfltResGraphID, dfltTgtGraphVarName, dfltQrySrcGrphName) 
+	 with EnhancedRepoClient
+  {
+
+  override def reloadRepoAndClient(): EnhancedRepoClient = ???
+ /* {
+    val reloadedRepo = myRepoSpec.getOrMakeRepo()
+    val reloadedClient = new EnhancedLocalRepoClient(myRepoSpec, reloadedRepo, dfltTgtGraphVarName, dfltQrySrcGrphName)
+    reloadedClient
+  } */
+
 }

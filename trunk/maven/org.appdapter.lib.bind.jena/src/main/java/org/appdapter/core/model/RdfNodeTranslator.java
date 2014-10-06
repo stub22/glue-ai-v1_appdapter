@@ -33,12 +33,12 @@ import com.hp.hpl.jena.rdf.model.Resource;
  * 
  *    1) What we consider to be a "good" set of namespace prefix bindings, required for the qName mappings.
  *
- *	  2) What we consider to be a "good" way to construct Jena 
+ *	  2) What we consider to be a "good" way to construct Jena nodes of these kinds:
  *			a) resources - often presumed to be connectable in some way with a presumed relevant model.
  *			The ambiguity of this part is inherited by the common interpretaions of #3.a and #3.b
  *			b) literals, which traditionally we have constructed using Model, but there must be a plain factory, right?
  * 
- *    3) What we consider to be a "good" way to construct
+ *    3) What we consider to be a "good" way to construct Appdapter URI wrappers of these kinds:
  *			a) Idents - which in this context are often assumed to be Items, JRIs in fact, wrapping #2.a above.
  *			b) Items - often assumed to be JRIs, wrapping #2a above.
  * 
