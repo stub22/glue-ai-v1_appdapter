@@ -27,9 +27,9 @@ import org.appdapter.fancy.log.VarargsLogging
 
 trait GraphAbsorber extends GraphPortal {
 	// These options are possible with both remote and local graph hosts.
-	// add = HTTP "post"
+	// If remote, add => HTTP "post"
 	def addStatementsToNamedModel(graphURI : String, srcModel : Model);
-	// replace = HTTP "put"
+	// If remote, replace => HTTP "put"
 	def replaceNamedModel(graphURI : String, srcModel : Model);
 }
 /* TODO:  Since this is local we may need TX support.

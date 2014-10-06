@@ -54,7 +54,7 @@ public class ItemAssemblyReaderImpl extends BasicDebugger implements ItemAssembl
 
 	@Override public Ident getConfigPropertyIdent(Item infoSource, Ident compID, String fieldName_absUri) {
 		Ident infoSourceID = infoSource.getIdent();
-		logDebug("infoSourceID=" + infoSourceID + ", compID=" + compID);
+		getLogger().debug("infoSourceID={}, compID={}", infoSourceID, compID);
 		ModelIdent someModelIdent = null;
 		if (infoSourceID instanceof ModelIdent) {
 			someModelIdent = (ModelIdent) infoSourceID;
@@ -77,7 +77,7 @@ public class ItemAssemblyReaderImpl extends BasicDebugger implements ItemAssembl
 		// Typical output is
 		// Resolved fieldName http://www.appdapter.org/schema/box#label to propertyIdent: JenaResourceItem[res=http://www.appdapter.org/schema/box#label]
 		Ident propertyIdent = getConfigPropertyIdent(infoSource, compID, fieldName_absUri);
-		logDebug("Resolved fieldName " + fieldName_absUri + " to propertyIdent: " + propertyIdent + ", to be fetched from source " + infoSource);
+		getLogger().debug("Resolved fieldName={} to propertyIdent={}, to be fetched from source={} ", fieldName_absUri, propertyIdent, infoSource);
 		if (propertyIdent != null) {
 			resultVal = infoSource.getValString(propertyIdent, defaultVal);
 		}
@@ -90,7 +90,7 @@ public class ItemAssemblyReaderImpl extends BasicDebugger implements ItemAssembl
 		// Typical output is
 		// Resolved fieldName http://www.appdapter.org/schema/box#label to propertyIdent: JenaResourceItem[res=http://www.appdapter.org/schema/box#label]
 		Ident propertyIdent = getConfigPropertyIdent(infoSource, compID, fieldName_absUri);
-		logDebug("Resolved fieldName " + fieldName_absUri + " to propertyIdent: " + propertyIdent + ", to be fetched from source " + infoSource);
+		getLogger().debug("Resolved fieldName={} to propertyIdent={}, to be fetched from source={} ", fieldName_absUri, propertyIdent, infoSource);
 		if (propertyIdent != null) {
 			resultVal = infoSource.getValLong(propertyIdent, defaultVal);
 		}
@@ -103,7 +103,7 @@ public class ItemAssemblyReaderImpl extends BasicDebugger implements ItemAssembl
 		// Typical output is
 		// Resolved fieldName http://www.appdapter.org/schema/box#label to propertyIdent: JenaResourceItem[res=http://www.appdapter.org/schema/box#label]
 		Ident propertyIdent = getConfigPropertyIdent(infoSource, compID, fieldName_absUri);
-		logDebug("Resolved fieldName " + fieldName_absUri + " to propertyIdent: " + propertyIdent + ", to be fetched from source " + infoSource);
+		getLogger().debug("Resolved fieldName={} to propertyIdent={}, to be fetched from source={} ", fieldName_absUri, propertyIdent, infoSource);
 		if (propertyIdent != null) {
 			resultVal = infoSource.getValDouble(propertyIdent, defaultVal);
 		}
@@ -113,7 +113,7 @@ public class ItemAssemblyReaderImpl extends BasicDebugger implements ItemAssembl
 	@Override public List<Item> readLinkedItemSeq(Item configItem, String collectionLinkName_absUri) {
 		Ident linkNameID = getConfigPropertyIdent(configItem, configItem.getIdent(), collectionLinkName_absUri);
 		List<Item> linkedItems = ((JenaResourceItem) configItem).getLinkedOrderedList(linkNameID);
-		logDebug("Got linkedItem collection at [" + collectionLinkName_absUri + "=" + linkNameID + "] = " + linkedItems);
+		getLogger().debug("Got linkedItem collection: [{}.{}] = {}", collectionLinkName_absUri, linkNameID, linkedItems);
 		return linkedItems;
 	}
 
@@ -138,7 +138,7 @@ public class ItemAssemblyReaderImpl extends BasicDebugger implements ItemAssembl
 		List<Object> resultList = new ArrayList<Object>();
 		List<Item> linkedItems = readLinkedItemSeq(configItem, collectionLinkName_absUri);
 		resultList = resultListFromItems(linkedItems, asmblr, mode);
-		logDebug("Opened object collection : " + resultList);
+		getLogger().debug("Opened object collection : {}", resultList);
 		return resultList;
 		/*
 		Set<Item> linkedItemSet = configItem.getLinkedItemSet(linkNameID);
