@@ -62,11 +62,11 @@ class VarargsLogging extends BasicDebugger {
  It "splats"1 the sequence.
  The _* type annotation is covered in "4.6.2 Repeated Parameters" of the SLS.
 
- The last value parameter of a parameter section may be suf�xed by, e.g. (..., x:T *). 
+ The last value parameter of a parameter section may be sufïxed by, e.g. (..., x:T *). 
  The type of such a repeated parameter inside the method is then the sequence type scala.Seq[T]. 
  Methods with repeated parameters T * take a variable number of arguments of type T . That is, if a method m with 
  type (p1 : T1, . . . , pn : Tn,ps : S*)U is applied to arguments (e1, . . . , ek) where k >= n, then m is taken 
- in that application to have type (p1 : T1, . . . , pn : Tn,ps : S, . . . , ps0S)U, with k ¡ n occurrences of type 
+ in that application to have type (p1 : T1, . . . , pn : Tn,ps : S, . . . , ps0S)U, with  occurrences of type 
  S where any parameter names beyond ps are fresh. The only exception to this rule is if the last argument is marked 
  to be a sequence argument via a _* type annotation. If m above is applied to arguments (e1, . . . , en,e0 : _*), 
  then the type of m in that application is taken to be (p1 : T1, . . . , pn : Tn,ps :scala.Seq[S])
