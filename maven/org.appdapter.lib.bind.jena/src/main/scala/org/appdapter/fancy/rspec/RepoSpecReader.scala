@@ -16,7 +16,9 @@
 
 package org.appdapter.fancy.rspec
 
-abstract class RepoSpecReader {
+import org.appdapter.core.log.BasicDebugger
+
+abstract class RepoSpecReader extends BasicDebugger {
   def getExt(): String;
   def makeRepoSpec(path: String, args: Array[String], cLs: java.util.List[ClassLoader]): RepoSpec;
 }
