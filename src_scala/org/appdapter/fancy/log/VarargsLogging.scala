@@ -18,7 +18,7 @@ package org.appdapter.fancy.log
 
 import org.appdapter.core.log.BasicDebugger;
 
-class VarargsLogging extends BasicDebugger {
+class VarargsLogging extends BasicDebugger { 
 	def info0(msg : String) = 	getLogger().info(msg)
 	def info1(msg : String, v1 : Object) = 	getLogger().info(msg, v1)
 	def info2(msg : String, v1 : Object, v2: Object) = 	getLogger().info(msg, Seq(v1, v2) : _*)
@@ -43,7 +43,7 @@ class VarargsLogging extends BasicDebugger {
  * 		//  https://groups.google.com/forum/#!topic/scala-language/ms4IVIu-xGw
  /*
   * in slf4j there are several overloads for the logging methods [1]: 
-
+ 
   void        info(String format, Object... arguments) 
   void        info(String format, Object arg) 
   void        info(String format, Object arg1, Object arg2) 
@@ -55,13 +55,14 @@ class VarargsLogging extends BasicDebugger {
   method (by using `Seq(...): _*` at the call site) but not the 
   optimized non-vararg variants. 
   */
+ 
  // To pass an explicit sequence to a method that takes varargs, follow it with : _*
 		
  http://stackoverflow.com/questions/6051302/what-does-colon-underscore-star-do-in-scala
  It "splats"1 the sequence.
  The _* type annotation is covered in "4.6.2 Repeated Parameters" of the SLS.
 
- The last value parameter of a parameter section may be sufﬁxed by “*”, e.g. (..., x:T *). 
+ The last value parameter of a parameter section may be suf�xed by, e.g. (..., x:T *). 
  The type of such a repeated parameter inside the method is then the sequence type scala.Seq[T]. 
  Methods with repeated parameters T * take a variable number of arguments of type T . That is, if a method m with 
  type (p1 : T1, . . . , pn : Tn,ps : S*)U is applied to arguments (e1, . . . , ek) where k >= n, then m is taken 
