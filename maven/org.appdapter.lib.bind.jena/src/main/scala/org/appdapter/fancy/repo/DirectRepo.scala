@@ -19,16 +19,17 @@ package org.appdapter.fancy.repo
 import org.appdapter.core.boot.ClassLoaderUtils
 import org.appdapter.core.store.{ BasicRepoImpl, Repo, RepoOper }
 import org.appdapter.core.store.dataset.RepoDatasetFactory
-import org.appdapter.fancy.rspec.{RepoSpec}
+import org.appdapter.fancy.rspec.{ RepoSpec }
 import com.hp.hpl.jena.query.Dataset
 import com.hp.hpl.jena.rdf.model.Model
-import org.appdapter.core.loader.{SpecialRepoLoader, LoadingRepoImpl}
-import org.appdapter.fancy.loader.{FancyRepoLoader}
+import org.appdapter.core.loader.{ SpecialRepoLoader, LoadingRepoImpl }
+import org.appdapter.fancy.loader.{ FancyRepoLoader }
 import com.hp.hpl.jena.query.DatasetFactory
+import org.appdapter.bind.rdf.jena.reason.JenaReasonerUtils
 
 class DirectRepo(val myRepoSpecForRef: RepoSpec, val myDebugNameToStr: String, val myBasePath: String,
-	val myDirectoryModel: Model, var fileModelCLs: java.util.List[ClassLoader] = null) 
-	extends LoadingRepoImpl with FancyRepo with Repo.Updatable with Repo.WithDirectory with RepoOper.ReloadableDataset {
+  val myDirectoryModelIn: Model, var fileModelCLs: java.util.List[ClassLoader] = null)
+  extends LoadingRepoImpl with FancyRepo with Repo.Updatable with Repo.WithDirectory with RepoOper.ReloadableDataset {
 
   def this(directoryModel: Model) =
     this(null, null, null, directoryModel, null)
@@ -37,6 +38,8 @@ class DirectRepo(val myRepoSpecForRef: RepoSpec, val myDebugNameToStr: String, v
     this(null, null, null, directoryModel, fmcls)
 
   override def getDirectoryModel: Model = myDirectoryModel;
+  
+  lazy val myDirectoryModel = JenaReasonerUtils.createBasicInfModel(myDirectoryModelIn);
 
   override def getMainQueryDataset(): Dataset = {
     loadSheetModelsIntoMainDataset();
@@ -48,29 +51,29 @@ class DirectRepo(val myRepoSpecForRef: RepoSpec, val myDebugNameToStr: String, v
     val oldDirModel = getDirectoryModel
     RepoOper.replaceModelElements(oldDirModel, myNewDirectoryModel)
   }*/
-	// Exposed via trait ReloadableDataset...for use by whom?
-	 def reloadAllModels () {
-		 reloadAllModelsNow
-	 }
-	/**
-	 *  
-	 */
+  // Exposed via trait ReloadableDataset...for use by whom?
+  def reloadAllModels() {
+    reloadAllModelsNow
+  }
+  /**
+   *
+   */
   private def reloadAllModelsNow {
     val dirModel: Model = if (myRepoSpecForRef != null) myRepoSpecForRef.getOrMakeDirectoryModel else getDirectoryModel
-	
-	getLogger.info("myBasePath=[{}]", myBasePath)
-	val optPrefixURL = myBasePath
-	val targetMainDS = getMainQueryDataset
+
+    getLogger.info("myBasePath=[{}]", myBasePath)
+    val optPrefixURL = myBasePath
+    val targetMainDS = getMainQueryDataset
     if (targetMainDS != null) {
-		getLogger.info("Refreshing existing dataset at {}", this)
+      getLogger.info("Refreshing existing dataset at {}", this)
       val oldDirModel = getDirectoryModel
       val sourceDS = makeDatasetFromDirModel(dirModel, optPrefixURL);
       RepoOper.replaceDatasetElements(targetMainDS, sourceDS)
     } else {
-		getLogger.info("Making fresh dataset at {}", this)
-		val freshMainDSet = makeMainQueryDataset
-		setMainQueryDataset(freshMainDSet)
-		FancyRepoLoader.updateDatasetFromDirModel(dirModel, freshMainDSet, fileModelCLs, optPrefixURL, getRepoLoader)
+      getLogger.info("Making fresh dataset at {}", this)
+      val freshMainDSet = makeMainQueryDataset
+      setMainQueryDataset(freshMainDSet)
+      FancyRepoLoader.updateDatasetFromDirModel(dirModel, freshMainDSet, fileModelCLs, optPrefixURL, getRepoLoader)
     }
   }
 
@@ -83,7 +86,7 @@ class DirectRepo(val myRepoSpecForRef: RepoSpec, val myDebugNameToStr: String, v
     val dm = getDirectoryModel
     var dmstr = "noDirModel";
     if (dm != null) dmstr = "dir=" + dm.size
-	if (isLoadingLockedOrNotStarted()) { //   if (isLoadingLocked || !isLoadingStarted) {
+    if (isLoadingLockedOrNotStarted()) { //   if (isLoadingLocked || !isLoadingStarted) {
       getClass.getSimpleName + "[name=" + myDebugNameToStr + "  " + dmstr + " setof=Loading...]";
     } else {
       getClass.getSimpleName + "[name=" + myDebugNameToStr + "  " + dmstr + " setof=" + RepoOper.setOF(getMainQueryDataset.listNames) + "]";
@@ -110,7 +113,7 @@ class DirectRepo(val myRepoSpecForRef: RepoSpec, val myDebugNameToStr: String, v
     {
       var reloadTries: Int = 2;
       val dirModel = getDirectoryModel
-	  val optPrefixURL = myBasePath;
+      val optPrefixURL = myBasePath;
       while (!this.isUpdatedFromDirModel && reloadTries > 0) {
         if (reloadTries == 1) {
           getLogger.error("OLDBUG: Looping on Reloads!")
@@ -120,18 +123,18 @@ class DirectRepo(val myRepoSpecForRef: RepoSpec, val myDebugNameToStr: String, v
         var dirModelSize = dirModel.size;
         // only load from non empty dir models
         // this is because we need to have non initialized repos at times
-		val oldMainDSet = getMainQueryDataset
+        val oldMainDSet = getMainQueryDataset
         if (dirModelSize == 0) {
           if (oldMainDSet != null) {
             RepoOper.clearAll(oldMainDSet)
-			setUpdatedFromDirModel(true);
+            setUpdatedFromDirModel(true);
           }
         } else {
           if (oldMainDSet == null) {
             setUpdatedFromDirModel(true);
-			getLogger.info("Making a new mainQueryDset for repo: {}, using optPrefixURL {}",  Seq(this, optPrefixURL) : _*)
+            getLogger.info("Making a new mainQueryDset for repo: {}, using optPrefixURL {}", Seq(this, optPrefixURL): _*)
             val replacingDSet = makeMainQueryDataset
-			setMainQueryDataset(replacingDSet)
+            setMainQueryDataset(replacingDSet)
             FancyRepoLoader.updateDatasetFromDirModel(dirModel, replacingDSet, getClassLoaderList(fileModelCLs), optPrefixURL, getRepoLoader)
           } else {
             setUpdatedFromDirModel(true);
@@ -151,7 +154,7 @@ class DirectRepo(val myRepoSpecForRef: RepoSpec, val myDebugNameToStr: String, v
     }
   }
 
-  private def makeDatasetFromDirModel(dirModel: Model, optUrlPrefix : String): Dataset = {
+  private def makeDatasetFromDirModel(dirModel: Model, optUrlPrefix: String): Dataset = {
     val newDS = DatasetFactory.create();
     FancyRepoLoader.updateDatasetFromDirModel(dirModel, newDS, fileModelCLs, optUrlPrefix, getRepoLoader)
     newDS
