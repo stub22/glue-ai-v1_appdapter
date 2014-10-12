@@ -76,6 +76,11 @@ trait  DsaccGraphPortal extends GraphPortal {
 	def getDatasetAccessor : DatasetAccessor
 }
 
+// GPortal that can return a (possibly auto-committing) Dataset 
+trait DatasetPortal {
+  def getDataset: Dataset
+}
+
 trait LocalGraphPortal extends DsaccGraphPortal {
 	protected def getLocalDataset : Dataset
 	lazy val myDacc : DatasetAccessor = DatasetAccessorFactory.create(getLocalDataset)
