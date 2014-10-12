@@ -30,11 +30,10 @@ import com.hp.hpl.jena.update.{ GraphStore, GraphStoreFactory, UpdateAction, Upd
 import org.appdapter.core.loader.SpecialRepoLoader
 import org.appdapter.core.store.BasicStoredMutableRepoImpl
 import org.appdapter.core.store.{Repo, StoredRepo}
-// import org.appdapter.impl.store.QueryHelper
 import org.appdapter.fancy.repo.FancyRepo
-// import org.appdapter.fancy.loader.{InstallableRepoLoader, FancyRepoLoader}
 import org.appdapter.fancy.rspec.{RepoSpec, SdbSqlRepoSpec}
 import org.appdapter.fancy.query.{QueryHelper}
+import org.appdapter.bind.rdf.jena.query.SPARQL_Utils
 
 /**
  * @author Stu B. <www.texpedient.com>
@@ -101,11 +100,14 @@ object SdbSqlRepoFactoryLoader extends org.appdapter.core.log.BasicDebugger {
     val nsJavaMap: java.util.Map[String, String] = myDirectoryModel.getNsPrefixMap()
 
     val msqText = """
-			select ?repo ?repoPath ?model ?modelPath ?unionOrReplace
+			select ?repo ?repoPath ?model ?modelName ?modelPath ?unionOrReplace
 				{
 					?repo  a ccrt:DatabaseRepo; ccrt:configPath ?configPath.
 					?model a ccrt:DatabaseModel; ccrt:repo ?repo.
       				OPTIONAL { ?model a ?unionOrReplace. FILTER (?unionOrReplace = ccrt:UnionModel) }
+                    OPTIONAL { ?model dphys:hasGraphNameUri ?modelName }
+				    OPTIONAL { ?model owl:sameAs ?modelName }
+
 				}
 		"""
 
@@ -115,7 +117,7 @@ object SdbSqlRepoFactoryLoader extends org.appdapter.core.log.BasicDebugger {
       val qSoln: QuerySolution = msRset.next();
 
       val repoRes: Resource = qSoln.getResource("repo");
-      val modelRes: Resource = qSoln.getResource("model");
+      val modelRes: Resource = SPARQL_Utils.nonBnodeValue(qSoln,"model","modelName")
       val unionOrReplaceRes: Resource = qSoln.getResource("unionOrReplace");
       val configPath_Lit: Literal = qSoln.getLiteral("configPath")
       val dbgArray = Array[Object](repoRes, configPath_Lit, modelRes);

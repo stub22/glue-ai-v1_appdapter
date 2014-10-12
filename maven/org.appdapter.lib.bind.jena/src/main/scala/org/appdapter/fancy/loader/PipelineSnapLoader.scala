@@ -23,6 +23,7 @@ import org.appdapter.fancy.query.QueryHelper
 import com.hp.hpl.jena.query.{ Dataset, QuerySolution }
 import com.hp.hpl.jena.rdf.model.Model
 import org.appdapter.core.store.dataset.RepoDatasetFactory
+import org.appdapter.bind.rdf.jena.query.SPARQL_Utils
 
 
 /// this is a registerable loader
@@ -81,9 +82,14 @@ object PipelineSnapLoader extends BasicDebugger {
     //val pipelineModel = RepoDatasetFactory.findOrCreateModel(mainDset, modelName)
 
     val msqText = """
-			select ?srcmodel ?targetmodel
+			select ?srcmodel ?targetmodel ?srcmodelName ?targetmodelName
 				{
 					?targetmodel <urn:ftd:cogchar.org:2012:runtime#sourceModel> ?srcmodel.
+                    OPTIONAL { ?targetmodel dphys:hasGraphNameUri ?targetmodelName }
+          	        OPTIONAL { ?targetmodel owl:sameAs ?targetmodelName }
+                    OPTIONAL { ?srcmodel dphys:hasGraphNameUri ?srcmodelName }
+          	        OPTIONAL { ?srcmodel owl:sameAs ?srcmodelName }
+
 				}
 		"""
 
@@ -93,8 +99,8 @@ object PipelineSnapLoader extends BasicDebugger {
       val qSoln: QuerySolution = msRset.next();
 
       //val repoR : Rource = qSoln.getRource("repo");
-      val srcmodelR = qSoln.get("srcmodel");
-      val targetmodelR = qSoln.get("targetmodel");
+      val srcmodelR = SPARQL_Utils.nonBnodeValue(qSoln,"srcmodel","srcmodelName");
+      val targetmodelR = SPARQL_Utils.nonBnodeValue(qSoln,"targetmodel","targetmodelName");
       val srcmodelName = srcmodelR.asResource().asNode().getURI
       val targetmodelName = targetmodelR.asResource().asNode().getURI
 

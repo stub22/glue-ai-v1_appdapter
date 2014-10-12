@@ -18,10 +18,7 @@ package org.appdapter.fancy.loader
 
 
 import java.io.{ InputStreamReader, Reader }
-
 import org.appdapter.core.log.BasicDebugger
-// import org.appdapter.fancy.loader.{ FancyRepoLoader, InstallableRepoLoader }
-
 import org.appdapter.core.loader.{ExtendedFileStreamUtils, SpecialRepoLoader}
 import org.appdapter.core.store.dataset.{ RepoDatasetFactory }
 import org.appdapter.fancy.repo.{ FancyRepo }
@@ -30,6 +27,7 @@ import org.appdapter.fancy.rspec.{CSVFileRepoSpec }
 import org.appdapter.fancy.matdat.{SemSheet, MatrixData}
 import com.hp.hpl.jena.query.{ Dataset, QuerySolution, ResultSet, ResultSetFactory }
 import com.hp.hpl.jena.rdf.model.{ Literal, Model, RDFNode, Resource }
+import org.appdapter.bind.rdf.jena.query.SPARQL_Utils
 
 
 
@@ -53,11 +51,13 @@ object CsvFileSheetLoader extends BasicDebugger {
     val nsJavaMap: java.util.Map[String, String] = myDirectoryModel.getNsPrefixMap()
 
     val msqText = """
-			select ?repo ?repoPath ?model ?modelPath ?unionOrReplace
+			select ?repo ?repoPath ?model ?modelName ?modelPath ?unionOrReplace
 				{
 					?repo  a ccrt:CsvFileRepo; ccrt:sourcePath ?repoPath.
 					?model a ccrt:CsvFileSheet; ccrt:sourcePath ?modelPath; ccrt:repo ?repo.
       				OPTIONAL { ?model a ?unionOrReplace. FILTER (?unionOrReplace = ccrt:UnionModel) }
+                    OPTIONAL { ?model dphys:hasGraphNameUri ?modelName }
+                    OPTIONAL { ?model owl:sameAs ?modelName }
 				}
 		"""
 
@@ -67,7 +67,7 @@ object CsvFileSheetLoader extends BasicDebugger {
       val qSoln: QuerySolution = msRset.next();
 
       val repoRes: Resource = qSoln.getResource("repo");
-      val modelRes: Resource = qSoln.getResource("model");
+      val modelRes: Resource = SPARQL_Utils.nonBnodeValue(qSoln,"model","modelName")
       val unionOrReplaceRes: Resource = qSoln.getResource("unionOrReplace");
       val repoPath_Lit: Literal = qSoln.getLiteral("repoPath")
       val modelPath_Lit: Literal = qSoln.getLiteral("modelPath")

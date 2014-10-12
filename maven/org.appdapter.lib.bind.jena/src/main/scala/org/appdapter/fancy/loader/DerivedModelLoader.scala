@@ -23,6 +23,7 @@ import org.appdapter.fancy.query.QueryHelper
 import com.hp.hpl.jena.query.{ Dataset, QuerySolution }
 import com.hp.hpl.jena.rdf.model.Model
 import org.appdapter.core.store.dataset.RepoDatasetFactory
+import org.appdapter.bind.rdf.jena.query.SPARQL_Utils
 
 /**
  * @author Douglas R. Miles <www.logicmoo.org>
@@ -60,9 +61,12 @@ object DerivedModelLoader extends BasicDebugger {
 
     // we use container so that we find only repo members
     val msqText = """
-	select ?model ?unionOrReplace
+	select ?model ?modelName ?unionOrReplace
 		{
-			?model a ccrt:DerivedModel; 
+			?model a ccrt:DerivedModel;
+            OPTIONAL { ?model dphys:hasGraphNameUri ?modelName }
+  	        OPTIONAL { ?model owl:sameAs ?modelName }
+
 		}     
 		"""
 
@@ -74,7 +78,7 @@ object DerivedModelLoader extends BasicDebugger {
       val qSoln: QuerySolution = msRset.next();
 
       //val repoRes : Resource = qSoln.getResource("repo");
-      val modelRes = qSoln.get("model");
+      val modelRes = SPARQL_Utils.nonBnodeValue(qSoln,"model","modelName");
       val modelName = modelRes.asResource().asNode().getURI
 
       val dbgArray = Array[Object](modelRes, modelName);

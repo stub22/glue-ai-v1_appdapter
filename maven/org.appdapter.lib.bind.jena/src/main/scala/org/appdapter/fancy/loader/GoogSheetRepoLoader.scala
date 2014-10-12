@@ -18,15 +18,16 @@ package org.appdapter.fancy.loader
 
 import org.appdapter.core.log.BasicDebugger
 import org.appdapter.core.store.dataset.{ RepoDatasetFactory }
-
 import org.appdapter.core.loader.{  SpecialRepoLoader }
 import org.appdapter.fancy.repo.{ DirectRepo}
 import org.appdapter.fancy.matdat.{ SemSheet, WebSheet, MatrixData}
 import org.appdapter.fancy.query.QueryHelper
 import org.appdapter.fancy.rspec.{RepoSpec, GoogSheetRepoSpec}
-
 import com.hp.hpl.jena.query.{ Dataset, QuerySolution }
 import com.hp.hpl.jena.rdf.model.{ Literal, Model, Resource }
+import org.appdapter.core.store.RepoOper
+import org.appdapter.bind.rdf.jena.query.JenaArqResultSetProcessor
+import org.appdapter.bind.rdf.jena.query.SPARQL_Utils
 
 /////////////////////////////////////////
 /// this is a registerable loader
@@ -71,11 +72,14 @@ object GoogSheetRepoLoader extends BasicDebugger {
     // getLogger.debug("Dir Model NS Prefix Map {} ", nsJavaMap)
     // getLogger.debug("Dir Model {}", dirModel)
     val msqText = """
-			select ?container ?key ?sheet ?num ?unionOrReplace
+			select ?container ?key ?sheet ?modelName ?num ?unionOrReplace
 				{
 					?container  a ccrt:GoogSheetRepo; ccrt:key ?key.
 					?sheet a ccrt:GoogSheet; ccrt:sheetNumber ?num; ccrt:repo ?container.
          			OPTIONAL { ?sheet a ?unionOrReplace. FILTER (?unionOrReplace = ccrt:UnionModel) }
+                    OPTIONAL { ?sheet dphys:hasGraphNameUri ?modelName }
+          	        OPTIONAL { ?sheet owl:sameAs ?modelName }
+      
 				}
 		"""
 
@@ -87,7 +91,7 @@ object GoogSheetRepoLoader extends BasicDebugger {
       val qSoln: QuerySolution = msRset.next();
       // getLogger.debug("Got apparent solution {}", qSoln);
       //val containerRes: Resource = qSoln.getResource("container");
-      val sheetRes: Resource = qSoln.getResource("sheet");
+      val sheetRes: Resource = SPARQL_Utils.nonBnodeValue(qSoln,"sheet","modelName");
       val sheetNum_Lit: Literal = qSoln.getLiteral("num")
       val sheetKey_Lit: Literal = qSoln.getLiteral("key")
       val unionOrReplaceRes: Resource = qSoln.getResource("unionOrReplace");
