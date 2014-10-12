@@ -77,7 +77,9 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 		}
 	}
 
-	// A bit like database's addNamedModel (but this is not implmentation of Mutable.. unless a subclass claims it is)
+
+	// A bit like database's addNamedModel (but this is not implmentation of
+	// Mutable.. unless a subclass claims it is)
 	public void addNamedModel(Ident modelID, Model jenaModel) {
 		Dataset repoDset = getMainQueryDataset();
 		// DataSource repoDsource = (DataSource) repoDset;
@@ -90,13 +92,30 @@ public abstract class BasicRepoImpl extends BasicQueryProcessorImpl implements R
 				repoDset.addNamedModel(name, jenaModel);
 			} else {
 				Model before = repoDset.getNamedModel(name);
-				jenaModel.add(before);
-				repoDset.replaceNamedModel(name, jenaModel);
+				Model outcome = addModels(jenaModel, before);
+				repoDset.replaceNamedModel(name, outcome);
 			}
 		} finally {
 			lock.leaveCriticalSection();
 		}
 	}
+
+	public Model addModels(Model addition, Model previous) {
+		addition.add(previous);
+		return addition;
+	}
+
+	public Model addModelMerged(Model addition, Model previous) {
+		if (isReadOnly(addition)) {
+			return ModelFactory.createUnion(previous, addition);
+		}
+		return ModelFactory.createUnion(addition, previous);
+	}
+
+	public boolean isReadOnly(Model addition) {
+		return false;
+	}
+
 
 	@Override public Model getNamedModel(Ident modelID, boolean createIfMissing) {
 		Dataset repoDset = getMainQueryDataset();

@@ -17,18 +17,16 @@
 package org.appdapter.fancy.loader
 
 import java.io.Reader
-
 import org.appdapter.core.log.BasicDebugger
-// import org.appdapter.fancy.loader.{InstallableRepoLoader, FancyRepoLoader}
 import org.appdapter.core.loader.{ExtendedFileStreamUtils, SpecialRepoLoader}
 import org.appdapter.core.store.dataset.{RepoDatasetFactory }
 import org.appdapter.fancy.repo.{FancyRepo, DirectRepo}
 import org.appdapter.fancy.matdat.{SemSheet, MatrixData}
 import org.appdapter.fancy.query.{QueryHelper}
 import org.appdapter.fancy.rspec.{OfflineXlsSheetRepoSpec}
-
 import com.hp.hpl.jena.query.{Dataset, QuerySolution, ResultSet}
 import com.hp.hpl.jena.rdf.model.{Literal, Model, Resource}
+import org.appdapter.bind.rdf.jena.query.SPARQL_Utils
 
 
 
@@ -61,11 +59,13 @@ object XLSXSheetRepoLoader extends BasicDebugger {
     val nsJavaMap: java.util.Map[String, String] = myDirectoryModel.getNsPrefixMap()
 
     val msqText = """
-			select ?container ?key ?sheet ?name ?unionOrReplace
+			select ?container ?key ?sheet ?name ?modelName ?unionOrReplace
 				{
 					?container  a ccrt:XlsxWorkbookRepo; ccrt:key ?key.
 					?sheet a ccrt:XlsxSheet; ccrt:sourcePath ?name; ccrt:repo ?container.
       				OPTIONAL { ?sheet  a ?unionOrReplace. FILTER (?unionOrReplace = ccrt:UnionModel) }
+                    OPTIONAL { ?sheet dphys:hasGraphNameUri ?modelName }
+          	        OPTIONAL { ?sheet owl:sameAs ?modelName }      
 				}
 		"""
 
@@ -75,7 +75,7 @@ object XLSXSheetRepoLoader extends BasicDebugger {
       val qSoln: QuerySolution = msRset.next();
 
       val containerRes: Resource = qSoln.getResource("container");
-      val sheetRes: Resource = qSoln.getResource("sheet");
+      val sheetRes: Resource = SPARQL_Utils.nonBnodeValue(qSoln,"sheet","modelName");
       val unionOrReplaceRes: Resource = qSoln.getResource("unionOrReplace");
       val sheetName_Lit: Literal = qSoln.getLiteral("name")
       val sheetLocation_Lit: Literal = qSoln.getLiteral("key")

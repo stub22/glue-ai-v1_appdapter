@@ -20,9 +20,9 @@ import org.appdapter.core.store.{RepoOper}
 import org.appdapter.core.loader.SpecialRepoLoader
 import org.appdapter.fancy.rspec.{RepoSpec, MultiRepoSpec, URLRepoSpec}
 import org.appdapter.fancy.query.{QueryHelper}
-
 import com.hp.hpl.jena.query.{ Dataset, QuerySolution }
 import com.hp.hpl.jena.rdf.model.{ Literal, Model, Resource }
+import org.appdapter.bind.rdf.jena.query.SPARQL_Utils
 /**
  * @author Stu B. <www.texpedient.com>
  */
@@ -86,10 +86,13 @@ object MultiRepoLoader extends org.appdapter.core.log.BasicDebugger {
     val nsJavaMap: java.util.Map[String, String] = myDirectoryModel.getNsPrefixMap()
 
     val msqText = """
-			select ?dirModel ?modelPath ?unionOrReplace
+			select ?dirModel ?dirModelName ?modelPath ?unionOrReplace
 				{
 					?dirModel  a ccrt:DirectoryModel; ccrt:sourcePath ?modelPath.
       				OPTIONAL { ?dirModel a ?unionOrReplace. FILTER (?unionOrReplace = ccrt:UnionModel)}
+                    OPTIONAL { ?dirModel dphys:hasGraphNameUri ?dirModelName }
+          	        OPTIONAL { ?dirModel owl:sameAs ?dirModelName }
+
     			}
 		"""
 
@@ -98,7 +101,7 @@ object MultiRepoLoader extends org.appdapter.core.log.BasicDebugger {
     while (msRset.hasNext()) {
       val qSoln: QuerySolution = msRset.next();
 
-      val dirModel = qSoln.getResource("dirModel");
+      val dirModel = SPARQL_Utils.nonBnodeValue(qSoln,"dirModel","dirModelName");
       val modelPath = qSoln.getLiteral("modelPath");
       val unionOrReplace: Resource = qSoln.getResource("unionOrReplace");
       val dbgArray = Array[Object](dirModel, modelPath, unionOrReplace);
