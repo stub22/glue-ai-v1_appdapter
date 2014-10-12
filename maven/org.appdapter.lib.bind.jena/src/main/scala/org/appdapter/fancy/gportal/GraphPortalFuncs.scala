@@ -32,7 +32,7 @@ import org.appdapter.fancy.log.VarargsLogging
  * @author Stu B. <www.texpedient.com>
  */
 
-case class CopyOpResult {
+case class CopyOpResult() {
 	
 }
 object GraphPortalFuncs {
