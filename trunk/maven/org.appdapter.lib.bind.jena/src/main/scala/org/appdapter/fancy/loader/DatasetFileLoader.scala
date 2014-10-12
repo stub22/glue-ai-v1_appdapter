@@ -17,14 +17,12 @@
 package org.appdapter.fancy.loader
 
 import org.appdapter.core.log.BasicDebugger
-// import org.appdapter.fancy.loader.InstallableRepoLoader
 import org.appdapter.core.store.RepoOper
 import org.appdapter.core.loader.SpecialRepoLoader
-
 import com.hp.hpl.jena.query.{Dataset, QuerySolution}
 import com.hp.hpl.jena.rdf.model.{Literal, Model, Resource}
-
 import org.appdapter.fancy.query.{QueryHelper}
+import org.appdapter.bind.rdf.jena.query.SPARQL_Utils
 /**
  * @author Douglas R. Miles <www.logicmoo.org>
  *
@@ -60,12 +58,17 @@ object DatasetFileRepo extends BasicDebugger {
     val nsJavaMap: java.util.Map[String, String] = myDirectoryModel.getNsPrefixMap()
 
     val msqText = """
-			select ?repo ?repoPath ?qrymodel ?dirmodel ?unionOrReplace
+			select ?repo ?repoPath ?qrymodel ?dirmodel ?qrymodelName ?dirmodelName ?unionOrReplace
 				{
 					?repo  a ccrt:DatasetFileRepo; ccrt:sourcePath ?repoPath.
 					?qrymodel a ccrt:QueryTxtModel; ccrt:repo ?repo.
 					?dirmodel a ccrt:DirectoryModel; ccrt:repo ?repo.
       				OPTIONAL { ?model a ?unionOrReplace. FILTER (?unionOrReplace = ccrt:UnionModel) }
+                    OPTIONAL { ?qrymodel dphys:hasGraphNameUri ?qrymodelName }
+          	        OPTIONAL { ?qrymodel owl:sameAs ?qrymodelName }
+                    OPTIONAL { ?dirmodel dphys:hasGraphNameUri ?dirmodelName }
+          	        OPTIONAL { ?dirmodel owl:sameAs ?dirmodelName }
+      
 				}
       """
 
@@ -75,8 +78,8 @@ object DatasetFileRepo extends BasicDebugger {
       val qSoln: QuerySolution = msRset.next();
 
       val repoRes: Resource = qSoln.getResource("repo");
-      val qrymodelRes: Resource = qSoln.getResource("qrymodel");
-      val dirmodelRes: Resource = qSoln.getResource("dirmodel");
+      val qrymodelRes: Resource = SPARQL_Utils.nonBnodeValue(qSoln,"qrymodel","qrymodelName");
+      val dirmodelRes: Resource = SPARQL_Utils.nonBnodeValue(qSoln,"dirmodel","dirmodelName");
       val unionOrReplaceRes: Resource = qSoln.getResource("unionOrReplace");
       val repoPath_Lit: Literal = qSoln.getLiteral("repoPath")
       val dbgArray = Array[Object](repoRes, repoPath_Lit, dirmodelRes);
