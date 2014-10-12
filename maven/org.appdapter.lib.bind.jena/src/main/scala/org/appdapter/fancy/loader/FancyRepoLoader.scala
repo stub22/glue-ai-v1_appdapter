@@ -198,7 +198,8 @@ object FancyRepoLoader extends BasicDebugger {
     } catch {
       case except: Throwable => {
         getLogger.error("Error loading from URL=[" + rdfURL + "]", except);
-        throw except
+        // we've informed evertyone of the error but lets not rethrow and kill our users! 
+        // throw except
       }
     }
   }
