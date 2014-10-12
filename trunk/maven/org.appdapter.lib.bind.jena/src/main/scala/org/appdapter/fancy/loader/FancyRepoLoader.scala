@@ -28,7 +28,7 @@ import org.appdapter.core.query.{InitialBinding}
 import org.appdapter.core.loader.{SpecialRepoLoader, ExtendedFileStreamUtils}
 import org.appdapter.fancy.repo.{DirectRepo, FancyRepo}
 import com.hp.hpl.jena.query.{Dataset, QuerySolution}
-import com.hp.hpl.jena.rdf.model.{Model, Resource}
+import com.hp.hpl.jena.rdf.model.{Model, Resource, ModelFactory}
 /*
  * @author logicmoo
  */
@@ -198,6 +198,7 @@ object FancyRepoLoader extends BasicDebugger {
     } catch {
       case except: Throwable => {
         getLogger.error("Error loading from URL=[" + rdfURL + "]", except);
+        ModelFactory.createDefaultModel()
         // we've informed evertyone of the error but lets not rethrow and kill our users! 
         // throw except
       }
