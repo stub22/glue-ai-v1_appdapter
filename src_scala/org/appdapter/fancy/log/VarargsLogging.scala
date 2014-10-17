@@ -18,7 +18,8 @@ package org.appdapter.fancy.log
 
 import org.appdapter.core.log.BasicDebugger;
 
-class VarargsLogging extends BasicDebugger { 
+trait VarargsLogging extends HasLoggerConv { }
+	/*
 	def info0(msg : String) = 	getLogger().info(msg)
 	def info1(msg : String, v1 : Object) = 	getLogger().info(msg, v1)
 	def info2(msg : String, v1 : Object, v2: Object) = 	getLogger().info(msg, Seq(v1, v2) : _*)
@@ -36,7 +37,8 @@ class VarargsLogging extends BasicDebugger {
 	def warn2(msg : String, v1 : Object, v2: Object) = 	getLogger().warn(msg, Seq(v1, v2) : _*)
 	def warn3(msg : String, v1 : Object, v2: Object, v3: Object) = 	getLogger().warn(msg, Seq(v1, v2, v3) : _*)	
 	def warn4(msg : String, v1 : Object, v2: Object, v3: Object, v4: Object) = 	getLogger().warn(msg, Seq(v1, v2, v3 ,v4) : _*)	
-}
+	*/
+
 /*
  *
  *  http://stackoverflow.com/questions/6051302/what-does-colon-underscore-star-do-in-scala
