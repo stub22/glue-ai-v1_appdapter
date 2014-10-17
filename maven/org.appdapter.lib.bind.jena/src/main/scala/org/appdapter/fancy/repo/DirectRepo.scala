@@ -38,7 +38,7 @@ class DirectRepo(val myRepoSpecForRef: RepoSpec, val myDebugNameToStr: String, v
     this(null, null, null, directoryModel, fmcls)
 
   override def getDirectoryModel: Model = myDirectoryModel;
-  
+
   lazy val myDirectoryModel = JenaReasonerUtils.createBasicInfModel(myDirectoryModelIn);
 
   override def getMainQueryDataset(): Dataset = {
@@ -159,22 +159,22 @@ class DirectRepo(val myRepoSpecForRef: RepoSpec, val myDebugNameToStr: String, v
     FancyRepoLoader.updateDatasetFromDirModel(dirModel, newDS, fileModelCLs, optUrlPrefix, getRepoLoader)
     newDS
   }
-  //includeDirModel() appears to be unused
-  /*
-  private def includeDirModel(dirModel: Model) {
-	// was accessing the now protected field as follows:
-	// if (myMainQueryDataset == null) {
-	//   myMainQueryDataset = getMainQueryDataset
-	// }
-	val mainDSet = getMainQueryDataset
+
+  // includeDirModel() is now used
+  protected def includeDirModel(dirModel: Model) {
+    // was accessing the now protected field as follows:
+    // if (myMainQueryDataset == null) {
+    //   myMainQueryDataset = getMainQueryDataset
+    // }
+    /*val mainDSet = getMainQueryDataset
     if (mainDSet == null) {
-		val replacingDSet = makeMainQueryDataset  // should be what?
-		setMainQueryDataset(replacingDSet)
-    }
-	val currDSet = getMainQueryDataset
-    myDirectoryModel.add(dirModel)
-    FancyRepoLoader.updateDatasetFromDirModel(dirModel, currDSet, fileModelCLs, getRepoLoader)
+      val replacingDSet = makeMainQueryDataset // should be what?
+      setMainQueryDataset(replacingDSet)
+    }*/
+    val currDSet = getMainQueryDataset
+    //myDirectoryModel.add(dirModel)
+    FancyRepoLoader.updateDatasetFromDirModel(getRepoLoader,currDSet,  dirModel, fileModelCLs, null)
   }
-  */
+
 }
 
