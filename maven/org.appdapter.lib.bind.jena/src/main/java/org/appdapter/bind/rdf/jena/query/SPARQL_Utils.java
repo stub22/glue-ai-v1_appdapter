@@ -70,16 +70,16 @@ public class SPARQL_Utils {
 	}
 
 	public static Resource nonBnodeValue(QuerySolution o, String v1, String v2) {
-		Resource value1 = o.getResource(v1);
-		if (value1 != null && !value1.isAnon() && value1.isURIResource())
-			return value1;
 		Resource value2 = o.getResource(v2);
 		if (value2 != null && !value2.isAnon() && value2.isURIResource())
 			return value2;
-		if (value1 != null)
+		Resource value1 = o.getResource(v1);
+		if (value1 != null && !value1.isAnon() && value1.isURIResource())
 			return value1;
 		if (value2 != null)
 			return value2;
+		if (value1 != null)
+			return value1;
 		return null;
 	}
 
