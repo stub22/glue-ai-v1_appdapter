@@ -76,6 +76,10 @@ public class SPARQL_Utils {
 		Resource value2 = o.getResource(v2);
 		if (value2 != null && !value2.isAnon() && value2.isURIResource())
 			return value2;
+		if (value1 != null)
+			return value1;
+		if (value2 != null)
+			return value2;
 		return null;
 	}
 

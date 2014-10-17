@@ -195,7 +195,7 @@ public class CheckedGraph implements Graph, PrefixMapping {
 	}
 
 	public void checkPrefix(String prefix) {
-		if (prefix == null || prefix.equals("")) {
+		if (prefix == null /*|| prefix.equals("")*/) {
 			throw new UnsupportedOperationException("Bad Prefix: " + prefix);
 		}
 		if (prefix.equals("cc")) {
