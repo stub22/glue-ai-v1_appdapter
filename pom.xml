@@ -583,7 +583,7 @@ Version-less parent will be allowed in Maven 3.1.
 		<site>
 			<id>nexus-site</id>
 			<!--url>dav:http://maple.robokind.us:8081/nexus/content/sites/site/org/appdapter</url-->
-			<url>file://maple.robokind.us:8081/nexus/content/sites/site/org/appdapter</url>
+			<url>dav://maple.robokind.us:8081/nexus/content/sites/site/org/appdapter</url>
 		</site>
 	</distributionManagement>
 
