@@ -1,0 +1,221 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.appdapter</groupId>
+		<artifactId>org.appdapter.modules.felix</artifactId>
+		<version>1.2.1</version>
+		<relativePath>../org.appdapter.modules.felix/pom.xml</relativePath>
+	</parent>
+
+    <artifactId>ext.bundle.felix.shell</artifactId>
+    <packaging>bundle</packaging>
+	<name>${project.artifactId} - OSGi + exec-wrap</name>
+	
+	<description>Optional felix/gogo/remote shell launcher.   This (optional) bundle sets up dependencies on the 
+			local+remote Felix/Gogo shell bundles.  We use it directly to test the launch of Felix shell, 
+			from segregated Ant command line.</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>ext.bundle.osgi.common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <artifactId>org.apache.felix.gogo.shell</artifactId>
+            <groupId>org.apache.felix</groupId>
+			<scope>runtime</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>org.eclipse.osgi</artifactId>
+                    <groupId>org.eclipse.osgi</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <artifactId>org.apache.felix.gogo.command</artifactId>
+            <groupId>org.apache.felix</groupId>
+			<scope>runtime</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>easymock</artifactId>
+                    <groupId>org.easymock</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>org.eclipse.osgi</artifactId>
+                    <groupId>org.eclipse.osgi</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>org.osgi.core</artifactId>
+                    <groupId>org.osgi</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>org.osgi.compendium</artifactId>
+                    <groupId>org.osgi</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <artifactId>org.apache.felix.gogo.runtime</artifactId>
+            <groupId>org.apache.felix</groupId>
+			<scope>runtime</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>org.eclipse.osgi</artifactId>
+                    <groupId>org.eclipse.osgi</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>org.osgi.core</artifactId>
+                    <groupId>org.osgi</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>org.osgi.compendium</artifactId>
+                    <groupId>org.osgi</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <artifactId>org.apache.felix.shell.remote</artifactId>
+            <groupId>org.apache.felix</groupId>
+			<scope>runtime</scope>
+            <exclusions>
+                <exclusion>
+                  <artifactId>org.apache.felix.gogo.runtime</artifactId>
+                  <groupId>org.apache.felix</groupId>
+              </exclusion>
+              <exclusion>
+                    <artifactId>org.osgi.core</artifactId>
+                    <groupId>org.apache.felix</groupId>
+                </exclusion>
+              <exclusion>
+                  <artifactId>org.osgi.core</artifactId>
+                  <groupId>org.osgi</groupId>
+              </exclusion>
+              <exclusion>
+                  <artifactId>org.osgi.compendium</artifactId>
+                  <groupId>org.osgi</groupId>
+              </exclusion>
+            </exclusions>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <extensions>true</extensions>
+                <configuration>
+                    <instructions>
+                        <Bundle-Activator>org.appdapter.ext.osgi.felix.shell.ExtOSGiFelixShellBundleActivator</Bundle-Activator>
+                        <Export-Package>org.appdapter.ext.osgi.felix.shell</Export-Package>
+                        <Private-Package>org.appdapter.ext.osgi.felix.shell.*</Private-Package>
+                    </instructions>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>run-on-felix</id>
+			<dependencies>
+				<dependency>
+					<groupId>org.apache.felix</groupId>
+					<artifactId>org.apache.felix.main</artifactId>
+				</dependency>
+				<dependency>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+				</dependency>
+				<dependency>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-log4j12</artifactId>
+				</dependency>
+                <!-- org.apache.felix:org.apache.felix.gogo.shell:0.6.1 useless from Maven since stdin is swallowed -->
+			</dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <configuration>
+                            <target>
+                                <property name="vm.args" value="" />
+                                <pathconvert property="plugins.jars" pathsep="${path.separator}">
+                                    <path refid="maven.runtime.classpath" />
+                                    <map from="${project.build.directory}${file.separator}classes" to="" />
+                                </pathconvert>
+                                <makeurl property="urls" separator=" ">
+                                    <path path="${plugins.jars}" />
+                                    <path location="${project.build.directory}/${project.build.finalName}.jar" />
+                                </makeurl>
+                                <propertyfile file="${project.build.directory}/run.properties">
+                                    <entry key="felix.auto.start" value="${urls}" />
+                                    <entry key="felix.auto.deploy.action" value="uninstall,install,update,start" />
+                                    <entry key="org.osgi.framework.storage" value="${project.build.directory}${file.separator}felix-cache" />
+                                    <entry key="org.osgi.framework.bootdelegation" value="*" />
+                                    <!-- org.w3c.dom.* are missing from default.properties in felix 4.2.1, they are present in 3.0.7 -->
+                                    <entry key="org.osgi.framework.system.packages.extra" value="org.w3c.dom.css, org.w3c.dom.html, org.w3c.dom.stylesheets, org.w3c.dom.traversal, org.w3c.dom.ranges, org.w3c.dom.views, org.w3c.dom.xpath" />
+                                </propertyfile>
+                                <makeurl property="run.properties.url" file="${project.build.directory}/run.properties" />
+								<!--
+										This is the execution form supplied by maven-OSGi archetype.
+										But it does not allow console interaction with Felix shell.
+										
+                                <java fork="true" jar="${maven.dependency.org.apache.felix.org.apache.felix.main.jar.path}">
+                                    <sysproperty key="felix.config.properties" value="${run.properties.url}" />
+                                    <jvmarg line="${vm.args}" />
+                                </java>
+								
+										So, we (appdapter) add the ability to run ant with same properties
+										outside of Maven.   Maven run also works (with no console input
+										to stdin).  
+										
+										TODO:  Find a way to pass stdin stream of maven into ant (or directly into Felix).
+									
+								-->
+								<property name="felix.ant.run.props" value="${project.build.directory}/felix.ant.run.props" />
+								<echo>[m-a] felix.ant.run.props=${felix.ant.run.props}</echo>
+								
+								<!-- Write/update runtime properties out for external use (in future ant run). -->
+								<propertyfile file="${felix.ant.run.props}">
+									<entry key="felix.main.jar.path" value="${maven.dependency.org.apache.felix.org.apache.felix.main.jar.path}" />
+									<entry key="felix.config.props.url" value="${run.properties.url}" />
+									<entry key="felix.jvm.args" value="${vm.args}" />
+								</propertyfile>
+								<!-- Load those same props into current context -->
+								<property file="${felix.ant.run.props}" />
+								
+								<echo>[m-a] felix.main.jar.path=${felix.main.jar.path}</echo> 
+								<echo>[m-a] felix.config.props.url=${felix.config.props.url}</echo> 	
+								<echo>[m-a] felix.jvm.args=${felix.jvm.args}</echo>
+								
+								<ant antfile="${basedir}/ant_run.xml">
+									<target name="java-fork-felix-jar" />
+								</ant>	
+                            </target>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>
+<!--
+/*
+ *  Copyright 2013 by The Appdapter Project (www.appdapter.org).
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+-->
