@@ -33,7 +33,7 @@ Version-less parent will be allowed in Maven 3.1.
 -->
 	<groupId>org.appdapter</groupId>
 	<artifactId>org.appdapter.project.root</artifactId>
-	<version>1.2.2-SNAPSHOT</version>
+	<version>1.2.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>${project.artifactId} - Root pom, linked to Sonatype repo parent</name>
 	<description>Project Root Folder pom.xml - includes all code + doc directories when snapped.</description>
