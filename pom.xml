@@ -33,7 +33,7 @@ Version-less parent will be allowed in Maven 3.1.
 -->
 	<groupId>org.appdapter</groupId>
 	<artifactId>org.appdapter.project.root</artifactId>
-	<version>1.2.2</version>
+	<version>1.2.3-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>${project.artifactId} - Root pom, linked to Sonatype repo parent</name>
 	<description>Project Root Folder pom.xml - includes all code + doc directories when snapped.</description>
@@ -57,9 +57,9 @@ Version-less parent will be allowed in Maven 3.1.
 	-->
 
 	<scm>
-		<connection>scm:svn:https://subversion.assembla.com/svn/appdapter/tags/org.appdapter.project.root-1.2.2</connection>
-		<developerConnection>scm:svn:https://subversion.assembla.com/svn/appdapter/tags/org.appdapter.project.root-1.2.2</developerConnection>
-		<url>https://www.assembla.com/code/appdapter/subversion/nodes/tags/org.appdapter.project.root-1.2.2</url>
+		<connection>scm:svn:https://subversion.assembla.com/svn/appdapter/trunk/</connection>
+		<developerConnection>scm:svn:https://subversion.assembla.com/svn/appdapter/trunk/</developerConnection>
+		<url>https://www.assembla.com/code/appdapter/subversion/nodes/trunk/</url>
 	</scm>
 
 
