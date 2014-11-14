@@ -1,0 +1,19 @@
+
+
+<project name="RunShell" default="java-fork-felix-jar" basedir=".">
+
+	<!-- This ant script expects three properties to be set by invoker.
+	-->
+
+	<echo>felix.main.jar.path=${felix.main.jar.path}</echo>
+	<echo>felix.config.props.url=${felix.config.props.url}</echo>
+	<echo>felix.jvm.args=${felix.jvm.args}</echo>
+	
+	<target name="java-fork-felix-jar">
+		<java fork="true" jar="${felix.main.jar.path}">
+			<sysproperty key="felix.config.properties" value="${felix.config.props.url}"/>
+			<jvmarg line="${felix.jvm.args}"/>	
+		</java>
+	</target>
+	
+</project>
