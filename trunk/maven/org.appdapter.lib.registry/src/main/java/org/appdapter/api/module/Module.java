@@ -64,7 +64,7 @@ public interface Module<Ctx> {
 		
 		/**
 		 * This state applies if and only if the start() method is currently executing.
-		 * Allowed xitions out = {WAIT_TO_RUN_OR_STOP or POST_STOP_OR_FAILED_STARTUP}
+		 * Allowed xitions out = {WAIT_TO_RUN_OR_STOP, POST_STOP, FAILED_STARTUP}
 		 */
 		IN_START,				
 		/**
@@ -79,7 +79,7 @@ public interface Module<Ctx> {
 		IN_RUN,					
 		/**
 		 * This state applies if and only if the stop() method is currently executing.
-		 * Allowed xitions out = {POST_STOP_OR_FAILED_STARTUP}
+		 * Allowed xitions out = {POST_STOP}
 		 */
 		IN_STOP,				
 
@@ -102,7 +102,7 @@ public interface Module<Ctx> {
 	 */
 	public State getState();
 	
-	/* Van be called anytime that the module is not already in another method.
+	/* Can be called anytime that the module is not already in another method.
 	 * So impl must be synchronized, and Module methods cannot cache the modulator 
 	 * must always check it.
 	 * All other calls to action methods:  [initModule, start, runOnce, stop, releaseModule]

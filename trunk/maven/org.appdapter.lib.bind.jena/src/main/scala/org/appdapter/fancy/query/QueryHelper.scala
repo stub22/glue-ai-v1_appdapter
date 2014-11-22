@@ -22,13 +22,19 @@ import com.hp.hpl.jena.query.{ Query, QueryExecutionFactory, QueryFactory, Query
 import com.hp.hpl.jena.rdf.model.Model
 import com.hp.hpl.jena.shared.PrefixMapping
 
-/**
- * @author Stu B. <www.texpedient.com>
- */
+
 
 object QueryHelper extends BasicDebugger {
+	// Temporary workaround until dphys namespace is resolved within Appdpapter, or we determine another method of 
+	// NS injection.
+	var theDPhysURI_opt : Option[String] = None
 
   def execModelQueryWithPrefixHelp(model: Model, qText: String): ResultSet = {
+	if (theDPhysURI_opt.isDefined) {
+		val dphysURI : String = theDPhysURI_opt.get
+		getLogger().debug("Setting dphys prefix to point at {}", dphysURI)
+		model.setNsPrefix("dphys", dphysURI)
+	}
 
     val qBaseURI: String = null;
     val query = new Query();
