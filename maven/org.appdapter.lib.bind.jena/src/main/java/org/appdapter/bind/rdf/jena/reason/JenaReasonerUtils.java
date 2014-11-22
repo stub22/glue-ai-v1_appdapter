@@ -38,7 +38,10 @@ import com.hp.hpl.jena.reasoner.rulesys.Rule;
 
 public class JenaReasonerUtils {
 	/*
-	 * http://jena.sourceforge.net/inference/#rules
+	 * http://jena.apache.org/documentation/inference/#rules
+	 * (was  http://jena.sourceforge.net/inference/#rules)
+	 * 
+	 * 
 	 * Rule files may be loaded and parsed using:
 
 	List rules = Rule.rulesFromURL("file:myfile.rules");
