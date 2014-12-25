@@ -299,11 +299,8 @@
 					<instructions>
 
 						<Import-Package>
-						<!-- Prevent direct wiring to this pkg, which is private in our httpclient-osgi-4.3.jar -->
-							!org.apache.http.impl.*,
-						<!--
-							org.apache.xerces.*;resolution:='optional',
-						-->
+						<!-- Using httpclient-osgi-4.3.1.jar  avoids problems with 	org.apache.http.impl.*, which
+							we used to exclude here, but which is needed by Jena SOH-upload				-->
 							*
 						</Import-Package>
 						<!-- DynamicImport-Package is a horrid workaround for Class.forName() used in AssemberHelp.
