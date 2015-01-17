@@ -1,0 +1,73 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.appdapter</groupId>
+		<artifactId>org.appdapter.modules.core</artifactId>
+		<version>1.2.3</version>
+		<relativePath>../org.appdapter.modules.core/pom.xml</relativePath>
+	</parent>	
+
+	<!-- Since this is a bundle, it should have the word bundle in the artifactId -->
+
+	<artifactId>org.appdapter.bundle.demo.gui</artifactId>
+	<packaging>bundle</packaging>
+	<name>${project.artifactId} - OSGi</name>
+    <description>Appdapter GUI  Demo OSGi Bundle</description>	
+
+	<dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>org.appdapter.bundle.gui</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+			<!-- Currently we get this transitively from o.a.b.core, but that dep may not last -->
+            <groupId>${project.groupId}</groupId>
+            <artifactId>org.appdapter.bundle.fileconv</artifactId>
+            <version>${project.version}</version>
+        </dependency>		
+		<dependency>
+			<groupId>org.apache.servicemix.bundles</groupId>
+			<artifactId>org.apache.servicemix.bundles.junit</artifactId>
+			<scope>test</scope>
+		</dependency>		
+		<!-- We now get all Log4J + SLF4J wiring from o.a.b.core -->
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<extensions>true</extensions>
+				<configuration>
+                    <instructions>
+                        <Bundle-Activator>org.appdapter.demo.gui.osgi.Activator</Bundle-Activator>
+						<!-- We want to use explicit packages.    *;-split-package:=merge-first  -->
+                        <Export-Package>
+							org.appdapter.demo.gui.osgi
+						</Export-Package>
+
+                    </instructions>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>
+<!--
+/*
+ *  Copyright 2011 by The Appdapter Project (www.appdapter.org).
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+-->
