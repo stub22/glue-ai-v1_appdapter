@@ -66,6 +66,10 @@ Version-less parent will be allowed in Maven 3.1.
 	<properties>
 		<maven.compiler.source>1.6</maven.compiler.source>
 		<maven.compiler.target>1.6</maven.compiler.target>
+					
+		<!-- Disable compile-on-save under Netbeans 8 to launch programs using maven-plugins for OSGi, Scala, _ -->
+		<netbeans.compile.on.save>none</netbeans.compile.on.save>
+		
 		<encoding>UTF-8</encoding>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<netbeans.hint.license>appdapter-apache20</netbeans.hint.license>
