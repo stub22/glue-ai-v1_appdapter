@@ -86,17 +86,21 @@
             <scope>provided</scope>
         </dependency-->
 
+		<!-- 2013-10-28 - after some dithering, decided we want compile scope, since the user can
+				always exclude the dep if its not wanted.
+		-->
+		
+
+		<!--
 		<dependency>
-			<artifactId>ext.bundle.jena_all_2_10_1</artifactId>
+			** <artifactId>ext.bundle.jena_all_2_10_1</artifactId>
 			<groupId>${project.groupId}</groupId>
 			<version>${project.version}</version>
-			<!-- 2013-10-28 - after some dithering, decided we want compile scope, since the user can
-				always exclude the dep if its not wanted.
-			-->
+
 			<scope>compile</scope>
 
 		</dependency>
-
+		-->
 
         <dependency>
 			<!-- Jena wants this HTTP-client lib, which is also useful to end-users of this bundle.

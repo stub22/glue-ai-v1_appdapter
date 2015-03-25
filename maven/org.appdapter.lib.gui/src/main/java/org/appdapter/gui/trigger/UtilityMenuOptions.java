@@ -41,7 +41,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.shared.ReificationStyle;
+// import com.hp.hpl.jena.shared.ReificationStyle;
 
 @UISalient(NonPublicMethods = false)
 abstract public class UtilityMenuOptions implements UtilClass {
@@ -89,7 +89,8 @@ abstract public class UtilityMenuOptions implements UtilClass {
 		withSubclasses(ModelFactory.class, fw);
 		withSubclasses(RepoDatasetFactory.class, fw);
 		useScannedClasses("com.hp.hpl.jena.rdf.model.", fw);
-		createEnumClass(ReificationStyle.class);
+		
+		// createEnumClass(ReificationStyle.class);
 
 		Utility.taskEqueue.waitUntilLastJobComplete();
 		loadAutoloads();

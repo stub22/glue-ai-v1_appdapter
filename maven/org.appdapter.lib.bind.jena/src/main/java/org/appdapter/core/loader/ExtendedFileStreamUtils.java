@@ -34,7 +34,6 @@ import com.hp.hpl.jena.util.FileManager;
 
 
 /**
- * @author Stu B. <www.texpedient.com>
  */
 
 public class ExtendedFileStreamUtils extends FileStreamUtils {

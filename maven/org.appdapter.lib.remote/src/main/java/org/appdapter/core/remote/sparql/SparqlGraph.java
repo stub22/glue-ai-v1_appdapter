@@ -446,4 +446,24 @@ public class SparqlGraph extends JenaWrappedGraph implements GraphWithPerform, G
 	public Model toModel() {
 		return ModelFactory.createModelForGraph(this);
 	}
+/*
+	@Override
+	public void delete(Triple t) {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
+	public Object find(Node s, Node p, Node o) {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+*/
+	@Override
+	public ExtendedIterator<Triple> find(Triple triple) {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
+	@Override
+	public void remove(Node node, Node node1, Node node2) {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
 }
