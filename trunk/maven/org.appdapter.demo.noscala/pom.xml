@@ -91,9 +91,10 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		<!--
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>ext.bundle.jena_all_2_10_1</artifactId>
+			** <artifactId>ext.bundle.jena_all_2_10_1</artifactId>
 			<version>${project.version}</version>
 			<exclusions>
 				<exclusion>
@@ -102,6 +103,7 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		-->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>org.appdapter.lib.core</artifactId>

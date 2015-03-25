@@ -121,4 +121,9 @@ public class SpecialBulkUpdateHandlerGraph extends JenaWrappedGraph implements G
 		return g.size();
 	}
 
+	@Override
+	public ExtendedIterator<Triple> find(Triple triple) {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	}
+
 }

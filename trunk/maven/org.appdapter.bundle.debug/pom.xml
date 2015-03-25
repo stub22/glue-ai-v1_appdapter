@@ -25,14 +25,41 @@
 			<artifactId>ext.bundle.xml.dom4j_161</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		
+		<!-- ReflectUtils and AggregateConverter uses org.apache.jena.atlas.lib.			-->
 		<dependency>
-			<!-- ReflectUtils and AggregateConverter uses org.apache.jena.atlas.lib.
-			-->
-			<groupId>${project.groupId}</groupId>
-			<artifactId>ext.bundle.jena_all_2_10_1</artifactId>
-            <version>${project.version}</version>
+			<groupId>org.apache.jena</groupId>
+			<artifactId>jena-osgi</artifactId>
+            <version>2.13.0</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.httpcomponents</groupId>
+					<artifactId>httpclient-osgi</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.httpcomponents</groupId>
+					<artifactId>httpcore-osgi</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>log4j</groupId>
+					<artifactId>log4j</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>			
+				
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>ext.bundle.apache_httpclient</artifactId>
+            <version>${project.version}</version>
+		</dependency>	
+	
+		<!--
+		<dependency>
+			
+			<groupId>${project.groupId}</groupId>
+			** <artifactId>ext.bundle.jena_all_2_10_1</artifactId>
+			<version>${project.version}</version>
+		</dependency>	
+		-->		
 		<dependency>
 			
 			<groupId>org.slf4j</groupId>
@@ -49,18 +76,18 @@
 				</exclusion>
 			</exclusions>
 		</dependency>				
-    </dependencies>
+	</dependencies>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <extensions>true</extensions>
-                <configuration>
-                    <instructions>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<extensions>true</extensions>
+				<configuration>
+					<instructions>
 
-                        <Bundle-Activator>org.appdapter.bundle.debug.Activator</Bundle-Activator>
+						<Bundle-Activator>org.appdapter.bundle.debug.Activator</Bundle-Activator>
 						<!-- If we are not specific enough in our Export-Package, BND will re-export imported packages 
 							(e.g. the Activator packages it finds in the ext-bundles).
 						-->
@@ -69,10 +96,10 @@
 							org.appdapter.bundle.debug, 
 							org.appdapter.bind.log4j
 						</Export-Package>
-                    </instructions>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+					</instructions>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 
 </project>

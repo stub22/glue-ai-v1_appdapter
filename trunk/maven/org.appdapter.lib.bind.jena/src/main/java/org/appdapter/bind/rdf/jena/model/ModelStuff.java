@@ -52,7 +52,7 @@ import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.shared.JenaException;
 import com.hp.hpl.jena.shared.PrefixMapping;
-import com.hp.hpl.jena.shared.ReificationStyle;
+// import com.hp.hpl.jena.shared.ReificationStyle;
 import com.hp.hpl.jena.util.CollectionFactory;
 import com.hp.hpl.jena.util.IteratorCollection;
 import com.hp.hpl.jena.util.iterator.ExtendedIterator;
@@ -556,6 +556,7 @@ public class ModelStuff {
 	 * @throws RuntimeException
 	 *             or JenaException if construction fails
 	 */
+	/*
 	public static Graph getGraph(Object wrap, Class<? extends Graph> graphClass, ReificationStyle style)
 	{
 		try
@@ -575,7 +576,7 @@ public class ModelStuff {
 			throw new JenaException(e);
 		}
 	}
-
+	*/
 	/*
 	    protected static Graph getReificationTriples( final Reifier r )
 	        {
@@ -726,7 +727,8 @@ public class ModelStuff {
 	 */
 	public static Model modelWithStatements(String facts)
 	{
-		return modelWithStatements(ReificationStyle.Standard, facts);
+		throw new RuntimeException("This method needs to be updated for Jena 2.13, which no longer supports ReificationStyle");
+		// return modelWithStatements(ReificationStyle.Standard, facts);
 	}
 
 	/**
@@ -738,21 +740,25 @@ public class ModelStuff {
 	 *            a string in semicolon-separated "S P O" format
 	 * @return a model containing those facts
 	 */
+	/*
 	public static Model modelWithStatements(ReificationStyle style, String facts)
 	{
 		return modelAdd(createModel(style), facts);
 	}
-
+*/
 	/**
 	 * make a model with a given reification style, give it Extended prefixes
 	 */
+	/*
 	public static Model createModel(ReificationStyle style)
 	{
-		Model result = ModelFactory.createDefaultModel(style);
+		// This method  no longer exists in Jena 2.13, but there is perhaps still some place we can plug in the style...
+		// Model result = ModelFactory.createDefaultModel(style);
+		Model result = ModelFactory.createDefaultModel();
 		result.setNsPrefixes(PrefixMapping.Extended);
 		return result;
 	}
-
+*/
 	/**
 	 * Answer a default model; it exists merely to abbreviate the rather long explicit invocation.
 	 * 

@@ -24,7 +24,6 @@ import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Model;
 
 /**
- * @author Stu B. <www.texpedient.com>
  */
 
 public abstract class AgnosticRepoImpl extends LoadingRepoImpl {

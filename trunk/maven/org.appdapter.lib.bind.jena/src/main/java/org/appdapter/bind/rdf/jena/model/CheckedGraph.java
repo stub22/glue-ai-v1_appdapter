@@ -313,4 +313,9 @@ public class CheckedGraph implements Graph, PrefixMapping {
 		}
 		return gnr;
 	}
+
+	@Override
+	public ExtendedIterator<Triple> find(Triple triple) {
+		throw new UnsupportedOperationException("**** Oops - this method was added between Jena 2.10 and Jena 2.13, and so far we only have a stub here."); //To change body of generated methods, choose Tools | Templates.
+	}
 }
