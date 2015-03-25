@@ -66,7 +66,8 @@ public class SPARQL_Utils {
 	}
 
 	public static Dataset createDataset(List defaultGraphURIs, List namedGraphURIs) {
-		return DatasetUtils.createDataset(defaultGraphURIs, namedGraphURIs, null, null);
+		// return DatasetUtils.createDataset(defaultGraphURIs, namedGraphURIs, null, null);
+		return DatasetUtils.createDataset(defaultGraphURIs, namedGraphURIs, null);
 	}
 
 	public static Resource nonBnodeValue(QuerySolution o, String v1, String v2) {

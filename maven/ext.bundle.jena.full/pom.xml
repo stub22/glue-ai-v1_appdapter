@@ -28,20 +28,6 @@
 	<name>${project.artifactId} - OSGi - Jena wrapper</name>
 	<description>Jena ${jena.version}, ARQ + SDB ${jena-sdb.version}</description>
 
-	<!--repositories>
-		<repository-->
-			<!-- Which deps do we still need this for? -->
-			<!--id>apache-repo-snapshots</id>
-			<url>https://repository.apache.org/content/repositories/snapshots/</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-	</repositories-->
-	
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>

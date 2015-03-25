@@ -55,12 +55,30 @@ central repo.
 
 		<!-- *************** Compile Deps - mostly OSGi-friendly versions *********************** -->
 
+		<!-- sdb is still used in org/appdapter/bind/sql/h2/DatabaseConnector.java -->
+		<dependency>	
+			<groupId>org.apache.jena</groupId>
+			<artifactId>jena-sdb</artifactId>
+			<version>1.5.2</version>
+
+		 <exclusions>
+		  <exclusion>
+		   <groupId>org.apache.jena</groupId>
+		   <artifactId>jena-arq</artifactId>
+		  </exclusion>
+		  <exclusion>
+		   <groupId>org.apache.jena</groupId>
+		   <artifactId>jena-core</artifactId>
+		  </exclusion>
+		 </exclusions>
+		</dependency>
+<!--
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>ext.bundle.jena_all_2_10_1</artifactId>
+			** <artifactId>ext.bundle.jena_all_2_10_1</artifactId>
             <version>${project.version}</version>
 		</dependency>		
-
+-->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>org.appdapter.bundle.debug</artifactId>

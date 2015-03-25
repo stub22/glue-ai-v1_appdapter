@@ -21,7 +21,9 @@
 
 		<module>../org.appdapter.bundle.debug</module>
 		<module>../org.appdapter.bundle.fileconv</module>
-        <module>../ext.bundle.jena.full</module>
+		<!--
+       ** <module>../ext.bundle.jena.full</module>
+		-->
         <module>../ext.bundle.openconverters</module>
         <module>../ext.bundle.apache_httpclient</module>
 		<module>../ext.bundle.xml.dom4j</module>

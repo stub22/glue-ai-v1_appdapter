@@ -103,7 +103,9 @@ public abstract class AbstractDatasetFactory implements UserDatasetFactory {
 	public Dataset create(List<String> uriList, List<String> namedSourceList, FileManager fileManager, String baseURI) {
 		// Fixed dataset - any GRAPH <notThere> in a query must return no match.
 		Dataset ds = createDefault();
-		DatasetUtils.addInGraphs(ds, uriList, namedSourceList, fileManager, baseURI);
+		// Under Jena 2.10 we had
+		// DatasetUtils.addInGraphs(ds, uriList, namedSourceList, fileManager, baseURI);
+		DatasetUtils.addInGraphs(ds, uriList, namedSourceList, baseURI);
 		return ds;
 	}
 
