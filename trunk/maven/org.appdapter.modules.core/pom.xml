@@ -24,6 +24,7 @@
 		<!--
        ** <module>../ext.bundle.jena.full</module>
 		-->
+		<module>../ext.bundle.semweb4j.jena</module>
         <module>../ext.bundle.openconverters</module>
         <module>../ext.bundle.apache_httpclient</module>
 		<module>../ext.bundle.xml.dom4j</module>
