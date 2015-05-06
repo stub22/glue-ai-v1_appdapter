@@ -18,38 +18,95 @@
     </properties>
 
     <dependencies>
-		<dependency>
-			<groupId>org.apache.jena</groupId>
-			<artifactId>jena-osgi</artifactId>
-            <version>2.13.0</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.apache.httpcomponents</groupId>
-					<artifactId>httpclient-osgi</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.apache.httpcomponents</groupId>
-					<artifactId>httpcore-osgi</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>log4j</groupId>
-					<artifactId>log4j</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>		
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>ext.bundle.apache_httpclient</artifactId>
-            <version>${project.version}</version>
-		</dependency>	
-				
         <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.core</artifactId>
             <version>4.3.0</version>
             <scope>provided</scope>
         </dependency>
-		
+
+		<dependency>
+			<groupId>org.appdapter</groupId>
+			<artifactId>ext.bundle.jena_all_2_13_0</artifactId>
+			<version>${project.version}</version>
+		</dependency>	
+
+						
+		<dependency>
+            <!-- Proper bundle used by ontoware RDF2Go stuff, which is not otherwise propagated.
+				We do *not* want to re-export this bundle.
+			-->
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.4</version>
+			<!-- Since we want this bundle-dep to propagate, we don't want "provided"
+            <scope>provided</scope>
+			-->
+        </dependency>
+        <dependency>
+            <groupId>org.semweb4j</groupId>
+            <artifactId>rdf2go.api</artifactId>
+            <version>${org.semweb4j.version}</version>
+			<!-- Nope, we want this dep to propagate, so we want scope=compile, which is the default.
+             <scope>provided</scope>
+			 -->
+        </dependency>
+        <dependency>
+            <groupId>org.semweb4j</groupId>
+            <artifactId>rdfreactor.runtime</artifactId>
+            <version>${org.semweb4j.version}</version>
+			<!-- We are re-exporting this jar contents, so "provided" is correct scope -->
+             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.semweb4j</groupId>
+            <!-- does not have an OSGi manifest.  provides org.ontoware.rdf2go.impl.StaticBinding, which is in a 
+            package that is also defined by rdf2go.api  which does have an OSGi manifest.   Probably the .impl
+            bundle should be treated as a fragment, injected into the .api Fragment-host.
+            -->
+            <artifactId>rdf2go.impl.jena</artifactId>
+            <version>${org.semweb4j.version}</version>
+			<!-- We are re-exporting this jar contents, so "provided" is correct scope -->
+             <scope>provided</scope>
+            <!--  Still needed?
+            <exclusions>
+                    <exclusion>
+                            <artifactId>httpclient</artifactId>
+                            <groupId>org.apache.httpcomponents</groupId>
+                    </exclusion>
+            </exclusions>
+            -->
+            <exclusions>
+				<!-- We do not want to propagate a direct dependence on these jena deps. -->
+                <exclusion>
+                    <groupId>org.apache.jena</groupId>
+                    <artifactId>jena-arq</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.jena</groupId>
+                    <artifactId>jena-core</artifactId>
+                </exclusion>
+                <exclusion>
+					<!-- We are not using this feature currently, and it drags in a lot of other deps -->
+                    <groupId>com.github.jsonld-java</groupId>
+                    <artifactId>jsonld-java-jena</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+		<!--
+        <dependency>
+            <groupId>com.github.jsonld-java</groupId>
+            <artifactId>jsonld-java-jena</artifactId>
+            <version>0.4.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.3.3</version>
+            <scope>provided</scope>
+        </dependency>
+		-->
     </dependencies>
 
     <build>
@@ -62,7 +119,21 @@
                 <configuration>
                     <instructions>
                         <Bundle-Activator>ext.bundle.semweb4j.jena.Activator</Bundle-Activator>
-                        <Export-Package/>
+						<Import-Package>!com.github.jsonldjava.*,*</Import-Package>
+                        <Export-Package>
+							<!-- Notes:  1) We don't want to re-export the packages from rdf2go.api.
+							2) The impl package is somewhat tricky, as this is the special "binding" pkg, 
+							but also contains AbstractModelFactory.class.  That is why we get:
+
+Bundle org.cogchar:ext.bundle.ontoware:bundle:1.1.3-SNAPSHOT : Split package org/ontoware/rdf2go/impl
+Use directive -split-package:=(merge-first|merge-last|error|first) on Export/Private Package instruction to get rid of this warning
+							-->
+							org.ontoware.rdf2go.impl.*,  
+							org.ontoware.rdfreactor.*
+							<!--
+							org.ontoware.*, rdf2go.*, rdfreactor.runtime, com.github.jsonldjava.*, com.fasterxml.jackson.*, org.apache.commons.io.*
+							-->
+						</Export-Package>						
                     </instructions>
                 </configuration>
             </plugin>
