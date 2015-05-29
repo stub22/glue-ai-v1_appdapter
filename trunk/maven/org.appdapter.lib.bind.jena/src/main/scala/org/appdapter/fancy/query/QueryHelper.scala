@@ -27,7 +27,10 @@ import com.hp.hpl.jena.shared.PrefixMapping
 object QueryHelper extends BasicDebugger {
 	// Temporary workaround until dphys namespace is resolved within Appdpapter, or we determine another method of 
 	// NS injection.
-	var theDPhysURI_opt : Option[String] = None
+	private val temp_dphysURI_temp = "http://onto.appdapter.org/onto/dphys_temp#"
+	
+	// Disable or remap using org.appdapter.fancy.query.QueryHelper.theDPhysURI_opt = None
+	var theDPhysURI_opt : Option[String] =  Some(temp_dphysURI_temp)
 
   def execModelQueryWithPrefixHelp(model: Model, qText: String): ResultSet = {
 	if (theDPhysURI_opt.isDefined) {
