@@ -98,6 +98,14 @@
 
 			<scope>compile</scope>
 		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>ext.bundle.semweb4j.jena</artifactId>
+            <version>${project.version}</version>
+			
+			<scope>compile</scope>
+		</dependency>		
+		
 
         <dependency>
 			<!-- Jena wants this HTTP-client lib, which is also useful to end-users of this bundle.
