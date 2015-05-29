@@ -45,38 +45,24 @@ trait MatrixRow {
 class MatrixRowCSV(val myRowArr: Array[String]) extends MatrixRow {
   val theDbg = new BasicDebugger();
 
-  override def getPossibleColumnCount(): Int = myRowArr.length;
+	override def getPossibleColumnCount(): Int = myRowArr.length;
 
-  override def getPossibleColumnValueString(colIdx: Int): Option[String] = {
-    if ((colIdx < 0) || (colIdx >= myRowArr.length)) {
-      theDbg.logWarning("Column index " + colIdx + " is out of bounds for rowArray length " + myRowArr.length);
-      None;
-    } else {
-      val colVal: String = myRowArr(colIdx);
-      if ((colVal == null) || (colVal.length() == 0)) {
-        None;
-      } else {
-        Some(safelyTrim(colVal));
-      }
-    }
-  }
-
-  def safelyTrim(s: String): String = {
-    var ss = s
-    while (isWhitespace(ss.charAt(0))) ss = ss.substring(1);
-    var len = ss.length() - 1;
-    while (isWhitespace(ss.charAt(len))) {
-      ss = ss.substring(0, len)
-      len = len - 1
-    }
-    ss
-  }
-
-  def isWhitespace(c: Char): Boolean = {
-    //if (c=='\\') return false;
-    c <= ' '
-  }
+	override def getPossibleColumnValueString(colIdx: Int): Option[String] = {
+		if ((colIdx < 0) || (colIdx >= myRowArr.length)) {
+			theDbg.logWarning("Column index " + colIdx + " is out of bounds for rowArray length " + myRowArr.length)
+			None
+		} else {
+			val colVal: String = myRowArr(colIdx);
+			if (colVal != null) {
+				val trimmedVal = colVal.trim
+				if (trimmedVal.length > 0) {
+					Some(trimmedVal)
+				} else None
+			} else None
+		}
+	}
 }
+
 
 class SheetProc(val myHeaderRowCount: Int) extends BasicDebugger {
   require(myHeaderRowCount > 0);
