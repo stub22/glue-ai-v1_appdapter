@@ -65,6 +65,12 @@ central repo.
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
+			<artifactId>ext.bundle.semweb4j.jena</artifactId>
+            <version>${project.version}</version>
+		</dependency>		
+
+		<dependency>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>org.appdapter.bundle.debug</artifactId>
             <version>${project.version}</version>
 		</dependency>
