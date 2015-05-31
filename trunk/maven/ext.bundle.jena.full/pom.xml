@@ -150,6 +150,12 @@
 							then remove at least that part of the DynamicImport-Package.  
 							
 							A similar concern applies in o.a.b.core.
+							
+				com.hp.hpl.jena.assembler.*
+ Unable to resolve bundle revision org.appdapter.org.appdapter.bundle.core [2.0] because it is exposed to package 
+'com.hp.hpl.jena.assembler.assemblers' from bundle revisions org.appdapter.ext.bundle.jena_all_2_13_0 [25.0] 
+and org.apache.jena.osgi [13.0] via two dependency chains.							
+							 
 						-->
 						<Export-Package>arq.*, com.hp.hpl.jena.sdb.*</Export-Package>
 						<Private-Package>riotcmd</Private-Package>

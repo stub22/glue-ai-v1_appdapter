@@ -21,6 +21,7 @@
 		-->
 		<module>../ext.bundle.math.symja_jas</module>
 		<module>../org.appdapter.lib.bind.math</module>
+		<module>../org.appdapter.bundle.math</module>
 	</modules>  
 </project>
 <!--
