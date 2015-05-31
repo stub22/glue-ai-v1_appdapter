@@ -57,7 +57,7 @@
                 <configuration>
                     <instructions>
                         <Bundle-Activator>org.appdapter.bundle.xload.Activator</Bundle-Activator>
-						<Export-Package>org.appdapter.xload</Export-Package>
+						<Export-Package>org.appdapter.xload.*</Export-Package>
                     </instructions>
                 </configuration>
             </plugin>
