@@ -18,8 +18,8 @@ package org.appdapter.gui.repo;
 
 import org.appdapter.api.trigger.Box;
 import org.appdapter.trigger.bind.jena.TriggerImpl;
-import org.appdapter.bind.sql.h2.DatabaseConnector;
-import org.appdapter.demo.DemoDatabase;
+import org.appdapter.xload.sql.h2.DatabaseConnector;
+import org.appdapter.xload.sql.h2.DemoDatabase;
 
 /**
  * @author Stu B. <www.texpedient.com>

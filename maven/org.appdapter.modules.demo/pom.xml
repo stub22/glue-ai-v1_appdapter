@@ -14,7 +14,9 @@
 	</description>
 	<modules>
 		<module>../org.appdapter.demo.standalone</module>
+		<!--
 		<module>../org.appdapter.demo.noscala</module>
+		-->
 	</modules>
 
 </project>

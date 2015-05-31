@@ -64,7 +64,7 @@
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>org.appdapter.lib.core</artifactId>
+			<artifactId>org.appdapter.bundle.core</artifactId>
 			<version>${project.version}</version>
 		</dependency>		  
 		<dependency>

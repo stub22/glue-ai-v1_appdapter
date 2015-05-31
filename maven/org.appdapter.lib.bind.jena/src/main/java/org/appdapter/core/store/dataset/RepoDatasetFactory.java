@@ -35,7 +35,7 @@ import org.appdapter.core.name.FreeIdent;
 import org.appdapter.core.store.RepoOper;
 import org.appdapter.core.store.RepoOper.ReloadableDataset;
 import org.appdapter.core.model.StatementSync;
-import org.appdapter.demo.DemoDatabase;
+// import org.appdapter.bind.sql.h2.DemoDatabase;
 import org.appdapter.demo.DemoResources;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -424,7 +424,10 @@ public class RepoDatasetFactory implements AnyOper, UtilClass {
 	}
 
 	private static void ensureQuadStore(Store store) {
-		DemoDatabase.initConnector();
+		if (true) {
+			throw new RuntimeException("Changed 2015-05-30:  Someone now needs to do DemoDatabase.initConnector() first!");
+		}
+//		DemoDatabase.initConnector();
 		StoreFormatter formaterObject = store.getTableFormatter();
 		formaterObject.create();
 		formaterObject.format();

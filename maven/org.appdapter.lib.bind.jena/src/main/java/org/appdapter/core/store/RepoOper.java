@@ -16,7 +16,6 @@
 package org.appdapter.core.store;
 
 import org.appdapter.core.model.RDFSortedWriter;
-import org.appdapter.core.loader.ExtendedFileStreamUtils;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -51,7 +50,7 @@ import org.appdapter.bind.rdf.jena.model.CheckedGraph;
 import org.appdapter.core.store.dataset.RepoDatasetFactory;
 import org.appdapter.core.store.dataset.UserDatasetFactory;
 import org.appdapter.demo.DemoResources;
-import org.appdapter.fileconv.FileStreamUtils;
+// import org.appdapter.fileconv.FileStreamUtils;
 import org.appdapter.trigger.bind.jena.TriggerImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -284,7 +283,7 @@ public class RepoOper implements AnyOper, UtilClass {
 			return;
 		}
 	}
-
+/* Moved to ExtendedRepoOper in xload
 	public static void readDatasetFromURL(String srcPath, Dataset target, Resource unionOrReplace) throws IOException {
 		final Model loaderModel = RepoDatasetFactory.createPrivateMemModel();
 		final Dataset loaderDataset = DatasetFactory.createMem();
@@ -341,7 +340,7 @@ public class RepoOper implements AnyOper, UtilClass {
 		}
 		putAllDatasetModels(target, loaderDataset, unionOrReplace);
 	}
-
+*/
 	static boolean firstTime = true;
 	static public boolean extremeDebug = false;
 

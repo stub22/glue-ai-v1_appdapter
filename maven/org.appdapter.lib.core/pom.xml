@@ -75,23 +75,19 @@ central repo.
             <version>${project.version}</version>
 		</dependency>
 
+<!--
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>org.appdapter.bundle.fileconv</artifactId>
             <version>${project.version}</version>
 		</dependency>		
-
+-->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>ext.bundle.xml.dom4j_161</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
-        <dependency>
-			<!-- Jena-SDB no longer propagates this dep to us.  -->
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-		</dependency>			
 		
 		<!-- ************************** Test Deps *********************** -->	
 		<!--	
