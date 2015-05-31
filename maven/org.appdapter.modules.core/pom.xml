@@ -21,6 +21,7 @@
 
 		<module>../org.appdapter.bundle.debug</module>
 		<module>../org.appdapter.bundle.fileconv</module>
+		<module>../org.appdapter.bundle.xload</module>
 		
         <module>../ext.bundle.jena.full</module>
 		

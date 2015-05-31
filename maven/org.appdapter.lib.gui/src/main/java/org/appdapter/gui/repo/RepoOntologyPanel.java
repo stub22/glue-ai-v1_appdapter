@@ -34,7 +34,7 @@ import org.appdapter.core.jvm.GetObject;
 import org.appdapter.core.debug.UIAnnotations.UISalient;
 import org.appdapter.core.debug.UIAnnotations.UtilClass;
 import org.appdapter.core.convert.ToFromKeyConverter;
-import org.appdapter.fancy.repo.DirectRepo;
+import org.appdapter.xload.repo.DirectRepo;
 import org.appdapter.core.name.Ident;
 import org.appdapter.core.store.Repo;
 import org.appdapter.core.store.dataset.RepoDatasetFactory;

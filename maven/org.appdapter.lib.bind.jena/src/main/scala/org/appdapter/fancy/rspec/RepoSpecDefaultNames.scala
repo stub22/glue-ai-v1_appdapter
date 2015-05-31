@@ -83,8 +83,9 @@ object RepoSpecDefaultNames {
 
   val TGT_GRAPH_SPARQL_VAR = DFLT_TGT_GRAPH_SPARQL_VAR; // "qGraph"
 
+	/*
   def main(args: Array[String]) = {
-    val fileResModelCLs: java.util.List[ClassLoader] =
+    val fileResModelCLs: java.util.List[ClassLoader] =\\
       ClassLoaderUtils.getFileResourceClassLoaders(null, ClassLoaderUtils.ALL_RESOURCE_CLASSLOADER_TYPES);
     val repoSpec = new OnlineSheetRepoSpec(RepoSpecDefaultNames.BMC_SHEET_KEY, RepoSpecDefaultNames.BMC_NAMESPACE_SHEET_NUM, RepoSpecDefaultNames.BMC_DIRECTORY_SHEET_NUM, fileResModelCLs);
     val repo = repoSpec.getOrMakeRepo //.asInstanceOf[GoogSheetRepo];
@@ -95,24 +96,7 @@ object RepoSpecDefaultNames {
     repoNav.addObject(null, repo, true, false);
     java.lang.Thread.sleep(60000000);
   }
+*/
 
-  def makeBMC_RepoSpec(ctx: BundleContext): OnlineSheetRepoSpec = {
-    val fileResModelCLs: java.util.List[ClassLoader] =
-      ClassLoaderUtils.getFileResourceClassLoaders(ctx, ClassLoaderUtils.ALL_RESOURCE_CLASSLOADER_TYPES);
-    makeBMC_RepoSpec(fileResModelCLs);
-  }
-  def makeBMC_RepoSpec(fileResModelCLs: java.util.List[ClassLoader]): OnlineSheetRepoSpec = {
-    new OnlineSheetRepoSpec(BMC_SHEET_KEY, BMC_NAMESPACE_SHEET_NUM, BMC_DIRECTORY_SHEET_NUM, fileResModelCLs);
-  }
-
-  def makeBMC_OfflineRepoSpec(ctx: BundleContext): OfflineXlsSheetRepoSpec = {
-    val fileResModelCLs: java.util.List[ClassLoader] =
-      ClassLoaderUtils.getFileResourceClassLoaders(ctx, ClassLoaderUtils.ALL_RESOURCE_CLASSLOADER_TYPES);
-    makeBMC_OfflineRepoSpec(fileResModelCLs);
-  }
-
-  def makeBMC_OfflineRepoSpec(fileResModelCLs: java.util.List[ClassLoader]): OfflineXlsSheetRepoSpec = {
-    new OfflineXlsSheetRepoSpec(BMC_WORKBOOK_PATH, DFLT_NAMESPACE_SHEET_NAME, DFLT_DIRECTORY_SHEET_NAME, fileResModelCLs);
-  }
 
 }

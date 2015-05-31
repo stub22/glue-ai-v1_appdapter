@@ -15,7 +15,7 @@
 	<dependencies>
 		<dependency>
            <groupId>${project.groupId}</groupId>
-           <artifactId>org.appdapter.bundle.core</artifactId>
+           <artifactId>org.appdapter.bundle.xload</artifactId>
            <version>${project.version}</version>
 		</dependency>
         <dependency>
