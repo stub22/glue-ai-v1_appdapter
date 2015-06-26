@@ -26,6 +26,7 @@
 			<version>${project.version}</version>
 		</dependency>
 		<!-- ReflectUtils and AggregateConverter uses org.apache.jena.atlas.lib.			-->
+		<!-- 2015-06-26   Stu replaces this with ref to ext.bundle.jena
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-osgi</artifactId>
@@ -45,21 +46,20 @@
 				</exclusion>
 			</exclusions>
 		</dependency>			
-				
+		-->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>ext.bundle.apache_httpclient</artifactId>
             <version>${project.version}</version>
 		</dependency>	
 	
-		<!--
+		
 		<dependency>
-			
+			<artifactId>ext.bundle.jena_all_2_13_0</artifactId>
 			<groupId>${project.groupId}</groupId>
-			** <artifactId>ext.bundle.jena_all_2_10_1</artifactId>
-			<version>${project.version}</version>
+			<version>${project.version}</version>			
 		</dependency>	
-		-->		
+				
 		<dependency>
 			
 			<groupId>org.slf4j</groupId>
