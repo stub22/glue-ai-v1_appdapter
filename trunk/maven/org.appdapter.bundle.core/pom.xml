@@ -78,8 +78,12 @@
             <scope>provided</scope>
         </dependency-->
 
-		<!-- 2013-10-28 - after some dithering, decided we want compile scope, since the user can
-				always exclude the dep if its not wanted.
+		<!-- 2013-10-28 - after some dithering, decided we want to propagate "compile" scope on ext.bundle.jena.
+			We note a user can always exclude the dep if its not wanted.  
+			The benefit here is that appdapter application writers will
+				only need to declare one dependency on o.a.b.core, which gets them direct compile-time
+				access to Appdapter's currently preferred version of all of the Jena classes.  That is important,
+				application code will often need to use jena Model classes together with Appdapter helper classes.
 		-->
 		
 
