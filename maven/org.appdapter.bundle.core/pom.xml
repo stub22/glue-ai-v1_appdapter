@@ -12,8 +12,8 @@
 	<packaging>bundle</packaging>
 	<name>${project.artifactId} - OSGi - core + registry</name>
 	<description>Primary Appdapter OSGi Bundle, "depend on me!", has no dependencies on a particular 
-			OSGi framework implementation, no SLF4J concrete binding, and no builtin shell.
-			Includes the contents of both the "core" and "registry" bundes from the "lib" tier.
+			OSGi framework implementation, and no builtin shell.
+			Exports the contents of the "core", "registry", "bind.math", "bind.jena" jars from the "lib" tier.
 	</description>	
 
 	<dependencies>
