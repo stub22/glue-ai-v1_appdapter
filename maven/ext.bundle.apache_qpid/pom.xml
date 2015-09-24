@@ -6,10 +6,10 @@
 		<version>1.2.4-SNAPSHOT</version>
 		<relativePath>../org.appdapter.modules.network/pom.xml</relativePath>
 	</parent>	
-    <artifactId>ext.bundle.apache_qpid_010</artifactId>
+    <artifactId>ext.bundle.apache_qpid_032</artifactId>
     <packaging>bundle</packaging>
 
-    <name>ext.bundle.apache_qpid_010 - OSGi - Qpid wrapper</name>
+    <name>${project.artifactId} - OSGi - Qpid wrapper</name>
 	<url>http://www.appdapter.org</url>
 	<description>Provides dependencies and OSGi bindings for working with Apache Qpid</description>
 
@@ -34,48 +34,16 @@
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
-                    <artifactId>backport-util-concurrent</artifactId>
-                    <groupId>backport-util-concurrent</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>mina-filter-ssl</artifactId>
-                    <groupId>org.apache.mina</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>mina-core</artifactId>
-                    <groupId>org.apache.mina</groupId>
-                </exclusion>
-                <exclusion>
                   <artifactId>slf4j-api</artifactId>
                   <groupId>org.slf4j</groupId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>activemq-all</artifactId>
-            <scope>provided</scope>
         </dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
             <scope>provided</scope>
 		</dependency>
-        <dependency>
-			<groupId>backport-util-concurrent</groupId>
-            <artifactId>backport-util-concurrent</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-			<groupId>org.apache.mina</groupId>
-            <artifactId>mina-core</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-			<groupId>org.apache.mina</groupId>
-            <artifactId>mina-filter-ssl</artifactId>
-            <scope>provided</scope>
-        </dependency>
     </dependencies>
 
     <build>
@@ -86,9 +54,7 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Import-Package>sun.misc;resolution:='optional',*</Import-Package>
                         <Export-Package>javax.jms.*,org.apache.qpid.*</Export-Package>
-                        <Private-Package>edu.emory.mathcs.backport.java.util.*,org.apache.mina.*</Private-Package>
                     </instructions>
                 </configuration>
             </plugin>
