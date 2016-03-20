@@ -18,6 +18,8 @@ package org.appdapter.help.repo
 
 import scala.collection.JavaConversions.{ asScalaBuffer, bufferAsJavaList }
 
+import org.appdapter.fancy.log.VarargsLogging
+
 import org.appdapter.core.name.Ident
 import org.appdapter.core.store.Repo
 import org.appdapter.fancy.rclient.{RepoClient}
@@ -26,11 +28,12 @@ import com.hp.hpl.jena.query.{ Query, QuerySolution }
 
 
 
-object ChannelsTriggersHelper {
+object ChannelsTriggersHelper  extends VarargsLogging {
+    var cmdQueryQN = "ccrt:find_cmds_99" // The QName of a query in the "Queries" model/tab
+    var cmdGraphQN = "ccrt:cmd_sheet_sin23" // The QName of a graph = model = tab, as given by directory model.
 
   def queryCommands(rc: RepoClient): java.util.List[CommandRec] = {
-    val cmdQueryQN = "ccrt:find_cmds_99" // The QName of a query in the "Queries" model/tab
-    val cmdGraphQN = "ccrt:cmd_sheet_AZR50" // The QName of a graph = model = tab, as given by directory model.
+	  info2("querying for commands with q={} and g={}", cmdQueryQN : Object, cmdGraphQN : Object)
     val solList = rc.queryIndirectForAllSolutions(cmdQueryQN, cmdGraphQN)
     val resultJList = new java.util.ArrayList[CommandRec]();
     import scala.collection.JavaConversions._
@@ -43,6 +46,7 @@ object ChannelsTriggersHelper {
       val cRec = new CommandRec(cmdID, boxID, trigID, trigFQCN);
       resultJList.add(cRec);
     })
+	info1("Found {} commands", resultJList.size() : Integer)
     resultJList
   }
   //import org.cogchar.impl.channel.FancyChannelSpec;
