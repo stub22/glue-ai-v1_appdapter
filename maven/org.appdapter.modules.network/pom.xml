@@ -15,6 +15,7 @@
 	<modules>
 		<module>../ext.bundle.apache_avro</module>
 		<module>../ext.bundle.apache_qpid</module>
+		<module>../ext.bundle.akka.remote</module>
 	</modules>
 
 </project>
