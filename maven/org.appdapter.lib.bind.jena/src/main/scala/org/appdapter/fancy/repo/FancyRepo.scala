@@ -149,7 +149,7 @@ trait FancyRepo extends Repo.WithDirectory with ModelClientCore with Loggable {
   }
   def checkQueryText(qText: String, qSrcGraphQN: Object, queryQN: Object, showStackTrace: Boolean): Unit = {
     if (qText == null || qText.length == 0) {
-      val msg = "Unable to find Query Called " + queryQN + " in Model " + qSrcGraphQN;
+      val msg = "FancyRepo is unable to find query called " + queryQN + " in model " + qSrcGraphQN;
       val rte = new RuntimeException(msg);
       logError(msg);
       if (showStackTrace) {
