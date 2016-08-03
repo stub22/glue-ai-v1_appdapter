@@ -19,14 +19,17 @@
 		
 		<module>../ext.bundle.math.jscience</module>
 		-->
+		<!-- Disabling Symja build as of our version 1.2.4  Archived builds may still be accessed thru
+		Appdapter version 1.2.3
 		<module>../ext.bundle.math.symja_jas</module>
+		-->
 		<module>../org.appdapter.lib.bind.math</module>
 		<module>../org.appdapter.bundle.math</module>
 	</modules>  
 </project>
 <!--
 /*
- *  Copyright 2011 by The Appdapter Project (www.appdapter.org).
+ *  Copyright 2011-2016 by The Appdapter Project (www.appdapter.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.

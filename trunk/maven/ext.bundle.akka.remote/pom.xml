@@ -35,6 +35,14 @@
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-remote_2.10</artifactId>
             <version>2.3.15</version>
+        </dependency>
+       <dependency>
+		   <!-- Added explicit dep on 2016-04-18.  Has OSGi manifest which looks slightly sloppy, seems OK in unit 
+				tests, still undecided if this dep should remain here or a launcher should have to add it.
+			-->
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-slf4j_2.10</artifactId>
+            <version>2.3.15</version>
         </dependency>		
     </dependencies>
 
