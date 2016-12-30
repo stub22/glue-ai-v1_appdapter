@@ -5,7 +5,7 @@
 		<artifactId>org.appdapter.modules.core</artifactId>
 		<version>1.2.5-SNAPSHOT</version>
 		<relativePath>../org.appdapter.modules.core/pom.xml</relativePath>
-	</parent>	
+	</parent>
     <artifactId>ext.bundle.semweb4j.jena</artifactId>
     <packaging>bundle</packaging>
 
@@ -28,9 +28,9 @@
 			<groupId>org.appdapter</groupId>
 			<artifactId>ext.bundle.jena_all_2_13_0</artifactId>
 			<version>${project.version}</version>
-		</dependency>	
+		</dependency>
 
-						
+
 		<dependency>
             <!-- Proper bundle used by ontoware RDF2Go stuff, which is not otherwise propagated.
 				We do *not* want to re-export this bundle.
@@ -59,7 +59,7 @@
         </dependency>
         <dependency>
             <groupId>org.semweb4j</groupId>
-            <!-- does not have an OSGi manifest.  provides org.ontoware.rdf2go.impl.StaticBinding, which is in a 
+            <!-- does not have an OSGi manifest.  provides org.ontoware.rdf2go.impl.StaticBinding, which is in a
             package that is also defined by rdf2go.api  which does have an OSGi manifest.   Probably the .impl
             bundle should be treated as a fragment, injected into the .api Fragment-host.
             -->
@@ -121,18 +121,18 @@
 						<Import-Package>!com.github.jsonldjava.*,*</Import-Package>
                         <Export-Package>
 							<!-- Notes:  1) We don't want to re-export the packages from rdf2go.api.
-							2) The impl package is somewhat tricky, as this is the special "binding" pkg, 
+							2) The impl package is somewhat tricky, as this is the special "binding" pkg,
 							but also contains AbstractModelFactory.class.  That is why we get:
 
 Bundle org.cogchar:ext.bundle.ontoware:bundle:1.1.3-SNAPSHOT : Split package org/ontoware/rdf2go/impl
 Use directive -split-package:=(merge-first|merge-last|error|first) on Export/Private Package instruction to get rid of this warning
-							-->
-							org.ontoware.rdf2go.impl.*,  
-							org.ontoware.rdfreactor.*
-							<!--
-							org.ontoware.*, rdf2go.*, rdfreactor.runtime, com.github.jsonldjava.*, com.fasterxml.jackson.*, org.apache.commons.io.*
-							-->
-						</Export-Package>						
+                            -->
+                            org.ontoware.rdf2go.impl.*,
+                            org.ontoware.rdfreactor.*
+                            <!--
+                            org.ontoware.*, rdf2go.*, rdfreactor.runtime, com.github.jsonldjava.*, com.fasterxml.jackson.*, org.apache.commons.io.*
+                            -->
+                        </Export-Package>
                     </instructions>
                 </configuration>
             </plugin>
@@ -146,7 +146,6 @@ Use directive -split-package:=(merge-first|merge-last|error|first) on Export/Pri
                 <dependency>
                     <groupId>org.apache.felix</groupId>
                     <artifactId>org.apache.felix.main</artifactId>
-                    <version>4.0.3</version>
                     <scope>provided</scope>
                 </dependency>
                 <!-- To include a shell:
@@ -224,7 +223,6 @@ Use directive -split-package:=(merge-first|merge-last|error|first) on Export/Pri
                 <dependency>
                     <groupId>org.apache.felix</groupId>
                     <artifactId>org.apache.felix.main</artifactId>
-                    <version>4.0.3</version>
                     <scope>provided</scope>
                 </dependency>
                 <!-- org.apache.felix:org.apache.felix.gogo.shell:0.6.1 useless from Maven since stdin is swallowed -->

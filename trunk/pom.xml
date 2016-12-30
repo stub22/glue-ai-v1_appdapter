@@ -166,7 +166,7 @@ Version-less parent will be allowed in Maven 3.1.
 		<version.maven.surefire.plugin>2.9</version.maven.surefire.plugin>
 		<version.maven.scala.plugin>2.15.2</version.maven.scala.plugin>
 		<version.wagon.ftp>1.0-beta-6</version.wagon.ftp>
-		<version.org.apache.felix.main>4.2.1</version.org.apache.felix.main>
+		<version.org.apache.felix.main>5.6.1</version.org.apache.felix.main>
 	</properties>
 
 	<dependencyManagement>
@@ -838,6 +838,7 @@ Version-less parent will be allowed in Maven 3.1.
                 <dependency>
                     <groupId>org.apache.felix</groupId>
                     <artifactId>org.apache.felix.main</artifactId>
+                    <version>${version.org.apache.felix.main}</version>
                 </dependency>
                 <!-- To include a shell:
                 <dependency>

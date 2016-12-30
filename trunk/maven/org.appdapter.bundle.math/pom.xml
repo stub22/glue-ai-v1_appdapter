@@ -5,7 +5,7 @@
 		<artifactId>org.appdapter.modules.core</artifactId>
 		<version>1.2.5-SNAPSHOT</version>
 		<relativePath>../org.appdapter.modules.core/pom.xml</relativePath>
-	</parent>	
+	</parent>
 
     <artifactId>org.appdapter.bundle.math</artifactId>
     <packaging>bundle</packaging>
@@ -36,13 +36,13 @@
 			<!-- This external component bundle-snapshot version is now fixed at Appdapter rev 1.0.9 (Spring 2013) -->
 			<version>1.0.9</version>
 			<!--  We would like to see JScience keep going, but we aren't encouraging further coding directly
-					against it at this time.  Our appdapter and cogchar APIs should offer increasing abstraction 
+					against it at this time.  Our appdapter and cogchar APIs should offer increasing abstraction
 					between	the JScience and Symja/JAS approaches.
-					
-				Any user who wants to actually code against the JScience API can add it as an explicit compile dep
-				in their own project.
-			-->
-			<scope>runtime</scope>
+
+                Any user who wants to actually code against the JScience API can add it as an explicit compile dep
+                in their own project.
+            -->
+            <scope>runtime</scope>
             <!-- but dont let it use "runtime" classes that mismatch -->
             <exclusions>
                 <exclusion>
@@ -65,9 +65,9 @@
                     <artifactId>slf4j-log4j12</artifactId>
                     <groupId>org.slf4j</groupId>
                 </exclusion>
-            </exclusions>    
-			
-		</dependency>		
+            </exclusions>
+
+        </dependency>
     </dependencies>
 
     <build>
@@ -80,7 +80,7 @@
                 <configuration>
                     <instructions>
                         <Bundle-Activator>org.appdapter.bundle.math.Activator</Bundle-Activator>
-						<Export-Package>org.appdapter.bind.math.*</Export-Package>
+                        <Export-Package>org.appdapter.bind.math.*</Export-Package>
                     </instructions>
                 </configuration>
             </plugin>
@@ -94,7 +94,6 @@
                 <dependency>
                     <groupId>org.apache.felix</groupId>
                     <artifactId>org.apache.felix.main</artifactId>
-                    <version>4.0.3</version>
                     <scope>provided</scope>
                 </dependency>
                 <!-- To include a shell:
@@ -172,7 +171,6 @@
                 <dependency>
                     <groupId>org.apache.felix</groupId>
                     <artifactId>org.apache.felix.main</artifactId>
-                    <version>4.0.3</version>
                     <scope>provided</scope>
                 </dependency>
                 <!-- org.apache.felix:org.apache.felix.gogo.shell:0.6.1 useless from Maven since stdin is swallowed -->

@@ -1,18 +1,18 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>org.appdapter</groupId>
-		<artifactId>org.appdapter.modules.network</artifactId>
-		<version>1.2.5-SNAPSHOT</version>
-		<relativePath>../org.appdapter.modules.network/pom.xml</relativePath>
-	</parent>	
+    <parent>
+        <groupId>org.appdapter</groupId>
+        <artifactId>org.appdapter.modules.network</artifactId>
+        <version>1.2.5-SNAPSHOT</version>
+        <relativePath>../org.appdapter.modules.network/pom.xml</relativePath>
+    </parent>
 
     <artifactId>ext.bundle.akka.remote_v2315_s210</artifactId>
-    
+
     <packaging>bundle</packaging>
 
     <name>${project.artifactId} - OSGi</name>
-    
+
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -35,14 +35,14 @@
             <artifactId>akka-remote_2.10</artifactId>
             <version>2.3.15</version>
         </dependency>
-       <dependency>
-		   <!-- Added explicit dep on 2016-04-18.  Has OSGi manifest which looks slightly sloppy, seems OK in unit 
-				tests, still undecided if this dep should remain here or a launcher should have to add it.
-			-->
+        <dependency>
+            <!-- Added explicit dep on 2016-04-18.  Has OSGi manifest which looks slightly sloppy, seems OK in unit
+                tests, still undecided if this dep should remain here or a launcher should have to add it.
+            -->
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-slf4j_2.10</artifactId>
             <version>2.3.15</version>
-        </dependency>		
+        </dependency>
     </dependencies>
 
     <build>
@@ -56,10 +56,10 @@
                     <instructions>
                         <Bundle-Activator>org.appdapter.ext.bundle.akka.remote.Activator</Bundle-Activator>
                         <Export-Package>
-							org.parboiled.*,
-							shapeless.*,
-							org.uncommons.maths.*
-						</Export-Package>
+                            org.parboiled.*,
+                            shapeless.*,
+                            org.uncommons.maths.*
+                        </Export-Package>
                     </instructions>
                 </configuration>
             </plugin>
@@ -73,7 +73,6 @@
                 <dependency>
                     <groupId>org.apache.felix</groupId>
                     <artifactId>org.apache.felix.main</artifactId>
-                    <version>4.0.3</version>
                     <scope>provided</scope>
                 </dependency>
                 <!-- To include a shell:
@@ -151,7 +150,6 @@
                 <dependency>
                     <groupId>org.apache.felix</groupId>
                     <artifactId>org.apache.felix.main</artifactId>
-                    <version>4.0.3</version>
                     <scope>provided</scope>
                 </dependency>
                 <!-- org.apache.felix:org.apache.felix.gogo.shell:0.6.1 useless from Maven since stdin is swallowed -->
