@@ -1,12 +1,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<groupId>org.appdapter</groupId>
-		<artifactId>org.appdapter.modules.core</artifactId>
-		<version>1.2.5-SNAPSHOT</version>
-		<relativePath>../org.appdapter.modules.core/pom.xml</relativePath>
-	</parent>	
+    <parent>
+        <groupId>org.appdapter</groupId>
+        <artifactId>org.appdapter.modules.core</artifactId>
+        <version>1.2.5-SNAPSHOT</version>
+        <relativePath>../org.appdapter.modules.core/pom.xml</relativePath>
+    </parent>
 
     <artifactId>org.appdapter.bundle.xload</artifactId>
     <packaging>bundle</packaging>
@@ -24,11 +24,11 @@
             <version>4.3.0</version>
             <scope>provided</scope>
         </dependency>
-		<dependency>
-           <groupId>${project.groupId}</groupId>
-           <artifactId>org.appdapter.bundle.core</artifactId>
-           <version>${project.version}</version>
-		</dependency>		
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>org.appdapter.bundle.core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>org.appdapter.bundle.fileconv</artifactId>
@@ -40,10 +40,10 @@
                 </exclusion>
             </exclusions>
         </dependency>
-		<dependency>
+        <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-		</dependency>			
+        </dependency>
     </dependencies>
 
     <build>
@@ -56,25 +56,25 @@
                 <configuration>
                     <instructions>
                         <Bundle-Activator>org.appdapter.bundle.xload.Activator</Bundle-Activator>
-						<Export-Package>org.appdapter.xload.*</Export-Package>
+                        <Export-Package>org.appdapter.xload.*</Export-Package>
                     </instructions>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.scala-tools</groupId>
                 <artifactId>maven-scala-plugin</artifactId>
-               
+
                 <executions>
                     <execution>
                         <goals>
                             <goal>compile</goal>
                             <!-- Not currently using any tests
                             <goal>testCompile</goal>
-                            --> 
+                            -->
                         </goals>
                     </execution>
                 </executions>
-            </plugin>			
+            </plugin>
         </plugins>
     </build>
 
@@ -85,7 +85,6 @@
                 <dependency>
                     <groupId>org.apache.felix</groupId>
                     <artifactId>org.apache.felix.main</artifactId>
-                    <version>4.0.3</version>
                     <scope>provided</scope>
                 </dependency>
                 <!-- To include a shell:
@@ -163,7 +162,6 @@
                 <dependency>
                     <groupId>org.apache.felix</groupId>
                     <artifactId>org.apache.felix.main</artifactId>
-                    <version>4.0.3</version>
                     <scope>provided</scope>
                 </dependency>
                 <!-- org.apache.felix:org.apache.felix.gogo.shell:0.6.1 useless from Maven since stdin is swallowed -->
