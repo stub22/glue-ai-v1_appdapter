@@ -4,11 +4,13 @@ import java.rmi.RMISecurityManager;
 import java.security.AccessController;
 import java.security.Permission;
 import java.security.PrivilegedAction;
-import java.util.logging.Logger;
 
 import org.appdapter.core.debug.UIAnnotations.HRKRefinement;
 
 public class PromiscuousSecurityManager extends RMISecurityManager implements HRKRefinement {
+
+	private static final org.slf4j.Logger theLogger = org.slf4j.LoggerFactory.getLogger(PromiscuousSecurityManager.class);
+
 	@Override
 	public void checkPermission(Permission perm) {
 		// java.security.AccessController.checkPermission(perm);
@@ -51,7 +53,7 @@ public class PromiscuousSecurityManager extends RMISecurityManager implements HR
 				// privileged code goes here, for example:
 				synchronized (SecurityManager.class) {
 
-					Logger.getLogger("JVoiceRMISecurityManager").info("security manager set to " + ourOneSecurityManager);
+					theLogger.info("Security manager set to: {}", ourOneSecurityManager);
 					java.lang.System.setSecurityManager(ourOneSecurityManager);
 				}
 				return null; // nothing to return
