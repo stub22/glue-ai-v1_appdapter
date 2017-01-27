@@ -1,16 +1,8 @@
 // (c) 2003 Allen I Holub. All rights reserved.
 package com.holub.ui;
 
-import java.awt.AWTEvent;
-import java.awt.AWTEventMulticaster;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Graphics;
-import java.awt.Point;
-import java.awt.Toolkit;
+import com.holub.tools.Log;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
@@ -21,21 +13,11 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.logging.Logger;
 
-import javax.swing.BorderFactory;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.Popup;
-import javax.swing.PopupFactory;
-import javax.swing.Timer;
 import javax.swing.border.AbstractBorder;
 import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
-
-import com.holub.tools.Log;
 // for testing
 // disambiguate from java.util.Timer
 
@@ -82,92 +64,98 @@ public class Input extends JTextField implements Styles {
 	private final Customizer customizer;
 
 	private String lastValid; // Useful only in on-exit-style validation.
-							  // holds the last-known valid contents
-							  // of the control.
+	// holds the last-known valid contents
+	// of the control.
 
 	private boolean valid = true; // Used for communication between
 	private int offset; // the Document event handler and the
 	private int length; // UI Delegate update code.
 
 	private Popup popup = null; // Popup window used for "help,"
-								// is null unless window is visible.
+	// is null unless window is visible.
 
 	private static int POPUP_LIFETIME = 15; // Maximum lifetime of popup
-											// window in seconds.
+	// window in seconds.
 
-	/** Provides information about, defines nonstandard initial
-	 *  state for, and validates user input.
-	 *  The predefined {@link NumericInput} class implements
-	 *  this interface for generic numbers, and the predefined
-	 *  {@link Input.Default} class implements it for
-	 *  a default, non-validating text control.
+	/**
+	 * Provides information about, defines nonstandard initial
+	 * state for, and validates user input.
+	 * The predefined {@link NumericInput} class implements
+	 * this interface for generic numbers, and the predefined
+	 * {@link Input.Default} class implements it for
+	 * a default, non-validating text control.
 	 */
 
 	public interface Customizer {
-		/** Called by the Input object to determine whether validation
-		 *  is performed (by calling {@link #isValid}) after every
-		 *  character is entered or when the user hits enter (or the
-		 *  input object looses focus)
-		 *  <p>
-		 *  Note that on-exit validation causes validation to occur
-		 *  in two situations: the user hits Enter or the control
-		 *  looses focus. The Control won't let the focus change
-		 *  occur if the contents don't validate. However the Esc
-		 *  character is recognized as a reset-to-original-value
-		 *  request, so you can exit the field if you want to.
-		 *  The string ("Type Esc to exit") is automatically appended
-		 *  to the error message in this mode.
+		/**
+		 * Called by the Input object to determine whether validation
+		 * is performed (by calling {@link #isValid}) after every
+		 * character is entered or when the user hits enter (or the
+		 * input object looses focus)
+		 * <p>
+		 * Note that on-exit validation causes validation to occur
+		 * in two situations: the user hits Enter or the control
+		 * looses focus. The Control won't let the focus change
+		 * occur if the contents don't validate. However the Esc
+		 * character is recognized as a reset-to-original-value
+		 * request, so you can exit the field if you want to.
+		 * The string ("Type Esc to exit") is automatically appended
+		 * to the error message in this mode.
 		 *
-		 *  @return false for character-by-character validation, true for
-		 *  		one-time validation on loss of focus or Enter.
+		 * @return false for character-by-character validation, true for one-time validation on loss
+		 * of focus or Enter.
 		 */
 		boolean validatesOnExit();
 
-		/** Return true if the string is valid input. This method
-		 *  is called either on exiting the control or after every
-		 *  character is typed, depending on the return value of
-		 *  {@link #validatesOnExit}. Reguardless of the
-		 *  "validate-on-exit" mode, an hitting Esc alwasy resets
-		 *  the control to the last-known valid value.
-		 *  <p>
-		 *  This method is also called when the control is initialized,
-		 *  and the constructor will throw an exception if the initial
-		 *  value is not valid.
+		/**
+		 * Return true if the string is valid input. This method
+		 * is called either on exiting the control or after every
+		 * character is typed, depending on the return value of
+		 * {@link #validatesOnExit}. Reguardless of the
+		 * "validate-on-exit" mode, an hitting Esc alwasy resets
+		 * the control to the last-known valid value.
+		 * <p>
+		 * This method is also called when the control is initialized,
+		 * and the constructor will throw an exception if the initial
+		 * value is not valid.
 		 *
-		 *  @param s The entire contents of the control, including any
-		 *  		 characters the user just entered.
+		 * @param s The entire contents of the control, including any characters the user just
+		 *          entered.
 		 */
 		boolean isValid(String s);
 
-		/** Return a description of what valid input looks likes.
-		 *  The string should be HTML, however the main context
-		 *  &lt;html&gt;, &lt;head&gt;, and &lt;body&gt; elements are already
-		 *  established, so these tags should not appear in
-		 *  your own text.
-		 *  @param badInput This is the string that the user tried to type.
-		 *  				The control rejects the bad input, so this
-		 *  				string is not displayed. You can put it into
-		 *  				your error message if you like, however.
-		 *  @return a help string or null if no help is avilable.
+		/**
+		 * Return a description of what valid input looks likes.
+		 * The string should be HTML, however the main context
+		 * &lt;html&gt;, &lt;head&gt;, and &lt;body&gt; elements are already
+		 * established, so these tags should not appear in
+		 * your own text.
+		 *
+		 * @param badInput This is the string that the user tried to type. The control rejects the
+		 *                 bad input, so this string is not displayed. You can put it into your
+		 *                 error message if you like, however.
+		 * @return a help string or null if no help is avilable.
 		 */
 		String help(String badInput);
 
-		/** Set up the look of the component for stuff not covered
-		 *  by the Style class. (For example, alignment and tool-tip
-		 *  text). This method after all initializations (including
-		 *  the text entry) have been made to the component.
-		 *  customizations have been made.
+		/**
+		 * Set up the look of the component for stuff not covered
+		 * by the Style class. (For example, alignment and tool-tip
+		 * text). This method after all initializations (including
+		 * the text entry) have been made to the component.
+		 * customizations have been made.
 		 */
 		void prepare(JTextField current);
 
 	}
 
-	/** An implemenation of Customizer that defines default behavior:
-	 *  All input is valid; there is no help; The prepare
-	 *  method makes the control 30 columns wide.
-	 *  You can extend this class if you just want
-	 *  to override one of the methods, much like an
-	 *  AWT <em>Xxx</em><code>Adapter</code>.
+	/**
+	 * An implemenation of Customizer that defines default behavior:
+	 * All input is valid; there is no help; The prepare
+	 * method makes the control 30 columns wide.
+	 * You can extend this class if you just want
+	 * to override one of the methods, much like an
+	 * AWT <em>Xxx</em><code>Adapter</code>.
 	 */
 
 	static public class Default implements Customizer {
@@ -186,12 +174,13 @@ public class Input extends JTextField implements Styles {
 		public boolean validatesOnExit() {
 			return true;
 		}
-	};
+	}
 
-	/** A constrained type to describe the border style you want.
-	 *  One of the predefined instances Input.BOXED, Input.UNDERLINED,
-	 *  or Input.BORDERLESS, must be passed to the
-	 *  {@linkplain Input#Input <code>Input</code> constructor}.
+	/**
+	 * A constrained type to describe the border style you want.
+	 * One of the predefined instances Input.BOXED, Input.UNDERLINED,
+	 * or Input.BORDERLESS, must be passed to the
+	 * {@linkplain Input#Input <code>Input</code> constructor}.
 	 */
 
 	public static final class BorderStyle {
@@ -203,28 +192,28 @@ public class Input extends JTextField implements Styles {
 	public static final BorderStyle BOXED = new BorderStyle();
 	public static final BorderStyle UNDERLINED = new BorderStyle();
 
-	/** Construct a validating input field. Works like a JTextField,
-	 *  but checks the input as it's typed and complains
-	 *  if the input is invalid. Also implements the TagBehavior
-	 *  interface, so can be used in a PAC system as a stand-in
-	 *  for an &lt;input&gt; tag.
-	 *  <p>
-	 *  The default width of the control is determined by the width of the
-	 *  <code>value</code> string. You can change the width from the
-	 *  default by calling {@link javax.swing.JTextField#setColumns} after
-	 *  you create the object. Unlike the standard JTextField, the maximum
-	 *  and minimum widths are constrained to the initial size. (This
-	 *  constraint is required for the control to work correctly inside
-	 *  a {@link com.holub.ui.HTML.HtmlPane}, which is it's raison d'etre.)
+	/**
+	 * Construct a validating input field. Works like a JTextField,
+	 * but checks the input as it's typed and complains
+	 * if the input is invalid. Also implements the TagBehavior
+	 * interface, so can be used in a PAC system as a stand-in
+	 * for an &lt;input&gt; tag.
+	 * <p>
+	 * The default width of the control is determined by the width of the
+	 * <code>value</code> string. You can change the width from the
+	 * default by calling {@link javax.swing.JTextField#setColumns} after
+	 * you create the object. Unlike the standard JTextField, the maximum
+	 * and minimum widths are constrained to the initial size. (This
+	 * constraint is required for the control to work correctly inside
+	 * a {@link com.holub.ui.HTML.HtmlPane}, which is it's raison d'etre.)
 	 *
-	 *  @param value initial value.
-	 *  @param customizer checks to see if the input is valid. A null argument
-	 *  			is treated as if you had passed an {@link Default} object.
-	 *  @param border one of BORDERLESS, BOXED, or UNDERLINED.
-	 *  @param isHighlighted if true, highlight the text in the Style.HIGHLIGHT_COLOR
-	 *
-	 *  @throws IllegalArgumentException if the customizer indicates that the
-	 *  		initial <code>value</code> is invalid.
+	 * @param value         initial value.
+	 * @param customizer    checks to see if the input is valid. A null argument is treated as if
+	 *                      you had passed an {@link Default} object.
+	 * @param border        one of BORDERLESS, BOXED, or UNDERLINED.
+	 * @param isHighlighted if true, highlight the text in the Style.HIGHLIGHT_COLOR
+	 * @throws IllegalArgumentException if the customizer indicates that the initial
+	 *                                  <code>value</code> is invalid.
 	 */
 	public Input(String value, Customizer customizer, final BorderStyle border, final boolean isHighlighted) {
 		this.customizer = (customizer != null) ? customizer : new Default();
@@ -264,12 +253,12 @@ public class Input extends JTextField implements Styles {
 		// notifies listeners if its valid.
 
 		super.addActionListener // handles Enter
-		(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if (!validateInputAndNotifyListenersIfValid())
-					retainFocus();
-			}
-		});
+				(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						if (!validateInputAndNotifyListenersIfValid())
+							retainFocus();
+					}
+				});
 
 		// Send action events on loss of focus as well as Enter, but
 		// only if the control holds valid input.
@@ -305,8 +294,9 @@ public class Input extends JTextField implements Styles {
 			getDocument().addDocumentListener(characterValidator);
 	}
 
-	/** @return true if the data was valid and the listeners notified
-	  */
+	/**
+	 * @return true if the data was valid and the listeners notified
+	 */
 	private boolean validateInputAndNotifyListenersIfValid() {
 		String text = Input.this.getText();
 		valid = customizer.isValid(text);
@@ -356,8 +346,9 @@ public class Input extends JTextField implements Styles {
 		}
 	}
 
-	/** Override of event dispatcher dismisses any popups when any
-	 *  event is detected.
+	/**
+	 * Override of event dispatcher dismisses any popups when any
+	 * event is detected.
 	 */
 	protected void processEvent(AWTEvent e) {
 		super.processEvent(e);
@@ -374,13 +365,14 @@ public class Input extends JTextField implements Styles {
 		}
 	}
 
-	/** This method must be public because it's public in the base class. Don't
+	/**
+	 * This method must be public because it's public in the base class. Don't
 	 * override it.
 	 */
 	public void paint(Graphics g) {
 		try { // Before you repaint, modify the document
-			  // to eliminate any invalid characters detected by.
-			  // the document listener
+			// to eliminate any invalid characters detected by.
+			// the document listener
 
 			if (!valid) {
 				explainTheProblem(getLocationOnScreen(), getText());
@@ -445,8 +437,9 @@ public class Input extends JTextField implements Styles {
 		listeners = AWTEventMulticaster.add(listeners, l);
 	}
 
-	/** Remove a listener added by a prior
-	 *  {@link #addActionListener addActionListener(...)} call.
+	/**
+	 * Remove a listener added by a prior
+	 * {@link #addActionListener addActionListener(...)} call.
 	 */
 	public synchronized void removeActionListener(ActionListener l) {
 		listeners = AWTEventMulticaster.remove(listeners, l);

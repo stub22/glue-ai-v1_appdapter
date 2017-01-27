@@ -22,7 +22,6 @@ import org.jscience.mathematics.number.Real;
  */
 public class BucksumRealFuncs  {
 
-
 	public static Real makeReal(double d) {
 		return null;
 		/*
@@ -65,7 +64,7 @@ public class BucksumRealFuncs  {
 			throw new RuntimeException ("Null value for var with sym=" + fullSymbol + " in poly=" + poly);
 		}
 		return rval.doubleValue();
-	}	
+	}
 	public static double evalPoly(Polynomial<Real> poly) {
 		return evalPrintReturnPoly(poly, null, null, null, false);
 	}

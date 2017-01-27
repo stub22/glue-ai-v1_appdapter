@@ -1,14 +1,12 @@
 package org.appdapter.gui.util;
 
-import static org.appdapter.core.convert.ReflectUtils.addIfNew;
-import static org.appdapter.core.convert.ReflectUtils.getFieldValue;
-import static org.appdapter.core.convert.ReflectUtils.setField;
-import static org.appdapter.core.log.Debuggable.LOGGER;
-import static org.appdapter.core.log.Debuggable.NoSuchClassImpl;
-import static org.appdapter.core.log.Debuggable.UnhandledException;
-import static org.appdapter.core.log.Debuggable.notImplemented;
-import static org.appdapter.core.log.Debuggable.reThrowable;
-import static org.appdapter.core.log.Debuggable.toInfoStringArgV;
+import org.appdapter.core.debug.NoLeakThreadLocal;
+import org.appdapter.core.debug.UIAnnotations.HRKRefinement;
+import org.appdapter.core.log.Debuggable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import sun.reflect.Reflection;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
@@ -44,17 +42,21 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import org.appdapter.core.debug.NoLeakThreadLocal;
-import org.appdapter.core.debug.UIAnnotations.HRKRefinement;
-import org.appdapter.core.log.Debuggable;
-
-import sun.reflect.Reflection;
+import static org.appdapter.core.convert.ReflectUtils.addIfNew;
+import static org.appdapter.core.convert.ReflectUtils.getFieldValue;
+import static org.appdapter.core.convert.ReflectUtils.setField;
+import static org.appdapter.core.log.Debuggable.NoSuchClassImpl;
+import static org.appdapter.core.log.Debuggable.UnhandledException;
+import static org.appdapter.core.log.Debuggable.notImplemented;
+import static org.appdapter.core.log.Debuggable.reThrowable;
+import static org.appdapter.core.log.Debuggable.toInfoStringArgV;
 
 //import org.slf4j.helpers.NOPLoggerFactory;
 
-@SuppressWarnings("restriction")
 abstract public class PromiscuousClassUtilsA {
-	public static NoLeakThreadLocal<Boolean> dontActuallyDefine = new NoLeakThreadLocal<Boolean>();
+
+	private static final Logger theLogger = LoggerFactory.getLogger(PromiscuousClassUtilsA.class);
+	public static NoLeakThreadLocal<Boolean> dontActuallyDefine = new NoLeakThreadLocal<>();
 
 	static public interface ArchiveSearcher {
 		String replace(String target, boolean maySplit, int depth);
@@ -64,14 +66,14 @@ abstract public class PromiscuousClassUtilsA {
 	private final static NoLeakThreadLocal m_depthCheck = new NoLeakThreadLocal();
 	public static ClassLoader originalSystemClassLoader = getSystemClassLoader();
 	public static ClassLoader bootstrapClassLoader = originalSystemClassLoader.getParent();
-	public static ArrayList<ClassLoader> allClassLoaders = new ArrayList<ClassLoader>();
+	public static ArrayList<ClassLoader> allClassLoaders = new ArrayList<>();
 	public static FeClipseAppClassLoader feClipseAppClassLoader = new FeClipseAppClassLoader(allClassLoaders, originalSystemClassLoader);
 
-	public static Set<Class> classesSeen = new HashSet<Class>();
+	public static Set<Class> classesSeen = new HashSet<>();
 	public static Map<String, Class> classnameToClass = new HashMap();
-	private static Map<String, Throwable> classNotFoundYet = new HashMap<String, Throwable>();
+	private static Map<String, Throwable> classNotFoundYet = new HashMap<>();
 
-	public static NoLeakThreadLocal<Map<String, List<?>>> m_currentModule = new NoLeakThreadLocal<Map<String, List<?>>>();
+	public static NoLeakThreadLocal<Map<String, List<?>>> m_currentModule = new NoLeakThreadLocal<>();
 
 	private static String M2_REPO = null;
 
@@ -79,7 +81,7 @@ abstract public class PromiscuousClassUtilsA {
 
 	public static boolean missingDepsOK = false;
 
-	private static Map<ClassLoader, ClassLoader> switchedOutClassLoader = new HashMap<ClassLoader, ClassLoader>();
+	private static Map<ClassLoader, ClassLoader> switchedOutClassLoader = new HashMap<>();
 
 	public static boolean treatmissingLikeOptional = true;
 
@@ -103,7 +105,7 @@ abstract public class PromiscuousClassUtilsA {
 
 	public static void applyConfigReplacements(Properties props) {
 		// Perform variable substitution for system properties.
-		for (Enumeration e = props.propertyNames(); e.hasMoreElements();) {
+		for (Enumeration e = props.propertyNames(); e.hasMoreElements(); ) {
 			String name = (String) e.nextElement();
 
 			props.setProperty(name, substAll(props.getProperty(name)));
@@ -133,7 +135,7 @@ abstract public class PromiscuousClassUtilsA {
 
 	//static NamingResolver namingResolver = new ClassLoadingNamingResolver();
 
-	@SuppressWarnings("unchecked") static public <T> T callProtectedMethod(boolean skipNSM, Object from, String methodName, Object... args) throws InvocationTargetException, NoSuchMethodException {
+	static public <T> T callProtectedMethod(boolean skipNSM, Object from, String methodName, Object... args) throws InvocationTargetException, NoSuchMethodException {
 		Throwable whyBroken = null;
 		Method foundm = null;
 		Class c = from.getClass();
@@ -202,7 +204,7 @@ abstract public class PromiscuousClassUtilsA {
 		//return null;
 	}
 
-	@SuppressWarnings("unchecked") static public <T> T callProtectedMethodNullOnUncheck(Object from, String methodName, Object... args) {
+	static public <T> T callProtectedMethodNullOnUncheck(Object from, String methodName, Object... args) {
 		try {
 			return callProtectedMethodNullOnUncheck(false, true, from, methodName, args);
 		} catch (RuntimeException we) {
@@ -210,7 +212,7 @@ abstract public class PromiscuousClassUtilsA {
 		}
 	}
 
-	@SuppressWarnings("unchecked") static public <T> T callProtectedMethodNullOnUncheck(boolean throwClause, boolean trace, Object from, String methodName, Object... args) throws RuntimeException {
+	static public <T> T callProtectedMethodNullOnUncheck(boolean throwClause, boolean trace, Object from, String methodName, Object... args) throws RuntimeException {
 		Throwable whyBroken;
 		Throwable wb;
 		Throwable fav = null;
@@ -307,7 +309,7 @@ abstract public class PromiscuousClassUtilsA {
 			if (icl == null) {
 				addClassloader(cl2);
 				ClassLoader parentWillBe = null;
-				List<ClassLoader> clList = new ArrayList<ClassLoader>();
+				List<ClassLoader> clList = new ArrayList<>();
 				if (sharedFirst) {
 					clList.add(getPromiscuousClassLoader());
 				}
@@ -596,7 +598,7 @@ abstract public class PromiscuousClassUtilsA {
 	public static void ensureOntoligized(Class interfaceClass) {
 		boolean wasTrue = true || HRKRefinement.class.isAssignableFrom(interfaceClass);
 		if (!wasTrue) {
-			LOGGER.warning("interfaceClass " + interfaceClass + " is not Ontoligized");
+			theLogger.warn("interfaceClass {} is not Ontoligized", interfaceClass);
 		}
 		//Assert.assertTrue("All our classes are ontoligized", wasTrue);
 
@@ -711,7 +713,7 @@ abstract public class PromiscuousClassUtilsA {
 
 	}
 
-	public static Object findClassOrResourceByDelegationWithClassloader(String pkgname, String name, boolean initialize, ClassLoader useCL, boolean isClass) throws ClassNotFoundException, Throwable /*throws , ResourceNotFoundException */{
+	public static Object findClassOrResourceByDelegationWithClassloader(String pkgname, String name, boolean initialize, ClassLoader useCL, boolean isClass) throws ClassNotFoundException, Throwable /*throws , ResourceNotFoundException */ {
 
 		if (isClass) {
 			Class z = findLoadedClassByName(name);
@@ -983,7 +985,7 @@ abstract public class PromiscuousClassUtilsA {
 
 	public static <T> Collection<Class<? extends T>> getImplementingClasses(Class<T> interfaceClass) {
 		ensureOntoligized(interfaceClass);
-		Collection<Class<? extends T>> foundClasses = new HashSet<Class<? extends T>>();
+		Collection<Class<? extends T>> foundClasses = new HashSet<>();
 		ensureInstalled();
 		for (Class type : getInstalledClasses()) {
 			if (!isCreateable(type))
@@ -1013,7 +1015,7 @@ abstract public class PromiscuousClassUtilsA {
 
 	public static ArrayList<Class> getInstalledClasses() {
 		synchronized (classesSeen) {
-			return new ArrayList<Class>(classesSeen);
+			return new ArrayList<>(classesSeen);
 		}
 	}
 
@@ -1033,7 +1035,7 @@ abstract public class PromiscuousClassUtilsA {
 		Map map = getModuleStackMap();
 		List<T> currentModulePrev = (List<T>) map.get(act);
 		if (currentModulePrev == null) {
-			currentModulePrev = new LinkedList<T>();
+			currentModulePrev = new LinkedList<>();
 			map.put(act, currentModulePrev);
 		}
 		return currentModulePrev;
@@ -1042,7 +1044,7 @@ abstract public class PromiscuousClassUtilsA {
 	public static synchronized Map<String, List<?>> getModuleStackMap() {
 		Map<String, List<?>> currentModulePrev = m_currentModule.get();
 		if (currentModulePrev == null) {
-			currentModulePrev = new HashMap<String, List<?>>();
+			currentModulePrev = new HashMap<>();
 			m_currentModule.set(currentModulePrev);
 		}
 		return currentModulePrev;
@@ -1284,19 +1286,23 @@ abstract public class PromiscuousClassUtilsA {
 			classLoader = getURLCLassLoader(loader);
 		}
 
-		@Override public boolean isClassFileScanned(String className, ClassLoader loader) {
+		@Override
+		public boolean isClassFileScanned(String className, ClassLoader loader) {
 			return true;
 		}
 
-		@Override public Class getClassFile() {
+		@Override
+		public Class getClassFile() {
 			return null;
 		}
 
-		@Override public boolean validClassFile(Class c) {
+		@Override
+		public boolean validClassFile(Class c) {
 			return true;
 		}
 
-		@Override public boolean isJarFileScanned(URL jarName, ClassLoader loader) {
+		@Override
+		public boolean isJarFileScanned(URL jarName, ClassLoader loader) {
 			if (classLoader != null) {
 				addURLToClassloader(jarName, classLoader);
 				return true;
@@ -1304,9 +1310,10 @@ abstract public class PromiscuousClassUtilsA {
 			return addURLToClassloader(jarName, loader);
 		}
 
-		HashSet<URL> scannedURLS = new HashSet<URL>();
+		HashSet<URL> scannedURLS = new HashSet<>();
 
-		@Override public boolean isDirScanned(URL jarName) {
+		@Override
+		public boolean isDirScanned(URL jarName) {
 			if (scannedURLS.contains(jarName))
 				return true;
 			scannedURLS.add(jarName);
@@ -1320,15 +1327,18 @@ abstract public class PromiscuousClassUtilsA {
 			super(loader);
 		}
 
-		@Override public boolean isClassFileScanned(String className, ClassLoader loader) {
+		@Override
+		public boolean isClassFileScanned(String className, ClassLoader loader) {
 			return false;
 		}
 
-		@Override public boolean validClassFile(Class c) {
+		@Override
+		public boolean validClassFile(Class c) {
 			return c != null;
 		}
 
-		@Override public boolean isJarFileScanned(URL jarName, ClassLoader loader) {
+		@Override
+		public boolean isJarFileScanned(URL jarName, ClassLoader loader) {
 			return false;
 		}
 
@@ -1342,7 +1352,8 @@ abstract public class PromiscuousClassUtilsA {
 			super(loader);
 		}
 
-		@Override public boolean isClassFileScanned(String className, ClassLoader loader) {
+		@Override
+		public boolean isClassFileScanned(String className, ClassLoader loader) {
 			try {
 				lastClass = null;
 				if (className == null)
@@ -1356,15 +1367,18 @@ abstract public class PromiscuousClassUtilsA {
 			return true;
 		}
 
-		@Override public Class getClassFile() {
+		@Override
+		public Class getClassFile() {
 			return lastClass;
 		}
 
-		@Override public boolean validClassFile(Class c) {
+		@Override
+		public boolean validClassFile(Class c) {
 			return lastClass != null;
 		}
 
-		@Override public boolean isJarFileScanned(URL jarName, ClassLoader loader) {
+		@Override
+		public boolean isJarFileScanned(URL jarName, ClassLoader loader) {
 			return false;
 		}
 	}
@@ -1680,11 +1694,11 @@ abstract public class PromiscuousClassUtilsA {
 				return (URLClassLoader) loaderParent;
 			URLClassLoader newParent = null;
 			try {
-				newParent = new URLClassLoader(new URL[] {}, loaderParent);
+				newParent = new URLClassLoader(new URL[]{}, loaderParent);
 			} catch (Throwable t) {
 			}
 			if (newParent == null) {
-				newParent = URLClassLoader.newInstance(new URL[] {}, loaderParent);
+				newParent = URLClassLoader.newInstance(new URL[]{}, loaderParent);
 				addClassloader(newParent);
 				return newParent;
 			}
@@ -1724,7 +1738,7 @@ abstract public class PromiscuousClassUtilsA {
 	}
 
 	public static int scanLoadable(final LoadableScanner scanner, final String pathIn, final boolean recurse, final boolean canSplit, final ClassLoader loader0, final boolean doWithBytes,
-			final ProtectionDomain pd) {
+								   final ProtectionDomain pd) {
 		final ClassLoader loader = getCorrectLoader(loader0);
 		String path = pathIn;
 		File file = new File(path);
@@ -1756,7 +1770,8 @@ abstract public class PromiscuousClassUtilsA {
 		final int[] found = new int[1];
 
 		substAll(path, true, -1, new ArchiveSearcher() {
-			@Override public String replace(String target, boolean maySplit, int depth) {
+			@Override
+			public String replace(String target, boolean maySplit, int depth) {
 				found[0]++;
 				int fnd = scanLoadable(scanner, target, recurse, maySplit, loader, doWithBytes, pd);
 				collect[0] += fnd;
@@ -1862,7 +1877,7 @@ abstract public class PromiscuousClassUtilsA {
 			return str;
 		String oldold = str;
 		if (maySplit) {
-			for (String splitter : new String[] { "\n", ",", "\r", File.pathSeparator, " " }) {
+			for (String splitter : new String[]{"\n", ",", "\r", File.pathSeparator, " "}) {
 
 				if (str.contains(splitter)) {
 					String[] properties = str.split("(?<!//)" + splitter);
@@ -1921,7 +1936,7 @@ abstract public class PromiscuousClassUtilsA {
 			return str;
 		String oldold = str;
 		if (maySplit) {
-			for (String splitter : new String[] { "\n", ",", "\r", File.pathSeparator, " " }) {
+			for (String splitter : new String[]{"\n", ",", "\r", File.pathSeparator, " "}) {
 
 				if (str.contains(splitter)) {
 					String[] properties = str.split("(?<!//)" + splitter);

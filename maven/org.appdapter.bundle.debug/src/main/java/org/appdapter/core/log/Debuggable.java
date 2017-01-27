@@ -16,7 +16,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import org.appdapter.core.convert.ReflectUtils;
 import org.appdapter.core.debug.NoLeakThreadLocal;
@@ -35,7 +34,7 @@ public abstract class Debuggable extends BasicDebugger {
 	public static final InputStream ORIGINAL_IN_STREAM = System.in;
 	public static final Console ORIGINAL_CONSOLE = System.console();
 
-	public static Logger LOGGER = Logger.getLogger(Debuggable.class.getSimpleName());
+	private static final org.slf4j.Logger theLogger = org.slf4j.LoggerFactory.getLogger(Debuggable.class);
 
 	@Override public String toString() {
 		return toInfoStringF(this, PRINT_DEPTH);
