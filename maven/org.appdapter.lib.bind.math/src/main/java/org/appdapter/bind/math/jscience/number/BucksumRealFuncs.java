@@ -5,22 +5,21 @@
 
 package org.appdapter.bind.math.jscience.number;
 
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import org.jscience.mathematics.function.Polynomial;
 import org.jscience.mathematics.function.Term;
 import org.jscience.mathematics.function.Variable;
 import org.jscience.mathematics.number.Real;
+import org.slf4j.Logger;
+
+import java.util.List;
+import java.util.logging.Level;
 
 /**
- *
  * @author Stu B. <www.texpedient.com>
  *
- * Currently BROKEN - incompatible with JScience 5.0.
+ *         Currently BROKEN - incompatible with JScience 5.0.
  */
-public class BucksumRealFuncs  {
+public class BucksumRealFuncs {
 
 	public static Real makeReal(double d) {
 		return null;
@@ -36,48 +35,68 @@ public class BucksumRealFuncs  {
 		 *
 		 */
 	}
+
 	public static void setVariableValue(Variable<Real> var, double value) {
 		Real rval = makeReal(value);
 		var.set(rval);
 	}
+
 	public static double getVariableValue(Variable<Real> var) {
 		Real rval = var.get();
 		if (rval == null) {
-			throw new RuntimeException ("Null value for var with sym=" + var.getSymbol());
+			throw new RuntimeException("Null value for var with sym=" + var.getSymbol());
 		}
 		return rval.doubleValue();
 	}
+
 	public static void setInputVarValue(Polynomial poly, String fullSymbol, double value) {
 		Variable<Real> v = poly.getVariable(fullSymbol);
 		if (v == null) {
-			throw new RuntimeException ("Can't locate var for sym=" + fullSymbol + " in poly=" + poly);
+			throw new RuntimeException("Can't locate var for sym=" + fullSymbol + " in poly=" + poly);
 		}
 		setVariableValue(v, value);
 	}
+
 	public static double getInputVarValue(Polynomial poly, String fullSymbol) {
 		Variable<Real> v = poly.getVariable(fullSymbol);
 		if (v == null) {
-			throw new RuntimeException ("Can't locate var for sym=" + fullSymbol + " in poly=" + poly);
+			throw new RuntimeException("Can't locate var for sym=" + fullSymbol + " in poly=" + poly);
 		}
 		Real rval = v.get();
 		if (rval == null) {
-			throw new RuntimeException ("Null value for var with sym=" + fullSymbol + " in poly=" + poly);
+			throw new RuntimeException("Null value for var with sym=" + fullSymbol + " in poly=" + poly);
 		}
 		return rval.doubleValue();
 	}
+
 	public static double evalPoly(Polynomial<Real> poly) {
 		return evalPrintReturnPoly(poly, null, null, null, false);
 	}
+
 	public static double evalPrintReturnPoly(Polynomial<Real> poly, String logLabel,
-				Logger logger, Level logLev, boolean logFlag) {
+											 Logger logger, Level logLev, boolean shouldLog) {
 		Real val = poly.evaluate();
-		if (logFlag && logger.isLoggable(logLev)) {
-			StringBuffer msg = new StringBuffer(logLabel).append(" = {");
-			msg.append(poly.toString()).append("} (").append(dumpPolyVars(poly)).append(") = ").append(val);
-			logger.log(logLev, msg.toString());
+		if (shouldLog) {
+			StringBuffer messageBuffer = new StringBuffer(logLabel).append(" = {");
+			messageBuffer.append(poly.toString()).append("} (").append(dumpPolyVars(poly)).append(") = ").append(val);
+
+			final String message = messageBuffer.toString();
+			if (logLev == Level.SEVERE && logger.isErrorEnabled()) {
+				logger.error(message);
+			} else if (logLev == Level.WARNING && logger.isWarnEnabled()) {
+				logger.warn(message);
+			} else if (logLev == Level.INFO && logger.isInfoEnabled()) {
+				logger.info(message);
+			} else if (logLev == Level.FINE || logLev == Level.FINER && logger.isDebugEnabled()) {
+				logger.debug(message);
+			} else if (logLev == Level.FINEST && logger.isTraceEnabled()) {
+				logger.trace(message);
+			}
+
 		}
 		return val.doubleValue();
 	}
+
 	public static String dumpPolyVars(Polynomial poly) {
 		StringBuffer buf = new StringBuffer("[");
 		List<Variable<Real>> polyVars = poly.getVariables();
@@ -96,14 +115,14 @@ public class BucksumRealFuncs  {
 	}
 
 	public static Polynomial makeConstAccelPosPoly(Variable<Real> rangeOffsetTimeVar,
-				Variable<Real> rangeAccelVar,
-				Variable<Real> rangePosStartVar,
-				Variable<Real> rangeVelStartVar) {
+												   Variable<Real> rangeAccelVar,
+												   Variable<Real> rangePosStartVar,
+												   Variable<Real> rangeVelStartVar) {
 		// x = x0 + v0t + .5 a t^2
 
-		Term  timeSquaredTerm = Term.valueOf(rangeOffsetTimeVar, 2);
-		Term  accelTerm = Term.valueOf(rangeAccelVar, 1);
-		Term  accelTimeSqTerm = timeSquaredTerm.times(accelTerm);
+		Term timeSquaredTerm = Term.valueOf(rangeOffsetTimeVar, 2);
+		Term accelTerm = Term.valueOf(rangeAccelVar, 1);
+		Term accelTimeSqTerm = timeSquaredTerm.times(accelTerm);
 
 		Real oneHalf = BucksumRealFuncs.makeReal(0.5);
 
@@ -123,22 +142,30 @@ public class BucksumRealFuncs  {
 
 		return fullPoly;
 	}
+
 	public static FieldNumberFactory<Real> getRealNumberFactory() {
-		return new FieldNumberFactory<Real> () {
-			@Override public Real getZero() {
+		return new FieldNumberFactory<Real>() {
+			@Override
+			public Real getZero() {
 				return Real.ZERO;
 			}
-			@Override public Real getOne() {
+
+			@Override
+			public Real getOne() {
 				return Real.ONE;
 			}
+
 			public Real getOneHalf() {
 				return makeNumberFromDouble(0.5);
 			}
-			@Override public Real makeNumberFromDouble(double d) {
+
+			@Override
+			public Real makeNumberFromDouble(double d) {
 				return makeReal(d);
 			}
 
-			@Override public Real[] makeArray(int size) {
+			@Override
+			public Real[] makeArray(int size) {
 				return GeneralFactory.makeArrayForClass(Real.class, size);
 			}
 
