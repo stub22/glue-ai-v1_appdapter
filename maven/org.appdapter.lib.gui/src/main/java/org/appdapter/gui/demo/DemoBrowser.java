@@ -26,7 +26,6 @@ import java.awt.FileDialog;
 import java.io.File;
 import java.net.URL;
 import java.util.concurrent.Callable;
-import java.util.logging.Level;
 
 import javax.swing.BoxLayout;
 import javax.swing.JApplet;
@@ -184,13 +183,13 @@ final public class DemoBrowser implements AnyOper.Singleton {
 
 	/**
 	 * Register a Trigger to places on all instances of 'cls'
-	 * 
+	 *
 	 * @param cls
 	 * @param menuLabel
 	 * @param trigger
-	 * 
+	 *
 	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
-	 * 
+	 *
 	 */
 	public static EditableTrigger registerTriggerForClassInstances(Class cls, String menuLabel, Trigger trigger) {
 		return Utility.registerTriggerForClassInstances(cls, menuLabel, trigger);
@@ -198,13 +197,13 @@ final public class DemoBrowser implements AnyOper.Singleton {
 
 	/**
 	 * Register a Trigger onto a class Object
-	 * 
+	 *
 	 * @param cls
 	 * @param menuLabel
 	 * @param trigger
-	 * 
+	 *
 	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
-	 * 
+	 *
 	 */
 	public static EditableTrigger registerTriggerForClass(Class cls, String menuLabel, Trigger trigger) {
 		return Utility.registerTriggerForClass(cls, menuLabel, trigger);
@@ -212,13 +211,13 @@ final public class DemoBrowser implements AnyOper.Singleton {
 
 	/**
 	 * Register a Trigger onto a class Object
-	 * 
+	 *
 	 * @param cls
 	 * @param menuLabel
 	 * @param trigger
-	 * 
+	 *
 	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
-	 * 
+	 *
 	 */
 	public static EditableTrigger registerTriggerForPredicate(CallableWithParameters<Box, Boolean> predicate, String menuLabel, Trigger trigger) {
 		return Utility.registerTriggerForPredicate(predicate, menuLabel, trigger);
@@ -226,13 +225,13 @@ final public class DemoBrowser implements AnyOper.Singleton {
 
 	/**
 	 * Register a Trigger onto a class Object
-	 * 
+	 *
 	 * @param cls
 	 * @param menuLabel
 	 * @param trigger
-	 * 
+	 *
 	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
-	 * 
+	 *
 	 */
 	public static EditableTrigger registerCallableForPredicate(CallableWithParameters<Box, Boolean> predicate, String menuLabel, CallableWithParameters function) {
 		return Utility.registerCallableForPredicate(predicate, menuLabel, function);
@@ -240,13 +239,13 @@ final public class DemoBrowser implements AnyOper.Singleton {
 
 	/**
 	 * Register a Factory for a Class
-	 * 
+	 *
 	 * @param cls
 	 * @param menuLabel
 	 * @param trigger
-	 * 
+	 *
 	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
-	 * 
+	 *
 	 */
 	public static <T> EditableTrigger registerFactoryForClass(Class<T> cls, String menuLabel, CallableWithParameters<Class<T>, ? extends T> trigger) {
 		return Utility.registerFactoryForClass(cls, menuLabel, trigger);
@@ -254,13 +253,13 @@ final public class DemoBrowser implements AnyOper.Singleton {
 
 	/**
 	 * Register a Trigger on a specific object
-	 * 
+	 *
 	 * @param cls
 	 * @param menuLabel
 	 * @param trigger
-	 * 
+	 *
 	 * @return a TriggerForInstance (will let you further customize the behaviour for the trigger)
-	 * 
+	 *
 	 */
 	public static EditableTrigger registerTriggerForObject(Object anyObject, String menuLabel, Trigger trigger) {
 		return Utility.registerTriggerForObject(anyObject, menuLabel, trigger);
@@ -272,9 +271,9 @@ final public class DemoBrowser implements AnyOper.Singleton {
 
 	/**
 	 * Ensure the main instance is started
-	 * 
+	 *
 	 * @param bringToFront
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public static synchronized void ensureRunning(boolean bringToFront, final String... args) throws InterruptedException {
@@ -356,7 +355,6 @@ final public class DemoBrowser implements AnyOper.Singleton {
 	// ==== Main method ==========================
 	public static void main(String[] args) throws InterruptedException {
 		testLoggingSetup();
-		java.util.logging.Logger.getAnonymousLogger().setLevel(Level.ALL);
 		System.err.println("Seeing system.err");
 		System.out.println("Seeing system.out");
 		theLogger.trace("Here is some TRACE");
@@ -364,7 +362,6 @@ final public class DemoBrowser implements AnyOper.Singleton {
 		theLogger.info("Here is some INFO");
 		theLogger.warn("Here is some WARN");
 		theLogger.error("Here is some ERROR");
-		java.util.logging.Logger.global.setLevel(Level.ALL);
 		// we set 'defaultExampleCode' from main
 		defaultExampleCode = true;
 		ensureRunning(true, args);
@@ -566,7 +563,7 @@ final public class DemoBrowser implements AnyOper.Singleton {
 
 	/**
 	 * Here is a humdinger of a static method, that constructs a demontration application tree
-	 * 
+	 *
 	 * @param <BT>
 	 * @param <RBT>
 	 * @param regBoxClass
