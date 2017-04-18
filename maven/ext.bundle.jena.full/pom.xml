@@ -10,11 +10,11 @@
 
 	<properties>
 		<jena.version>2.13.0</jena.version>
-		
+
 		<!--jena-tdb.version>0.10.1</jena-tdb.version>
 		<jena-iri.version>0.9.6</jena-iri.version>
 		<jena-fuseki.version>0.2.7</jena-fuseki.version-->
-		<!--	LogicMoo was experimenting with plugging Sesame in here as well, but we decided it is too bulky and 
+		<!--	LogicMoo was experimenting with plugging Sesame in here as well, but we decided it is too bulky and
 				deserves its own wrappers if we are going to use it.
 		<sesame.version>2.7.4</sesame.version>
 		-->
@@ -40,7 +40,7 @@
 			<groupId>${project.groupId}</groupId>
 			<artifactId>ext.bundle.xml.xerces</artifactId>
             <version>${project.version}</version>
-		</dependency>			
+		</dependency>
 
 		<dependency>
 			<groupId>org.apache.jena</groupId>
@@ -59,17 +59,21 @@
 					<groupId>log4j</groupId>
 					<artifactId>log4j</artifactId>
 				</exclusion>
+                <exclusion>
+                    <groupId>org.apache.servicemix.bundles</groupId>
+                    <artifactId>org.apache.servicemix.bundles.xerces</artifactId>
+                </exclusion>
 			 <exclusion>
 			  <groupId>org.slf4j</groupId>
 			  <artifactId>jcl-over-slf4j</artifactId>
 			 </exclusion>
 			</exclusions>
-		</dependency>		
-	
+		</dependency>
+
 
 
 		<!-- sdb is still used in org/appdapter/bind/sql/h2/DatabaseConnector.java -->
-		<dependency>	
+		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-sdb</artifactId>
 			<version>1.5.2</version>
@@ -86,8 +90,8 @@
 			</exclusions>
 		</dependency>
 
-		
-		
+
+
 <!--
 		<dependency>
 			<groupId>com.ibm.icu</groupId>
@@ -111,21 +115,21 @@
 			<groupId>org.apache.servicemix.specs</groupId>
 			<artifactId>org.apache.servicemix.specs.activation-api-1.1</artifactId>
 			<scope>runtime</scope>
-		</dependency>		
+		</dependency>
 		-->
-		<!-- If we don't properly exclude all of Jena's attempts to propagate (non-OSGi friendly) Log4J jars, we see 
+		<!-- If we don't properly exclude all of Jena's attempts to propagate (non-OSGi friendly) Log4J jars, we see
 		runtime messages like:
-						
+
      [java] Auto-properties install: file:/E:/maven_repo/log4j/log4j/1.2.16/log4j-1.2.16.jar (org.osgi.framework.BundleException: Duplicate import: com.sun.jdmk.comm)
-     [java] Auto-properties start: file:/E:/maven_repo/log4j/log4j/1.2.16/log4j-1.2.16.jar (org.osgi.framework.BundleException: Duplicate im[System.out] Trace: 
-		ext.osgi.common.ExtOSGiCommonBundleActivator.start(ctx=org.apache.felix.framework.BundleContextImpl@32955cd5port: com.sun.jdmk.comm)				
+     [java] Auto-properties start: file:/E:/maven_repo/log4j/log4j/1.2.16/log4j-1.2.16.jar (org.osgi.framework.BundleException: Duplicate im[System.out] Trace:
+		ext.osgi.common.ExtOSGiCommonBundleActivator.start(ctx=org.apache.felix.framework.BundleContextImpl@32955cd5port: com.sun.jdmk.comm)
 
 		-->
-		
-							
+
+
 	</dependencies>
 
-			
+
 	<build>
 		<plugins>
 			<plugin>
@@ -142,25 +146,25 @@
 						</Import-Package>
 						<!-- DynamicImport-Package is a horrid workaround for Class.forName() used in AssemberHelp.
 							We have successfully been using Fragment-Host to inject buildable classes from JFlux
-							and other artifact locations.  	
+							and other artifact locations.
 
-							Newer Jena riot-RDFDataMgr may allow for some cleaner code on the appdapter side.			
-							
+							Newer Jena riot-RDFDataMgr may allow for some cleaner code on the appdapter side.
+
 							Cogchar TODO:  Use Fragment-Host to allow Assembler to process injected classes from Cogchar,
-							then remove at least that part of the DynamicImport-Package.  
-							
+							then remove at least that part of the DynamicImport-Package.
+
 							A similar concern applies in o.a.b.core.
-							
+
 				com.hp.hpl.jena.assembler.*
- Unable to resolve bundle revision org.appdapter.org.appdapter.bundle.core [2.0] because it is exposed to package 
-'com.hp.hpl.jena.assembler.assemblers' from bundle revisions org.appdapter.ext.bundle.jena_all_2_13_0 [25.0] 
-and org.apache.jena.osgi [13.0] via two dependency chains.							
-							 
+ Unable to resolve bundle revision org.appdapter.org.appdapter.bundle.core [2.0] because it is exposed to package
+'com.hp.hpl.jena.assembler.assemblers' from bundle revisions org.appdapter.ext.bundle.jena_all_2_13_0 [25.0]
+and org.apache.jena.osgi [13.0] via two dependency chains.
+
 						-->
 						<Export-Package>arq.*, com.hp.hpl.jena.sdb.*</Export-Package>
 						<Private-Package>riotcmd</Private-Package>
 						<DynamicImport-Package>org.appdapter.*,org.cogchar.*</DynamicImport-Package>
-	
+
 					</instructions>
 				</configuration>
 			</plugin>
@@ -190,7 +194,7 @@ and org.apache.jena.osgi [13.0] via two dependency chains.
 		These "sources" and "javadocs" deps appear to possibly be complicating the resolution of the
 		httpclient/httpcore imports.  We can come back to this.  However, these are so bulky in the
 		pom.xml - can we file them neatly away somewhere else without another ext-bundle in Appdapter?
-		
+
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-arq</artifactId>
@@ -206,26 +210,26 @@ and org.apache.jena.osgi [13.0] via two dependency chains.
 			<scope>provided</scope>
 		</dependency>
 
-		<dependency>
-			<groupId>org.apache.jena</groupId>
-			<artifactId>jena-tdb</artifactId>
-			<version>${jena-tdb.version}</version>
-			<classifier>sources</classifier>
-			<scope>provided</scope>			
-		</dependency>
-		<dependency>
-			<groupId>org.apache.jena</groupId>
-			<artifactId>jena-sdb</artifactId>
-			<version>${jena-sdb.version}</version>
-			<classifier>sources</classifier>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.jena</groupId>
-			<artifactId>jena-iri</artifactId>
-			<version>${jena-iri.version}</version>
-			<classifier>sources</classifier>
-			<scope>provided</scope>
-		</dependency>
--->       
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena-tdb</artifactId>
+            <version>${jena-tdb.version}</version>
+            <classifier>sources</classifier>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena-sdb</artifactId>
+            <version>${jena-sdb.version}</version>
+            <classifier>sources</classifier>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena-iri</artifactId>
+            <version>${jena-iri.version}</version>
+            <classifier>sources</classifier>
+            <scope>provided</scope>
+        </dependency>
+-->
 
