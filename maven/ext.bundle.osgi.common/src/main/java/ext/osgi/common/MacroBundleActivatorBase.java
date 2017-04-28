@@ -61,21 +61,21 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 
 	public static boolean MACRO_LAUNCHER = false;
 
-	public static boolean isOSGIProperty(String string, Object value) {
-		String sp = System.getProperty(string, null);
+	public static boolean isOSGIProperty(final String string, final Object value) {
+		final String sp = System.getProperty(string, null);
 		if (sp == null)
 			return value == null;
-		String sv = "" + value;
+		final String sv = "" + value;
 		return sp.equalsIgnoreCase(sv);
 	}
 
 	static public class ListenerMap<K, V> extends HashMap<K, V> implements Map<K, V>, ListenableMap<K, V> {
 		public class LEntry {
 
-			private K key;
-			private V value;
+			private final K key;
+			private final V value;
 
-			public LEntry(K k, V v) {
+			public LEntry(final K k, final V v) {
 				this.key = k;
 				this.value = v;
 			}
@@ -90,56 +90,62 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 
 		}
 
-		private PropertyChangeSupport propertySupport;
+		private final PropertyChangeSupport propertySupport;
 
 		public ListenerMap() {
 			super();
 			propertySupport = new PropertyChangeSupport(this);
 		}
 
-		@Override public V put(K k, V v) {
-			V old = super.put(k, v);
+		@Override
+		public V put(final K k, final V v) {
+			final V old = super.put(k, v);
 			propertySupport.firePropertyChange(PROP_PUT, newEntry(k, old), newEntry(k, v));
 			return old;
 		}
 
-		private Object newEntry(K k, V v) {
+		private Object newEntry(final K k, final V v) {
 			return new LEntry(k, v);
 		}
 
-		@Override public V remove(Object k) {
-			V old = super.remove(k);
+		@Override
+		public V remove(final Object k) {
+			final V old = super.remove(k);
 			propertySupport.firePropertyChange(PROP_PUT, old, null);
 			return old;
 		}
 
-		public V removeNoFire(Object k) {
-			V old = super.remove(k);
+		@Override
+		public V removeNoFire(final Object k) {
+			final V old = super.remove(k);
 			return old;
 		}
 
-		public V putNoFire(K k, V v) {
-			V old = super.put(k, v);
+		@Override
+		public V putNoFire(final K k, final V v) {
+			final V old = super.put(k, v);
 			return old;
 		}
 
-		public void addPropertyChangeListener(PropertyChangeListener listener) {
+		@Override
+		public void addPropertyChangeListener(final PropertyChangeListener listener) {
 			propertySupport.addPropertyChangeListener(listener);
 		}
 
-		public void removePropertyChangeListener(PropertyChangeListener listener) {
+		@Override
+		public void removePropertyChangeListener(final PropertyChangeListener listener) {
 			propertySupport.removePropertyChangeListener(listener);
 		}
 	}
 
-	public static void debugLoaders(String clazzName) {
+	public static void debugLoaders(final String clazzName) {
 		Class clazz = null;
 		try {
 			clazz = Class.forName(clazzName, false, null);
 			clazz.getDeclaredMethods();
 			clazz.getDeclaredFields();
 			if (isOSGIProperty("test.classloader", true)) {
-				Class class2;
+				final Class class2;
 				class2 = Class.forName(clazz.getName(), true, null);
 				if (class2 != clazz) {
 					warning("Classes not same as in current loader " + clazz);
@@ -147,7 +153,7 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 					debugLoadersInfo(class2);
 				}
 			}
-		} catch (Throwable e) {
+		} catch (final Throwable e) {
 			e.printStackTrace();
 			warning("Class has errors in current loader " + clazzName);
 			if (clazz != null)
@@ -160,12 +166,12 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 		}
 	}
 
-	public static void debugLoaders(Class clazz) {
+	public static void debugLoaders(final Class clazz) {
 		try {
 			clazz.getDeclaredMethods();
 			clazz.getDeclaredFields();
 			if (isOSGIProperty("test.classloader", true)) {
-				Class class2;
+				final Class class2;
 				class2 = Class.forName(clazz.getName(), true, null);
 				if (class2 != clazz) {
 					warning("Classes not same as in current loader " + clazz);
@@ -173,7 +179,7 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 					debugLoadersInfo(class2);
 				}
 			}
-		} catch (Throwable e) {
+		} catch (final Throwable e) {
 			e.printStackTrace();
 			warning("Class has errors in current loader " + clazz);
 			debugLoadersInfo(clazz);
@@ -185,12 +191,12 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 		}
 	}
 
-	public static void debugLoadersInfo(Class clazz) {
-		ClassLoader myLoader = clazz.getClassLoader();
-		ClassLoader pLoader = myLoader.getParent();
-		ClassLoader gpLoader = pLoader.getParent();
-		ClassLoader threadCL = Thread.currentThread().getContextClassLoader();
-		ClassLoader systemCL = ClassLoader.getSystemClassLoader();
+	public static void debugLoadersInfo(final Class clazz) {
+		final ClassLoader myLoader = clazz.getClassLoader();
+		final ClassLoader pLoader = myLoader.getParent();
+		final ClassLoader gpLoader = pLoader.getParent();
+		final ClassLoader threadCL = Thread.currentThread().getContextClassLoader();
+		final ClassLoader systemCL = ClassLoader.getSystemClassLoader();
 
 		trace("Classloader for the main class is: " + myLoader);
 		trace("Parent Classloader is: " + pLoader);
@@ -199,26 +205,26 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 		trace("SystemCL is: " + systemCL);
 	}
 
-	public static void debugResolve(String desc, ClassLoader cl, String resourcePath) {
+	public static void debugResolve(final String desc, final ClassLoader cl, final String resourcePath) {
 		trace("------------");
-		URL rurl = cl.getResource(resourcePath);
+		final URL rurl = cl.getResource(resourcePath);
 		trace("Classloader[" + desc + ", " + cl + "].getResource(" + resourcePath + ") = " + rurl);
-		URL surl = ClassLoader.getSystemResource(resourcePath);
+		final URL surl = ClassLoader.getSystemResource(resourcePath);
 		trace("Classloader[" + desc + ", " + cl + "].getSystemResource(" + resourcePath + ") = " + surl);
 		trace("------------");
 	}
 
-	protected static String bundleCtxName(BundleContext bc) {
+	protected static String bundleCtxName(final BundleContext bc) {
 		if (bc == null)
 			return "NULL";
 		return "" + bc.getBundle();
 	}
 
-	public static void trace(String string, Object... args) {
+	public static void trace(final String string, final Object... args) {
 		System.out.println("[System.out] Trace: " + string);
 	}
 
-	public static void warning(String string, Object... args) {
+	public static void warning(final String string, final Object... args) {
 		System.err.println("[System.err] Warning: " + string);
 	}
 
@@ -229,20 +235,22 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 	static public class TodoItem implements Runnable {
 		TodoItemState state = TodoItemState.UNSTARTED;
 		Throwable lastException = null;
-		private Runnable work;
-		private Object doneBy;
+		private final Runnable work;
+		private final Object doneBy;
 		static Object stateLock = new Object();
 
-		public TodoItem(String name, Runnable runnable) {
+		public TodoItem(final String name, final Runnable runnable) {
 			this.work = runnable;
 			this.doneBy = name;
 		}
 
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return "TodoItem:  " + state + " " + doneBy + " " + work;
 		}
 
-		@Override public void run() {
+		@Override
+		public void run() {
 			synchronized (stateLock) {
 				if (state != TodoItemState.UNSTARTED) {
 					return;
@@ -254,7 +262,7 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 				synchronized (stateLock) {
 					state = TodoItemState.COMPLETED;
 				}
-			} catch (Throwable e) {
+			} catch (final Throwable e) {
 				synchronized (stateLock) {
 					state = TodoItemState.EXCEPTION;
 				}
@@ -264,7 +272,8 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 			}
 		}
 
-		@Override public boolean equals(Object obj) {
+		@Override
+		public boolean equals(final Object obj) {
 			if (obj instanceof TodoItem) {
 				return getName().compareTo(((TodoItem) obj).getName()) == 0;
 			}
@@ -307,15 +316,15 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 		public int ON_DEMAND = 200;
 	}
 
-	public static String getPhaseName(Object phase) {
-		Class enumClass = BootPhaseConst.class;
-		String s = getEnumValueName(phase, enumClass);
+	public static String getPhaseName(final Object phase) {
+		final Class enumClass = BootPhaseConst.class;
+		final String s = getEnumValueName(phase, enumClass);
 		if (s != null)
 			return s;
 		return "UNKNOWN_" + phase;
 	}
 
-	public static String getEnumValueName(Object phase, Class searchClass) {
+	public static String getEnumValueName(final Object phase, Class searchClass) {
 		Class phaseClass = null;
 		boolean isNull = true;
 		int phaseHC = Integer.MIN_VALUE;
@@ -324,13 +333,13 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 			phaseClass = phase.getClass();
 			phaseHC = phase.hashCode();
 		}
-		for (Field f : searchClass.getDeclaredFields()) {
-			int mods = f.getModifiers();
+		for (final Field f : searchClass.getDeclaredFields()) {
+			final int mods = f.getModifiers();
 			if (Modifier.isStatic(mods)) {
 				try {
 					if (!f.isAccessible())
 						f.setAccessible(true);
-					Object fv = f.get(null);
+					final Object fv = f.get(null);
 					if (fv == null) {
 						if (isNull) {
 
@@ -346,17 +355,17 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 							continue;
 						return f.getName();
 					}
-				} catch (IllegalArgumentException e) {
+				} catch (final IllegalArgumentException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-				} catch (IllegalAccessException e) {
+				} catch (final IllegalAccessException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
 		}
-		for (Class cc : searchClass.getInterfaces()) {
-			String r = getEnumValueName(phase, cc);
+		for (final Class cc : searchClass.getInterfaces()) {
+			final String r = getEnumValueName(phase, cc);
 			if (r != null)
 				return r;
 		}
@@ -379,15 +388,15 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 		public ListenerMap actionCallbackMap = new ListenerMap();
 		public Map<String, Integer> defaultStartLevel = new HashMap();
 
-		public boolean flagTrue(String key) {
+		public boolean flagTrue(final String key) {
 			return hasSetting(key) && sameValue(getSetting(key), Boolean.TRUE);
 		}
 
-		public void runNow(String key, Runnable value) {
+		public void runNow(final String key, final Runnable value) {
 			runTodoItem(asTodoItem(key, value));
 		}
 
-		public void runNow(String key) {
+		public void runNow(final String key) {
 			runTodoItem(asTodoItem(key, getRunnable(key)));
 		}
 
@@ -400,11 +409,11 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 
 		public BundleActivator firstBundleActivatorBase = null;
 		public Map<String, Object> settingsMap = new HashMap();
-		public HashSet<String> servicesBegun = new HashSet<String>();
+		public HashSet<String> servicesBegun = new HashSet<>();
 
-		public HashSet<String> servicesMissing = new HashSet<String>();
-		public HashSet<String> servicesDisabled = new HashSet<String>();
-		public HashSet<String> servicesKnown = new HashSet<String>();
+		public HashSet<String> servicesMissing = new HashSet<>();
+		public HashSet<String> servicesDisabled = new HashSet<>();
+		public HashSet<String> servicesKnown = new HashSet<>();
 		public final Map<Integer, List<TodoItem>> servicesTodo;
 
 		private MacroStartupSettings() {
@@ -418,10 +427,10 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 			servicesKnown.add(key);
 		}
 
-		public void putSetting(String key, Object value) {
+		public void putSetting(String key, final Object value) {
 			key = toKeyCase(key);
 			synchronized (settingsMap) {
-				Object old = settingsMap.put(key, value);
+				final Object old = settingsMap.put(key, value);
 				if (value instanceof Boolean) {
 					setServiceEnabled(key, (boolean) (Boolean) value);
 				}
@@ -432,7 +441,7 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 			}
 		}
 
-		public void setServiceEnabled(String key, boolean b) {
+		public void setServiceEnabled(String key, final boolean b) {
 			addServiceName(key);
 			key = toKeyCase(key);
 			if (b) {
@@ -448,13 +457,13 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 
 		}
 
-		public String getProperty(Bundle bundle, String defult, String... tryFrom) {
+		public String getProperty(final Bundle bundle, final String defult, final String... tryFrom) {
 			boolean blankString = false;
 			BundleContext context = null;
 			if (bundle != null) {
 				context = bundle.getBundleContext();
 			}
-			for (String s : tryFrom) {
+			for (final String s : tryFrom) {
 
 				String args = null;
 				if (bundle != null) {
@@ -467,7 +476,7 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 					}
 					return args;
 				}
-				Object oargs = getSetting(s);
+				final Object oargs = getSetting(s);
 				if (oargs != null)
 					return "" + oargs;
 			}
@@ -476,11 +485,11 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 			return defult;
 		}
 
-		public <T> T getSetting(String key) {
+		public <T> T getSetting(final String key) {
 			Object string = System.getProperty(key, System.getenv(key));
 			if (string != null)
 				return (T) string;
-			String key2 = toKeyCase(key);
+			final String key2 = toKeyCase(key);
 			string = System.getProperty(key2, System.getenv(key2));
 			if (string != null)
 				return (T) string;
@@ -551,29 +560,29 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 			return false;
 		}
 
-		private boolean sameValue(Object v1, Object v2) {
+		private boolean sameValue(final Object v1, final Object v2) {
 			if (v1 == v2)
 				return true;
 
 			return ("" + v1).equalsIgnoreCase("" + v2);
 		}
 
-		public boolean hasSetting(String key) {
+		public boolean hasSetting(final String key) {
 			synchronized (settingsMap) {
 				return settingsMap.containsKey(toKeyCase(key));
 			}
 		}
 
-		public void offerFirst(BundleActivator bundleActivatorBase) {
+		public void offerFirst(final BundleActivator bundleActivatorBase) {
 			if (firstBundleActivatorBase == null)
 				firstBundleActivatorBase = bundleActivatorBase;
 		}
 
-		public void makeStartupBundle(BundleActivator activator) {
+		public void makeStartupBundle(final BundleActivator activator) {
 			firstBundleActivatorBase = activator;
 		}
 
-		public void runTodoList(List<TodoItem> registerServicesPhaseTodo) {
+		public void runTodoList(final List<TodoItem> registerServicesPhaseTodo) {
 			if (registerServicesPhaseTodo == null)
 				return;
 			TodoItem item = null;
@@ -586,7 +595,7 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 
 		}
 
-		private void runTodoItem(TodoItem item) {
+		private void runTodoItem(final TodoItem item) {
 			String key = item.getName();
 			key = toKeyCase(key);
 			synchronized (servicesBegun) {
@@ -606,13 +615,13 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 			item.run();
 		}
 
-		public static Map<Integer, List<TodoItem>> phaseTodosMap = new HashMap<Integer, List<TodoItem>>();
+		public static Map<Integer, List<TodoItem>> phaseTodosMap = new HashMap<>();
 
-		public static List<TodoItem> getPhaseTodo(int phaseAt) {
+		public static List<TodoItem> getPhaseTodo(final int phaseAt) {
 			return getPhaseTodo(phaseAt, true);
 		}
 
-		public static List<TodoItem> getPhaseTodo(int phaseAt, boolean createIfMissing) {
+		public static List<TodoItem> getPhaseTodo(final int phaseAt, final boolean createIfMissing) {
 			synchronized (phaseTodosMap) {
 				if (createIfMissing && !phaseTodosMap.containsKey(phaseAt)) {
 					phaseTodosMap.put(phaseAt, new ArrayList<TodoItem>());
@@ -621,12 +630,12 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 			}
 		}
 
-		public void raiseToPhase(int top) {
+		public void raiseToPhase(final int top) {
 			boolean runAgain = true;
 			while (runAgain) {
 				runAgain = false;
 				for (int phaseAt = 0; phaseAt < top; phaseAt++) {
-					List<TodoItem> todos = getPhaseTodo(phaseAt, false);
+					final List<TodoItem> todos = getPhaseTodo(phaseAt, false);
 					if (todos == null || todos.size() == 0)
 						continue;
 					runAgain = true;
@@ -641,10 +650,10 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 			raiseToPhase(BootPhaseConst.RUNNING_COMPLETE);
 		}
 
-		public void addMacroService(int bootPhase, String key, Runnable value) {
+		public void addMacroService(final int bootPhase, String key, final Runnable value) {
 			key = toKeyCase(key);
 			addServiceName(key);
-			TodoItem todoItem = asTodoItem(key, value);
+			final TodoItem todoItem = asTodoItem(key, value);
 			synchronized (actionCallbackMap) {
 				actionCallbackMap.put(key, todoItem);
 				handleEvent(key);
@@ -656,12 +665,13 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 		}
 
 		public void scheduleFrameworkStartEventHandler(final MacroBundleActivatorBase bundleActivatorBase) {
-			String key = bundleActivatorBase.getClass().getName();
+			final String key = bundleActivatorBase.getClass().getName();
 			addMacroService(BootPhaseConst.FRAMEWORKSTARTING, key + "_frameworkstarted", new Runnable() {
-				@Override public void run() {
+				@Override
+				public void run() {
 					try {
 						bundleActivatorBase.dispatchFrameworkStartedEvent0(bundleActivatorBase.m_context.getBundle(), null);
-					} catch (Exception e) {
+					} catch (final Exception e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
@@ -672,8 +682,9 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 
 		public void possiblyStart(final MacroBundleActivatorBase bundleActivatorBase) {
 			bundleActivatorBase.m_context.addFrameworkListener(new FrameworkListener() {
-				@Override public void frameworkEvent(FrameworkEvent fe) {
-					int eventType = fe.getType();
+				@Override
+				public void frameworkEvent(final FrameworkEvent fe) {
+					final int eventType = fe.getType();
 					if (eventType == FrameworkEvent.STARTED) {
 						launchPhases();
 					}
@@ -684,42 +695,42 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 		}
 
 		public String getFieldValuesString() {
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			PrintStream ps = new PrintStream(baos);
+			final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			final PrintStream ps = new PrintStream(baos);
 			printMacroStateInfo(ps, null, true);
-			String content = baos.toString(); // e.g. ISO-8859-1
+			final String content = baos.toString(); // e.g. ISO-8859-1
 			return content;
 		}
 
-		public void printMacroStateInfo(PrintStream ps, BundleContext bc, boolean onlyNoteable) {
+		public void printMacroStateInfo(final PrintStream ps, final BundleContext bc, final boolean onlyNoteable) {
 			if (bc != null) {
-				Bundle[] bundles = bc.getBundles();
-				for (Bundle b : bundles) {
-					int state = b.getState();
+				final Bundle[] bundles = bc.getBundles();
+				for (final Bundle b : bundles) {
+					final int state = b.getState();
 					if (onlyNoteable && state == Bundle.ACTIVE)
 						continue;
 					ps.println(b.getBundleId() + ": " + toBundleStateString(state) + " " + getBundleName(b));
 				}
 			}
-			Set<String> names = new HashSet<String>(servicesBegun);
+			final Set<String> names = new HashSet<>(servicesBegun);
 			names.addAll(servicesDisabled);
 			names.addAll(servicesMissing);
 			synchronized (settingsMap) {
 				names.addAll(settingsMap.keySet());
 			}
-			for (String n : names) {
+			for (final String n : names) {
 				if (servicesBegun.contains(n)) {
 					if (onlyNoteable)
 						continue;
 				}
-				String valuestatus = getValueStatus(n);
+				final String valuestatus = getValueStatus(n);
 				ps.println(n + "=" + valuestatus);
 			}
 		}
 
 		public String getServiceName(String n) {
 			n = toKeyCase(n);
-			String name = settingsName.get(n);
+			final String name = settingsName.get(n);
 			if (name != null)
 				return name;
 			return n;
@@ -743,36 +754,36 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 			}
 			if (value == null)
 				value = "";
-			String valuestatus = value + status;
+			final String valuestatus = value + status;
 			return valuestatus;
 		}
 
 		/**
 		 * Return a String representation of a bundle state
 		 */
-		public static String toBundleStateString(int state) {
+		public static String toBundleStateString(final int state) {
 			switch (state) {
-			case Bundle.UNINSTALLED:
-				return "UNINSTALLED";
-			case Bundle.INSTALLED:
-				return "INSTALLED";
-			case Bundle.RESOLVED:
-				return "RESOLVED";
-			case Bundle.STARTING:
-				return "STARTING";
-			case Bundle.STOPPING:
-				return "STOPPING";
-			case Bundle.ACTIVE:
-				return "ACTIVE";
-			default:
-				return "UNKNOWN";
+				case Bundle.UNINSTALLED:
+					return "UNINSTALLED";
+				case Bundle.INSTALLED:
+					return "INSTALLED";
+				case Bundle.RESOLVED:
+					return "RESOLVED";
+				case Bundle.STARTING:
+					return "STARTING";
+				case Bundle.STOPPING:
+					return "STOPPING";
+				case Bundle.ACTIVE:
+					return "ACTIVE";
+				default:
+					return "UNKNOWN";
 			}
 		}
 
 		public void removeBegun() {
 			synchronized (servicesBegun) {
 				synchronized (actionCallbackMap) {
-					for (Object n : servicesBegun.toArray()) {
+					for (final Object n : servicesBegun.toArray()) {
 						actionCallbackMap.remove(n);
 					}
 				}
@@ -788,16 +799,16 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 				runNow(key);
 			}
 		}
-	//  This feature needs to move to JFlux.
-	//  Appdapter is no longer allowed to use
-	//  import org.jflux.api.core.Listener;
-	//	private List<Listener<String>> myListeners = new ArrayList<Listener<String>>();
+		//  This feature needs to move to JFlux.
+		//  Appdapter is no longer allowed to use
+		//  import org.jflux.api.core.Listener;
+		//	private List<Listener<String>> myListeners = new ArrayList<Listener<String>>();
 
-		public void handleEvent(String event) {
+		public void handleEvent(final String event) {
 			// STU SEZ:  CAn we see the tasty events we're missinggetLogger().info("Received event {}", event);
-	//		for (Listener<String> l : myListeners) {
-	//			l.handleEvent(event);
-	//		}
+			//		for (Listener<String> l : myListeners) {
+			//			l.handleEvent(event);
+			//		}
 		}
 /*
 		public void registerServiceChanged(Listener<String> listener) {
@@ -815,35 +826,35 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 		*/
 	}
 
-	public void addMacroService(String key, Runnable value) {
+	public void addMacroService(final String key, final Runnable value) {
 		addMacroService(BootPhaseConst.RUNNING, key, value);
 	}
 
-	public void addMacroService(String key, boolean enabled, Runnable value) {
+	public void addMacroService(final String key, final boolean enabled, final Runnable value) {
 		if (!macroStartupSettings.isDisabled(key))
 			macroStartupSettings.setServiceEnabled(key, enabled);
 		addMacroService(BootPhaseConst.RUNNING, key, value);
 	}
 
-	public void addMacroPreService(String key, Runnable value) {
+	public void addMacroPreService(final String key, final Runnable value) {
 		addMacroService(BootPhaseConst.PRE_CONFIG, key, value);
 	}
 
-	public void addMacroService(int bootPhase, String key, Runnable value) {
+	public void addMacroService(final int bootPhase, String key, final Runnable value) {
 		key = toKeyCase(key);
 		synchronized (macroStartupSettings) {
 			macroStartupSettings.addMacroService(bootPhase, key, value);
 		}
 	}
 
-	public static TodoItem asTodoItem(String key, Runnable value) {
+	public static TodoItem asTodoItem(String key, final Runnable value) {
 		if (value instanceof TodoItem)
 			return (TodoItem) value;
 		key = toKeyCase(key);
 		return new TodoItem(key, value);
 	}
 
-	public void addMacroServiceLocal(int bootPhase, String key, Runnable value) {
+	public void addMacroServiceLocal(final int bootPhase, String key, final Runnable value) {
 		key = toKeyCase(key);
 		String pn = getClass().getPackage().getName();
 		pn = pn.substring(pn.indexOf('.') + 1);
@@ -852,12 +863,12 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 	}
 
 	public static String toKeyCase(String key) {
-		String name = key;
+		final String name = key;
 		key = key.toLowerCase();
 		boolean remove = true;
 		while (remove) {
 			remove = false;
-			for (String s : new String[] { "start", "launch", "osgi.", "core.", "lib.", ".", "com.", "org.", "hrkind.", "appdapter.", "friendularity.", "cogchar.", "ext.", "cogchar", "bundle.", "-", "is", "use", "init", "connect", "call", "connect", }) {
+			for (final String s : new String[]{"start", "launch", "osgi.", "core.", "lib.", ".", "com.", "org.", "hrkind.", "appdapter.", "friendularity.", "cogchar.", "ext.", "cogchar", "bundle.", "-", "is", "use", "init", "connect", "call", "connect",}) {
 				if (key.startsWith(s) && key.length() + 2 > s.length()) {
 					key = key.substring(s.length());
 					remove = true;
@@ -866,7 +877,7 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 		}
 		while (remove) {
 			remove = false;
-			for (String s : new String[] { "application", "app", "lifecycles", "lifecycle", "service", "services", "launcher", }) {
+			for (final String s : new String[]{"application", "app", "lifecycles", "lifecycle", "service", "services", "launcher",}) {
 				if (key.endsWith(s) && key.length() + 2 > s.length()) {
 					key = key.substring(0, key.length() - s.length());
 					remove = true;
@@ -902,7 +913,7 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 				key = "launch_" + key;
 			}
 		}
-		String oldName = settingsName.get(key);
+		final String oldName = settingsName.get(key);
 		if (oldName == null || oldName.length() < name.length() || (oldName.length() == name.length() && !name.toLowerCase().equals(name))) {
 			settingsName.put(key, name);
 		}
@@ -918,12 +929,12 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 
 	/**
 	 * Receives notification of a general {@code FrameworkEvent} object.
-	 * 
-	 * @param event
-	 *            The {@code FrameworkEvent} object.
+	 *
+	 * @param event The {@code FrameworkEvent} object.
 	 */
-	public void frameworkEvent(FrameworkEvent fe) {
-		int eventType = fe.getType();
+	@Override
+	public void frameworkEvent(final FrameworkEvent fe) {
+		final int eventType = fe.getType();
 		if (eventType == FrameworkEvent.STARTED) {
 			getLogger().info("********  OSGi Framework has STARTED, calling dispatchFrameworkStartedEvent()");
 			dispatchFrameworkStartedEvent0(fe.getBundle(), fe.getThrowable());
@@ -942,16 +953,19 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 	}
 
 	/**
-	 * There are two things you might do in your overriding start() method, which are generally only done in asingle "top" bundle (generally corresponding to a project that you want to "run" from maven, or use as the seed of your own launch strategy).
-	 * 
-	 * If you call these methods from multiple bundles, then you will have to deal with the fact that those invocations (and their callbacks) may generally occur in any order.
-	 * 
-	 * 1) Call forceLog4JConfig() if you like Log4J logging. 2) Call scheduleFrameworkStartEventHandler() to schedule a callback allowing you to safely begin your application setup *after* all initial bundles have been started.
-	 * 
-	 * @param bundleCtx
-	 * @throws Exception
+	 * There are two things you might do in your overriding start() method, which are generally only
+	 * done in asingle "top" bundle (generally corresponding to a project that you want to "run"
+	 * from maven, or use as the seed of your own launch strategy).
+	 *
+	 * If you call these methods from multiple bundles, then you will have to deal with the fact
+	 * that those invocations (and their callbacks) may generally occur in any order.
+	 *
+	 * 1) Call forceLog4JConfig() if you like Log4J logging. 2) Call scheduleFrameworkStartEventHandler()
+	 * to schedule a callback allowing you to safely begin your application setup *after* all
+	 * initial bundles have been started.
 	 */
-	@Override public void start(BundleContext bundleCtx) throws Exception {
+	@Override
+	public void start(final BundleContext bundleCtx) throws Exception {
 		this.m_context = bundleCtx;
 		synchronized (startedBundles) {
 			if (startedBundles.contains(this))
@@ -977,15 +991,15 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 		return m_context == null;
 	}
 
-	public static ArrayList<BundleActivator> startedBundles = new ArrayList<BundleActivator>();
+	public static ArrayList<BundleActivator> startedBundles = new ArrayList<>();
 
-	private void addStartedBundle(BundleActivator bundleActivatorBase) {
+	private void addStartedBundle(final BundleActivator bundleActivatorBase) {
 		synchronized (startedBundles) {
 			if (startedBundles.contains(bundleActivatorBase))
 				return;
 			startedBundles.add(bundleActivatorBase);
 		}
-		String key = bundleActivatorBase.getClass().getName();
+		final String key = bundleActivatorBase.getClass().getName();
 		/*
 		addMacroService(BootPhaseConst.STARTING, key + "_start", new Runnable() {
 			@Override public void run() {
@@ -1003,11 +1017,12 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 			}
 		});*/
 		addMacroService(BootPhaseConst.REGISTERINGSERVICES, key + "_registerservices", new Runnable() {
-			@Override public void run() {
+			@Override
+			public void run() {
 				bundleBootPhase = BootPhaseConst.REGISTERINGSERVICES;
 				try {
 					registerServices(m_context);
-				} catch (Exception e) {
+				} catch (final Exception e) {
 					getLogger().error("registerServices: " + e, e);
 					e.printStackTrace();
 				}
@@ -1015,7 +1030,8 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 			}
 		});
 		addMacroService(BootPhaseConst.FRAMEWORKSTARTING, key + "_frameworkstarted", new Runnable() {
-			@Override public void run() {
+			@Override
+			public void run() {
 				bundleBootPhase = BootPhaseConst.FRAMEWORKSTARTING;
 				try {
 					Bundle b = null;
@@ -1023,7 +1039,7 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 						b = m_context.getBundle();
 					}
 					dispatchFrameworkStartedEvent0(b, null);
-				} catch (Exception e) {
+				} catch (final Exception e) {
 					getLogger().error("registerServices: " + e, e);
 					e.printStackTrace();
 				}
@@ -1031,13 +1047,14 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 			}
 		});
 		addMacroService(BootPhaseConst.LAUNCHING, key + "_launch", new Runnable() {
-			@Override public void run() {
+			@Override
+			public void run() {
 				bundleBootPhase = BootPhaseConst.LAUNCHING;
 				try {
 					if (isLauncherBundle()) {
 						launchApplication(m_context);
 					}
-				} catch (Exception e) {
+				} catch (final Exception e) {
 					getLogger().error("LAUNCHING: " + e, e);
 					e.printStackTrace();
 				}
@@ -1046,7 +1063,8 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 		});
 	}
 
-	@Override public void stop(BundleContext bundleCtx) throws Exception {
+	@Override
+	public void stop(final BundleContext bundleCtx) throws Exception {
 		synchronized (macroStartupSettings) {
 			if (classLoaderUtils != null) {
 				classLoaderUtils.unregisterClassLoader(this, bundleCtx);
@@ -1055,11 +1073,11 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 		getLogger().info(describe("stop<BundleActivatorBase>", bundleCtx));
 	}
 
-	static protected String getBundleName(BundleActivator key) {
+	static protected String getBundleName(final BundleActivator key) {
 		return key.getClass().getName();
 	}
 
-	static public String getBundleName(Bundle b) {
+	static public String getBundleName(final Bundle b) {
 		if (b == null)
 			return "NO_BUNDLE";
 		String sym = b.getSymbolicName();
@@ -1075,50 +1093,57 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 
 	/**
 	 * The code in here should be moved between two methods:
-	 * 
-	 * 
-	 * handleFrameworkStartedEvent = everything has had start(.) called now the best time to create objects and populate fields hopefully the best time to win a race at setting a OSGi framework property
-	 * 
+	 *
+	 *
+	 * handleFrameworkStartedEvent = everything has had start(.) called now the best time to create
+	 * objects and populate fields hopefully the best time to win a race at setting a OSGi framework
+	 * property
+	 *
 	 * registerServices = time to change properies and register serveices
-	 * 
-	 * laucheBundle = everything has had handleFrameworkStartedEvent(.) called now use isLauncherBundle() in your code to see if you are the toplevel bundle
-	 * 
+	 *
+	 * laucheBundle = everything has had handleFrameworkStartedEvent(.) called now use
+	 * isLauncherBundle() in your code to see if you are the toplevel bundle
+	 *
 	 * We might go to three methods
 	 */
-	protected void registerConfig(BundleContext bundleCtx) throws Exception {
+	protected void registerConfig(final BundleContext bundleCtx) throws Exception {
 		legacyStartWasOverriden_Check = false;
 	}
 
-	protected void registerServices(BundleContext context0) {
+	protected void registerServices(final BundleContext context0) {
 
 	}
 
 	/**
-	 * Override this method if you need notification after all bundles in your container have been started. Normally you would override this method in a "top" bundle to setup your application code. Important: This handler will be called now regardless if you called scheduleFrameworkStartEventHandler()
-	 * 
-	 * @param bundleCtx
-	 *            - Fetched from the bundle of the FrameworkEvent, so it should be nice and fresh.
+	 * Override this method if you need notification after all bundles in your container have been
+	 * started. Normally you would override this method in a "top" bundle to setup your application
+	 * code. Important: This handler will be called now regardless if you called
+	 * scheduleFrameworkStartEventHandler()
+	 *
+	 * @param bundleCtx - Fetched from the bundle of the FrameworkEvent, so it should be nice and
+	 *                  fresh.
 	 */
-	protected void handleFrameworkStartedEvent(BundleContext bundleCtx) throws Exception {
+	protected void handleFrameworkStartedEvent(final BundleContext bundleCtx) throws Exception {
 
 	}
 
 	/**
-	 * Override this method with the code that you'd use if this Bundle was intend to be Launched However, it will only be called if this was the launched bundle like -Prun-on-felix
+	 * Override this method with the code that you'd use if this Bundle was intend to be Launched
+	 * However, it will only be called if this was the launched bundle like -Prun-on-felix
 	 */
-	protected void launchApplication(BundleContext bundleCtx) throws Exception {
+	protected void launchApplication(final BundleContext bundleCtx) throws Exception {
 		if (isLauncherBundle()) {
 			getLogger().warn("this bundle was missing LAUNCHING");
 		}
 	}
 
 	/**
-	 * Call this method from any bundle's start() to schedule a callback to its handleFrameworkStartedEvent() method.
-	 * 
-	 * @param bundleCtx
-	 *            - used to schedule the callback, and then forgotten.
+	 * Call this method from any bundle's start() to schedule a callback to its
+	 * handleFrameworkStartedEvent() method.
+	 *
+	 * @param bundleCtx - used to schedule the callback, and then forgotten.
 	 */
-	final protected void scheduleFrameworkStartEventHandler(BundleContext bundleCtx) {
+	final protected void scheduleFrameworkStartEventHandler(final BundleContext bundleCtx) {
 		synchronized (dispatchEventLock) {
 			if (startedEventScheduled)
 				return;
@@ -1135,9 +1160,9 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 		}
 	}
 
-	final void dispatchFrameworkStartedEvent0(Bundle eventBundle, Throwable eventThrowable) {
-		String thrownMsg = (eventThrowable == null) ? "OK" : eventThrowable.getClass().getName();
-		String bundleName = getBundleName(eventBundle);
+	final void dispatchFrameworkStartedEvent0(final Bundle eventBundle, final Throwable eventThrowable) {
+		final String thrownMsg = (eventThrowable == null) ? "OK" : eventThrowable.getClass().getName();
+		final String bundleName = getBundleName(eventBundle);
 		getLogger().info("dispatchFrameworkStartedEvent<BundleActivatorBase> ( bundle={}, msg={}", bundleName, thrownMsg);
 		if (eventThrowable == null) {
 			BundleContext bc = null;
@@ -1161,7 +1186,7 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 					}
 					handleFrameworkStartedEvent(bc);
 				}
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				getLogger().error("handleFrameworkStartedEvent " + e, e);
 			}
 		} else {
@@ -1171,21 +1196,18 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 
 	/**
 	 * If you override this
-	 * 
-	 * @param eventBundle
-	 * @param eventThrowable
 	 */
-	private void reallyLaunch(BundleActivator bundleActivatorBase) {
+	private void reallyLaunch(final BundleActivator bundleActivatorBase) {
 		macroStartupSettings.launchPhases();
 		//launchApplication(bc);
 
 	}
 
-	protected String describe(String action, BundleContext bundleCtx) {
+	protected String describe(final String action, final BundleContext bundleCtx) {
 		Bundle b = null;
 		if (bundleCtx != null)
 			b = bundleCtx.getBundle();
-		String msg = getClass().getCanonicalName() + "." + action + "(ctx=[" + bundleCtx + "], bundle=[" + getBundleName(b) + "])";
+		final String msg = getClass().getCanonicalName() + "." + action + "(ctx=[" + bundleCtx + "], bundle=[" + getBundleName(b) + "])";
 		return msg;
 	}
 
@@ -1203,7 +1225,7 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 			forceLog4jConfig0();
 	}
 
-	public void logInfo(String msg) {
+	public void logInfo(final String msg) {
 		getLogger().info(msg);
 	}
 
@@ -1214,30 +1236,36 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 	}
 
 	/**
-	 * This should usually be called only once during a system's runtime lifetime. (To be tested: works OK to update properties at runtime?)
-	 * 
-	 * Prints some debug to stdout about known classloaders, then builds a URL using the *local* CL of this concrete class (which will be *your* class is you make subtypes of BasicDebugger or BundleActivatorBase!) to create a resource URL into the classpath (under OSGi, the bundle-classpath-of) of that concrete class, which under OSGi will look something like:
-	 * 
+	 * This should usually be called only once during a system's runtime lifetime. (To be tested:
+	 * works OK to update properties at runtime?)
+	 *
+	 * Prints some debug to stdout about known classloaders, then builds a URL using the *local* CL
+	 * of this concrete class (which will be *your* class is you make subtypes of BasicDebugger or
+	 * BundleActivatorBase!) to create a resource URL into the classpath (under OSGi, the
+	 * bundle-classpath-of) of that concrete class, which under OSGi will look something like:
+	 *
 	 * bundle://221.0:1/log4j.properties
-	 * 
+	 *
 	 * ...which is then passed to Log4jFuncs.forceLog4jConfig.
-	 * 
-	 * What this means is that you can put a log4j.properties into any bundle of your own, then call "forceLog4jConfig()" ONCE from that bundle's activator (or framework-START-event handler), and then your properties should be in place.
+	 *
+	 * What this means is that you can put a log4j.properties into any bundle of your own, then call
+	 * "forceLog4jConfig()" ONCE from that bundle's activator (or framework-START-event handler),
+	 * and then your properties should be in place.
 	 */
 	protected void forceLog4jConfig0() {
 		// Logger logger = getLogger();
 
 		// To get more determinism over when this happens (before other bundles that use logging are launched),
 		// need to mess with Felix auto-start properties?
-		ClassLoader threadCL = Thread.currentThread().getContextClassLoader();
-		ClassLoader localCL = getClass().getClassLoader();
+		final ClassLoader threadCL = Thread.currentThread().getContextClassLoader();
+		final ClassLoader localCL = getClass().getClassLoader();
 		System.out.println("thread-context-CL=" + threadCL);
 		System.out.println("local-CL=" + localCL);
 
-		String resPath = "log4j.properties";
+		final String resPath = "log4j.properties";
 
-		URL threadURL = threadCL.getResource(resPath);
-		URL localURL = localCL.getResource(resPath);
+		final URL threadURL = threadCL.getResource(resPath);
+		final URL localURL = localCL.getResource(resPath);
 		System.out.println("[System.out] forceLog4jConfig() threadCL resolved " + resPath + " to threadURL " + threadURL);
 		System.out.println("[System.out] forceLog4jConfig() localCL resolved  " + resPath + " to  localURL " + localURL);
 		System.out.println("[System.out] " + getClass().getCanonicalName() + " is forcing Log4J to read config from localURL: " + localURL);
@@ -1245,23 +1273,23 @@ public abstract class MacroBundleActivatorBase implements BundleActivator, Frame
 		try {
 
 			forceLog4jConfig(localURL);
-		} catch (Throwable t) {
+		} catch (final Throwable t) {
 			t.printStackTrace();
 		}
 		try {
-			Logger logger = getLogger();
+			final Logger logger = getLogger();
 
 			try {
-				logger.warn("{forceLog4JConfig} - This message was printed at WARN level to SLF4J, after forcing config for Log4J to localURL: " + localURL);
-			} catch (Throwable t2) {
+				logger.info("{forceLog4JConfig} - This message was printed at INFO level to SLF4J, after forcing config for Log4J to localURL: " + localURL);
+			} catch (final Throwable t2) {
 				t2.printStackTrace();
 			}
-		} catch (Throwable t) {
+		} catch (final Throwable t) {
 			t.printStackTrace();
 		}
 	}
 
-	public static void forceLog4jConfig(URL propertiesURL) {
+	public static void forceLog4jConfig(final URL propertiesURL) {
 		System.out.println(new StringBuilder().append("[System.out] ").append(MacroBundleActivatorBase.class.getName()).append(" is forcing Log4J to read config from propertiesURL: ").append(propertiesURL).toString());
 		PropertyConfigurator.configure(propertiesURL);
 	}
