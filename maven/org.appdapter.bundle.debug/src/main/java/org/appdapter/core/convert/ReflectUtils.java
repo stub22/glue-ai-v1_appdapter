@@ -9,24 +9,7 @@ import static org.appdapter.core.log.Debuggable.warn;
 import java.awt.Component;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Array;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.GenericArrayType;
-import java.lang.reflect.GenericDeclaration;
-import java.lang.reflect.GenericSignatureFormatError;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.MalformedParameterizedTypeException;
-import java.lang.reflect.Member;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Proxy;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
-import java.lang.reflect.WildcardType;
+import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -2179,6 +2162,11 @@ abstract public class ReflectUtils implements UtilClass {
 		 */
 		@Override public String getName() {
 			return typeName.toString();
+		}
+
+		@Override
+		public AnnotatedType[] getAnnotatedBounds() {
+			return new AnnotatedType[0];
 		}
 
 		/**
