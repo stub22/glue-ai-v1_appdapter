@@ -14,7 +14,9 @@ import scala.io.StdIn
 object GlpApp {
   val pathA = "patha"
   val pathB = "pathb"
-  val pathF = "pathf"
+  val pathJsonPreDump = "json-pre-dump"
+  val pathJsonLdMime = "json-ld-mime"
+
   def foo(x : Array[String]) = x.foldLeft("")((a,b) => a + b)
   
   def main(args : Array[String]) {
@@ -44,9 +46,13 @@ object GlpApp {
         get {
           complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, "<h1>Say goodbye to akka-http</h1>"))
         }
-      } ~ path(pathF) {
-        val x = getSomeJsonLD()
-        complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, "<pre>" + x + "</pre>"))
+      } ~ path(pathJsonPreDump) {
+          val x = getSomeJsonLD()
+          complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, "<pre>" + x + "</pre>"))
+      }  ~ path(pathJsonLdMime) {
+          val x = getSomeJsonLD()
+          // Note scala backticks, used to identify variables containing special chars
+          complete(HttpEntity(ContentTypes.`application/json`, x ))
       }
 
       val bindingFuture = Http().bindAndHandle(route, "localhost", 8080)
