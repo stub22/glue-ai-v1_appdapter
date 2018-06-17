@@ -45,15 +45,23 @@ object GlpApp {
           complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, "<h1>Say goodbye to akka-http</h1>"))
         }
       } ~ path(pathF) {
-        complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, "<h1>Foo!</h1>"))
+        val x = getSomeJsonLD()
+        complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, "<pre>" + x + "</pre>"))
       }
 
-    val bindingFuture = Http().bindAndHandle(route, "localhost", 8080)
+      val bindingFuture = Http().bindAndHandle(route, "localhost", 8080)
 
-    println(s"Server online at http://localhost:8080/\nPress RETURN to stop...")
-    StdIn.readLine() // let it run until user presses return
-    bindingFuture
-            .flatMap(_.unbind()) // trigger unbinding from the port
-            .onComplete(_ => system.terminate()) // and shutdown when done
+      println(s"Server online at http://localhost:8080/\nPress RETURN to stop...")
+      StdIn.readLine() // let it run until user presses return
+      bindingFuture
+              .flatMap(_.unbind()) // trigger unbinding from the port
+              .onComplete(_ => system.terminate()) // and shutdown when done
+    }
+  def getSomeJsonLD() : String = {
+    val sds = new SomeDataStuff()
+    val mdl = sds.loadThatModel()
+    val ms = mdl.toString
+    System.out.println("Loaded: " + ms)
+    ms
   }
 }
