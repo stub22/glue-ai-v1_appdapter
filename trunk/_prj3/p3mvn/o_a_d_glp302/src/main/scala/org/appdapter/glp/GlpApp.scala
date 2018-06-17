@@ -60,8 +60,10 @@ object GlpApp {
   def getSomeJsonLD() : String = {
     val sds = new SomeDataStuff()
     val mdl = sds.loadThatModel()
-    val ms = mdl.toString
-    System.out.println("Loaded: " + ms)
-    ms
+    val mdmp = mdl.toString
+    System.out.println("Loaded: " + mdmp)
+    val jldTxt = sds.writeModelToJsonLDString_Pretty(mdl)
+    System.out.println("Formatted: " + jldTxt)
+    jldTxt
   }
 }
