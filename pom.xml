@@ -136,7 +136,7 @@ Version-less parent will be allowed in Maven 3.1.
 		<pax.version>1.1.2</pax.version>
 		<poi.version>3.9</poi.version>
 		<qpid.version>0.32</qpid.version>
-		<scala.version>2.10.2</scala.version>
+		<scala.version>2.13.3</scala.version>
 		<scalatest.version>1.4.1</scalatest.version>
 		<servlet.api.version>2.5</servlet.api.version>
 		<servicemix.bundles.javax.mail.version>1.4.1_4</servicemix.bundles.javax.mail.version>
