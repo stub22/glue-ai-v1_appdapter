@@ -123,7 +123,7 @@ Version-less parent will be allowed in Maven 3.1.
 		<jscience.groupId>org.jscience</jscience.groupId>
 		<jscience.math.artifactId>jscience-mathematics</jscience.math.artifactId>
 		<jscience.version>5.0-SNAPSHOT</jscience.version>
-		<junit.version>4.8.2</junit.version>
+		<junit.version>4.13.1</junit.version>
 		<lib.poi.dev.version>5.9.4.1</lib.poi.dev.version>
 		<log4j.version>1.2.16</log4j.version>
 		<mina.version>1.0.1</mina.version>
