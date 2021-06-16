@@ -150,7 +150,7 @@ Version-less parent will be allowed in Maven 3.1.
 		<snappy.version>1.0.1-rc3</snappy.version>
 		<velocity.version>1.7</velocity.version>
 		<wagon.webdav.version>1.0-beta-7</wagon.webdav.version>
-		<xmlbeans.version>2.5.0</xmlbeans.version>
+		<xmlbeans.version>3.0.0</xmlbeans.version>
 		<!-- Plugin versions -->
 		<version.license.maven.plugin>1.7</version.license.maven.plugin>
 		<version.maven.antrun.plugin>1.6</version.maven.antrun.plugin>
