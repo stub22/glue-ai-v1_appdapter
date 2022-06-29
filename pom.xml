@@ -134,7 +134,7 @@ Version-less parent will be allowed in Maven 3.1.
 		<ooxml.schemas.version>1.0</ooxml.schemas.version>
 		<paranamer.version>2.3</paranamer.version>
 		<pax.version>1.1.2</pax.version>
-		<poi.version>3.9</poi.version>
+		<poi.version>4.1.1</poi.version>
 		<qpid.version>0.32</qpid.version>
 		<scala.version>2.10.2</scala.version>
 		<scalatest.version>1.4.1</scalatest.version>
